@@ -6,3 +6,5 @@ The magma server daemon, classic edition, which supports server side encryption,
 NOTE:
 
 Magma classic is currently not on git hub. To download the current version of the source code visit our forums at http://darkmail.info/forums.
+
+Thread with info: https://darkmail.info/forums/viewtopic.php?f=5&p=27#p27

@@ -1,0 +1,45 @@
+Return-Path: <dallasmediation@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.184])
+	by mail.nerdshack.com with ESMTP
+	for <ladar@nerdshack.com>; Fri, 05 Oct 2007 13:21:04 -0500
+Received: by rv-out-0910.google.com with SMTP id b22so196408rvf
+        for <ladar@nerdshack.com>; Fri, 05 Oct 2007 11:21:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=beta;
+        h=domainkey-signature:received:received:message-id:date:from:to:subject:mime-version:content-type;
+        bh=A8ntjYl8/ytU7xodDpBDF3sjzZy0+9b2CdKV8LY1sJw=;
+        b=ujPMF5QOL3oQFK2+zBbi+2+ZSnBjTI0To6aPijghamWLsw6Zc4ZMywiGOz3vHOzkNZu5/v+vGhJlH1mst6MIVIE2T7SvAng2DPOYbB5K4g8F2l4DBtfHO/szzmPtRkiwel820HJ/wu3QaiFyyL5+IYUXXWEmvvK3gn5MLSUAiRw=
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type;
+        b=upy9/5eZxQEJJDENhm32WWY3lLWAo+ZKlgv3IDntMxr2U2soPok1boRnws14ha/Q2IcdbK9T/ngpmHAGqWPXTfc2flmcebo2GJ+cw9LlU8JaK99CADhLjiLqDZcAjiR9NTHaF98XBGHPbTiQl0B9m/9XwoUXtGMxPvOBUhzcbco=
+Received: by 10.141.87.13 with SMTP id p13mr1851149rvl.1191608463570;
+        Fri, 05 Oct 2007 11:21:03 -0700 (PDT)
+Received: by 10.141.198.7 with HTTP; Fri, 5 Oct 2007 11:21:03 -0700 (PDT)
+Message-ID: <689ff4da0710051121t5d0c75fcy36eb35d0655bd67e@mail.gmail.com>
+Date: Fri, 5 Oct 2007 13:21:03 -0500
+From: "Chris Logan" <dallasmediation@gmail.com>
+To: "Matthew Breitenstine" <strandedorg@gmail.com>, 
+	"Sean Patrick Hicks" <sphicks@gmail.com>, 
+	"Ladar Levison" <ladar@nerdshack.com>
+Subject: Stars
+MIME-Version: 1.0
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_17358_12466185.1191608463583"
+
+------=_Part_17358_12466185.1191608463583
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Going to the Stars game tonight?
+
+------=_Part_17358_12466185.1191608463583
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Going to the Stars game tonight?<br>
+
+------=_Part_17358_12466185.1191608463583--
+

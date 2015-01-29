@@ -1,0 +1,1 @@
+bazinga._domainkey IN TXT "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQD5lzepAqvhig0ZQleOYPQNKr0vVPxSK5uPJThpxPskp2RlrTRGnxGMW7dbRDY0zotI8U9d7kLXeytsKUdU5PiZxWqrozceftBz60dFYEYsGpbf+VVYtMFPQO58ParXlqhQhoJI/diMmH1uyZzDtJ7Ishb/5GFLnXMatENUml5aywIDAQAB" ; ----- DKIM bazinga for lavabit.com

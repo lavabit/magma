@@ -1,0 +1,113 @@
+--- /dev/null   2007-09-04 12:46:47.564263777 +0200 
++++ gd-2.0.34/config/gdlib.pc.in        2007-09-04 15:17:09.000000000 +0200 
+@@ -0,0 +1,15 @@ 
++prefix=@prefix@ 
++exec_prefix=@exec_prefix@ 
++libdir=@libdir@ 
++includedir=@includedir@ 
++bindir=@bindir@ 
++ldflags=@LDFLAGS@ 
++ 
++ 
++Name: gd-devel 
++Description: A graphics library for quick creation of PNG or JPEG images 
++Version: @VERSION@ 
++Requires: 
++Libs: -L${libdir} -lgd 
++Libs.private: @LIBS@ 
++Cflags: -I${includedir}
+--- gd-2.0.34/Makefile.in.pom	2007-02-03 02:41:46.000000000 +0100
++++ gd-2.0.34/Makefile.in	2007-02-08 13:34:06.000000000 +0100
+@@ -341,6 +341,7 @@
+ ACLOCAL_AMFLAGS = -I config
+ SUBDIRS = config test
+ bin_SCRIPTS = bdftogd config/gdlib-config
++pkgconf_CFILE = config/gdlib.pc 
+ EXTRA_DIST = README-JPEG.TXT README.TXT configure.pl bdftogd demoin.png err.out index.html install-item makefile.sample readme.jpn entities.html entities.tcl
+ include_HEADERS = gd.h gdfx.h gd_io.h gdcache.h gdfontg.h gdfontl.h gdfontmb.h gdfonts.h gdfontt.h entities.h
+ lib_LTLIBRARIES = libgd.la
+@@ -553,6 +554,15 @@
+ 	  rm -f "$(DESTDIR)$(bindir)/$$f"; \
+ 	done
+ 
++install-pkgconfigCF:
++		$(mkdir_p) "$(DESTDIR)$(libdir)/pkgconfig"
++		echo " cp $(pkgconf_CFILE) $(DESTDIR)$(libdir)/pkgconfig/gdlib.pc"
++		cp $(pkgconf_CFILE)  $(DESTDIR)$(libdir)/pkgconfig/gdlib.pc
++
++uninstall-pkgconfigCF:
++		echo " rm $(DESTDIR)$(libdir)/pkgconfig/gdlib.pc"
++		rm $(DESTDIR)$(libdir)/pkgconfig/gdlib.pc
++
+ mostlyclean-compile:
+ 	-rm -f *.$(OBJEXT)
+ 
+@@ -986,7 +996,7 @@
+ 
+ install-data-am: install-includeHEADERS
+ 
+-install-exec-am: install-binPROGRAMS install-binSCRIPTS \
++install-exec-am: install-binPROGRAMS install-binSCRIPTS install-pkgconfigCF\
+ 	install-libLTLIBRARIES
+ 
+ install-info: install-info-recursive
+@@ -1015,7 +1025,7 @@
+ 
+ ps-am:
+ 
+-uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
++uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS uninstall-pkgconfigCF\
+ 	uninstall-includeHEADERS uninstall-info-am \
+ 	uninstall-libLTLIBRARIES
+ 
+--- gd-2.0.34/config/gdlib-config.in.pom	2007-02-03 02:41:00.000000000 +0100
++++ gd-2.0.34/config/gdlib-config.in	2007-02-08 13:27:25.000000000 +0100
+@@ -7,9 +7,10 @@
+ # installation directories
+ prefix=@prefix@
+ exec_prefix=@exec_prefix@
+-libdir=@libdir@
++libdir=`pkg-config gdlib --variable=libdir`
+ includedir=@includedir@
+ bindir=@bindir@
++ldflags=`pkg-config gdlib --variable=ldflags` 
+ 
+ usage()
+ {
+@@ -68,7 +69,7 @@
+ 	echo @GDLIB_REVISION@
+ 	;;
+     --ldflags)
+-	echo @LDFLAGS@
++	echo $ldflags 
+ 	;;
+     --libs)
+ 	echo @LIBS@ @LIBICONV@
+@@ -83,7 +84,7 @@
+ 	echo "GD library  @VERSION@"
+ 	echo "includedir: $includedir"
+ 	echo "cflags:     -I@includedir@"
+-	echo "ldflags:    @LDFLAGS@"
++	echo "ldflags:    $ldflags"
+ 	echo "libs:       @LIBS@ @LIBICONV@"
+ 	echo "libdir:     $libdir"
+ 	echo "features:   @FEATURES@"
+--- gd-2.0.34/configure.pom	2007-02-08 13:25:00.000000000 +0100
++++ gd-2.0.34/configure	2007-02-08 13:31:53.000000000 +0100
+@@ -24672,7 +24672,7 @@
+    Support for pthreads:             $acx_pthread_ok
+ " >&6; }
+ 
+-ac_config_files="$ac_config_files Makefile config/Makefile config/gdlib-config test/Makefile"
++ac_config_files="$ac_config_files Makefile config/Makefile config/gdlib-config config/gdlib.pc test/Makefile"
+ 
+ 
+ cat >confcache <<\_ACEOF
+@@ -25257,6 +25257,7 @@
+     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+     "config/Makefile") CONFIG_FILES="$CONFIG_FILES config/Makefile" ;;
+     "config/gdlib-config") CONFIG_FILES="$CONFIG_FILES config/gdlib-config" ;;
++    "config/gdlib.pc" ) CONFIG_FILES="$CONFIG_FILES config/gdlib.pc" ;; 
+     "test/Makefile") CONFIG_FILES="$CONFIG_FILES test/Makefile" ;;
+ 
+   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5

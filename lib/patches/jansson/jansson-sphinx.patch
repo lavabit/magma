@@ -1,0 +1,24 @@
+diff -r 419415774845 sources/jansson/doc/Makefile.am
+--- a/sources/jansson/doc/Makefile.am	Thu Oct 13 03:05:23 2011 -0500
++++ b/sources/jansson/doc/Makefile.am	Thu Oct 13 03:06:48 2011 -0500
+@@ -2,7 +2,7 @@ EXTRA_DIST = conf.py apiref.rst changes.
+ 	gettingstarted.rst github_commits.c index.rst portability.rst	\
+ 	tutorial.rst upgrading.rst ext/refcounting.py
+ 
+-SPHINXBUILD = sphinx-build
++SPHINXBUILD = sphinx-1.0-build
+ SPHINXOPTS = -d _build/doctrees $(SPHINXOPTS_EXTRA)
+ 
+ html-local:
+diff -r 419415774845 sources/jansson/doc/Makefile.in
+--- a/sources/jansson/doc/Makefile.in	Thu Oct 13 03:05:23 2011 -0500
++++ b/sources/jansson/doc/Makefile.in	Thu Oct 13 03:06:48 2011 -0500
+@@ -164,7 +164,7 @@ EXTRA_DIST = conf.py apiref.rst changes.
+ 	gettingstarted.rst github_commits.c index.rst portability.rst	\
+ 	tutorial.rst upgrading.rst ext/refcounting.py
+ 
+-SPHINXBUILD = sphinx-build
++SPHINXBUILD = sphinx-1.0-build
+ SPHINXOPTS = -d _build/doctrees $(SPHINXOPTS_EXTRA)
+ all: all-am
+ 

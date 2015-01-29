@@ -1,0 +1,11 @@
+{
+    "result": {
+        "reading-pane": 2,
+        "fields": ["from", "to", "subject", "date", "size"],
+        "sort": {
+            "field": "from",
+            "order": 1
+        }
+    },
+    "error": true
+}

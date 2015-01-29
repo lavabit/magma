@@ -1,0 +1,12 @@
+diff -r 590ec559bcbf libtest/main.cc
+--- a/libtest/main.cc	Fri May 09 20:36:23 2014 -0500
++++ b/libtest/main.cc	Fri May 09 20:37:12 2014 -0500
+@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
+     }
+   }
+ 
+-  srandom((unsigned int)time(NULL));
++  srandom((unsigned int)time(NULL) % getpid());
+ 
+   if (bool(getenv("YATL_REPEAT")) and (strtoul(getenv("YATL_REPEAT"), (char **) NULL, 10) > 1))
+   {

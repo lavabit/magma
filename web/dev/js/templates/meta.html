@@ -1,0 +1,48 @@
+<dl class="user">
+    <dt>User Number</dt>
+    <dd class="user-number">${userID}</dd>
+    <dt>Client IP</dt>
+    <dd class="client-ip">${clientIP}</dd>
+    <dt>Browser</dt>
+    <dd class="browser">${browser}</dd>
+    <dt>Location</dt>
+    <dd class="location">${location}</dd>
+    <dt>Timezone</dt>
+    <dd class="timezone">${timezone}</dd>
+    <dt>Reputation</dt>
+    <dd class="reputation">${reputation}</dd>
+    <dt>Plan</dt>
+    <dd class="plan">${plan}</dd>
+    <dt>Quota</dt>
+    <dd class="quota">${quota}</dd>
+</dl>
+<dl class="browser">
+    <dt>Cookies</dt>
+    {{if cookies}}
+        <dd class="cookies true">Yes</dd>
+    {{else}}
+        <dd class="cookies false">No</dd>
+    {{/if}}
+    <dt>Javascript</dt>
+    {{if javascript}}
+        <dd class="javascript true">Yes</dd>
+    {{else}}
+        <dd class="javascript false">No</dd>
+    {{/if}}
+    <dt>Stylesheets</dt>
+    {{if stylesheets}}
+        <dd class="stylesheets true">Yes</dd>
+    {{else}}
+        <dd class="stylesheets false">No</dd>
+    {{/if}}
+    <dt>Connection</dt>
+    {{if secure}}
+        <dd class="connection secure">Secure</dd>
+    {{else}}
+        <dd class="connection insecure">Insecure</dd>
+    {{/if}}
+    <dt>Portal Version</dt>
+    <dd class="version">${version}</dd>
+</dl>
+<a class="close" href="#close-meta-box">Close</a>
+<a class="button view-logs" href="#view-logs">View Logs</a>

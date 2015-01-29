@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+	<head>
+		<title>Lavabit ..::.. Statistics</title>
+		<meta name="author" content="Ladar Levison"/>
+		<meta name="keywords" lang="en" content="email free pop imap webmail spam secure private privacy" />
+		<meta name="description" lang="en" content="Lavabit is a premier POP3 e-mail provider with free and premium accounts. This page provides details about Lavabit’s size and how fast were growing." />
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="Pragma" content="no-cache" />
+		<meta http-equiv="Cache-Control" content="no-store" />
+		<link rel="stylesheet" type="text/css" href="/css/site.css" />
+		<script type="text/javascript" src="/js/site.js"></script>
+		<script type="text/javascript" src="/js/jquery.js"></script>
+		<script type="text/javascript" src="/js/jquery.corner.js"></script>
+		<script type="text/javascript" src="/js/statistics.js"></script>
+	</head>
+	<body>
+		<div id="page">
+			<div id="header">
+				<h1>Lavabit</h1>
+				<div>
+					<ul id="nav_col_1">
+						<li class="skip"><a href="#statistics">Skip Primary Navigation</a></li>
+						<li><a id="nav_home" href="/index.html">Home</a></li>
+						<li><a id="nav_about" href="/about.html">About</a></li>
+						<li><a id="nav_features" href="/features.html">Features</a></li>
+						<li><a id="nav_services" href="/services.html">Services</a></li>
+					</ul>
+					<ul id="nav_col_2">
+						<li><a id="nav_philosophy" href="/philosophy.html">Philosophy</a></li>
+						<li><a id="nav_testimonials" href="/testimonials.html">Testimonials</a></li>
+						<li><a id="nav_network" href="/network.html">Network</a></li>
+						<li><a id="nav_help" href="/help.html">Help</a></li>
+					</ul>
+					<ul id="nav_col_3">
+						<li><a id="nav_contact" href="https://lavabit.com/contact">Contact Information</a></li>
+						<li><a id="nav_preferences" href="https://lavabit.com/apps/preferences">Preferences</a></li>
+						<li><a id="nav_register" href="https://lavabit.com/register">Sign&nbsp;Up</a></li>
+					</ul>
+				</div>
+			</div>
+			<div id="statistics" class="content">
+				<div id="secondary">
+					<ul>
+						<li class="skip"><a href="#start">Skip Secondary Navigation</a></li>
+						<li><a href="/hardware_software.html">Hardware &amp; Software</a></li>
+						<li><a href="/graphs.html">Graphs</a></li>
+						<li><a href="/statistics.html" class="active">Statistics</a></li>
+						<li><a href="/health.html">Health</a></li>
+					</ul>
+				</div>
+				<h2 id="start">Statistics</h2>
+				<p>We're big and we're growing. This page shows how many people rely on Lavabit and how much e-mail we process. We update this page every few minutes with the latest statistics, so check back to follow our progress.</p>
+				<table class="standard">
+					<caption>This table contains statistics about the Lavabit service.</caption>
+					<tbody>
+						<tr>
+							<th>How many total users:</th>
+							<td id="total_users">0</td>
+						</tr>
+						<tr>
+							<th>How many users have checked their e-mail today:</th>
+							<td id="checked_email_today">0</td>
+						</tr>
+						<tr>
+							<th>How many users have checked their e-mail this week:</th>
+							<td id="checked_email_week">0</td>
+						</tr>
+						<tr>
+							<th>How many users have sent e-mail today:</th>
+							<td id="sent_email_today">0</td>
+						</tr>
+						<tr>
+							<th>How many users sent e-mail this week:</th>
+							<td id="sent_email_week">0</td>
+						</tr>
+						<tr>
+							<th>How many e-mail messages were received today:</th>
+							<td id="emails_received_today">0</td>
+						</tr>
+						<tr>
+							<th>How many e-mail messages were received this week:</th>
+							<td id="emails_received_week">0</td>
+						</tr>
+						<tr>
+							<th>How many e-mail messages were sent today:</th>
+							<td id="emails_sent_today">0</td>
+						</tr>
+						<tr>
+							<th>How many e-mail messages were sent this week:</th>
+							<td id="emails_sent_week">0</td>
+						</tr>
+						<tr>
+							<th>How many users have registered today:</th>
+							<td id="users_registered_today">0</td>
+						</tr>
+						<tr>
+							<th>How many users have registered this week:</th>
+							<td id="users_registered_week">0</td>
+						</tr>
+					</tbody>
+				</table>
+				<p id="time">&nbsp;</p>
+			</div>
+			<div id="footer">
+				<ul>
+					<li class="skip"><a href="#copyright">Skip Footer Navigation</a></li>
+					<li><a href="/terms_of_use.html">Terms of Use</a></li>
+					<li><a href="/privacy_policy.html">Privacy Policy</a></li>
+					<li><a href="/advertising_policy.html">Advertising Policy</a></li>
+					<li><a href="/abuse_policy.html">Abuse Policy</a></li>
+					<li><a href="https://lavabit.com/report_abuse.html">Report Abuse</a></li>
+					<li id="last"><a href="/site_map.html">Site Map</a></li>
+					<li><a href="/credits.html">Credits</a></li>
+				</ul>
+				<p id="copyright">&copy; 2007 Lavabit LLC. All rights reserved.</p>
+				<p id="badges"><a href="/xhtml_valid.html"><img src="/images/xhtml_strict_grey.gif" onmouseover="ChangeImage(this, '/images/xhtml_strict_red.gif')" onmouseout="ChangeImage(this, '/images/xhtml_strict_grey.gif')" alt="XHTML Strict" /></a> <a href="/css_valid.html"><img src="/images/css_valid_grey.gif" onmouseover="ChangeImage(this, '/images/css_valid_red.gif')" onmouseout="ChangeImage(this, '/images/css_valid_grey.gif')" alt="CSS Valid" /></a> <a href="/wai_aaa.html"><img src="/images/wai_aaa_grey.gif" onmouseover="ChangeImage(this, '/images/wai_aaa_red.gif')" onmouseout="ChangeImage(this, '/images/wai_aaa_grey.gif')" alt="WAI AAA Conformance" /></a></p>
+			</div>
+		</div>
+	</body>
+</html>

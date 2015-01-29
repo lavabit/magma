@@ -1,0 +1,26 @@
+main
+    chrome
+        meta
+        logout
+    tabs
+        permatab
+    wrkspcswrp
+        wrkspcwrp
+            toolbar
+                search
+                    advanced
+                tools
+                    default
+            tool-options
+                display
+            tool-suboptions
+                fields
+            workspace
+                view
+                    messages
+                        list
+                folder-menu
+                    scroll+options
+                        default
+                        folders.default
+                    folder-options

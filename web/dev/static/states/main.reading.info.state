@@ -1,0 +1,17 @@
+main
+    chrome
+        meta
+        logout
+    tabs
+        permatab
+    wrkspcswrp
+        wrkspcwrp
+            toolbar
+                tools
+                    default
+            workspace
+                reading
+                    header
+                    info
+                    body
+                    ad

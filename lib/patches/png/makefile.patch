@@ -1,0 +1,12 @@
+diff -r c884e083392e Makefile.in
+--- a/Makefile.in	Fri Mar 07 02:36:20 2014 -0600
++++ b/Makefile.in	Fri Mar 07 02:36:47 2014 -0600
+@@ -2114,7 +2114,7 @@ contrib/tools/pngfix.o: pnglibconf.h
+ 	test -d scripts || mkdir scripts || test -d scripts
+ 	echo '#include "$<"' >$*.c
+ 	$(DFNCPP) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES)\
+-	    $(CPPFLAGS) $(SYMBOL_CFLAGS) $*.c > $*.tf1
++	    $(SYMBOL_CFLAGS) $*.c > $*.tf1
+ 	$(AWK) -f "${srcdir}/scripts/dfn.awk" out="$*.tf2" $*.tf1 1>&2
+ 	rm -f $*.c $*.tf1
+ 	mv $*.tf2 $@

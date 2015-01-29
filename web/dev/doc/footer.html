@@ -1,0 +1,86 @@
+<script src="http://code.jquery.com/jquery-1.6.1.js"></script>
+<script>
+var tester = $('#tester'),
+    method = $('#method'),
+    request = $('#request'),
+    response = $('#response'),
+    proxy = $('#proxy'),
+    auto = $('#auto-submit'),
+    stats = $('#stats');
+
+// fill in example request array with build-doc.php
+// pulls examples from /json/requests/
+var requests = {
+${requests}
+};
+
+method.change(function() {
+    request.val(JSON.stringify(requests[$(this).val()], null, "  "));
+
+    if(auto.prop('checked')) {
+        tester.submit();
+    }
+}).change(); // initialize request on startup
+
+tester.submit(function(event) {
+    event.preventDefault();
+
+    var success = function(data) {
+            var time = new Date() - startTime;
+
+            updateStats(time, data.contents.length);
+            data = JSON.parse(data.contents); // validate
+            response.val(JSON.stringify(data, null, "  ")); // format
+        },
+        error = function(error) {
+            updateStats('none', 'none');
+            response.val(error.status === 404 ? 'Response does not exist' : error.statusText);
+        },
+        updateStats = function(time, size) {
+            stats.find('dd:first').text(
+                typeof time === 'number' ? time/1000 + ' seconds' : 'none'
+            );
+            stats.find('dd:last').text(size + ' bytes');
+        },
+        requestData = (function() {
+            var data = JSON.parse(request.val());
+
+            // trim request to first example if multiple
+            return data instanceof Array ? data[0] : data;
+        })(),
+        proxyParams = $.param({
+            url: 'http://192.168.1.137:10000/portal/camel', // remote url
+            send_cookies: 1,
+            send_session: 1,
+            full_headers: 1,
+            full_status: 1,
+        }),
+        startTime = new Date();
+
+    // pass data to simple-proxy.php
+    // http://benalman.com/code/projects/php-simple-proxy/docs/files/ba-simple-proxy-php.html
+    if(proxy.prop('checked')) {
+        $.ajax({
+            type: 'POST',
+            url: '/dev/simple-proxy.php?' + proxyParams,
+            contentType: 'text/plain',
+            dataType: 'text',
+            data: JSON.stringify(requestData),
+            success: success,
+            error: error
+        });
+    } else {
+        $.ajax({
+            type: 'POST',
+            url: 'http://192.168.1.137:10000/portal/camel',
+            contentType: 'text/plain',
+            dataType: 'text',
+            data: JSON.stringify(requestData),
+            success: success,
+            error: error
+        });
+    }
+});
+</script>
+</html>
+</body>

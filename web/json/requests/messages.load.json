@@ -1,0 +1,9 @@
+{
+    "id": 22,
+    "method": "messages.load",
+    "params": {
+        "messageID": 1,
+        "folderID": 1,
+        "sections": ["header", "body", "attachments"]
+    }
+}

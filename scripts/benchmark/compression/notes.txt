@@ -1,0 +1,4 @@
+
+
+(./bench.sh &> bench.txt &); tail -f bench.txt 
+

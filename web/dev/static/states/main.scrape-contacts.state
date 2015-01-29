@@ -1,0 +1,10 @@
+main
+    chrome
+        meta
+        logout
+    tabs
+        permatab
+    wrkspcswrp
+        wrkspcwrp
+            workspace
+                scrape

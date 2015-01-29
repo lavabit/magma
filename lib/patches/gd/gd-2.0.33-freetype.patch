@@ -1,0 +1,13 @@
+--- gd-2.0.33/configure.freetype	2005-09-07 17:16:03.000000000 +0200
++++ gd-2.0.33/configure	2005-09-07 17:16:54.000000000 +0200
+@@ -11705,8 +11705,8 @@
+     else
+       libft_INCLUDES=`$FREETYPE_CONFIG --cflags`
+     fi
+-    libft_LDFLAGS=`$FREETYPE_CONFIG --libs`
+-    libft_LDFLAGS=`echo " $libft_LDFLAGS" |sed 's/ -l[^ ][^ ]*//g'`
++    # Hack to ingore the broken freetype config --libs flags
++    libft_LDFLAGS=""
+   else
+     if test -n "$FREETYPE_DIR"; then
+       libft_INCLUDES="-I$FREETYPE_DIR/include/freetype2 -I$FREETYPE_DIR/include"

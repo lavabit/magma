@@ -1,0 +1,20 @@
+main
+    chrome
+        meta
+        logout
+    wrkspcswrp
+        wrkspcwrp
+            toolbar
+                search
+                tools
+                    contacts
+            workspace
+                view
+                    contacts
+                        info
+                        list+info
+                folder-menu
+                    scroll+options
+                        contacts
+                        folders.contacts
+                    folder-options

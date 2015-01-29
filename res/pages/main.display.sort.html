@@ -1,0 +1,207 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lavabit ..::.. Webmail</title>
+    <link rel="stylesheet" href="/css/jquery-ui-smoothness.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <script src="/js/jquery.js"></script>
+    <script src="/js/plugins.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body>
+    <div id="main-wrapper">
+        <div id="chrome">
+            <h1 class="logo">Lavabit Webmail</h1>
+            <div id="account">
+                <h2 class="sr-hidden">Account</h2>
+                <a class="sr-hidden" href="#sr-global-nav">Skip to global navigation</a>
+                <!-- paragraph({text: "magma@lavabit.com"}) insertBefore:'#account-info ul' -->
+                <ul>
+                    <li><a class="meta" href="#info">Information</a></li>
+                    <li><a class="sign-out" href="#signout">Sign Out</a></li>
+                </ul>
+            </div>
+            <div id="global-nav">
+                <h2 class="sr-hidden" id="sr-global-nav">Global Navigation</h2>
+                <ul>
+                    <li><a class="mail" href="#mail">Mail</a></li>
+                    <li><a class="contacts" href="#contacts">Contacts</a></li>
+                    <li><a class="options" href="#options">Options</a></li>
+                    <li><a class="help" href="#help">Help</a></li>
+                </ul>
+            </div>
+        </div>
+        <div id="tabs">
+            <h2 class="sr-hidden" id="sr-tabs">Tabs</h2>
+            <li class="tab permatab active">
+                <h3>Inbox</h3>
+                <a class="sr-hidden" href="#sr-permatab">Skip to this tab's content</a>
+            </li>
+        </div>
+        <div id="workspaces-wrapper">
+            <div class="workspace-wrapper active">
+                <div class="toolbar">
+                    <h3 class="sr-hidden">Toolbar</h3>
+                    <div class="search">
+                        <h4 class="sr-hidden">Search</h4>
+                        <a class="sr-hidden" href="#sr-tools">Skip to tools</a>
+                        <!-- skiplink -->
+                        <form action="#search">
+                            <label class="sr-hidden watermark" for="search-input">Enter search your here.</label>
+                            <input type="text" id="search-input" name="search-text" />
+                            <a class="gray button clear" href="#clear-search" title="Clear search">✖</a>
+                            <input class="gray button" type="submit" name="search" value="Search" />
+                        </form>
+                        <a class="advanced" href="#advanced">Advanced</a>
+                    </div>
+                    <div class="tools">
+                        <h4 class="sr-hidden" id="sr-tools">Tools</h4>
+                        <!-- skiplink -->
+                        <ul>
+                            <li><a href="#new" class="new">New</a></li>
+                            <li><a href="#print" class="print">Print</a></li>
+                            <li><a href="#reply" class="reply">Reply</a></li>
+                            <li><a href="#reply-all" class="reply-all">Reply All</a></li>
+                            <li><a href="#forward" class="forward">Forward</a></li>
+                            <li><a href="#delete" class="delete">Delete</a></li>
+                            <li><a href="#junk" class="junk">Junk</a></li>
+                            <li>
+                            	<input id="copy" class="dropdown" type="checkbox" />
+                            	<label for="copy">Copy</label>
+                            </li>
+                            <li>
+                            	<input id="move" class="dropdown" type="checkbox" />
+                            	<label for="move">Move</label>
+                            </li>
+                            <li>
+                            	<input id="mark" class="dropdown" type="checkbox" />
+                            	<label for="mark">Mark</label>
+                            </li>
+                            <li>
+                            	<input id="tags" class="dropdown" type="checkbox" />
+                            	<label for="tags">Tags</label>
+                            </li>
+                            <li>
+                            	<input id="display" class="toggle" type="checkbox" />
+                            	<label for="display">Display</label>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="tool-options tools">
+                    <h4 class="sr-hidden" id="sr-tool-options">Tool Options</h4>
+                    <!-- skiplink -->
+                    <ul>
+                        <li><a class="sort" href="#sort">Sort</a></li>
+                        <li><a class="borders" href="#borders">Borders</a></li>
+                        <li><a class="buttons" href="#buttons">Buttons</a></li>
+                        <li><a class="fields" href="#fields">Fields</a></li>
+                        <li><a class="reading-pane" href="#reading-pane">Reading Pane</a></li>
+                    </ul>
+                </div>
+                <div class="tool-suboptions tools">
+                    <h4 class="sr-hidden" id="sr-tool-options">Tool Options</h4>
+                    <!-- skiplink -->
+                    <div class="span">
+                        <div class="right">
+                            <label for="sort-by">Sort By:</label>
+                            <select id="sort-by" name="sort-by">
+                                <option value="from">From</option>
+                                <option value="to">To</option>
+                                <option value="subject">Subject</option>
+                                <option value="date">Date</option>
+                                <option value="size">Size</option>
+                            </select>
+                            <ul>
+                                <li><a class="add" href="#add">Add</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="span">
+                        <div class="left">
+                            <ul>
+                                <li><a class="discard" href="#discard">Discard</a></li>
+                            </ul>
+                        </div>
+                        <div class="right">
+                            <select id="apply-to" name="apply-to">
+                                <option value="all">All of Mail</option>
+                                <option value="inbox">Inbox</option>
+                                <option value="drafts">Sent</option>
+                                <option value="junk">Junk</option>
+                                <option value="trash">Trash</option>
+                                <!-- folders -->
+                            </select>
+                            <ul>
+                                <li><a class="apply" href="#apply">Apply</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="workspace">
+                    <div class="view-wrapper">
+                        <div class="view">
+                            <h2 class="sr-hidden" id="sr-view">View</h2>
+                            <div class="messages-wrapper">
+                                <h3 class="sr-hidden">Inbox</h3>
+                                <!-- skiplink -->
+                                <table class="messages">
+                                    <thead>
+                                        <tr>
+                                            <th><span class="checkbox-controls-button">✔</span></th>
+                                            <th>ID</th>
+                                            <th>Read</th>
+                                            <th>Replied</th>
+                                            <th>Starred</th>
+                                            <th>Attachment</th>
+                                            <th>From</th>
+                                            <th>To</th>
+                                            <th>Addressed To</th>
+                                            <th>Reply To</th>
+                                            <th>Return Path</th>
+                                            <th>Carbon</th>
+                                            <th>Subject</th>
+                                            <th>Unix Time</th>
+                                            <th>Date Received</th>
+                                            <th>Arrival Unix Time</th>
+                                            <th>Arrival Date</th>
+                                            <th>Bytes</th>
+                                            <th>Size</th>
+                                            <th>Snippet</th>
+                                            <th>Tags</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- messageList messages.list({view: "inbox"}) appendTo:'.messages tbody' -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="folder-menu">
+                        <h2 class="sr-hidden" id="sr-folder-menu">Folder Menu</h2>
+                        <div class="folder-scroll-wrapper options">
+                            <ul class="folder-list">
+                                <li id="folder-0"><a class="inbox folder permanent" href="#inbox">Inbox</a></li>
+                                <li id="folder-1"><a class="drafts folder permanent" href="#drafts">Drafts</a></li>
+                                <li id="folder-2"><a class="sent folder permanent" href="#sent">Sent</a></li>
+                                <li id="folder-3"><a class="junk folder permanent" href="#junk">Junk</a></li>
+                                <li id="folder-4"><a class="trash folder permanent" href="#trash">Trash</a></li>
+                                <!-- foldersExpandable folders.list() appendTo:'.folder-list' -->
+                            </ul>
+                        </div>
+                        <div class="folder-options">
+                            <h3 class="sr-hidden" id="sr-folder-options">Folder Options</h3>
+                            <input id="add-folder" class="add" type="checkbox" />
+                            <label for="add-folder">Add Folder</label>
+                            <input id="edit-folders" class="edit" type="checkbox" />
+                            <label for="edit-folders">Edit Folders</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

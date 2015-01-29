@@ -1,0 +1,20 @@
+{{if alert}}
+<div class="alerts">
+    {{each alert}}
+    <div class="alert">
+        <h2 {{if alertID}}id="alert-${alertID}"{{/if}}>System Alert</h2>
+        <p>${message}</p>
+    </div>
+    {{/each}}
+</div>
+{{/if}}
+{{if warning}}
+<div class="warnings">
+    {{each warning}}
+    <div class="warning">
+        <h2 {{if alertID}}id="alert-${alertID}"{{/if}}>Account Warning</h2>
+        <p>${message}</p>
+    </div>
+    {{/each}}
+</div>
+{{/if}}

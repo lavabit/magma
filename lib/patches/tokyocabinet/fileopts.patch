@@ -1,0 +1,61 @@
+diff -r 241c3808c47e sources/tokyocabinet/tcadb.c
+--- a/sources/tokyocabinet/tcadb.c	Sun Sep 11 04:12:43 2011 -0500
++++ b/sources/tokyocabinet/tcadb.c	Wed Sep 14 02:52:53 2011 -0500
+@@ -22,7 +22,7 @@
+ #include "tcadb.h"
+ #include "myconf.h"
+ 
+-#define ADBDIRMODE     00755             // permission of created directories
++#define ADBDIRMODE     00700             // permission of created directories
+ #define ADBMULPREFIX   "adbmul-"         // prefix of multiple database files
+ 
+ typedef struct {                         // type of structure for multiple database
+diff -r 241c3808c47e sources/tokyocabinet/tcfdb.c
+--- a/sources/tokyocabinet/tcfdb.c	Sun Sep 11 04:12:43 2011 -0500
++++ b/sources/tokyocabinet/tcfdb.c	Wed Sep 14 02:52:53 2011 -0500
+@@ -18,8 +18,8 @@
+ #include "tcfdb.h"
+ #include "myconf.h"
+ 
+-#define FDBFILEMODE    00644             // permission of created files
+-#define FDBIOBUFSIZ    8192              // size of an I/O buffer
++#define FDBFILEMODE    00600             // permission of created files
++#define FDBIOBUFSIZ    16384              // size of an I/O buffer
+ 
+ #define FDBMAGICDATA   "ToKyO CaBiNeT"   // magic data for identification
+ #define FDBHEADSIZ     256               // size of the reagion of the header
+diff -r 241c3808c47e sources/tokyocabinet/tchdb.c
+--- a/sources/tokyocabinet/tchdb.c	Sun Sep 11 04:12:43 2011 -0500
++++ b/sources/tokyocabinet/tchdb.c	Wed Sep 14 02:52:53 2011 -0500
+@@ -19,8 +19,8 @@
+ #include "tcbdb.h"
+ #include "myconf.h"
+ 
+-#define HDBFILEMODE    00644             // permission of created files
+-#define HDBIOBUFSIZ    8192              // size of an I/O buffer
++#define HDBFILEMODE    00600             // permission of created files
++#define HDBIOBUFSIZ    16384              // size of an I/O buffer
+ 
+ #define HDBMAGICDATA   "ToKyO CaBiNeT"   // magic data for identification
+ #define HDBHEADSIZ     256               // size of the reagion of the header
+diff -r 241c3808c47e sources/tokyocabinet/tcutil.c
+--- a/sources/tokyocabinet/tcutil.c	Sun Sep 11 04:12:43 2011 -0500
++++ b/sources/tokyocabinet/tcutil.c	Wed Sep 14 02:52:53 2011 -0500
+@@ -4765,7 +4765,7 @@ unsigned long tclrand(void){
+   static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+   if((cnt & 0xff) == 0 && pthread_mutex_lock(&mutex) == 0){
+     if(cnt == 0) seed += time(NULL);
+-    if(tcrandomdevfd == -1 && (tcrandomdevfd = open(TCRANDDEV, O_RDONLY, 00644)) != -1)
++    if(tcrandomdevfd == -1 && (tcrandomdevfd = open(TCRANDDEV, O_RDONLY, 00600)) != -1)
+       atexit(tcrandomfdclose);
+     if(tcrandomdevfd == -1 || read(tcrandomdevfd, &mask, sizeof(mask)) != sizeof(mask)){
+       double t = tctime();
+@@ -6950,7 +6950,7 @@ static int tcchidxcmp(const void *a, con
+  *************************************************************************************************/
+ 
+ 
+-#define TCFILEMODE     00644             // permission of a creating file
++#define TCFILEMODE     00600             // permission of a creating file
+ #define TCIOBUFSIZ     16384             // size of an I/O buffer
+ 
+ 

@@ -1,0 +1,62 @@
+diff -U 10 -wNpr jpeg/jpeglib.h jpeg.version/jpeglib.h
+--- jpeg/jpeglib.h	2010-11-17 15:01:56.000000000 -0600
++++ jpeg.version/jpeglib.h	2011-04-29 15:24:02.477394447 -0500
+@@ -917,20 +917,22 @@ typedef JMETHOD(boolean, jpeg_marker_par
+ #define jpeg_write_coefficients	jWrtCoefs
+ #define jpeg_copy_critical_parameters	jCopyCrit
+ #define jpeg_abort_compress	jAbrtCompress
+ #define jpeg_abort_decompress	jAbrtDecompress
+ #define jpeg_abort		jAbort
+ #define jpeg_destroy		jDestroy
+ #define jpeg_resync_to_restart	jResyncRestart
+ #endif /* NEED_SHORT_EXTERNAL_NAMES */
+ 
+ 
++EXTERN(const char *) jpeg_version(void);
++
+ /* Default error-management setup */
+ EXTERN(struct jpeg_error_mgr *) jpeg_std_error
+ 	JPP((struct jpeg_error_mgr * err));
+ 
+ /* Initialization of JPEG compression objects.
+  * jpeg_create_compress() and jpeg_create_decompress() are the exported
+  * names that applications should call.  These expand to calls on
+  * jpeg_CreateCompress and jpeg_CreateDecompress with additional information
+  * passed for version mismatch checking.
+  * NB: you must set up the error-manager BEFORE calling jpeg_create_xxx.
+diff -U 10 -wNpr jpeg/jutils.c jpeg.version/jutils.c
+--- jpeg/jutils.c	2009-04-11 06:31:52.000000000 -0500
++++ jpeg.version/jutils.c	2011-04-29 15:23:07.791573184 -0500
+@@ -8,21 +8,31 @@
+  *
+  * This file contains tables and miscellaneous utility routines needed
+  * for both compression and decompression.
+  * Note we prefix all global names with "j" to minimize conflicts with
+  * a surrounding application.
+  */
+ 
+ #define JPEG_INTERNALS
+ #include "jinclude.h"
+ #include "jpeglib.h"
+-
++#include "jversion.h"
++
++static char jversion[16];
++
++const char * jpeg_version(void) {
++	char *end = JVERSION;
++	while (*end != '\0' && *end != ' ') end++;
++	snprintf(jversion, 16, "%.*s", end - JVERSION, JVERSION);
++	return jversion;
++}
++
+ 
+ /*
+  * jpeg_zigzag_order[i] is the zigzag-order position of the i'th element
+  * of a DCT block read in natural order (left to right, top to bottom).
+  */
+ 
+ #if 0				/* This table is not actually needed in v6a */
+ 
+ const int jpeg_zigzag_order[DCTSIZE2] = {
+    0,  1,  5,  6, 14, 15, 27, 28,

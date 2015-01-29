@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+	<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>&nbsp;</title>
+		<meta name="Author" content="Ladar Levison" />
+		<meta name="Keywords" content="email free pop imap webmail spam secure private privacy" />
+		<meta name="Description" content="Lavabit is a premier POP3 e-mail provider with free and premium accounts. This page is step one of three in the Lavabit registration process. Use this page to select basic account information such as your username and password." />
+		<meta http-equiv="Pragma" content="no-cache" />
+		<meta http-equiv="Cache-Control" content="no-store" />
+		<link rel="stylesheet" type="text/css" href="/css/site.css" />
+		<script type="text/javascript" src="/js/site.js"></script>
+	</head>
+	<body>
+		<div id="page">
+			<div id="header">
+				<h1>Lavabit</h1>
+				<div>
+					<ul id="nav_col_1">
+						<li class="skip"><a href="#reg_step1">Skip Primary Navigation</a></li>
+						<li><a id="nav_home" href="/index.html">Home</a></li>
+						<li><a id="nav_about" href="/about.html">About</a></li>
+						<li><a id="nav_features" href="/features.html">Features</a></li>
+						<li><a id="nav_services" href="/services.html">Services</a></li>
+					</ul>
+					<ul id="nav_col_2">
+						<li><a id="nav_philosophy" href="/philosophy.html">Philosophy</a></li>
+						<li><a id="nav_testimonials" href="/testimonials.html">Testimonials</a></li>
+						<li><a id="nav_network" href="/network.html">Network</a></li>
+						<li><a id="nav_help" href="/help.html">Help</a></li>
+					</ul>
+					<ul id="nav_col_3">
+						<li><a id="nav_contact" href="https://lavabit.com/contact">Contact Information</a></li>
+						<li><a id="nav_preferences" href="https://lavabit.com/apps/preferences">Preferences</a></li>
+						<li><a id="nav_register" href="https://lavabit.com/register">Sign&nbsp;Up</a></li>
+					</ul>
+				</div>
+			</div>
+			<div id="contact_message" class="content">
+				<div id="secondary">
+					<ul>
+						<li class="skip"><a href="#start">Skip Secondary Navigation</a></li>
+						<li><a href="https://lavabit.com/contact">Contact Lavabit</a></li>
+						<li><a href="https://lavabit.com/report_abuse">Report Abuse</a></li>
+					</ul>
+				</div>
+				<p id="message">&nbsp;</p>
+			</div>
+			<div id="footer">
+				<ul>
+					<li class="skip"><a href="#copyright">Skip Footer Navigation</a></li>
+					<li><a href="/terms_of_use.html">Terms of Use</a></li>
+					<li><a href="/site_map.html">Site Map</a></li>
+					<li><a href="/credits.html">Credits</a></li>
+				</ul>
+				<p id="copyright">&copy; 2014 Lavabit LLC. All rights reserved.</p>
+				<p id="badges"><a href="/xhtml_valid.html"><img src="/images/xhtml_strict_grey.gif" onmouseover="ChangeImage(this, '/images/xhtml_strict_red.gif')" onmouseout="ChangeImage(this, '/images/xhtml_strict_grey.gif')" alt="XHTML Strict" /></a> <a href="/css_valid.html"><img src="/images/css_valid_grey.gif" onmouseover="ChangeImage(this, '/images/css_valid_red.gif')" onmouseout="ChangeImage(this, '/images/css_valid_grey.gif')" alt="CSS Valid" /></a> <a href="/wai_aaa.html"><img src="/images/wai_aaa_grey.gif" onmouseover="ChangeImage(this, '/images/wai_aaa_red.gif')" onmouseout="ChangeImage(this, '/images/wai_aaa_grey.gif')" alt="WAI AAA Conformance" /></a></p>
+			</div>
+		</div>
+	</body>
+</html>

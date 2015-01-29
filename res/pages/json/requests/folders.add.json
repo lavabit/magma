@@ -1,0 +1,8 @@
+{
+    "id": 13,
+    "method": "folders.add",
+    "params": {
+        "parentID": 9,
+        "name": "Bitbucket"
+    }
+}

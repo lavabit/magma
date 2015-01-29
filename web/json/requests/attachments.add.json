@@ -1,0 +1,8 @@
+{
+    "id": 5,
+    "method": "attachments.add",
+    "params": {
+        "composeID": 45,
+        "filename": "script.js"
+    }
+}

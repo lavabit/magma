@@ -1,0 +1,8 @@
+startup
+    vert
+        login
+            formwrp
+                form
+            registration
+            error
+    footer

@@ -1,0 +1,117 @@
+
+Magma Classic 6.0.1
+
+Installation Instructions
+These instructions are targeted at systems running CentOS 6.6.
+
+First, if you are reading this, we would like to extend a hearty thank you for your support of the dark mail initiative on Kickstarter. We 
+could not have released Magma Classic without your help and support. Magma was originally designed and developed by Ladar Levison for 
+lavabit.com. This Magma Classic release is the based on the development branch for Lavabit's service. We've removed most of the Lavabit 
+specific code in an effort to make universally usable. Because we started with the development branch, some of the features and functions are
+rather unstable. Its not recommended for the faint of heart. But if your willing and able, then happy hacking. 
+
+Credits
+---------------------------------------------
+
+Greg Brown
+Ivan Tolkachav
+Ladar Levison
+Princess Levison
+Ryan Crites
+Sean Benson
+Stephen Watt
+
+And the army of Kickstarter supporters who contributed to this project.
+
+
+
+Tarball Contents
+---------------------------------------------
+
+magma.distribution/
+	bin/
+	check/
+	docs/
+	lib/
+	res/
+	scripts/
+	src/
+	tools/
+	web/
+	INSTALL
+	README
+
+
+
+Prerequisites
+---------------------------------------------
+List of packages to be installed: mysql-server, memcached, gettext-devel
+
+Setup mysql on the system:
+
+	As root:
+	root> yum install mysql-server
+    	root> service mysqld start
+    	root> chkconfig mysqld on
+
+Create a mysql user + password:
+   # Example
+   # user: magma
+   # pass: volcano
+   # hostname: localhost
+	
+	mysql -uroot
+		mysql> create user 'magma'@'localhost' identified by 'volcano';
+		mysql> grant all privileges on *.* to 'magma'@'localhost' with grant option;
+		mysql> exit
+
+
+Setup memcached on the system:
+	As root:
+	root> yum install memcached
+	root> service memcached start
+	root> chkconfig memcached on
+
+
+Setup envsubst on the system:
+	As root:
+	root> yum install gettext-devel
+
+Update clamav:
+	As root:
+	scripts/freshen/freshen.clamav.sh
+
+
+Instructions
+---------------------------------------------
+
+After running through the prerequisites above, load the project into Eclipse and build magma.so, magma.check and magma.
+
+Navigate to magma.distribution and run:
+
+	./INSTALL
+
+
+
+Example runs of scripts
+---------------------------------------------
+
+Both of the scripts have usage, but here are examples of what the call should look like:
+   	./INSTALL -d ~/ -u magma -p volcano -s Lavabit
+
+
+
+Starting Magma
+---------------------------------------------
+Within the scripts/launch directory:
+	./magma.run.sh
+
+
+
+Magma Webmail
+---------------------------------------------
+Inside the resources/pages/ directory is a copy of the webmail code. Locate script.js file and change the 
+magma.portalUrl = true variable to false, and it will use a set of hard coded test requests/responses. Its
+useful for checking/developing the webmail code without involving a server. Currently the files are configured
+to access the JSON-RPC interface using the hostname "localhost" and the HTTP port 10000. This should work using
+the default magma.config file.

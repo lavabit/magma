@@ -1,0 +1,6 @@
+<dl>
+    {{each list}}
+        <dt>${key}</dt>
+        <dd {{if type}}class="${type}"{{/if}}>{{html value}}</dd>
+    {{/each}}
+</dl>

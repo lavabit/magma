@@ -1,0 +1,102 @@
+Return-Path: <payment@paypal.com>
+Received: from den01imail03.den.paypal.com (outbound1.den.paypal.com [216.113.188.96])
+	by mail.nerdshack.com with ESMTP
+	for <ladar@lavabit.com>; Tue, 25 Sep 2007 14:29:50 -0500
+DomainKey-Signature: s=dkim; d=paypal.com; c=nofws; q=dns;
+    h=Received:Date:Message-Id:Subject:X-MaxCode-Template:
+      To:From:X-Email-Type-Id:X-XPT-XSL-Name:
+      Content-Transfer-Encoding:Content-Type:MIME-Version;
+    b=ee3v/gKcTzo8+0PKNiT+t+dtohzxFMNDgxmSEvWC6+cwfoAvNCYj/
+      fkIlB0RB/6CGeJCZlNVprMhkuIeD2TqR2+j72zFJIRResXNorlffU
+      PiA6oMGxR3C81HIMIB+CrAyPNV+NOc4cLykjHEKjXEzoApIRJ36e0
+      n/3Qr18lLW1A=;
+Received: (qmail 29987 invoked by uid 99); 25 Sep 2007 19:29:50 -0000
+Date: Tue, 25 Sep 2007 12:29:50 -0700
+Message-Id: <1190748590.29987@paypal.com>
+Subject: Receipt for Your Payment to kandesports@verizon.net
+X-MaxCode-Template: email-receipt-auction-payment
+To: Ladar Levison <ladar@lavabit.com>
+From: "service@paypal.com" <service@paypal.com>
+X-Email-Type-Id: PP843
+X-XPT-XSL-Name: email_pimp/default/en_US/auction/ReceiptAuctionPayment.xsl
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=windows-1252
+MIME-Version: 1.0
+
+Dear Ladar Levison,
+
+This email confirms that you, kingladar, have paid =
+kandesports=40verizon.net =2445.49 USD using PayPal.
+
+This credit card transaction will appear on your bill as =22PAYPAL =
+*KANDESPORTS=22.
+
+
+----------------------------------------------------------------
+
+
+-----------------------------------
+Payment Details
+-----------------------------------
+
+
+Purchased From: k-e-sports
+Transaction ID: 6HN786043R335690R
+
+Item =23: 320162399675
+Item Title: Brand New Wilson AVP Game Volleyball
+Item URL: http://cgi.ebay.com/ws/eBayISAPI.dll?ViewItem&item=3D320162399675
+Quantity: 1
+Price: =2437.99 USD
+Subtotal: =2437.99 USD
+
+
+----------------------------------------------------------------
+
+Shipping & Handling via USPS Priority Mail to 752XX =247.50 USD(includes =
+any seller handling fees)
+
+Shipping Insurance (optional):--
+=20
+Total:=2445.49 USD
+
+
+
+
+
+----------------------------------------------------------------
+
+
+
+
+-----------------------------------
+Your CONFIRMED Address
+-----------------------------------
+
+Ladar Levison
+5331 E. Mockingbird Lane =23421
+Dallas, TX 75206
+United States
+
+If you have questions about the shipping and tracking of your purchased =
+item or service, please contact the seller kandesports=40verizon.net.
+
+----------------------------------------------------------------
+
+
+Thank you for using PayPal=21
+The PayPal Team
+
+Your monthly account statement is available anytime; just log in to your =
+account at https://www.paypal.com/us/HISTORY. To correct any errors, =
+please contact us through our Help Center at https://www.paypal.com/us/HELP.
+
+Please do not reply to this email. This mailbox is not monitored and you =
+will not receive a response. For assistance, log in to your PayPal account =
+and click the Help link located in the top right corner of any PayPal page.
+
+----------------------------------------------------------------
+
+PayPal Email ID PP843
+
+

@@ -1,0 +1,44 @@
+=== modified file 'tests/plus.cpp'
+--- tests/plus.cpp	2011-06-24 19:25:01 +0000
++++ tests/plus.cpp	2011-06-28 23:51:01 +0000
+@@ -114,15 +114,16 @@
+ 
+   populate_vector(value, value_set);
+ 
+-  foo.setByKey(master_key_a, key, value, 0, 0);
+-  foo.getByKey(master_key_a, key, test_value);
++  test_true(foo.setByKey(master_key_a, key, value, 0, 0));
++  test_true(foo.getByKey(master_key_a, key, test_value));
+ 
+-  test_true((memcmp(&value[0], &test_value[0], value.size()) == 0));
++  test_compare(value.size(), test_value.size());
++  test_memcmp(&value[0], &test_value[0], value.size());
+ 
+   test_value.clear();
+ 
+-  foo.getByKey(master_key_b, key, test_value);
+-  test_true((memcmp(&value[0], &test_value[0], value.size()) == 0));
++  test_false(foo.getByKey(master_key_b, key, test_value));
++  test_compare(0, test_value.size());
+ 
+   return TEST_SUCCESS;
+ }
+@@ -134,7 +135,7 @@
+ {
+   unsigned int *counter= static_cast<unsigned int *>(context);
+ 
+-  *counter= *counter + 1;
++  *counter= *counter +1;
+ 
+   return MEMCACHED_SUCCESS;
+ }
+@@ -175,7 +176,7 @@
+ 
+   test_true(memc.mget(keys));
+   size_t count= 0;
+-  while ((mc_rc= memc.fetch(return_key, return_value)) == MEMCACHED_SUCCESS)
++  while (memcached_success(mc_rc= memc.fetch(return_key, return_value)))
+   {
+     test_compare(return_key.length(), return_value.size());
+     test_memcmp(&return_value[0], return_key.c_str(), return_value.size());
+

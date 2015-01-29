@@ -1,0 +1,22 @@
+--- gd-2.0.33/gdft.c.pom	2004-11-02 22:00:48.000000000 +0100
++++ gd-2.0.33/gdft.c	2006-11-21 09:25:49.000000000 +0100
+@@ -1237,7 +1237,8 @@
+ 	  glyph_min.x = penf.x + slot->metrics.horiBearingX;
+ 	  glyph_min.y = penf.y - slot->metrics.horiBearingY;
+ 
+-#if 0
++// #if 0 - this version of glyph_max.x setting fixes problem with 
++//		too large bouonding box
+ 	  if (ch == ' ')        /* special case for trailing space */
+             {
+               glyph_max.x = penf.x + horiAdvance;
+@@ -1246,7 +1247,8 @@
+             {
+ 	      glyph_max.x = glyph_min.x + slot->metrics.width;
+             }
+-#else
++//#else
++#if 0
+           glyph_max.x = penf.x + horiAdvance;
+ #endif
+ 	  glyph_max.y = glyph_min.y + slot->metrics.height;

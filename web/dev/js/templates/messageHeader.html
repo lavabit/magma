@@ -1,0 +1,24 @@
+<dl class="header-info">
+    <dt>From</dt>
+    <dd class="from">${from}</dt>
+    <dt>Subject</dt>
+    <dd class="subject">${subject}</dd>
+    <dt>Date</dt>
+    <dd class="date">${date}</dd>
+    <dt>To</dt>
+    <dd class="to">${to}</dd>
+    {{if cc}}
+        <dt>CC</dt>
+        <dd class="cc">${cc}</dd>
+    {{/if}}
+    {{if bcc}}
+        <dt>BCC</dt>
+        <dd class="bcc">${bcc}</dd>
+    {{/if}}
+    {{if sender}}
+        <dt>Sender</dt>
+        <dd class="sender">${sender}</dd>
+    {{/if}}
+    <dt>Reply-To</dt>
+    <dd class="replyto">${replyto}</dd>
+</dl>

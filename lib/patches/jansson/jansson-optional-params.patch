@@ -1,0 +1,56 @@
+diff -r 3f63684f1ed2 jansson/src/pack_unpack.c
+--- jansson/src/pack_unpack.c	Sat Apr 30 21:18:38 2011 -0500
++++ jansson.b/src/pack_unpack.c	Fri May 06 12:03:06 2011 -0500
+@@ -191,6 +191,19 @@ static json_t *pack(scanner_t *s, va_lis
+             return json_string_nocheck(str);
+         }
+ 
++        case 'S': /* optional string, NULL inputs are replaced with a json null value */
++        {
++            const char *str = va_arg(*ap, const char *);
++            if(!str) {
++                return json_null();
++            }
++            if(!utf8_check_string(str, -1)) {
++                set_error(s, "<args>", "Invalid UTF-8 string");
++                return NULL;
++            }
++            return json_string_nocheck(str);
++        }
++
+         case 'n': /* null */
+             return json_null();
+ 
+@@ -402,6 +415,32 @@ static int unpack(scanner_t *s, json_t *
+             }
+             return 0;
+ 
++        case 'S':
++            if(!json_is_string(root) && !json_is_null(root)) {
++                set_error(s, "<validation>", "Expected string or null, got %s",
++                          type_name(root));
++                return -1;
++            }
++
++            if(!(s->flags & JSON_VALIDATE_ONLY)) {
++                const char **str;
++
++                str = va_arg(*ap, const char **);
++                if(!str) {
++                    set_error(s, "<args>", "NULL string argument");
++                    return -1;
++                }
++
++                if (json_is_null(root)) {
++                	*str = NULL;
++                }
++                else {
++                	*str = json_string_value(root);
++                }
++
++            }
++            return 0;
++
+         case 'i':
+             if(!json_is_integer(root)) {
+                 set_error(s, "<validation>", "Expected integer, got %s",

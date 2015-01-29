@@ -1,0 +1,671 @@
+This documents details the various configurable options.
+The config file can be found in the directory where you installed magma.
+
+
+
+* REQUIRED = magma will NOT load if the specified configuration option is not set.
+* NO OVERWRITE = If the configuration key has already been set in the local configuration file, it can NOT be overwritten by
+				 a setting supplied in the database. 
+
+General
+
+magma.system.domain (REQUIRED)
+Possible values:	any valid domain name to be used as the default email domain if none is specified.
+Default value:		[empty]
+Description:		This is the default domain name that is used in two situations: the first is when new user registration
+					occurs and is appended to the newly registered username to create their primary, fully qualified email address.
+					The second is for the login process; login attempts that don't explicitly specify the domain portion of
+					the username will have the default domain name appended to them for verification purposes.
+
+magma.storage.root (REQUIRED)
+Possible values:	a string containing the name of the root directory that will be used for magma storage.
+Default value:		[empty]
+Description:		The storage directory is used to persist all mail messages to disk in an organized, hierarchical fashion.
+
+magma.storage.default (REQUIRED)
+Possible values:	a string specifying the active storage server.
+Default value:		[empty]
+Description:		This option species the storage server that will be used for mail message storage and retrieval.
+
+magma.system.daemonize
+Possible values:	true or false
+Default value:		false
+Description:		If set, magmad will fork into the background and launch into daemon mode, suppressing console logging.
+					Please note that magma.output.file must also be set along with magma.system.daemonize. 
+Related:			magma.output.file
+
+magma.system.worker_threads
+Possible values:	an integer specifying the number of worker threads.
+Default value:		8
+Description:		The number of worker threads that will be spawned by magma.
+
+magma.system.network_buffer
+Possible values:	an integer specifying the size of the network buffer.
+Default value:		8192 (MAGMA_CONNECTION_BUFFER_SIZE)
+Description:		This option sets the size of all listening sockets' send and receive buffers, and is also
+					used internally by magma's buffered networking functions for line-buffered input.
+
+magma.system.impersonate_user
+Possible values:	the name of a local user.
+Default value:		[empty]
+Description:		Run the magma process with the credentials of the specified user.
+
+magma.system.root_directory
+Possible values:	a pathname to a directory that will become the new magma root.
+Default value:		[empty]
+Description:		The magma process will change to the specified magma root directory and call chroot() on it.
+
+magma.library.file (NO OVERWRITE)
+Possible values:	the pathname to the magma shared library.
+Default value:		magmad.so
+Description:		By default, the magma shared library (linked with all third party dependencies) is stored in the same
+					directory as the magmad executable. This option allows magma to be re-launched with an alternate copy
+					of the library.
+					
+magma.library.unload
+Possible values:	true or false
+Default value:		true
+Description:		If true, unload magmad.so at exit.
+
+magma.system.core_dump_size_limit
+Possible values:	a number specifying the size, in bytes, of the maximum core dump size. 
+Default value:		68719476736 (64GB)
+Description:		If the magma daemon unexpectedly aborts or receives a signal that forces it to dump core, this option
+					will limit set the process rlimit for the maximum core dump size value.
+
+
+
+
+
+
+
+
+Security
+
+magma.secure.salt (REQUIRED) (NO OVERWRITE)
+Possible values:	a variable-length string that will be used as a salt value.
+Default value:		[empty]
+Description:		The user's authentication key(s) are obtained from a round of SHA-512 hashes that operate upon the user's username, password, and
+					the magma.secure.salt value for extra security. The longer the salt value, the more security will be provided to the process.
+
+magma.secure.memory.enable
+Possible values: 	true or false
+Default value:		true
+Description: 		If this option is set, a special memory pool will be allocated for secure storage using mmap(). This memory region
+					is mlock()'ed into memory so that it will never be swapped out into persistent storage.
+Related:			magma.secure.memory.length
+
+magma.secure.memory.length
+Possible values:	any positive byte length, as an unsigned 64-bit integer.
+Default value:		32768
+Description:		This option controls the slab length for the secure memory allocator. The sum of all secure memory allocation operations
+					will not exceed this size.
+Note:				magma.secure.memory.enable must be set to true.
+					
+magma.iface.cryptography.seed_length
+Possible values:	the number of bytes of random data to be used to seed the RNG.
+Default value:		64 (MAGMA_CRYPTOGRAPHY_SEED_SIZE)
+Description:		The openssl RNG (random number generator) will be seeded with this specified number of bytes of data read from the special
+					device /dev/random when magmad is started for the first time.
+
+
+
+
+
+
+
+
+Web/HTTP Configuration Options
+
+magma.secure.sessions (REQUIRED) (NO OVERWRITE)
+Possible values:	any string of random data.
+Default value:		[empty]
+Description:		The string used to encrypt session tokens that are transmitted in http cookies.
+
+magma.web.portal.safeguard
+Possible values:	true or false
+Default value:		true
+Description:		If set, redirect all non-secure http client connections to an ssl-enabled interface.
+
+magma.web.ssl_redirect
+Possible values:	any valid hostname followed by an optional port number.
+Default value:		[empty]
+Description:		This value configures the destination of all 301 HTTP operations that seek to redirect a user's request from
+					an insecure http resource to a secure ssl-protected resource. Examples include attempts to access the contacts or
+					registration pages through an http:// link. Since multiple magma http and https server instances can be configured,
+					it is necessary to specify which location will receive the upgraded and redirected request. If not configured,
+					the magma server will simply return an HTTP 403 error code instead.
+
+magma.http.allow_cross_domain
+Possible values:	true or false
+Default value:		false
+Description:		If set, enable cross-domain json requests by returning the Access-Control-Allow-Origin header.
+
+magma.http.close
+Possible values:	true or false
+Default value:		false
+Description:		If set, http connections will be closed automatically after each request.
+
+magma.http.pages (NO OVERWRITE)
+Possible values:	a string specifying the pathname of the static web content directory.
+Default value:		resources/pages/ (MAGMA_RESOURCE_PAGES)
+Description:		The pathname of a directory from which static web content directory will be loaded.
+
+magma.http.templates (NO OVERWRITE)
+Possible values:	a string specifying the pathname of the web application templates directory.
+Default value:		resources/templates/ (MAGMA_RESOURCE_TEMPLATES)
+Description:		The pathname of a directory from which the web application's templates will be loaded.
+
+magma.http.fonts (NO OVERWRITE)
+Possible values:	a string specifying the pathname of the web fonts directory.
+Default value:		resources/fonts/ (MAGMA_RESOURCE_FONTS)
+Description:		The pathname of a directory from which truetype fonts will be randomly selected for
+					generating the captcha codes that are used as part of the new user registration web module.
+
+magma.http.session_timeout
+Possible values:	a number specifying the cookie expiration in seconds.
+Default value:		86400
+Description:		The lifetime, in seconds, before a cookie used for webmail sessions expires.
+
+magma.web.portal.indent
+Possible values:	true or false
+Default value:		false
+Description:		Determines whether json-based rpc responses from the web portal should be formatted in a more human-readable manner.
+
+magma.web.statistics
+Possible value:		true or false
+Default value:		true
+Description:		Specifies whether or not the web statistics page found at "/statistics" is enabled.
+
+magma.web.registration
+Possible value:		true or false
+Default value:		true
+Description:		Specifies whether or not the web new user registration page found at "/register" is enabled.
+
+magma.admin.contact
+Possible value:		any valid email address
+Default value:		[empty]
+Description:		Specifies the email address that will receive all general contact form messages.
+					If this option is not set, then the open web contact form at /contact will not be available for use; nor will newly
+					registered users receive welcome messages, which are sent from this address.
+					Additionally, any emails received from this email address WILL NOT count against the disk quota of the recipient.
+					
+magma.admin.abuse
+Possible value:		any valid email address
+Default value:		[empty]
+Description:		Specifies the email address that will receive all abuse form messages.
+					If this option is not set, then the open web contact form at /report_abuse will not be available for use.
+					Additionally, any emails received from this email address WILL NOT count against the disk quota of the recipient.
+
+
+
+
+
+
+
+
+Logging
+
+magma.output.file
+Possible values:	true or false
+Default value:		false
+Description:		Determines whether logging messages are sent to a file or to the console.
+Note:				If magma.system.daemonize has been set, then this option MUST be enabled.
+					If magma.output.file has been set, then magma.output.path must ALSO be set.
+Related:			magma.system.daemonize, magma.output.path
+
+magma.output.path
+Possible values:	a string containing the directory where logging output files will be stored.
+Default value:		logs/ (MAGMA_LOGS)
+Description:		If magma.output.file has been set, this option specifies the directory where log files will be written.
+Related:			magma.output.file
+
+magma.log.content
+Possible values:	true or false
+Default value:		false
+Description:		Specifies whether the names of web server content files and templates are logged as they are loaded.
+					When the individual file contents of the pages and templates directories specified in the configuration
+					options "magma.http.pages" and "magma.http.templates" directories are loaded, this option ensures that
+					the name of each filename will be logged as it is successfully loaded and cached in memory.
+					
+magma.log.time
+Possible values:	true or false
+Default value:		false
+Description:		Determines whether or not a timestamp is recorded with every logging request.
+					
+magma.log.file
+Possible values:	true or false
+Default value:		false
+Description:		Determines whether or not the source filename of the calling function should be recorded with every
+					logging request.
+					
+magma.log.function
+Possible values:	true or false
+Default value:		false
+Description:		Determines whether or not the calling function name should be recorded with every logging request.
+
+magma.log.line
+Possible values:	true or false
+Default value:		false
+Description:		Determines whether or not the line number of the calling function should be recorded with every logging request.
+
+magma.log.stack
+Possible values:	true or false
+Default value:		false
+Description:		Determines whether or not a full stack backtrace will be provided with each logging request.
+
+magma.config.output_config
+Possible values:	true or false
+Default value:		false
+Description:		If enabled, the Magma daemon configuration will be dumped to the log file (or console) after being loaded.
+
+magma.config.output_resource_limits
+Possible values:	true or false
+Default value:		false
+Description:		If set, print out the collection of per-process resource limits set for the magma server.
+
+magma.log.http
+Possible values:	true or false
+Default value:		false
+Description:		Log detailed http-specific protocol data. Targets include the contents of POST request values and bodies,
+					the name/value pairs of all http request headers, and the target location of each http request. 
+					
+magma.log.imap
+Possible values:	true or false
+Default value:		false
+Description:		Log each client-issued imap request.
+
+
+
+
+
+
+
+
+Database
+
+magma.iface.database.host (REQUIRED) (NO OVERWRITE)
+Possible values:	a string containing the mysql database hostname.
+Default value:		[empty]
+Description:		The hostname of the mysql server that will be used to handle all of magma's database requests.
+
+magma.iface.database.schema (REQUIRED) (NO OVERWRITE)
+Possible values:	a string containing the mysql database name.
+Default value:		[empty]
+Description:		The name of the mysql database containing magma's data tables. 
+
+magma.iface.database.user (REQUIRED) (NO OVERWRITE)
+Possible values:	a string containing the mysql username.
+Default value:		[empty]
+Description:		The username used to log into the specified mysql server.
+
+magma.iface.database.password (REQUIRED) (NO OVERWRITE)
+Possible values:	a string containing the mysql password.
+Default value:		[empty]
+Description:		The password for the username used to log into the mysql database.
+
+magma.iface.database.port (NO OVERWRITE)
+Possible values:	1-65535
+Default value:		3306
+Description:		The port used by the configured mysql database server.
+
+magma.iface.database.pool.connections (NO OVERWRITE)
+Possible values:	1-4096 (MAGMA_CORE_POOL_OBJECTS_LIMIT) 
+Default value:		4
+Description:		The maximum number of concurrent connections that can be made to the mysql server.
+
+magma.iface.database.pool.timeout (NO OVERWRITE)
+Possible values:	1-86400 (MAGMA_CORE_POOL_TIMEOUT_LIMIT)
+Default value:		60
+Description:		The number of seconds that magma will wait for a free database connection to process a
+					request before it returns with failure.
+
+magma.iface.database.socket_path
+Possible values:        a pathname to the database socket path
+Default value:          [empty]
+Description:            A pathname to a directory containing the database socket path for mysql
+
+
+
+
+
+
+
+
+Miscellaneous
+
+magma.spool (NO OVERWRITE)
+Possible values:	a pathname to a directory that will be the magma spool base.
+Default value:		/tmp/magma/
+Description:		The pathname to a directory that will contain the spool storage facility for temporary file operations.
+
+magma.iface.location.cache (NO OVERWRITE)
+Possible values:	disable | index | mapped | memory
+Default value:		disable (MAGMA_LOCATION_CACHE)
+Description:		Set the IP location caching strategy to be used.
+
+magma.iface.virus.available (NO OVERWRITE)
+Possible values:	true or false
+Default value:		true
+Description:		Determines whether or not the anti-virus facility (ClamAV) will be loaded.
+					If set, magma.iface.virus.signatures must also be set.
+Note:				If this option is set, magma.iface.virus.signatures must also be set.
+Related:			magma.iface.virus.signatures
+
+magma.iface.virus.signatures (NO OVERWRITE)
+Possible values:	a pathname to a directory containing the ClamAV signatures.
+Default value:		resources/virus/ (MAGMA_RESOURCE_VIRUS)
+Description:		The pathname to a directory that holds all the ClamAV signature database files.
+Related:			magma.iface.virus.available
+
+magma.system.enable_core_dumps
+Possible values:	true or false
+Default value:		false
+Description:		Determine whether magma daemon core dumps should be enabled.
+
+magma.system.increase_resource_limits
+Possible values:	true or false
+Default value:		true
+Description:		If set, increase various system limits applied to the magma daemon process.
+					These include the process address space, data segment size, stack size, file size,
+					and thread and file descriptor limits.
+Related:			magma.config.output_resource_limits
+
+magma.system.thread_stack_size
+Possible values:	16384-a positive integer specifying the stack size of the worker threads.
+Default value:		1048576 (MAGMA_THREAD_STACK_SIZE)
+Description:		Specifies the stack size of magma's worker pthreads.
+
+
+
+
+
+
+
+
+SMTP
+
+magma.smtp.wrap_line_length
+Possible values:	40-65535
+Default value:		80 (MAGMA_SMTP_LINE_WRAP_LENGTH)
+Description:		The maximum number of characters-per-line in email messages before line wrapping is forced.
+
+magma.smtp.recipient_limit
+Possible values:	8-32768
+Default value:		256 (MAGMA_SMTP_RECIPIENT_LIMIT)
+Description:		The maximum number of recipients permitted for an inbound/outbound message.
+
+magma.smtp.relay_limit
+Possible values:	16-512
+Default value:		256 (MAGMA_SMTP_RELAY_LIMIT)
+Description:		The maximum number of relay hops permitted before a forward loop is detected and it is discarded.
+
+magma.smtp.blacklists.domain
+Possible values:	a hostname for a DNS blacklist server to be checked against IP addresses for abuse.
+Default value:		[empty]
+Description:		The hostname is one of a potential series of RBL (real-time blackhole list) servers that will be used by magma
+					to perform DNS-based queries to see if a connecting server has been blacklisted. 
+Note:				This parameter can be specified multiple times for multiple values, as long as the total number of times
+					does not exceed 6 (MAGMA_BLACKLIST_INSTANCES).
+
+magma.smtp.message_length_limit
+Possible values:	a number specifying the maximum size of messages accepted by the smtp server.
+Default value:		1073741824 [1 gigabyte] (MAGMA_SMTP_MAX_MESSAGE_SIZE)
+Description:		Any message with a SIZE parameter specified by the "MAIL FROM" command that exceeds this length will be rejected.	
+
+magma.smtp.address_length_limit
+Possible values:	a number specifying the maximum size of a valid email address.
+Default value:		256 (MAGMA_SMTP_MAX_ADDRESS_SIZE
+Description:		Any email address specified with the RCPT command will be truncated to this length if it exceeds it.
+
+magma.smtp.helo_length_limit
+Possible values:	a number specifying the maximum size of the hostname passed to the HELO/EHLO command.
+Default value:		255 (MAGMA_SMTP_MAX_HELO_SIZE)
+Description:		Any domain specified with the HELO/EHLO command will be truncated to this length if it exceeds it.
+
+magma.smtp.bypass_addr
+Possible values:	any valid IP address or subnet address that will bypass various smtp server checks. 
+Default value:		[empty]
+Description:		This parameter can be passed as a regular IP string or as a network address in CIDR notation.
+					Any inbound connection that matches this specified hostname or subnet address will not be subject to certain
+					security checks that are normally performed on peered servers.
+Note:				This configuration option may be passed an indefinite number of times for multiple whitelisting rules.
+
+
+
+
+
+
+
+
+Other Mail Options
+
+magma.dkim.enabled
+Possible values:	true or false
+Default value:		false
+Description:		Specifies whether DKIM signing is enabled for outbound messages.
+Related:			magma.dkim.domain, magma.dkim.selector, magma.dkim.privkey
+Note:				If magma.dkim.enabled is set, then magma.dkim.domain, magma.dkim.selector, and magma.dkim.privkey must all be set.
+
+magma.dkim.selector
+Possible values:	any string containing a valid DKIM selector.
+Default value:		[empty]
+Description:		The DKIM selector is used in conjunction with the DKIM domain to obtain a public key for signature verification via a DNS TXT record.
+Related:			magma.dkim.enabled
+
+magma.dkim.domain
+Possible values:	any string containing a valid domain name.
+Default value:		[empty]
+Description:		This is the domain name for which DKIM message signing is being performed.
+Related:			magma.dkim.enabled
+
+magma.dkim.privkey
+Possible values:	a pathname to a file with the DKIM private key.
+Default value:		[empty]
+Description:		The DKIM private key must contain a PEM-encoded private key and cannot be world-readable.
+Related:			magma.dkim.enabled
+
+magma.iface.spf.pool.connections
+Possible values:	1-4096 (MAGMA_CORE_POOL_OBJECTS_LIMIT) 
+Default value:		4
+Description:		The maximum number of concurrent spf requests that can be made at one time.
+
+magma.iface.spf.pool.timeout
+Possible values:	1-86400 (MAGMA_CORE_POOL_TIMEOUT_LIMIT)
+Default value:		60
+Description:		The number of seconds that magma will wait for a free spf context before it returns with failure.
+
+
+
+
+
+
+
+
+Caches (memcached)
+
+Cache configuration consists of optional global variables, as well as an arrangement of host entries, each with the same configurable options.
+
+magma.iface.cache.pool.connections
+Possible values:	a number specifying the size of the memcached connection pool.
+Default value:		4
+Description:		The size of the magmad cache connection pool. Note that each slot in the connection pool will rotate amongst all the memcached
+					servers that have been configured in the per-host options described below.
+					
+magma.iface.cache.pool.timeout
+Possible values:	a number specifying the timeout, in seconds, for the memcached connection pool.	
+Default value:		60
+Description:		If this time limit has been exceeded when magmad is attempting to grab a free memcached connection out of the connection pool,
+					an error will be returned to the caller. 
+
+magma.iface.cache.timeout
+Possible values:	1-3600
+Default value:		10 (MAGMA_CACHE_SOCKET_TIMEOUT,)
+Description:		The cache socket timeout in seconds.
+Note:				This value must be greater than or equal to magma.iface.cache.retry
+
+magma.iface.cache.retry
+Possible values:	10-86400
+Default value:		600 (MAGMA_CACHE_SERVER_RETRY)
+Description:		The number of seconds to wait between attempting to contact an unresponsive cache server.
+Note:				This value must be less than or equal to magma.iface.cache.timeout
+	
+
+An example of the per-host options:
+
+magma.iface.cache.host[1].name = 127.0.0.1
+magma.iface.cache.host[2].name = 192.168.1.5
+magma.iface.cache.host[2].port = 21211
+
+magma.iface.cache.host[n].name (REQUIRED)
+Possible values:	a string containing the hostname of the memcached server.
+Default value:		[blank]
+Description:		This is the hostname of a server running memcached.
+
+magma.iface.cache.host[n].port
+Possible values:	1-65535
+Default value:		11211
+Description:		This is the port number used by the configured memcached host.
+
+magma.iface.cache.host[n].weight
+Possible values:	1-32768
+Default value:		1024
+Description:		The relative weight of the memcached instance, used for request balancing.
+
+
+
+
+
+
+
+
+Mail Relays
+
+Mail relays have one general configuration option, and all mail relays instances are stored as an optional array of configurable servers.
+NOTE: At least 1 mail relay server MUST be configured!
+
+magma.relay.timeout
+Possible values:	any positive integer
+Default value:		60
+Description:		Set the maximum send/receive timeout in seconds for all mail relays. 
+
+
+Per-server configuration options:
+
+Example:
+magma.relay[1].name = localhost
+magma.relay[1].port = 25
+
+magma.relay[n].name (REQUIRED)
+Possible values:	a string containing the hostname of the smtp relay server.
+Default value:		[empty]
+Description:		This is the hostname of the configured smtp relay server.
+
+magma.relay[n].port
+Possible values:	1-65535
+Default value:		25
+Description:		The port number used by the relay server.
+
+magma.relay[n].secure
+Possible values:	true or false
+Default value:		false
+Description:		Specifies whether or not the connection to the relay server should be made using SSL.
+
+
+
+
+
+
+
+Servers
+
+Note: The servers section is a 1-based index array of running servers, all of which share the same basic structure.
+A separate entry will be required for each individual protocol, transport type (ipv4 or ipv6), or security layer (ssl or no ssl).
+
+For example:
+
+magma.servers[0].name = Lavabit POP
+magma.servers[0].domain = lavabit.com
+magma.servers[0].protocol = POP
+magma.servers[0].network.port = 8000
+magma.servers[0].ssl.certificate = /etc/ssl/certs/wildcard.lavabit.com.pem
+ 
+magma.servers[1].name = Lavabit POPS
+magma.servers[1].domain = lavabit.com
+magma.servers[1].protocol = POP
+magma.servers[1].network.port = 8550
+magma.servers[1].network.ipv6 = true
+magma.servers[1].network.type = SSL
+magma.servers[1].ssl.certificate = /etc/ssl/certs/wildcard.lavabit.com.pem
+
+
+
+magma.servers[n].protocol (REQUIRED)
+Possible values:	POP, IMAP, SMTP, HTTP, MOLTEN, SUBMISSION, EMPTY
+Default value:		[empty]
+Description:		This string specifies the protocol of the running service, and can only be one of the values above.
+
+magma.servers[n].enabled (REQUIRED)
+Possible values:	true or false
+Default value:		true
+Description:		Specifies whether a server is enabled or not. Useful for quickly disabling a service configuration.
+
+magma.servers[n].network.ipv6 (REQUIRED)
+Possible values:	true or false
+Default value:		false
+Description:		Determines whether the server will support ipv6 connections.
+
+magma.servers[n].network.port (REQUIRED)
+Possible values:	1-65535
+Default value:		0
+Description:		Sets the port on which the specified server will listen for inbound connections.
+
+magma.servers[n].name
+Possible values:	a user-defined string describing the service being configured.
+Default value:		[empty]
+Description:		This string is for the benefit of the user, and should be set in a way to make the configuration file
+					easily readable and manageable. 
+					
+magma.servers[n].domain
+Possible values:	a string containing the hostname of the listening service.
+Default value:		[empty]
+Description:		A hostname or IP address to which the service will be bound.
+
+magma.servers[n].ssl.certificate
+Possible values:	the pathname to the ssl certificate file for the service.
+Default value:		[empty]
+Description:		The pathname to the ssl certificate file, that will also automatically establish the listening service
+					into secure-transport only. You will need to specify multiple server entries if you wish to have
+					complementary versions running both in ssl and unencrypted mode.
+Related:			magma.servers[n].network.type
+					
+magma.servers[n].network.timeout
+Possible values:	a numerical value for the send/receive timeout of the server.
+Default value:		600
+Description:		This value specifies the time, in seconds, for how long it will take for receive and send operations
+					to client connections to fail without update.
+					
+magma.servers[n].listen_queue
+Possible values:	an integer with the maximum listen backlog for the server.
+Default value:		128
+Description:		This parameter tunes the backlog value passed to the server's listen() call, which sets the maximum length
+					of the queue for all pending connections on the listening socket.
+					
+magma.servers[n].network.type
+Possible values:	"TCP" or "SSL"
+Default value:		TCP
+Description:		The type of transport to be used for the server. Either TCP or SSL can be specified. If set to SSL,
+					the transport layer of the connection will be ssl enabled. In this case, magma.servers[n].ssl.certificate
+					must be set.
+Related:			magma.servers[n].ssl.certificate
+
+magma.servers[n].violations.delay
+Possible values:	an integer with the number of microseconds to sleep
+Default value:		1000
+Description:		The delay triggered by protocol or authentication errors
+
+magma.servers[n].violations.cutoff
+Possible values:	an integer with the maximum number of client violations allowed.
+Default value:		100
+Description:		The maximum number of protocol-level or authentication errors that will be allowed before a connection
+					to a client is terminated.

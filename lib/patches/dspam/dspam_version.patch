@@ -1,0 +1,43 @@
+diff -U 10 -Nprw dspam.orig/src/libdspam.c dspam/src/libdspam.c
+--- dspam.orig/src/libdspam.c	2011-04-13 00:43:58.711719999 -0500
++++ dspam/src/libdspam.c	2011-04-13 00:45:13.617935828 -0500
+@@ -2703,10 +2703,14 @@ int _ds_increment_tokens(DSPAM_CTX *CTX,
+ 
+       }
+     }
+ 
+     ds_term = ds_diction_next(ds_c);
+     i++;
+   }
+   ds_diction_close(ds_c);
+   return 0;
+ }
++
++const char * dspam_version(void) {
++	return VERSION;
++}
+diff -U 10 -Nprw dspam.orig/src/libdspam.h dspam/src/libdspam.h
+--- dspam.orig/src/libdspam.h	2011-04-13 00:43:58.712742523 -0500
++++ dspam/src/libdspam.h	2011-04-13 00:47:59.268662304 -0500
+@@ -60,20 +60,21 @@ DSPAM_CTX * dspam_create (const char *us
+ int dspam_attach  (DSPAM_CTX *CTX, void *dbh);
+ int dspam_detach  (DSPAM_CTX *CTX);
+ int dspam_process (DSPAM_CTX * CTX, const char *message);
+ 
+ int dspam_getsource       (DSPAM_CTX * CTX, char *buf, size_t size);
+ int dspam_addattribute    (DSPAM_CTX * CTX, const char *key, const char *value);
+ int dspam_clearattributes (DSPAM_CTX * CTX);
+ 
+ void dspam_destroy        (DSPAM_CTX * CTX);
+ 
++const char * dspam_version(void);
+ 
+ /* Private functions */
+ 
+ int _ds_calc_stat (DSPAM_CTX * CTX, ds_term_t term, struct _ds_spam_stat *s,
+      int type, struct _ds_spam_stat *bnr_tot);
+ int _ds_calc_result (DSPAM_CTX * CTX, ds_heap_t sort, ds_diction_t diction); 
+ int _ds_increment_tokens(DSPAM_CTX *CTX, ds_diction_t diction);
+ int  _ds_operate               (DSPAM_CTX * CTX, char *headers, char *body);
+ int  _ds_process_signature     (DSPAM_CTX * CTX);
+ int  _ds_factor                (struct nt *set, char *token_name, float value);

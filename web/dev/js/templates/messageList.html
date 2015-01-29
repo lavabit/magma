@@ -1,0 +1,23 @@
+<tr>
+    <td><input type="checkbox" name="check-${messageID}" value="${messageID}" /></td>
+    <td>${messageID}</td>
+    <td>{{if flag.seen}}<span>Read</span>{{/if}}</td>
+    <td>{{if flag.answered}}<span>Replied</span>{{/if}}</td>
+    <td>{{if flag.flagged}}<span>Starred</span>{{/if}}</td>
+    <td>{{if attachment}}<span>Attachment</span>{{/if}}</td>
+    <td>${from}</td>
+    <td>${to}</td>
+    <td>${addressedTo}</td>
+    <td>${replyTo}</td>
+    <td>${returnPath}</td>
+    <td>${carbon}</td>
+    <td>${subject}</td>
+    <td>${utc}</td>
+    <td>${date}</td>
+    <td>${arrivalUtc}</td>
+    <td>${arrivalDate}</td>
+    <td>${bytes}</td>
+    <td>${size}</td>
+    <td>${snippet}</td>
+    <td>{{each tags}}<div class="tag"><span class="${$value.slug} left">${$value.name}</span><span class="right">✕</span></div>{{/each}}</td>
+</tr>

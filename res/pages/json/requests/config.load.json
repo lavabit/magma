@@ -1,0 +1,5 @@
+{
+    "id": 3,
+    "method": "config.load",
+    "params": {}
+}

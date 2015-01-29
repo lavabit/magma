@@ -1,0 +1,67 @@
+[{
+    "result": [{
+        "contactID": 45,
+        "name": "John Resig",
+        "email": "jr@mozilla.org",
+        "company": "Mozilla",
+        "img": {
+            "src": "http://www.gravatar.com/avatar/00000000000000000000000000000000?s=32&d=mm&f=y",
+            "alt": "Avatar"
+        }
+    }, {
+        "contactID": 48,
+        "name": "Linus Torvalds",
+        "email": "lt@kernel.org",
+        "company": "Linux"
+    }, {
+        "contactID": 53,
+        "name": "Douglas Crockford",
+        "email": "dc@yahoo.com",
+        "company": "Yahoo",
+        "img": {
+            "src": "http://www.gravatar.com/avatar/00000000000000000000000000000000?s=32&d=mm&f=y",
+            "alt": "Avatar"
+        }
+    }, {
+        "contactID": 58,
+        "name": "Paul Graham",
+        "email": "pg@ycombinator.com",
+        "company": "Y Combinator",
+        "img": {
+            "src": "http://www.gravatar.com/avatar/00000000000000000000000000000000?s=32&d=mm&f=y",
+            "alt": "Avatar"
+        }
+    }, {
+        "contactID": 64,
+        "name": "John Paul",
+        "email": "jp@morgan.com"
+    }]
+}, {
+    "result": [{
+        "contactID": 45,
+        "name": "John Resig",
+        "email": "jr@mozilla.org",
+        "company": "Mozilla",
+    }, {
+        "contactID": 48,
+        "name": "Linus Torvalds",
+        "email": "lt@kernel.org",
+        "company": "Linux"
+    }, {
+        "contactID": 53,
+        "name": "Douglas Crockford",
+        "email": "dc@yahoo.com",
+        "company": "Yahoo",
+    }, {
+        "contactID": 58,
+        "name": "Paul Graham",
+        "email": "pg@ycombinator.com",
+        "company": "Y Combinator",
+    }, {
+        "contactID": 64,
+        "name": "John Paul",
+        "email": "jp@morgan.com"
+    }]
+}, {
+    "error": true
+}]

@@ -1,0 +1,7 @@
+{
+    "id": 21,
+    "method": "messages.list",
+    "params": {
+        "folderID": 1
+    }
+}

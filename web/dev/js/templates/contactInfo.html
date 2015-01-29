@@ -1,0 +1,65 @@
+<h4>${name}</h4>
+<dl class="email">
+    <dt>Primary Email</dt>
+    <dd class="primary">${email.primary}</dt>
+    {{if email.alternate1}}
+        <dt>Alternate 1</dt>
+        <dd class="alternate-1">${email.alternate1}</dd>
+    {{/if}}
+    {{if email.alternate2}}
+        <dt>Alternate 2</dt>
+        <dd class="alternate-2">${email.alternate2}</dd>
+    {{/if}}
+</dl>
+{{if chat}}
+    <dl class="chat">
+        {{if chat.yahoo}}
+            <dt>Yahoo</dt>
+            <dd class="yahoo">${chat.yahoo}</dd>
+        {{/if}}
+        {{if chat.live}}
+            <dt>Windows Live</dt>
+            <dd class="live">${chat.live}</dd>
+        {{/if}}
+        {{if chat.aim}}
+            <dt>AOL/AIM</dt>
+            <dd class="aim">${chat.aim}</dd>
+        {{/if}}
+        {{if chat.google}}
+            <dt>Google</dt>
+            <dd class="google">${chat.google}</dd>
+        {{/if}}
+        {{if chat.icq}}
+            <dt>ICQ</dt>
+            <dd class="icq">${chat.icq}</dd>
+        {{/if}}
+    </dl>
+{{/if}}
+{{if contact}}
+    <dl class="contact">
+        {{if contact.home}}
+            <dt>Home</dt>
+            <dd class="home">${contact.home}</dd>
+        {{/if}}
+        {{if contact.home}}
+            <dt>Work</dt>
+            <dd class="work">${contact.work}</dd>
+        {{/if}}
+        {{if contact.mobile}}
+            <dt>Mobile</dt>
+            <dd class="mobile">${contact.mobile}</dd>
+        {{/if}}
+        {{if contact.pager}}
+            <dt>Pager</dt>
+            <dd class="pager">${contact.pager}</dd>
+        {{/if}}
+        {{if contact.fax}}
+            <dt>Fax</dt>
+            <dd class="fax">${contact.fax}</dd>
+        {{/if}}
+        {{if contact.address}}
+            <dt>Address</dt>
+            <dd class="address">{{html contact.address}}</dd>
+        {{/if}}
+    </dl>
+{{/if}}

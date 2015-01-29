@@ -1,0 +1,8 @@
+{
+    "id": 24,
+    "method": "messages.remove",
+    "params": {
+    	"folderID": 1,
+        "messageIDs": [100, 110, 120]
+    }
+}

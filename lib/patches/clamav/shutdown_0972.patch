@@ -1,0 +1,149 @@
+diff -r 30ab042f28d5 sources/clamav/libclamav/clamav.h
+--- a/sources/clamav/libclamav/clamav.h	Fri Sep 02 08:46:52 2011 -0500
++++ b/sources/clamav/libclamav/clamav.h	Thu Sep 08 08:38:04 2011 -0500
+@@ -135,6 +135,7 @@ struct cl_settings;
+ 
+ #define CL_INIT_DEFAULT	0x0
+ extern int cl_init(unsigned int initoptions);
++extern void cl_shutdown(void);
+ 
+ extern struct cl_engine *cl_engine_new(void);
+ 
+diff -r 30ab042f28d5 sources/clamav/libclamav/mbox.c
+--- a/sources/clamav/libclamav/mbox.c	Fri Sep 02 08:46:52 2011 -0500
++++ b/sources/clamav/libclamav/mbox.c	Thu Sep 08 08:38:04 2011 -0500
+@@ -297,6 +297,8 @@ static	const	struct tableinit {
+ 	{	NULL,		0		}
+ };
+ 
++static table_t *rfc821 = NULL, *subtype = NULL;
++
+ #ifdef	CL_THREAD_SAFE
+ static	pthread_mutex_t	tables_mutex = PTHREAD_MUTEX_INITIALIZER;
+ #endif
+@@ -333,7 +335,6 @@ cli_parse_mbox(const char *dir, int desc
+ 	message *body;
+ 	char buffer[RFC2821LENGTH + 1];
+ 	mbox_ctx mctx;
+-	static table_t *rfc821, *subtype;
+ 	size_t at = 0;
+ 	fmap_t *map = *ctx->fmap;
+ 
+@@ -2295,6 +2295,30 @@ initialiseTables(table_t **rfc821Table, 
+ }
+ 
+ /*
++ * Cleanup the various lookup tables
++ */
++void
++cli_mbox_shutdown(void)
++{
++
++#ifdef	CL_THREAD_SAFE
++	pthread_mutex_lock(&tables_mutex);
++#endif
++	if(rfc821) {
++		tableDestroy(rfc821);
++		rfc821 = NULL;
++	}
++	if(subtype) {
++		tableDestroy(subtype);
++		subtype = NULL;
++	}
++#ifdef	CL_THREAD_SAFE
++			pthread_mutex_unlock(&tables_mutex);
++#endif
++
++}
++
++/*
+  * If there's a HTML text version use that, otherwise
+  * use the first text part, otherwise just use the
+  * first one around. HTML text is most likely to include
+diff -r 30ab042f28d5 sources/clamav/libclamav/mbox.h
+--- a/sources/clamav/libclamav/mbox.h	Fri Sep 02 08:46:52 2011 -0500
++++ b/sources/clamav/libclamav/mbox.h	Thu Sep 08 08:38:04 2011 -0500
+@@ -51,5 +51,6 @@ typedef enum {
+ 
+ size_t	strstrip(char *s);	/* remove trailing white space */
+ int	cli_mbox(const char *dir, int desc, cli_ctx *ctx);
++void cli_mbox_shutdown(void);
+ 
+ #endif /* __MBOX_H */
+diff -r 30ab042f28d5 sources/clamav/libclamav/message.c
+--- a/sources/clamav/libclamav/message.c	Fri Sep 02 08:46:52 2011 -0500
++++ b/sources/clamav/libclamav/message.c	Thu Sep 08 08:38:04 2011 -0500
+@@ -148,6 +148,32 @@ static const unsigned char base64Table[2
+ 	255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
+ };
+ 
++static table_t *mime_table = NULL;
++
++#ifdef	CL_THREAD_SAFE
++	static pthread_mutex_t mime_mutex = PTHREAD_MUTEX_INITIALIZER;
++#endif
++
++/*
++ * Cleanup the various lookup tables
++ */
++void
++cli_mime_shutdown(void)
++{
++
++#ifdef	CL_THREAD_SAFE
++	pthread_mutex_lock(&mime_mutex);
++#endif
++	if(mime_table) {
++		tableDestroy(mime_table);
++		mime_table = NULL;
++	}
++#ifdef	CL_THREAD_SAFE
++			pthread_mutex_unlock(&mime_mutex);
++#endif
++
++}
++
+ message *
+ messageCreate(void)
+ {
+@@ -211,12 +237,8 @@ messageReset(message *m)
+ int
+ messageSetMimeType(message *mess, const char *type)
+ {
+-#ifdef	CL_THREAD_SAFE
+-	static pthread_mutex_t mime_mutex = PTHREAD_MUTEX_INITIALIZER;
+-#endif
+ 	const struct mime_map *m;
+ 	int typeval;
+-	static table_t *mime_table;
+ 
+ 	assert(mess != NULL);
+ 	if(type == NULL) {
+diff -r 30ab042f28d5 sources/clamav/libclamav/message.h
+--- a/sources/clamav/libclamav/message.h	Fri Sep 02 08:46:52 2011 -0500
++++ b/sources/clamav/libclamav/message.h	Thu Sep 08 08:38:04 2011 -0500
+@@ -85,4 +85,6 @@ void	messageSetCTX(message *m, cli_ctx *
+ int	messageContainsVirus(const message *m);
+ int messageSavePartial(message *m, const char *dir, const char *id, unsigned part);
+ 
++void cli_mime_shutdown(void);
++
+ #endif	/*_MESSAGE_H*/
+diff -r 30ab042f28d5 sources/clamav/libclamav/others.c
+--- a/sources/clamav/libclamav/others.c	Fri Sep 02 08:46:52 2011 -0500
++++ b/sources/clamav/libclamav/others.c	Thu Sep 08 08:38:04 2011 -0500
+@@ -300,6 +300,14 @@ int cl_init(unsigned int initoptions)
+     return CL_SUCCESS;
+ }
+ 
++void cl_shutdown(void) {
++	cli_mbox_shutdown();
++	cli_mime_shutdown();
++	if (lt_dlexit()) {
++		cli_errmsg("lt_dlexit: Library exit error, probably because of an invalid reference counter");
++	}
++}
++
+ struct cl_engine *cl_engine_new(void)
+ {
+ 	struct cl_engine *new;

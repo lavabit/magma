@@ -1,0 +1,26 @@
+diff -U 10 -Npr gd/gd_png.c gd.sigcmp/gd_png.c
+--- gd/gd_png.c	2007-06-14 14:51:41.000000000 -0500
++++ gd.sigcmp/gd_png.c	2011-04-29 14:29:42.184961966 -0500
+@@ -142,21 +142,21 @@ BGD_DECLARE(gdImagePtr) gdImageCreateFro
+   /* Make sure the signature can't match by dumb luck -- TBB */
+   /* GRR: isn't sizeof(infile) equal to the size of the pointer? */
+ 	memset (sig, 0, sizeof (sig));
+ 
+   /* first do a quick check that the file really is a PNG image; could
+    * have used slightly more general png_sig_cmp() function instead */
+   if (gdGetBuf (sig, 8, infile) < 8) {
+ 	return NULL;
+   }
+ 
+-	if (!png_check_sig (sig, 8)) { /* bad signature */
++	if (png_sig_cmp (sig, 0, 8)) { /* bad signature */
+     	return NULL;		/* bad signature */
+ 	}
+ 
+ #ifndef PNG_SETJMP_NOT_SUPPORTED
+   png_ptr = png_create_read_struct (PNG_LIBPNG_VER_STRING, &gdPngJmpbufStruct, gdPngErrorHandler, NULL);
+ #else
+   png_ptr = png_create_read_struct (PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+ #endif
+   if (png_ptr == NULL) {
+       fprintf (stderr, "gd-png error: cannot allocate libpng main struct\n");

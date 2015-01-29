@@ -1,0 +1,19 @@
+main
+    chrome
+        meta
+        logout
+    tabs
+        permatab
+    wrkspcswrp
+        wrkspcwrp
+            workspace
+                search
+                    option
+                        field
+                        filter
+                            string
+                        controls
+                            remove
+                            add
+                search-results
+                    list

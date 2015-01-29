@@ -1,0 +1,514 @@
+diff -U 10 -Nprw dspam.orig/src/agent_shared.h dspam/src/agent_shared.h
+--- dspam.orig/src/agent_shared.h	2011-04-13 00:43:58.713742159 -0500
++++ dspam/src/agent_shared.h	2011-04-13 00:50:03.081899763 -0500
+@@ -30,21 +30,21 @@
+ #include <auto-config.h>
+ #endif
+ #include "libdspam.h"
+ 
+ #ifndef _AGENT_SHARED_H
+ #  define _AGENT_SHARED_H
+ 
+ extern char *__pw_name;
+ extern uid_t __pw_uid;
+ 
+-#define STATUS( ... )   snprintf(ATX->status, sizeof(ATX->status), __VA_ARGS__);
++#define DSPAM_STATUS( ... )   snprintf(ATX->status, sizeof(ATX->status), __VA_ARGS__);
+ 
+ #define SYNTAX "Syntax: dspam [--help|--version|[--client|--daemon [--nofork]] [--debug] --mode=[toe|tum|teft|notrain|unlearn] --user [user1 user2 ... userN] [--feature=[no,wh,tb=N]] [--class=[spam|innocent]] [--source=[error|corpus|inoculation]] [--profile=[PROFILE]] [--deliver=[spam,innocent,summary]] [--process|--classify] [--stdout] [--mail-from=sender-address] [--rcpt-to recipient-address(es)] [--signature=DSPAM-Signature] [passthru-arguments]]"
+ 
+ #define         SIGNATURE_BEGIN		"!DSPAM:"
+ #define         SIGNATURE_END		"!"
+ #define         LOOSE_SIGNATURE_BEGIN	"X-DSPAM-Signature:"
+ #define         SIGNATURE_DELIMITER	": "
+ 
+ /* AGENT_CTX: Agent context. Defines the behavior of the agent */
+ 
+diff -U 10 -Nprw dspam.orig/src/client.c dspam/src/client.c
+--- dspam.orig/src/client.c	2011-04-13 00:43:58.713742159 -0500
++++ dspam/src/client.c	2011-04-13 00:50:07.591820224 -0500
+@@ -84,86 +84,86 @@ int client_process(AGENT_CTX *ATX, buffe
+   char buf[1024], err[256];
+   struct nt_node *node_nt;
+   struct nt_c c_nt;
+   int exitcode = 0, msglen;
+   THREAD_CTX TTX;
+   int i;
+ 
+   TTX.sockfd = client_connect(ATX, 0);
+   if (TTX.sockfd <0) {
+     LOG(LOG_WARNING, ERR_CLIENT_CONNECT);
+-    STATUS(ERR_CLIENT_CONNECT);
++    DSPAM_STATUS(ERR_CLIENT_CONNECT);
+     return TTX.sockfd;
+   }
+ 
+   TTX.packet_buffer = buffer_create(NULL);
+   if (TTX.packet_buffer == NULL) 
+     goto BAIL;
+ 
+   /* LHLO / MAIL FROM - Authenticate on the server */
+ 
+   if (client_authenticate(&TTX, ATX->client_args)<0) {
+     LOG(LOG_WARNING, ERR_CLIENT_AUTH_FAILED);
+-    STATUS(ERR_CLIENT_AUTH_FAILED);
++    DSPAM_STATUS(ERR_CLIENT_AUTH_FAILED);
+     goto QUIT;
+   }
+ 
+   /* RCPT TO - Send recipient information */
+ 
+   strcpy(buf, "RCPT TO: ");
+   node_nt = c_nt_first(ATX->users, &c_nt);
+   while(node_nt != NULL) {
+     const char *ptr = (const char *) node_nt->ptr;
+     snprintf(buf, sizeof(buf), "RCPT TO: <%s>", ptr);
+     if (send_socket(&TTX, buf)<=0) {
+-      STATUS(ERR_CLIENT_SEND_FAILED);
++      DSPAM_STATUS(ERR_CLIENT_SEND_FAILED);
+       goto BAIL;
+     }
+ 
+     if (client_getcode(&TTX, err, sizeof(err))!=LMTP_OK) {
+-      STATUS("%s", err);
++      DSPAM_STATUS("%s", err);
+       goto QUIT;
+     }
+ 
+     node_nt = c_nt_next(ATX->users, &c_nt);
+   }
+ 
+   /* DATA - Send message */
+ 
+   if (send_socket(&TTX, "DATA")<=0) 
+     goto BAIL;
+ 
+   if (client_getcode(&TTX, err, sizeof(err))!=LMTP_DATA) {
+-    STATUS("%s", err);
++    DSPAM_STATUS("%s", err);
+     goto QUIT;
+   }
+ 
+   i = 0;
+   msglen = strlen(message->data);
+   while(i<msglen) {
+     int r = send(TTX.sockfd, message->data+i, msglen - i, 0);
+     if (r <= 0) {
+-      STATUS(ERR_CLIENT_SEND_FAILED);
++      DSPAM_STATUS(ERR_CLIENT_SEND_FAILED);
+       goto BAIL;
+     }
+     i += r;
+   }
+ 
+   if (message->data[strlen(message->data)-1]!= '\n') {
+     if (send_socket(&TTX, "")<=0) {
+-     STATUS(ERR_CLIENT_SEND_FAILED);
++     DSPAM_STATUS(ERR_CLIENT_SEND_FAILED);
+      goto BAIL;
+     }
+   }
+ 
+   if (send_socket(&TTX, ".")<=0) {
+-    STATUS(ERR_CLIENT_SEND_FAILED);
++    DSPAM_STATUS(ERR_CLIENT_SEND_FAILED);
+     goto BAIL;
+   }
+ 
+   /* Server response */
+ 
+   if (ATX->flags & DAF_STDOUT || ATX->flags & DAF_SUMMARY ||
+       ATX->operating_mode == DSM_CLASSIFY) 
+    {
+     char *line = NULL;
+     int head = !(ATX->flags & DAF_STDOUT);
+@@ -298,53 +298,53 @@ int client_connect(AGENT_CTX *ATX, int f
+ 
+     if (_ds_read_attribute(agent_config, "ClientPort"))
+       port = atoi(_ds_read_attribute(agent_config, "ClientPort"));
+ 
+     if (host && host[0] == '/')
+       domain = 1;
+   }
+ 
+   if (host == NULL) {
+     LOG(LOG_CRIT, ERR_CLIENT_INVALID_CONFIG);
+-    STATUS(ERR_CLIENT_INVALID_CONFIG);
++    DSPAM_STATUS(ERR_CLIENT_INVALID_CONFIG);
+     return EINVAL;
+   }
+ 
+   /* Connect (domain socket) */
+ 
+   if (domain) {
+     sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+     saun.sun_family = AF_UNIX;
+     strcpy(saun.sun_path, host);
+     addr_len = sizeof(saun.sun_family) + strlen(saun.sun_path) + 1;
+ 
+     LOGDEBUG(INFO_CLIENT_CONNECTING, host, 0);
+     if(connect(sockfd, (struct sockaddr *)&saun, addr_len)<0) {
+       LOG(LOG_ERR, ERR_CLIENT_CONNECT_SOCKET, host, strerror(errno));
+-      STATUS("%s", strerror(errno));
++      DSPAM_STATUS("%s", strerror(errno));
+       close(sockfd);
+       return EFAILURE;
+     }
+ 
+   /* Connect (TCP socket) */
+ 
+   } else {
+     sockfd = socket(AF_INET, SOCK_STREAM, 0);
+     memset(&addr, 0, sizeof(struct sockaddr_in));
+     addr.sin_family = AF_INET;
+     addr.sin_addr.s_addr = inet_addr(host);
+     addr.sin_port = htons(port);
+     addr_len = sizeof(struct sockaddr_in);
+     LOGDEBUG(INFO_CLIENT_CONNECTING, host, port);
+     if(connect(sockfd, (struct sockaddr *)&addr, addr_len)<0) {
+       LOG(LOG_ERR, ERR_CLIENT_CONNECT_HOST, host, port, strerror(errno));
+-      STATUS("%s", strerror(errno));
++      DSPAM_STATUS("%s", strerror(errno));
+       close(sockfd);
+       return EFAILURE;
+     }
+   }
+ 
+   LOGDEBUG(INFO_CLIENT_CONNECTED);
+   setsockopt(sockfd,SOL_SOCKET,TCP_NODELAY,&yes,sizeof(int));
+ 
+   return sockfd;
+ }
+@@ -683,120 +683,120 @@ int deliver_socket(AGENT_CTX *ATX, const
+   int exitcode = EFAILURE;
+   int msglen, code;
+   int buflen;
+   char *inp;
+   int i;
+ 
+   err[0] = 0;
+ 
+   TTX.sockfd = client_connect(ATX, CCF_DELIVERY);
+   if (TTX.sockfd <0) {
+-    STATUS(ERR_CLIENT_CONNECT);
++    DSPAM_STATUS(ERR_CLIENT_CONNECT);
+     LOG(LOG_ERR, ERR_CLIENT_CONNECT);
+     return TTX.sockfd;
+   }
+ 
+   TTX.packet_buffer = buffer_create(NULL);
+   if (TTX.packet_buffer == NULL) {
+     LOG(LOG_CRIT, ERR_MEM_ALLOC);
+-    STATUS(ERR_MEM_ALLOC);
++    DSPAM_STATUS(ERR_MEM_ALLOC);
+     goto BAIL;
+   }
+ 
+   inp = client_expect(&TTX, LMTP_GREETING, err, sizeof(err));
+   if (inp == NULL) {
+     LOG(LOG_ERR, ERR_CLIENT_ON_GREETING, err);
+-    STATUS("%s", err);
++    DSPAM_STATUS("%s", err);
+     goto BAIL;
+   }
+   free(inp);
+ 
+   /* LHLO / HELO */
+ 
+   snprintf(buf, sizeof(buf), "%s %s", (proto == DDP_LMTP) ? "LHLO" : "HELO",
+            (ident) ? ident : "localhost");
+   if (send_socket(&TTX, buf)<=0) {
+     LOG(LOG_ERR, ERR_CLIENT_SEND_FAILED);
+-    STATUS(ERR_CLIENT_SEND_FAILED);
++    DSPAM_STATUS(ERR_CLIENT_SEND_FAILED);
+     goto BAIL;
+   }
+ 
+   /* MAIL FROM */
+ 
+   inp = client_expect(&TTX, LMTP_OK, err, sizeof(err));
+   if (inp == NULL) {
+     LOG(LOG_ERR, ERR_CLIENT_INVALID_RESPONSE,
+       (proto == DDP_LMTP) ? "LHLO" : "HELO", err);
+-    STATUS("%s: %s", (proto == DDP_LMTP) ? "LHLO" : "HELO", err);
++    DSPAM_STATUS("%s: %s", (proto == DDP_LMTP) ? "LHLO" : "HELO", err);
+     goto QUIT;
+   }
+   free(inp);
+ 
+   if (proto == DDP_LMTP) {
+     snprintf(buf, sizeof(buf), "MAIL FROM:<%s> SIZE=%ld", 
+              ATX->mailfrom, (long) strlen(msg));
+   } else {
+     snprintf(buf, sizeof(buf), "MAIL FROM:<%s>", ATX->mailfrom);
+   }
+ 
+   if (send_socket(&TTX, buf)<=0) {
+     LOG(LOG_ERR, ERR_CLIENT_SEND_FAILED);
+-    STATUS(ERR_CLIENT_SEND_FAILED);
++    DSPAM_STATUS(ERR_CLIENT_SEND_FAILED);
+     goto BAIL;
+   }
+ 
+   code = client_getcode(&TTX, err, sizeof(err));
+ 
+   if (code!=LMTP_OK) {
+     LOG(LOG_ERR, ERR_CLIENT_RESPONSE, code, "MAIL FROM", err);
+     if (code >= 500) 
+       exitcode = EINVAL;
+     chomp(err);
+-    STATUS((code >= 500) ? "Fatal: %s" : "Deferred: %s", err);
++    DSPAM_STATUS((code >= 500) ? "Fatal: %s" : "Deferred: %s", err);
+     goto QUIT;
+   }
+ 
+   /* RCPT TO */
+ 
+   snprintf(buf, sizeof(buf), "RCPT TO:<%s>", (ATX->recipient) ? ATX->recipient : "");
+   if (send_socket(&TTX, buf)<=0) {
+     LOG(LOG_ERR, ERR_CLIENT_SEND_FAILED);
+-    STATUS(ERR_CLIENT_SEND_FAILED);
++    DSPAM_STATUS(ERR_CLIENT_SEND_FAILED);
+     goto BAIL;
+   }
+ 
+   code = client_getcode(&TTX, err, sizeof(err));
+ 
+   if (code!=LMTP_OK) {
+     LOG(LOG_ERR, ERR_CLIENT_RESPONSE, code, "RCPT TO", err);
+     if (code >= 500)
+       exitcode = EINVAL;  
+     chomp(err);
+-    STATUS((code >= 500) ? "Fatal: %s" : "Deferred: %s", err);
++    DSPAM_STATUS((code >= 500) ? "Fatal: %s" : "Deferred: %s", err);
+     goto QUIT;
+   }
+ 
+   /* DATA */
+ 
+   if (send_socket(&TTX, "DATA")<=0) {
+     LOG(LOG_ERR, ERR_CLIENT_SEND_FAILED);
+-    STATUS(ERR_CLIENT_SEND_FAILED);
++    DSPAM_STATUS(ERR_CLIENT_SEND_FAILED);
+     goto BAIL;
+   }
+ 
+   code = client_getcode(&TTX, err, sizeof(err));
+   if (code!=LMTP_DATA) {
+     LOG(LOG_ERR, ERR_CLIENT_RESPONSE, code, "DATA", err);
+     if (code >= 500)
+       exitcode = EINVAL;
+     chomp(err);
+-    STATUS((code >= 500) ? "Fatal: %s" : "Deferred: %s", err);
++    DSPAM_STATUS((code >= 500) ? "Fatal: %s" : "Deferred: %s", err);
+     goto QUIT;
+   }
+ 
+   i = 0;
+   msglen = strlen(msg);
+   while(i<msglen) {
+     int r;
+     int t;
+ 
+     /* fill buf with partial msg, replacing \n with \r\n */
+@@ -818,52 +818,52 @@ int deliver_socket(AGENT_CTX *ATX, const
+       buflen++;
+       i++;
+     }
+ 
+     /* send buf */
+     t = 0;
+     while (t < buflen) {
+       r = send(TTX.sockfd, buf+t, buflen - t, 0);
+       if (r <= 0) {
+         LOG(LOG_ERR, ERR_CLIENT_SEND_FAILED);
+-        STATUS(ERR_CLIENT_SEND_FAILED);
++        DSPAM_STATUS(ERR_CLIENT_SEND_FAILED);
+         goto BAIL;
+       }
+       t += r;
+     }
+   }
+ 
+   if (msg[strlen(msg)-1]!= '\n') {
+     if (send_socket(&TTX, "")<=0) {
+       LOG(LOG_ERR, ERR_CLIENT_SEND_FAILED);
+-      STATUS(ERR_CLIENT_SEND_FAILED);
++      DSPAM_STATUS(ERR_CLIENT_SEND_FAILED);
+       goto BAIL;
+     }
+   }
+ 
+   if (send_socket(&TTX, "\r\n.")<=0) {
+     LOG(LOG_ERR, ERR_CLIENT_SEND_FAILED);
+-    STATUS(ERR_CLIENT_SEND_FAILED);
++    DSPAM_STATUS(ERR_CLIENT_SEND_FAILED);
+     goto BAIL;
+   }
+ 
+   /* server response */
+ 
+   code = client_getcode(&TTX, err, sizeof(err));
+   if (code < 200 || code >= 300) {
+     LOG(LOG_ERR, ERR_CLIENT_RESPONSE, code, "message data", err);
+     if (code >= 400 && code < 500)
+       exitcode = EX_TEMPFAIL;
+     else if (code >= 500)
+       exitcode = EINVAL;
+     chomp(err);
+-    STATUS((code >= 500) ? "Fatal: %s" : "Deferred: %s", err);
++    DSPAM_STATUS((code >= 500) ? "Fatal: %s" : "Deferred: %s", err);
+     goto QUIT;
+   }
+ 
+   send_socket(&TTX, "QUIT");
+   client_getcode(&TTX, err, sizeof(err));
+   close(TTX.sockfd);
+   buffer_destroy(TTX.packet_buffer);
+   return 0;
+ 
+ QUIT:
+diff -U 10 -Nprw dspam.orig/src/dspam.c dspam/src/dspam.c
+--- dspam.orig/src/dspam.c	2011-04-13 00:43:58.711719999 -0500
++++ dspam/src/dspam.c	2011-04-13 00:50:07.584820828 -0500
+@@ -407,21 +407,21 @@ process_message (
+   if (_ds_read_attribute(agent_config, "ClamAVPort") &&
+       _ds_read_attribute(agent_config, "ClamAVHost") &&
+       CTX->source != DSS_ERROR                       &&
+       strcmp(_ds_pref_val(ATX->PTX, "optOutClamAV"), "on"))
+   {
+     if (has_virus(message)) {
+       char ip[32];
+       CTX->result = DSR_ISSPAM;
+       CTX->probability = 1.0;
+       CTX->confidence = 1.0;
+-      STATUS("A virus was detected in the message contents");
++      DSPAM_STATUS("A virus was detected in the message contents");
+       result = DSR_ISSPAM;
+       strcpy(CTX->class, LANG_CLASS_VIRUS);
+       internally_canned = 1;
+       if(!_ds_match_attribute(agent_config, "TrackSources", "virus")) {
+         if (!dspam_getsource (CTX, ip, sizeof (ip)))
+         {
+           LOG(LOG_WARNING, "virus warning: infected message from %s", ip);
+         }
+       }
+     }
+@@ -537,21 +537,21 @@ process_message (
+       if (result != 0) {
+         result = EFAILURE;
+         goto RETURN;
+       }
+     }
+   }
+ 
+   result = CTX->result;
+ 
+   if (result == DSR_ISINNOCENT && !strcmp(CTX->class, LANG_CLASS_WHITELISTED)) {
+-    STATUS("Auto-Whitelisted");
++    DSPAM_STATUS("Auto-Whitelisted");
+   }
+ 
+   /*
+    * Send any relevant notifications to the user (first spam, etc)
+    * Only if the process was successful
+    */
+ 
+   if (result == DSR_ISINNOCENT || result == DSR_ISSPAM)
+   {
+     do_notifications(CTX, ATX);
+@@ -3036,43 +3036,43 @@ int log_events(DSPAM_CTX *CTX, AGENT_CTX
+   char class;
+   char x[1024], subject_buf[256], from_buf[256];
+   char *messageid = NULL;
+ 
+   if (CTX->message)
+     messageid = _ds_find_header(CTX->message, "Message-Id");
+ 
+   if (ATX->status[0] == 0 && CTX->source == DSS_ERROR &&
+      (!(ATX->flags & DAF_UNLEARN)))
+   {
+-    STATUS("Retrained");
++    DSPAM_STATUS("Retrained");
+   }
+ 
+   if (ATX->status[0] == 0 && CTX->classification == DSR_NONE
+                           && CTX->result == DSR_ISSPAM
+                           && ATX->status[0] == 0)
+   {
+     if (_ds_pref_val(ATX->PTX, "spamAction")[0] == 0 ||
+         !strcmp(_ds_pref_val(ATX->PTX, "spamAction"), "quarantine"))
+     {
+-      STATUS("Quarantined");
++      DSPAM_STATUS("Quarantined");
+     } else if (!strcmp(_ds_pref_val(ATX->PTX, "spamAction"), "tag")) {
+-      STATUS("Tagged");
++      DSPAM_STATUS("Tagged");
+     } else if (!strcmp(_ds_pref_val(ATX->PTX, "spamAction"), "deliver")) {
+-      STATUS("Delivered");
++      DSPAM_STATUS("Delivered");
+     }
+   }
+ 
+   if (ATX->status[0] == 0             &&
+       CTX->classification == DSR_NONE &&
+       CTX->result == DSR_ISINNOCENT)
+   {
+-    STATUS("Delivered");
++    DSPAM_STATUS("Delivered");
+   }
+ 
+   _ds_userdir_path(filename, _ds_read_attribute(agent_config, "Home"), LOOKUP(ATX->PTX, (ATX->managed_group[0]) ? ATX->managed_group : CTX->username), "log");
+ 
+   if (CTX->message)
+   {
+     node_nt = c_nt_first (CTX->message->components, &c_nt);
+     if (node_nt != NULL)
+     {
+       ds_message_part_t block;
+@@ -3121,21 +3121,21 @@ int log_events(DSPAM_CTX *CTX, AGENT_CTX
+       class = 'F';
+   } else if (CTX->source == DSS_INOCULATION)
+     class = 'N';
+   else if (CTX->source == DSS_CORPUS)
+     class = 'C';
+ 
+   if (ATX->flags & DAF_UNLEARN) {
+     char stat[256];
+     snprintf(stat, sizeof(stat), "Delivery Failed (%s)",
+              (ATX->status[0]) ? ATX->status : "No error provided");
+-    STATUS("%s", stat);
++    DSPAM_STATUS("%s", stat);
+     class = 'E';
+   }
+ 
+   log_prepare(from_buf, from);
+   log_prepare(subject_buf, subject);
+ 
+   /* Write USER.log */
+ 
+   if (_ds_match_attribute(agent_config, "UserLog", "on")) {
+ 
+@@ -4037,21 +4037,21 @@ int is_blacklisted(DSPAM_CTX *CTX, AGENT
+       if (!error) {
+         char buff[128];
+         if (!bad) {
+           memcpy(&saddr, res->ai_addr, sizeof(struct sockaddr));
+ #ifdef HAVE_INET_NTOA_R_2
+           inet_ntoa_r(saddr.sin_addr, buff);
+ #else
+           inet_ntoa_r(saddr.sin_addr, buff, sizeof(buff));
+ #endif
+           if (strncmp(buff, "127.0.0.", 8) == 0) {
+-            STATUS("Blacklisted (%s)", attrib->value);
++            DSPAM_STATUS("Blacklisted (%s)", attrib->value);
+             bad = 1;
+             freeaddrinfo(res);
+             break;
+           }
+         }
+         freeaddrinfo(res);
+       }
+       attrib = attrib->next;
+     }
+   }

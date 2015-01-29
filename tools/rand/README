@@ -1,0 +1,3 @@
+This random number generator bridge must only be used on development machines. It is _NOT_ secure
+but will speedup the magma launch process by ensuring sufficient entrophy is available to seed the
+internal prng sub system. 

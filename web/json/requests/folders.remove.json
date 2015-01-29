@@ -1,0 +1,7 @@
+{
+    "id": 16,
+    "method": "folders.remove",
+    "params": {
+        "folderID": 30
+    }
+}

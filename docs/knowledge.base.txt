@@ -1,0 +1,278 @@
+Hopefully you have been able to build/install magma without issue.  In the event that you have encountered a problem, or are interested in learning more about Magma, this document may be of assistance.
+
+
+Magma Classic Overview FAQ
+----------------------------------------------------------------------
+
+Dependencies
+    All external dependencies are in the magma.so which are loaded dynamically at runtime. Depending on the configuration file option, magma classic should have no real dependencies other than pthreads and libc.
+
+Captcha
+    The following are dependencies for captcha: libgd, libpng, lib jpeg, and freetype, which are required for new account registration verification.
+
+JSON
+   The webmail client (still under development) uses json-rpc 2.0 for its communications and the json parsing is done by jansson. XML is used by the web server component which preprocesses templates that are displayed as web pages to the user. The dom parser is used to locate elements by id and modify them dynamically.
+
+Protocols
+   Question: Do you use standard versions of mail protocols (SMTP, POP, IMAP) or secured ones (SMTPS, IMAPS, POPS)? If standard - is it possible to use secure versions?
+   Answer: Both non-encrypted and ssl versions are available. You should see how to configure an ssl-enabled version of any service from the example magma.config file.
+
+   Question: Does the system use any linux-specific features like epoll, inotify, etc.?
+   Answer: Yes, the daemon does use epoll - but in general, even though the release is only supported for Linux/CentOS, there was a general goal of portability and there were very few architecture or system-dependent performance optimization techniques that were used in the code.
+
+   Question: What is the Molten protocol? What is it used for?
+   Answer: The molten protocol is not much more than an empty stub at this point. Its existence should be ignored for now.
+
+
+
+
+
+On Disk Storage FAQ
+----------------------------------------------------------------------
+
+Messages are compressed by lzo when stored.
+
+On Disk Encryption is done using openssl routines using a 571 bit elliptic curve to store a per-message ephemeral key for aes 256 in CBC mode. On disk encryption is only enabled if the user's secure flag is turned on in the Dispatch table then a public and private storage key pair are generated for the user and stored in the `Keys` table.
+
+Each secure message is stored encrypted with a unique per-message ephemeral key for aes 256 for CBC, which is encrypted with the public key of the user and written/stored in the encryption header of the message file. The user password is used to encrypt private key that is stored in DB. The private key is used to encrypt ephemeral key, and the ephemeral key is used to encrypt mail on disk.
+
+   Question: Where the mail bodies are stored? What is the storage format?
+   Answer: The mail bodies are simply stored in a multi-level directory flat file hierarchy on disk with only a few message status flags and timestamps and other bits of information stored in the database ("Messages") table. The mail directory/subdirectory names are integers, with the design that message contents can be efficiently looked up from a given message id using bucket hashing. Due to this method, the messages of different users are mixed up together on disk with no logical separation by userid. The messages themselves are just stored in a plain-text raw format, like .eml. The base of the message storage directory is configured in the configuration entry "magma.storage.root"
+
+#   Question: If the system uses NFS, how the NFS locking problem is solved?
+#   Answer: I cannot answer off the top of my head how the various NFS issues were handled, but I know that Ladar did design and test the storage code to be usable on an NFS cluster. I can say that in the code, there is no expectation that even the simplest of file operations, like unlink(), will succeed.
+
+   Question: Why do you plan to use Tokyo Cabinet to save mail on server? What benefits would it have over Maildir or other formats of mail storage?
+   Answer: The original intent was to create a distributed model of Tokyo Cabinet running on multiple magma servers that would eliminate some of the shortcomings and pitfalls of using NFS as a method of shared storage. This was never completed. Earlier, somebody was wondering about the purpose of the molten protocol. This protocol was never developed, but it was intended to be the connective glue for coordinating distributed Tokyo Cabinet requests across the network. Additionally, it was hoped that Tokyo Cabinet would also allow magma to be data fail-safe through redundant mirrors, and that the unified cabinet approach would improve file system efficiency and reduce fragmentation.
+
+
+
+
+
+MTA Requirements
+----------------------------------------------------------------------
+
+#   Question: Magma can receive mail from external servers but send only internal mail. Why is that so?
+#   Answer: Postfix is recommended for relaying outbound mail. One of the calls Ladar had to make was whether or not he wanted to take on the complicated work expected in engineering an MTA, such as recovering from network and system failures, delayed transmission, etc. For whatever reasons (primarily limited time and resources) he decided to leave this job up to Postfix which is not distributed with Magma.
+
+
+
+
+
+Installation FAQ
+----------------------------------------------------------------------
+
+   Question: Is it possible to generate Makefiles and build the project using make?
+   Answer: The project already has a Makefile infrastructure that works out of the box. To use it you will need to run make from the ".debug" directory. When you run make from "magma/.debug", please ensure that the parent directory that contains the magma directory also contains the directory "magma.so", which must have its "sources" directory populated with the un-extracted copies of the dependencies of magma.so, which are found in "magma.so/archives". The "sources" directory contains the include directory of each 3rd party dependency, the exact copy of which is necessary to compile magma. To do this, you will use the script build.sh found inside the magma.so project. You can specify the step "configure" as you will only need to extract, patch (prep) and configure each library, and not actually build it - in order to compile against it. Specifying just "configure" will run this processing for all library packages; but you can do it for each individual dependency as well.
+
+   Question: Why is there only one big magma daemon which does it all? Is it possible to separate it into smaller parts to divide between hosts? If not, how good is multithreading within the magma daemon?
+   Answer: There is one big daemon that "does it all" because this was a unique design consideration of the software as it was originally only run on and designed for the sole use of lavabit.com, and more demanding 3rd party design concerns were not a factor. As a result it is certainly proficient in multi-threading. There are many shared components between the various servers from a code-reusability perspective.
+
+
+
+
+
+Mysql DB Information
+----------------------------------------------------------------------
+
+Listed below are a few of the commonly used/modified tables & fields
+( 0 = off, 1 = on) 
+
+
+Dispatch
+-------------------
+secure - enable or disable secure storage for a particular user
+virusaction - Action upon recognition of virus
+send_size_limit	- Max sent bytes per message
+revc_size_limit	- Max received bytes per message
+daily_send_limit - Max bytes sent per 24 hrs.
+daily_revc_limit - Max bytes received per 24 hrs
+daily_revc_limit_ip - Max bytes received by IP per 24 hrs
+
+
+Hosts
+-------------------
+hostname - The name of a host (Must match local hostname)
+
+
+`Keys`
+-------------------
+*The use of ticks " ` " surrounding "Keys" is absolutely necessary*
+storage_pub - The public storage key of a user
+storage_priv - The private storage key of a user
+
+
+Limits
+-------------------
+*This table describes the various classes of users and the limits imposed on them*
+
+
+Messages
+-------------------
+messagenum - The number assigned to a specific message
+usernum - The number assigned to a specific user
+foldernum - The number assigned to a specific folder
+server - The server storing the message
+status - The status of the message  **See below for additional information**
+size - The size of a message in bytes
+signum - The signum of a message
+sigkey - The sigkey of a message
+visible - Denotes whether or not a message is visible
+created - Date/Time the message was created
+
+
+Status codes:
+empty		1
+recent		2
+seen		4
+answered	8
+flagged		16
+deleted		32
+draft		64
+secure		128
+appended	256
+hidden		512
+junk		1024
+infected	2048
+spoofed		4096
+blackholdes	8192
+phishing	16384
+tagged		32768
+encrypted	65536
+
+
+Users
+-------------------
+usernum - The number assigned to a specific user
+userid - The id of a particular user
+password - The hashed password of a user
+plan - The type of plan the user is enrolled in	
+size - Current size of the user's total messages
+quota - Size quota for a user
+overquota - If the user has exceeded their quota this value will be 1
+plan_expiration - The expiration date of a user's plan
+lock_expiration - The expiration of a lock on a user
+
+
+
+
+
+Errors & possible solutions
+----------------------------------------------------------------------
+
+
+The host entry cannot be found
+-------------------
+
+[..config_fetch_host_number()] = The host entry could not be found. { host = xxxxxxxxx }
+[..process_start()] = Unable to load configuration settings stored inside the Magma database. Exiting.
+[..process_stop()] = magma.init != shutdown {6 != 37}
+[..process_stop()] = Magma shutdown complete.
+
+	Simple, your system's hostname does not match the hostname in the host_config table. You have two options, either update the hosts_config table to reflect your system's hostname, or change your system's hostname to reflect the hosts_config table.
+
+
+
+Can't connect to local MySQL server
+-------------------
+
+[..sql_open()] = MySQL connect error. { error = Can't connect to local MySQL server through socket '/var/lib/mysql/mysql.sock' (2) }
+[..process_start()] = Unable to open the Magma database. Exiting.
+[..process_stop()] = magma.init != shutdown {5 != 37}
+[..process_stop()] = Magma shutdown complete.
+
+	This is caused by one of two things: either mysql is not running or you have not properly configured the magma.config setting for the mysql socket.
+
+
+Unable to memory map an anonymous file
+-------------------
+
+[../core/memory/secure.c - mm_sec_start()] = Unable to memory map an anonymous file. {Resource temporarily unavailable}
+[../engine/context/process.c - process_start()] = Initialization of the secure memory system failed. Exiting.
+[../engine/context/process.c - process_stop()] = magma.init != shutdown {10 != 37}
+[../engine/context/process.c - process_stop()] = Magma shutdown complete.
+	
+	Method 1:
+		As root:
+		While install.sh adds the following entries to /etc/security/limits.conf:
+			hard    memlock         1024
+			soft    memlock         1024 
+		It may be necessary modify the entries to the following:
+			hard    memlock         1024
+			soft    memlock         2048 
+
+	Method 2:
+		As root:
+		Navigate to /etc/security/limits.d
+		Create file: 90-memlock.conf
+			chcon "system_u:object_r:etc_t:s0" 90-memlock.conf
+		Edit 90-memlock.conf and insert:
+				 %u	soft	memlock		268435456
+				 %u	hard	memlock		268435456
+		Restart operating system for changes to take effect
+
+
+
+Sending mail errors
+-------------------
+
+Question: When sending mail, we receive the following error message: 
+	"451 DATA FAILED - MEMORY ALLOCATION FAILED - PLEASE TRY AGAIN LATER»” or “451 DATA FAILED - ENCOUNTERED A TEMPORARY ERROR WITH THE RECIPIENT”
+	
+	You might see output like this in the console and/or failure in telnet or your mail program:
+	../objects/mail/store_message.c - mail_store_message_data() - 53] = An error occurred while trying to get a file descriptor.
+	../servers/smtp/accept.c - smtp_store_message() - 76] = Unable to store message.
+
+Answer: The order in which magma reads settings on launch reads from the magma.config file FIRST, then network settings (i.e., SQL database). First, verify the path defined by the value of “magma.storage.root =” is valid and there are permissions to write to the specified directory. If the directory does not exist or does not have permissions to write to the directory, storing messages will fail. If there is no path specified in magma.storage.root, verify the value set for the Host_Config in the SQL database; as with the above, it should be a valid path with write permissions. You should only supply the valid path from one location.
+
+
+
+Unable to prepare the SQL statement.
+-------------------
+
+Question: When launching Magma you may encounter the following error message: 
+	../providers/database/stmts.c - stmt_prepare()] = Unable to prepare the SQL statement.  
+	Simply put, Magma is searching for a field in a specific table that does not exist.
+
+Answer: You'll need to blow away the old SQL database by running the script: init-db.sh
+
+
+
+
+
+Random
+----------------------------------------------------------------------
+   Question: What data is cached in memcached?
+   Answer: Memcached is used as frequently as possible to cache any sort of data that might otherwise be commonly retrieved from the mysql server, to avoid the performance cost of making these queries directly from the database. Serial numbers are used to check to see if cached data is stale, and if so, it is refreshed from the database. This includes information such as the users' credentials and account information and mail box and associated message metadata and contents. It also includes ephemeral information such as sessions that are created for users that are actively logged in via the web or another service like imap, etc.
+
+#   Question: As we can see in magmad.so resources you are using patched versions of external libraries. They are differ from standard versions. Is it possible to use vanilla versions of them? What is the purpose of patching?
+#   Answer: I have not personally reviewed all of the patches but I know that some of them are performance or security related modifications that Ladar personally identified and wrote himself, and that were never incorporated into the main software releases upstream.
+
+   Question: How do I add/remove a user?
+   Answer: There are a few scripts included in magma.distribution/magma/scripts/ that may be useful to you. They are: adduser, pwchange and rmuser. All of the scripts rely on pwtool, which is included in magma.distribution/source/magma.utils/.  Magma.so and Magma must be built before pwtool.  Please consult building.from.source for instructions.
+
+	   All of the scripts have multiple lines you must edit in order for them to function.
+	   MAGMAD_HELPER= <location of pwtool>
+	   MAGMA_SYSTEM_DOMAIN= <the system's domain>
+	   MAGMA_CONFIG_LOC= <location of magma.config>
+
+   Question: How do I change a user's password/encryption keys?
+   Answer: First, build magma.so, and magma. Please consult building.from.source for instructions. Then build pwtool. There is a small script named pwchange in magma.distribution/magma/scripts/ that will assist you with changing a users password as well as on-disk encryption keys. Knowing a user's current password is necessary. pwchange is simply a wrapper for pwtool.
+
+
+
+Nightly Cleanup Script
+-------------------
+
+daily.sql
+	It is recommended you set up a cron job to execute the nightly script in order to maintain the health of the mysql receiving table. To add or update job in crontab, use below command. It will open crontab file in editor where job can be added/updated.
+
+		# crontab -e
+
+	Note: the default behavior will edit/create crontab entries of currently logged in user.
+	It is recommended to schedule a nightly a cron to execute the <NAME OF SCRIPT.sh>.  In this example, the nightly script will execute at 2am by adding the following entry:
+
+		0 2 * * * /path/to/dir <NAME OF SCRIPT>.sh
+
+
+

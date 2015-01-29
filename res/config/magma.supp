@@ -1,0 +1,671 @@
+{
+   dlopen
+   Memcheck:Leak
+   fun:malloc
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:do_dlopen
+   fun:_dl_catch_error
+   fun:__libc_dlopen_mode
+   fun:pthread_cancel_init
+   fun:_Unwind_ForcedUnwind
+   fun:__pthread_unwind
+   fun:pthread_exit
+   fun:nptl_pthread_exit_hack_handler
+   fun:start_thread
+   fun:clone
+}
+{
+   dlopen
+   Memcheck:Leak
+   fun:malloc
+   fun:_dl_scope_free
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:do_dlopen
+   fun:_dl_catch_error
+   fun:__libc_dlopen_mode
+   fun:pthread_cancel_init
+   fun:_Unwind_ForcedUnwind
+   fun:__pthread_unwind
+   fun:pthread_exit
+   fun:nptl_pthread_exit_hack_handler
+   fun:start_thread
+   fun:clone
+}
+{
+   dlopen
+   Memcheck:Leak
+   fun:calloc
+   fun:do_lookup_x
+   fun:_dl_lookup_symbol_x
+   fun:_dl_relocate_object
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   fun:lib_load
+   fun:process_start
+   fun:main
+}
+{
+	libspf2 leaks
+	Memcheck:Leak
+	fun:malloc
+	fun:SPF_dns_resolv_lookup
+	fun:SPF_dns_lookup
+	fun:SPF_server_get_record
+	fun:SPF_request_query_mailfrom
+	fun:*
+}
+
+{
+   libspf2 leaks
+   Memcheck:Leak
+   fun:malloc
+   fun:SPF_dns_resolv_lookup
+   fun:SPF_dns_lookup
+   fun:SPF_dns_cache_lookup
+   fun:SPF_dns_lookup
+   fun:SPF_server_get_record
+   fun:SPF_request_query_mailfrom
+   fun:*
+}
+
+{
+   libspf2 leaks
+   Memcheck:Leak
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:spf_check_v4
+   fun:*
+}
+
+{
+   libspf2 leaks
+   Memcheck:Leak
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:spf_check_v4
+   fun:*
+}
+
+{
+   libspf2 leaks
+   Memcheck:Leak
+   fun:malloc
+   fun:__libc_res_nsend
+   fun:__libc_res_nquery
+   fun:__res_nquery
+   fun:SPF_dns_resolv_lookup
+   fun:SPF_dns_lookup
+   fun:SPF_dns_cache_lookup
+   fun:SPF_dns_lookup
+   fun:SPF_server_get_record
+   fun:SPF_request_query_mailfrom
+   fun:*
+}
+
+{
+	libspf2 leaks
+	Memcheck:Leak
+	fun:malloc
+	fun:__libc_res_nsend
+	fun:__libc_res_nquery
+	fun:__res_nquery (res_query.c:318)
+	fun:SPF_dns_resolv_lookup
+	fun:SPF_dns_lookup
+	fun:SPF_server_get_record
+	fun:SPF_request_query_mailfrom
+	fun:*
+}
+
+# doit leaks
+{
+   doit leaks
+   Memcheck:Leak
+   fun:calloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_error
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:*
+}
+
+{
+   doit leaks
+   Memcheck:Leak
+   fun:calloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:*
+}
+{
+   doit leaks
+   Memcheck:Leak
+   fun:calloc
+   fun:_dl_check_map_versions
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:*
+}
+{
+   doit leaks
+   Memcheck:Leak
+   fun:malloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:*
+}
+{
+   doit leaks
+   Memcheck:Leak
+   fun:malloc
+   fun:local_strdup
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_error
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:*
+}
+{
+   doit leaks
+   Memcheck:Leak
+   fun:malloc
+   fun:expand_dynamic_string_token
+   fun:_dl_map_object
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:*
+}
+
+# dlopen is triggering a leak...
+
+{
+   dlopen leak
+   Memcheck:Leak
+   fun:malloc
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   fun:lib_load
+   fun:process_start
+   fun:main
+}
+{
+   dlopen leak
+   Memcheck:Leak
+   fun:malloc
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   fun:lib_load
+   fun:process_start
+   fun:main
+}
+{
+   dlopen leak
+   Memcheck:Leak
+   fun:malloc
+   fun:add_to_global
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   fun:lib_load
+   fun:process_start
+   fun:main
+}
+{
+   dlopen leak
+   Memcheck:Leak
+   fun:calloc
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   fun:lib_load
+   fun:process_start
+   fun:main
+}
+{
+   exit leak
+   Memcheck:Leak
+   fun:malloc
+   fun:_dl_close_worker
+   fun:_dl_close
+   fun:_dl_catch_error
+   fun:__libc_dlclose
+   obj:/lib64/libc-2.12.so
+   obj:/lib64/libc-2.12.so
+   fun:_vgnU_freeres
+   fun:exit
+   fun:main
+}
+
+
+# Tokyo Cabinet passes uninitialised bytes to msync
+
+#
+# Warnings in libz because it works with aligned memory(?)
+#
+
+{
+   libz tr_flush_block
+   Memcheck:Cond
+   fun:_tr_flush_block
+   fun:deflate_slow
+   fun:deflate
+   fun:do_flush
+   fun:gzclose
+}
+{
+   libz tr_flush_block2
+   Memcheck:Cond
+   fun:_tr_flush_block
+   fun:deflate_slow
+   fun:deflate
+   fun:compress2
+}
+{
+   libz longest_match
+   Memcheck:Cond
+   fun:longest_match
+   fun:deflate_slow
+   fun:deflate
+   fun:do_flush
+}
+
+{
+   libz longest_match2
+   Memcheck:Cond
+   fun:longest_match
+   fun:deflate_slow
+   fun:deflate
+   fun:compress2
+}
+{
+   libz longest_match 3
+   Memcheck:Cond
+   fun:longest_match
+   fun:deflate_slow
+   fun:deflate
+   fun:gzclose
+}
+{
+   libz longest_match 4 
+   Memcheck:Cond
+   fun:longest_match
+   fun:deflate_slow
+   fun:deflate
+   fun:gzflush
+}
+{
+   libz longest_match3
+   Memcheck:Cond
+   fun:longest_match
+   fun:deflate_slow
+   fun:deflate
+   fun:azflush
+}
+{
+   libz longest_match3
+   Memcheck:Cond
+   fun:longest_match
+   fun:deflate_slow
+   fun:deflate
+   fun:azclose
+}
+
+{
+   libz deflate
+   Memcheck:Cond
+   obj:*/libz.so.*
+   obj:*/libz.so.*
+   fun:deflate
+   fun:compress2
+}
+{
+   libz deflate2
+   Memcheck:Cond
+   obj:*/libz.so.*
+   obj:*/libz.so.*
+   fun:deflate
+   obj:*/libz.so.*
+   fun:gzflush
+}
+{
+   libz deflate3
+   Memcheck:Cond
+   obj:*/libz.so.*
+   obj:*/libz.so.*
+   fun:deflate
+   fun:do_flush
+}
+{
+   clamav overlap
+   Memcheck:Overlap
+   fun:memcpy
+   fun:hm_sort
+   fun:hm_flush
+   fun:cl_engine_compile
+   fun:virus_engine_create
+   fun:virus_start
+   fun:process_start
+   fun:main
+}
+{
+   clamav overlap
+   Memcheck:Overlap
+   fun:memcpy
+   fun:hm_sort
+   fun:hm_sort
+   fun:hm_flush
+   fun:cl_engine_compile
+   fun:virus_engine_create
+   fun:virus_start
+   fun:process_start
+   fun:main
+}
+{
+   clamav overlap
+   Memcheck:Overlap
+   fun:memcpy
+   fun:hm_sort
+   fun:hm_sort
+   fun:hm_sort
+   fun:hm_flush
+   fun:cl_engine_compile
+   fun:virus_engine_create
+   fun:virus_start
+   fun:process_start
+   fun:main
+}
+{
+   clamav overlap
+   Memcheck:Overlap
+   fun:memcpy
+   fun:hm_sort
+   fun:hm_sort
+   fun:hm_sort
+   fun:hm_sort
+   fun:hm_flush
+   fun:cl_engine_compile
+   fun:virus_engine_create
+   fun:virus_start
+   fun:process_start
+   fun:main
+}
+{
+   clamav overlap
+   Memcheck:Overlap
+   fun:memcpy
+   fun:hm_sort
+   fun:hm_sort
+   fun:hm_sort
+   fun:hm_sort
+   fun:hm_sort
+   fun:hm_flush
+   fun:cl_engine_compile
+   fun:virus_engine_create
+   fun:virus_start
+   fun:process_start
+   fun:main
+}
+
+{
+   clamav leak
+   Memcheck:Leak
+   fun:calloc
+   fun:cli_calloc
+   fun:tableCreate
+   fun:messageSetMimeType
+   fun:parseMimeHeader
+   fun:parseEmailHeader
+   fun:parseEmailFile
+   fun:cli_parse_mbox
+   fun:cli_mbox
+   fun:cli_scanmail
+   fun:magic_scandesc
+   fun:cli_magic_scandesc
+   fun:cl_scandesc_callback
+   fun:cl_scandesc
+   fun:virus_check
+   fun:virus_check_sthread
+   fun:check_virus_s
+   fun:srunner_run_all
+   fun:main
+}
+{
+   clamav leak
+   Memcheck:Leak
+   fun:malloc
+   fun:cli_malloc
+   fun:tableInsert
+   fun:messageSetMimeType
+   fun:parseMimeHeader
+   fun:parseEmailHeader
+   fun:parseEmailFile
+   fun:cli_parse_mbox
+   fun:cli_mbox
+   fun:cli_scanmail
+   fun:magic_scandesc
+   fun:cli_magic_scandesc
+   fun:cl_scandesc_callback
+   fun:cl_scandesc
+   fun:virus_check
+   fun:virus_check_sthread
+   fun:check_virus_s
+   fun:srunner_run_all
+   fun:main
+}
+{
+   clamav leak
+   Memcheck:Leak
+   fun:calloc
+   fun:cli_calloc
+   fun:tableCreate
+   fun:initialiseTables
+   fun:cli_parse_mbox
+   fun:cli_mbox
+   fun:cli_scanmail
+   fun:magic_scandesc
+   fun:cli_magic_scandesc
+   fun:cl_scandesc_callback
+   fun:cl_scandesc
+   fun:virus_check
+   fun:virus_check_sthread
+   fun:check_virus_s
+   fun:srunner_run_all
+   fun:main
+}
+{
+   clamav leak
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:cli_strdup
+   fun:tableInsert
+   fun:messageSetMimeType
+   fun:parseMimeHeader
+   fun:parseEmailHeader
+   fun:parseEmailFile
+   fun:cli_parse_mbox
+   fun:cli_mbox
+   fun:cli_scanmail
+   fun:magic_scandesc
+   fun:cli_magic_scandesc
+   fun:cl_scandesc_callback
+   fun:cl_scandesc
+   fun:virus_check
+   fun:virus_check_sthread
+   fun:check_virus_s
+   fun:srunner_run_all
+   fun:main
+}
+{
+   clamav leak
+   Memcheck:Leak
+   fun:malloc
+   fun:cli_malloc
+   fun:tableInsert
+   fun:initialiseTables
+   fun:cli_parse_mbox
+   fun:cli_mbox
+   fun:cli_scanmail
+   fun:magic_scandesc
+   fun:cli_magic_scandesc
+   fun:cl_scandesc_callback
+   fun:cl_scandesc
+   fun:virus_check
+   fun:virus_check_sthread
+   fun:check_virus_s
+   fun:srunner_run_all
+   fun:main
+}
+{
+   clamav leak
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:cli_strdup
+   fun:tableInsert
+   fun:initialiseTables
+   fun:cli_parse_mbox
+   fun:cli_mbox
+   fun:cli_scanmail
+   fun:magic_scandesc
+   fun:cli_magic_scandesc
+   fun:cl_scandesc_callback
+   fun:cl_scandesc
+   fun:virus_check
+   fun:virus_check_sthread
+   fun:check_virus_s
+   fun:srunner_run_all
+   fun:main
+}
+{
+   DSPAM Tokenizer Read Error
+   Memcheck:Addr8
+   fun:__strspn_sse42
+   fun:_ds_truncate_token
+   fun:_ds_process_header_token
+   fun:_ds_tokenize_ngram
+   fun:_ds_tokenize
+   fun:_ds_operate
+   fun:dspam_process
+   fun:dspam_check
+   fun:smtp_accept_message
+   fun:smtp_data_inbound
+   fun:dequeue
+   fun:start_thread
+   fun:clone
+}
+{
+   crypto-malloc-race
+   Helgrind:Race
+   fun:CRYPTO_malloc
+   fun:EVP_DigestInit_ex
+   fun:ssleay_rand_bytes
+   fun:RAND_bytes
+   fun:*
+}
+{
+   digest-race
+   Helgrind:Race
+   fun:memcpy
+   fun:SHA1_Update
+   fun:update
+   fun:EVP_DigestUpdate
+   fun:ssleay_rand_bytes
+   fun:RAND_bytes
+   fun:*
+}
+{
+   ssleay-race
+   Helgrind:Race
+   fun:ssleay_rand_bytes
+   fun:RAND_bytes
+   fun:*
+}
+{
+		asn-jump
+		Memcheck:Cond
+		fun:ASN1_STRING_set
+		fun:ASN1_mbstring_ncopy
+		fun:ASN1_mbstring_copy
+		fun:ASN1_STRING_to_UTF8
+		fun:asn1_string_canon
+		fun:x509_name_canon
+		fun:x509_name_ex_d2i
+		fun:ASN1_item_ex_d2i
+		fun:asn1_template_noexp_d2i
+		fun:asn1_template_ex_d2i
+		fun:ASN1_item_ex_d2i
+		fun:asn1_template_noexp_d2i
+		fun:asn1_template_ex_d2i
+		fun:ASN1_item_ex_d2i
+		fun:ASN1_item_d2i
+		fun:d2i_X509
+		fun:d2i_X509_AUX
+		fun:PEM_ASN1_read_bio
+		fun:PEM_read_bio_X509_AUX
+		fun:SSL_CTX_use_certificate_chain_file
+		fun:ssl_server_create
+		fun:*
+}

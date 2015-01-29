@@ -1,0 +1,40 @@
+diff -r 22546f626e64 sources/tokyocabinet/tcutil.c
+--- a/sources/tokyocabinet/tcutil.c	Fri Aug 19 04:28:01 2011 -0500
++++ b/sources/tokyocabinet/tcutil.c	Sat Aug 27 05:30:13 2011 -0500
+@@ -4314,6 +4314,20 @@ void tcndbiterinit(TCNDB *ndb){
+ }
+ 
+ 
++/* Copy an on-memory tree database object. */
++TCNDB *tcndbdup(TCNDB *ndb){
++  assert(ndb);
++  TCNDB *ptr;
++  if(pthread_mutex_lock((pthread_mutex_t *)ndb->mmtx) != 0) return NULL;
++  TCMALLOC(ptr, sizeof(*ptr));
++  TCMALLOC(ptr->mmtx, sizeof(pthread_mutex_t));
++  if(pthread_mutex_init(ptr->mmtx, NULL) != 0) tcmyfatal("mutex error");
++  ptr->tree = tctreedup(ndb->tree);
++  pthread_mutex_unlock((pthread_mutex_t *)ndb->mmtx);
++  return ptr;
++}
++
++
+ /* Get the next key of the iterator of an on-memory tree database object. */
+ void *tcndbiternext(TCNDB *ndb, int *sp){
+   assert(ndb && sp);
+diff -r 22546f626e64 sources/tokyocabinet/tcutil.h
+--- a/sources/tokyocabinet/tcutil.h	Fri Aug 19 04:28:01 2011 -0500
++++ b/sources/tokyocabinet/tcutil.h	Sat Aug 27 05:30:13 2011 -0500
+@@ -1942,6 +1942,12 @@ int tcndbvsiz(TCNDB *ndb, const void *kb
+ int tcndbvsiz2(TCNDB *ndb, const char *kstr);
+ 
+ 
++/* Copy an on-memory tree database object.
++ 	 `ndb' specifies the on-memory tree database object.
++ 	  The return value is the new on-memory tree database object equivalent to the specified object. */
++TCNDB *tcndbdup(TCNDB *ndb);
++
++
+ /* Initialize the iterator of an on-memory tree database object.
+    `ndb' specifies the on-memory tree database object.
+    The iterator is used in order to access the key of every record stored in the on-memory

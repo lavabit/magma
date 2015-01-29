@@ -1,0 +1,9 @@
+{
+    "id": 11,
+    "method": "contacts.move",
+    "params": {
+	  "contactID": 100,
+	  "sourceFolderID": 1,
+	  "targetFolderID": 10
+    }
+}

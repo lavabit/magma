@@ -1,0 +1,14 @@
+main
+    chrome
+        meta
+        logout
+    tabs
+        permatab
+    wrkspcswrp
+        wrkspcwrp
+            toolbar
+                tools
+                    composing
+            workspace
+                composing
+                    form

@@ -1,0 +1,87 @@
+diff -U 10 -wNpr freetype/include/freetype.h freetype.version/include/freetype.h
+--- freetype/include/freetype.h	2010-11-28 08:58:00.000000000 -0600
++++ freetype.version/include/freetype.h	2011-04-29 15:43:34.452327163 -0500
+@@ -3843,20 +3843,44 @@ FT_BEGIN_HEADER
+   FT_EXPORT( void )
+   FT_Library_Version( FT_Library   library,
+                       FT_Int      *amajor,
+                       FT_Int      *aminor,
+                       FT_Int      *apatch );
+ 
+ 
+   /*************************************************************************/
+   /*                                                                       */
+   /* <Function>                                                            */
++  /*    FT_Library_Version_Static                                          */
++  /*                                                                       */
++  /* <Description>                                                         */
++  /*    Return the version of the FreeType library being used.  This is    */
++  /*    useful when dynamically linking to the library, since one cannot   */
++  /*    use the macros @FREETYPE_MAJOR, @FREETYPE_MINOR, and               */
++  /*    @FREETYPE_PATCH.                                                   */
++  /*                                                                       */
++  /* <Output>                                                              */
++  /*    amajor  :: The major version number.                               */
++  /*                                                                       */
++  /*    aminor  :: The minor version number.                               */
++  /*                                                                       */
++  /*    apatch  :: The patch version number.                               */
++  /*                                                                       */
++  /*                                                                       */
++ FT_EXPORT( void )
++ FT_Library_Version_Static(  FT_Int      *amajor,
++                      FT_Int      *aminor,
++                      FT_Int      *apatch );
++
++  /*************************************************************************/
++  /*                                                                       */
++  /* <Function>                                                            */
+   /*    FT_Face_CheckTrueTypePatents                                       */
+   /*                                                                       */
+   /* <Description>                                                         */
+   /*    Parse all bytecode instructions of a TrueType font file to check   */
+   /*    whether any of the patented opcodes are used.  This is only useful */
+   /*    if you want to be able to use the unpatented hinter with           */
+   /*    fonts that do *not* use these opcodes.                             */
+   /*                                                                       */
+   /*    Note that this function parses *all* glyph instructions in the     */
+   /*    font file, which may be slow.                                      */
+diff -U 10 -wNpr freetype/src/base/ftobjs.c freetype.version/src/base/ftobjs.c
+--- freetype/src/base/ftobjs.c	2010-11-04 10:52:59.000000000 -0500
++++ freetype.version/src/base/ftobjs.c	2011-04-29 15:43:44.645497076 -0500
+@@ -4396,20 +4396,35 @@
+     if ( amajor )
+       *amajor = major;
+ 
+     if ( aminor )
+       *aminor = minor;
+ 
+     if ( apatch )
+       *apatch = patch;
+   }
+ 
++ FT_EXPORT_DEF( void )
++  FT_Library_Version_Static(  FT_Int      *amajor,
++                      FT_Int      *aminor,
++                      FT_Int      *apatch )
++  {
++	  if ( amajor )
++      *amajor = FREETYPE_MAJOR;
++
++    if ( aminor )
++      *aminor = FREETYPE_MINOR;
++
++    if ( apatch )
++      *apatch = FREETYPE_PATCH;
++  }
++
+ 
+   /* documentation is in ftmodapi.h */
+ 
+   FT_EXPORT_DEF( FT_Error )
+   FT_Done_Library( FT_Library  library )
+   {
+     FT_Memory  memory;
+ 
+ 
+     if ( !library )

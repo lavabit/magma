@@ -1,0 +1,54 @@
+diff -Naur clamav.orig/libclamav/cache.c clamav/libclamav/cache.c
+--- clamav.orig/libclamav/cache.c	2010-08-13 21:34:25.799076715 -0500
++++ clamav/libclamav/cache.c	2010-08-13 21:34:47.916024107 -0500
+@@ -655,7 +655,7 @@
+ }
+ 
+ /* Adds an hash to the cache */
+-void cache_add(unsigned char *md5, size_t size, cli_ctx *ctx) {
++void cl_cache_add(unsigned char *md5, size_t size, cli_ctx *ctx) {
+     unsigned int key = getkey(md5);
+     uint32_t level;
+     struct CACHE *c;
+@@ -683,7 +683,7 @@
+ #endif
+ 
+     pthread_mutex_unlock(&c->mutex);
+-    cli_dbgmsg("cache_add: %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x (level %u)\n", md5[0], md5[1], md5[2], md5[3], md5[4], md5[5], md5[6], md5[7], md5[8], md5[9], md5[10], md5[11], md5[12], md5[13], md5[14], md5[15], level);
++    cli_dbgmsg("cl_cache_add: %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x (level %u)\n", md5[0], md5[1], md5[2], md5[3], md5[4], md5[5], md5[6], md5[7], md5[8], md5[9], md5[10], md5[11], md5[12], md5[13], md5[14], md5[15], level);
+     return;
+ }
+ 
+diff -Naur clamav.orig/libclamav/cache.h clamav/libclamav/cache.h
+--- clamav.orig/libclamav/cache.h	2010-08-13 21:34:25.790075240 -0500
++++ clamav/libclamav/cache.h	2010-08-13 21:34:47.882019519 -0500
+@@ -24,7 +24,7 @@
+ #include "clamav.h"
+ #include "others.h"
+ 
+-void cache_add(unsigned char *md5, size_t size, cli_ctx *ctx);
++void cl_cache_add(unsigned char *md5, size_t size, cli_ctx *ctx);
+ int cache_check(unsigned char *hash, cli_ctx *ctx);
+ int cli_cache_init(struct cl_engine *engine);
+ void cli_cache_destroy(struct cl_engine *engine);
+diff -Naur clamav.orig/libclamav/scanners.c clamav/libclamav/scanners.c
+--- clamav.orig/libclamav/scanners.c	2010-08-13 21:34:25.798076812 -0500
++++ clamav/libclamav/scanners.c	2010-08-13 21:34:47.913022257 -0500
+@@ -2025,7 +2025,7 @@
+ 	    cli_dbgmsg("%s found in descriptor %d\n", *ctx->virname, desc);
+ 	else if(ret == CL_CLEAN) {
+ 	    if(ctx->recursion != ctx->engine->maxreclevel)
+-		cache_add(hash, hashed_size, ctx); /* Only cache if limits are not reached */
++		cl_cache_add(hash, hashed_size, ctx); /* Only cache if limits are not reached */
+ 	    else 
+ 		emax_reached(ctx);
+ 	}
+@@ -2377,7 +2377,7 @@
+ 	case CL_EMAXFILES:
+ 	    cli_dbgmsg("Descriptor[%d]: %s\n", desc, cl_strerror(ret));
+ 	case CL_CLEAN:
+-	    cache_add(hash, hashed_size, ctx);
++	    cl_cache_add(hash, hashed_size, ctx);
+ 	    ret_from_magicscan(CL_CLEAN);
+ 	default:
+ 	    ret_from_magicscan(ret);

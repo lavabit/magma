@@ -1,0 +1,11 @@
+--- gd-2.0.34/Makefile.in.pom	2007-09-04 15:08:18.000000000 +0200
++++ gd-2.0.34/Makefile.in	2007-09-04 15:58:05.000000000 +0200
+@@ -227,7 +227,7 @@ AUTOMAKE = @AUTOMAKE@
+ AWK = @AWK@
+ CC = @CC@
+ CCDEPMODE = @CCDEPMODE@
+-CFLAGS = @CFLAGS@
++CFLAGS = @CFLAGS@ -D_DEFAULT_FONTPATH="/usr/share/X11/fonts/TTF/:/usr/share/fonts/bitstream-vera/:/usr/share/fonts/dejavu-lgc/:/usr/share/fonts/default/Type1/:/usr/share/X11/fonts/Type1:/usr/share/fonts/liberation/"
+ CPP = @CPP@
+ CPPFLAGS = @CPPFLAGS@
+ CXX = @CXX@

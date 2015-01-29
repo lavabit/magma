@@ -1,0 +1,49 @@
+diff -Npr /tmp/tmp.la2KjOmfu1E8cTj9tLi/tokyocabinet/tcutil.c tokyocabinet/tcutil.c
+--- /tmp/tmp.la2KjOmfu1E8cTj9tLi/tokyocabinet/tcutil.c	Sun Jun 27 13:44:14 2010 -0500
++++ tokyocabinet/tcutil.c	Mon Jul 05 03:14:44 2010 -0500
+@@ -2801,6 +2801,28 @@
+   return true;
+ }
+ 
++/* Remove a record of a tree object, but return the original key and value pointers to the user. */
++bool tctreegetboth(TCTREE *tree, const void *kbuf, int ksiz, void **rkbuf, int *rksiz, void **rvbuf, int *rvsiz){
++	assert(tree && kbuf && ksiz >= 0 && sp);
++	TCTREEREC *top = tctreesplay(tree, kbuf, ksiz);
++	if(!top) return NULL;
++	char *dbuf = (char *)top + sizeof(*top);
++	int cv = tree->cmp(kbuf, ksiz, dbuf, top->ksiz, tree->cmpop);
++	if(cv != 0){
++		tree->root = top;
++		return NULL;
++	}
++	tree->root = top;
++
++  if (rkbuf) *rkbuf = dbuf;
++  if (rksiz) *rksiz = top->ksiz;
++  if (rvbuf) *rvbuf = dbuf + top->ksiz + TCALIGNPAD(top->ksiz);
++  if (rvsiz) *rvsiz = top->vsiz;
++
++  return true;
++}
++
++
+ 
+ /* Remove a string record of a tree object. */
+ bool tctreeout2(TCTREE *tree, const char *kstr){
+@@ -4221,6 +4243,16 @@
+ }
+ 
+ 
++/* Remove a record of an on-memory tree database object. */
++bool tcndbgetboth(TCNDB *ndb, const void *kbuf, int ksiz, void **rkbuf, int *rksiz, void **rvbuf, int *rvsiz) {
++  assert(ndb && kbuf && ksiz >= 0);
++  if(pthread_mutex_lock((pthread_mutex_t *)ndb->mmtx) != 0) return false;
++  bool rv = tctreegetboth(ndb->tree, kbuf, ksiz, rkbuf, rksiz, rvbuf, rvsiz);
++  pthread_mutex_unlock((pthread_mutex_t *)ndb->mmtx);
++  return rv;
++}
++
++
+ /* Remove a string record of an on-memory tree database object. */
+ bool tcndbout2(TCNDB *ndb, const char *kstr){
+   assert(ndb && kstr);

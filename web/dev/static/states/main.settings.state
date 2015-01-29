@@ -1,0 +1,15 @@
+main
+    chrome
+        meta
+        logout
+    wrkspcswrp
+        wrkspcwrp
+            toolbar
+                tools
+                    settings
+            workspace
+                view
+                    settings
+                folder-menu
+                    scroll
+                        settings

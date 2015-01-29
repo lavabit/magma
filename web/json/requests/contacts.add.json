@@ -1,0 +1,11 @@
+{
+	"id":4,
+	"method":"contacts.add",
+	"params":{
+		"folderID":7,
+		"contact":{
+			"name":"Jenna", 
+			"email":"jenna@jameson.com"
+		}
+	}
+}

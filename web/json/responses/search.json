@@ -1,0 +1,33 @@
+[{
+    "result": [{
+        "messageID": 1024,
+        "flags": ["seen", "flagged"],
+        "from": "William Adama",
+        "to": "Apallo",
+        "addressedTo": "apallo@lavabit.com",
+        "replyTo": "bill@lavabit.com",
+        "returnPath": "bill@lavabit.com",
+        "subject": "Pegasus",
+        "utc": 1109749011,
+        "arrivalUtc": 1109749011,
+        "snippet": "Go the the gym softy",
+        "bytes": 487479772 
+    }, {
+        "messageID": 1023,
+        "attachment": true,
+        "from": "Douglas Crockford",
+        "to": "John Resig",
+        "addressedTo": "jresig@lavabit.com",
+        "replyTo": "dcrock@lavabit.com",
+        "returnPath": "dcrock@lavabit.com",
+        "carbon": "mozilla@lavabit.com",
+        "subject": "jQuery cruft",
+        "utc": 1266415038183,
+        "arrivalUtc": 1020030,
+        "snippet": "jQuery is too crufty. YUI is much leaner.",
+        "bytes": 895625721,
+        "tags": ["Javascript"]
+    }]
+}, {
+    "error": true
+}]

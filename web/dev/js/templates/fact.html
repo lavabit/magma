@@ -1,0 +1,7 @@
+{{if text.length > 1 }}
+<ul class="facts">
+    {{each text}}<li class="fact">${$value}</li>{{/each}}
+</ul>
+{{else}}
+<p class="facts">${text[0]}</p>
+{{/if}}

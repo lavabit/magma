@@ -1,0 +1,36 @@
+[{
+    "id": 20,
+    "method": "messages.tag",
+    "params": {
+    	"action": "add",
+    	"tags": ["javascript", "magma"],
+        "messageIDs": [100, 101, 102],
+    	"folderID": 1
+    }
+},{
+    "id": 20,
+    "method": "messages.tag",
+    "params": {
+        "action": "replace",
+    	"tags": [],
+        "messageIDs": [100, 101, 102],
+    	"folderID": 1
+    }
+},{
+    "id": 20,
+    "method": "messages.tag",
+    "params": {
+        "action": "remove",
+		"tags": ["almost", "done"],
+	    "messageIDs": [100, 101, 102],
+		"folderID": 1
+    }
+},{
+    "id": 20,
+    "method": "messages.tag",
+    "params": {
+        "action": "list",
+	    "messageIDs": [100, 101, 102],
+		"folderID": 1
+    }
+}]

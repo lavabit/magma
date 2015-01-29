@@ -1,0 +1,2 @@
+#define MAGMA_BUILD "5.2.a960882e"
+#define MAGMA_STAMP "20150115.1445"

@@ -1,0 +1,132 @@
+diff -r 19232e986f2f libclamav/clamav.h
+--- a/libclamav/clamav.h	Fri Mar 07 15:27:23 2014 -0600
++++ b/libclamav/clamav.h	Fri Mar 07 15:33:09 2014 -0600
+@@ -167,6 +167,7 @@ struct cl_settings;
+ 
+ #define CL_INIT_DEFAULT	0x0
+ extern int cl_init(unsigned int initoptions);
++extern void cl_shutdown(void);
+ 
+ extern struct cl_engine *cl_engine_new(void);
+ 
+diff -r 19232e986f2f libclamav/mbox.c
+--- a/libclamav/mbox.c	Fri Mar 07 15:27:23 2014 -0600
++++ b/libclamav/mbox.c	Fri Mar 07 15:33:09 2014 -0600
+@@ -2297,6 +2299,30 @@ initialiseTables(table_t **rfc821Table, 
+ }
+ 
+ /*
++ * Cleanup the various lookup tables
++ */
++void
++cli_mbox_shutdown(void)
++{
++
++#ifdef	CL_THREAD_SAFE
++	pthread_mutex_lock(&tables_mutex);
++#endif
++	if(rfc821) {
++		tableDestroy(rfc821);
++		rfc821 = NULL;
++	}
++	if(subtype) {
++		tableDestroy(subtype);
++		subtype = NULL;
++	}
++#ifdef	CL_THREAD_SAFE
++			pthread_mutex_unlock(&tables_mutex);
++#endif
++
++}
++
++/*
+  * If there's a HTML text version use that, otherwise
+  * use the first text part, otherwise just use the
+  * first one around. HTML text is most likely to include
+diff -r 19232e986f2f libclamav/mbox.h
+--- a/libclamav/mbox.h	Fri Mar 07 15:27:23 2014 -0600
++++ b/libclamav/mbox.h	Fri Mar 07 15:33:09 2014 -0600
+@@ -52,4 +52,6 @@ typedef enum {
+ size_t	strstrip(char *s);	/* remove trailing white space */
+ int	cli_mbox(const char *dir, cli_ctx *ctx);
+ 
++void cli_mbox_shutdown(void);
++
+ #endif /* __MBOX_H */
+diff -r 19232e986f2f libclamav/message.c
+--- a/libclamav/message.c	Fri Mar 07 15:27:23 2014 -0600
++++ b/libclamav/message.c	Fri Mar 07 15:33:09 2014 -0600
+@@ -148,6 +148,32 @@ static const unsigned char base64Table[2
+ 	255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
+ };
+ 
++static table_t *mime_table = NULL;
++
++#ifdef	CL_THREAD_SAFE
++	static pthread_mutex_t mime_mutex = PTHREAD_MUTEX_INITIALIZER;
++#endif
++
++/*
++ * Cleanup the various lookup tables
++ */
++void
++cli_mime_shutdown(void)
++{
++
++#ifdef	CL_THREAD_SAFE
++	pthread_mutex_lock(&mime_mutex);
++#endif
++	if(mime_table) {
++		tableDestroy(mime_table);
++		mime_table = NULL;
++	}
++#ifdef	CL_THREAD_SAFE
++			pthread_mutex_unlock(&mime_mutex);
++#endif
++
++}
++
+ message *
+ messageCreate(void)
+ {
+@@ -211,12 +237,8 @@ messageReset(message *m)
+ int
+ messageSetMimeType(message *mess, const char *type)
+ {
+-#ifdef	CL_THREAD_SAFE
+-	static pthread_mutex_t mime_mutex = PTHREAD_MUTEX_INITIALIZER;
+-#endif
+ 	const struct mime_map *m;
+ 	int typeval;
+-	static table_t *mime_table;
+ 
+ 	assert(mess != NULL);
+ 	if(type == NULL) {
+diff -r 19232e986f2f libclamav/message.h
+--- a/libclamav/message.h	Fri Mar 07 15:27:23 2014 -0600
++++ b/libclamav/message.h	Fri Mar 07 15:33:09 2014 -0600
+@@ -85,4 +85,6 @@ void	messageSetCTX(message *m, cli_ctx *
+ int	messageContainsVirus(const message *m);
+ int messageSavePartial(message *m, const char *dir, const char *id, unsigned part);
+ 
++void cli_mime_shutdown(void);
++
+ #endif	/*_MESSAGE_H*/
+diff -r 19232e986f2f libclamav/others.c
+--- a/libclamav/others.c	Fri Mar 07 15:27:23 2014 -0600
++++ b/libclamav/others.c	Fri Mar 07 15:33:09 2014 -0600
+@@ -303,6 +303,14 @@ int cl_init(unsigned int initoptions)
+     return CL_SUCCESS;
+ }
+ 
++void cl_shutdown(void) {
++	cli_mbox_shutdown();
++	cli_mime_shutdown();
++	if (lt_dlexit()) {
++		cli_errmsg("lt_dlexit: Library exit error, probably because of an invalid reference counter");
++	}
++}
++
+ struct cl_engine *cl_engine_new(void)
+ {
+ 	struct cl_engine *new;

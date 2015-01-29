@@ -1,0 +1,12 @@
+diff -U 3 -H -b -w -B -E -i -p -r -N -- clamav/unit_tests/check_common.sh clamav.lavabit/unit_tests/check_common.sh
+--- clamav/unit_tests/check_common.sh	2011-05-13 06:25:31.000000000 -0500
++++ clamav.lavabit/unit_tests/check_common.sh	2011-06-09 13:42:00.570566000 -0500
+@@ -47,8 +47,6 @@ die()
+ 
+ # Setup test directory to avoid temporary and output file clashes
+ test_start() {
+-    ulimit -t 120 || true; ulimit -d 1024000 || true;
+-    ulimit -v 1024000 || true;
+     (cd test-$1 2>/dev/null && killclamd || true)
+     rm -rf test-$1
+     mkdir test-$1

@@ -1,0 +1,11 @@
+<li id="folder-${folderID}" class="toggle{{if subfolders}} expandable{{/if}}{{if opened}} open{{/if}}">
+ {{if subfolders}}<a class="expander">Toggle</a>{{/if}}
+ <a class="folder" href="#folder">${name}</a>
+</li>
+{{if subfolders}}
+<li id="subfolders-${folderID}" class="collapsed">
+    <ul>
+        {{tmpl($item.data.subfolders) "foldersExpandable"}}
+    </ul>
+</li>
+{{/if}}

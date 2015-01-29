@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+	<head>
+		<title>Lavabit ..::.. Sign Up - Step Two</title>
+		<meta name="author" content="Ladar Levison" />
+		<meta name="keywords" lang="en" content="email free pop imap webmail spam secure private privacy" />
+		<meta name="description" lang="en" content="Lavabit is a premier POP3 e-mail provider with free and premium accounts. This page is step two of three in the Lavabit registration process. Use this page to select your Lavabit account plan." />
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="Pragma" content="no-cache" />
+		<meta http-equiv="Cache-Control" content="no-store" />
+		<link rel="stylesheet" type="text/css" href="/css/site.css" />
+		<script type="text/javascript" src="/js/site.js"></script>
+		<script type="text/javascript" src="/js/jquery.js"></script>
+		<script type="text/javascript" src="/js/jquery.corner.js"></script>
+		<!--script type="text/javascript" src="/js/register.js"></script-->
+	</head>
+	<body>
+		<div id="page">
+			<div id="header">
+				<h1>Lavabit</h1>
+				<div>
+					<ul id="nav_col_1">
+						<li class="skip"><a href="#index">Skip Primary Navigation</a></li>
+						<li><a id="nav_home" class="active" href="/index.html">Home</a></li>
+						<li><a id="nav_about" href="/about.html">About</a></li>
+						<li><a id="nav_features" href="/features.html">Features</a></li>
+						<li><a id="nav_services" href="/services.html">Services</a></li>
+					</ul>
+					<ul id="nav_col_2">
+						<li><a id="nav_philosophy" href="/philosophy.html">Philosophy</a></li>
+						<li><a id="nav_testimonials" href="/testimonials.html">Testimonials</a></li>
+						<li><a id="nav_network" href="/network.html">Network</a></li>
+						<li><a id="nav_help" href="/help.html">Help</a></li>
+					</ul>
+					<ul id="nav_col_3">
+						<li><a id="nav_contact" href="https://lavabit.com/contact">Contact Information</a></li>
+						<li><a id="nav_preferences" href="https://lavabit.com/apps/preferences">Preferences</a></li>
+						<li><a id="nav_webmail" href="https://lavabit.com/portal">Webmail</a></li>
+						<li><a id="nav_register" class="active" href="https://lavabit.com/register">Sign&nbsp;Up</a></li>
+					</ul>
+				</div>
+			</div>
+			<div id="reg_step2" class="content">$ERROR$
+				<p>Choose the plan that works best for you. If you&rsquo;re curious, just try one of our free plans. You can always upgrade later. If you need the features or the space, jump right into one of our value-priced plans.</p>
+				<p>All of our plans include access to our <acronym title="Post Office Protocol Version 3">POP3</acronym> servers for downloading your incoming e-mail and access to our <acronym title="Simple Mail Transfer Protocol">SMTP</acronym> servers for sending your outgoing messages. We&rsquo;re also developing <acronym title="Internet Message Access Protocol">IMAP</acronym> and webmail for launch early next year.</p>
+				<form id="step2" method="post" action="/register">
+					<div id="buttons">
+						<input id="session" name="session" type="hidden" value="$SESSION$" />
+						<button id="next2" name="next2" type="submit" accesskey="Enter" title="Use this button to submit the form and finish registering."><strong>Finish &gt;&gt;</strong></button>
+						<button id="prev2" name="prev2" type="submit" title="Use this button to go back to step one."><strong>&lt;&lt; Back</strong></button>
+					</div>
+				</form>
+			</div>
+			<div id="footer">
+				<ul>
+					<li class="skip"><a href="#copyright">Skip Footer Navigation</a></li>
+					<li><a href="/terms_of_use.html">Terms of Use</a></li>
+					<li><a href="https://lavabit.com/report_abuse.html">Report Abuse</a></li>
+					<li id="last"><a href="/site_map.html">Site Map</a></li>
+					<li><a href="/credits.html">Credits</a></li>
+				</ul>
+				<p id="copyright">&copy; 2011 Lavabit LLC. All rights reserved.</p>
+				<p id="badges"><a href="xhtml_valid.html"><img src="/images/xhtml_strict_grey.gif" onmouseover="ChangeImage(this, '/images/xhtml_strict_red.gif')" onmouseout="ChangeImage(this, '/images/xhtml_strict_grey.gif')" alt="XHTML Strict" /></a> <a href="/css_valid.html"><img src="/images/css_valid_grey.gif" onmouseover="ChangeImage(this, '/images/css_valid_red.gif')" onmouseout="ChangeImage(this, '/images/css_valid_grey.gif')" alt="CSS Valid" /></a> <a href="/wai_aaa.html"><img src="/images/wai_aaa_grey.gif" onmouseover="ChangeImage(this, '/images/wai_aaa_red.gif')" onmouseout="ChangeImage(this, '/images/wai_aaa_grey.gif')" alt="WAI AAA Conformance" /></a></p>
+			</div>
+		</div>
+	</body>
+</html>

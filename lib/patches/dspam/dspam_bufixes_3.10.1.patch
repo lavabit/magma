@@ -1,0 +1,36 @@
+diff -r e69d31321583 sources/dspam/src/decode.c
+--- a/sources/dspam/src/decode.c	Thu Sep 01 06:34:36 2011 -0500
++++ b/sources/dspam/src/decode.c	Thu Sep 01 14:17:30 2011 -0500
+@@ -445,6 +445,8 @@ _ds_decode_headers (ds_message_part_t bl
+         ptr = strtok_r (NULL, "?", &ptrptr);
+         dptr = strtok_r (NULL, "?", &ptrptr);
+         if (!dptr) {
++          if (was_null && header->original_data != NULL)
++          	free(header->original_data);
+           if (was_null)
+             header->original_data = NULL;
+           continue;
+@@ -491,6 +493,10 @@ _ds_decode_headers (ds_message_part_t bl
+           free(header->concatenated_data);
+           header->concatenated_data = decoded;
+         }
++        else if (was_null && header->original_data) {
++        	free(header->original_data);
++          header->original_data = NULL;
++        }
+         else if (was_null) {
+           header->original_data = NULL;
+         }
+diff -r e69d31321583 sources/dspam/src/nodetree.c
+--- a/sources/dspam/src/nodetree.c	Thu Sep 01 06:34:36 2011 -0500
++++ b/sources/dspam/src/nodetree.c	Thu Sep 01 14:17:30 2011 -0500
+@@ -106,7 +106,8 @@ nt_add (struct nt *nt, void *data)
+   if (nt->nodetype == NT_CHAR)
+   {
+     long size = strlen ((char *) data) + 1;
+-    vptr = malloc (size);
++    /* vptr is compared with  'From' and 'X-DSPAM-'even if data is shorter; but a larger buffer is allocated to prevent a comparison against garbage */
++    vptr = malloc (size < 16 ? 16 : size);
+     if (vptr == NULL)
+     {
+       LOG (LOG_CRIT, ERR_MEM_ALLOC);

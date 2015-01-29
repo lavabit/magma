@@ -1,0 +1,120 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lavabit ..::.. Webmail</title>
+    <link rel="stylesheet" href="/css/jquery-ui-smoothness.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <script src="/js/jquery.js"></script>
+    <script src="/js/plugins.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body>
+    <div id="main-wrapper">
+        <div id="chrome">
+            <h1 class="logo">Lavabit Webmail</h1>
+            <div id="account">
+                <h2 class="sr-hidden">Account</h2>
+                <a class="sr-hidden" href="#sr-global-nav">Skip to global navigation</a>
+                <!-- paragraph({text: "magma@lavabit.com"}) insertBefore:'#account-info ul' -->
+                <ul>
+                    <li><a class="meta" href="#info">Information</a></li>
+                    <li><a class="sign-out" href="#signout">Sign Out</a></li>
+                </ul>
+            </div>
+            <div id="global-nav">
+                <h2 class="sr-hidden" id="sr-global-nav">Global Navigation</h2>
+                <ul>
+                    <li><a class="mail" href="#mail">Mail</a></li>
+                    <li><a class="contacts" href="#contacts">Contacts</a></li>
+                    <li><a class="options" href="#options">Options</a></li>
+                    <li><a class="help" href="#help">Help</a></li>
+                </ul>
+            </div>
+        </div>
+        <div id="tabs">
+            <h2 class="sr-hidden" id="sr-tabs">Tabs</h2>
+            <li class="tab permatab active">
+                <h3>Inbox</h3>
+                <a class="sr-hidden" href="#sr-permatab">Skip to this tab's content</a>
+            </li>
+        </div>
+        <div id="workspaces-wrapper">
+            <div class="workspace-wrapper active">
+                <div class="toolbar">
+                    <h3 class="sr-hidden">Toolbar</h3>
+                    <div class="tools">
+                        <h4 class="sr-hidden" id="sr-tools">Tools</h4>
+                        <!-- skiplink -->
+                        <div class="span">
+                            <ul class="left">
+                                <li><a class="cancel" href="#cancel">Cancel</a></li>
+                            </ul>
+                            <ul class="right">
+                                <li>
+                                    <input id="cc" class="toggle" type="checkbox" />
+                                    <label for="cc">CC</label>
+                                </li>
+                                <li>
+                                    <input id="bcc" class="toggle" type="checkbox" />
+                                    <label for="bcc">BCC</label>
+                                </li>
+                                <li>
+                                    <input id="attach" class="toggle" type="checkbox" />
+                                    <label for="attach">Attach</label>
+                                </li>
+                                <li><a class="save" href="#save">Save</a></li>
+                                <li><a class="send" href="#send">Send</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="workspace">
+                    <div class="composing-wrapper">
+                        <form name="composing" method="POST" action="#send">
+                            <div class="composing-header">
+                                <div class="field-wrapper">
+                                    <div class="input-wrapper">
+                                        <div class="input">
+                                            <select id="from" name="from">
+                                                <!-- options aliases() appendTo:'#from' -->
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="label-wrapper">
+                                        <label for="from">From:</label>
+                                    </div>
+                                </div>
+                                <div class="field-wrapper">
+                                    <div class="input-wrapper">
+                                        <div class="input text">
+                                            <input type="text" id="to" name="to" />
+                                        </div>
+                                    </div>
+                                    <div class="label-wrapper">
+                                        <label for="to">To:</label>
+                                    </div>
+                                </div>
+                                <div class="field-wrapper">
+                                    <div class="input-wrapper">
+                                        <div class="input text">
+                                            <input type="text" id="subject" name="subject" />
+                                        </div>
+                                    </div>
+                                    <div class="label-wrapper">
+                                        <label for="subject">Subject:</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="composing-body">
+                                <label class="sr-hidden watermark" for="body">Type your message here...</label>
+                                <textarea id="body" name="body"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

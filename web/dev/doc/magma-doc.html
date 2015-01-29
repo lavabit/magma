@@ -1,0 +1,2800 @@
+<html>
+<head>
+<title>Magma Doc</title>
+<style>
+body {
+    width: 1024px;
+    margin: 20px auto;
+}
+h1, h2, h3 { margin-bottom: 0; }
+p, ul, ol { margin: 0 0 10px; }
+ul ul { margin: 3px 0; }
+dt {
+    margin-right: 5px;
+    float: left;
+    clear: both;
+}
+dt:after {
+    content: ':';
+}
+dd {
+    margin-bottom: 5px;
+}
+textarea {
+    width: 100%;
+}
+#tester div {
+    margin-bottom: 10px;
+}
+.above {
+    display: block;
+}
+.method {
+    margin-top: 30px;
+    padding: 10px;
+    border: 1px solid black;
+    background-color: #EEE;
+    overflow-x: auto;
+}
+.method h2 {
+    margin-top: 0;
+}
+
+@media print {
+    a, #contents { display: none; }
+    .method {
+        margin: 0;
+        padding: 0;
+        border: none;
+        background-color: white;
+    }
+    .method h2 {
+        margin-top: 20px;
+    }
+}
+</style>
+<body>
+<h1>Magma JSON Interface</h1>
+<p>Description: This document summarizes the JSON interface for the Magma email platform.</p>
+
+<p>Version: <em>0.6.5</em></p>
+
+<p>Last Updated: Mon, 20 Jun 2011 17:24:41 -0500</p>
+
+<p>Assumptions:</p>
+
+<ul>
+<li>User is identified with cookie a or optional sessionID in all requests.</li>
+<li>Responses for tables send all fields.</li>
+<li>No assumption is made about the order of items in a response unless specified otherwise.</li>
+</ul>
+
+<p>Document MO:</p>
+
+<ul>
+<li>Some parameters with a designated set of options are listed as an ordered list.</li>
+<li>Optional parameters are indicated by surrounding param with square brackets.
+<ul>
+<li>e.g. ["type"]</li>
+</ul></li>
+<li>All parameters are required unless specified as optional.</li>
+<li>The default request value <em>(def)</em> is assumed by server if that parameter is not provided in the request.</li>
+<li>Mulptiple example requests map to response successes unless specified otherwise.</li>
+<li>Methods with no request params simply leave out the parameter summary and example requests.</li>
+</ul>
+<h2>Method Tester</h2>
+<form id="tester" method="POST" action="http://192.168.1.137:10000/portal/camel">
+    <div>
+        <label for="proxy">Simple proxy?</label>
+        <input id="proxy" type="checkbox" />
+        <label for="auto-submit">Auto test?</label>
+        <input id="auto-submit" type="checkbox" />
+    </div>
+    <div>
+        <label for="method">Choose a method:</label>
+        <select id="method" name="method">
+            <option value="ad">ad</option><option value="alert.acknowledge">alert.acknowledge</option><option value="alert.list">alert.list</option><option value="aliases">aliases</option><option value="attachments.add">attachments.add</option><option value="attachments.progress">attachments.progress</option><option value="attachments.remove">attachments.remove</option><option value="auth">auth</option><option value="contacts.add">contacts.add</option><option value="contacts.edit">contacts.edit</option><option value="contacts.list">contacts.list</option><option value="contacts.load">contacts.load</option><option value="contacts.remove">contacts.remove</option><option value="display-options">display-options</option><option value="folders.add">folders.add</option><option value="folders.list">folders.list</option><option value="folders.remove">folders.remove</option><option value="folders.rename">folders.rename</option><option value="help.page">help.page</option><option value="help.topics">help.topics</option><option value="logs.mail">logs.mail</option><option value="logs.security">logs.security</option><option value="logs.statistics">logs.statistics</option><option value="messages.compose">messages.compose</option><option value="messages.copy">messages.copy</option><option value="messages.flag">messages.flag</option><option value="messages.list">messages.list</option><option value="messages.load">messages.load</option><option value="messages.move">messages.move</option><option value="messages.remove">messages.remove</option><option value="messages.send">messages.send</option><option value="messages.tag">messages.tag</option><option value="messages.tags">messages.tags</option><option value="meta">meta</option><option value="scrape.add">scrape.add</option><option value="scrape">scrape</option><option value="search">search</option><option value="settings.identity">settings.identity</option>
+        </select>
+        <input id="test" type="submit" value="Test" />
+    </div>
+    <div>
+        <label class="above" for="request">Request:</label>
+        <textarea id="request" name="request" rows="20"></textarea>
+    </div>
+    <div>
+        <label class="above" for="response">Response:</label>
+        <textarea id="response" name="response" readonly="readonly" rows="20"></textarea>
+    </div>
+    <dl id="stats">
+        <dt>Response time</dt>
+        <dd>none</dd>
+        <dt>Response size</dt>
+        <dd>none</dd>
+    </dl>
+</form>
+<div id="contents"><h2>Table of Contents</h2><ul><li><a href="#ad">ad</a></li><li><a href="#alert.acknowledge">alert.acknowledge</a></li><li><a href="#alert.list">alert.list</a></li><li><a href="#aliases">aliases</a></li><li><a href="#attachments.add">attachments.add</a></li><li><a href="#attachments.progress">attachments.progress</a></li><li><a href="#attachments.remove">attachments.remove</a></li><li><a href="#auth">auth</a></li><li><a href="#contacts.add">contacts.add</a></li><li><a href="#contacts.edit">contacts.edit</a></li><li><a href="#contacts.list">contacts.list</a></li><li><a href="#contacts.load">contacts.load</a></li><li><a href="#contacts.remove">contacts.remove</a></li><li><a href="#display-options">display-options</a></li><li><a href="#folders.add">folders.add</a></li><li><a href="#folders.list">folders.list</a></li><li><a href="#folders.remove">folders.remove</a></li><li><a href="#folders.rename">folders.rename</a></li><li><a href="#help.page">help.page</a></li><li><a href="#help.topics">help.topics</a></li><li><a href="#logs.mail">logs.mail</a></li><li><a href="#logs.security">logs.security</a></li><li><a href="#logs.statistics">logs.statistics</a></li><li><a href="#messages.compose">messages.compose</a></li><li><a href="#messages.copy">messages.copy</a></li><li><a href="#messages.flag">messages.flag</a></li><li><a href="#messages.list">messages.list</a></li><li><a href="#messages.load">messages.load</a></li><li><a href="#messages.move">messages.move</a></li><li><a href="#messages.remove">messages.remove</a></li><li><a href="#messages.send">messages.send</a></li><li><a href="#messages.tag">messages.tag</a></li><li><a href="#messages.tags">messages.tags</a></li><li><a href="#meta">meta</a></li><li><a href="#scrape.add">scrape.add</a></li><li><a href="#scrape">scrape</a></li><li><a href="#search">search</a></li><li><a href="#settings.identity">settings.identity</a></li></ul></div><div class="method"><h2 id="ad">Method: ad</h2><a href="#contents">back to contents</a><p>Gets advertisement and fun facts for loading screen and ad banner for messages.</p>
+
+<h3>Request Params</h3>
+
+<p>["context"] - <em>where the ad will be displayed</em></p>
+
+<ol>
+<li>"loading"</li>
+<li>"messages" <em>(def)</em></li>
+</ol>
+
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 1,
+    &quot;method&quot;: &quot;ad&quot;,
+    &quot;params&quot;: {
+        &quot;context&quot;: &quot;loading&quot;
+    }
+}
+</pre>
+<h3>Response Params</h3>
+
+<p>"ad"</p>
+
+<ul>
+<li>"href" - <em>href of advertisement</em>
+<ul>
+<li>string</li>
+</ul></li>
+<li>["title"] - <em>link title</em>
+<ul>
+<li>string</li>
+</ul></li>
+<li><p>["img"] - <em>if image ad</em></p>
+
+<ul>
+<li>"src"
+<ul>
+<li>string</li>
+</ul></li>
+<li>"alt"
+<ul>
+<li>string</li>
+</ul></li>
+</ul></li>
+<li><p>["text"] - <em>if text ad</em></p>
+
+<ul>
+<li>string</li>
+</ul></li>
+</ul>
+
+<p>["fact"]</p>
+
+<ul>
+<li>"img"
+<ul>
+<li>"src"
+<ul>
+<li>string</li>
+</ul></li>
+<li>"alt"
+<ul>
+<li>string</li>
+</ul></li>
+</ul></li>
+<li>"text"
+<ul>
+<li>array of strings</li>
+</ul></li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: {
+        &quot;ad&quot;: {
+            &quot;href&quot;: &quot;/advertisement.html&quot;,
+            &quot;title&quot;: &quot;Loading Ad&quot;,
+            &quot;img&quot;: {
+                &quot;src&quot;: &quot;http://placehold.it/300x250&quot;,
+                &quot;alt&quot;: &quot;Loading Ad&quot;
+            }
+        },
+        &quot;fact&quot;: {
+            &quot;img&quot;: {
+                &quot;src&quot;: &quot;http://placehold.it/300x50&quot;,
+                &quot;alt&quot;: &quot;Fun picture&quot;
+            },
+            &quot;text&quot;: [
+                &quot;Most elephants weigh less than the tongue of a blue whale.&quot;,
+                &quot;A kangaroo can only jump if its tail is touching the ground.&quot;,
+                &quot;In a study of 200,000 ostriches over a period of 80 years, no one reported a single case where an ostrich buried its head in the sand, or attempted to do so.&quot;
+            ]
+        }
+    }
+}, {
+    &quot;result&quot;: {
+        &quot;ad&quot;: {
+            &quot;href&quot;: &quot;/advertisement.html&quot;,
+            &quot;title&quot;: &quot;Wide Advertisement&quot;,
+            &quot;img&quot;: {
+                &quot;src&quot;: &quot;http://placehold.it/728x90&quot;,
+                &quot;alt&quot;: &quot;Wide Advertisement&quot;
+            }
+        }
+    }
+}, {
+    &quot;result&quot;: {
+        &quot;ad&quot;: {
+            &quot;href&quot;: &quot;/text-ad.html&quot;,
+            &quot;title&quot;: &quot;Text Ad&quot;,
+            &quot;text&quot;: &quot;This is a text ad&quot;
+        }
+    }
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="alert.acknowledge">Method: alert.acknowledge</h2><a href="#contents">back to contents</a><p>Javascript will pull server for alerts at an interval.</p>
+
+<h3>Request Params</h3>
+
+<p>If alertIDs are included in request it is an awk.</p>
+
+<p>["alertIDs"] - <em>ack alerts</em></p>
+
+<ul>
+<li>array of ints</li>
+</ul>
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 2,
+    &quot;method&quot;: &quot;alert.acknowledge&quot;,
+    &quot;params&quot;: {
+        &quot;alertID&quot;: [1,2]
+    }
+}
+</pre>
+<h3>Example Response</h3><pre>{
+    &quot;jsonrpc&quot;: &quot;2.0&quot;,
+    &quot;result&quot;: {
+        &quot;alert.acknowledge&quot;: &quot;success&quot;
+    },
+    &quot;id&quot;: 3
+}
+</pre></div><div class="method"><h2 id="alert.list">Method: alert.list</h2><a href="#contents">back to contents</a><p>Javascript will pull server for alerts at an interval.</p>
+
+<h3>Response Params</h3>
+
+<p>"alertID" - <em>allows for ack</em></p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>"type"</p>
+
+<ol>
+<li>"alert" - <em>(def)</em></li>
+<li>"warning"</li>
+</ol>
+
+<p>"message"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"utc"</p>
+
+<ul>
+<li>unix time</li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: [{
+        &quot;alertID&quot;: 1,
+        &quot;type&quot;: &quot;alert&quot;,
+        &quot;message&quot;: &quot;It's a trap!&quot;,
+        &quot;date&quot;: &quot;1029381092830&quot;
+    }, {
+        &quot;alertID&quot;: 2,
+        &quot;type&quot;: &quot;warning&quot;,
+        &quot;message&quot;: &quot;Your subscription will expire soon.&quot;,
+        &quot;date&quot;: &quot;12093810293801&quot;
+    }]
+}, {
+    &quot;result&quot;: true
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="aliases">Method: aliases</h2><a href="#contents">back to contents</a><p>Fills in composing from field dropdown.</p>
+
+<h3>Response Params</h3>
+
+<p>"email"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"name"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>["def"] - <em>indicates which to display by default (default keyword reserved by javascript)</em></p>
+
+<ul>
+<li>bool</li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: [{
+        &quot;email&quot;: &quot;peter@lavabit.com&quot;,
+        &quot;name&quot;: &quot;Peter&quot;
+    }, {
+        &quot;email&quot;: &quot;work@lavabit.com&quot;,
+        &quot;name&quot;: &quot;Work&quot;,
+        &quot;def&quot;: true
+    }, {
+        &quot;email&quot;: &quot;peter@pan.com&quot;,
+        &quot;name&quot;: &quot;Website&quot;
+    }, {
+        &quot;email&quot;: &quot;email@example.com&quot;,
+        &quot;name&quot;: &quot;Test Email&quot;
+    }]
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="attachments.add">Method: attachments.add</h2><a href="#contents">back to contents</a><p>Sent when the user chooses a file to attach.</p>
+
+<h3>Request Params</h3>
+
+<p>"composeID" - <em>provided by server when user starts composing a message</em></p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>"filename"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 5,
+    &quot;method&quot;: &quot;attachments.add&quot;,
+    &quot;params&quot;: {
+        &quot;composeID&quot;: 45,
+        &quot;filename&quot;: &quot;script.js&quot;
+    }
+}
+</pre>
+<h3>Response Params</h3>
+
+<p>"attachmentID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: {
+        &quot;attachmentID&quot;: 34
+    }
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="attachments.progress">Method: attachments.progress</h2><a href="#contents">back to contents</a><p>Pulls server for progress of file upload.</p>
+
+<h3>Request Params</h3>
+
+<p>"attachmentID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 6,
+    &quot;method&quot;: &quot;attachments.progress&quot;,
+    &quot;params&quot;: {
+        &quot;attachmentID&quot;: 34
+    }
+}
+</pre>
+<h3>Response Params</h3>
+
+<p>"progress" - <em>0 to 100 indicating percent complete</em></p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>["size"] - <em>in bytes</em></p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>["rate"]</p>
+
+<ul>
+<li>string</li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: {
+        &quot;progress&quot;: 54
+    }
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="attachments.remove">Method: attachments.remove</h2><a href="#contents">back to contents</a><p>Removes an attachment from a message.</p>
+
+<h3>Request Params</h3>
+
+<p>"attachmentID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 7,
+    &quot;method&quot;: &quot;attachments.remove&quot;,
+    &quot;params&quot;: {
+        &quot;attachmentID&quot;: 34
+    }
+}
+</pre>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: true
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="auth">Method: auth</h2><a href="#contents">back to contents</a><p>Sent when user submits login form. In this case, the example requests correspond to the errors respectively.</p>
+
+<h3>Request Params</h3>
+
+<p>"username"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"password"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 8,
+    &quot;method&quot;: &quot;auth&quot;,
+    &quot;params&quot;: {
+        &quot;username&quot;: &quot;magma&quot;,
+        &quot;password&quot;: &quot;test&quot;
+    }
+}
+</pre>
+<h3>Response Params</h3>
+
+<p>"auth"
+- string
+ 1. "success"
+ 1. "failed"
+ 1. "locked"</p>
+
+<p><a href="">"session"</a> - <em>sessionID sent when successfully authenticated</em></p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p><a href="">"message"</a> - <em>error message</em></p>
+
+<ul>
+<li>string</li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: {
+        &quot;auth&quot;: &quot;success&quot;,
+        &quot;session&quot;: &quot;&quot;
+    }
+}, {
+    &quot;result&quot;: {
+        &quot;auth&quot;: &quot;failed&quot;,
+        &quot;message&quot;: &quot;The username and password provided are incorrect, please try again.&quot;
+    }
+}, {
+    &quot;result&quot;: {
+        &quot;auth&quot;: &quot;locked&quot;,
+        &quot;message&quot;: &quot;Your account is locked due to abuse.&quot;
+    }
+}]
+</pre></div><div class="method"><h2 id="contacts.add">Method: contacts.add</h2><a href="#contents">back to contents</a><p>Gets a contactID from server for subsequent communication.</p>
+
+<h3>Response Params</h3>
+
+<p>"contactID" - <em>key from server</em></p>
+
+<ul>
+<li>integer</li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: {
+        &quot;contactID&quot;: 88
+    }
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="contacts.edit">Method: contacts.edit</h2><a href="#contents">back to contents</a><p>Change a contact's info. This method has several parameters that are optional since it only sends the updated fields. The response sends back all the fields that are set on the server.</p>
+
+<h3>Request Params</h3>
+
+<p>"contactID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>["name"] - <em>full name of contact</em></p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>["email"]</p>
+
+<ul>
+<li>["primary"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["alternate-1"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["alternate-2"]
+<ul>
+<li>string</li>
+</ul></li>
+</ul>
+
+<p>["chat"] - <em>IM/XMPP/IRC handles</em></p>
+
+<ul>
+<li>["yahoo"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["live"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["aim"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["google"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["icq"]
+<ul>
+<li>string</li>
+</ul></li>
+</ul>
+
+<p>["phone"]</p>
+
+<ul>
+<li>["home"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["work"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["mobile"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["pager"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["fax"]
+<ul>
+<li>string</li>
+</ul></li>
+</ul>
+
+<p>["address"]</p>
+
+<ul>
+<li>["home"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["work"]
+<ul>
+<li>string</li>
+</ul></li>
+</ul>
+
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 8,
+    &quot;method&quot;: &quot;contacts.edit&quot;,
+    &quot;params&quot;: {}
+}
+</pre>
+<h3>Response Params</h3>
+
+<p>"contactID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>["name"] - <em>full name of contact</em></p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>["email"]</p>
+
+<ul>
+<li>["primary"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["alternate-1"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["alternate-2"]
+<ul>
+<li>string</li>
+</ul></li>
+</ul>
+
+<p>["chat"] - <em>IM/XMPP/IRC handles</em></p>
+
+<ul>
+<li>["yahoo"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["live"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["aim"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["google"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["icq"]
+<ul>
+<li>string</li>
+</ul></li>
+</ul>
+
+<p>["phone"]</p>
+
+<ul>
+<li>["home"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["work"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["mobile"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["pager"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["fax"]
+<ul>
+<li>string</li>
+</ul></li>
+</ul>
+
+<p>["address"]</p>
+
+<ul>
+<li>["home"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["work"]
+<ul>
+<li>string</li>
+</ul></li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: {
+        &quot;name&quot;: &quot;Peter Pan&quot;,
+        &quot;email&quot;: {
+            &quot;primary&quot;: &quot;peter@lavabit.com&quot;,
+            &quot;alternate-1&quot;: &quot;peter@pan.com&quot;
+        },
+        &quot;chat&quot;: {
+            &quot;yahoo&quot;: &quot;pp@yahoo.com&quot;,
+            &quot;live&quot;: &quot;pp@hotmail.com&quot;,
+            &quot;aim&quot;: &quot;peanutbutter&quot;,
+            &quot;google&quot;: &quot;pp@gmail.com&quot;
+        },
+        &quot;phone&quot;: {
+            &quot;home&quot;: &quot;123-456-7890&quot;,
+            &quot;work&quot;: &quot;123-456-7890&quot;,
+            &quot;mobile&quot;: &quot;123-456-7890&quot;,
+            &quot;address&quot;: [&quot;1234 Lost Way&quot;, &quot;Neverland Isl&quot;]
+        }
+    }
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="contacts.list">Method: contacts.list</h2><a href="#contents">back to contents</a><p>Summarize contact info in a table.</p>
+
+<h3>Request Params</h3>
+
+<p>"folderID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 9,
+    &quot;method&quot;: &quot;contacts.list&quot;,
+    &quot;params&quot;: {
+        &quot;folderID&quot;: 3
+    }
+}
+</pre>
+<h3>Response Params</h3>
+
+<p>"contactID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>"name" - <em>contact's full name</em></p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"email"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>["company"]</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>["img"] - <em>avatar</em></p>
+
+<ul>
+<li>"src"
+<ul>
+<li>href</li>
+</ul></li>
+<li>"alt"
+<ul>
+<li>string</li>
+</ul></li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: [{
+        &quot;contactID&quot;: 45,
+        &quot;name&quot;: &quot;John Resig&quot;,
+        &quot;email&quot;: &quot;jr@mozilla.org&quot;,
+        &quot;company&quot;: &quot;Mozilla&quot;,
+        &quot;img&quot;: {
+            &quot;src&quot;: &quot;http://www.gravatar.com/avatar/00000000000000000000000000000000?s=32&amp;d=mm&amp;f=y&quot;,
+            &quot;alt&quot;: &quot;Avatar&quot;
+        }
+    }, {
+        &quot;contactID&quot;: 48,
+        &quot;name&quot;: &quot;Linus Torvalds&quot;,
+        &quot;email&quot;: &quot;lt@kernel.org&quot;,
+        &quot;company&quot;: &quot;Linux&quot;
+    }, {
+        &quot;contactID&quot;: 53,
+        &quot;name&quot;: &quot;Douglas Crockford&quot;,
+        &quot;email&quot;: &quot;dc@yahoo.com&quot;,
+        &quot;company&quot;: &quot;Yahoo&quot;,
+        &quot;img&quot;: {
+            &quot;src&quot;: &quot;http://www.gravatar.com/avatar/00000000000000000000000000000000?s=32&amp;d=mm&amp;f=y&quot;,
+            &quot;alt&quot;: &quot;Avatar&quot;
+        }
+    }, {
+        &quot;contactID&quot;: 58,
+        &quot;name&quot;: &quot;Paul Graham&quot;,
+        &quot;email&quot;: &quot;pg@ycombinator.com&quot;,
+        &quot;company&quot;: &quot;Y Combinator&quot;,
+        &quot;img&quot;: {
+            &quot;src&quot;: &quot;http://www.gravatar.com/avatar/00000000000000000000000000000000?s=32&amp;d=mm&amp;f=y&quot;,
+            &quot;alt&quot;: &quot;Avatar&quot;
+        }
+    }, {
+        &quot;contactID&quot;: 64,
+        &quot;name&quot;: &quot;John Paul&quot;,
+        &quot;email&quot;: &quot;jp@morgan.com&quot;
+    }]
+}, {
+    &quot;result&quot;: [{
+        &quot;contactID&quot;: 45,
+        &quot;name&quot;: &quot;John Resig&quot;,
+        &quot;email&quot;: &quot;jr@mozilla.org&quot;,
+        &quot;company&quot;: &quot;Mozilla&quot;,
+    }, {
+        &quot;contactID&quot;: 48,
+        &quot;name&quot;: &quot;Linus Torvalds&quot;,
+        &quot;email&quot;: &quot;lt@kernel.org&quot;,
+        &quot;company&quot;: &quot;Linux&quot;
+    }, {
+        &quot;contactID&quot;: 53,
+        &quot;name&quot;: &quot;Douglas Crockford&quot;,
+        &quot;email&quot;: &quot;dc@yahoo.com&quot;,
+        &quot;company&quot;: &quot;Yahoo&quot;,
+    }, {
+        &quot;contactID&quot;: 58,
+        &quot;name&quot;: &quot;Paul Graham&quot;,
+        &quot;email&quot;: &quot;pg@ycombinator.com&quot;,
+        &quot;company&quot;: &quot;Y Combinator&quot;,
+    }, {
+        &quot;contactID&quot;: 64,
+        &quot;name&quot;: &quot;John Paul&quot;,
+        &quot;email&quot;: &quot;jp@morgan.com&quot;
+    }]
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="contacts.load">Method: contacts.load</h2><a href="#contents">back to contents</a><p>Load the contact info for a particular contact.</p>
+
+<h3>Request Params</h3>
+
+<p>"contactID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 10,
+    &quot;method&quot;: &quot;contacts.load&quot;,
+    &quot;params&quot;: {
+        &quot;contactID&quot;: 88
+    }
+}
+</pre>
+<h3>Response Params</h3>
+
+<p>"name"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"email"</p>
+
+<ul>
+<li>"primary"
+<ul>
+<li>string</li>
+</ul></li>
+<li>["alternate1"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["alternate2"]
+<ul>
+<li>string</li>
+</ul></li>
+</ul>
+
+<p>["chat"]</p>
+
+<ul>
+<li>["yahoo"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["live"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["aim"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["google"]
+<ul>
+<li>string</li>
+</ul></li>
+</ul>
+
+<p>["contact"]</p>
+
+<ul>
+<li>["home"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["work"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["mobile"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["address"] - <em>include <br /> for new lines</em>
+<ul>
+<li>strings</li>
+</ul></li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: {
+        &quot;name&quot;: &quot;Douglas Crockford&quot;,
+        &quot;email&quot;: {
+            &quot;primary&quot;: &quot;dougcrock@lavabit.com&quot;,
+            &quot;alternate1&quot;: &quot;dc@crockford.com&quot;
+        },
+        &quot;chat&quot;: {
+            &quot;yahoo&quot;: &quot;crockford@yahoo.com&quot;,
+            &quot;aim&quot;: &quot;thejsguy&quot;,
+            &quot;google&quot;: &quot;crockford@gmail.com&quot;
+        },
+        &quot;contact&quot;: {
+            &quot;home&quot;: &quot;123-456-7890&quot;,
+            &quot;work&quot;: &quot;123-456-7890&quot;,
+            &quot;mobile&quot;: &quot;123-456-7890&quot;,
+            &quot;address&quot;: &quot;1234 Yahoo&lt;br \/&gt;Sunnyvale, CA 12345 &quot;
+        }
+    }
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="contacts.remove">Method: contacts.remove</h2><a href="#contents">back to contents</a><p>Removes the specified contact.</p>
+
+<h3>Request Params</h3>
+
+<p>"contactID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 12,
+    &quot;method&quot;: &quot;contacts.remove&quot;,
+    &quot;params&quot;: {
+        &quot;contactID&quot;: 88
+    }
+}
+</pre>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: true
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="display-options">Method: display-options</h2><a href="#contents">back to contents</a><p>Not implemented yet</p>
+<h3>Example Response</h3><pre>{
+    &quot;result&quot;: {
+        &quot;reading-pane&quot;: 2,
+        &quot;fields&quot;: [&quot;from&quot;, &quot;to&quot;, &quot;subject&quot;, &quot;date&quot;, &quot;size&quot;],
+        &quot;sort&quot;: {
+            &quot;field&quot;: &quot;from&quot;,
+            &quot;order&quot;: 1
+        }
+    },
+    &quot;error&quot;: true
+}
+</pre></div><div class="method"><h2 id="folders.add">Method: folders.add</h2><a href="#contents">back to contents</a><p>Adds a folder with given name and returns folderID.</p>
+
+<h3>Request Params</h3>
+
+<p>["parentID"] - <em>given if added folder is a child</em></p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>"name" - <em>name of the new folder</em></p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 13,
+    &quot;method&quot;: &quot;folders.add&quot;,
+    &quot;params&quot;: {
+        &quot;parentID&quot;: 9,
+        &quot;name&quot;: &quot;Bitbucket&quot;
+    }
+}
+</pre>
+<h3>Response Params</h3>
+
+<p>"folderID" - <em>global folderID assigned by server</em></p>
+
+<ul>
+<li>integer</li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: {
+        &quot;folderID&quot;: 41
+    }
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="folders.list">Method: folders.list</h2><a href="#contents">back to contents</a><p>Lists the folders to be displayed in view menu.</p>
+
+<h3>Request Params</h3>
+
+<p>"context" - <em>lets server know which folders to list</em></p>
+
+<ol>
+<li>"mail" - <em>(def)</em></li>
+<li>"contacts"</li>
+<li>"settings"</li>
+<li>"help"</li>
+</ol>
+
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 14,
+    &quot;method&quot;: &quot;folders.list&quot;,
+    &quot;params&quot;: {
+        &quot;context&quot;: &quot;mail&quot;
+    }
+}
+</pre>
+<h3>Response Params</h3>
+
+<p>"folderID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>["parentID"] - <em>only given if folder is a child</em></p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>"name"</p>
+
+<ul>
+<li>string</li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: [{
+        &quot;folderID&quot;: 1,
+        &quot;name&quot;: &quot;Inbox&quot;
+    }, {
+        &quot;folderID&quot;: 5,
+        &quot;name&quot;: &quot;Projects&quot;
+    }, {
+        &quot;folderID&quot;: 8,
+        &quot;parentID&quot;: 12,
+        &quot;name&quot;: &quot;jQuery Plugins&quot;
+    }, {
+        &quot;folderID&quot;: 10,
+        &quot;parentID&quot;: 12,
+        &quot;name&quot;: &quot;Tests&quot;
+    }, {
+        &quot;folderID&quot;: 11,
+        &quot;parentID&quot;: 10,
+        &quot;name&quot;: &quot;Webmail&quot;
+    }, {
+        &quot;folderID&quot;: 15,
+        &quot;parentID&quot;: 12,
+        &quot;name&quot;: &quot;Templates&quot;
+    }, {
+        &quot;folderID&quot;: 12,
+        &quot;name&quot;: &quot;Javascript&quot;
+    }, {
+        &quot;folderID&quot;: 9,
+        &quot;parentID&quot;: 8,
+        &quot;name&quot;: &quot;Querios&quot;
+    }]
+}, {
+    &quot;result&quot;: [{
+        &quot;folderID&quot;: 200,
+        &quot;name&quot;: &quot;All&quot;
+    }, {
+        &quot;folderID&quot;: 201,
+        &quot;name&quot;: &quot;People&quot;
+    }, {
+        &quot;folderID&quot;: 202,
+        &quot;name&quot;: &quot;Business&quot;
+    }, {
+        &quot;folderID&quot;: 203,
+        &quot;name&quot;: &quot;Collected&quot;
+    }, {
+        &quot;folderID&quot;: 204,
+        &quot;name&quot;: &quot;Work&quot;
+    }, {
+        &quot;folderID&quot;: 205,
+        &quot;name&quot;: &quot;Personal&quot;
+    }, {
+        &quot;folderID&quot;: 206,
+        &quot;parentID&quot;: 205,
+        &quot;name&quot;: &quot;Family&quot;
+    }, {
+        &quot;folderID&quot;: 207,
+        &quot;parentID&quot;: 205,
+        &quot;name&quot;: &quot;Friends&quot;
+    }, {
+        &quot;folderID&quot;: 999,
+        &quot;name&quot;: &quot;No Gravatars&quot;
+    }]
+}, {
+    &quot;result&quot;: [{
+        &quot;folderID&quot;: 100,
+        &quot;name&quot;: &quot;Identity&quot;
+    }, {
+        &quot;folderID&quot;: 101,
+        &quot;name&quot;: &quot;Mail Settings&quot;
+    }, {
+        &quot;folderID&quot;: 102,
+        &quot;name&quot;: &quot;Portal Settings&quot;
+    }, {
+        &quot;folderID&quot;: 103,
+        &quot;name&quot;: &quot;Account Upgrades&quot;
+    }, {
+        &quot;folderID&quot;: 104,
+        &quot;name&quot;: &quot;Password&quot;
+    }]
+}, {
+    &quot;result&quot;: [{
+        &quot;folderID&quot;: 400,
+        &quot;name&quot;: &quot;Statistics&quot;
+    }, {
+        &quot;folderID&quot;: 401,
+        &quot;name&quot;: &quot;Security&quot;
+    }, {
+        &quot;folderID&quot;: 402,
+        &quot;name&quot;: &quot;Contacts&quot;
+    }, {
+        &quot;folderID&quot;: 403,
+        &quot;name&quot;: &quot;Mail&quot;
+    }]
+}, {
+    &quot;result&quot;: [{
+        &quot;folderID&quot;: 500,
+        &quot;name&quot;: &quot;Help Category&quot;
+    }, {
+        &quot;folderID&quot;: 501,
+        &quot;name&quot;: &quot;Help Category&quot;
+    }, {
+        &quot;folderID&quot;: 502,
+        &quot;name&quot;: &quot;Help Category&quot;
+    }]
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="folders.remove">Method: folders.remove</h2><a href="#contents">back to contents</a><p>Removes the folder.</p>
+
+<h3>Request Params</h3>
+
+<p>"folderID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 16,
+    &quot;method&quot;: &quot;folders.remove&quot;,
+    &quot;params&quot;: {
+        &quot;folderID&quot;: 30
+    }
+}
+</pre>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: true
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="folders.rename">Method: folders.rename</h2><a href="#contents">back to contents</a><p>Rename the specified folder.</p>
+
+<h3>Request Params</h3>
+
+<p>"folderID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>"name"</p>
+
+<ul>
+<li>string</li>
+</ul>
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 17,
+    &quot;method&quot;: &quot;folders.rename&quot;,
+    &quot;params&quot;: {
+        &quot;folderID&quot;: 30,
+        &quot;name&quot;: &quot;New Name&quot;
+    }
+}
+</pre>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: true
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="help.page">Method: help.page</h2><a href="#contents">back to contents</a><p>Get html for wiki style help pages.</p>
+
+<h3>Request Params</h3>
+
+<p>"topicID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<h3>Example Request</h3><pre></pre>
+<h3>Response Params</h3>
+
+<ul>
+<li>html string</li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;jsonrpc&quot;: &quot;2.0&quot;,
+    &quot;result&quot;: &quot;&lt;h2&gt;Help&lt;/h2&gt;&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque ipsum orci, dictum quis vestibulum id, lobortis eget nibh. Cras diam ante, adipiscing vel elementum ut, fringilla non magna. Nunc eu metus libero, at condimentum dolor. Donec sit amet est quis eros condimentum lobortis et ut ipsum. Suspendisse diam nisl, blandit vitae lobortis vitae, fermentum ut est. Sed placerat nisl eu neque auctor non tempor urna mattis. Aenean convallis nibh eros. Nunc egestas scelerisque urna, non congue erat iaculis in. Donec consectetur luctus fringilla. In in ligula eu libero mattis ornare. Curabitur iaculis porta leo eu consectetur. Nulla lacus tortor, vehicula non pellentesque sed, tincidunt at ante. Mauris rhoncus rhoncus nisl eget rhoncus. Etiam consequat nunc ut enim bibendum vitae porta dui laoreet. Aenean placerat nisi ac urna dignissim dignissim in ut velit.&lt;/p&gt;&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque ipsum orci, dictum quis vestibulum id, lobortis eget nibh. Cras diam ante, adipiscing vel elementum ut, fringilla non magna. Nunc eu metus libero, at condimentum dolor. Donec sit amet est quis eros condimentum lobortis et ut ipsum. Suspendisse diam nisl, blandit vitae lobortis vitae, fermentum ut est. Sed placerat nisl eu neque auctor non tempor urna mattis. Aenean convallis nibh eros. Nunc egestas scelerisque urna, non congue erat iaculis in. Donec consectetur luctus fringilla. In in ligula eu libero mattis ornare. Curabitur iaculis porta leo eu consectetur. Nulla lacus tortor, vehicula non pellentesque sed, tincidunt at ante. Mauris rhoncus rhoncus nisl eget rhoncus. Etiam consequat nunc ut enim bibendum vitae porta dui laoreet. Aenean placerat nisi ac urna dignissim dignissim in ut velit.&lt;/p&gt;&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque ipsum orci, dictum quis vestibulum id, lobortis eget nibh. Cras diam ante, adipiscing vel elementum ut, fringilla non magna. Nunc eu metus libero, at condimentum dolor. Donec sit amet est quis eros condimentum lobortis et ut ipsum. Suspendisse diam nisl, blandit vitae lobortis vitae, fermentum ut est. Sed placerat nisl eu neque auctor non tempor urna mattis. Aenean convallis nibh eros. Nunc egestas scelerisque urna, non congue erat iaculis in. Donec consectetur luctus fringilla. In in ligula eu libero mattis ornare. Curabitur iaculis porta leo eu consectetur. Nulla lacus tortor, vehicula non pellentesque sed, tincidunt at ante. Mauris rhoncus rhoncus nisl eget rhoncus. Etiam consequat nunc ut enim bibendum vitae porta dui laoreet. Aenean placerat nisi ac urna dignissim dignissim in ut velit.&lt;/p&gt;&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque ipsum orci, dictum quis vestibulum id, lobortis eget nibh. Cras diam ante, adipiscing vel elementum ut, fringilla non magna. Nunc eu metus libero, at condimentum dolor. Donec sit amet est quis eros condimentum lobortis et ut ipsum. Suspendisse diam nisl, blandit vitae lobortis vitae, fermentum ut est. Sed placerat nisl eu neque auctor non tempor urna mattis. Aenean convallis nibh eros. Nunc egestas scelerisque urna, non congue erat iaculis in. Donec consectetur luctus fringilla. In in ligula eu libero mattis ornare. Curabitur iaculis porta leo eu consectetur. Nulla lacus tortor, vehicula non pellentesque sed, tincidunt at ante. Mauris rhoncus rhoncus nisl eget rhoncus. Etiam consequat nunc ut enim bibendum vitae porta dui laoreet. Aenean placerat nisi ac urna dignissim dignissim in ut velit.&lt;/p&gt;&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque ipsum orci, dictum quis vestibulum id, lobortis eget nibh. Cras diam ante, adipiscing vel elementum ut, fringilla non magna. Nunc eu metus libero, at condimentum dolor. Donec sit amet est quis eros condimentum lobortis et ut ipsum. Suspendisse diam nisl, blandit vitae lobortis vitae, fermentum ut est. Sed placerat nisl eu neque auctor non tempor urna mattis. Aenean convallis nibh eros. Nunc egestas scelerisque urna, non congue erat iaculis in. Donec consectetur luctus fringilla. In in ligula eu libero mattis ornare. Curabitur iaculis porta leo eu consectetur. Nulla lacus tortor, vehicula non pellentesque sed, tincidunt at ante. Mauris rhoncus rhoncus nisl eget rhoncus. Etiam consequat nunc ut enim bibendum vitae porta dui laoreet. Aenean placerat nisi ac urna dignissim dignissim in ut velit.&lt;/p&gt;&quot;,
+    &quot;id&quot;: 100
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="help.topics">Method: help.topics</h2><a href="#contents">back to contents</a><p>List help topics for a category.</p>
+
+<h3>Request Params</h3>
+
+<p>"categoryID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<h3>Example Request</h3><pre></pre>
+<h3>Response Params</h3>
+
+<p>"topicID"</p>
+
+<ul>
+<li>topicID</li>
+</ul>
+
+<p>"name" - <em>topic display name</em></p>
+
+<ul>
+<li>string</li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;jsonrpc&quot;: &quot;2.0&quot;,
+    &quot;result&quot;: [{
+        &quot;topicID&quot;: 600,
+        &quot;name&quot;: &quot;Help Topic&quot;
+    }, {
+        &quot;topicID&quot;: 601,
+        &quot;name&quot;: &quot;Help Topic&quot;
+    }, {
+        &quot;topicID&quot;: 602,
+        &quot;name&quot;: &quot;Help Topic&quot;
+    }],
+    &quot;id&quot;: 100
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="logs.mail">Method: logs.mail</h2><a href="#contents">back to contents</a><p>Retrieve mail logs</p>
+
+<h3>Response Params</h3>
+
+<p>"name" - <em>full name</em></p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"first" - <em>first name</em></p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"last" - <em>last name</em></p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"website"</p>
+
+<ul>
+<li>string</li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: [{
+        &quot;messageID&quot;: 100,
+        &quot;queue&quot;: 1011,
+        &quot;type&quot;: &quot;Incoming&quot;,
+        &quot;from&quot;: &quot;Bill Shakespeare&quot;,
+        &quot;to&quot;: &quot;Bill Gates&quot;,
+        &quot;outcome&quot;: &quot;Delivered&quot;,
+        &quot;utc&quot;: 102032012310,
+        &quot;bytes&quot;: 1024
+    }, {
+        &quot;messageID&quot;: 101,
+        &quot;queue&quot;: 1012,
+        &quot;type&quot;: &quot;Outgoing&quot;,
+        &quot;from&quot;: &quot;Bob Dole&quot;,
+        &quot;to&quot;: &quot;Bob Dylan&quot;,
+        &quot;outcome&quot;: &quot;Delayed&quot;,
+        &quot;utc&quot;: 102033422369,
+        &quot;bytes&quot;: 1232
+    }, {
+        &quot;messageID&quot;: 102,
+        &quot;queue&quot;: 1013,
+        &quot;type&quot;: &quot;Incoming&quot;,
+        &quot;from&quot;: &quot;Bill Shakespeare&quot;,
+        &quot;to&quot;: &quot;Bill Gates&quot;,
+        &quot;outcome&quot;: &quot;Delivered&quot;,
+        &quot;utc&quot;: 102032012310,
+        &quot;bytes&quot;: 123145
+    }, {
+        &quot;messageID&quot;: 103,
+        &quot;queue&quot;: 1014,
+        &quot;type&quot;: &quot;Outgoing&quot;,
+        &quot;from&quot;: &quot;Bob Dole&quot;,
+        &quot;to&quot;: &quot;Bob Dylan&quot;,
+        &quot;outcome&quot;: &quot;Delayed&quot;,
+        &quot;utc&quot;: 102033422369,
+        &quot;bytes&quot;: 10
+    }, {
+        &quot;messageID&quot;: 104,
+        &quot;queue&quot;: 1015,
+        &quot;type&quot;: &quot;Incoming&quot;,
+        &quot;from&quot;: &quot;Bill Shakespeare&quot;,
+        &quot;to&quot;: &quot;Bill Gates&quot;,
+        &quot;outcome&quot;: &quot;Delivered&quot;,
+        &quot;utc&quot;: 102032012310,
+        &quot;bytes&quot;: 999
+    }, {
+        &quot;messageID&quot;: 105,
+        &quot;queue&quot;: 1016,
+        &quot;type&quot;: &quot;Outgoing&quot;,
+        &quot;from&quot;: &quot;Bob Dole&quot;,
+        &quot;to&quot;: &quot;Bob Dylan&quot;,
+        &quot;outcome&quot;: &quot;Delayed&quot;,
+        &quot;utc&quot;: 102033422369,
+        &quot;bytes&quot;: 123
+    }]
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="logs.security">Method: logs.security</h2><a href="#contents">back to contents</a><p>Retrieve security logs</p>
+
+<h3>Response Params</h3>
+
+<p>"utc" - <em>unix time</em></p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"type" - <em>login / logout</em></p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"severity"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"ip"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"protocol"</p>
+
+<ul>
+<li>string</li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: [{
+        &quot;utc&quot;: 10239834048,
+        &quot;type&quot;: &quot;Login&quot;,
+        &quot;severity&quot;: &quot;Zero&quot;,
+        &quot;ip&quot;: &quot;0.0.0.0&quot;,
+        &quot;protocol&quot;: &quot;Web&quot;
+    }, {
+        &quot;utc&quot;: 10238439074,
+        &quot;type&quot;: &quot;Logout&quot;,
+        &quot;severity&quot;: &quot;Zero&quot;,
+        &quot;ip&quot;: &quot;0.0.0.0&quot;,
+        &quot;protocol&quot;: &quot;Web&quot;
+    }, {
+        &quot;utc&quot;: 10239834157,
+        &quot;type&quot;: &quot;Login&quot;,
+        &quot;severity&quot;: &quot;Zero&quot;,
+        &quot;ip&quot;: &quot;0.0.0.0&quot;,
+        &quot;protocol&quot;: &quot;IMAP&quot;
+    }]
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="logs.statistics">Method: logs.statistics</h2><a href="#contents">back to contents</a><p>Gets account statistics.</p>
+
+<h3>Response Params</h3>
+
+<p>"account"</p>
+
+<p>"username"</p>
+
+<ul>
+<li><p>string</p>
+
+<p>"name"</p></li>
+<li><p>string</p>
+
+<p>"number"</p></li>
+<li><p>integer</p>
+
+<p>"reputation"</p></li>
+<li><p>string</p>
+
+<p>"plan"</p></li>
+<li><p>string</p>
+
+<p>"date"</p></li>
+<li><p>string</p></li>
+</ul>
+
+<p>"storage"</p>
+
+<p>"space"</p>
+
+<ul>
+<li><p>integer</p>
+
+<p>"folders"</p></li>
+<li><p>integer</p>
+
+<p>"stored"</p></li>
+<li><p>integer</p>
+
+<p>"archived"</p></li>
+<li><p>integer</p>
+
+<p>"encrypted"</p></li>
+<li><p>integer</p></li>
+</ul>
+
+<p>"logins"</p>
+
+<p>"smtp" - <em>number of times accessed</em></p>
+
+<ul>
+<li><p>integer</p>
+
+<p>"pop" - <em>number of times accessed</em></p></li>
+<li><p>integer</p>
+
+<p>"imap" - <em>number of times accessed</em></p></li>
+<li><p>integer</p>
+
+<p>"web - <em>number of times accessed</em>"</p></li>
+<li><p>integer</p></li>
+</ul>
+
+<p>"messages"</p>
+
+<p>"received" - <em>total received</em></p>
+
+<ul>
+<li><p>integer</p>
+
+<p>"sent" - <em>total sent</em></p></li>
+<li><p>integer</p></li>
+</ul>
+
+<p>"email"</p>
+
+<p>"address"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"transfer"</p>
+
+<p>"sent"</p>
+
+<ul>
+<li><p>integer</p>
+
+<p>"received"</p></li>
+<li><p>integer</p></li>
+</ul>
+
+<p>"blocked"</p>
+
+<p>"spam"</p>
+
+<ul>
+<li><p>integer</p>
+
+<p>"bounced"</p></li>
+<li><p>integer</p></li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: {
+        &quot;account&quot;: {
+            &quot;username&quot;: &quot;Mike&quot;,
+            &quot;name&quot;: &quot;Mike&quot;,
+            &quot;number&quot;: 1,
+            &quot;reputation&quot;: &quot;100%&quot;,
+            &quot;plan&quot;: &quot;Free&quot;,
+            &quot;date&quot;: &quot;Nov 11th, 2011&quot;
+        },
+        &quot;storage&quot;: {
+            &quot;space&quot;: 10203192038,
+            &quot;folders&quot;: 12,
+            &quot;stored&quot;: 1000303,
+            &quot;archived&quot;: 12030123213,
+            &quot;encrypted&quot;: 1200310320
+        },
+        &quot;logins&quot;: {
+            &quot;smtp&quot;: 1000,
+            &quot;pop&quot;: 1000,
+            &quot;imap&quot;: 1000,
+            &quot;web&quot;: 1000
+        },
+        &quot;messages&quot;: {
+            &quot;received&quot;: 1000,
+            &quot;sent&quot;: 1000
+        },
+        &quot;email&quot;: {
+            &quot;address&quot;: &quot;mike@lavabit.com&quot;
+        },
+        &quot;transfer&quot;: {
+            &quot;sent&quot;: 2,
+            &quot;received&quot;: 3
+        },
+        &quot;blocked&quot;: {
+            &quot;spam&quot;: 0,
+            &quot;bounced&quot;: 0
+        }
+    }
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="messages.compose">Method: messages.compose</h2><a href="#contents">back to contents</a><p>Sent when the user starts to compose a message. Gets the composeID from the server.</p>
+
+<h3>Response Params</h3>
+
+<p>"contactID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: { &quot;composeID&quot;: 1 }
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="messages.copy">Method: messages.copy</h2><a href="#contents">back to contents</a><p>Copy messages from one folder to another or the same folder.</p>
+
+<h3>Request Params</h3>
+
+<p>"messageIDs"</p>
+
+<ul>
+<li>array of ints</li>
+</ul>
+
+<p>"sourceFolderID"</p>
+
+<ul>
+<li>int</li>
+</ul>
+
+<p>"targetFolderID"</p>
+
+<ul>
+<li>int</li>
+</ul>
+
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 19,
+    &quot;method&quot;: &quot;messages.copy&quot;,
+    &quot;params&quot;: {
+        &quot;messageIDs&quot;: [100, 101, 102],
+        &quot;sourceFolderID&quot;: 1,
+        &quot;targetFolderID&quot;: 10
+    }
+}
+</pre>
+<h3>Response Params</h3>
+
+<p>Each object in the response array is associated with a messageID in the request.</p>
+
+<p>"sourceMessageID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>"targetMessageID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: [{
+        &quot;sourceMessageID&quot;: 1021,
+        &quot;targetMessageID&quot;: 1035
+    }, {
+        &quot;sourceMessageID&quot;: 1022,
+        &quot;targetMessageID&quot;: 1036
+    }]
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="messages.flag">Method: messages.flag</h2><a href="#contents">back to contents</a><p>Assign various flags to a message. The flag property indicates what flag is being assigned.</p>
+
+<h3>Request Params</h3>
+
+<p>Each object in the example is a separate request.</p>
+
+<p>"action"</p>
+
+<ul>
+<li>string
+<ol>
+<li>add</li>
+<li>replace</li>
+<li>remove</li>
+</ol></li>
+</ul>
+
+<p>"flags" </p>
+
+<ul>
+<li>array of strings
+<ul>
+<li>read</li>
+<li>unread</li>
+<li>star</li>
+<li>unstar</li>
+</ul></li>
+</ul>
+
+<p>"messageIDs"</p>
+
+<ul>
+<li>array</li>
+</ul>
+
+<p>"folderID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+<h3>Example Request</h3><pre>[{
+    &quot;id&quot;: 20,
+    &quot;method&quot;: &quot;messages.flag&quot;,
+    &quot;params&quot;: {
+    	&quot;action&quot;: &quot;add&quot;,
+    	&quot;flags&quot;: [&quot;junk&quot;],
+        &quot;messageIDs&quot;: [100, 101, 102],
+    	&quot;folderID&quot;: 1
+    }
+},{
+    &quot;id&quot;: 20,
+    &quot;method&quot;: &quot;messages.flag&quot;,
+    &quot;params&quot;: {
+        &quot;action&quot;: &quot;replace&quot;,
+    	&quot;flags&quot;: [],
+        &quot;messageIDs&quot;: [100, 101, 102],
+    	&quot;folderID&quot;: 1
+    }
+},{
+    &quot;id&quot;: 20,
+    &quot;method&quot;: &quot;messages.flag&quot;,
+    &quot;params&quot;: {
+        &quot;action&quot;: &quot;remove&quot;,
+		&quot;flags&quot;: [&quot;read&quot;],
+	    &quot;messageIDs&quot;: [100, 101, 102],
+		&quot;folderID&quot;: 1
+    }
+},{
+    &quot;id&quot;: 20,
+    &quot;method&quot;: &quot;messages.flag&quot;,
+    &quot;params&quot;: {
+        &quot;action&quot;: &quot;list&quot;,
+	    &quot;messageIDs&quot;: [100, 101, 102],
+		&quot;folderID&quot;: 1
+    }
+}]
+</pre>
+<h3>Example Response</h3><pre>[{
+	&quot;jsonrpc&quot;:&quot;2.0&quot;,
+	&quot;result&quot;:{
+	    &quot;maessages.flag&quot; : &quot;success&quot;
+	},
+    &quot;id&quot;:20
+}, {
+    &quot;jsonrpc&quot;:&quot;2.0&quot;,
+    &quot;result&quot;: {
+        &quot;messageID&quot;:1,
+        &quot;flags&quot;: [&quot;flagged&quot;]
+    },
+    &quot;id&quot;:20
+}]
+</pre></div><div class="method"><h2 id="messages.list">Method: messages.list</h2><a href="#contents">back to contents</a><p>List messages of the given folder.</p>
+
+<h3>Request Params</h3>
+
+<p>"folderID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 21,
+    &quot;method&quot;: &quot;messages.list&quot;,
+    &quot;params&quot;: {
+        &quot;folderID&quot;: 1
+    }
+}
+</pre>
+<h3>Response Params</h3>
+
+<p>"messageID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>["attachment"]</p>
+
+<ul>
+<li>boolean</li>
+</ul>
+
+<p>["flags"]</p>
+
+<ul>
+<li>array of strings</li>
+</ul>
+
+<p>"from"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"to"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"addressedTo"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"replyTo"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"returnPath"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>["carbon"]</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"subject"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"utc" - <em>server utc time in seconds (unix time)</em></p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>"arrivalUtc"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>"snippet"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"bytes" - <em>size in bytes</em></p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>["tags"]</p>
+
+<ul>
+<li>array of strings</li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: []
+}, {
+    &quot;result&quot;: [{
+        &quot;messageID&quot;: 1024,
+        &quot;flags&quot;: [&quot;seen&quot;, &quot;flagged&quot;],
+        &quot;from&quot;: &quot;William Adama&quot;,
+        &quot;to&quot;: &quot;Apallo&quot;,
+        &quot;addressedTo&quot;: &quot;apallo@lavabit.com&quot;,
+        &quot;replyTo&quot;: &quot;bill@lavabit.com&quot;,
+        &quot;returnPath&quot;: &quot;bill@lavabit.com&quot;,
+        &quot;subject&quot;: &quot;Pegasus&quot;,
+        &quot;utc&quot;: 1109749011,
+        &quot;arrivalUtc&quot;: 1109749011,
+        &quot;snippet&quot;: &quot;Go the the gym softy&quot;,
+        &quot;bytes&quot;: 487479772 
+    }, {
+        &quot;messageID&quot;: 1023,
+        &quot;attachment&quot;: true,
+        &quot;from&quot;: &quot;Douglas Crockford&quot;,
+        &quot;to&quot;: &quot;John Resig&quot;,
+        &quot;addressedTo&quot;: &quot;jresig@lavabit.com&quot;,
+        &quot;replyTo&quot;: &quot;dcrock@lavabit.com&quot;,
+        &quot;returnPath&quot;: &quot;dcrock@lavabit.com&quot;,
+        &quot;carbon&quot;: &quot;mozilla@lavabit.com&quot;,
+        &quot;subject&quot;: &quot;jQuery cruft&quot;,
+        &quot;utc&quot;: 1266415038183,
+        &quot;arrivalUtc&quot;: 1020030,
+        &quot;snippet&quot;: &quot;jQuery is too crufty. YUI is much leaner.&quot;,
+        &quot;bytes&quot;: 895625721,
+        &quot;tags&quot;: [&quot;Javascript&quot;]
+    }, {
+        &quot;messageID&quot;: 1022,
+        &quot;from&quot;: &quot;Paul Grahm&quot;,
+        &quot;to&quot;: &quot;Douglas Crockford&quot;,
+        &quot;addressedTo&quot;: &quot;dcrock@lavabit.com&quot;,
+        &quot;replyTo&quot;: &quot;paulg@lavabit.com&quot;,
+        &quot;returnPath&quot;: &quot;paulg@lavabit.com&quot;,
+        &quot;subject&quot;: &quot;Reply: Y Combinator cruft&quot;,
+        &quot;utc&quot;: 1071564744567,
+        &quot;arrivalUtc&quot;: 1023012302,
+        &quot;snippet&quot;: &quot;I have a startup idea. It's a startup starter...&quot;,
+        &quot;bytes&quot;: 1014127863,
+        &quot;tags&quot;: [&quot;Yahoo&quot;, &quot;Y Combinator&quot;, &quot;cruft&quot;]
+    }, {
+        &quot;messageID&quot;: 1021,
+        &quot;from&quot;: &quot;Douglas Crockford&quot;,
+        &quot;to&quot;: &quot;David Flanagan&quot;,
+        &quot;addressedTo&quot;: &quot;dflan@lavabit.com&quot;,
+        &quot;replyTo&quot;: &quot;dcrock@lavabit.com&quot;,
+        &quot;returnPath&quot;: &quot;dcrock@lavabit.com&quot;,
+        &quot;subject&quot;: &quot;Javascript: The Definitive Guide cruft&quot;,
+        &quot;utc&quot;: 1054397333677,
+        &quot;arrivalUtc&quot;: 10023100321,
+        &quot;snippet&quot;: &quot;You should only talk about the good parts.&quot;,
+        &quot;bytes&quot;: 839535031,
+        &quot;tags&quot;: [&quot;Javascript&quot;]
+    }]
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="messages.load">Method: messages.load</h2><a href="#contents">back to contents</a><p>Loads message details to be viewed in reading screen or info accordian. Sections of the message can be requested in batches with an array.</p>
+
+<h3>Request Params</h3>
+
+<p>"messageID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>"section" - <em>multiple can be requested</em></p>
+
+<ul>
+<li>array of strings
+<ol>
+<li>"header"</li>
+<li>"body"</li>
+<li>"attachments"</li>
+<li>"info"</li>
+</ol></li>
+</ul>
+
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 22,
+    &quot;method&quot;: &quot;messages.load&quot;,
+    &quot;params&quot;: {
+        &quot;messageID&quot;: 1,
+        &quot;folderID&quot;: 1,
+        &quot;sections&quot;: [&quot;header&quot;, &quot;body&quot;, &quot;attachments&quot;]
+    }
+}
+</pre>
+<h3>Response Params</h3>
+
+<p>["header"] - <em>header summary</em></p>
+
+<ul>
+<li>"from"
+<ul>
+<li>string</li>
+</ul></li>
+<li>"subject"
+<ul>
+<li>string</li>
+</ul></li>
+<li>"utc" - <em>email client utc</em>
+<ul>
+<li>integer</li>
+</ul></li>
+<li>"to"
+<ul>
+<li>string</li>
+</ul></li>
+<li>["cc"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["bcc"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>["sender"]
+<ul>
+<li>string</li>
+</ul></li>
+<li>"replyto"
+<ul>
+<li>string</li>
+</ul></li>
+</ul>
+
+<p>["body"]</p>
+
+<ul>
+<li>["html"] - <em>if message is to displayed as html</em>
+<ul>
+<li>string</li>
+</ul></li>
+<li>["text"] - <em>if message is ascii text</em>
+<ul>
+<li>string</li>
+</ul></li>
+</ul>
+
+<p>["attachments"]</p>
+
+<ul>
+<li>"attachmentID"
+<ul>
+<li>integer</li>
+</ul></li>
+<li>"name"
+<ul>
+<li>string</li>
+</ul></li>
+<li>"bytes" - <em>size in bytes</em>
+<ul>
+<li>integer</li>
+</ul></li>
+</ul>
+
+<p>["info"] - <em>extra message information</em></p>
+
+<ul>
+<li>"source"
+<ul>
+<li>"ip"
+<ul>
+<li>string</li>
+</ul></li>
+<li>"dns"
+<ul>
+<li>string</li>
+</ul></li>
+<li>"reputation"
+<ul>
+<li>string</li>
+</ul></li>
+</ul></li>
+<li>"security"
+<ul>
+<li>"secure" - <em>displays red or green status indicator</em>
+<ul>
+<li>bool</li>
+</ul></li>
+<li>"spf" - <em>displays red or green status indicator</em>
+<ul>
+<li>bool</li>
+</ul></li>
+<li>"dkim" - <em>displays red or green status indicator</em>
+<ul>
+<li>bool</li>
+</ul></li>
+</ul></li>
+<li>"server"
+<ul>
+<li>"utc" - <em>server time</em>
+<ul>
+<li>integer</li>
+</ul></li>
+<li>"images" - <em>displays red or green status indicator</em>
+<ul>
+<li>bool</li>
+</ul></li>
+<li>"warnings"
+<ul>
+<li>bool</li>
+</ul></li>
+</ul></li>
+</ul>
+<h3>Example Response</h3><pre>[
+  {
+    &quot;result&quot;: {
+      &quot;meta&quot;: {
+        &quot;messageID&quot;: 1,
+        &quot;folderID&quot;: 1,
+        &quot;flags&quot;: [
+
+        ],
+        &quot;tags&quot;: [
+          &quot;thefuture&quot;
+        ]
+      },
+      &quot;header&quot;: {
+        &quot;sender&quot;: &quot;forwarder@example.org&quot;,
+        &quot;from&quot;: &quot;John Resig&quot;,
+        &quot;to&quot;: &quot;Mozilla&quot;,
+        &quot;cc&quot;: &quot;carbon@example.org&quot;,
+        &quot;bcc&quot;: &quot;blind@example.org&quot;,
+        &quot;returnpath&quot;: &quot;bounces@example.org&quot;,
+        &quot;subject&quot;: &quot;jQuery&quot;,
+        &quot;date&quot;: 1003939300349,
+        &quot;replyto&quot;: &quot;John Resig&quot;,
+        &quot;size&quot;: 87348
+      },
+      &quot;body&quot;: {
+        &quot;html&quot;: &quot;&lt;h1&gt;Hi There!&lt;/h1&gt;&lt;p&gt;jQuery 1.5 just came out. You should use it!&lt;/p&gt;&lt;p&gt;John Resig&lt;/p&gt;&quot;
+      },
+      &quot;attachments&quot;: [
+        {
+          &quot;attachmentID&quot;: 59,
+          &quot;name&quot;: &quot;Photo1.jpg&quot;,
+          &quot;size&quot;: 11039,
+          &quot;type&quot;: &quot;image/jpeg&quot;
+        },
+        {
+          &quot;attachmentID&quot;: 60,
+          &quot;name&quot;: &quot;Photo2.jpg&quot;,
+          &quot;size&quot;: 12093,
+          &quot;type&quot;: &quot;image/jpeg&quot;
+        },
+        {
+          &quot;attachmentID&quot;: 60,
+          &quot;name&quot;: &quot;profits.xlsx&quot;,
+          &quot;size&quot;: 59120,
+          &quot;type&quot;: &quot;application/octet-stream&quot;
+        }
+      ]
+    }
+  }, {
+    &quot;result&quot;: {
+      &quot;info&quot;: {
+          &quot;source&quot;: {
+            &quot;ip&quot;: &quot;1.23.45.678&quot;,
+            &quot;dns&quot;: &quot;dns1.email.com&quot;,
+            &quot;reputation&quot;: &quot;Good&quot;
+          },
+          &quot;security&quot;: {
+            &quot;secure&quot;: true,
+            &quot;spf&quot;: true,
+            &quot;dkim&quot;: false
+          },
+          &quot;server&quot;: {
+            &quot;utc&quot;: 1003029300349,
+            &quot;images&quot;: true,
+            &quot;warnings&quot;: &quot;The message is spoofed! The signature it carries did not validate! &quot;
+          }
+      }
+    }
+}]
+</pre></div><div class="method"><h2 id="messages.move">Method: messages.move</h2><a href="#contents">back to contents</a><p>Move messages from one folder to another. Cannot be the same folder.</p>
+
+<h3>Request Params</h3>
+
+<p>"messageIDs"</p>
+
+<ul>
+<li>array of ints</li>
+</ul>
+
+<p>"folderID"</p>
+
+<ul>
+<li>int</li>
+</ul>
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 23,
+    &quot;method&quot;: &quot;messages.move&quot;,
+    &quot;params&quot;: {
+        &quot;messageIDs&quot;: [100, 101, 102],
+        &quot;sourceFolderID&quot;: 1,
+        &quot;targetFolderID&quot;: 10
+    }
+}
+</pre>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: true
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="messages.remove">Method: messages.remove</h2><a href="#contents">back to contents</a><p>Move messages from one folder to another. Cannot be the same folder.</p>
+
+<h3>Request Params</h3>
+
+<p>"messageIDs"</p>
+
+<ul>
+<li>array of ints</li>
+</ul>
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 24,
+    &quot;method&quot;: &quot;messages.remove&quot;,
+    &quot;params&quot;: {
+    	&quot;folderID&quot;: 1,
+        &quot;messageIDs&quot;: [100, 110, 120]
+    }
+}
+</pre>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: true
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="messages.send">Method: messages.send</h2><a href="#contents">back to contents</a><p>Sends serialized message data to server</p>
+
+<h3>Request Params</h3>
+
+<p>"composeID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>"from"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"to"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>["subject"] - <em>not sent if empty - user warned before sent</em></p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>["priority"]</p>
+
+<ol>
+<li>"low"</li>
+<li>"normal" - <em>(def)</em></li>
+<li>"high"</li>
+</ol>
+
+<p>["body"] - <em>not sent if empty - user warned before sent</em></p>
+
+<ol>
+<li>"html"
+<ul>
+<li>string</li>
+</ul></li>
+<li>"text"
+<ul>
+<li>string</li>
+</ul></li>
+</ol>
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 25,
+    &quot;method&quot;: &quot;messages.send&quot;,
+    &quot;params&quot;: {
+        &quot;composeID&quot;: 0,
+        &quot;from&quot;: &quot;Douglas Crockford &lt;dc@yahoo.com&gt;&quot;,
+        &quot;to&quot;: &quot;Linus Torvalds &lt;lt@kernel.org&gt;&quot;,
+        &quot;subject&quot;: &quot;Kernel cruft&quot;,
+        &quot;priority&quot;: &quot;normal&quot;,
+        &quot;attachments&quot;: [0, 1, 3],
+        &quot;body&quot;: {
+            &quot;html&quot;: &quot;&lt;h1&gt;Linux Cruft&lt;/h1&gt;&lt;p&gt;Split Linux into specialized kernels to clean up some cruft!&lt;/p&gt;&lt;p&gt;DC&lt;/p&gt;&quot;
+        }
+    }
+}
+</pre>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: true
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="messages.tag">Method: messages.tag</h2><a href="#contents">back to contents</a><p>Assign tags to messages.</p>
+
+<h3>Request Params</h3>
+
+<p>"messageIDs"</p>
+
+<ul>
+<li>array of ints</li>
+</ul>
+
+<p>"tags"</p>
+
+<ul>
+<li>array of strings</li>
+</ul>
+<h3>Example Request</h3><pre>[{
+    &quot;id&quot;: 20,
+    &quot;method&quot;: &quot;messages.tag&quot;,
+    &quot;params&quot;: {
+    	&quot;action&quot;: &quot;add&quot;,
+    	&quot;tags&quot;: [&quot;javascript&quot;, &quot;magma&quot;],
+        &quot;messageIDs&quot;: [100, 101, 102],
+    	&quot;folderID&quot;: 1
+    }
+},{
+    &quot;id&quot;: 20,
+    &quot;method&quot;: &quot;messages.tag&quot;,
+    &quot;params&quot;: {
+        &quot;action&quot;: &quot;replace&quot;,
+    	&quot;tags&quot;: [],
+        &quot;messageIDs&quot;: [100, 101, 102],
+    	&quot;folderID&quot;: 1
+    }
+},{
+    &quot;id&quot;: 20,
+    &quot;method&quot;: &quot;messages.tag&quot;,
+    &quot;params&quot;: {
+        &quot;action&quot;: &quot;remove&quot;,
+		&quot;tags&quot;: [&quot;almost&quot;, &quot;done&quot;],
+	    &quot;messageIDs&quot;: [100, 101, 102],
+		&quot;folderID&quot;: 1
+    }
+},{
+    &quot;id&quot;: 20,
+    &quot;method&quot;: &quot;messages.tag&quot;,
+    &quot;params&quot;: {
+        &quot;action&quot;: &quot;list&quot;,
+	    &quot;messageIDs&quot;: [100, 101, 102],
+		&quot;folderID&quot;: 1
+    }
+}]
+</pre>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: true
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="messages.tags">Method: messages.tags</h2><a href="#contents">back to contents</a><p>Grabs tags from the server</p>
+
+<h3>Response Params</h3>
+
+<p>Success just sends array of tags.</p>
+
+<ul>
+<li>array of tags</li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: [&quot;Important&quot;, &quot;Work&quot;, &quot;Personal&quot;, &quot;To Do&quot;]
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="meta">Method: meta</h2><a href="#contents">back to contents</a><p>Displays meta info in the main page. Browser, cookies, stylesheets, and connection security are detected by client.</p>
+
+<h3>Response Params</h3>
+
+<p>"userID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>"clientIP"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"location"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"reputation" - <em>0 to 100</em></p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>"plan"</p>
+
+<ol>
+<li>"Free"</li>
+<li>"Basic"</li>
+<li>"Personal"</li>
+<li>"Enhanced"</li>
+<li>"Premium"</li>
+</ol>
+
+<p>"version" - <em>webmail version</em></p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"quota" - <em>0 to 100</em></p>
+
+<ul>
+<li>integer</li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: {
+        &quot;userID&quot;: 32,
+        &quot;clientIP&quot;: &quot;127.0.0.1&quot;,
+        &quot;location&quot;: &quot;Dallas, TX&quot;,
+        &quot;timezone&quot;: &quot;Central&quot;,
+        &quot;reputation&quot;: 88,
+        &quot;plan&quot;: &quot;Basic&quot;,
+        &quot;version&quot;: &quot;1.02&quot;,
+        &quot;quota&quot;: 45
+    }
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="scrape.add">Method: scrape.add</h2><a href="#contents">back to contents</a><p>Add a scraped contact from the scraped contacts page. Any optional request params not present were empty submissions.</p>
+
+<h3>Request Params</h3>
+
+<p>"messageID"</p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>"id" - <em>temp id assigned by server from contacts.scrape method</em></p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>"name"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"email"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>["phone"]</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>["work"]</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>["cell"]</p>
+
+<ul>
+<li>string</li>
+</ul>
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 27,
+    &quot;method&quot;: &quot;scrape.add&quot;,
+    &quot;params&quot;: {
+        &quot;messageID&quot;: 203,
+        &quot;id&quot;: 59,
+        &quot;name&quot;: &quot;John Doe&quot;,
+        &quot;email&quot;: &quot;jdoe@example.com&quot;
+    }
+}
+</pre>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: true
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="scrape">Method: scrape</h2><a href="#contents">back to contents</a><p>Grab contacts from a message to display in the scraping screen.</p>
+
+<h3>Request Params</h3>
+
+<p>"messageID" - <em>refers to message that contacts should be scraped from</em></p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 28,
+    &quot;method&quot;: &quot;scrape&quot;,
+    &quot;params&quot;: {
+        &quot;messageID&quot;: 203
+    }
+}
+</pre>
+<h3>Response Params</h3>
+
+<p>"id" - <em>temporary id assigned by server</em></p>
+
+<ul>
+<li>integer</li>
+</ul>
+
+<p>"name"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"email"</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>["phone"]</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>["work"]</p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>["cell"]</p>
+
+<ul>
+<li>string</li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: [{
+        &quot;contactID&quot;: 45,
+        &quot;name&quot;: &quot;John Resig&quot;,
+        &quot;email&quot;: &quot;jr@mozilla.org&quot;,
+    }, {
+        &quot;contactID&quot;: 48,
+        &quot;name&quot;: &quot;Linus Torvalds&quot;,
+        &quot;email&quot;: &quot;lt@kernel.org&quot;,
+    }, {
+        &quot;contactID&quot;: 53,
+        &quot;name&quot;: &quot;Douglas Crockford&quot;,
+        &quot;email&quot;: &quot;dc@yahoo.com&quot;,
+    }, {
+        &quot;contactID&quot;: 58,
+        &quot;name&quot;: &quot;Paul Graham&quot;,
+        &quot;email&quot;: &quot;pg@ycombinator.com&quot;
+    }, {
+        &quot;contactID&quot;: 64,
+        &quot;name&quot;: &quot;John Paul&quot;,
+        &quot;email&quot;: &quot;jp@morgan.com&quot;
+    }]
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="search">Method: search</h2><a href="#contents">back to contents</a><p>Sent when searching with advanced search.</p>
+
+<h3>Request Params</h3>
+
+<p>"searchin"</p>
+
+<ul>
+<li>"folderID" - <em>will need some way to specify all</em>
+<ul>
+<li>integer</li>
+</ul></li>
+</ul>
+
+<p>"queries" - <em>array of objects containing the following params</em></p>
+
+<ul>
+<li>"field"
+<ol>
+<li>"from"</li>
+<li>"to"</li>
+<li>"subject"</li>
+<li>"date" - <em>changes filter to date range</em></li>
+<li>"size" - <em>changes filter to greater than, less than</em></li>
+</ol></li>
+<li>["filter"]
+<ol>
+<li>"contains"</li>
+<li>"does not contain"</li>
+<li>"greater" - <em>for searching size</em></li>
+<li>"less" - <em>for searching size</em></li>
+</ol></li>
+<li>["query"] - <em>sent only for filtered items</em>
+<ol>
+<li>string</li>
+<li>integer - <em>size in bytes when searching size</em></li>
+</ol></li>
+<li>["range"]
+<ul>
+<li>"from"
+<ul>
+<li>unix time</li>
+</ul></li>
+<li>"to"
+<ul>
+<li>unix time</li>
+</ul></li>
+</ul></li>
+</ul>
+<h3>Example Request</h3><pre>{
+    &quot;id&quot;: 29,
+    &quot;method&quot;: &quot;search&quot;,
+    &quot;params&quot;: {
+        &quot;searchin&quot;: 0,
+        &quot;queries&quot;: [{
+            &quot;field&quot;: &quot;from&quot;,
+            &quot;filter&quot;: &quot;contains&quot;,
+            &quot;query&quot;: &quot;Paul Grahm&quot;
+        }, {
+            &quot;field&quot;: &quot;date&quot;,
+            &quot;range&quot;: {
+                &quot;from&quot;: 23112342342,
+                &quot;to&quot;: 2342342343
+            }
+        }]
+    }
+}
+</pre>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: [{
+        &quot;messageID&quot;: 1024,
+        &quot;flags&quot;: [&quot;seen&quot;, &quot;flagged&quot;],
+        &quot;from&quot;: &quot;William Adama&quot;,
+        &quot;to&quot;: &quot;Apallo&quot;,
+        &quot;addressedTo&quot;: &quot;apallo@lavabit.com&quot;,
+        &quot;replyTo&quot;: &quot;bill@lavabit.com&quot;,
+        &quot;returnPath&quot;: &quot;bill@lavabit.com&quot;,
+        &quot;subject&quot;: &quot;Pegasus&quot;,
+        &quot;utc&quot;: 1109749011,
+        &quot;arrivalUtc&quot;: 1109749011,
+        &quot;snippet&quot;: &quot;Go the the gym softy&quot;,
+        &quot;bytes&quot;: 487479772 
+    }, {
+        &quot;messageID&quot;: 1023,
+        &quot;attachment&quot;: true,
+        &quot;from&quot;: &quot;Douglas Crockford&quot;,
+        &quot;to&quot;: &quot;John Resig&quot;,
+        &quot;addressedTo&quot;: &quot;jresig@lavabit.com&quot;,
+        &quot;replyTo&quot;: &quot;dcrock@lavabit.com&quot;,
+        &quot;returnPath&quot;: &quot;dcrock@lavabit.com&quot;,
+        &quot;carbon&quot;: &quot;mozilla@lavabit.com&quot;,
+        &quot;subject&quot;: &quot;jQuery cruft&quot;,
+        &quot;utc&quot;: 1266415038183,
+        &quot;arrivalUtc&quot;: 1020030,
+        &quot;snippet&quot;: &quot;jQuery is too crufty. YUI is much leaner.&quot;,
+        &quot;bytes&quot;: 895625721,
+        &quot;tags&quot;: [&quot;Javascript&quot;]
+    }]
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><div class="method"><h2 id="settings.identity">Method: settings.identity</h2><a href="#contents">back to contents</a><p>Retrieve identity settings</p>
+
+<h3>Response Params</h3>
+
+<p>Returns settings that have been set.</p>
+
+<p>"name" - <em>full name</em></p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"first" - <em>first name</em></p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"last" - <em>last name</em></p>
+
+<ul>
+<li>string</li>
+</ul>
+
+<p>"website"</p>
+
+<ul>
+<li>string</li>
+</ul>
+<h3>Example Response</h3><pre>[{
+    &quot;result&quot;: {
+        &quot;name&quot;: &quot;Lava Bit&quot;,
+        &quot;first&quot;: &quot;Lava&quot;,
+        &quot;last&quot;: &quot;Bit&quot;,
+        &quot;website&quot;: &quot;lavabit.com&quot;
+    }
+}, {
+    &quot;error&quot;: true
+}]
+</pre></div><script src="http://code.jquery.com/jquery-1.6.1.js"></script>
+<script>
+var tester = $('#tester'),
+    method = $('#method'),
+    request = $('#request'),
+    response = $('#response'),
+    proxy = $('#proxy'),
+    auto = $('#auto-submit'),
+    stats = $('#stats');
+
+// fill in example request array with build-doc.php
+// pulls examples from /json/requests/
+var requests = {
+'ad': {"id": 1,"method": "ad","params": {"context": "loading"}},
+'alert.acknowledge': {"id": 2,"method": "alert.acknowledge","params": {"alertID": [1,2]}},
+'alert.list': {"id": 3,"method": "alert.list","params": {}},
+'aliases': {"id": 4,"method": "aliases","params": {"def": true}},
+'attachments.add': {"id": 5,"method": "attachments.add","params": {"composeID": 45,"filename": "script.js"}},
+'attachments.progress': {"id": 6,"method": "attachments.progress","params": {"attachmentID": 34}},
+'attachments.remove': {"id": 7,"method": "attachments.remove","params": {"attachmentID": 34}},
+'auth': {"id": 8,"method": "auth","params": {"username": "magma","password": "test"}},
+'contacts.add': {"id": 8,"method": "contacts.add","params": {}},
+'contacts.edit': {"id": 8,"method": "contacts.edit","params": {}},
+'contacts.list': {"id": 9,"method": "contacts.list","params": {"folderID": 3}},
+'contacts.load': {"id": 10,"method": "contacts.load","params": {"contactID": 88}},
+'contacts.remove': {"id": 12,"method": "contacts.remove","params": {"contactID": 88}},
+'display-options': ,
+'folders.add': {"id": 13,"method": "folders.add","params": {"parentID": 9,"name": "Bitbucket"}},
+'folders.list': {"id": 14,"method": "folders.list","params": {"context": "mail"}},
+'folders.remove': {"id": 16,"method": "folders.remove","params": {"folderID": 30}},
+'folders.rename': {"id": 17,"method": "folders.rename","params": {"folderID": 30,"name": "New Name"}},
+'help.page': ,
+'help.topics': ,
+'logs.mail': ,
+'logs.security': ,
+'logs.statistics': ,
+'messages.compose': {"id": 15,"method": "messages.compose","params": {}},
+'messages.copy': {"id": 19,"method": "messages.copy","params": {"messageIDs": [100, 101, 102],"sourceFolderID": 1,"targetFolderID": 10}},
+'messages.flag': [{"id": 20,"method": "messages.flag","params": {	"action": "add",	"flags": ["junk"],"messageIDs": [100, 101, 102],	"folderID": 1}},{"id": 20,"method": "messages.flag","params": {"action": "replace",	"flags": [],"messageIDs": [100, 101, 102],	"folderID": 1}},{"id": 20,"method": "messages.flag","params": {"action": "remove",		"flags": ["read"],	"messageIDs": [100, 101, 102],		"folderID": 1}},{"id": 20,"method": "messages.flag","params": {"action": "list",	"messageIDs": [100, 101, 102],		"folderID": 1}}],
+'messages.list': {"id": 21,"method": "messages.list","params": {"folderID": 1}},
+'messages.load': {"id": 22,"method": "messages.load","params": {"messageID": 1,"folderID": 1,"sections": ["header", "body", "attachments"]}},
+'messages.move': {"id": 23,"method": "messages.move","params": {"messageIDs": [100, 101, 102],"sourceFolderID": 1,"targetFolderID": 10}},
+'messages.remove': {"id": 24,"method": "messages.remove","params": {	"folderID": 1,"messageIDs": [100, 110, 120]}},
+'messages.send': {"id": 25,"method": "messages.send","params": {"composeID": 0,"from": "Douglas Crockford <dc@yahoo.com>","to": "Linus Torvalds <lt@kernel.org>","subject": "Kernel cruft","priority": "normal","attachments": [0, 1, 3],"body": {"html": "<h1>Linux Cruft</h1><p>Split Linux into specialized kernels to clean up some cruft!</p><p>DC</p>"}}},
+'messages.tag': [{"id": 20,"method": "messages.tag","params": {	"action": "add",	"tags": ["javascript", "magma"],"messageIDs": [100, 101, 102],	"folderID": 1}},{"id": 20,"method": "messages.tag","params": {"action": "replace",	"tags": [],"messageIDs": [100, 101, 102],	"folderID": 1}},{"id": 20,"method": "messages.tag","params": {"action": "remove",		"tags": ["almost", "done"],	"messageIDs": [100, 101, 102],		"folderID": 1}},{"id": 20,"method": "messages.tag","params": {"action": "list",	"messageIDs": [100, 101, 102],		"folderID": 1}}],
+'messages.tags': ,
+'meta': {"id": 27,"method": "meta","params": {}},
+'scrape.add': {"id": 27,"method": "scrape.add","params": {"messageID": 203,"id": 59,"name": "John Doe","email": "jdoe@example.com"}},
+'scrape': {"id": 28,"method": "scrape","params": {"messageID": 203}},
+'search': {"id": 29,"method": "search","params": {"searchin": 0,"queries": [{"field": "from","filter": "contains","query": "Paul Grahm"}, {"field": "date","range": {"from": 23112342342,"to": 2342342343}}]}},
+'settings.identity': 
+};
+
+method.change(function() {
+    request.val(JSON.stringify(requests[$(this).val()], null, "  "));
+
+    if(auto.prop('checked')) {
+        tester.submit();
+    }
+}).change(); // initialize request on startup
+
+tester.submit(function(event) {
+    event.preventDefault();
+
+    var success = function(data) {
+            var time = new Date() - startTime;
+
+            updateStats(time, data.contents.length);
+            data = JSON.parse(data.contents); // validate
+            response.val(JSON.stringify(data, null, "  ")); // format
+        },
+        error = function(error) {
+            updateStats('none', 'none');
+            response.val(error.status === 404 ? 'Response does not exist' : error.statusText);
+        },
+        updateStats = function(time, size) {
+            stats.find('dd:first').text(
+                typeof time === 'number' ? time/1000 + ' seconds' : 'none'
+            );
+            stats.find('dd:last').text(size + ' bytes');
+        },
+        requestData = (function() {
+            var data = JSON.parse(request.val());
+
+            // trim request to first example if multiple
+            return data instanceof Array ? data[0] : data;
+        })(),
+        proxyParams = $.param({
+            url: 'http://192.168.1.137:10000/portal/camel', // remote url
+            send_cookies: 1,
+            send_session: 1,
+            full_headers: 1,
+            full_status: 1,
+        }),
+        startTime = new Date();
+
+    // pass data to simple-proxy.php
+    // http://benalman.com/code/projects/php-simple-proxy/docs/files/ba-simple-proxy-php.html
+    if(proxy.prop('checked')) {
+        $.ajax({
+            type: 'POST',
+            url: '/dev/simple-proxy.php?' + proxyParams,
+            contentType: 'text/plain',
+            dataType: 'text',
+            data: JSON.stringify(requestData),
+            success: success,
+            error: error
+        });
+    } else {
+        $.ajax({
+            type: 'POST',
+            url: 'http://192.168.1.137:10000/portal/camel',
+            contentType: 'text/plain',
+            dataType: 'text',
+            data: JSON.stringify(requestData),
+            success: success,
+            error: error
+        });
+    }
+});
+</script>
+</html>
+</body>

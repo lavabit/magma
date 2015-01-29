@@ -1,0 +1,115 @@
+diff -urN zlib-1.2.3.orig/Makefile.am zlib-1.2.3.kasal/Makefile.am
+--- zlib-1.2.3.orig/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ zlib-1.2.3.kasal/Makefile.am	2009-03-17 17:58:36.000000000 +0100
+@@ -0,0 +1,67 @@
++ACLOCAL_AMFLAGS = -I m4 --install
++
++lib_LTLIBRARIES = libz.la
++
++libz_la_SOURCES = \
++	adler32.c \
++	compress.c \
++	crc32.c \
++	crc32.h \
++	gzio.c \
++	uncompr.c \
++	deflate.c \
++	deflate.h \
++	trees.c \
++	trees.h \
++	zutil.c \
++	zutil.h \
++	inflate.c \
++	inflate.h \
++	infback.c \
++	inftrees.c \
++	inftrees.h \
++	inffast.c \
++	inffast.h \
++	infflate.h
++
++# Use -version-number to match the file name used before autoconfiscation.
++libz_la_LDFLAGS = -version-number 1:2:3
++
++include_HEADERS = zlib.h
++nodist_include_HEADERS = zconf.h
++
++dist_man_MANS = zlib.3
++
++## libminizip:
++
++lib_LTLIBRARIES += libminizip.la
++
++libminizip_la_SOURCES = \
++	contrib/minizip/ioapi.c \
++	contrib/minizip/mztools.c \
++	contrib/minizip/unzip.c \
++	contrib/minizip/zip.c
++
++# do not build the static version of libminizip
++libminizip_la_CFLAGS = -shared
++libminizip_la_LDFLAGS = -version-info 1:0:0
++libminizip_la_LIBADD = libz.la
++
++minizip_includedir = $(includedir)/minizip
++minizip_include_HEADERS = \
++	contrib/minizip/crypt.h \
++	contrib/minizip/ioapi.h \
++	contrib/minizip/mztools.h \
++	contrib/minizip/unzip.h \
++	contrib/minizip/zip.h
++
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = minizip.pc
++
++EXTRA_PROGRAMS = miniunzip minizip
++
++miniunzip_SOURCES = contrib/minizip/miniunz.c
++miniunzip_LDADD = libminizip.la
++
++minizip_SOURCES = contrib/minizip/minizip.c
++minizip_LDADD = libminizip.la
+diff -urN zlib-1.2.3.orig/configure.ac zlib-1.2.3.kasal/configure.ac
+--- zlib-1.2.3.orig/configure.ac	1970-01-01 01:00:00.000000000 +0100
++++ zlib-1.2.3.kasal/configure.ac	2009-03-17 17:28:41.000000000 +0100
+@@ -0,0 +1,13 @@
++#                                               -*- Autoconf -*-
++# Process this file with autoconf to produce a configure script.
++
++AC_INIT([zlib], [1.2.3], [bugzilla.redhat.com])
++AC_CONFIG_SRCDIR([minigzip.c])
++AC_CONFIG_MACRO_DIR([m4])
++AM_INIT_AUTOMAKE([foreign])
++LT_INIT
++
++AC_SUBST([HAVE_UNISTD_H], [0])
++AC_CHECK_HEADER([unistd.h], [HAVE_UNISTD_H=1], [])
++AC_CONFIG_FILES([Makefile minizip.pc zconf.h:zconf.in.h])
++AC_OUTPUT
+diff -urN zlib-1.2.3.orig/minizip.pc.in zlib-1.2.3.kasal/minizip.pc.in
+--- zlib-1.2.3.orig/minizip.pc.in	1970-01-01 01:00:00.000000000 +0100
++++ zlib-1.2.3.kasal/minizip.pc.in	2009-01-07 15:49:34.000000000 +0100
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++libdir=@libdir@
++includedir=@includedir@/minizip
++
++Name: minizip
++Description: Minizip zip file manipulation library
++Requires:
++Version: @PACKAGE_VERSION@
++Libs: -L${libdir} -lminizip -lz
++Cflags: -I${includedir}
+diff -urN zlib-1.2.3.orig/zconf.in.h zlib-1.2.3.kasal/zconf.in.h
+--- zlib-1.2.3.orig/zconf.in.h	2005-05-28 08:40:35.000000000 +0200
++++ zlib-1.2.3.kasal/zconf.in.h	2009-03-17 17:17:11.000000000 +0100
+@@ -284,7 +284,7 @@
+    typedef Byte       *voidp;
+ #endif
+ 
+-#if 0           /* HAVE_UNISTD_H -- this line is updated by ./configure */
++#if @HAVE_UNISTD_H@           /* HAVE_UNISTD_H -- this line is updated by ./configure */
+ #  include <sys/types.h> /* for off_t */
+ #  include <unistd.h>    /* for SEEK_* and off_t */
+ #  ifdef VMS

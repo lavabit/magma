@@ -1,0 +1,84 @@
+This document contains a list of the known issues with Magma-Classic components.
+
+Webmail
+	WEBMAIL IS HIGHLY EXPERIMENTAL. WE ARE NOT SUPPORTING WEBMAIL AT THIS TIME.
+	- If session times out, only a generic error messages is displayed
+	- If no messages checked, toolbar actions which require message selection should be disabled
+	- Opening unread message and closing does not update TOC message is read
+	- Need "Check Mail" button since F5 does not refresh page
+	- Folder names have 16 character hard limit, at 17th, additional input should not be allowed
+	- Columns should be resizable, reorderable, and hideable
+	- Resizing browser pane destroys column labels
+	- Need escaping on html mail to verify content isn't running scripts
+	- Reply/Reply-all does not work
+	- Tagging messages does not work
+	- Junk button does not work
+	- Magma.dkim.privkey is not being loaded into a secure memory buffer and probably should be.
+
+
+
+Server
+	- Credential_alloc_auth() returns NULL regardless of whether the failure was caused by something like a general error such as no free memory, 
+		or a validation problem like a malformed or blank credential username. As a result, there are a few places in servers/smtp/smtp.c where 
+		this checking is done as a hack, after the fact.
+	- Finish tank/tokyocabinet integration
+	- Add collections/validators to config key options. Validators would automatically determine that a configuration option falls within a 
+		specified minimum <-> maximum range.
+	- On certain systems, reading in cryptographic seed data at startup can take an inordinate amount of time because even small requests to 
+		read /dev/random can block for a very long before returning. There possibly should be some sort of timer set that warns the user 
+		and falls back to rand_start() if the read operation takes too much time.
+	-  Network functions need to be architecture independent. There are several functions in the network subsystem that assume a little endian 
+		architecture when performing network address operations. These obviously all need to be corrected. This also includes explicit checks 
+		in other portions of code for localhost as 0x0100007f ...
+	- The retrieval of user credentials and the validation of newly registered names need to perform a few additional checks for illegal characters 
+		in usernames/addresses: Valid usernames start with an alphabetic character, end with an alphanumeric character, and cannot contain 
+		consecutive underscores.
+	- st_replace() needs full review. This function needs to be reviewed (core/strings/replace.c) and added to the check unit tests.
+	- The magma server configuration file takes only a single ssl.certificate option that expects both the certificate chain and the 
+		private key file to coexist in the same PEM file. There should probably be another config option added, .e.g. "ssl.privkey"
+	- There are portions in the code where the ERR_error_string*() family of functions is being used instead of an internal routine. 
+		Furthermore, some of these use ERR_error_string() instead of the preferred ERR_error_string_n(), which is not thread safe.
+		It also seems that a higher degree of granularity in error reporting could be achieved if ERR_error_string_n() were used along 
+		with ERR_get_error_line_data(). Similarly, we could probably dump the entire error queue for maximum notification instead of just 
+		fetching the top one.
+
+
+
+WebApps
+	- No new password strength enforcement
+	- New folder name validation.  The same rules that apply to enforcing valid names for imap folders should be applied to contacts folders
+	- Web registration blocklist needs to be completed and tested
+	- Each time the teacher receives a training request, it needs to update the message flags in the database. The update_signature_flags_add and 
+		update_signature_flags_remove sql queries are currently unused, but should be used for that purpose.
+	- The current web registration code in register_data_insert_user() only creates one folder - the inbox - and then uses this folder id for 
+		the "spamfolder" value in the Dispatch table. There should probably be two separate folders created.
+
+
+
+HTTP
+	- There is an unverified bug in the code of http_body() that determines if the entire http body has been read. At the very least, 
+		a loop is required to ensure this happens. There are also no limitations placed on the maximum size of the http headers or body sent by a 
+		client to the server, so a denial-of-service condition is possible, whether intentional or not.
+	- http_print_500() should be replaced with http_print_500_log() where possible
+	- http_load_file() in servers/http/content.c still uses hardcoded content types when it loads files; these should be subject to the same logic 
+		employed by objects/mail/mime.c.
+	- Right now there is a SIGHUP handler for updating all http content changes, which has not been verified or tested. Additionally, modifications 
+		to files should prompt a server update automatically, as should deletions or additions in the future - all without requiring the delivery
+		of a signal.
+	- The operations that create contact folders and rename them (in objects/folders/contacts.c) need to perform full-validation that is mostly 
+		identical to the analogous checks performed on imap folders.
+	- Portal main script needs a macro to populate address of web server. Right now magma.portalUrl in script.js is a hardcoded value. 
+		This should be determined and populated dynamically, in accordance with the current magma configuration.
+
+
+SMTP
+	- Currently dspam_check() only returns an integer value. Instead, it should return a structure that includes the disposition, confidence, probability, 
+		and signature to be stored with the message in the database. The new return code should be 0 for success or a negative integer for an error.
+	- Routines in servers/smtp/parse.c need to ensure that the list of allowed characters in an email address are compliant with RFC specifications. 
+		The parser should use different lists of valid characters for the local and domain portions of an email address.
+	- smtp_recipients_t is essentially a simple linked list structure, so there's no reason it shouldn't be replaced with an inx holder of type M_INX_LINKED.
+	- dkim_create() only returns NULL on signing failure. There should be more information available to the caller as to the nature of the error.
+
+
+IMAP
+	- Deleted imap messages may persist in the database and on disk

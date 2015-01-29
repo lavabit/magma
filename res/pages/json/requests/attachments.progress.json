@@ -1,0 +1,7 @@
+{
+    "id": 6,
+    "method": "attachments.progress",
+    "params": {
+        "attachmentID": 34
+    }
+}

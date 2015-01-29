@@ -1,0 +1,54 @@
+Building From Source - Magma 6.0
+
+Tarball contains
+---------------------------------------------
+
+magma.distribution/
+	doc/
+		build.from.source.txt
+		config.readme.txt		
+		install.instructions.txt
+		knowledge.base.txt
+		known.issues.txt
+	install.sh
+	magma/
+		bin/
+		etc/
+		lib/
+		logs/
+		magma.config.stub
+		resources/
+		scripts/
+		spool/
+	source/
+		magma/
+		magma.so/
+		magma.web/
+		magma.utils/
+
+
+Prerequisites
+---------------------------------------------
+
+List of packages to be installed: mysql-devel, ncurses-devel, gcc-c++, check, check-devel, libevent-devel, bzip2-devel 
+
+Assuming that all prerequisites have been met, this should be the entire process. buildall.sh is a wrapper around build.sh that unpacks, configures, and builds all of magma.so's 3rd party dependencies in such a way that they are built in the precise, proper order, as some of these 3rd party dependencies depend upon others. There will likely be no reason for you ever to use build.sh manually, unless you know exactly what you are doing.
+
+On CentOS 6.5 there are a few known points for potential failure: 1. The C++ compiler must be installed (package gcc-c++) 2. The clamav installation requires that user/group "clamav" exists. 3. ncurses include files may be necessary (package ncurses-devel).
+
+If there is a build error you can pinpoint the source of it by using the build.sh "log" function on the failed module. For example, if one of the build steps for clamav fails, you can see what went wrong by running ./build.sh clamav-log and checking the last few lines of output.
+
+Please note that if a failure occurs in the buildall.sh script, there is no way to resume at failure. The process will either start from the beginning, or you may need to make a temporary copy of the script and comment out the lines that have already executed successfully.
+
+
+Instructions
+------------------------------------------
+
+Magma.so must be built before Magma and Magma.check
+
+1. Navigate to magma.distribution/source/magma.so and run buildall.sh
+2. Navigate to magma.distribution/source/magma/.debug and type 'make'
+3. Navigate to magma.distribution/source/magma/.check and type 'make'
+
+
+You're done!  Please read install.instructions.txt

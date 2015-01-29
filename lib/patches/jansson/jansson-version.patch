@@ -1,0 +1,47 @@
+diff -U 10 -Nprw jansson-2.0.1.orig/src/error.c jansson-2.0.1/src/error.c
+--- jansson/src/error.c	2011-04-13 02:38:13.045762668 -0500
++++ jansson.b/src//error.c	2011-04-13 02:50:55.437768723 -0500
+@@ -1,13 +1,17 @@
+ #include <string.h>
+ #include "jansson_private.h"
+ 
++const char * jansson_version(void) {
++	return JANSSON_VERSION;
++}
++
+ void jsonp_error_init(json_error_t *error, const char *source)
+ {
+     if(error)
+     {
+         error->text[0] = '\0';
+         error->line = -1;
+         error->column = -1;
+         error->position = 0;
+         if(source)
+             jsonp_error_set_source(error, source);
+diff -U 10 -Nprw jansson-2.0.1.orig/src/jansson.h jansson-2.0.1/src/jansson.h
+--- jansson/src/jansson.h	2011-04-13 02:38:13.045762668 -0500
++++ jansson.b/src/jansson.h	2011-04-13 02:49:30.324825263 -0500
+@@ -27,20 +27,22 @@ extern "C" {
+ /* Micro version is omitted if it's 0 */
+ #define JANSSON_VERSION  "2.0.1"
+ 
+ /* Version as a 3-byte hex number, e.g. 0x010201 == 1.2.1. Use this
+    for numeric comparisons, e.g. #if JANSSON_VERSION_HEX >= ... */
+ #define JANSSON_VERSION_HEX  ((JANSSON_MAJOR_VERSION << 16) |   \
+                               (JANSSON_MINOR_VERSION << 8)  |   \
+                               (JANSSON_MICRO_VERSION << 0))
+ 
+ 
++const char * jansson_version(void);
++
+ /* types */
+ 
+ typedef enum {
+     JSON_OBJECT,
+     JSON_ARRAY,
+     JSON_STRING,
+     JSON_INTEGER,
+     JSON_REAL,
+     JSON_TRUE,
+     JSON_FALSE,

@@ -1,0 +1,17 @@
+eclipse.preferences.version=1
+environment/project/cdt.managedbuild.toolchain.gnu.base.501067626/append=true
+environment/project/cdt.managedbuild.toolchain.gnu.base.501067626/appendContributed=true
+indexer/filesToParseUpFront=time.h, stdio.h, stdlib.h, cstdarg, stdarg.h, stddef.h, sys/resource.h, ctime, sys/types.h, signal.h, cstdio
+indexer/indexAllFiles=true
+indexer/indexAllHeaderVersions=true
+indexer/indexAllVersionsSpecificHeaders=
+indexer/indexOnOpen=true
+indexer/indexUnusedHeadersWithDefaultLang=true
+indexer/indexerId=org.eclipse.cdt.core.fastIndexer
+indexer/skipFilesLargerThanMB=512
+indexer/skipImplicitReferences=false
+indexer/skipIncludedFilesLargerThanMB=16
+indexer/skipMacroReferences=false
+indexer/skipReferences=false
+indexer/skipTypeReferences=false
+indexer/useHeuristicIncludeResolution=true

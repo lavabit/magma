@@ -1,0 +1,138 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lavabit ..::.. Webmail</title>
+    <link rel="stylesheet" href="/css/jquery-ui-smoothness.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <script src="/js/jquery.js"></script>
+    <script src="/js/plugins.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body>
+    <div id="main-wrapper">
+        <div id="chrome">
+            <h1 class="logo">Lavabit Webmail</h1>
+            <div id="account">
+                <h2 class="sr-hidden">Account</h2>
+                <a class="sr-hidden" href="#sr-global-nav">Skip to global navigation</a>
+                <!-- paragraph({text: "magma@lavabit.com"}) insertBefore:'#account-info ul' -->
+                <ul>
+                    <li><a class="meta" href="#info">Information</a></li>
+                    <li><a class="sign-out" href="#signout">Sign Out</a></li>
+                </ul>
+            </div>
+            <div id="global-nav">
+                <h2 class="sr-hidden" id="sr-global-nav">Global Navigation</h2>
+                <ul>
+                    <li><a class="mail" href="#mail">Mail</a></li>
+                    <li><a class="contacts" href="#contacts">Contacts</a></li>
+                    <li><a class="options" href="#options">Options</a></li>
+                    <li><a class="help" href="#help">Help</a></li>
+                </ul>
+            </div>
+        </div>
+        <div id="workspaces-wrapper">
+            <div class="workspace-wrapper active">
+                <div class="toolbar">
+                    <h3 class="sr-hidden">Toolbar</h3>
+                    <div class="search">
+                        <h4 class="sr-hidden">Search</h4>
+                        <a class="sr-hidden" href="#sr-tools">Skip to tools</a>
+                        <!-- skiplink -->
+                        <form action="#search">
+                            <label class="sr-hidden watermark" for="search-input">Enter search your here.</label>
+                            <input type="text" id="search-input" name="search-text" />
+                            <a class="gray button clear" href="#clear-search" title="Clear search">✖</a>
+                            <input class="gray button" type="submit" name="search" value="Search" />
+                        </form>
+                    </div>
+                    <div class="tools">
+                        <h4 class="sr-hidden" id="sr-tools">Tools</h4>
+                        <!-- skiplink -->
+                        <ul>
+                            <li><a class="new" href="#new">New</a></li>
+                            <li>
+                            	<input id="sort" class="dropdown" type="checkbox" />
+                            	<label for="sort">Sort</label>
+                            </li>
+                            <li>
+                            	<input id="narrow" class="dropdown" type="checkbox" />
+                            	<label for="narrow">Narrow</label>
+                            </li>
+                            <li>
+                            	<input id="copy" class="dropdown" type="checkbox" />
+                            	<label for="copy">Copy</label>
+                            </li>
+                            <li>
+                            	<input id="move" class="dropdown" type="checkbox" />
+                            	<label for="move">Move</label>
+                            </li>
+                            <li class="disabled">
+                            	<input id="edit" class="toggle" type="checkbox" />
+                            	<label for="edit">Edit</label>
+                            </li>
+                            <li><a class="delete" href="#delete">Delete</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="workspace">
+                    <div class="view-wrapper">
+                        <div class="view">
+                            <h2 class="sr-hidden" id="sr-view">View</h2>
+                            <div class="contacts-wrapper">
+                                <h3 class="sr-hidden">Contacts</h3>
+                                <!-- skiplink -->
+                                <div class="column-wrapper">
+                                    <div class="contact-info">
+                                        <!-- contactInfo contacts.load({contactID: 1}) appendTo:'.contact-info' -->
+                                        <a class="close" href="close-contact-info">Close</a>
+                                    </div>
+                                </div>
+                                <div class="contact-list info">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Gravatar</th>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                                <th>Company</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                    <div class="table-scroll-wrapper">
+                                        <table class="contacts">
+                                            <tbody>
+                                                <!-- contactList contacts.list() appendTo:'.contacts tbody' -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="folder-menu">
+                        <h2 class="sr-hidden" id="sr-folder-menu">Folder Menu</h2>
+                        <div class="folder-scroll-wrapper options">
+                            <ul class="folder-list">
+                                <li id="folder-0"><a class="all folder permanent" href="#all">All</a></li>
+                                <li id="folder-1"><a class="people folder permanent" href="#people">People</a></li>
+                                <li id="folder-2"><a class="business folder permanent" href="#business">Business</a></li>
+                                <li id="folder-3"><a class="collected folder permanent" href="#collected">Collected</a></li>
+                                <!-- foldersExpandable folders.list({context: "contacts"}) appendTo:'.folder-list' -->
+                            </ul>
+                        </div>
+                        <div class="folder-options">
+                            <h3 class="sr-hidden" id="sr-folder-options">Folder Options</h3>
+                            <input id="add-folder" class="add" type="checkbox" />
+                            <label for="add-folder">Add Folder</label>
+                            <input id="edit-folders" class="edit" type="checkbox" />
+                            <label for="edit-folders">Edit Folders</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

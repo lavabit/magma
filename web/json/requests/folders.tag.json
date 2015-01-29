@@ -1,0 +1,7 @@
+{
+    "id": 16,
+    "method": "folders.tag",
+    "params": {
+        "folderID": 30
+    }
+}

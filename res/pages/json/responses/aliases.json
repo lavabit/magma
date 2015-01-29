@@ -1,0 +1,18 @@
+[{
+    "result": [{
+        "email": "peter@lavabit.com",
+        "name": "Peter"
+    }, {
+        "email": "work@lavabit.com",
+        "name": "Work",
+        "def": true
+    }, {
+        "email": "peter@pan.com",
+        "name": "Website"
+    }, {
+        "email": "email@example.com",
+        "name": "Test Email"
+    }]
+}, {
+    "error": true
+}]

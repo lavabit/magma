@@ -1,0 +1,40 @@
+<dl class="source">
+    <dt>Source IP</dt>
+    <dd class="source-ip">${source.ip}</dd>
+    <dt>DNS</dt>
+    <dd class="dns">${source.dns}</dd>
+    <dt>Reputation</dt>
+    <dd class="reputation">${source.reputation}</dd>
+</dl>
+<dl class="security">
+    <dt>Received Securely</dt>
+    {{if security.secure}}
+        <dd class="secure true">Yes</dd>
+    {{else}}
+        <dd class="secure false">No</dd>
+    {{/if}}
+    <dt>SPF</dt>
+    {{if security.spf}}
+        <dd class="spf true">Yes</dd>
+    {{else}}
+        <dd class="spf false">No</dd>
+    {{/if}}
+    <dt>DKIM</dt>
+    {{if security.dkim}}
+        <dd class="dkim true">Yes</dd>
+    {{else}}
+        <dd class="dkim false">No</dd>
+    {{/if}}
+</dl>
+<div class="server">
+    <p class="date">${server.date}</p>
+    <dl>
+        <dt>Remote Images Available</dt>
+        {{if server.images}}
+            <dd class="remote-images true">Yes</dd>
+        {{else}}
+            <dd class="remote-images false">No</dd>
+        {{/if}}
+    </dl>
+    <p class={{if server.warnings}}"warnings"{{else}}"no-warnings"{{/if}}>Warnings</p>
+</div>

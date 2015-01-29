@@ -1,0 +1,7 @@
+<div class="tab{{if permatab}} permatab{{/if}}">
+ <h3>${title}</h3>
+ {{tmpl "skiplink"}}
+ {{if !permatab}}
+  <a class="close" title="Close this tab" href="#close-tab">Close</a>
+ {{/if}}
+</div>

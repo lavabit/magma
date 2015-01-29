@@ -1,0 +1,41 @@
+<div class="composing-wrapper">
+    <form name="composing" method="POST" action="#send">
+        <div class="composing-header">
+            <div class="field-wrapper">
+                <div class="input-wrapper">
+                    <div class="input">
+                        <select id="from" name="from">
+                        </select>
+                    </div>
+                </div>
+                <div class="label-wrapper">
+                    <label for="from">From:</label>
+                </div>
+            </div>
+            <div class="field-wrapper">
+                <div class="input-wrapper">
+                    <div class="input text">
+                        <input type="text" id="to" name="to" />
+                    </div>
+                </div>
+                <div class="label-wrapper">
+                    <label for="to">To:</label>
+                </div>
+            </div>
+            <div class="field-wrapper">
+                <div class="input-wrapper">
+                    <div class="input text">
+                        <input type="text" id="subject" name="subject" />
+                    </div>
+                </div>
+                <div class="label-wrapper">
+                    <label for="subject">Subject:</label>
+                </div>
+            </div>
+        </div>
+        <div class="composing-body">
+            <label class="sr-hidden watermark" for="body">Type your message here...</label>
+            <textarea id="body" name="body"></textarea>
+        </div>
+    </form>
+</div>

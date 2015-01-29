@@ -1,0 +1,5 @@
+{{if inbox}}<li id="folder-${inbox.folderID}"><a class="inbox folder permanent" href="#folder-${inbox.folderID}">${inbox.name}</a></li>{{/if}}
+{{if drafts}}<li id="folder-${drafts.folderID}"><a class="drafts folder permanent" href="#folder-${drafts.folderID}">${drafts.name}</a></li>{{/if}}
+{{if sent}}<li id="folder-${sent.folderID}"><a class="sent folder permanent" href="#folder-${sent.folderID}">${sent.name}</a></li>{{/if}}
+{{if junk}}<li id="folder-${junk.folderID}"><a class="junk folder permanent" href="#folder-${junk.folderID}">${junk.name}</a></li>{{/if}}
+{{if trash}}<li id="folder-${trash.folderID}"><a class="trash folder permanent" href="#folder-${trash.folderID}">${trash.name}</a></li>{{/if}}

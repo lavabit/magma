@@ -1,0 +1,6 @@
+diff -r 946577531cae libclamav/version.h.static
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/libclamav/version.h.static	Fri Oct 10 05:45:20 2014 -0500
+@@ -0,0 +1,1 @@
++#define REPO_VERSION VERSION
+

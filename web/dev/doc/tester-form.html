@@ -1,0 +1,29 @@
+<form id="tester" method="POST" action="http://192.168.1.137:10000/portal/camel">
+    <div>
+        <label for="proxy">Simple proxy?</label>
+        <input id="proxy" type="checkbox" />
+        <label for="auto-submit">Auto test?</label>
+        <input id="auto-submit" type="checkbox" />
+    </div>
+    <div>
+        <label for="method">Choose a method:</label>
+        <select id="method" name="method">
+            ${method-options}
+        </select>
+        <input id="test" type="submit" value="Test" />
+    </div>
+    <div>
+        <label class="above" for="request">Request:</label>
+        <textarea id="request" name="request" rows="20"></textarea>
+    </div>
+    <div>
+        <label class="above" for="response">Response:</label>
+        <textarea id="response" name="response" readonly="readonly" rows="20"></textarea>
+    </div>
+    <dl id="stats">
+        <dt>Response time</dt>
+        <dd>none</dd>
+        <dt>Response size</dt>
+        <dd>none</dd>
+    </dl>
+</form>

@@ -1,0 +1,107 @@
+[{
+    "result": [{
+        "folderID": 1,
+        "name": "Inbox"
+    }, {
+        "folderID": 5,
+        "name": "Projects"
+    }, {
+        "folderID": 8,
+        "parentID": 12,
+        "name": "jQuery Plugins"
+    }, {
+        "folderID": 10,
+        "parentID": 12,
+        "name": "Tests"
+    }, {
+        "folderID": 11,
+        "parentID": 10,
+        "name": "Webmail"
+    }, {
+        "folderID": 15,
+        "parentID": 12,
+        "name": "Templates"
+    }, {
+        "folderID": 12,
+        "name": "Javascript"
+    }, {
+        "folderID": 9,
+        "parentID": 8,
+        "name": "Querios"
+    }]
+}, {
+    "result": [{
+        "folderID": 200,
+        "name": "All"
+    }, {
+        "folderID": 201,
+        "name": "People"
+    }, {
+        "folderID": 202,
+        "name": "Business"
+    }, {
+        "folderID": 203,
+        "name": "Collected"
+    }, {
+        "folderID": 204,
+        "name": "Work"
+    }, {
+        "folderID": 205,
+        "name": "Personal"
+    }, {
+        "folderID": 206,
+        "parentID": 205,
+        "name": "Family"
+    }, {
+        "folderID": 207,
+        "parentID": 205,
+        "name": "Friends"
+    }, {
+        "folderID": 999,
+        "name": "No Gravatars"
+    }]
+}, {
+    "result": [{
+        "folderID": 100,
+        "name": "Identity"
+    }, {
+        "folderID": 101,
+        "name": "Mail Settings"
+    }, {
+        "folderID": 102,
+        "name": "Portal Settings"
+    }, {
+        "folderID": 103,
+        "name": "Account Upgrades"
+    }, {
+        "folderID": 104,
+        "name": "Password"
+    }]
+}, {
+    "result": [{
+        "folderID": 400,
+        "name": "Statistics"
+    }, {
+        "folderID": 401,
+        "name": "Security"
+    }, {
+        "folderID": 402,
+        "name": "Contacts"
+    }, {
+        "folderID": 403,
+        "name": "Mail"
+    }]
+}, {
+    "result": [{
+        "folderID": 500,
+        "name": "Help Category"
+    }, {
+        "folderID": 501,
+        "name": "Help Category"
+    }, {
+        "folderID": 502,
+        "name": "Help Category"
+    }]
+}, {
+    "error": true
+}]

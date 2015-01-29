@@ -1,0 +1,8 @@
+{
+    "id": 7,
+    "method": "attachments.remove",
+    "params": {
+	"composeID": 1,
+        "attachmentID": 34
+    }
+}

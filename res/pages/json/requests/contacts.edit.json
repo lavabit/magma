@@ -1,0 +1,11 @@
+{
+	"id":4,
+	"method":"contacts.edit",
+	"params":{
+		"folderID":7,
+		"contactID": 1,
+		"contact":{
+			"phone": "2145551212"
+		}
+	}
+}

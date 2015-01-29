@@ -1,0 +1,24 @@
+diff -up gd-2.0.35/gd_gif_in.c.loop gd-2.0.35/gd_gif_in.c
+--- gd-2.0.35/gd_gif_in.c.loop	2007-06-14 15:51:41.000000000 -0400
++++ gd-2.0.35/gd_gif_in.c	2008-07-21 11:20:25.000000000 -0400
+@@ -453,16 +453,17 @@ LWZReadByte_(gdIOCtx *fd, LZW_STATIC_DAT
+                        return sd->firstcode;
+                } else if (code == sd->end_code) {
+                        int             count;
++                       int             max_count = 1024;
+                        unsigned char   buf[260];
+ 
+                        if (*ZeroDataBlockP)
+                                return -2;
+ 
+-                       while ((count = GetDataBlock(fd, buf, ZeroDataBlockP)) > 0)
++                       while ((count = GetDataBlock(fd, buf, ZeroDataBlockP)) > 0 && --max_count >= 0 )
+                                ;
+ 
+-                       if (count != 0)
+-                       return -2;
++                       if (count != 0 || max_count < 0 )
++                               return -2;
+                }
+ 
+                incode = code;

@@ -1,0 +1,46 @@
+diff -U 3 -H -b -w -B -E -i -p -r -N -- clamav/libclamav/others.c clamav.lavabit/libclamav/others.c
+--- clamav/libclamav/others.c	2011-06-09 01:34:47.000000000 -0500
++++ clamav.lavabit/libclamav/others.c	2011-06-09 13:44:45.811469818 -0500
+@@ -160,25 +160,35 @@ static lt_dlhandle lt_dlfind(const char 
+     return rhandle;
+ }
+ 
++#include <dlfcn.h>
+ static void cli_rarload(void) {
+-    lt_dlhandle rhandle;
+ 
+-    if(is_rar_initd) return;
++	lt_dlhandle rhandle = NULL;
++
++  if(is_rar_initd) {
++  	return;
++  }
++
+     is_rar_initd = 1;
+ 
+-    rhandle = lt_dlfind("libclamunrar_iface", "unrar");
+-    if (!rhandle)
++  if (!(*(void **)(&cli_unrar_open) = (void *)dlsym((void *)0, "libclamunrar_iface_LTX_unrar_open")) ||
++		!(*(void **)(&cli_unrar_extract_next_prepare) = dlsym(NULL, "libclamunrar_iface_LTX_unrar_extract_next_prepare")) ||
++		!(*(void **)(&cli_unrar_extract_next) = dlsym(NULL, "libclamunrar_iface_LTX_unrar_extract_next")) ||
++		!(*(void **)(&cli_unrar_close) = dlsym(NULL, "libclamunrar_iface_LTX_unrar_close"))) {
++
++	  if (!(rhandle = lt_dlfind("libclamunrar_iface", "unrar"))) {
+ 	return;
++	  }
+ 
+     if (!(cli_unrar_open = (int(*)(int, const char *, unrar_state_t *))lt_dlsym(rhandle, "libclamunrar_iface_LTX_unrar_open")) ||
+ 	!(cli_unrar_extract_next_prepare = (int(*)(unrar_state_t *, const char *))lt_dlsym(rhandle, "libclamunrar_iface_LTX_unrar_extract_next_prepare")) ||
+ 	!(cli_unrar_extract_next = (int(*)(unrar_state_t *, const char *))lt_dlsym(rhandle, "libclamunrar_iface_LTX_unrar_extract_next")) ||
+-	!(cli_unrar_close = (void(*)(unrar_state_t *))lt_dlsym(rhandle, "libclamunrar_iface_LTX_unrar_close"))
+-	) {
+-	/* ideally we should never land here, we'd better warn so */
++-	  		!(cli_unrar_close = (void(*)(unrar_state_t *))lt_dlsym(rhandle, "libclamunrar_iface_LTX_unrar_close"))) {
+         cli_warnmsg("Cannot resolve: %s (version mismatch?) - unrar support unavailable\n", lt_dlerror());
+         return;
+     }
++	}
++
+     have_rar = 1;
+ }
+ 

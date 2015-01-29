@@ -1,0 +1,12 @@
+--- gd-2.0.28/gd_gd.c	2004-05-24 17:28:12.000000000 +0200
++++ gd-2.0.28_new/gd_gd.c	2009-12-08 15:19:16.159836680 +0100
+@@ -44,6 +44,9 @@
+ 	    {
+ 	      goto fail1;
+ 	    }
++	    if (im->colorsTotal > gdMaxColors) {
++	      goto fail1;
++		}
+ 	}
+       /* Int to accommodate truecolor single-color transparency */
+       if (!gdGetInt (&im->transparent, in))

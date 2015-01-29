@@ -1,0 +1,7 @@
+#Tue Jul 12 21:55:31 CDT 2011
+content-types/enabled=false
+content-types/org.eclipse.cdt.core.cHeader/file-extensions=h
+content-types/org.eclipse.cdt.core.cSource/file-extensions=c
+content-types/org.eclipse.cdt.core.cxxHeader/file-extensions=hpp
+content-types/org.eclipse.cdt.core.cxxSource/file-extensions=cpp
+eclipse.preferences.version=1

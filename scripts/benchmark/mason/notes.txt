@@ -1,0 +1,7 @@
+
+
+### The storage mason benchmarks.
+
+Used the messages in magma.universe/data/messages as a sample corpus.
+Corpus equaled 225,416 messages taking up 5.2 GB of disk space.
+

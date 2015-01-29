@@ -1,0 +1,12 @@
+diff -up gd-2.0.35/Makefile.in.time gd-2.0.35/Makefile.in
+--- gd-2.0.35/Makefile.in.time	2009-01-06 15:07:36.000000000 +0100
++++ gd-2.0.35/Makefile.in	2009-01-06 15:09:54.000000000 +0100
+@@ -25,7 +25,7 @@ pkglibdir = $(libdir)/@PACKAGE@
+ pkgincludedir = $(includedir)/@PACKAGE@
+ top_builddir = .
+ am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
+-INSTALL = @INSTALL@
++INSTALL = @INSTALL@ -p
+ install_sh_DATA = $(install_sh) -c -m 644
+ install_sh_PROGRAM = $(install_sh) -c
+ install_sh_SCRIPT = $(install_sh) -c

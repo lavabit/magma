@@ -1,0 +1,63 @@
+diff -r 039afa115fb4 sources/jansson/src/jansson.h
+--- jansson/src/jansson.h
++++ jansson.b/src//jansson.h
+@@ -74,6 +74,9 @@ typedef long json_int_t;
+ #define json_is_boolean(json)  (json_is_true(json) || json_is_false(json))
+ #define json_is_null(json)     (json && json_typeof(json) == JSON_NULL)
+ 
++/* json type as a string, note that NULL returns "JSON_NULL" */
++const char * json_type_string(json_t *json);
++
+ /* construction, destruction, reference counting */
+ 
+ json_t *json_object(void);
+diff -r 039afa115fb4 sources/jansson/src/value.c
+--- jansson/src/value.c
++++ jansson.b/src//value.c
+@@ -865,6 +865,46 @@ json_t *json_null(void)
+     return &the_null;
+ }
+ 
++/*** types ***/
++const char * json_type_string(json_t *json) {
++
++	char *type = "JSON_NULL";
++
++	if (!json)
++		return type;
++
++	switch (json_typeof(json)) {
++		case(JSON_OBJECT):
++			type = "JSON_OBJECT";
++			break;
++    case(JSON_ARRAY):
++			type = "JSON_ARRAY";
++			break;
++    case(JSON_STRING):
++			type = "JSON_STRING";
++			break;
++    case(JSON_INTEGER):
++			type = "JSON_INTEGER";
++			break;
++    case(JSON_REAL):
++			type = "JSON_REAL";
++			break;
++    case(JSON_TRUE):
++			type = "JSON_TRUE";
++			break;
++    case(JSON_FALSE):
++			type = "JSON_FALSE";
++			break;
++    case(JSON_NULL):
++			type = "JSON_NULL";
++    	break;
++    default:
++    	type = "ERROR";
++    	break;
++	}
++
++	return type;
++}
+ 
+ /*** deletion ***/
+ 

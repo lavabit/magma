@@ -1,0 +1,11 @@
+--- bzip2-1.0.4/Makefile-libbz2_so.cflags	2007-01-08 09:47:27.000000000 +0100
++++ bzip2-1.0.4/Makefile-libbz2_so	2007-01-08 09:48:47.000000000 +0100
+@@ -35,7 +35,7 @@
+       bzlib.o
+ 
+ all: $(OBJS)
+-	$(CC) -shared -Wl,-soname -Wl,libbz2.so.1 -o libbz2.so.1.0.4 $(OBJS)
++	$(CC) $(CFLAGS) -shared -Wl,-soname -Wl,libbz2.so.1 -o libbz2.so.1.0.4 $(OBJS)
+ 	$(CC) $(CFLAGS) -o bzip2-shared bzip2.c libbz2.so.1.0.4
+ 	rm -f libbz2.so.1.0
+ 	ln -s libbz2.so.1.0.4 libbz2.so.1.0

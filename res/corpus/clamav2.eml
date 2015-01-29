@@ -1,0 +1,35 @@
+FCC: imap://ladar@localhost/Sent
+X-Identity-Key: id1
+Date: Thu, 13 May 2010 08:13:11 -0500
+From: none <""ladar\"@(none)">
+X-Mozilla-Draft-Info: internal/draft; vcard=0; receipt=0; uuencode=0
+User-Agent: Thunderbird 1.5.0.12 (X11/20100317)
+MIME-Version: 1.0
+To:  ladar@lavabit.com
+Subject: rar test v2
+Content-Type: multipart/mixed;
+ boundary="------------050401010305060400040808"
+
+This is a multi-part message in MIME format.
+--------------050401010305060400040808
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+
+
+--------------050401010305060400040808
+Content-Type: application/x-rar;
+ name="clam-v2.rar"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="clam-v2.rar"
+
+UmFyIRoHAM+QcwAADQAAAAAAAACRAHSAgCgAIgEAACACAAAD/TwH77wMJjEUMwgApIEAAGNs
+YW0uZXhlCcFZTMgAAAAc1+kYULWtszouCt0cW/3wCyWsye2nRguDS4S0kpcrL/Ckuag5oPiS
+g4XBFBJ4AvgNycVB2XFyiRkW0V72ztCr4BcuB8d59wPudOc8U/fcy4cx+8BpcIwPB8QCODjn
+z9RDySYkGsD35zzsto5FTmxj5fRVUfTtJS0GOfB7dcwGtToG4wzG2O36fn4uYYffJwif60WI
+cezfkH69OKhKxdyP9cmyb8X+TxO96u7mG6pvU1BTpu3uCF8FGrN4dy1XXu3Q31cdGXoiTpES
+WsL0LTSYeRmueQDUdCO/CFqK1DM5+Ac3Hp/cmqSlHyFAmkXjJiUGuU5a4ONx6QRICbOWzHof
+7owJl9N++fCuQsvDR4qFpNPgqgaL58LetsA=
+--------------050401010305060400040808--
+

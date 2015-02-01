@@ -45,6 +45,8 @@ void processor_cleanup(EC_KEY *key, secure_t *ciphered, char *hex_pub, char *hex
 	return;
 }
 
+typedef char make_sure_rand_max_is_large_enough[(RAND_MAX < 10LL << 20) ? -1 : 1];
+
 int processor(int iteration) {
 
 	int tlen;
@@ -69,7 +71,7 @@ int processor(int iteration) {
 	memset(copy, 0, tlen + 1);
 	memset(text, 0, tlen + 1);
 	for (uint64_t j = 0; j < tlen; j++) {
-		*(copy + j) = *(text + j) = (rand() % 255);
+		copy[j] = text[j] = rand() % 256;
 	}
 
 	// Generate a key for our theoretical user.

@@ -83,18 +83,18 @@ void register_captcha_write_noise(gdImagePtr image, int_t x, int_t y) {
 
 	int_t increment, color, xpos, ypos, pixels = (x * y) * 0.05;
 
-	// Write garbage into 10% of the pixels.
+	// Write garbage into about 40% of the pixels.
 	for (increment = 0; increment < pixels; increment++) {
 		xpos = rand_get_uint32() % x;
 		ypos = rand_get_uint32() % y;
-		color = gdImageColorResolve_d(image, rand_get_uint32() % 255, rand_get_uint32() % 255, rand_get_uint32() % 255);
-		gdImageSetPixel_d(image, xpos, ypos, color);
-		gdImageSetPixel_d(image, xpos + 1, ypos, color);
-		gdImageSetPixel_d(image, xpos + 2, ypos, color);
-		gdImageSetPixel_d(image, xpos, ypos + 1, color);
+		color = gdImageColorResolve_d(image, rand_get_uint32() % 256, rand_get_uint32() % 256, rand_get_uint32() % 256);
+		gdImageSetPixel_d(image, xpos + 0, ypos + 0, color);
+		gdImageSetPixel_d(image, xpos + 1, ypos + 0, color);
+		gdImageSetPixel_d(image, xpos + 2, ypos + 0, color);
+		gdImageSetPixel_d(image, xpos + 0, ypos + 1, color);
 		gdImageSetPixel_d(image, xpos + 1, ypos + 1, color);
 		gdImageSetPixel_d(image, xpos + 2, ypos + 2, color);
-		gdImageSetPixel_d(image, xpos, ypos + 2, color);
+		gdImageSetPixel_d(image, xpos + 0, ypos + 2, color);
 		gdImageSetPixel_d(image, xpos + 1, ypos + 2, color);
 		gdImageSetPixel_d(image, xpos + 2, ypos + 2, color);
 	}
@@ -183,8 +183,8 @@ stringer_t * register_captcha_generate(stringer_t *value) {
 			return NULL;
 		}
 
-		// Select a random color.
-		color = gdImageColorResolve_d(image, rand_get_uint32() % 255, rand_get_uint32() % 50, rand_get_uint32() % 50);
+		// Select a random color, biased towards red.
+		color = gdImageColorResolve_d(image, rand_get_uint32() % 256, rand_get_uint32() % 50, rand_get_uint32() % 50);
 
 		// Write the character to the image.
 		if (gdImageStringFT_d(image, &brect[0], color, st_char_get(font_path), font_size, angle, (36 * increment) + 12, 43 - ((40 - font_size) /2), string) != NULL) {

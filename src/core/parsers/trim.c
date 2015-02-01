@@ -12,44 +12,24 @@
 
 #include "magma.h"
 
-#define CHARS_TO_TRIM ' ', '\n', '\r', '\t', '\v'
+static bool_t is_trim(char c) {
+	return c == ' ' || c == '\n' || c == '\r' || c == '\t' || c == '\v';
+}
 
-// Removes any starting/ending whitespace from a stringer. Since only a subtraction is possible, the trimmed string is returned inside the existing buffer.
+// Removes any starting/ending whitespace from a stringer. Since the trimmed string cannot ever become longer, it is returned inside the existing buffer.
 void st_trim(stringer_t *string) {
 
-	int_t trim = 1;
-	size_t trim_chars_len;
-	chr_t *start, *end, trim_chars[] = { CHARS_TO_TRIM };
+	chr_t *start, *end;
 
 	start = st_char_get(string);
-	trim_chars_len = sizeof(trim_chars);
-	end = st_char_get(string) + st_length_get(string);
+	end = start + st_length_get(string);
 
-	while (trim == 1 && start != end) {
-
-		trim = 0;
-		for (size_t i = 0; trim == 0 && i < trim_chars_len; i++) {
-			if (*start == trim_chars[i])
-				trim = 1;
-		}
-
-		if (trim) {
-			start++;
-		}
+	while (start != end && is_trim(*start)) {
+		start++;
 	}
 
-	trim = 1;
-	while (trim == 1 && start != end) {
-
-		trim = 0;
-		for (size_t i = 0; trim == 0 && i < trim_chars_len; i++) {
-			if (*(end - 1) == trim_chars[i])
-				trim = 1;
-		}
-
-		if (trim) {
-			end--;
-		}
+	while (end != start && is_trim(end[-1])) {
+		end--;
 	}
 
 	if (start == end) {
@@ -66,39 +46,16 @@ void st_trim(stringer_t *string) {
 
 placer_t pl_trim(placer_t place) {
 
-	bool_t trim = true;
-	size_t trim_chars_len;
-	chr_t *start, *end, trim_chars[] = { CHARS_TO_TRIM };
+	chr_t *start, *end;
 
 	start = pl_char_get(place);
-	trim_chars_len = sizeof(trim_chars);
-	end = pl_char_get(place) + pl_length_get(place);
+	end = start + pl_length_get(place);
 
-	while (trim == true && start != end) {
-
-		trim = false;
-		for (int_t i = 0; trim == false && i < trim_chars_len; i++) {
-			if (*start == trim_chars[i])
-				trim = true;
-		}
-
-		if (trim) {
-			start++;
-		}
+	while (start != end && is_trim(*start)) {
+		start++;
 	}
-
-	trim = true;
-	while (trim == true && start != end) {
-
-		trim = false;
-		for (int_t i = 0; trim == false && i < trim_chars_len; i++) {
-			if (*(end - 1) == trim_chars[i])
-				trim = true;
-		}
-
-		if (trim) {
-			end--;
-		}
+	while (end != start && is_trim(end[-1])) {
+		end--;
 	}
 
 	if (start == end)
@@ -114,25 +71,13 @@ placer_t pl_trim(placer_t place) {
  */
 placer_t pl_trim_start(placer_t place) {
 
-	bool_t trim = true;
-	size_t trim_chars_len;
-	chr_t *start, *end, trim_chars[] = { CHARS_TO_TRIM };
+	chr_t *start, *end;
 
 	start = pl_char_get(place);
-	trim_chars_len = sizeof(trim_chars);
-	end = pl_char_get(place) + pl_length_get(place);
+	end = start + pl_length_get(place);
 
-	while (trim == true && start != end) {
-
-		trim = false;
-		for (int_t i = 0; trim == false && i < trim_chars_len; i++) {
-			if (*start == trim_chars[i])
-				trim = true;
-		}
-
-		if (trim) {
-			start++;
-		}
+	while (start != end && is_trim(*start)) {
+		start++;
 	}
 
 	if (start == end)
@@ -143,25 +88,13 @@ placer_t pl_trim_start(placer_t place) {
 
 placer_t pl_trim_end(placer_t place) {
 
-	bool_t trim = true;
-	size_t trim_chars_len;
-	chr_t *start, *end, trim_chars[] = { CHARS_TO_TRIM };
+	chr_t *start, *end;
 
 	start = pl_char_get(place);
-	trim_chars_len = sizeof(trim_chars);
-	end = pl_char_get(place) + pl_length_get(place);
+	end = start + pl_length_get(place);
 
-	while (trim == true && start != end) {
-
-		trim = false;
-		for (int_t i = 0; trim == false && i < trim_chars_len; i++) {
-			if (*(end - 1) == trim_chars[i])
-				trim = true;
-		}
-
-		if (trim) {
-			end--;
-		}
+	while (end != start && is_trim(end[-1])) {
+		end--;
 	}
 
 	if (start == end)

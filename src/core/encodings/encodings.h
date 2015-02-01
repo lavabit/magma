@@ -29,10 +29,10 @@
 #define QP_LINE_WRAP_LENGTH			76
 #define BASE64_LINE_WRAP_LENGTH		76
 
-#define BASE64_ENCODED_LEN(len)		((len * 4/3) + (((len * 4/3) / BASE64_LINE_WRAP_LENGTH) * 2) + 64)
-#define BASE64_ENCODED_MOD_LEN(len)	((len * 4 / 3) + (len * 4 / 3) + 64)
-#define BASE64_DECODED_LEN(len)		(len * 3/4)
-#define BASE64_DECODED_MOD_LEN		BASE64_DECODED_LEN
+#define BASE64_ENCODED_LEN(len)		(((len) * 4/3) + ((((len) * 4/3) / BASE64_LINE_WRAP_LENGTH) * 2) + 64)
+#define BASE64_ENCODED_MOD_LEN(len)	(((len) * 4 / 3) + ((len) * 4 / 3) + 64)
+#define BASE64_DECODED_LEN(len)		((len) * 3/4)
+#define BASE64_DECODED_MOD_LEN(len)	BASE64_DECODED_LEN(len)
 
 
 typedef struct {

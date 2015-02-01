@@ -14,8 +14,8 @@
 #define MAGMA_PROVIDERS_CRYPTOGRAPHY_H
 
 // Some Openssl macros also need to be re-defined
-#define BN_num_bytes_d(a)		((BN_num_bits_d(a)+7)/8)
-#define OPENSSL_free_d(addr)	CRYPTO_free_d(addr)
+#define BN_num_bytes_d(a)		((BN_num_bits_d((a))+7)/8)
+#define OPENSSL_free_d(addr)	CRYPTO_free_d((addr))
 
 // Our own home-rolled cipher suite to guarantee perfect forward secrecy
 #define MAGMA_CIPHER_LIST	"EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH+aRSA+RC4:EECDH:EDH+aRSA:RC4    :!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!SSLv2:!RC4-SHA:!SEED"

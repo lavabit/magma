@@ -60,12 +60,12 @@ void     debug_hook(void);
 /**
  * @brief	Log an error message if the specified conditional evaluates to true.
  */
-#define log_check(expr) if (expr) log_internal (__FILE__, __FUNCTION__, __LINE__, M_LOG_PEDANTIC, __STRING (expr))
+#define log_check(expr) do { if (expr) log_internal (__FILE__, __FUNCTION__, __LINE__, M_LOG_PEDANTIC, __STRING (expr)); } while (0)
 
 #else
 
-#define log_pedantic(...)
-#define log_check(expr)
+#define log_pedantic(...) do {} while (0)
+#define log_check(expr) do {} while (0)
 
 #endif
 

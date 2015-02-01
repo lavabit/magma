@@ -32,7 +32,7 @@ bool_t check_compress_sthread(check_compress_opt_t *opts) {
 
 		// Fill it with random data.
 		for (uint64_t j = 0; j < rlen; j++) {
-			*(original + j) = ((char)rand() % 255);
+			original[j] = rand() % 256;
 		}
 
 		// Compress the data block.

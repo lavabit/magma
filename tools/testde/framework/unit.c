@@ -14,7 +14,7 @@ int unit_test_1(void) {
 
 	// Fill in the random buffer.
 	for (increment = 0; increment < 100; increment++) {
-		random[increment] = (rand() % 255);
+		random[increment] = rand() % 256;
 	}
 
 	buffer = allocate_ns(100);
@@ -119,7 +119,7 @@ int unit_test_3(void) {
 
 	// Fill in the random buffer.
 	for (increment = 0; increment < 1024; increment++) {
-		random[increment] = (rand() % 255);
+		random[increment] = rand() % 256;
 	}
 
 	if (copy_st_ns_amt(larger, random, 1024) != 1) {
@@ -166,7 +166,7 @@ int unit_test_4(void) {
 
 	// Fill in the random buffer.
 	for (increment = 0; increment < 2048; increment++) {
-		random[increment] = (rand() % 255);
+		random[increment] = rand() % 256;
 	}
 
 	string = import_bl(random, 2048);
@@ -194,7 +194,7 @@ int unit_test_5(void) {
 
 	// Fill in the random buffer.
 	for (increment = 0; increment < 4096; increment++) {
-		random[increment] = (rand() % 255);
+		random[increment] = rand() % 256;
 	}
 
 	string = import_bl(random, 4096);
@@ -250,7 +250,7 @@ int unit_test_6(void) {
 	free_ns(string);
 
 	for (increment = 0; increment < 4096; increment++) {
-		random[increment] = (rand() % 255);
+		random[increment] = rand() % 256;
 	}
 
 	string = duplicate_ns_amt(random, 4096);
@@ -311,8 +311,8 @@ int unit_test_6(void) {
 // Test the block allocation functions.
 int unit_test_7(void) {
 
-	void *buffer;
-	void *dupe;
+	unsigned char *buffer;
+	unsigned char *dupe;
 	int increment;
 	unsigned char random[8192];
 
@@ -322,7 +322,7 @@ int unit_test_7(void) {
 	}
 
 	for (increment = 0; increment < 4096; increment++) {
-		random[increment] = *(unsigned char *)(buffer + increment) = (rand() % 255);
+		random[increment] = buffer[increment] = rand() % 256;
 	}
 
 	if (memcmp(random, buffer, 4096) != 0) {
@@ -337,7 +337,7 @@ int unit_test_7(void) {
 	}
 
 	for (increment = 4096; increment < 8192; increment++) {
-		random[increment] = *(unsigned char *)(dupe + increment) = (rand() % 255);
+		random[increment] = dupe[increment] = rand() % 256;
 	}
 
 	if (memcmp(random, dupe, 8192) != 0) {
@@ -364,8 +364,8 @@ int unit_test_8(void) {
 	unsigned char current;
 
 	for (increment = 0; increment < 1024; increment++) {
-		current = (rand() % 50);
-		if (current <= 25) {
+		current = rand() % 50;
+		if (current < 25) {
 			random[increment] = 'l';
 		}
 		else {
@@ -481,8 +481,8 @@ int unit_test_9(void) {
 	}
 
 	for (increment = 0; increment < 1024; increment++) {
-		current = (rand() % 50);
-		if (current <= 25) {
+		current = rand() % 50;
+		if (current < 25) {
 			random[increment] = 'l';
 		}
 		else {
@@ -493,8 +493,8 @@ int unit_test_9(void) {
 	random[1024] = '\0';
 
 	for (increment = 0; increment < 1024; increment++) {
-		current = (rand() % 50);
-		if (current <= 25) {
+		current = rand() % 50;
+		if (current < 25) {
 			random_2[increment] = 'l';
 		}
 		else {
@@ -919,7 +919,7 @@ int unit_test_13(void) {
 
 	// Fill in the random buffer.
 	for (increment = 0; increment < 4096; increment++) {
-		random[increment] = (rand() % 255);
+		random[increment] = rand() % 256;
 	}
 
 	random_st = import_bl(random, 4096);
@@ -1695,7 +1695,7 @@ int unit_test_19(void) {
 		return 0;
 	}
 
-	if (length_ull(12345678901234567ll) != 17) {
+	if (length_ull(12345678901234567LL) != 17) {
 		return 0;
 	}
 

@@ -16,8 +16,8 @@
 #include <string.h>
 #include <errno.h>
 
-char *hostname = "localhost";
-int port = 7000;
+static const char * const hostname = "localhost";
+static const int port = 7000;
 
 int replace_ns_ns_ns(char **target, ssize_t target_length, const char *pattern, const char *replacement) {
 

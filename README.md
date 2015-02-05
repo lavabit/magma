@@ -8,16 +8,16 @@ Magma was originally designed and developed by Ladar Levison for lavabit.com. Th
 
 https://darkmail.info/downloads/magma-classic-6.0.1.tar.gz     
 https://darkmail.info/downloads/magma-classic-6.0.1.tar.gz.sha512
-
+  
 5bbafc8778ef1da9a4afc1c8cb8b17dca19c98d370d9fbdbc1ee6f136abaed76a04d86df4d4b63660e4c79cc261d22fbca781e775f7db9ed83de9358c62fb681
 
 ##### Magma Development Machine, v1.0.0  
 
-https://darkmail.info/downloads/dark-mail-development-machine-1.0.0.tar.gz
-https://darkmail.info/downloads/dark-mail-development-machine-1.0.0.tar.gz.sha512
+https://darkmail.info/downloads/dark-mail-development-machine-1.0.0.tar.gz  
+https://darkmail.info/downloads/dark-mail-development-machine-1.0.0.tar.gz.sha512  
 https://darkmail.info/downloads/dark-mail-development-machine-1.0.0.torrent
-
-5bbafc8778ef1da9a4afc1c8cb8b17dca19c98d370d9fbdbc1ee6f136abaed76a04d86df4d4b63660e4c79cc261d22fbca781e775f7db9ed83de9358c62fb681
+  
+88d38c8c1f64fa03611f635ad478e75e7e3911a1717e5ca899ffd5f14bb1fa7083a1040aa5bb6bfd908796842a9eed0390afb8abd1ec9607227e8064d7115afa
 
 # Credits
 
@@ -33,8 +33,9 @@ And the army of Kickstarter supporters who contributed to this project.
 
 # Tarball Contents
 
+```
 magma.distribution/  
-    bin/  
+	bin/  
 	check/  
 	docs/  
 	lib/  
@@ -45,6 +46,7 @@ magma.distribution/
 	web/  
 	INSTALL  
 	README  
+```
 
 # Installation Instructions
 
@@ -85,7 +87,11 @@ yum install gettext-devel
 
 **ClamAV**  
 
-The freshen.clamav.sh script will update the ClamAV definitions.
+The freshen.clamav.sh script will update, or download, the ClamAV virus definitions.
+
+```shell
+magma.distribution/scripts/freshen/freshen.clamav.sh
+```
 
 ### Compiling
 

@@ -58,15 +58,15 @@ List of packages to be installed: mysql-server, memcached, gettext-devel
 
 **MySQL**  
 
-To install MySQL and configure the magma username run the commands below. The supplied password should be replaced with value unique to your environment.  
+To install MySQL and configure the magma username run the commands below. The supplied password should be replaced with value unique to your environment. You may also want to limit the permissions of the magma database user to the database it will need to access. The global permission is only needed to setup the table schema.
   
 ```shell
 yum install mysql-server
 service mysqld start
 chkconfig mysqld on
 
-mysql -u root < "create user 'magma'@'localhost' identified by 'volcano';"
-mysql -u root < "grant all privileges on *.* to 'magma'@'localhost' with grant;"
+mysql -u root < echo "CREATE USER 'magma'@'localhost' IDENTIFIED BY 'volcano';"
+mysql -u root < echo "GRANT ALL PRIVILEGES ON *.* TO 'magma'@'localhost' WITH GRANT;"
 ```
 
 **Memcached**  
@@ -113,6 +113,13 @@ To link up the development scripts run linkup.sh.
 magma.distribution/scripts/linkup.sh
 ```
 
+Development environments need to create the database manually.
+
+```shell
+# Usage: schema.init <mysql_user> <mysql_password> <mysql_schema>
+schema.init magma volcano Lavabit
+```
+
 To launch magma using the sandbox configuration.
 
 ```shell
@@ -121,12 +128,7 @@ magma.run
 
 # Webmail
 
-Inside the resources/pages/ directory is a copy of the webmail code. Locate 
-script.js file and change the magma.portalUrl = true variable to false, and 
-it will use a set of hard coded test requests/responses. Its useful for 
-checking/developing the webmail code without involving a server. Currently 
-the files are configured to access the JSON-RPC interface using the hostname 
-"localhost" and the HTTP port 10000. This should work using the default magma.config file.
+Inside the resources/pages/ directory is a copy of the webmail code. Locate script.js file and change the magma.portalUrl = true variable to false, and it will use a set of hard coded test requests/responses. Its useful for checking/developing the webmail code without involving a server. Currently the files are configured to access the JSON-RPC interface using the hostname "localhost" and the HTTP port 10000. This should work using the default magma.config file.
 
 
 

@@ -18,6 +18,7 @@ BASE=`dirname $LINK`
 
 cd "$BASE/../../lib/"
 M_ROOT=`pwd`
+M_BUILD=$LINK
 
 . "../scripts/builders/build.lib.params.sh"
 
@@ -1792,31 +1793,31 @@ combo() {
 
 	# The ClamAV checks will timeout if the system is under heavy load, so check that library all by itself first.
 	if [[ $1 == "check" ]] || [[ $1 == "check-full" ]]; then
-		($0 "clamav-$1") & CLAMAV_PID=$!
+		($M_BUILD "clamav-$1") & CLAMAV_PID=$!
 		wait $CLAMAV_PID; error
 		
 	else
-		($0 "clamav-$1") & CLAMAV_PID=$!
+		($M_BUILD "clamav-$1") & CLAMAV_PID=$!
 	fi
 
-	($0 "gd-$1") & GD_PID=$!
-	($0 "png-$1") & PNG_PID=$!
-	($0 "lzo-$1") & LZO_PID=$!
-	($0 "jpeg-$1") & JPEG_PID=$!
-	($0 "curl-$1") & CURL_PID=$!
-	($0 "spf2-$1") & SPF2_PID=$!
-	($0 "xml2-$1") & XML2_PID=$!
-	($0 "dkim-$1") & DKIM_PID=$!
-	($0 "zlib-$1") & ZLIB_PID=$!
-	($0 "bzip2-$1") & BZIP2_PID=$!
-	($0 "dspam-$1") & DSPAM_PID=$!
-	($0 "mysql-$1") & MYSQL_PID=$!
-	($0 "geoip-$1") & GEOIP_PID=$!
-	($0 "openssl-$1") & OPENSSL_PID=$!
-	($0 "jansson-$1") & JANSSON_PID=$!
-	($0 "freetype-$1") & FREETYPE_PID=$!
-	($0 "memcached-$1") & MEMCACHED_PID=$!
-	($0 "tokyocabinet-$1") & TOKYOCABINET_PID=$!
+	($M_BUILD "gd-$1") & GD_PID=$!
+	($M_BUILD "png-$1") & PNG_PID=$!
+	($M_BUILD "lzo-$1") & LZO_PID=$!
+	($M_BUILD "jpeg-$1") & JPEG_PID=$!
+	($M_BUILD "curl-$1") & CURL_PID=$!
+	($M_BUILD "spf2-$1") & SPF2_PID=$!
+	($M_BUILD "xml2-$1") & XML2_PID=$!
+	($M_BUILD "dkim-$1") & DKIM_PID=$!
+	($M_BUILD "zlib-$1") & ZLIB_PID=$!
+	($M_BUILD "bzip2-$1") & BZIP2_PID=$!
+	($M_BUILD "dspam-$1") & DSPAM_PID=$!
+	($M_BUILD "mysql-$1") & MYSQL_PID=$!
+	($M_BUILD "geoip-$1") & GEOIP_PID=$!
+	($M_BUILD "openssl-$1") & OPENSSL_PID=$!
+	($M_BUILD "jansson-$1") & JANSSON_PID=$!
+	($M_BUILD "freetype-$1") & FREETYPE_PID=$!
+	($M_BUILD "memcached-$1") & MEMCACHED_PID=$!
+	($M_BUILD "tokyocabinet-$1") & TOKYOCABINET_PID=$!
 	
 	wait $GD_PID; error
 	wait $PNG_PID; error
@@ -1899,19 +1900,19 @@ all() {
 	rm -f "$M_LOGS/build.txt"; error
 	date +"%nStarting at %r on %x%n"
 	date +"Starting at %r on %x" &>> "$M_LOGS/build.txt"
-	$0 "extract"
-	$0 "prep"
-	$0 "configure"
-	$0 "build"
+	$M_BUILD "extract"
+	$M_BUILD "prep"
+	$M_BUILD "configure"
+	$M_BUILD "build"
 	
 	# The DSPAM configure script requires the Magma version of MySQL to be compiled ahead of time for linkage, to accomodate we rebuild DSPAM at this
 	# point and replace the version linked against the system's MySQL library/headers.
-	$0 "dspam-configure"
-	$0 "dspam-build"
+	$M_BUILD "dspam-configure"
+	$M_BUILD "dspam-build"
 	
-	$0 "combine"
-	$0 "load"
-	$0 "check"
+	$M_BUILD "combine"
+	$M_BUILD "load"
+	$M_BUILD "check"
 	date +"%nFinished at %r on %x%n"
 	date +"Finished at %r on %x" &>> "$M_LOGS/build.txt"
 }

@@ -1871,7 +1871,7 @@ status() {
 	while true; do 
 		clear
 		tput sgr0;  tput sgr 0 1; tput setaf 6; printf "\n# Commands\n\n"; tput sgr0
-		ps --no-headers -C build -C build.sh -o command:100,etime | grep -v status | cat - | 
+		ps --no-headers -C build -C build.sh -C build.lib -C build.lib.sh -o command:100,etime | grep -v status | cat - | 
 		while read line; do
 			BASE=`echo "$line" | awk '{print $1}'`
 			line=`eval "advance $line"`

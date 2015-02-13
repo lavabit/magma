@@ -134,7 +134,11 @@ png() {
 		;;
 		png-prep)
 			cd "$M_SOURCES/png"; error
-			cat "$M_PATCHES/png/"makefile.patch | patch -p1 --verbose &>> "$M_LOGS/png.txt"; error
+			if [[ $PNG == "libpng-1.6.9" ]]; then 
+				cat "$M_PATCHES/png/"makefile-1.6.9.patch | patch -p1 --verbose &>> "$M_LOGS/png.txt"; error
+			else
+				cat "$M_PATCHES/png/"makefile-1.6.16.patch | patch -p1 --verbose &>> "$M_LOGS/png.txt"; error
+			fi
 		;;
 		png-configure)
 			cd "$M_SOURCES/png"; error

@@ -1,0 +1,12 @@
+diff -r 697a1947d088 Makefile.in
+--- a/Makefile.in       Fri Feb 13 17:01:42 2015 -0600
++++ b/Makefile.in       Fri Feb 13 17:02:20 2015 -0600
+@@ -2143,7 +2143,7 @@
+        rm -f $@ $*.tf[12]
+        test -d scripts || mkdir scripts || test -d scripts
+        $(DFNCPP) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES)\
+-           $(CPPFLAGS) $(SYMBOL_CFLAGS) $< > $*.tf1
++          $(SYMBOL_CFLAGS) $< > $*.tf1
+        $(AWK) -f "${srcdir}/scripts/dfn.awk" out="$*.tf2" $*.tf1 1>&2
+        rm -f $*.tf1
+        mv $*.tf2 $@

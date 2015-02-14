@@ -1,12 +1,21 @@
-diff -r 697a1947d088 Makefile.in
---- a/Makefile.in       Fri Feb 13 17:01:42 2015 -0600
-+++ b/Makefile.in       Fri Feb 13 17:02:20 2015 -0600
-@@ -2143,7 +2143,7 @@
-        rm -f $@ $*.tf[12]
-        test -d scripts || mkdir scripts || test -d scripts
-        $(DFNCPP) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES)\
--           $(CPPFLAGS) $(SYMBOL_CFLAGS) $< > $*.tf1
-+          $(SYMBOL_CFLAGS) $< > $*.tf1
-        $(AWK) -f "${srcdir}/scripts/dfn.awk" out="$*.tf2" $*.tf1 1>&2
-        rm -f $*.tf1
-        mv $*.tf2 $@
+diff -r -U 7 png.orig/Makefile.in png/Makefile.in
+--- png.orig/Makefile.in	2015-02-13 18:02:55.668012785 -0600
++++ png/Makefile.in	2015-02-13 18:03:18.948867104 -0600
+@@ -2139,15 +2139,15 @@
+ contrib/tools/makesRGB.o: pnglibconf.h
+ contrib/tools/pngfix.o: pnglibconf.h
+ 
+ .c.out:
+ 	rm -f $@ $*.tf[12]
+ 	test -d scripts || mkdir scripts || test -d scripts
+ 	$(DFNCPP) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES)\
+-	    $(CPPFLAGS) $(SYMBOL_CFLAGS) $< > $*.tf1
++	    $(SYMBOL_CFLAGS) $< > $*.tf1
+ 	$(AWK) -f "${srcdir}/scripts/dfn.awk" out="$*.tf2" $*.tf1 1>&2
+ 	rm -f $*.tf1
+ 	mv $*.tf2 $@
+ 
+ # The .c file for pnglibconf.h is machine generated
+ pnglibconf.c: scripts/pnglibconf.dfa scripts/options.awk pngconf.h pngusr.dfa $(DFA_XTRA)
+ 	rm -f $@ $*.tf[45]
+

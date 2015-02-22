@@ -78,7 +78,7 @@ bool_t lib_load(void) {
 		return false;
 	}
 	else if (!st_cmp_ci_eq(NULLER(magma.library.file), CONSTANT("NULL"))) {
-		lib_magma = dlopen(RTLD_DEFAULT, RTLD_NOW | RTLD_GLOBAL);
+		lib_magma = dlopen(NULL, RTLD_NOW | RTLD_GLOBAL);
 	}
 	else {
 		lib_magma = dlopen(magma.library.file, RTLD_NOW | RTLD_GLOBAL);

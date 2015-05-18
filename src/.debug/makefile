@@ -75,7 +75,10 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: magmad
+all: pre-build main-build
+
+# Main-build Target
+main-build: magmad
 
 # Tool invocations
 magmad: $(OBJS) $(USER_OBJS)
@@ -90,7 +93,12 @@ clean:
 	-$(RM) $(OBJS)$(C_DEPS)$(EXECUTABLES) magmad
 	-@echo ' '
 
+pre-build:
+	-@echo 'Prepares build.h for building.'
+	-/home/ladar/Lavabit/magma.classic/scripts/builders/build.prep.sh
+	-@echo ' '
+
 .PHONY: all clean dependents
-.SECONDARY:
+.SECONDARY: main-build pre-build
 
 -include ../makefile.targets

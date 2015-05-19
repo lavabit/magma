@@ -28,8 +28,8 @@ enum {
 	MAPPED_T = 32,				// The managed string is allocated with mmap()
 
 	// Layout
-	CONTIGUOUS = 64,			/* Data and chunk header are adjacent */
-	JOINTED = 128,				/* Data is not contiguous with chunk header */
+	CONTIGUOUS = 64,			/* The header and string (aka data) buffer are adjacent */
+	JOINTED = 128,				/* The header and string (aka data) buffer are separate allocations. */
 
 	// Memory
 	STACK = 256,				// More properly, data is not on the heap (stack or static initialization)

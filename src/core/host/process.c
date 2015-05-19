@@ -38,7 +38,7 @@ int_t process_kill(stringer_t *name, int_t signal, int_t wait) {
 	while ((entry = readdir(dir)) && (matches < (sizeof (killed) / sizeof (pid_t)))) {
 
 		if (entry->d_type == DT_DIR && chr_numeric((uchr_t)*(entry->d_name)) && int32_conv_ns(entry->d_name, &pid) && pid != getpid()) {
-			// Since the cmdline file could contain the command arguments as a NULL seperated array we have to wrap compare with NULLER to exclude those arguments.
+			// Since the cmdline file could contain the command arguments as a NULL separated array we have to wrap compare with NULLER to exclude those arguments.
 			if (snprintf(cmd, MAGMA_FILEPATH_MAX + 1, "%s/%i/cmdline", MAGMA_PROC_PATH, pid) && file_read(cmd, compare) > 0 &&
 				!st_cmp_ci_starts(st_swap(compare, '\0', ' '), name)) {
 				if ((ret = kill(pid, signal))) {

@@ -1,12 +1,18 @@
 #!/bin/bash
 # TODO: Try using sslscan to make things more robust.
 # http://sourceforge.net/projects/sslscan/
+LINK=`readlink -f $0`
+BASE=`dirname $LINK`
+
+cd $BASE/../../
+MAGMA_DIST=`pwd`
+
 DELAY=100
 SERVER="lavabit.com:993"
 #SERVER="localhost.lavabit.com:9500"
-export LD_LIBRARY_PATH="/home/ladar/Lavabit/magma.so/sources/openssl/:/home/ladar/Lavabit/magma.so/sources/openssl/apps/"
-export OPENSSL="/home/ladar/Lavabit/magma.so/sources/openssl/apps/openssl"
-#export OPENSSL_CONF="/home/ladar/Lavabit/magma.so/sources/openssl/apps/openssl.cnf"
+export LD_LIBRARY_PATH="$MAGMA_DIST/lib/sources/openssl/:$MAGMA_DIST/lib/sources/openssl/apps/"
+export OPENSSL="$MAGMA_DIST/lib/sources/openssl/apps/openssl"
+#export OPENSSL_CONF="$MAGMA_DIST/lib/sources/openssl/apps/openssl.cnf"
 export OPENSSL_CONF="/etc/pki/tls/openssl.cnf"
 export CIPHERS=`$OPENSSL ciphers 'ALL' | sed -e 's/:/ /g'`
 

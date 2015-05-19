@@ -355,7 +355,7 @@ stringer_t * st_dupe(stringer_t *s) {
 
 /**
  * @brief	Append one managed string to another, with aligned memory boundaries.
- * @param	align	an alignment value to be used for managed string (re)allocation.
+ * @param	align	an alignment value to be used for managed string (re)allocation. This only works for powers of 2.
  * @param	s		the managed string to be extended, which will be allocated for the caller if passed as NULL.
  * @param	append	the managed string to be appended to s.
  * @result	NULL on failure, or a pointer to the appended result on success.

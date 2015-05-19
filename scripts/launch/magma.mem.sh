@@ -19,7 +19,7 @@ if [ "$VMEM" != '' ] || [ "$RMEM" != '' ]; then
 	HIT="yes"
 	let "vmem = ($VMEM / 1024)"
 	let "rmem = ($RMEM / 1024)"
-	echo "mamgma = $vmem virtual megabytes / $rmem resident megabytes"
+	echo "magma = $vmem virtual megabytes / $rmem resident megabytes"
 fi
  
 unset VMEM RMEM vmem rmem
@@ -33,7 +33,7 @@ if [ "$VMEM" != '' ] || [ "$RMEM" != '' ]; then
 	HIT="yes"
 	let "vmem = ($VMEM / 1024)"
 	let "rmem = ($RMEM / 1024)"
-	echo "mamgmad.check = $vmem virtual megabytes / $rmem resident megabytes"
+	echo "magmad.check = $vmem virtual megabytes / $rmem resident megabytes"
 fi
  
 unset VMEM RMEM vmem rmem

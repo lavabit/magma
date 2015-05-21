@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/user/stacie_check.h
+ * @file /magma.check/providers/stacie_check.c
  *
  * @brief Checks the code used to generate STACIE-specified keys and tokens.
  *
@@ -10,10 +10,5 @@
  *
  */
 
-#ifndef STACIE_CHECK_H
-#define STACIE_CHECK_H
-
-Suite * suite_check_stacie(void);
-
-#endif
+#include "magma_check.h"
 

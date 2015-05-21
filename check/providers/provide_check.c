@@ -214,12 +214,12 @@ START_TEST (check_digest_s)
 
 		log_unit("%-64.64s", "CRYPTOGRAPHY / DIGEST / SINGLE THREADED:");
 
-		if (status() && !(outcome = check_digest_simple())) {
+		if (status() && !(outcome = check_hash_simple())) {
 			snprintf(errmsg, 1024, "digest methods failed to return the expected result...");
 		}
 
 		for (uint64_t i = 0; status() && outcome == true && i < (sizeof(digest_list) / sizeof(chr_t *)); i++) {
-			if (!(outcome = check_digest_sthread(digest_list[i]))) {
+			if (!(outcome = check_hash_sthread(digest_list[i]))) {
 				snprintf(errmsg, 1024, "%s failed...", digest_list[i]);
 			}
 		}

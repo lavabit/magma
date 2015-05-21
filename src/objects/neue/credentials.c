@@ -253,9 +253,9 @@ credential_t * credential_alloc_auth(stringer_t *username, stringer_t *password)
 	// Build the key and then iterate two more times to build the password hash. If an error free the result, but continue so the
 	// standard cleanup code can free any of the buffers that were used.
 	else if (!(combo[0] = st_merge_opts(MANAGED_T | CONTIGUOUS | SECURE, "sss", result->auth.username, magma.secure.salt, password)) ||
-		digest_sha512(combo[0], binary) != binary || hex_encode_st(binary, result->auth.key) != result->auth.key ||
-		!(combo[1] = st_merge_opts(MANAGED_T | CONTIGUOUS | SECURE, "ss", password, binary)) || digest_sha512(combo[1], binary) != binary ||
-		!(combo[2] = st_merge_opts(MANAGED_T | CONTIGUOUS | SECURE, "ss", password, binary)) || digest_sha512(combo[2], binary) != binary ||
+		hash_sha512(combo[0], binary) != binary || hex_encode_st(binary, result->auth.key) != result->auth.key ||
+		!(combo[1] = st_merge_opts(MANAGED_T | CONTIGUOUS | SECURE, "ss", password, binary)) || hash_sha512(combo[1], binary) != binary ||
+		!(combo[2] = st_merge_opts(MANAGED_T | CONTIGUOUS | SECURE, "ss", password, binary)) || hash_sha512(combo[2], binary) != binary ||
 		hex_encode_st(binary, result->auth.password) != result->auth.password) {
 		credential_free(result);
 		result = NULL;

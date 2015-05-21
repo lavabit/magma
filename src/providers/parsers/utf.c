@@ -22,7 +22,7 @@ bool_t utf_is_good(stringer_t *utf_string) {
 
 	void *data;
 
-	if(!utf_string) {
+	if(st_empty(utf_string)) {
 		log_pedantic("A NULL pointer was passed in");
 		return false;
 	}
@@ -34,7 +34,7 @@ bool_t utf_is_good(stringer_t *utf_string) {
 
 	for(size_t i = 0; i < st_length_get(utf_string); ++i) {
 
-		if(!isascii(data[i])) {
+		if(!chr_ascii(((chr_t *)data)[i])) {
 			return false;
 		}
 		
@@ -51,7 +51,7 @@ bool_t utf_is_good(stringer_t *utf_string) {
 */
 size_t utf_length_get(stringer_t *utf_string) {
 
-	if(!utf_string) {
+	if(st_empty(utf_string)) {
 		log_pedantic("A NULL pointer was passed in.");
 		return 0;
 	}

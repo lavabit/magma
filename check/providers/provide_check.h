@@ -60,12 +60,13 @@ void     check_ecies_cleanup(EC_KEY *key, cryptex_t *ciphered, stringer_t *hex_p
 bool_t   check_ecies_sthread(void);
 
 /// digest_check.c
-bool_t   check_digest_simple(void);
-bool_t   check_digest_sthread(chr_t *name);
+bool_t   check_hash_simple(void);
+bool_t   check_hash_sthread(chr_t *name);
 
 /// compress_check.c
 bool_t   check_compress_mthread(check_compress_opt_t *opts);
 void     check_compress_mthread_cnv(check_compress_opt_t *opts);
 bool_t   check_compress_sthread(check_compress_opt_t *opts);
+
 
 #endif

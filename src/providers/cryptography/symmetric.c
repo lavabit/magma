@@ -246,13 +246,13 @@ stringer_t * symmetric_key(cipher_t *cipher, stringer_t *key, stringer_t *output
 	}
 
 	if (len <= 20) {
-		digest_sha1(key, output);
+		hash_sha1(key, output);
 	}
 	else if (len <= 24) {
-		digest_sha224(key, output);
+		hash_sha224(key, output);
 	}
 	else if (len <= 32) {
-		digest_sha256(key, output);
+		hash_sha256(key, output);
 	}
 
 	// If the hash isn't the correct length, trim the output.

@@ -55,4 +55,8 @@ xmlParserCtxtPtr xml_create_parser_ctx(void);
 xmlXPathContextPtr xml_create_xpath_ctx(xmlDocPtr doc);
 xmlXPathObjectPtr xml_xpath_eval(const uchr_t *xpath, xmlXPathContextPtr ctx);
 
+/// utf.c
+bool_t utf_is_good(stringer_t *utf_string);
+size_t utf_length_get(stringer_t *utf_string);
+
 #endif

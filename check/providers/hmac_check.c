@@ -28,7 +28,7 @@ bool_t check_hmac_simple(void) {
 		"KEY5KEY6abcdefghKEY7KEY8ijklmnopKEY9KEY0qrstuvwxKEY1KEY2yzABCDEF",
 		"KEY3KEY4GHIJKLMNKEY5KEY6OPQRSTUVKEY7KEY8WXYZabcdKEY9KEY0efghijklKEY1KEY2mnopqrstKEY3KEY4uvwxyzAB",
 		"CDEFGHIJKEY5KEY6KLMNOPQRKEY7KEY8STUVWXYZKEY9KEY0abcdefghKEY1KEY2ijklmnopKEY3KEY4qrstuvwxKEY5KEY6yzABCDEFKEY7KEY8GHIJKLMNKEY9KEY0",
-		"OPQRSTUVKEY1KEY2WXYZabcdKEY3KEY4efghijk"
+		"OPQRSTUVKEY1KEY2WXYZabcdKEY3KEY4efghijkl"
 	},
 	*result_list[] = {
 		"ca0ac03c32316b2025e1732b0eb1377c",
@@ -42,7 +42,7 @@ bool_t check_hmac_simple(void) {
 		"0f6ffd4b9e9c65ada6e006c1343d927b36ee7195"
 	};
 
-	for (uint64_t i = 6; status() && i < (sizeof(digest_list) / sizeof(chr_t *)); ++i) {
+	for (uint64_t i = 0	; status() && i < (sizeof(digest_list) / sizeof(chr_t *)); ++i) {
 
 		if (!(digest = hash_name(NULLER(digest_list[i]))) || !(hash = hmac_digest(digest, PLACER(" ", 1), NULLER(key_list[i]), NULL))) {
 			return false;

@@ -22,11 +22,11 @@
  */
 stringer_t * hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, stringer_t *output) {
 
-	HMAC_CTX ctx;
 	int_t olen;
-	stringer_t *result;
+	HMAC_CTX ctx;
 	uint32_t opts;
 	uint_t outlen;
+	stringer_t *result;
 
 	// Ensure a digest pointer was passed in and that we can retrieve the output length.
 	if (!digest || (olen = EVP_MD_size_d((const EVP_MD *)digest)) <= 0) {
@@ -76,7 +76,7 @@ stringer_t * hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, strin
 		return NULL;
 	}
 
-	if (HMAC_Final_d(&ctx, st_data_get(output), &outlen) != 1) {
+	if (HMAC_Final_d(&ctx, st_data_get(result), &outlen) != 1) {
 		log_info("Unable to generate a data authentication code. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
 		HMAC_CTX_cleanup_d(&ctx);
 
@@ -88,6 +88,10 @@ stringer_t * hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, strin
 	}
 
 	HMAC_CTX_cleanup_d(&ctx);
+
+	if (!output || st_valid_tracked(opts)) {
+		st_length_set(result, outlen);
+	}
 
 	return result;
 }

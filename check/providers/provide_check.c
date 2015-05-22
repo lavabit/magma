@@ -200,7 +200,7 @@ START_TEST (check_ecies_s)
 	}
 END_TEST
 
-START_TEST (check_digest_s)
+START_TEST (check_hash_s)
 	{
 		bool_t outcome = true;
 		chr_t errmsg[1024];
@@ -212,7 +212,7 @@ START_TEST (check_digest_s)
 
 		mm_wipe(errmsg, sizeof(errmsg));
 
-		log_unit("%-64.64s", "CRYPTOGRAPHY / DIGEST / SINGLE THREADED:");
+		log_unit("%-64.64s", "CRYPTOGRAPHY / HASH / SINGLE THREADED:");
 
 		if (status() && !(outcome = check_hash_simple())) {
 			snprintf(errmsg, 1024, "digest methods failed to return the expected result...");
@@ -412,6 +412,38 @@ START_TEST (check_dspam_bin_s) {
 }
 END_TEST
 
+START_TEST (check_hash_calculation) {
+
+	bool_t outcome = true;
+
+	log_unit("%-64.64s", "CRYPTOGRAPHY / HASH / SINGLE THREADED:");
+
+	if(status()) {
+		log_disable();
+		outcome = check_hash_simple();
+		log_enable();
+	}
+
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, "check_hash_simple failed");
+}
+END_TEST
+
+START_TEST (check_hmac_calculation) {
+
+	bool_t outcome = true;
+
+	log_unit("%-64.64s", "CRYPTOGRAPHY / HMAC / SINGLE THREADED:");
+
+	if(status()) {
+		outcome = check_hmac_simple();
+	}
+
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, "check_hmac_simple failed");
+}
+END_TEST
+
 Suite * suite_check_provide(void) {
 
 	TCase *tc;
@@ -427,7 +459,9 @@ Suite * suite_check_provide(void) {
 	testcase(s, tc, "Cryptography RAND/S", check_rand_s);
 	testcase(s, tc, "Cryptography RAND/M", check_rand_m);
 	testcase(s, tc, "Cryptography ECIES/S", check_ecies_s);
-	testcase(s, tc, "Cryptography DIGEST/S", check_digest_s);
+	testcase(s, tc, "Cryptography HASH/S", check_hash_s);
+	testcase(s, tc, "Cryptography HASH/S", check_hash_calculation);
+	testcase(s, tc, "Cryptography HMAC/S", check_hmac_calculation);
 	testcase(s, tc, "Cryptography SYMMETRIC/S", check_symmetric_s);
 	testcase(s, tc, "Cryptography SCRAMBLE/S", check_scramble_s);
 

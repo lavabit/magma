@@ -22,7 +22,7 @@
  */
 stringer_t * hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, stringer_t *output) {
 
-	HMAC_CTX hmac;
+	HMAC_CTX ctx;
 	int_t olen;
 	stringer_t *result;
 	uint32_t opts;
@@ -52,16 +52,42 @@ stringer_t * hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, strin
 		return NULL;
 	}
 
-	if (HMAC_Init_ex_d(&hmac, st_data_get(key), st_length_get(key), (const EVP_MD *)digest, NULL) != 1 ||
-		HMAC_Update_d(&hmac, st_data_get(s), st_length_get(s)) != 1 ||
-		HMAC_Final_d(&hmac, st_data_get(output), &outlen) != 1 ||
-		outlen != (uint_t) olen) {
+	HMAC_CTX_init_d(&ctx);
+
+	if (HMAC_Init_ex_d(&ctx, st_data_get(key), st_length_get(key), (const EVP_MD *)digest, NULL) != 1) {
 		log_info("Unable to generate a data authentication code. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
-		HMAC_CTX_cleanup_d(&hmac);
+		HMAC_CTX_cleanup_d(&ctx);
+
+		if(!output) {
+			st_free(result);
+		}
+
 		return NULL;
 	}
 
-	HMAC_CTX_cleanup_d(&hmac);
+	if (HMAC_Update_d(&ctx, st_data_get(s), st_length_get(s)) != 1) {
+		log_info("Unable to generate a data authentication code. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		HMAC_CTX_cleanup_d(&ctx);
+
+		if(!output) {
+			st_free(result);
+		}
+
+		return NULL;
+	}
+
+	if (HMAC_Final_d(&ctx, st_data_get(output), &outlen) != 1) {
+		log_info("Unable to generate a data authentication code. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		HMAC_CTX_cleanup_d(&ctx);
+
+		if(!output) {
+			st_free(result);
+		}
+
+		return NULL;
+	}
+
+	HMAC_CTX_cleanup_d(&ctx);
 
 	return result;
 }

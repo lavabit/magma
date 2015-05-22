@@ -59,9 +59,12 @@ chr_t *  check_virus_sthread(chr_t *location);
 void     check_ecies_cleanup(EC_KEY *key, cryptex_t *ciphered, stringer_t *hex_pub, stringer_t *hex_priv, unsigned char *text, unsigned char *copy, unsigned char *original);
 bool_t   check_ecies_sthread(void);
 
-/// digest_check.c
+/// hash_check.c
 bool_t   check_hash_simple(void);
 bool_t   check_hash_sthread(chr_t *name);
+
+/// hmac_check.c
+bool_t   check_hmac_simple(void);
 
 /// compress_check.c
 bool_t   check_compress_mthread(check_compress_opt_t *opts);

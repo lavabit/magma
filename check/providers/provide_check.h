@@ -65,6 +65,7 @@ bool_t   check_hash_sthread(chr_t *name);
 
 /// hmac_check.c
 bool_t   check_hmac_simple(void);
+bool_t   check_hmac_parameters();
 
 /// compress_check.c
 bool_t   check_compress_mthread(check_compress_opt_t *opts);

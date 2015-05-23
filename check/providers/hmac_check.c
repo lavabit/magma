@@ -12,46 +12,49 @@
 
 #include "magma_check.h"
 
+/*
+ * @brief	Calculate hmacs with a constant key and input string and compare to pre-calculated values.
+ * @return	True on successful comparisons, false if at least one failed.
+ */	
 bool_t check_hmac_simple(void) {
 
 	digest_t *digest;
-	stringer_t *hash, *hex;
-	chr_t *digest_list[] = {
-		"MD4", "MD5", "SHA", "SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "RIPEMD160"
+	stringer_t *hash, *hex,
+	*digest_list[] = {
+		PLACER("MD4", 3), 
+		PLACER("MD5", 3),
+		PLACER("SHA", 3),
+		PLACER("SHA1", 4),
+		PLACER("SHA224", 6),
+		PLACER("SHA256", 6),
+		PLACER("SHA384", 6),
+		PLACER("SHA512", 6),
+		PLACER("RIPEMD160", 9)
 	},
-	*key_list[] = {
-		"abcdefghKEY1KEY2ijklmnopKEY3KEY4",
-		"qrstuvwxKEY5KEY6yzABCDEFKEY7KEY8",
-		"GHIJKLMNKEY9KEY0OPQRSTUVKEY1KEY2WXYZabcd",
-		"KEY3KEY4efghijklKEY5KEY6mnopqrstKEY7KEY8",
-		"uvwxyzABKEY9KEY0CDEFGHIJKEY1KEY2KLMNOPQRKEY3KEY4STUVWXYZ",
-		"KEY5KEY6abcdefghKEY7KEY8ijklmnopKEY9KEY0qrstuvwxKEY1KEY2yzABCDEF",
-		"KEY3KEY4GHIJKLMNKEY5KEY6OPQRSTUVKEY7KEY8WXYZabcdKEY9KEY0efghijklKEY1KEY2mnopqrstKEY3KEY4uvwxyzAB",
-		"CDEFGHIJKEY5KEY6KLMNOPQRKEY7KEY8STUVWXYZKEY9KEY0abcdefghKEY1KEY2ijklmnopKEY3KEY4qrstuvwxKEY5KEY6yzABCDEFKEY7KEY8GHIJKLMNKEY9KEY0",
-		"OPQRSTUVKEY1KEY2WXYZabcdKEY3KEY4efghijkl"
-	},
+	*key = PLACER("key", 3),
 	*result_list[] = {
-		"ca0ac03c32316b2025e1732b0eb1377c",
-		"f0e5f1e5a93f1f051ccc80852568c895",
-		"1ca147ab57ba0d0d44f47804074e9156f108efd7",
-		"7843bc098af2279a631dcd5cdc4d9caefb37d3b9",
-		"1d1e789e4d0cdd7ba892287412710513723394799900a963851568f0",
-		"0e99f21ba0df76417e9db5ca1b9635679b72fa3c9b4ad7012d946bee6ca27074",
-		"958b3e11796cd6139720901106be3541371fc17f7de7d90c2d92531e18c3d050f00bc3e9b241da6c65fbccaa7ee5b130",
-		"5c8d649316694980857c4f7052e1464d49166586968b7149a239d0855e3ba24531d446659a9cd0f6fa4a03a583bbca14e9e4e8a1e3aa35e999138abfdc55bf42",
-		"0f6ffd4b9e9c65ada6e006c1343d927b36ee7195"
+		PLACER("9b74896f0d315106c754a6c98d5602df", 32),
+		PLACER("bc6a30c3fb714a626f2579eb17996408", 32),
+		PLACER("dd3856b9637c715a17baa22ddaefbe8d5950ad38", 40),
+		PLACER("0f296eadc8f232211a6f5a80427c3abb6490d392", 40),
+		PLACER("162d0318e6a8ca179f11ea8811a03d0187e0fb77f553f650b88d945a", 56),
+		PLACER("c68e4d52fc7380d5910f95008ceced2eb543bde28446eacb095bfc2993ea0457", 64),
+		PLACER("ff9120f9fb89d833c30ab360e0f86291bdc56b3b6d61f9223556fdc7e90e8baf630668234cec76ca18cc780a868bab10", 96),
+		PLACER("add0b1c73df30f0b9b968a20dd3cb4c7b24c88d47147fc13bac811db852a2883b71904f81d0dc03c2738c7e9e380a6436cd972ca3964f9e921cb983e9d3e5035", 128),
+		PLACER("f83f31af3bd50fd2e85925e25472d0b0e0879c34", 40)
 	};
 
-	for (uint64_t i = 0	; status() && i < (sizeof(digest_list) / sizeof(chr_t *)); ++i) {
+	for (uint64_t i = 0; status() && i < (sizeof(digest_list) / sizeof(chr_t *)); ++i) {
 
-		if (!(digest = hash_name(NULLER(digest_list[i]))) || !(hash = hmac_digest(digest, PLACER(" ", 1), NULLER(key_list[i]), NULL))) {
+		if (!(digest = hash_name(digest_list[i])) || !(hash = hmac_digest(digest, digest_list[i], key, NULL))) {
 			return false;
 		}
 		else if (!(hex = hex_encode_st(hash, NULL))) {
 			st_free(hash);
 			return false;
 		}
-		else if (st_cmp_cs_eq(hex, NULLER(result_list[i]) )) {
+
+		if (st_cmp_cs_eq(hex, result_list[i] )) {
 			st_free(hash);
 			st_free(hex);
 			return false;
@@ -59,6 +62,81 @@ bool_t check_hmac_simple(void) {
 
 		st_free(hash);
 		st_free(hex);
+	}
+
+	return true;
+}
+
+bool_t check_hmac_parameters(void) {
+
+	digest_t *temp_dig;
+	stringer_t *temp_st;
+
+	temp_dig = hash_name("MD4");
+	temp_st = NULLER("temp_string");
+	
+	if(hmac_digest(NULL, temp_st, temp_st, NULL)) {
+		return false;
+	}
+	else if(hmac_digest(temp_dig, NULL, temp_st, NULL)) {
+		return false;
+	}
+	else if(hmac_digest(temp_dig, temp_st, NULL, NULL)) {
+		return false;
+	}
+	else if(hmac_md4(NULL, temp_st, NULL)) {
+		return false;
+	}
+	else if(hmac_md4(temp_st, NULL, NULL)) {
+		return false;
+	}
+	else if(hmac_md5(NULL, temp_st, NULL)) {
+		return false;
+	}
+	else if(hmac_md5(temp_st, NULL, NULL)) {
+		return false;
+	}
+	else if(hmac_sha(NULL, temp_st, NULL)) {
+		return false;
+	}
+	else if(hmac_sha(temp_st, NULL, NULL)) {
+		return false;
+	}
+	else if(hmac_sha1(NULL, temp_st, NULL)) {
+		return false;
+	}
+	else if(hmac_sha1(temp_st, NULL, NULL)) {
+		return false;
+	}
+	else if(hmac_sha224(NULL, temp_st, NULL)) {
+		return false;
+	}
+	else if(hmac_sha224(temp_st, NULL, NULL)) {
+		return false;
+	}
+	else if(hmac_sha256(NULL, temp_st, NULL)) {
+		return false;
+	}
+	else if(hmac_sha256(temp_st, NULL, NULL)) {
+		return false;
+	}
+	else if(hmac_sha384(NULL, temp_st, NULL)) {
+		return false;
+	}
+	else if(hmac_sha384(temp_st, NULL, NULL)) {
+		return false;
+	}
+	else if(hmac_sha512(NULL, temp_st, NULL)) {
+		return false;
+	}
+	else if(hmac_sha512(temp_st, NULL, NULL)) {
+		return false;
+	}
+	else if(hmac_ripemd160(NULL, temp_st, NULL)) {
+		return false;
+	}
+	else if(hmac_ripemd160(temp_st, NULL, NULL)) {
+		return false;
 	}
 
 	return true;

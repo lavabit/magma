@@ -431,11 +431,28 @@ START_TEST (check_hash_calculation) {
 }
 END_TEST
 
+START_TEST (check_hmac_params) {
+
+	bool_t outcome = true;
+
+	log_unit("%-64.64s", "CRYPTOGRAPHY / HMAC / PARAMS / SINGLE THREADED:");
+
+	if(status()) {
+		log_disable();
+		outcome = check_hmac_parameters();
+		log_enable();
+	}
+
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, "check_hash_parameters failed");
+}
+END_TEST
+
 START_TEST (check_hmac_calculation) {
 
 	bool_t outcome = true;
 
-	log_unit("%-64.64s", "CRYPTOGRAPHY / HMAC / SINGLE THREADED:");
+	log_unit("%-64.64s", "CRYPTOGRAPHY / HMAC / CALCULATION /SINGLE THREADED:");
 
 	if(status()) {
 		outcome = check_hmac_simple();
@@ -464,6 +481,7 @@ Suite * suite_check_provide(void) {
 	testcase(s, tc, "Cryptography HASH/S", check_hash_s);
 	testcase(s, tc, "Cryptography HASH/S", check_hash_calculation);
 	testcase(s, tc, "Cryptography HMAC/S", check_hmac_calculation);
+	testcase(s, tc, "Cryptography HMAC/Params", check_hmac_params);
 	testcase(s, tc, "Cryptography SYMMETRIC/S", check_symmetric_s);
 	testcase(s, tc, "Cryptography SCRAMBLE/S", check_scramble_s);
 

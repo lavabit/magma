@@ -38,7 +38,11 @@ stringer_t * hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, strin
 		return NULL;
 	}
 	else if (st_empty(s)) {
-		log_pedantic("The input string does not appear to have any data ready for encoding. {%slen = %zu}", s ? "" : "s = NULL / ",	s ? st_length_get(s) : 0);
+		log_pedantic("The input string does not appear to have any data. {%slen = %zu}", s ? "" : "s = NULL / ",	s ? st_length_get(s) : 0);
+		return NULL;
+	}
+	else if (st_empty(key)) {
+		log_pedantic("The key string does not appear to have any data.");
 		return NULL;
 	}
 	else if ((result = output) && ((st_valid_avail(opts) && st_avail_get(output) < olen) ||

@@ -480,6 +480,36 @@ START_TEST (check_stacie_params) {
 }
 END_TEST
 
+START_TEST (check_stacie_calculation) {
+
+	bool_t outcome = true;
+
+	bool_t (*checks[])(void) = {
+		&check_stacie_rounds,
+		&check_stacie_seed_extract
+	};
+
+	stringer_t *err = NULL;
+
+	stringer_t *errors[] = {
+		NULLER("check_stacie_rounds"),
+		NULLER("check_stacie_seed_extract")
+	};
+
+	log_unit("%-64.64s", "CRYPTOGRAPHY / STACIE / CALCULATION / SINGLE THREADED:");
+
+	for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof(bool_t * (void)); ++i) {
+		log_disable();
+		if(!(outcome = check_stacie_parameters())) {
+			err = errors[i];
+		}
+		log_enable();
+	}
+
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, st_data_get(err));
+}
+END_TEST
 
 Suite * suite_check_provide(void) {
 
@@ -503,6 +533,7 @@ Suite * suite_check_provide(void) {
 	testcase(s, tc, "Cryptography SYMMETRIC/S", check_symmetric_s);
 	testcase(s, tc, "Cryptography SCRAMBLE/S", check_scramble_s);
 	testcase(s, tc, "Cryptography STACIE/Params", check_stacie_params);
+	testcase(s, tc, "Cryptography STACIE/S", check_stacie_calculation);
 
 	// Tank functionality is temporarily disabled.
 

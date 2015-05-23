@@ -30,6 +30,10 @@
 #define ECIES_CIPHER NID_aes_256_cbc
 #define ECIES_ENVELOPE NID_sha512
 
+// STACIE round number constants
+#define MAX_HASH_NUM	0x00FFFFFF
+#define MIN_HASH_NUM	8
+
 typedef enum {
 	ECIES_PRIVATE_HEX = 1,
 	ECIES_PRIVATE_BINARY = 2,

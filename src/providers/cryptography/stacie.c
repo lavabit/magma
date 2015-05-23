@@ -32,7 +32,7 @@ uint_t stacie_rounds_calculate(stringer_t *password, uint_t bonus) {
 		return 0;
 	}
 
-	if(bonus >= MAX_HASH_NUM - 1) {
+	if(bonus >= MAX_HASH_NUM - 2) {
 		return MAX_HASH_NUM;
 	}
 

@@ -20,7 +20,7 @@
  */
 uint_t stacie_rounds_calculate(stringer_t *password, uint_t bonus) {
 
-	uint_t exp, pass_len, hash_num;
+	uint_t pass_len, hash_num;
 
 	if(st_empty(password)) {
 		log_pedantic("Empty password stringer.");
@@ -37,12 +37,11 @@ uint_t stacie_rounds_calculate(stringer_t *password, uint_t bonus) {
 	}
 
 	if(pass_len >= 24) {
-		exp = 1;
+		hash_num = 2;
 	} else {
-		exp = 24 - pass_len;
+		hash_num = ((uint_t) 2) << (23 - pass_len);
 	}
 
-	hash_num = ((uint_t) 2 ) << exp;
 	hash_num += bonus;
 
 	if(hash_num < 8) {
@@ -93,8 +92,6 @@ stringer_t* stacie_seed_extract(uint_t rounds, stringer_t *username, stringer_t 
 		piece = mm_set(piece + salt_len + 2, 1, 1);
 		temp3 = hash_sha512(temp2, NULL);
 		key = st_append(key, temp3);
-		st_cleanup(temp2);
-		st_cleanup(temp3);
 	}
 	else if(!key) {
 		key = salt;
@@ -104,6 +101,8 @@ stringer_t* stacie_seed_extract(uint_t rounds, stringer_t *username, stringer_t 
 		log_pedantic("Could not compute desired hmac.");
 		error = true;
 	}
+
+	st_cleanup(temp3);
 
 	for(uint i = 1; !error && i < rounds; ++i) {
 		if(!(result = hmac_sha512(result, key, result))) {

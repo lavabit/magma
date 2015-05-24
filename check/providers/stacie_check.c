@@ -43,7 +43,7 @@ bool_t check_stacie_rounds(void) {
  * @brief	Check that seed extraction is consistent.
  * @return	True if passes, false if fails.
 */
-bool_t check_stacie_seed_extract(void) {
+bool_t check_stacie_determinism(void) {
 
 	int outcome;
 	stringer_t *user, *pass, *salt, *res1 = NULL, *res2 = NULL;
@@ -52,8 +52,9 @@ bool_t check_stacie_seed_extract(void) {
 	pass = PLACER("test_password", 13);
 	salt = PLACER("SALT1234SALT5678SALT9012SALT3456SALT7890SALT1234SALT5678SALT9012", 64);
 
-	res1 = stacie_seed_extract(MIN_HASH_NUM, user, pass, salt);
-	res2 = stacie_seed_extract(MIN_HASH_NUM, user, pass, salt);
+	if(!(res1 = stacie_seed_extract(MIN_HASH_NUM, user, pass, salt)) || !(res2 = stacie_seed_extract(MIN_HASH_NUM, user, pass, salt))) {
+		return false;
+	}
 
 	outcome = st_cmp_cs_eq(res1, res2);
 	st_free(res1);
@@ -63,8 +64,9 @@ bool_t check_stacie_seed_extract(void) {
 		return false;
 	}
 
-	res1 = stacie_seed_extract(MAX_HASH_NUM, user, pass, salt);
-	res2 = stacie_seed_extract(MAX_HASH_NUM, user, pass, salt);
+	if(!(res1 = stacie_seed_extract(MIN_HASH_NUM, user, pass, salt)) || !(res2 = stacie_seed_extract(MIN_HASH_NUM, user, pass, salt))) {
+		return false;
+	}
 
 	outcome = st_cmp_cs_eq(res1, res2);
 	st_free(res1);
@@ -74,8 +76,9 @@ bool_t check_stacie_seed_extract(void) {
 		return false;
 	}
 
-	res1 = stacie_seed_extract(MIN_HASH_NUM, user, pass, NULL);
-	res2 = stacie_seed_extract(MIN_HASH_NUM, user, pass, NULL);
+	if(!(res1 = stacie_seed_extract(MIN_HASH_NUM, user, pass, salt)) || !(res2 = stacie_seed_extract(MIN_HASH_NUM, user, pass, salt))) {
+		return false;
+	}
 
 	outcome = st_cmp_cs_eq(res1, res2);
 	st_free(res1);
@@ -85,8 +88,9 @@ bool_t check_stacie_seed_extract(void) {
 		return false;
 	}
 	
-	res1 = stacie_seed_extract(MAX_HASH_NUM, user, pass, NULL);
-	res2 = stacie_seed_extract(MAX_HASH_NUM, user, pass, NULL);
+	if(!(res1 = stacie_seed_extract(MIN_HASH_NUM, user, pass, salt)) || !(res2 = stacie_seed_extract(MIN_HASH_NUM, user, pass, salt))) {
+		return false;
+	}
 
 	outcome = st_cmp_cs_eq(res1, res2);
 	st_free(res1);

@@ -431,76 +431,60 @@ START_TEST (check_hash_calculation) {
 }
 END_TEST
 
-START_TEST (check_hmac_params) {
-
-	bool_t outcome = true;
-
-	log_unit("%-64.64s", "CRYPTOGRAPHY / HMAC / PARAMS / SINGLE THREADED:");
-
-	if(status()) {
-		log_disable();
-		outcome = check_hmac_parameters();
-		log_enable();
-	}
-
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, "check_hash_parameters failed");
-}
-END_TEST
-
-START_TEST (check_hmac_calculation) {
-
-	bool_t outcome = true;
-
-	log_unit("%-64.64s", "CRYPTOGRAPHY / HMAC / CALCULATION /SINGLE THREADED:");
-
-	if(status()) {
-		outcome = check_hmac_simple();
-	}
-
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, "check_hmac_simple failed");
-}
-END_TEST
-
-START_TEST (check_stacie_params) {
-
-	bool_t outcome = true;
-
-	log_unit("%-64.64s", "CRYPTOGRAPHY / STACIE / PARAMS / SINGLE THREADED:");
-
-	if(status()) {
-		log_disable();
-		outcome = check_stacie_parameters();
-		log_enable();
-	}
-
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, "check_stacie_parameters failed");
-}
-END_TEST
-
-START_TEST (check_stacie_calculation) {
+START_TEST (check_hmac_s) {
 
 	bool_t outcome = true;
 
 	bool_t (*checks[])(void) = {
-		&check_stacie_rounds,
-		&check_stacie_seed_extract
+		&check_hmac_simple,
+		&check_hmac_parameters
 	};
 
 	stringer_t *err = NULL;
 
 	stringer_t *errors[] = {
-		NULLER("check_stacie_rounds"),
-		NULLER("check_stacie_seed_extract")
+		NULLER("check_hmac_simple failed"),
+		NULLER("check_hmac_parameters failed")
 	};
 
-	log_unit("%-64.64s", "CRYPTOGRAPHY / STACIE / CALCULATION / SINGLE THREADED:");
+	log_unit("%-64.64s", "CRYPTOGRAPHY / HMAC / SINGLE THREADED:");
 
-	for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof(bool_t * (void)); ++i) {
+	for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof((checks)[0]); ++i) {
 		log_disable();
-		if(!(outcome = check_stacie_parameters())) {
+		if(!(outcome = checks[i]())) {
+			err = errors[i];
+		}
+		log_enable();
+	}
+
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, st_data_get(err));
+}
+END_TEST
+
+START_TEST (check_stacie_s) {
+
+	bool_t outcome = true;
+
+	bool_t (*checks[])(void) = {
+		&check_stacie_rounds,
+		&check_stacie_determinism,
+		&check_stacie_parameters
+	};
+
+	stringer_t *err = NULL;
+
+	stringer_t *errors[] = {
+		NULLER("check_stacie_rounds failed"),
+		NULLER("check_stacie_determinism failed"),
+		NULLER("check_stacie_parameters failed")
+	};
+
+	log_unit("%-64.64s", "CRYPTOGRAPHY / STACIE / SINGLE THREADED:");
+
+	for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof((checks)[0]); ++i) {
+		log_disable();
+		if(!(outcome = checks[i]())) {
 			err = errors[i];
 		}
 		log_enable();
@@ -528,12 +512,10 @@ Suite * suite_check_provide(void) {
 	testcase(s, tc, "Cryptography ECIES/S", check_ecies_s);
 	testcase(s, tc, "Cryptography HASH/S", check_hash_s);
 	testcase(s, tc, "Cryptography HASH/S", check_hash_calculation);
-	testcase(s, tc, "Cryptography HMAC/S", check_hmac_calculation);
-	testcase(s, tc, "Cryptography HMAC/Params", check_hmac_params);
+	testcase(s, tc, "Cryptography HMAC/S", check_hmac_s);
 	testcase(s, tc, "Cryptography SYMMETRIC/S", check_symmetric_s);
 	testcase(s, tc, "Cryptography SCRAMBLE/S", check_scramble_s);
-	testcase(s, tc, "Cryptography STACIE/Params", check_stacie_params);
-	testcase(s, tc, "Cryptography STACIE/S", check_stacie_calculation);
+	testcase(s, tc, "Cryptography STACIE/S", check_stacie_s);
 
 	// Tank functionality is temporarily disabled.
 

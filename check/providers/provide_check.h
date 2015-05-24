@@ -75,7 +75,7 @@ bool_t   check_compress_sthread(check_compress_opt_t *opts);
 /// stacie_check.c
 bool_t   check_stacie_parameters(void);
 bool_t   check_stacie_rounds(void);
-bool_t   check_stacie_seed_extract(void);
+bool_t   check_stacie_determinism(void);
 
 
 #endif

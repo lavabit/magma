@@ -40,7 +40,7 @@ bool_t check_stacie_rounds(void) {
 }
 
 /*
- * @brief	Check that seed extraction is consistent.
+ * @brief	Check that calculations are deterministic.
  * @return	True if passes, false if fails.
 */
 bool_t check_stacie_determinism(void) {

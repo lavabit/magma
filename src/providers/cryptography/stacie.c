@@ -53,10 +53,18 @@ uint_t stacie_rounds_calculate(stringer_t *password, uint_t bonus) {
 	return hash_num;
 }
 
+/*
+ * @brief	Extract the seed from user password.
+ * @param	rounds		Number of hashing rounds.
+ * @param	username	User username.
+ * @param	password	User password.
+ * @salt	salt		User specific salt (optional).
+ * @return	Stringer with user's entropy seed.
+ */
 stringer_t* stacie_seed_extract(uint_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt) {
 
 	bool_t error = false;
-	stringer_t *result = NULL, *temp, *temp2 = NULL, *temp3, *key = NULL, *piece;
+	stringer_t *result = NULL, *temp, *temp2 = NULL, *temp3 = NULL, *key = NULL, *piece;
 	size_t salt_len;
 
 	if(rounds < MIN_HASH_NUM || rounds > MAX_HASH_NUM) {
@@ -88,7 +96,8 @@ stringer_t* stacie_seed_extract(uint_t rounds, stringer_t *username, stringer_t 
 		piece = mm_copy(piece, st_data_get(salt), salt_len);
 		piece = mm_set(piece + salt_len, 0, 3);
 		temp2 = PLACER(piece, salt_len + 3);
-		key = hash_sha512(temp2, key);
+		temp3 = hash_sha512(temp2, NULL);
+		key = st_append(key, temp3);
 		piece = mm_set(piece + salt_len + 2, 1, 1);
 		temp3 = hash_sha512(temp2, NULL);
 		key = st_append(key, temp3);

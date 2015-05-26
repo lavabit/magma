@@ -72,6 +72,12 @@ placer_t pl_trim_end(placer_t place);
 placer_t pl_trim_start(placer_t place);
 void st_trim(stringer_t *string);
 
+/// bitwise.c
+stringer_t * st_xor(stringer_t *a, stringer_t *b, stringer_t *outcome);
+stringer_t * st_and(stringer_t *a, stringer_t *b, stringer_t *outcome);
+stringer_t * st_or(stringer_t *a, stringer_t *b, stringer_t *outcome);
+stringer_t * st_not(stringer_t *s, stringer_t *outcome);
+
 
 #include "numbers/numbers.h"
 #include "formats/formats.h"

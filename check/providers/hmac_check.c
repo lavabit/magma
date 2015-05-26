@@ -12,10 +12,10 @@
 
 #include "magma_check.h"
 
-/*
+/**
  * @brief	Calculate hmacs with a constant key and input string and compare to pre-calculated values.
  * @return	True on successful comparisons, false if at least one failed.
- */	
+*/
 bool_t check_hmac_simple(void) {
 
 	digest_t *digest;

@@ -83,4 +83,13 @@ int   check_bsearch_months(int num, char *name);
 /// zbase32_check.c
 bool_t   check_encoding_zbase32(void);
 
+/// nbo_check.c
+bool_t   check_nbo_simple(void);
+bool_t   check_nbo_parameters(void);
+
+/// bitwise_check.c
+bool_t   check_bitwise_parameters(void);
+bool_t   check_bitwise_determinism(void);
+bool_t   check_bitwise_simple(void);
+
 #endif

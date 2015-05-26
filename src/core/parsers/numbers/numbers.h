@@ -54,4 +54,11 @@ bool_t uint8_conv_bl(void *block, size_t length, uint8_t *number);
 bool_t uint8_conv_ns(char *string, uint8_t *number);
 bool_t uint8_conv_st(stringer_t *string, uint8_t *number);
 
+stringer_t * uint32_put_no(uint32_t val);
+stringer_t * uint24_put_no(uint32_t val);
+stringer_t * uint16_put_no(uint16_t val);
+uint32_t uint32_get_no(stringer_t *s);
+uint32_t uint24_get_no(stringer_t *s);
+uint16_t uint16_get_no(stringer_t *s);
+
 #endif

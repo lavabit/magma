@@ -436,15 +436,15 @@ START_TEST (check_hmac_s) {
 	bool_t outcome = true;
 
 	bool_t (*checks[])(void) = {
-		&check_hmac_simple,
-		&check_hmac_parameters
+		&check_hmac_parameters,
+		&check_hmac_simple
 	};
 
 	stringer_t *err = NULL;
 
 	stringer_t *errors[] = {
-		NULLER("check_hmac_simple failed"),
-		NULLER("check_hmac_parameters failed")
+		NULLER("check_hmac_parameters failed"),
+		NULLER("check_hmac_simple failed")
 	};
 
 	log_unit("%-64.64s", "CRYPTOGRAPHY / HMAC / SINGLE THREADED:");
@@ -467,17 +467,17 @@ START_TEST (check_stacie_s) {
 	bool_t outcome = true;
 
 	bool_t (*checks[])(void) = {
-		&check_stacie_rounds,
+		&check_stacie_parameters,
 		&check_stacie_determinism,
-		&check_stacie_parameters
+		&check_stacie_rounds
 	};
 
 	stringer_t *err = NULL;
 
 	stringer_t *errors[] = {
-		NULLER("check_stacie_rounds failed"),
+		NULLER("check_stacie_parameters failed"),
 		NULLER("check_stacie_determinism failed"),
-		NULLER("check_stacie_parameters failed")
+		NULLER("check_stacie_rounds failed")
 	};
 
 	log_unit("%-64.64s", "CRYPTOGRAPHY / STACIE / SINGLE THREADED:");

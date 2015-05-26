@@ -114,7 +114,7 @@ bool_t check_stacie_determinism(void) {
 	if(outcome) {
 		return false;
 	}
-
+/*
 	if(!(res1 = stacie_seed_extract(MAX_HASH_NUM, user, pass, salt)) || !(res2 = stacie_seed_extract(MAX_HASH_NUM, user, pass, salt))) {
 		return false;
 	}
@@ -126,24 +126,13 @@ bool_t check_stacie_determinism(void) {
 	if(outcome) {
 		return false;
 	}
-	
-	if(!(res1 = stacie_seed_extract(MAX_HASH_NUM, user, pass, NULL)) || !(res2 = stacie_seed_extract(MAX_HASH_NUM, user, pass, NULL))) {
-		return false;
-	}
-
-	outcome = st_cmp_cs_eq(res1, res2);
-	st_free(res1);
-	st_free(res2);
-
-	if(outcome) {
-		return false;
-	}
-
+*/
 //	stacie_hashed_key_derive
 
 	res1 = stacie_seed_extract(MIN_HASH_NUM, user, pass, NULL);
 	base = MANAGEDBUF(64);
-	base = mm_copy(st_data_get(base), st_data_get(res1), st_length_get(base));
+	mm_copy(st_data_get(base), st_data_get(res1), st_length_get(res1));
+	st_length_set(base, 64);
 	st_free(res1);
 
 	if(!(res1 = stacie_hashed_key_derive(base, MIN_HASH_NUM, user, pass, salt)) || !(res2 = stacie_hashed_key_derive(base, MIN_HASH_NUM, user, pass, salt))) {
@@ -169,7 +158,7 @@ bool_t check_stacie_determinism(void) {
 	if(outcome) {
 		return false;
 	}
-
+/*
 	if(!(res1 = stacie_hashed_key_derive(base, MAX_HASH_NUM, user, pass, salt)) || !(res2 = stacie_hashed_key_derive(base, MAX_HASH_NUM, user, pass, salt))) {
 		return false;
 	}
@@ -193,7 +182,7 @@ bool_t check_stacie_determinism(void) {
 	if(outcome) {
 		return false;
 	}
-
+*/
 //	stacie_hashed_token_derive
 
 	nonce = PLACER("NONCE123NONCE456NONCE789NONCE012NONCE345NONCE678NONCE901NONCE234", 64);
@@ -342,22 +331,27 @@ bool_t check_stacie_parameters(void) {
 		return false;
 	}
 
-	if((res = stacie_hashed_token_derive(NULL, temp_st, NULL, temp_st))) {
+	if((res = stacie_hashed_token_derive(NULL, temp_st, NULL, temp_st64))) {
 		st_free(res);
 		return false;
 	}
 
-	if((res = stacie_hashed_token_derive(temp_st, temp_st, NULL, temp_st))) {
+	if((res = stacie_hashed_token_derive(temp_st, temp_st, NULL, NULL))) {
 		st_free(res);
 		return false;
 	}
 
-	if((res = stacie_hashed_token_derive(temp_st64, NULL, NULL, temp_st))) {
+	if((res = stacie_hashed_token_derive(temp_st64, NULL, NULL, NULL))) {
 		st_free(res);
 		return false;
 	}
 
-	if((res = stacie_hashed_token_derive(temp_st64, temp_st, NULL, NULL))) {
+	if((res = stacie_hashed_token_derive(temp_st64, temp_st, temp_st, temp_st64))) {
+		st_free(res);
+		return false;
+	}
+
+	if((res = stacie_hashed_token_derive(temp_st64, temp_st, NULL, temp_st))) {
 		st_free(res);
 		return false;
 	}

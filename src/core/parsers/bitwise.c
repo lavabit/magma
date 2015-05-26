@@ -60,6 +60,8 @@ stringer_t * st_xor(stringer_t *a, stringer_t *b, stringer_t *output) {
 		data[i] = in_a[i] ^ in_b[i];
 	}
 
+	st_length_set(result, olen);
+
 	return result;
 }
 
@@ -110,6 +112,8 @@ stringer_t * st_and(stringer_t *a, stringer_t *b, stringer_t *output) {
 	for(uint_t i = 0; i < olen; ++i) {
 		data[i] = in_a[i] & in_b[i];
 	}
+
+	st_length_set(result, olen);
 
 	return result;
 }
@@ -162,6 +166,8 @@ stringer_t * st_or(stringer_t *a, stringer_t *b, stringer_t *output) {
 		data[i] = in_a[i] | in_b[i];
 	}
 
+	st_length_set(result, olen);
+
 	return result;
 }
 
@@ -207,6 +213,8 @@ stringer_t * st_not(stringer_t *s, stringer_t *output) {
 	for(uint_t i = 0; i < olen; ++i) {
 		data[i] = ~in_s[i];
 	}
+
+	st_length_set(result, olen);
 
 	return result;
 }

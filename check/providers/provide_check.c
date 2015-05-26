@@ -500,6 +500,7 @@ Suite * suite_check_provide(void) {
 	TCase *tc;
 	Suite *s = suite_create("\tProviders");
 
+
 	testcase(s, tc, "Compression LZO/S", check_compress_lzo_s);
 	testcase(s, tc, "Compression LZO/M", check_compress_lzo_m);
 	testcase(s, tc, "Compression ZLIB/S", check_compress_zlib_s);
@@ -550,6 +551,8 @@ Suite * suite_check_provide(void) {
 	} else {
 		log_unit("Skipping DSPAM checks...\n");
 	}
+
+	tcase_set_timeout(tc, 120);
 
 	return s;
 }

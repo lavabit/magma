@@ -83,7 +83,7 @@ stringer_t * stacie_seed_extract(uint_t rounds, stringer_t *username, stringer_t
 		log_error("Salt is too short (must be at least 64 octets.)");
 		return NULL;
 	}
-	else if(!(result = st_alloc_opts((MANAGED_T | JOINTED | HEAP | SECURE), 64))) {
+	else if(!(result = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64))) {
 		log_pedantic("Could not allocate secure stringer for result.");
 		return NULL;
 	}
@@ -151,7 +151,8 @@ stringer_t * stacie_seed_extract(uint_t rounds, stringer_t *username, stringer_t
 */
 stringer_t * stacie_hashed_key_derive(stringer_t *base, uint_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt) {
 
-	size_t salt_len = 0;
+	void *opt1, *opt2;
+	size_t salt_len = 0, in_len;
 	stringer_t *result, *hash_input, *count;
 
 	if(st_empty(username) || st_empty(password)) {
@@ -166,34 +167,62 @@ stringer_t * stacie_hashed_key_derive(stringer_t *base, uint_t rounds, stringer_
 		log_pedantic("The salt length must be at least 64 bytes.");
 		return NULL;
 	}
-	else if(st_empty(base) || st_length_get(base) != 64) {
+	else if(st_empty(base) || (st_length_get(base) != 64)) {
 		log_pedantic("The base seed was either empty or of invalid size.");
 		return NULL;
 	}
-	else if(!(result = st_alloc_opts((MANAGED_T | JOINTED | HEAP | SECURE), 64))) {
+	else if(!(result = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64))) {
 		log_pedantic("Failed to allocate secure stringer for hashed key.");
 		return NULL;
 	}
-	else if(!(hash_input = st_alloc_opts((MANAGED_T | JOINTED | HEAP | SECURE), 64 
+	else if(!(hash_input = st_alloc_opts((MANAGED_T | JOINTED | SECURE), (in_len = 64 
 		+ st_length_get(base) + st_length_get(username) 
-		+ salt_len + st_length_get(password) + 3))) {
+		+ salt_len + st_length_get(password) + 3)))) {
 		log_pedantic("Failed to allocate secure stringer for hash input.");
 	}
 
-	for(uint_t i = 0; i < rounds; ++i) {
-		hash_input = st_append(hash_input, result);
-		st_wipe(result);
-		hash_input = st_append(hash_input, base);
-		hash_input = st_append(hash_input, username);
-		if(salt_len) {
-			hash_input = st_append(hash_input, salt);
-		}
-		hash_input = st_append(hash_input, password);
+	hash_input = st_append(hash_input, base);
+	hash_input = st_append(hash_input, username);
+
+	if(salt_len) {
+		hash_input = st_append(hash_input, salt);
+	}
+
+	hash_input = st_append(hash_input, password);
+	count = uint24_put_no(0);
+	hash_input = st_append(hash_input, count);
+	result = hash_sha512(hash_input, result);
+	st_wipe(hash_input);
+
+	hash_input = st_append(hash_input, result);
+	hash_input = st_append(hash_input, base);
+	hash_input = st_append(hash_input, username);
+
+	if(salt_len) {
+		hash_input = st_append(hash_input, salt);
+	}
+
+	hash_input = st_append(hash_input, password);
+	count = uint24_put_no(1);
+	hash_input = st_append(hash_input, count);
+	result = hash_sha512(hash_input, result);
+
+	if(!(opt1 = st_data_get(result)) || !(opt2 = st_data_get(hash_input))) {
+		log_pedantic("Failed to retrieve data pointers from stringers.");
+		st_free(hash_input);
+		st_free(result);
+	}
+
+	for(uint_t i = 2; i < rounds; ++i) {
+		mm_copy(opt2, opt1, 64);
+		st_length_set(hash_input, in_len - 3);
 		count = uint24_put_no(i);
 		hash_input = st_append(hash_input, count);
 		result = hash_sha512(hash_input, result);
-		st_wipe(hash_input);
 	}
+
+	st_wipe(hash_input);
+	st_free(hash_input);
 
 	return result;
 }
@@ -219,11 +248,11 @@ stringer_t * stacie_hashed_token_derive(stringer_t *base, stringer_t *username, 
 		log_pedantic("The nonce length must be at least 64 bytes.");
 		return NULL;
 	}
-	else if(!(result = st_alloc_opts((MANAGED_T | JOINTED | HEAP | SECURE), 64))) {
+	else if(!(result = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64))) {
 		log_pedantic("Failed to allocate secure stringer for result.");
 		return NULL;
 	}
-	else if(!(hash_input = st_alloc_opts((MANAGED_T | JOINTED | HEAP | SECURE), 64 +
+	else if(!(hash_input = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64 +
 		+ st_length_get(base) + st_length_get(username) +
 		+ salt_len + nonce_len + 3))) {
 		log_pedantic("Failed to allocate secure stringer for hashed token.");
@@ -266,11 +295,11 @@ stringer_t * stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, 
 		log_pedantic("An empty or invalid shard was passed in.");
 		return NULL;
 	}
-	else if(!(hash_input = st_alloc_opts((MANAGED_T | JOINTED | HEAP | SECURE), st_length_get(master_key) +
+	else if(!(hash_input = st_alloc_opts((MANAGED_T | JOINTED | SECURE), st_length_get(master_key) +
 		+ st_length_get(realm) + st_length_get(shard)))) {
 		log_pedantic("Failed to allocate secure stringer for hash input.");
 	}
-	else if(!(result = st_alloc_opts((MANAGED_T | JOINTED | HEAP | SECURE), 64))) {
+	else if(!(result = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64))) {
 		log_pedantic("Failed to allocate secure stringer for realm key.");
 	}
 
@@ -295,7 +324,7 @@ stringer_t * stacie_realm_cipher_key_derive(stringer_t *realm_key) {
 		log_pedantic("Failed to create placer for cipher key.");
 		return NULL;
 	}
-	else if(!(result = st_dupe_opts((MANAGED_T | JOINTED | HEAP | SECURE), pl))) {
+	else if(!(result = st_dupe_opts((MANAGED_T | JOINTED | SECURE), pl))) {
 		log_pedantic("Failed to allocate secure stringer for cipher key.");
 		return NULL;
 	}
@@ -315,7 +344,7 @@ stringer_t * stacie_realm_init_vector_derive(stringer_t *realm_key) {
 		log_pedantic("Failed to created placers to be xor'd to derive vector key.");
 		return NULL;
 	}
-	else if(!(temp = st_alloc_opts((MANAGED_T | JOINTED | HEAP | SECURE), 16))) {
+	else if(!(temp = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 16))) {
 		log_pedantic("Failed to allocate secure stringer for vector key.");
 		return NULL;
 	}

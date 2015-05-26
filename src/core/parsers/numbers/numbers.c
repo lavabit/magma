@@ -737,7 +737,7 @@ stringer_t * uint32_put_no(uint32_t val) {
 	data[2] = (val & 0x0000ff00) >> 8;
 	data[3] = val & 0x000000ff;
 
-	st_avail_set(result, 4);
+	st_length_set(result, 4);
 	return result;
 }
 
@@ -766,7 +766,7 @@ stringer_t * uint24_put_no(uint32_t val) {
 	data[1] = (val & 0x0000ff00) >> 8;
 	data[2] = val & 0x000000ff;
 
-	st_avail_set(result, 3);
+	st_length_set(result, 3);
 	return result;
 }
 
@@ -794,7 +794,7 @@ stringer_t * uint16_put_no(uint16_t val) {
 	data[0] = (val & 0x0000ff00) >> 8;
 	data[1] = val & 0x000000ff;
 
-	st_avail_set(result, 2);
+	st_length_set(result, 2);
 	return result;
 }
 

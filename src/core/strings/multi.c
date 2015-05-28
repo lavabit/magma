@@ -173,7 +173,7 @@ uint64_t mt_get_number(multi_t multi) {
  * @param	multi	a pointer to the multi-type object to be examined.
  * @param	a pointer to the value of the input object, or NULL on failure.
  */
-char * mt_get_char(multi_t *multi) {
+char * mt_get_char(const multi_t *multi) {
 
 	char *result = NULL;
 

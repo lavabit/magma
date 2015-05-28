@@ -228,7 +228,7 @@ int32_t    cmp_mt_mt(multi_t one, multi_t two);
 bool_t     ident_mt_mt(multi_t one, multi_t two);
 multi_t    mt_dupe(multi_t multi);
 void       mt_free(multi_t multi);
-char *     mt_get_char(multi_t *multi);
+char *     mt_get_char(const multi_t *multi);
 size_t     mt_get_length(multi_t multi);
 multi_t    mt_get_null(void);
 uint64_t   mt_get_number(multi_t multi);

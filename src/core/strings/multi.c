@@ -170,71 +170,71 @@ uint64_t mt_get_number(multi_t multi) {
 
 /**
  * @brief	Get a character pointer to the value of a multi-type object.
- * @param	multi	the multi-type object to be examined.
+ * @param	multi	a pointer to the multi-type object to be examined.
  * @param	a pointer to the value of the input object, or NULL on failure.
  */
-char * mt_get_char(multi_t multi) {
+char * mt_get_char(multi_t *multi) {
 
 	char *result = NULL;
 
-	switch (multi.type) {
+	switch (multi->type) {
 
 	// Strings
 	case (M_TYPE_STRINGER):
-		result = st_char_get(multi.val.st);
+		result = st_char_get(multi->val.st);
 		break;
 
 	case (M_TYPE_NULLER):
-		result = multi.val.ns;
+		result = multi->val.ns;
 		break;
 
 	case (M_TYPE_BLOCK):
-		result = multi.val.bl;
+		result = multi->val.bl;
 		break;
 
 	// Boolean
 	case (M_TYPE_BOOLEAN):
-		result = (char *)&(multi.val.binary);
+		result = (char *)&(multi->val.binary);
 		break;
 
 		// Unsigned integers
 	case (M_TYPE_UINT64):
-		result = (char *)&(multi.val.u64);
+		result = (char *)&(multi->val.u64);
 
 		break;
 	case (M_TYPE_UINT32):
-		result = (char *)&(multi.val.u32);
+		result = (char *)&(multi->val.u32);
 		break;
 	case (M_TYPE_UINT16):
-		result = (char *)&(multi.val.u16);
+		result = (char *)&(multi->val.u16);
 		break;
 	case (M_TYPE_UINT8):
-		result = (char *)&(multi.val.u8);
+		result = (char *)&(multi->val.u8);
 		break;
 
 		// Signed integers
 	case (M_TYPE_INT64):
-		result = (char *)&(multi.val.i64);
+		result = (char *)&(multi->val.i64);
 		break;
 	case (M_TYPE_INT32):
-		result = (char *)&(multi.val.i32);
+		result = (char *)&(multi->val.i32);
 		break;
 	case (M_TYPE_INT16):
-		result = (char *)&(multi.val.i16);
+		result = (char *)&(multi->val.i16);
 		break;
 	case (M_TYPE_INT8):
-		result = (char *)&(multi.val.i8);
+		result = (char *)&(multi->val.i8);
 		break;
 
 	case (M_TYPE_FLOAT):
-		result = (char *)&(multi.val.fl);
+		result = (char *)&(multi->val.fl);
 		break;
 	case (M_TYPE_DOUBLE):
-		result = (char *)&(multi.val.dbl);
+		result = (char *)&(multi->val.dbl);
 		break;
 
 	default:
-		log_options(M_LOG_INFO | M_LOG_STACK_TRACE, "The mt_get_char function was called on an unsupported data type. {type = %s = %u}", type(multi.type), multi.type);
+		log_options(M_LOG_INFO | M_LOG_STACK_TRACE, "The mt_get_char function was called on an unsupported data type. {type = %s = %u}", type(multi->type), multi->type);
 		break;
 	}
 

@@ -22,7 +22,7 @@ https://darkmail.info/downloads/dark-mail-development-machine-1.0.0.torrent
 # Credits
 
 Greg Brown  
-Ivan Tolkachav  
+Ivan Tolkachev  
 Ladar Levison  
 Princess Levison  
 Ryan Crites  

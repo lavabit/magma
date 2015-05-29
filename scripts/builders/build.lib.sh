@@ -51,7 +51,7 @@ gd() {
 
 	case "$1" in
 		gd-extract)
-	  		extract $GD "gd" &>> "$M_LOGS/gd.txt"
+			extract $GD "gd" &>> "$M_LOGS/gd.txt"
 		;;
 		gd-prep)
 			cd "$M_SOURCES/gd"; error
@@ -130,7 +130,7 @@ png() {
 
 	case "$1" in
 		png-extract)
-	  	extract $PNG "png" &>> "$M_LOGS/png.txt"
+		extract $PNG "png" &>> "$M_LOGS/png.txt"
 		;;
 		png-prep)
 			cd "$M_SOURCES/png"; error
@@ -202,7 +202,7 @@ lzo() {
 
 	case "$1" in
 		lzo-extract)
-	  		extract $LZO "lzo" &>> "$M_LOGS/lzo.txt"
+			extract $LZO "lzo" &>> "$M_LOGS/lzo.txt"
 		;;
 		lzo-prep)
 			cd "$M_SOURCES/lzo"; error
@@ -269,7 +269,7 @@ jpeg() {
 
 	case "$1" in
 		jpeg-extract)
-	  		extract $JPEG "jpeg" &>> "$M_LOGS/jpeg.txt"
+			extract $JPEG "jpeg" &>> "$M_LOGS/jpeg.txt"
 		;;
 		jpeg-prep)
 			cd "$M_SOURCES/jpeg"; error
@@ -337,7 +337,7 @@ spf2() {
 
 	case "$1" in
 		spf2-extract)
-	  		extract $SPF2 "spf2" &>> "$M_LOGS/spf2.txt"
+			extract $SPF2 "spf2" &>> "$M_LOGS/spf2.txt"
 		;;
 		spf2-prep)
 			cd "$M_SOURCES/spf2"; error
@@ -404,7 +404,7 @@ curl() {
 
 	case "$1" in
 		curl-extract)
-	  		extract $CURL "curl" &>> "$M_LOGS/curl.txt"
+			extract $CURL "curl" &>> "$M_LOGS/curl.txt"
 		;;
 		curl-prep)
 			cd "$M_SOURCES/curl"; error
@@ -499,9 +499,9 @@ xml2() {
 
 	case "$1" in
 		xml2-extract)
-	  		extract $XML2 "xml2" &>> "$M_LOGS/xml2.txt"
-	  		tar xzvf "$M_ARCHIVES/$XMLTS.tar.gz" -C "$M_SOURCES/xml2" &>> "$M_LOGS/xml2.txt"; error
-	  		tar --strip-components=1 -x -z -v -f "$M_ARCHIVES/$XML2TEST.tar.gz" -C "$M_SOURCES/xml2" &>> "$M_LOGS/xml2.txt"; error
+			extract $XML2 "xml2" &>> "$M_LOGS/xml2.txt"
+			tar xzvf "$M_ARCHIVES/$XMLTS.tar.gz" -C "$M_SOURCES/xml2" &>> "$M_LOGS/xml2.txt"; error
+			tar --strip-components=1 -x -z -v -f "$M_ARCHIVES/$XML2TEST.tar.gz" -C "$M_SOURCES/xml2" &>> "$M_LOGS/xml2.txt"; error
 		;;
 		xml2-prep)
 			cd "$M_SOURCES/xml2"; error
@@ -577,7 +577,7 @@ dkim() {
 
 	case "$1" in
 		dkim-extract)
-	  		extract $DKIM "dkim" &>> "$M_LOGS/dkim.txt"
+			extract $DKIM "dkim" &>> "$M_LOGS/dkim.txt"
 		;;
 		dkim-prep)
 			cd "$M_SOURCES/dkim"; error
@@ -644,7 +644,7 @@ zlib() {
 
 	case "$1" in
 		zlib-extract)
-	  		extract $ZLIB "zlib" &>> "$M_LOGS/zlib.txt"
+			extract $ZLIB "zlib" &>> "$M_LOGS/zlib.txt"
 		;;
 		zlib-prep)
 			# Apply RHEL zlib prep steps.
@@ -729,7 +729,7 @@ bzip2() {
 
 	case "$1" in
 		bzip2-extract)
-	  		extract $BZIP2 "bzip2" &>> "$M_LOGS/bzip2.txt"
+			extract $BZIP2 "bzip2" &>> "$M_LOGS/bzip2.txt"
 		;;
 		bzip2-prep)
 			# Apply RHEL bzip2 patches.
@@ -798,7 +798,7 @@ dspam() {
 
 	case "$1" in
 		dspam-extract)
-	  		extract $DSPAM "dspam" &>> "$M_LOGS/dspam.txt"
+			extract $DSPAM "dspam" &>> "$M_LOGS/dspam.txt"
 		;;
 		dspam-prep)
 			cd "$M_SOURCES/dspam"; error
@@ -887,7 +887,7 @@ mysql() {
 
 	case "$1" in
 		mysql-extract)
-	  		extract $MYSQL "mysql" &>> "$M_LOGS/mysql.txt"
+			extract $MYSQL "mysql" &>> "$M_LOGS/mysql.txt"
 		;;
 		mysql-prep)
 			cd "$M_SOURCES/mysql"; error
@@ -905,16 +905,16 @@ mysql() {
 
 			# According to the RHEL build spec, MySQL checks will fail without --with-big-tables,
 			# And the "with-plugin" and "without-plugin options" do actually work; so we can ignore warnings about them...
-#			./configure \
-#			--with-mysqld-user="ladar" \
-#      --with-extra-charsets=all --with-big-tables --with-pic --with-readline \
-#      --enable-static --enable-shared --enable-largefile --enable-thread-safe-client --enable-local-infile \
-#      --build=x86_64-redhat-linux-gnu --target=x86_64-redhat-linux-gnu --with-debug  &>> "$M_LOGS/mysql.txt"; error
-#
-        #--with-plugins=innodb_plugin,myisam,heap,csv
-        # --with-client-ldflags=-all-static --with-mysqld-ldflags=-all-static
-        # mkdir working; error
-       #--with-plugin-innobase --with-plugin-partition --without-plugin-innodb_plugin
+			#./configure \
+			#--with-mysqld-user="ladar" \
+			#--with-extra-charsets=all --with-big-tables --with-pic --with-readline \
+			#--enable-static --enable-shared --enable-largefile --enable-thread-safe-client --enable-local-infile \
+			#--build=x86_64-redhat-linux-gnu --target=x86_64-redhat-linux-gnu --with-debug  &>> "$M_LOGS/mysql.txt"; error
+			#
+			#--with-plugins=innodb_plugin,myisam,heap,csv
+			#--with-client-ldflags=-all-static --with-mysqld-ldflags=-all-static
+			#mkdir working; error
+			#--with-plugin-innobase --with-plugin-partition --without-plugin-innodb_plugin
 
 			#--with-plugins=innobase,innodb_plugin,myisam,heap,csv &>> "$M_LOGS/mysql.txt"; error
 
@@ -988,7 +988,7 @@ geoip() {
 
 	case "$1" in
 		geoip-extract)
-	  		extract $GEOIP "geoip" &>> "$M_LOGS/geoip.txt"
+			extract $GEOIP "geoip" &>> "$M_LOGS/geoip.txt"
 		;;
 		geoip-prep)
 			cd "$M_SOURCES/geoip"; error
@@ -1054,7 +1054,7 @@ clamav() {
 
 	case "$1" in
 		clamav-extract)
-	  		extract $CLAMAV "clamav" &>> "$M_LOGS/clamav.txt"
+			extract $CLAMAV "clamav" &>> "$M_LOGS/clamav.txt"
 		;;
 		clamav-prep)
 			# Patches cli_rarload() so it looks internally, and changes the name of cache_add() to cl_cache_add().
@@ -1194,7 +1194,7 @@ openssl() {
 
 	case "$1" in
 		openssl-extract)
-	  		extract $OPENSSL "openssl" &>> "$M_LOGS/openssl.txt"
+			extract $OPENSSL "openssl" &>> "$M_LOGS/openssl.txt"
 		;;
 		openssl-prep)
 			# OpenSSL 1.0.0b has a known bug
@@ -1264,7 +1264,7 @@ jansson() {
 
 	case "$1" in
 		jansson-extract)
-	  		extract $JANSSON "jansson" &>> "$M_LOGS/jansson.txt"
+			extract $JANSSON "jansson" &>> "$M_LOGS/jansson.txt"
 		;;
 		jansson-prep)
 			cd "$M_SOURCES/jansson"; error
@@ -1344,7 +1344,7 @@ freetype() {
 
 	case "$1" in
 		freetype-extract)
-	  		extract $FREETYPE "freetype" &>> "$M_LOGS/freetype.txt"
+			extract $FREETYPE "freetype" &>> "$M_LOGS/freetype.txt"
 		;;
 		freetype-prep)
 			cd "$M_SOURCES/freetype"; error
@@ -1412,7 +1412,7 @@ memcached() {
 
 	case "$1" in
 		memcached-extract)
-	  		extract $MEMCACHED "memcached" &>> "$M_LOGS/memcached.txt"
+			extract $MEMCACHED "memcached" &>> "$M_LOGS/memcached.txt"
 		;;
 		memcached-prep)
 			cd "$M_SOURCES/memcached"; error
@@ -1527,7 +1527,7 @@ tokyocabinet() {
 
 	case "$1" in
 		tokyocabinet-extract)
-	  		extract $TOKYOCABINET "tokyocabinet" &>> "$M_LOGS/tokyocabinet.txt"
+			extract $TOKYOCABINET "tokyocabinet" &>> "$M_LOGS/tokyocabinet.txt"
 		;;
 		tokyocabinet-prep)
 			# Adds tctreegetboth() and tcndbgetboth().

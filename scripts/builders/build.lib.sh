@@ -3,12 +3,12 @@
 # Install Sphinx (python-sphinx package) to build Jansson HTML docs
 # Install LTDL and create the clamav user/group so ClamAV will build correctly
 # DSPAM will require the MySQL development (lib/headers) for a parallel build to complete
-# Install libevent/memcached, and then add /usr/local/lib to the linker config path so memcached can be executed 
+# Install libevent/memcached, and then add /usr/local/lib to the linker config path so memcached can be executed
 
 # Enable the SELinux boolean allow_exestack or the shared object loader will fail
 # Create the test@localhost mysql user and grant the account full access to the test schema
-# The symbols.h file may need to be imported from the magma project for the object load test 
-# Note that some platforms may require setting the CFLAGS/CPPFLAGS environment variables to -Wold-style-cast when compiling memcached 
+# The symbols.h file may need to be imported from the magma project for the object load test
+# Note that some platforms may require setting the CFLAGS/CPPFLAGS environment variables to -Wold-style-cast when compiling memcached
 
 # To generate a SLOC report for each project:
 # cd $M_SOURCES; find  -maxdepth 1 -type d -printf '\n\n%P\n' -exec sloc --quiet --progress-rate=0 {} \; | grep -v "http://cloc.sourceforge.net"
@@ -25,9 +25,9 @@ M_BUILD=$LINK
 error() {
 	if [ $? -ne 0 ]; then
 		tput sgr0; tput setaf 1
-		#printf "\n\n$COMMAND failed...\n\n"; 
+		#printf "\n\n$COMMAND failed...\n\n";
 		date +"%n%n$COMMAND failed at %r on %x%n%n"
-		tput sgr0 
+		tput sgr0
 		exit 1
 	fi
 }
@@ -42,13 +42,13 @@ extract() {
 }
 
 gd() {
-	
+
 	if [[ $1 == "gd-extract" ]]; then
 		rm -f "$M_LOGS/gd.txt"; error
-	elif [[ $1 != "gd-log" ]]; then	
-		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/gd.txt" 
+	elif [[ $1 != "gd-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/gd.txt"
 	fi
-	
+
 	case "$1" in
 		gd-extract)
 	  		extract $GD "gd" &>> "$M_LOGS/gd.txt"
@@ -112,29 +112,29 @@ gd() {
 			exit 2
 		;;
 	esac
-	
+
 	date +"Finished $1 at %r on %x"
-	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/gd.txt" 
-	
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/gd.txt"
+
 	return $?
 
 }
 
 png() {
-	
+
 	if [[ $1 == "png-extract" ]]; then
 		rm -f "$M_LOGS/png.txt"; error
-	elif [[ $1 != "png-log" ]]; then	
-		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/png.txt" 
+	elif [[ $1 != "png-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/png.txt"
 	fi
-	
+
 	case "$1" in
 		png-extract)
 	  	extract $PNG "png" &>> "$M_LOGS/png.txt"
 		;;
 		png-prep)
 			cd "$M_SOURCES/png"; error
-			if [[ $PNG == "libpng-1.6.9" ]]; then 
+			if [[ $PNG == "libpng-1.6.9" ]]; then
 				cat "$M_PATCHES/png/"makefile-1.6.9.patch | patch -p1 --verbose &>> "$M_LOGS/png.txt"; error
 			else
 				cat "$M_PATCHES/png/"makefile-1.6.16.patch | patch -p1 --verbose &>> "$M_LOGS/png.txt"; error
@@ -184,22 +184,22 @@ png() {
 			exit 2
 		;;
 	esac
-	
+
 	date +"Finished $1 at %r on %x"
-	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/png.txt" 
-	
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/png.txt"
+
 	return $?
-	
+
 }
 
 lzo() {
-	
+
 	if [[ $1 == "lzo-extract" ]]; then
 		rm -f "$M_LOGS/lzo.txt"; error
-	elif [[ $1 != "lzo-log" ]]; then	
+	elif [[ $1 != "lzo-log" ]]; then
 		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/lzo.txt"
 	fi
-	
+
 	case "$1" in
 		lzo-extract)
 	  		extract $LZO "lzo" &>> "$M_LOGS/lzo.txt"
@@ -251,22 +251,22 @@ lzo() {
 			exit 2
 		;;
 	esac
-	
+
 	date +"Finished $1 at %r on %x"
-	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/lzo.txt" 
-	
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/lzo.txt"
+
 	return $?
 
 }
 
 jpeg() {
-	
+
 	if [[ $1 == "jpeg-extract" ]]; then
 		rm -f "$M_LOGS/jpeg.txt"; error
-	elif [[ $1 != "jpeg-log" ]]; then	
-		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/jpeg.txt" 
+	elif [[ $1 != "jpeg-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/jpeg.txt"
 	fi
-	
+
 	case "$1" in
 		jpeg-extract)
 	  		extract $JPEG "jpeg" &>> "$M_LOGS/jpeg.txt"
@@ -319,22 +319,22 @@ jpeg() {
 			exit 2
 		;;
 	esac
-	
+
 	date +"Finished $1 at %r on %x"
-	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/jpeg.txt" 
-	
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/jpeg.txt"
+
 	return $?
-	
+
 }
 
 spf2() {
-	
+
 	if [[ $1 == "spf2-extract" ]]; then
 		rm -f "$M_LOGS/spf2.txt"; error
-	elif [[ $1 != "spf2-log" ]]; then	
-		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/spf2.txt" 
+	elif [[ $1 != "spf2-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/spf2.txt"
 	fi
-	
+
 	case "$1" in
 		spf2-extract)
 	  		extract $SPF2 "spf2" &>> "$M_LOGS/spf2.txt"
@@ -386,22 +386,22 @@ spf2() {
 			exit 2
 		;;
 	esac
-	
+
 	date +"Finished $1 at %r on %x"
-	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/spf2.txt" 
-	
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/spf2.txt"
+
 	return $?
 
 }
 
 curl() {
-	
+
 	if [[ $1 == "curl-extract" ]]; then
 		rm -f "$M_LOGS/curl.txt"; error
-	elif [[ $1 != "curl-log" ]]; then	
-		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/curl.txt" 
+	elif [[ $1 != "curl-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/curl.txt"
 	fi
-	
+
 	case "$1" in
 		curl-extract)
 	  		extract $CURL "curl" &>> "$M_LOGS/curl.txt"
@@ -435,25 +435,25 @@ curl() {
 			make --jobs=4 test &>> "$M_LOGS/curl.txt"; error
 		;;
 		curl-check-full)
-			
+
 			# The target 'check' is an alias for the targets 'test' and 'examples'
 			cd "$M_SOURCES/curl"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
 			make --jobs=4 examples &>> "$M_LOGS/curl.txt"; error; error
 			make --jobs=4 test &>> "$M_LOGS/curl.txt"; error
 			make --jobs=4 test-full &>> "$M_LOGS/curl.txt"; error
-			
+
 			# To pass the torture test we'll need to recompile the library with all of the protocols enabled.
 #			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 #			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 #			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-#			
+#
 #			make distclean &>> "$M_LOGS/curl.txt";
 #			./configure --enable-debug --enable-static=yes --without-librtmp --without-krb4 --without-krb5 --without-libssh2 --without-ca-bundle --without-ca-path --without-libidn \
 #				--with-pic --with-ssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" &>> "$M_LOGS/curl.txt"; error
 #			make --jobs=4 &>> "$M_LOGS/curl.txt"; error
 #			make --jobs=4 test-torture &>> "$M_LOGS/curl.txt"; error
-#			
+#
 #			# Assuming the torture test passed, rebuild the library using the default settings.
 #			make distclean &>> "$M_LOGS/curl.txt";
 #			curl configure
@@ -481,22 +481,22 @@ curl() {
 			exit 2
 		;;
 	esac
-	
+
 	date +"Finished $1 at %r on %x"
-	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/curl.txt" 
-	
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/curl.txt"
+
 	return $?
 
 }
 
-xml2() { 
-	
+xml2() {
+
 	if [[ $1 == "xml2-extract" ]]; then
 		rm -f "$M_LOGS/xml2.txt"; error
-	elif [[ $1 != "xml2-log" ]]; then	
-		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/xml2.txt" 
+	elif [[ $1 != "xml2-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/xml2.txt"
 	fi
-	
+
 	case "$1" in
 		xml2-extract)
 	  		extract $XML2 "xml2" &>> "$M_LOGS/xml2.txt"
@@ -559,22 +559,22 @@ xml2() {
 			exit 2
 		;;
 	esac
-	
+
 	date +"Finished $1 at %r on %x"
-	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/xml2.txt" 
-	
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/xml2.txt"
+
 	return $?
-	
+
 }
 
 dkim() {
-	
+
 	if [[ $1 == "dkim-extract" ]]; then
 		rm -f "$M_LOGS/dkim.txt"; error
-	elif [[ $1 != "dkim-log" ]]; then	
-		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/dkim.txt" 
+	elif [[ $1 != "dkim-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/dkim.txt"
 	fi
-	
+
 	case "$1" in
 		dkim-extract)
 	  		extract $DKIM "dkim" &>> "$M_LOGS/dkim.txt"
@@ -626,22 +626,22 @@ dkim() {
 			exit 2
 		;;
 	esac
-	
+
 	date +"Finished $1 at %r on %x"
-	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/dkim.txt" 
-	
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/dkim.txt"
+
 	return $?
 
 }
 
-zlib() { 
-	
+zlib() {
+
 	if [[ $1 == "zlib-extract" ]]; then
 		rm -f "$M_LOGS/zlib.txt"; error
-	elif [[ $1 != "zlib-log" ]]; then	
-		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/zlib.txt" 
+	elif [[ $1 != "zlib-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/zlib.txt"
 	fi
-	
+
 	case "$1" in
 		zlib-extract)
 	  		extract $ZLIB "zlib" &>> "$M_LOGS/zlib.txt"
@@ -649,7 +649,7 @@ zlib() {
 		zlib-prep)
 			# Apply RHEL zlib prep steps.
 			cd "$M_SOURCES/zlib"; error
-			if [[ $ZLIB == "1.2.3" ]]; then	
+			if [[ $ZLIB == "1.2.3" ]]; then
 				chmod -Rf a+rX,u+w,g-w,o-w . &>> "$M_LOGS/zlib.txt"; error
 				cat "$M_PATCHES/zlib/"zlib-1.2.3-autotools.patch | patch -p1 -b --suffix .atools --fuzz=0 &>> "$M_LOGS/zlib.txt"; error
 				mkdir m4 &>> "$M_LOGS/zlib.txt"; error
@@ -661,7 +661,7 @@ zlib() {
 		;;
 		zlib-configure)
 			cd "$M_SOURCES/zlib"; error
-			if [[ $ZLIB == "1.2.3" ]]; then	
+			if [[ $ZLIB == "1.2.3" ]]; then
 				export CFLAGS='-O2 -g3 -rdynamic -fPIC -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic'; error
 				export CXXFLAGS='-O2 -g3 -rdynamic -fPIC -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic'; error
 				export FFLAGS='-O2 -g3 -rdynamic -fPIC -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -I/usr/lib64/gfortran/modules'; error
@@ -711,22 +711,22 @@ zlib() {
 			exit 2
 		;;
 	esac
-	
+
 	date +"Finished $1 at %r on %x"
-	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/zlib.txt" 
-	
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/zlib.txt"
+
 	return $?
-	
+
 }
 
-bzip2() { 
-	
+bzip2() {
+
 	if [[ $1 == "bzip2-extract" ]]; then
 		rm -f "$M_LOGS/bzip2.txt"; error
-	elif [[ $1 != "bzip2-log" ]]; then	
-		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/bzip2.txt" 
+	elif [[ $1 != "bzip2-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/bzip2.txt"
 	fi
-	
+
 	case "$1" in
 		bzip2-extract)
 	  		extract $BZIP2 "bzip2" &>> "$M_LOGS/bzip2.txt"
@@ -734,7 +734,7 @@ bzip2() {
 		bzip2-prep)
 			# Apply RHEL bzip2 patches.
 			cd "$M_SOURCES/bzip2"; error
-			if [[ $ZLIB == "1.0.5" ]]; then	
+			if [[ $ZLIB == "1.0.5" ]]; then
 				chmod -Rf a+rX,u+w,g-w,o-w . &>> "$M_LOGS/bzip2.txt"; error
 				cat "$M_PATCHES/bzip2/"bzip2-1.0.4-saneso.patch | patch -p1 -b --suffix .saneso --fuzz=0 &>> "$M_LOGS/bzip2.txt"; error
 				cat "$M_PATCHES/bzip2/"bzip2-1.0.4-cflags.patch | patch -p1 -b --suffix .cflags --fuzz=0 &>> "$M_LOGS/bzip2.txt"; error
@@ -745,7 +745,7 @@ bzip2() {
 			cd "$M_SOURCES/bzip2"; error
 		;;
 		bzip2-build)
-			cd "$M_SOURCES/bzip2"; error	
+			cd "$M_SOURCES/bzip2"; error
 			make CC=gcc AR=ar RANLIB=ranlib 'CFLAGS=-O2 -g3 -fPIC -rdynamic -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -D_FILE_OFFSET_BITS=64' &>> "$M_LOGS/bzip2.txt"; error
 		;;
 		bzip2-check)
@@ -780,46 +780,46 @@ bzip2() {
 			exit 2
 		;;
 	esac
-	
+
 	date +"Finished $1 at %r on %x"
-	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/bzip2.txt" 
-	
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/bzip2.txt"
+
 	return $?
-	
+
 }
 
 dspam() {
-	
+
 	if [[ $1 == "dspam-extract" ]]; then
 		rm -f "$M_LOGS/dspam.txt"; error
-	elif [[ $1 != "dspam-log" ]]; then	
-		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/dspam.txt" 
+	elif [[ $1 != "dspam-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/dspam.txt"
 	fi
-	
+
 	case "$1" in
 		dspam-extract)
 	  		extract $DSPAM "dspam" &>> "$M_LOGS/dspam.txt"
 		;;
 		dspam-prep)
 			cd "$M_SOURCES/dspam"; error
-			
+
 			# Changes STATUS( to DSPAM_STATUS( in client.c, dspam.c and agent_shared.c in DSPAM the src folder.
-			if [[ $DSPAM == "dspam-3.9.1-RC1" ]]; then	
+			if [[ $DSPAM == "dspam-3.9.1-RC1" ]]; then
 				cat "$M_PATCHES/dspam/"dspam_status_rename_3.9.0.RC1.patch | patch -p1 --verbose &>> "$M_LOGS/dspam.txt"; error
 			else
 				cat "$M_PATCHES/dspam/"dspam_status_rename_3.10.0.patch | patch -p3 --verbose &>> "$M_LOGS/dspam.txt"; error
 			fi
-			
+
 			cat "$M_PATCHES/dspam/"dspam_version.patch | patch -p1 --verbose &>> "$M_LOGS/dspam.txt"; error
 			cat "$M_PATCHES/dspam/"dspam_bufixes_3.10.1.patch | patch -p3 --verbose &>> "$M_LOGS/dspam.txt"; error
 		;;
 		dspam-configure)
 			cd "$M_SOURCES/dspam"; error
-			# Can't include because the library isn't there till after MySQL is compiled. 
+			# Can't include because the library isn't there till after MySQL is compiled.
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			
+
 			if [ ! -d "$M_SOURCES/mysql/libmysql/.libs/" ]; then
 				MYSQL_LIB_PATH="/usr/lib64/mysql/"
 				MYSQL_INC_PATH="/usr/include/mysql/"
@@ -827,7 +827,7 @@ dspam() {
 				MYSQL_LIB_PATH="$M_SOURCES/mysql/libmysql/.libs/"
 				MYSQL_INC_PATH="$M_SOURCES/mysql/include/"
 			fi
-			
+
 			./configure --enable-static --with-pic --enable-preferences-extension --enable-virtual-users \
 			--with-storage-driver=mysql_drv --disable-trusted-user-security --disable-mysql4-initialization	\
 			--with-mysql-includes=$MYSQL_INC_PATH --with-mysql-libraries=$MYSQL_LIB_PATH &>> "$M_LOGS/dspam.txt"; error
@@ -869,22 +869,22 @@ dspam() {
 			exit 2
 		;;
 	esac
-	
+
 	date +"Finished $1 at %r on %x"
-	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/dspam.txt" 
-	
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/dspam.txt"
+
 	return $?
 
 }
 
-mysql() { 
-	
+mysql() {
+
 	if [[ $1 == "mysql-extract" ]]; then
 		rm -f "$M_LOGS/mysql.txt"; error
-	elif [[ $1 != "mysql-log" ]]; then	
+	elif [[ $1 != "mysql-log" ]]; then
 		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/mysql.txt"
 	fi
-	
+
 	case "$1" in
 		mysql-extract)
 	  		extract $MYSQL "mysql" &>> "$M_LOGS/mysql.txt"
@@ -892,17 +892,17 @@ mysql() {
 		mysql-prep)
 			cd "$M_SOURCES/mysql"; error
 			touch libtoolT; error
-			
+
 		;;
 		mysql-configure)
 			cd "$M_SOURCES/mysql"; error
 			export CFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			
+
 			./configure --with-pic --enable-thread-safe-client --with-readline --with-charset=latin1 --with-extra-charsets=all \
-			--with-plugins=all &>> "$M_LOGS/mysql.txt"; error  
-      
+			--with-plugins=all &>> "$M_LOGS/mysql.txt"; error
+
 			# According to the RHEL build spec, MySQL checks will fail without --with-big-tables,
 			# And the "with-plugin" and "without-plugin options" do actually work; so we can ignore warnings about them...
 #			./configure \
@@ -910,15 +910,15 @@ mysql() {
 #      --with-extra-charsets=all --with-big-tables --with-pic --with-readline \
 #      --enable-static --enable-shared --enable-largefile --enable-thread-safe-client --enable-local-infile \
 #      --build=x86_64-redhat-linux-gnu --target=x86_64-redhat-linux-gnu --with-debug  &>> "$M_LOGS/mysql.txt"; error
-#        
-        #--with-plugins=innodb_plugin,myisam,heap,csv 
+#
+        #--with-plugins=innodb_plugin,myisam,heap,csv
         # --with-client-ldflags=-all-static --with-mysqld-ldflags=-all-static
         # mkdir working; error
        #--with-plugin-innobase --with-plugin-partition --without-plugin-innodb_plugin
-       
+
 			#--with-plugins=innobase,innodb_plugin,myisam,heap,csv &>> "$M_LOGS/mysql.txt"; error
-			
-			# TODO: Develop logic for detecting whether openssl and zlib are built ala DSPAM. 
+
+			# TODO: Develop logic for detecting whether openssl and zlib are built ala DSPAM.
 			#--with-zlib-dir="$M_SOURCES/zlib" --with-openssl="$M_SOURCES/openssl" &>> "$M_LOGS/mysql.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 		;;
@@ -932,18 +932,18 @@ mysql() {
 			make --jobs=2 test-fast &>> "$M_LOGS/mysql.txt"; error
 		;;
 		mysql-check-full)
-			
+
 			cd "$M_SOURCES/mysql"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
-		
+
 			# The test suite will use this variable to offset the port numbers and prevent clashing.
 			export MTR_BUILD_THREAD=86
-		
+
 			# test-full combines the test, test-nr and test-ps targets
 			make clean &>> "$M_LOGS/mysql.txt"; error
 			make --jobs=2 &>> "$M_LOGS/mysql.txt"; error
 			make --jobs=2 test-full &>> "$M_LOGS/mysql.txt"; error
-			
+
 			# make clean &>> "$M_LOGS/mysql.txt"; error
 			#make --jobs=2 &>> "$M_LOGS/mysql.txt"; error
 			#make test-full-qa &>> "$M_LOGS/mysql.txt"; error
@@ -970,22 +970,22 @@ mysql() {
 			exit 2
 		;;
 	esac
-	
+
 	date +"Finished $1 at %r on %x"
-	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/mysql.txt" 
-	
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/mysql.txt"
+
 	return $?
-	
+
 }
 
 geoip() {
-	
+
 	if [[ $1 == "geoip-extract" ]]; then
 		rm -f "$M_LOGS/geoip.txt"; error
-	elif [[ $1 != "geoip-log" ]]; then	
-		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/geoip.txt" 
+	elif [[ $1 != "geoip-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/geoip.txt"
 	fi
-	
+
 	case "$1" in
 		geoip-extract)
 	  		extract $GEOIP "geoip" &>> "$M_LOGS/geoip.txt"
@@ -1037,21 +1037,21 @@ geoip() {
 			exit 2
 		;;
 	esac
-	
+
 	date +"Finished $1 at %r on %x"
-	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/geoip.txt" 
-	
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/geoip.txt"
+
 	return $?
 }
 
-clamav() { 
-	
+clamav() {
+
 	if [[ $1 == "clamav-extract" ]]; then
 		rm -f "$M_LOGS/clamav.txt"; error
-	elif [[ $1 != "clamav-log" ]]; then	
-		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/clamav.txt" 
-	fi 
-	
+	elif [[ $1 != "clamav-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/clamav.txt"
+	fi
+
 	case "$1" in
 		clamav-extract)
 	  		extract $CLAMAV "clamav" &>> "$M_LOGS/clamav.txt"
@@ -1071,10 +1071,10 @@ clamav() {
 			elif [[ $CLAMAV =~ "clamav-0.98.1" ]]; then
 				# Add the shutdown and clean up functions.
 				cat "$M_PATCHES/clamav/"shutdown_0981.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
-			
+
 				# Fix the rar library dynamic loading logic.
 				cat "$M_PATCHES/clamav/"rarload_0971.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
-				
+
 				# Fix reference conflict with OpenSSL over the name SHA256_CTX.
 				SHA_FILES=`grep --files-with-matches --recursive SHA256_CTX *`; error
 				sed -i -e "s/SHA256_CTX/CL_SHA256_CTX/g" $SHA_FILES; error
@@ -1082,33 +1082,33 @@ clamav() {
 			else
 				# Add the shutdown and clean up functions and fix the rar library dynamic loading logic.
 				cat "$M_PATCHES/clamav/"shutdown_rarload_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
-				
-				# Output the version number and not the git commit hash. 
+
+				# Output the version number and not the git commit hash.
 				cat "$M_PATCHES/clamav/"version_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
 			fi
-			
+
 			# Fix reference conflict with libpng over the filename png.h.
 			PNG_FILES=`grep --files-with-matches --recursive "png\\.h" *`; error
 			sed -i -e "s/png\.h/clpng\.h/g" $PNG_FILES; error
 			mv libclamav/png.h libclamav/clpng.h; error
 			unset PNG_FILES
-		
+
 		;;
 		clamav-configure)
 			cd "$M_SOURCES/clamav"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE"
-			
+
 			# Note that at least in version 0.97 and 0.98, --disable-llvm breaks the unit tests.
-			
+
 			./configure --disable-llvm --enable-check --enable-static &>> "$M_LOGS/clamav.txt"; error
-			
+
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
-			
+
 			if [[ $CLAMAV =~ "clamav-0.9"[7-8]"."[1-9] ]]; then
-				# The check3_clamd.sh script will fail if LLVM is disabled. 
-				# Since were not currently using clamd, the offending check script is replaced. 
+				# The check3_clamd.sh script will fail if LLVM is disabled.
+				# Since were not currently using clamd, the offending check script is replaced.
 				# The exit value 77 indicates the check was skipped.
 				printf "\x23\x21/bin/bash\nexit 77\n" > "$M_SOURCES/clamav/unit_tests/check2_clamd.sh"; error
 				printf "\x23\x21/bin/bash\nexit 77\n" > "$M_SOURCES/clamav/unit_tests/check3_clamd.sh"; error
@@ -1122,15 +1122,15 @@ clamav() {
 		clamav-check)
 			cd "$M_SOURCES/clamav"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
-			 
+
 			# Remove read perms for the accdenied file so the test works properly.
 			if [[ -e "$M_SOURCES/clamav/unit_tests/accdenied" ]] && [[ ! -f "$M_SOURCES/clamav/unit_tests/accdenied" ]]; then
 				chmod --changes u-r "$M_SOURCES/clamav/unit_tests/accdenied" &>> "$M_LOGS/clamav.txt"; error
 			fi
-			
+
 			make check &>> "$M_LOGS/clamav.txt"; error
-			
-			# Add read perms to accdenied file so it can be checked into the version control repo. 
+
+			# Add read perms to accdenied file so it can be checked into the version control repo.
 			if [[ -e "$M_SOURCES/clamav/unit_tests/accdenied" ]] && [[ ! -f "$M_SOURCES/clamav/unit_tests/accdenied" ]]; then
 				chmod --changes u+r "$M_SOURCES/clamav/unit_tests/accdenied" &>> "$M_LOGS/clamav.txt"; error
 			fi
@@ -1138,18 +1138,18 @@ clamav() {
 		clamav-check-full)
 			cd "$M_SOURCES/clamav"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
-			
+
 			# Remove read perms for the accdenied file so the test works properly.
 			if [[ -e "$M_SOURCES/clamav/unit_tests/accdenied" ]] && [[ ! -f "$M_SOURCES/clamav/unit_tests/accdenied" ]]; then
 				chmod --changes u-r "$M_SOURCES/clamav/unit_tests/accdenied" &>> "$M_LOGS/clamav.txt"; error
 			fi
-			
+
 			# Reset the session limits.
-			ulimit -f unlimited || ulimit -i 77233 || ulimit -l 64 || ulimit -m unlimited || ulimit -n 1024 || ulimit -q 819200 || ulimit -r 0 || ulimit -s 10240 || ulimit -c 0 || ulimit -d unlimited || ulimit -e 0 || ulimit -t unlimited || ulimit -u 77233 || ulimit -v unlimited || ulimit -x unlimited || ulimit -p 8 
-			
+			ulimit -f unlimited || ulimit -i 77233 || ulimit -l 64 || ulimit -m unlimited || ulimit -n 1024 || ulimit -q 819200 || ulimit -r 0 || ulimit -s 10240 || ulimit -c 0 || ulimit -d unlimited || ulimit -e 0 || ulimit -t unlimited || ulimit -u 77233 || ulimit -v unlimited || ulimit -x unlimited || ulimit -p 8
+
 			make check VG=1 HG=1 &>> "$M_LOGS/clamav.txt"; error
-			
-			# Add read perms to accdenied file so it can be checked into the version control repo. 
+
+			# Add read perms to accdenied file so it can be checked into the version control repo.
 			if [[ -e "$M_SOURCES/clamav/unit_tests/accdenied" ]] && [[ ! -f "$M_SOURCES/clamav/unit_tests/accdenied" ]]; then
 				chmod --changes u-r "$M_SOURCES/clamav/unit_tests/accdenied" &>> "$M_LOGS/clamav.txt"; error
 			fi
@@ -1176,22 +1176,22 @@ clamav() {
 			exit 2
 		;;
 	esac
-	
+
 	date +"Finished $1 at %r on %x"
-	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/clamav.txt" 
-	
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/clamav.txt"
+
 	return $?
-	
+
 }
 
-openssl() { 
-	
+openssl() {
+
 	if [[ $1 == "openssl-extract" ]]; then
 		rm -f "$M_LOGS/openssl.txt"; error
-	elif [[ $1 != "openssl-log" ]]; then	
-		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/openssl.txt" 
-	fi 
-	
+	elif [[ $1 != "openssl-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/openssl.txt"
+	fi
+
 	case "$1" in
 		openssl-extract)
 	  		extract $OPENSSL "openssl" &>> "$M_LOGS/openssl.txt"
@@ -1246,22 +1246,22 @@ openssl() {
 			exit 2
 		;;
 	esac
-	
+
 	date +"Finished $1 at %r on %x"
-	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/openssl.txt" 
-	
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/openssl.txt"
+
 	return $?
-	
+
 }
 
 jansson() {
-	
+
 	if [[ $1 == "jansson-extract" ]]; then
 		rm -f "$M_LOGS/jansson.txt"; error
-	elif [[ $1 != "jansson-log" ]]; then	
-		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/jansson.txt" 
+	elif [[ $1 != "jansson-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/jansson.txt"
 	fi
-	
+
 	case "$1" in
 		jansson-extract)
 	  		extract $JANSSON "jansson" &>> "$M_LOGS/jansson.txt"
@@ -1326,22 +1326,22 @@ jansson() {
 			exit 2
 		;;
 	esac
-	
+
 	date +"Finished $1 at %r on %x"
-	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/jansson.txt" 
-	
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/jansson.txt"
+
 	return $?
 
 }
 
 freetype() {
-	
+
 	if [[ $1 == "freetype-extract" ]]; then
 		rm -f "$M_LOGS/freetype.txt"; error
-	elif [[ $1 != "freetype-log" ]]; then	
-		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/freetype.txt" 
+	elif [[ $1 != "freetype-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/freetype.txt"
 	fi
-	
+
 	case "$1" in
 		freetype-extract)
 	  		extract $FREETYPE "freetype" &>> "$M_LOGS/freetype.txt"
@@ -1394,31 +1394,31 @@ freetype() {
 			exit 2
 		;;
 	esac
-	
+
 	date +"Finished $1 at %r on %x"
-	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/freetype.txt" 
-	
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/freetype.txt"
+
 	return $?
-	
+
 }
 
-memcached() { 
-	
+memcached() {
+
 	if [[ $1 == "memcached-extract" ]]; then
 		rm -f "$M_LOGS/memcached.txt"; error
-	elif [[ $1 != "memcached-log" ]]; then	
+	elif [[ $1 != "memcached-log" ]]; then
 		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/memcached.txt"
 	fi
-		
+
 	case "$1" in
 		memcached-extract)
 	  		extract $MEMCACHED "memcached" &>> "$M_LOGS/memcached.txt"
 		;;
 		memcached-prep)
 			cd "$M_SOURCES/memcached"; error
-			if [[ $MEMCACHED == "libmemcached-0.50" ]]; then	
-				cat "$M_PATCHES/memcached/951_950.diff" | patch -p0 -verbose &>> "$M_LOGS/memcached.txt"; error; 
-			elif [[ $MEMCACHED == "libmemcached-1.0.8" ]]; then	
+			if [[ $MEMCACHED == "libmemcached-0.50" ]]; then
+				cat "$M_PATCHES/memcached/951_950.diff" | patch -p0 -verbose &>> "$M_LOGS/memcached.txt"; error;
+			elif [[ $MEMCACHED == "libmemcached-1.0.8" ]]; then
 				# Add the shutdown and clean up functions.
 				cat "$M_PATCHES/memcached/"srandom_fix.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
 			else
@@ -1428,33 +1428,33 @@ memcached() {
 		;;
 		memcached-configure)
 			cd "$M_SOURCES/memcached"; error
-		
+
 			# If Dtrace or System Tap support is enabled, the libmemcached_probes.o file will need to be manually added to the shared object
 			# since it doesn't appear to be included in the libmemcached.a archive file (as of v0.49).
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			
-			# unset MEMCACHED_SERVERS			
+
+			# unset MEMCACHED_SERVERS
 			# export GEARMAND_BINARY="/usr/local/sbin/gearmand"
 			# export MEMCACHED_BINARY="/usr/local/bin/memcached"
-			
+
 			# Options used for 1.0.3+
 			./configure --disable-silent-rules --disable-dtrace --disable-sasl --disable-libinnodb --disable-libevent --disable-mtmalloc \
 			--enable-64bit --enable-largefile --enable-static --enable-shared --with-pic --with-debug \
 			--with-memcached="/usr/local/bin/memcached" &>> "$M_LOGS/memcached.txt"; error
-			
+
 			# Options used for 1.0.2
 			#./configure --disable-silent-rules --disable-dtrace --disable-sasl --disable-libinnodb --disable-libevent --disable-mtmalloc \
 			#--enable-64bit --enable-largefile --enable-static --enable-shared \
 			#--with-pic --with-debug --with-valgrind &>> "$M_LOGS/memcached.txt"; error
-			
+
 			# Options used for 0.51
 			#./configure --disable-silent-rules --disable-dtrace --disable-sasl --disable-libinnodb --disable-libevent --enable-static &>> "$M_LOGS/memcached.txt"; error
-			
+
 			# An alternative and still experimental strategy for configuring the memcached library.
 			# ./configure --disable-silent-rules --disable-sasl --enable-static --with-pic --with-debug --with-valgrind &>> "$M_LOGS/memcached.txt"; error
-			
+
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 			# unset GEARMAND_BINARY; unset MEMCACHED_BINARY
 		;;
@@ -1465,22 +1465,22 @@ memcached() {
 		memcached-check)
 			cd "$M_SOURCES/memcached"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
-			
+
 			# Doesn't appear to be necessary anymore...
 			#rm -vf /tmp/memcached.pid* &>> "$M_LOGS/memcached.txt"; error
-			
+
 			# For some reason the included version of memcached is being used and causing the unit tests to fail, so overwrite the binary
 			#cp /usr/local/bin/memcached "$M_SOURCES/memcached/memcached"
-			
+
 			make check &>> "$M_LOGS/memcached.txt"; error
 		;;
 		memcached-check-full)
 			cd "$M_SOURCES/memcached"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
-			
+
 			# Doesn't appear to be necessary anymore...
 			#rm -vf /tmp/memcached.pid* &>> "$M_LOGS/memcached.txt"; error
-			
+
 			make check &>> "$M_LOGS/memcached.txt"; error
 			make valgrind &>> "$M_LOGS/memcached.txt"; error
 			make helgrind &>> "$M_LOGS/memcached.txt"; error
@@ -1508,23 +1508,23 @@ memcached() {
 			exit 2
 		;;
 	esac
-	
+
 	date +"Finished $1 at %r on %x"
-	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/memcached.txt" 
-	
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/memcached.txt"
+
 	return $?
-	
+
 }
 
-tokyocabinet() { 
-	
+tokyocabinet() {
+
 	if [[ $1 == "tokyocabinet-extract" ]]; then
 		rm -f "$M_LOGS/tokyocabinet.txt"; error
-	elif [[ $1 != "tokyocabinet-log" ]]; then	
-		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/tokyocabinet.txt" 
-	fi 
-	
-	
+	elif [[ $1 != "tokyocabinet-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/tokyocabinet.txt"
+	fi
+
+
 	case "$1" in
 		tokyocabinet-extract)
 	  		extract $TOKYOCABINET "tokyocabinet" &>> "$M_LOGS/tokyocabinet.txt"
@@ -1585,53 +1585,53 @@ tokyocabinet() {
 			exit 2
 		;;
 	esac
-	
+
 	date +"Finished $1 at %r on %x"
-	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/tokyocabinet.txt" 
-	
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/tokyocabinet.txt"
+
 	return $?
-	
+
 }
 
-combine() { 
-	
+combine() {
+
 	rm -f "$M_SO" &>> "$M_LOGS/combine.txt"; error
-	
+
 	rm -rf "$M_OBJECTS/gd" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/gd" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/gd" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/gd/.libs/libgd.a" &>> "$M_LOGS/combine.txt"; error
-			
+
 	rm -rf "$M_OBJECTS/png" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/png" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/png" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/png/.libs/libpng16.a" &>> "$M_LOGS/combine.txt"; error
-	
+
 	rm -rf "$M_OBJECTS/lzo" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/lzo" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/lzo" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/lzo/src/.libs/liblzo2.a" &>> "$M_LOGS/combine.txt"; error
-				
+
 	rm -rf "$M_OBJECTS/jpeg" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/jpeg" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/jpeg" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/jpeg/.libs/libjpeg.a" &>> "$M_LOGS/combine.txt"; error
-	
+
 	rm -rf "$M_OBJECTS/spf2" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/spf2" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/spf2" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/spf2/src/libspf2/.libs/libspf2.a" &>> "$M_LOGS/combine.txt"; error
-	
+
 	rm -rf "$M_OBJECTS/curl" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/curl" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/curl" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/curl/lib/.libs/libcurl.a" &>> "$M_LOGS/combine.txt"; error
-	
+
 	rm -rf "$M_OBJECTS/xml2" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/xml2" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/xml2" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/xml2/.libs/libxml2.a" &>> "$M_LOGS/combine.txt"; error
-	
+
 	rm -rf "$M_OBJECTS/dkim" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/dkim" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/dkim" &>> "$M_LOGS/combine.txt"; error
@@ -1640,8 +1640,8 @@ combine() {
 	rm -rf "$M_OBJECTS/zlib" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/zlib" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/zlib" &>> "$M_LOGS/combine.txt"; error
-	
-	if [[ $ZLIB == "1.2.3" ]]; then	
+
+	if [[ $ZLIB == "1.2.3" ]]; then
 		ar xv "$M_SOURCES/zlib/.libs/libz.a" &>> "$M_LOGS/combine.txt"; error
 	else
 		ar xv "$M_SOURCES/zlib/libz.a" &>> "$M_LOGS/combine.txt"; error
@@ -1651,48 +1651,48 @@ combine() {
 	mkdir "$M_OBJECTS/bzip2" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/bzip2" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/bzip2/libbz2.a" &>> "$M_LOGS/combine.txt"; error
-	
+
 	rm -rf "$M_OBJECTS/dspam" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/dspam" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/dspam" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/dspam/src/.libs/libdspam.a" &>> "$M_LOGS/combine.txt"; error
 	#ar xv "$M_SOURCES/dspam/src/.libs/libmysql_drv.a" &>> "$M_LOGS/combine.txt"; error
-	
+
 	rm -rf "$M_OBJECTS/mysql" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/mysql" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/mysql" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/mysql/libmysql_r/.libs/libmysqlclient_r.a" &>> "$M_LOGS/combine.txt"; error
-	
+
 	rm -rf "$M_OBJECTS/geoip" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/geoip" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/geoip" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/geoip/libGeoIP/.libs/libGeoIP.a" &>> "$M_LOGS/combine.txt"; error
-		
+
 	rm -rf "$M_OBJECTS/clamav" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/clamav" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/clamav" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/clamav/libclamav/.libs/libclamav.a" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/clamav/libclamav/.libs/libclamunrar.a" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/clamav/libclamav/.libs/libclamunrar_iface.a" &>> "$M_LOGS/combine.txt"; error
-	
+
 	# Some systems don't appear to need this archive.
 	ar xv "$M_SOURCES/clamav/libltdl/.libs/libltdlc.a" &>> "$M_LOGS/combine.txt"; error
-	
+
 	rm -rf "$M_OBJECTS/crypto" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/crypto" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/crypto" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/openssl/libcrypto.a" &>> "$M_LOGS/combine.txt"; error
-	
+
 	rm -rf "$M_OBJECTS/ssl" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/ssl" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/ssl" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/openssl/libssl.a" &>> "$M_LOGS/combine.txt"; error
-	
+
 	rm -rf "$M_OBJECTS/jansson" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/jansson" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/jansson" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/jansson/src/.libs/libjansson.a" &>> "$M_LOGS/combine.txt"; error
-		
+
 	rm -rf "$M_OBJECTS/freetype" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/freetype" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/freetype" &>> "$M_LOGS/combine.txt"; error
@@ -1702,96 +1702,96 @@ combine() {
 	mkdir "$M_OBJECTS/memcached" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/memcached" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/memcached/libmemcached/.libs/libmemcached.a" &>> "$M_LOGS/combine.txt"; error
-	
-	# If libmemcached is built with Dtrace support, this object file will need to be included. 
+
+	# If libmemcached is built with Dtrace support, this object file will need to be included.
 	# cp "$M_SOURCES/memcached/libmemcached/libmemcached_probes.o" . &>> "$M_LOGS/combine.txt"; error
-	
+
 	rm -rf "$M_OBJECTS/tokyocabinet" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/tokyocabinet" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/tokyocabinet" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/tokyocabinet/libtokyocabinet.a" &>> "$M_LOGS/combine.txt"; error
-	
+
 	gcc -Wl,-Bsymbolic -g3 -fPIC -rdynamic -shared -o "$M_SO" "$M_OBJECTS"/lzo/*.o "$M_OBJECTS"/zlib/*.o "$M_OBJECTS"/bzip2/*.o \
 		"$M_OBJECTS"/geoip/*.o "$M_OBJECTS"/clamav/*.o "$M_OBJECTS"/tokyocabinet/*.o "$M_OBJECTS"/crypto/*.o "$M_OBJECTS"/ssl/*.o \
 		"$M_OBJECTS"/mysql/*.o "$M_OBJECTS"/xml2/*.o "$M_OBJECTS"/spf2/*.o "$M_OBJECTS"/curl/*.o "$M_OBJECTS"/memcached/*.o \
 		"$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o "$M_OBJECTS"/png/*.o "$M_OBJECTS"/jpeg/*.o "$M_OBJECTS"/freetype/*.o \
 		"$M_OBJECTS"/gd/*.o \
 		-lm -lrt -ldl -lnsl -lresolv -lpthread -lstdc++ &>> "$M_LOGS/combine.txt"; error
-	
+
 	# Commands for creating a static version of the library.
 	# rm -f "$M_ROOT/libmagmad.a"; error
 	# ar -r "$M_ROOT/libmagmad.a" "$M_OBJECTS"/lzo/*.o "$M_OBJECTS"/zlib/*.o "$M_OBJECTS"/bzip2/*.o \
 	#	"$M_OBJECTS"/clamav/*.o "$M_OBJECTS"/tokyocabinet/*.o "$M_OBJECTS"/crypto/*.o "$M_OBJECTS"/ssl/*.o \
 	#	"$M_OBJECTS"/mysql/*.o "$M_OBJECTS"/xml2/*.o "$M_OBJECTS"/spf2/*.o "$M_OBJECTS"/curl/*.o \
 	#	"$M_OBJECTS"/memcached/*.o "$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o &>> "$M_LOGS/combine.txt"; error
-	
+
 	date +"%nFinished creating the shared object at %r on %x%n"
 }
 
 load() {
-	
+
 	echo ""
 	echo "Checking shared object..."
 	echo ""
-	
+
 	cd "$M_CHECK"; error
-	
+
 	# Copy the current symbols file over.
 	cat $M_SYM_FILE | egrep -v $M_SYM_SKIP > magma.open.symbols.h; error
-	
+
 	# Create a file with a function that assigns the original symbols to the dynamic version.
 	echo "#include \"magma.open.check.h\"" > magma.open.symbols.c; error
 	echo "#include \"magma.open.symbols.h\"" >> magma.open.symbols.c; error
 	echo "void symbols_check(void) {" >> magma.open.symbols.c; error
 	cat magma.open.symbols.h | grep -v "^$" | grep -v "#" | awk -F'(' '{print $2}' | tr -d "*" | sed 's/_d)//g' | awk '{ print $1 "_d = &" $1 ";"}' | grep -v "^_d = &;$" >> magma.open.symbols.c; error
 	echo "}" >> magma.open.symbols.c; error
-	
+
 	# Because GeoIPDBDescription is an array of pointers it doesn't need the leading ampersand.
 	sed -i -e "s/GeoIPDBDescription_d = &GeoIPDBDescription;/GeoIPDBDescription_d = GeoIPDBDescription;/g" magma.open.symbols.c; error
-	
+
 	# This function prototype is prefixed with macro in paraentheses which fools the default parsing rules.
 	sed -i -e "s/SSL_COMP)_d = &SSL_COMP);/SSL_COMP_get_compression_methods_d = \&SSL_COMP_get_compression_methods;/g" magma.open.symbols.c; error
-	
+
 	# The name dkim_getsighdr_d is taken by the OpenDKIM library, so we had to break convention and use dkim_getsighdrx_d.
 	sed -i -e "s/\&dkim_getsighdrx/\&dkim_getsighdr/g" magma.open.symbols.c; error
-	
+
 	# Compile the source files. If an error occurs at compile time it is probably because we have a mismatch somewhere.
 	gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_DIRS $M_SO -g3 -rdynamic -Wall -Wextra -Werror \
 		-o magma.open.check magma.open.check.c magma.open.symbols.c -ldl
-	
+
 	# If errors are generated from invalid symbols, this should print out the specific lines that are invalid.
-	if [ $? -ne 0 ]; then 
+	if [ $? -ne 0 ]; then
 
 		LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_DIRS $M_SO -g3 -rdynamic -Wall -Wextra -Werror \
 			-o magma.open.check magma.open.check.c magma.open.symbols.c -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
-			grep "[0-9*]" | awk '{print $1 ", " }' | sort -gu | uniq | tr -d "\n" | sed "s/, $//g"` 
-		
+			grep "[0-9*]" | awk '{print $1 ", " }' | sort -gu | uniq | tr -d "\n" | sed "s/, $//g"`
+
 		# Only output the symbol info we found lines to print.
-		if [ "$LNS" != "" ]; then 
-			
+		if [ "$LNS" != "" ]; then
+
 		echo ""
 		echo "printing invalid symbols..."
 		echo "lines = " $LNS
 		echo ""
-		
+
 		LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_DIRS $M_SO -g3 -rdynamic -Wall -Wextra -Werror \
 			-o magma.open.check magma.open.check.c magma.open.symbols.c -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
 			grep "[0-9*]" | awk '{print $1 "p;" }' | sort -gu | uniq | tr -d "\n"`
-		
+
 		cat magma.open.symbols.c | sed -n "$LNS"; error
-		
+
 		fi
-		
+
 		echo ""
 		exit 1
 	fi
-	
+
 	# Execute the program to see if the library can be loaded successfully at run time.
 	./magma.open.check "$M_SO"; error
 }
 
 combo() {
-	
+
 	date +"%nStarting $1 at %r on %x%n" &>> "$M_LOGS/build.txt"
 
 
@@ -1799,7 +1799,7 @@ combo() {
 	if [[ $1 == "check" ]] || [[ $1 == "check-full" ]]; then
 		($M_BUILD "clamav-$1") & CLAMAV_PID=$!
 		wait $CLAMAV_PID; error
-		
+
 	else
 		($M_BUILD "clamav-$1") & CLAMAV_PID=$!
 	fi
@@ -1822,7 +1822,7 @@ combo() {
 	($M_BUILD "freetype-$1") & FREETYPE_PID=$!
 	($M_BUILD "memcached-$1") & MEMCACHED_PID=$!
 	($M_BUILD "tokyocabinet-$1") & TOKYOCABINET_PID=$!
-	
+
 	wait $GD_PID; error
 	wait $PNG_PID; error
 	wait $LZO_PID; error
@@ -1841,11 +1841,11 @@ combo() {
 	wait $FREETYPE_PID; error
 	wait $MEMCACHED_PID; error
 	wait $TOKYOCABINET_PID; error
-	
-	if [[ $1 != "check" ]] && [[ $1 != "check-full" ]]; then 
+
+	if [[ $1 != "check" ]] && [[ $1 != "check-full" ]]; then
 		wait $CLAMAV_PID; error
 	fi
-	
+
 	date +"%nFinished $1 at %r on %x%n"
 	date +"%nFinished $1 at %r on %x%n" &>> "$M_LOGS/build.txt"
 }
@@ -1853,13 +1853,13 @@ combo() {
 follow() {
 	tail -n 0 -F "$M_LOGS/clamav.txt" "$M_LOGS/curl.txt" "$M_LOGS/dspam.txt" "$M_LOGS/jansson.txt" "$M_LOGS/memcached.txt" "$M_LOGS/openssl.txt" \
 		"$M_LOGS/tokyocabinet.txt" "$M_LOGS/zlib.txt" "$M_LOGS/bzip2.txt" "$M_LOGS/dkim.txt" "$M_LOGS/geoip.txt" "$M_LOGS/lzo.txt" \
-		"$M_LOGS/mysql.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt" 
+		"$M_LOGS/mysql.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt"
 }
 
 log() {
 	cat "$M_LOGS/clamav.txt" "$M_LOGS/curl.txt" "$M_LOGS/dspam.txt" "$M_LOGS/jansson.txt" "$M_LOGS/memcached.txt" "$M_LOGS/openssl.txt" \
 		"$M_LOGS/tokyocabinet.txt" "$M_LOGS/zlib.txt" "$M_LOGS/bzip2.txt" "$M_LOGS/dkim.txt" "$M_LOGS/geoip.txt" "$M_LOGS/lzo.txt" \
-		"$M_LOGS/mysql.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt" 
+		"$M_LOGS/mysql.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt"
 }
 
 advance() {
@@ -1868,23 +1868,23 @@ advance() {
 }
 
 status() {
-	
+
 	CPU=`iostat cpu | head -4 | tail -2`
 	DISK=`iostat -m -x sda sdb sdc | tail -n +6 | awk '{print $1 "\t\t\t" $6 "\t" $7 "\t" $12}'`
-	
-	while true; do 
+
+	while true; do
 		clear
 		tput sgr0;  tput sgr 0 1; tput setaf 6; printf "\n# Commands\n\n"; tput sgr0
-		ps --no-headers -C build -C build.sh -C build.lib -C build.lib.sh -o command:100,etime | grep -v status | cat - | 
+		ps --no-headers -C build -C build.sh -C build.lib -C build.lib.sh -o command:100,etime | grep -v status | cat - |
 		while read line; do
 			BASE=`echo "$line" | awk '{print $1}'`
 			line=`eval "advance $line"`
 			C=`basename "$BASE"`
-			if [[ "$C" == "bash" ]]; then 
+			if [[ "$C" == "bash" ]]; then
 				BASE=`echo "$line" | awk '{print $1}'`
 				line=`eval "advance $line"`
 				C=`basename "$BASE"`
-			fi 
+			fi
 			echo "$C $line"
 		done
 		tput sgr0;  tput sgr 0 1; tput setaf 6; printf "\n# Load\n\n"; tput sgr0
@@ -1893,10 +1893,10 @@ status() {
 		echo "$CPU"
 		tput sgr0;  tput sgr 0 1; tput setaf 6; printf "\n# Disk\n\n"; tput sgr0
 		echo "$DISK"
-		
-		# Refresh the stats for the next loop; note that this takes 4 seconds to complete. 
+
+		# Refresh the stats for the next loop; note that this takes 4 seconds to complete.
 		CPU=`iostat cpu 4 2 | tail -5 | head -2`
-		DISK=`iostat -m -x sda sdb sdc 4 2 | tail -3 | head -2 | awk '{print $1 "\t\t\t" $6 "\t" $7 "\t" $12}'` 
+		DISK=`iostat -m -x sda sdb sdc 4 2 | tail -3 | head -2 | awk '{print $1 "\t\t\t" $6 "\t" $7 "\t" $12}'`
 	done
 }
 
@@ -1908,12 +1908,12 @@ all() {
 	$M_BUILD "prep"
 	$M_BUILD "configure"
 	$M_BUILD "build"
-	
+
 	# The DSPAM configure script requires the Magma version of MySQL to be compiled ahead of time for linkage, to accomodate we rebuild DSPAM at this
 	# point and replace the version linked against the system's MySQL library/headers.
 	$M_BUILD "dspam-configure"
 	$M_BUILD "dspam-build"
-	
+
 	$M_BUILD "combine"
 	$M_BUILD "load"
 	$M_BUILD "check"
@@ -1988,16 +1988,16 @@ fi
 # Beep the speaker 10 times to let us know when 'all' is done or 3 times for something else.
 if [[ "$PARENT" == "$BASHPID" ]]; then
 
-	if [[ $1 == "all" ]]; then 
+	if [[ $1 == "all" ]]; then
 		NUMS="1 2 3 4 5 6 7 8 9 10"
 	else
 		NUMS="1 2 3"
 	fi
-	
+
 	for i in $NUMS; do
 	  printf "\a"; sleep 1
-	done  
-	
+	done
+
 fi
 
 exit 0

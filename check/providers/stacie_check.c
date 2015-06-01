@@ -13,6 +13,148 @@
 #include "magma_check.h"
 
 /*
+ * @briefCheck that all calculation results match up accurately with results from python reference.
+ * @return True if passes, false if fails.
+ * NOTE: There are some memory leaks in this function if it doesn't succeed.
+*/
+bool_t check_stacie_simple(void) {
+
+	int cmp;
+	unsigned int bonus = 0, rounds = 196608, res1 = 0;
+
+	stringer_t *password = PLACER("password", 8),
+		   *username = PLACER("user@example.tld", 16),
+		   *salt_b64 = NULLER("HQpHA0L4Izkpy1lVY8Cnp03-D67E2bk04WDqNOiSzIMNnbmCjGlMRKxBh9UV5IgXggpRDYTYSRlTWNsohwvLwA"),
+		   *nonce_b64 = NULLER("sJWAhD5Okulpjpa63FE4dGI-W3PDACaQtA49vQBOG9_UYhgNMzmLuSeRBEQy15Lv2Wn_lvSmzRkWfky51Fpp7Q"),
+		   *seed_b64 = NULLER("6xuALdCjmjaBlMSn8KkM9sSwO-DGM2V7J5r_K6g6Ocgg1VgnKTSsH4nsKokP597Wsdc9modu_ArofThTNIHcpw"),
+		   *master_key_b64 = NULLER("SXn5XauE903R7ir03ZS5oE5PwJ2UhxtFS-8LygUUSNQLAabDUDUu805EpVxxuQX-Smvc0NV-q6RdzyQ8M3eysg"),
+		   *password_key_b64 = NULLER("SskpKhi42KmNHIpO7v9NdATRDFY5oAl9gu03rGrUzowwLnXAkAxr1h1b5lajgNnWfH2WlE6I6vbXqgjgh4ExMA"),
+		   *verification_token_b64 = NULLER("Xe9Xj70O2M2ctVCclrgO6FaJLiVmKPhMZZKMGVHeTetnxWglvgeu21T7Ms0pCKXiAUG2NuSO2cF5MUAuV1qCgg"),
+		   *ephemeral_login_token_b64 = NULLER("IVl9I1cEPWP3wd_XNYng8qSyzaic4Z_gCVaJcIZTE7rlGkwwh3oF63X8K4T0AvsEJOGOCnWQMirIyKiBpDD59Q"),
+		   *realm = NULLER("mail"),
+		   *shard_b64 = NULLER("gD65Kdeda1hB2Q6gdZl0fetGg2viLXWG0vmKN4HxE3Jp3Z0Gkt5prqSmcuY2o8t24iGSCOnFDpP71c3xl9SX9Q"),
+		   *realm_cipher_key_b64 = NULLER("EBThm16sL5xQciv2BgPD2w"),
+		   *realm_vector_key_b64 = NULLER("E5-hWK1n7StXpyqLlrR7aEEJaWGIMC3Ml4hlSHhb4xI"),
+		   *realm_key, *res2, *salt, *nonce, *seed, *master_key, *password_key, *verification_token,
+		   *ephemeral_login_token, *shard, *realm_cipher_key, *realm_vector_key;
+
+	if(!(salt = base64_decode_mod(salt_b64, NULL)) || !(nonce = base64_decode_mod(nonce_b64, NULL)) || !(seed = base64_decode_mod(seed_b64, NULL))) {
+		return false;
+	} else if(!(master_key = base64_decode_mod(master_key_b64, NULL)) || !(password_key = base64_decode_mod(password_key_b64, NULL))) {
+		return false;
+	} else if(!(verification_token = base64_decode_mod(verification_token_b64, NULL)) || !(ephemeral_login_token = base64_decode_mod(ephemeral_login_token_b64, NULL))) {
+		return false;
+	} else if(!(shard = base64_decode_mod(shard_b64, NULL)) || !(realm_cipher_key = base64_decode_mod(realm_cipher_key_b64, NULL))) {
+		return false;
+	} else if(!(realm_vector_key = base64_decode_mod(realm_vector_key_b64, NULL))) {
+		return false;
+	}
+
+	bonus = (((unsigned int) 2) << 16);
+
+	if((res1 = stacie_rounds_calculate(password, bonus)) != rounds) {
+		return false;
+	}
+
+	if(!(res2 = stacie_seed_extract(rounds, username, password, salt))) {
+		return false;
+	}
+
+
+	cmp = st_cmp_cs_eq(res2, seed);
+	st_free(res2);
+
+	if(cmp) {
+		fprintf(stderr, "\n1\n");
+	}
+
+	if(!(res2 = stacie_hashed_key_derive(seed, rounds, username, password, salt))) {
+		return false;
+	}
+
+	cmp = st_cmp_cs_eq(master_key, res2);
+	st_free(res2);
+
+	if(cmp) {
+		fprintf(stderr, "\n2\n");
+	}
+
+	if(!(res2 = stacie_hashed_key_derive(master_key, rounds, username, password, salt))) {
+		return false;
+	}
+
+	cmp = st_cmp_cs_eq(password_key, res2);
+	st_free(res2);
+
+	if(cmp) {
+		fprintf(stderr, "\n3\n");
+	}
+
+	if(!(res2 = stacie_hashed_token_derive(password_key, username, salt, NULL))) {
+		return false;
+	}
+
+	cmp = st_cmp_cs_eq(verification_token, res2);
+	st_free(res2);
+
+	if(cmp) {
+		fprintf(stderr, "\n4\n");
+	}
+
+	if(!(res2 = stacie_hashed_token_derive(verification_token, username, salt, nonce))) {
+		return false;
+	}
+
+	cmp = st_cmp_cs_eq(ephemeral_login_token, res2);
+	st_free(res2);
+
+	if(cmp) {
+		fprintf(stderr, "\n5\n");
+	}
+
+	if(!(realm_key = stacie_realm_key_derive(master_key, realm, shard))) {
+		return false;
+	}
+
+	if(!(res2 = stacie_realm_init_vector_derive(realm_key))) {
+		return false;
+	}
+
+	cmp = st_cmp_cs_eq(res2, realm_vector_key);
+	st_free(res2);
+
+	if(cmp) {
+		fprintf(stderr, "\n6\n");
+	}
+
+	if(!(res2 = stacie_realm_cipher_key_derive(realm_key))) {
+		return false;
+	}
+
+	cmp = st_cmp_cs_eq(res2, realm_cipher_key);
+	st_free(res2);
+	st_free(realm_key);
+
+	if(cmp) {
+		fprintf(stderr, "\n7\n");
+	}
+
+	st_free(salt);
+	st_free(nonce);
+	st_free(seed);
+	st_free(master_key);
+	st_free(password_key);
+	st_free(verification_token_b64);
+	st_free(ephemeral_login_token);
+	st_free(shard);
+	st_free(realm_cipher_key);
+	st_free(realm_vector_key);
+
+	return true;
+}
+
+
+/*
  * @brief	Check that rounds are calculated accurately using some simple examples.
  * @return	True if passes, false if fails.
 */

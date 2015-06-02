@@ -1101,9 +1101,9 @@ clamav() {
 		;;
 		clamav-configure)
 			cd "$M_SOURCES/clamav"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
 
 			# Note that at least in version 0.97 and 0.98, --disable-llvm breaks the unit tests.
 

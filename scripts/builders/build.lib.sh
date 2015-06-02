@@ -348,9 +348,9 @@ spf2() {
 		;;
 		spf2-configure)
 			cd "$M_SOURCES/spf2"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
 			./configure &>> "$M_LOGS/spf2.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 		;;
@@ -900,9 +900,9 @@ mysql() {
 		;;
 		mysql-configure)
 			cd "$M_SOURCES/mysql"; error
-			export CFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CXXFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
+			export CXXFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
+			export CPPFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
 
 			./configure --with-pic --enable-thread-safe-client --with-readline --with-charset=latin1 --with-extra-charsets=all \
 			--with-plugins=all &>> "$M_LOGS/mysql.txt"; error
@@ -1285,9 +1285,9 @@ jansson() {
 		;;
 		jansson-configure)
 			cd "$M_SOURCES/jansson"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
 			./configure &>> "$M_LOGS/jansson.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 		;;

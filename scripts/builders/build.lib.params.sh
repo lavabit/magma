@@ -32,7 +32,7 @@ M_OBJECTS="$M_ROOT/objects"
 M_CHECK="$M_PROJECT_ROOT/lib/check"
 
 # Where the symbols.h file can be found
-M_SYM_FILE="../../src/providers/symbols.h"
+M_SYM_FILE="$M_PROJECT_ROOT/src/providers/symbols.h"
 
 # The following symbols are not in defined in any of the public header files
 M_SYM_SKIP="tcndbgetboth|my_once_free|lt_dlexit"

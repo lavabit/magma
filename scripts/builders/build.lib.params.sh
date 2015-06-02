@@ -44,7 +44,7 @@ M_SYM_DIRS="-I$M_SOURCES/clamav/libclamav -I$M_SOURCES/mysql/include -I$M_SOURCE
 -I$M_SOURCES/dkim/libopendkim -I$M_SOURCES/dspam/src/ -I$M_SOURCES/jansson/src/ -I$M_SOURCES/gd -I$M_SOURCES/png -I$M_SOURCES/jpeg \
 -I$M_SOURCES/freetype/include/freetype -I$M_SOURCES/freetype/include"
 
-M_LDPATH="$M_SOURCES/curl/lib/.libs/:$M_SOURCES/curl/lib/.libs/:$M_SOURCES/memcached/libmemcached/.libs/:$M_SOURCES/spf2/src/libspf2/.libs/:\
+M_LDPATH="$M_SOURCES/curl/lib/.libs/:$M_SOURCES/memcached/libmemcached/.libs/:$M_SOURCES/spf2/src/libspf2/.libs/:\
 $M_SOURCES/tokyocabinet/:$M_SOURCES/lzo/src/.libs/:$M_SOURCES/openssl/engines/:$M_SOURCES/openssl/:$M_SOURCES/clamav/libclamav/.libs/:\
 $M_SOURCES/mysql/libmysql/.libs/:$M_SOURCES/xml2/.libs/:$M_SOURCES/xml2/python/.libs/:$M_SOURCES/geoip/libGeoIP/.libs/:\
 $M_SOURCES/dkim/libopendkim/.libs/:$M_SOURCES/dspam/src/.libs/:$M_SOURCES/jansson/src/.libs/:$M_SOURCES/gd/.libs/:$M_SOURCES/png/.libs/:\

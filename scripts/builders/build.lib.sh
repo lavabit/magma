@@ -1109,7 +1109,7 @@ clamav() {
 
 			./configure --disable-llvm --enable-check --enable-static &>> "$M_LOGS/clamav.txt"; error
 
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LD_LIBRARY_PATH
 
 			if [[ $CLAMAV =~ "clamav-0.9"[7-8]"."[1-9] ]]; then
 				# The check3_clamd.sh script will fail if LLVM is disabled.
@@ -1126,7 +1126,6 @@ clamav() {
 		;;
 		clamav-check)
 			cd "$M_SOURCES/clamav"; error
-			export LD_LIBRARY_PATH="$M_LDPATH"; error
 
 			# Remove read perms for the accdenied file so the test works properly.
 			if [[ -e "$M_SOURCES/clamav/unit_tests/accdenied" ]] && [[ ! -f "$M_SOURCES/clamav/unit_tests/accdenied" ]]; then

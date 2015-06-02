@@ -1,0 +1,18 @@
+diff -rupN spf2/src/include/spf_log.h spf2_new/src/include/spf_log.h
+--- spf2/src/include/spf_log.h	2012-01-28 03:24:47.000000000 -0500
++++ spf2_new/src/include/spf_log.h	2015-06-02 12:12:21.296647071 -0400
+@@ -60,10 +60,10 @@ void SPF_debugv( const char *file, int l
+ 
+ #if defined( __STDC_VERSION__ ) && __STDC_VERSION__ >= 199901L
+ 
+-#define SPF_errorf(format, ... ) SPF_errorx( __FILE__, __LINE__, format, __VA_ARGS__ )
+-#define SPF_warningf(format, ... ) SPF_warningx( __FILE__, __LINE__, format, __VA_ARGS__ )
+-#define SPF_infof(format, ... ) SPF_infox( __FILE__, __LINE__, format, __VA_ARGS__ )
+-#define SPF_debugf(format, ... ) SPF_debugx( __FILE__, __LINE__, format, __VA_ARGS__ )
++#define SPF_errorf(format, ... ) SPF_errorx( __FILE__, __LINE__, format, ##__VA_ARGS__ )
++#define SPF_warningf(format, ... ) SPF_warningx( __FILE__, __LINE__, format, ##__VA_ARGS__ )
++#define SPF_infof(format, ... ) SPF_infox( __FILE__, __LINE__, format, ##__VA_ARGS__ )
++#define SPF_debugf(format, ... ) SPF_debugx( __FILE__, __LINE__, format, ##__VA_ARGS__ )
+ 
+ #elif defined( __GNUC__ )
+ 

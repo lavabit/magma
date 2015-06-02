@@ -345,6 +345,7 @@ spf2() {
 		;;
 		spf2-prep)
 			cd "$M_SOURCES/spf2"; error
+			cat "$M_PATCHES/spf2/"fix_variadic_macro_logging.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
 		;;
 		spf2-configure)
 			cd "$M_SOURCES/spf2"; error

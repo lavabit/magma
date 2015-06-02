@@ -16,6 +16,8 @@
 M_ROOT=`pwd`
 M_BUILD=`readlink -f $0`
 
+# Set parent directory as project root by default (used to find scripts,
+# bundled tarballs, patches, etc.)
 if [ -z "$M_PROJECT_ROOT" ]; then M_PROJECT_ROOT=`readlink -f ..`; fi
 
 . "$M_PROJECT_ROOT/scripts/builders/build.lib.params.sh"

@@ -13,14 +13,16 @@
 # To generate a SLOC report for each project:
 # cd $M_SOURCES; find  -maxdepth 1 -type d -printf '\n\n%P\n' -exec sloc --quiet --progress-rate=0 {} \; | grep -v "http://cloc.sourceforge.net"
 
-LINK=`readlink -f $0`
-BASE=`dirname $LINK`
-
-cd "$BASE/../../lib/"
 M_ROOT=`pwd`
-M_BUILD=$LINK
+M_BUILD=`readlink -f $0`
 
-. "../scripts/builders/build.lib.params.sh"
+if [ -z "$M_PROJECT_ROOT" ]; then M_PROJECT_ROOT=`readlink -f ..`; fi
+
+. "$M_PROJECT_ROOT/scripts/builders/build.lib.params.sh"
+
+mkdir -p "$M_LOGS"
+mkdir -p "$M_SOURCES"
+mkdir -p "$M_OBJECTS"
 
 error() {
 	if [ $? -ne 0 ]; then

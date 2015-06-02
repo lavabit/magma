@@ -829,7 +829,7 @@ dspam() {
 				MYSQL_LIB_PATH="/usr/lib64/mysql/"
 				MYSQL_INC_PATH="/usr/include/mysql/"
 			else
-				MYSQL_LIB_PATH="$M_SOURCES/mysql/libmysql/.libs/"
+				MYSQL_LIB_PATH="$M_SOURCES/mysql/libmysql_r/.libs/"
 				MYSQL_INC_PATH="$M_SOURCES/mysql/include/"
 			fi
 

@@ -1359,7 +1359,7 @@ freetype() {
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			./configure &>> "$M_LOGS/freetype.txt"; error
+			./configure --without-harfbuzz &>> "$M_LOGS/freetype.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 		;;
 		freetype-build)

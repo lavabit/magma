@@ -1738,10 +1738,15 @@ load() {
 	echo "Checking shared object..."
 	echo ""
 
+	mkdir -p "$M_CHECK"; error
 	cd "$M_CHECK"; error
 
 	# Copy the current symbols file over.
 	cat $M_SYM_FILE | egrep -v $M_SYM_SKIP > magma.open.symbols.h; error
+
+	# Copy the source files for this test
+	cp "$M_CHECK_SO_SOURCES/magma.open.check.h" .; error
+	cp "$M_CHECK_SO_SOURCES/magma.open.check.c" .; error
 
 	# Create a file with a function that assigns the original symbols to the dynamic version.
 	echo "#include \"magma.open.check.h\"" > magma.open.symbols.c; error

@@ -29,7 +29,8 @@ M_ARCHIVES="$M_PROJECT_ROOT/lib/archives"
 M_PATCHES="$M_PROJECT_ROOT/lib/patches"
 M_SOURCES="$M_ROOT/sources"
 M_OBJECTS="$M_ROOT/objects"
-M_CHECK="$M_PROJECT_ROOT/lib/check"
+M_CHECK="$M_ROOT/check"
+M_CHECK_SO_SOURCES="$M_PROJECT_ROOT/lib/check"
 
 # Where the symbols.h file can be found
 M_SYM_FILE="$M_PROJECT_ROOT/src/providers/symbols.h"

@@ -2,11 +2,6 @@ bin/magmad
 bin/magmad.so
 bin/magmad.stripped
 bin/magmad.so.stripped
-lib/check/magma.open.check
-lib/logs/*
-lib/objects/*
-lib/sources/*
-lib/magmad.so
 res/logs/*
 res/spool/*
 res/virus/main.cld

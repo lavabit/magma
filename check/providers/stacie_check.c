@@ -15,7 +15,7 @@
 /*
  * @briefCheck that all calculation results match up accurately with results from python reference.
  * @return True if passes, false if fails.
- * NOTE: There are some memory leaks in this function if it doesn't succeed.
+ * @note 	There are some memory leaks in this function if it doesn't succeed.
 */
 bool_t check_stacie_simple(void) {
 
@@ -33,8 +33,8 @@ bool_t check_stacie_simple(void) {
 		   *ephemeral_login_token_b64 = NULLER("IVl9I1cEPWP3wd_XNYng8qSyzaic4Z_gCVaJcIZTE7rlGkwwh3oF63X8K4T0AvsEJOGOCnWQMirIyKiBpDD59Q"),
 		   *realm = NULLER("mail"),
 		   *shard_b64 = NULLER("gD65Kdeda1hB2Q6gdZl0fetGg2viLXWG0vmKN4HxE3Jp3Z0Gkt5prqSmcuY2o8t24iGSCOnFDpP71c3xl9SX9Q"),
-		   *realm_cipher_key_b64 = NULLER("EBThm16sL5xQciv2BgPD2w"),
-		   *realm_vector_key_b64 = NULLER("E5-hWK1n7StXpyqLlrR7aEEJaWGIMC3Ml4hlSHhb4xI"),
+		   *realm_vector_key_b64 = NULLER("EBThm16sL5xQciv2BgPD2w"),
+		   *realm_cipher_key_b64 = NULLER("E5-hWK1n7StXpyqLlrR7aEEJaWGIMC3Ml4hlSHhb4xI"),
 		   *realm_key, *res2, *salt, *nonce, *seed, *master_key, *password_key, *verification_token,
 		   *ephemeral_login_token, *shard, *realm_cipher_key, *realm_vector_key;
 
@@ -65,7 +65,7 @@ bool_t check_stacie_simple(void) {
 	st_free(res2);
 
 	if(cmp) {
-		fprintf(stderr, "\n1\n");
+		return false;
 	}
 
 	if(!(res2 = stacie_hashed_key_derive(seed, rounds, username, password, salt))) {
@@ -76,7 +76,7 @@ bool_t check_stacie_simple(void) {
 	st_free(res2);
 
 	if(cmp) {
-		fprintf(stderr, "\n2\n");
+		return false;
 	}
 
 	if(!(res2 = stacie_hashed_key_derive(master_key, rounds, username, password, salt))) {
@@ -87,7 +87,7 @@ bool_t check_stacie_simple(void) {
 	st_free(res2);
 
 	if(cmp) {
-		fprintf(stderr, "\n3\n");
+		return false;
 	}
 
 	if(!(res2 = stacie_hashed_token_derive(password_key, username, salt, NULL))) {
@@ -98,7 +98,7 @@ bool_t check_stacie_simple(void) {
 	st_free(res2);
 
 	if(cmp) {
-		fprintf(stderr, "\n4\n");
+		return false;
 	}
 
 	if(!(res2 = stacie_hashed_token_derive(verification_token, username, salt, nonce))) {
@@ -109,7 +109,7 @@ bool_t check_stacie_simple(void) {
 	st_free(res2);
 
 	if(cmp) {
-		fprintf(stderr, "\n5\n");
+		return false;
 	}
 
 	if(!(realm_key = stacie_realm_key_derive(master_key, realm, shard))) {
@@ -124,7 +124,7 @@ bool_t check_stacie_simple(void) {
 	st_free(res2);
 
 	if(cmp) {
-		fprintf(stderr, "\n6\n");
+		return false;
 	}
 
 	if(!(res2 = stacie_realm_cipher_key_derive(realm_key))) {
@@ -136,7 +136,7 @@ bool_t check_stacie_simple(void) {
 	st_free(realm_key);
 
 	if(cmp) {
-		fprintf(stderr, "\n7\n");
+		return false;
 	}
 
 	st_free(salt);
@@ -233,6 +233,18 @@ bool_t check_stacie_determinism(void) {
 	pass = PLACER("test_password", 13);
 	salt = PLACER("SALT1234SALT5678SALT9012SALT3456SALT7890SALT1234SALT5678SALT9012", 64);
 
+	if(!(res1 = stacie_seed_key_derive(salt)) || !(res2 = stacie_seed_key_derive(salt))) {
+		return false;
+	}
+
+	outcome = st_cmp_cs_eq(res1, res2);
+	st_free(res1);
+	st_free(res2);
+
+	if(outcome) {
+		return false;
+	}
+
 	if(!(res1 = stacie_seed_extract(MIN_HASH_NUM, user, pass, salt)) || !(res2 = stacie_seed_extract(MIN_HASH_NUM, user, pass, salt))) {
 		return false;
 	}
@@ -256,7 +268,7 @@ bool_t check_stacie_determinism(void) {
 	if(outcome) {
 		return false;
 	}
-/*
+
 	if(!(res1 = stacie_seed_extract(MAX_HASH_NUM, user, pass, salt)) || !(res2 = stacie_seed_extract(MAX_HASH_NUM, user, pass, salt))) {
 		return false;
 	}
@@ -268,7 +280,7 @@ bool_t check_stacie_determinism(void) {
 	if(outcome) {
 		return false;
 	}
-*/
+
 //	stacie_hashed_key_derive
 
 	res1 = stacie_seed_extract(MIN_HASH_NUM, user, pass, NULL);
@@ -300,7 +312,7 @@ bool_t check_stacie_determinism(void) {
 	if(outcome) {
 		return false;
 	}
-/*
+/* Test times out with max hash numbers.
 	if(!(res1 = stacie_hashed_key_derive(base, MAX_HASH_NUM, user, pass, salt)) || !(res2 = stacie_hashed_key_derive(base, MAX_HASH_NUM, user, pass, salt))) {
 		return false;
 	}
@@ -390,11 +402,22 @@ bool_t check_stacie_determinism(void) {
 */
 bool_t check_stacie_parameters(void) {
 
-	stringer_t *temp_st, *res, *temp_st64;
+	stringer_t *temp_st, *res, *temp_st64, *temp_empty;
 	temp_st = NULLER("temp_string");
 	temp_st64 = NULLER("TEMP1234TEMP5678TEMP9012TEMP3456TEMP7890TEMP1234TEMP5678TEMP9012");
+	temp_empty = NULLER("");
 
 	if(stacie_rounds_calculate(NULL, 0)) {
+		return false;
+	}
+
+	if((res = stacie_seed_key_derive(NULL))) {
+		st_free(res);
+		return false;
+	}
+
+	if((res = stacie_seed_key_derive(temp_empty))) {
+		st_free(res);
 		return false;
 	}
 

@@ -70,72 +70,133 @@ bool_t check_hmac_simple(void) {
 bool_t check_hmac_parameters(void) {
 
 	digest_t *temp_dig;
-	stringer_t *temp_st;
+	stringer_t *temp_st, *res;
 
-	temp_dig = hash_name("MD4");
+	temp_dig = hash_name("SHA512");
 	temp_st = NULLER("temp_string");
 	
-	if(hmac_digest(NULL, temp_st, temp_st, NULL)) {
+	if((res = hmac_digest(NULL, temp_st, temp_st, NULL))) {
+		st_free(res);
 		return false;
 	}
-	else if(hmac_digest(temp_dig, NULL, temp_st, NULL)) {
+	else if((res = hmac_digest(temp_dig, NULL, temp_st, NULL))) {
+		st_free(res);
 		return false;
 	}
-	else if(hmac_digest(temp_dig, temp_st, NULL, NULL)) {
+	else if((res = hmac_digest(temp_dig, temp_st, NULL, NULL))) {
+		st_free(res);
 		return false;
 	}
-	else if(hmac_md4(NULL, temp_st, NULL)) {
+	else if((res = hmac_multi_digest(0, NULL, temp_st, temp_st, NULL))) {
+		st_free(res);
 		return false;
 	}
-	else if(hmac_md4(temp_st, NULL, NULL)) {
+	else if((res = hmac_multi_digest(111, NULL, temp_st, temp_st, NULL))) {
+		st_free(res);
 		return false;
 	}
-	else if(hmac_md5(NULL, temp_st, NULL)) {
+	else if((res = hmac_multi_digest(0, temp_dig, NULL, temp_st, NULL))) {
+		st_free(res);
 		return false;
 	}
-	else if(hmac_md5(temp_st, NULL, NULL)) {
+	else if((res = hmac_multi_digest(111, temp_dig, NULL, temp_st, NULL))) {
+		st_free(res);
 		return false;
 	}
-	else if(hmac_sha(NULL, temp_st, NULL)) {
+	else if((res = hmac_multi_digest(0, temp_dig, temp_st, NULL, NULL))) {
+		st_free(res);
 		return false;
 	}
-	else if(hmac_sha(temp_st, NULL, NULL)) {
+	else if((res = hmac_multi_digest(111, temp_dig, temp_st, NULL, NULL))) {
+		st_free(res);
 		return false;
 	}
-	else if(hmac_sha1(NULL, temp_st, NULL)) {
+	else if((res = hmac_md4(NULL, temp_st, NULL))) {
+		st_free(res);
 		return false;
 	}
-	else if(hmac_sha1(temp_st, NULL, NULL)) {
+	else if((res = hmac_md4(temp_st, NULL, NULL))) {
+		st_free(res);
 		return false;
 	}
-	else if(hmac_sha224(NULL, temp_st, NULL)) {
+	else if((res = hmac_md5(NULL, temp_st, NULL))) {
+		st_free(res);
 		return false;
 	}
-	else if(hmac_sha224(temp_st, NULL, NULL)) {
+	else if((res = hmac_md5(temp_st, NULL, NULL))) {
+		st_free(res);
 		return false;
 	}
-	else if(hmac_sha256(NULL, temp_st, NULL)) {
+	else if((res = hmac_sha(NULL, temp_st, NULL))) {
+		st_free(res);
 		return false;
 	}
-	else if(hmac_sha256(temp_st, NULL, NULL)) {
+	else if((res = hmac_sha(temp_st, NULL, NULL))) {
+		st_free(res);
 		return false;
 	}
-	else if(hmac_sha384(NULL, temp_st, NULL)) {
+	else if((res = hmac_sha1(NULL, temp_st, NULL))) {
+		st_free(res);
 		return false;
 	}
-	else if(hmac_sha384(temp_st, NULL, NULL)) {
+	else if((res = hmac_sha1(temp_st, NULL, NULL))) {
+		st_free(res);
 		return false;
 	}
-	else if(hmac_sha512(NULL, temp_st, NULL)) {
+	else if((res = hmac_sha224(NULL, temp_st, NULL))) {
+		st_free(res);
 		return false;
 	}
-	else if(hmac_sha512(temp_st, NULL, NULL)) {
+	else if((res = hmac_sha224(temp_st, NULL, NULL))) {
+		st_free(res);
 		return false;
 	}
-	else if(hmac_ripemd160(NULL, temp_st, NULL)) {
+	else if((res = hmac_sha256(NULL, temp_st, NULL))) {
+		st_free(res);
 		return false;
 	}
-	else if(hmac_ripemd160(temp_st, NULL, NULL)) {
+	else if((res = hmac_sha256(temp_st, NULL, NULL))) {
+		st_free(res);
+		return false;
+	}
+	else if((res = hmac_sha384(NULL, temp_st, NULL))) {
+		st_free(res);
+		return false;
+	}
+	else if((res = hmac_sha384(temp_st, NULL, NULL))) {
+		st_free(res);
+		return false;
+	}
+	else if((res = hmac_sha512(NULL, temp_st, NULL))) {
+		st_free(res);
+		return false;
+	}
+	else if((res = hmac_sha512(temp_st, NULL, NULL))) {
+		st_free(res);
+		return false;
+	}
+	else if((res = hmac_ripemd160(NULL, temp_st, NULL))) {
+		st_free(res);
+		return false;
+	}
+	else if((res = hmac_ripemd160(temp_st, NULL, NULL))) {
+		st_free(res);
+		return false;
+	}
+	else if((res = hmac_multi_sha512(0, NULL, temp_st, NULL))) {
+		st_free(res);
+		return false;
+	}
+	else if((res = hmac_multi_sha512(0, NULL, temp_st, NULL))) {
+		st_free(res);
+		return false;
+	}
+	else if((res = hmac_multi_sha512(0, temp_st, NULL, NULL))) {
+		st_free(res);
+		return false;
+	}
+	else if((res = hmac_multi_sha512(0, temp_st, NULL, NULL))) {
+		st_free(res);
 		return false;
 	}
 

@@ -124,8 +124,9 @@ stringer_t *  hash_sha256(stringer_t *s, stringer_t *output);
 stringer_t *  hash_sha384(stringer_t *s, stringer_t *output);
 stringer_t *  hash_sha512(stringer_t *s, stringer_t *output);
 
-/// digest.c
+/// hmac.c
 stringer_t *  hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, stringer_t *output);
+stringer_t *  hmac_multi_digest(uint_t rounds, digest_t *digest, stringer_t *s, stringer_t *key, stringer_t *output);
 stringer_t *  hmac_md4(stringer_t *s, stringer_t *key, stringer_t *output);
 stringer_t *  hmac_md5(stringer_t *s, stringer_t *key, stringer_t *output);
 stringer_t *  hmac_ripemd160(stringer_t *s, stringer_t *key, stringer_t *output);
@@ -135,6 +136,8 @@ stringer_t *  hmac_sha224(stringer_t *s, stringer_t *key, stringer_t *output);
 stringer_t *  hmac_sha256(stringer_t *s, stringer_t *key, stringer_t *output);
 stringer_t *  hmac_sha384(stringer_t *s, stringer_t *key, stringer_t *output);
 stringer_t *  hmac_sha512(stringer_t *s, stringer_t *key, stringer_t *output);
+stringer_t *  hmac_multi_sha512(uint_t rounds, stringer_t *s, stringer_t *key, stringer_t *output);
+
 
 
 /// openssl.c
@@ -192,6 +195,7 @@ uint64_t      scramble_vector_length(scramble_t *buffer);
 
 /// stacie.c
 uint_t stacie_rounds_calculate(stringer_t *password, uint_t bonus);
+stringer_t* stacie_seed_key_derive(stringer_t *salt);
 stringer_t* stacie_seed_extract(uint_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt);
 stringer_t* stacie_hashed_key_derive(stringer_t *base, uint_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt);
 stringer_t* stacie_hashed_token_derive(stringer_t *base, stringer_t *username, stringer_t *salt, stringer_t *nonce);

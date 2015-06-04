@@ -54,6 +54,80 @@ uint_t stacie_rounds_calculate(stringer_t *password, uint_t bonus) {
 }
 
 /*
+ * @brief	Computer the key used to extract the entropy seed.
+ * @param	salt		User specific salt.
+ * @return	Key used by the hmac function to extract seed.
+ */
+stringer_t * stacie_seed_key_derive(stringer_t *salt) {
+
+	size_t salt_len;
+	stringer_t *result, *temp1, *temp2;
+	unsigned char *piece;
+
+	if(st_empty(salt)) {
+		log_pedantic("The salt input cannot be empty.");
+		return NULL;
+	}
+
+	salt_len = st_length_get(salt);
+
+	if(salt_len % 32) {
+		log_error("Salt should be aligned to 32 octet boundary.");
+	}
+
+	if(salt_len > 1024) {
+		log_error("Salt should not exceed 1024 octets.");
+	}
+
+	if(salt_len != 128) {
+		if(!(result = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 128))) {
+			log_pedantic("Failed to allocate secure stringer for seed key.");
+			return NULL;
+		}
+
+		if(!(piece = mm_alloc(salt_len + 3))) {
+			log_pedantic("Failed to allocate memory buffer.");
+			st_free(result);
+			return NULL;
+		}
+
+		mm_copy(piece, st_data_get(salt), salt_len);
+		mm_set(piece + salt_len, 0, 3);
+		temp1 = PLACER(piece, salt_len + 3);
+
+		if(!(temp2 = hash_sha512(temp1, NULL))) {
+			log_pedantic("Failed to hash salt string.");
+			mm_free(piece);
+			st_free(result);
+			return NULL;
+		}
+
+		mm_copy(st_data_get(result), st_data_get(temp2), 64);
+		st_free(temp2);
+		piece[salt_len + 2] = (unsigned char) 1;
+
+		if(!(temp2 = hash_sha512(temp1, NULL))) {
+			log_pedantic("Failed to hash salt string.");
+			mm_free(piece);
+			st_free(result);
+			return NULL;
+		}
+
+		mm_copy(st_data_get(result) + 64, st_data_get(temp2), 64);
+		st_length_set(result, 128);
+		st_free(temp2);
+		st_free(temp1);
+		mm_free(piece);
+	}
+	else if(!(result = st_dupe_opts((MANAGED_T | JOINTED | SECURE), salt))) {
+			log_pedantic("Failed to duplicate salt stringer.");
+			return NULL;
+	}
+
+	return result;
+}
+
+/*
  * @brief	Extract the seed from user password.
  * @param	rounds		Number of hashing rounds.
  * @param	username	User username.
@@ -63,8 +137,7 @@ uint_t stacie_rounds_calculate(stringer_t *password, uint_t bonus) {
  */
 stringer_t * stacie_seed_extract(uint_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt) {
 
-	bool_t error = false;
-	stringer_t *result = NULL, *temp, *temp2 = NULL, *temp3 = NULL, *key = NULL, *piece;
+	stringer_t *result = NULL, *temp, *key;
 	size_t salt_len;
 
 	if(rounds < MIN_HASH_NUM || rounds > MAX_HASH_NUM) {
@@ -87,55 +160,23 @@ stringer_t * stacie_seed_extract(uint_t rounds, stringer_t *username, stringer_t
 		log_pedantic("Could not allocate secure stringer for result.");
 		return NULL;
 	}
-	
-	if(salt_len % 32) {
-		log_error("Salt should be aligned to 32 octet boundary.");
+	else if(!(key = stacie_seed_key_derive(salt))) {
+		log_pedantic("Failed to derive seed key.");
+		st_free(result);
+		return NULL;
 	}
 
-	if(salt_len > 1024) {
-		log_error("Salt should not exceed 1024 octets.");
+	if(!(result = hmac_multi_sha512(rounds, password, key, result))) {
+		log_pedantic("Failed to perform desired hmac on password.");
+		st_free(key);
+		st_free(result);
+		return NULL;
 	}
 
-	if(salt_len != 128) {
-		piece = MEMORYBUF(1027);
-		piece = mm_copy(piece, st_data_get(salt), salt_len);
-		piece = mm_set(piece + salt_len, 0, 3);
-		temp2 = PLACER(piece, salt_len + 3);
-		temp3 = hash_sha512(temp2, NULL);
-		key = st_append(key, temp3);
-		piece = mm_set(piece + salt_len + 2, 1, 1);
-		temp3 = hash_sha512(temp2, NULL);
-		key = st_append(key, temp3);
-	}
-	else if(!key) {
-		key = salt;
-	}
-
-	if(!(result = hmac_sha512(password, key, result))) {
-		log_pedantic("Could not compute desired hmac.");
-		error = true;
-	}
-
-	st_cleanup(temp3);
-
-	for(uint i = 1; !error && i < rounds; ++i) {
-		if(!(result = hmac_sha512(result, key, result))) {
-			log_pedantic("Failed computing hmac round %d.", i);
-			error = true;
-		}
-	}
+	st_free(key);
 
 	if(!temp) {
 		st_cleanup(salt);
-	}
-
-	if(temp2) {
-		st_cleanup(key);
-	}
-
-	if(error) {
-		st_cleanup(result);
-		return NULL;
 	}
 
 	return result;
@@ -227,6 +268,14 @@ stringer_t * stacie_hashed_key_derive(stringer_t *base, uint_t rounds, stringer_
 	return result;
 }
 
+/*
+ * @brief	Derive hashed token as per STACIE authentication protocol.
+ * @param	base		The base input that will be hashed into the token, either a password_key or verification token
+ * @param	username	Username stringer.
+ * @param	salt		User-specific salt.
+ * @param	nonce		Token-specific nonce.
+ * @return	Stringer containing the hashed token.
+*/
 stringer_t * stacie_hashed_token_derive(stringer_t *base, stringer_t *username, stringer_t *salt, stringer_t *nonce) {
 
 	size_t salt_len = 0, nonce_len = 0;
@@ -279,9 +328,17 @@ stringer_t * stacie_hashed_token_derive(stringer_t *base, stringer_t *username, 
 	return result;
 }
 
+/*
+ * @brief	Derive the realm key used to decrypt keys for realm-specific user information.
+ * @param	master_key	Stringer containing master key derived from user password.
+ * @param	realm		Realm name.
+ * @param	shard		Shard serves as a realm-specific salt.
+ * @return	Stringer containing the realm key.
+*/
 stringer_t * stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, stringer_t *shard) {
 
-	stringer_t *result, *hash_input;
+	bool_t error = false;
+	stringer_t *result = NULL, *hash_input = NULL, *hash_output = NULL;
 
 	if(st_empty(master_key) || (st_length_get(master_key) != 64)) {
 		log_pedantic("An empty or invalid master key was passed in.");
@@ -298,20 +355,53 @@ stringer_t * stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, 
 	else if(!(hash_input = st_alloc_opts((MANAGED_T | JOINTED | SECURE), st_length_get(master_key) +
 		+ st_length_get(realm) + st_length_get(shard)))) {
 		log_pedantic("Failed to allocate secure stringer for hash input.");
+		return NULL;
 	}
 	else if(!(result = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64))) {
 		log_pedantic("Failed to allocate secure stringer for realm key.");
+		error = true;
+	}
+	else if(!(hash_output = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64))) {
+		log_pedantic("Failed to allocate secure stringer for hash output.");
+		error = true;
+	}
+	else if(!(hash_input = st_append(hash_input, master_key))) {
+		log_pedantic("Failed to append hash input stringer with master key.");
+		error = true;
+	}
+	else if(!(hash_input = st_append(hash_input, realm))) {
+		log_pedantic("Failed to append hash input stringer with realm name.");
+		error = true;
+	}
+	else if(!(hash_input = st_append(hash_input, shard))) {
+		log_pedantic("Failed to append hash input stringer with shard.");
+		error = true;
+	}
+	else if(!(hash_output = hash_sha512(hash_input, hash_output))) {
+		log_pedantic("Failed to hash input stringer.");
+		error = true;
+	}
+	else if(!(result = st_xor(hash_output, shard, result))) {
+		log_pedantic("Failed to xor input stringer with shard.");
+		error = true;
 	}
 
-	hash_input = st_append(hash_input, master_key);
-	hash_input = st_append(hash_input, realm);
-	hash_input = st_append(hash_input, shard);
-	result = hash_sha512(hash_input, result);
-	result = st_xor(result, shard, result);
+	st_cleanup(hash_input);
+	st_cleanup(hash_output);
+
+	if(error) {
+		st_cleanup(result);
+		return NULL;
+	}
 
 	return result;
 }
 
+/*
+ * @brief	Derive the encryption key used to decrypt realm-specific key.
+ * @param	realm_key	Stringer containing the realm key.
+ * @return	Encryption key.
+*/
 stringer_t * stacie_realm_cipher_key_derive(stringer_t *realm_key) {
 
 	stringer_t *result, *pl;
@@ -332,6 +422,11 @@ stringer_t * stacie_realm_cipher_key_derive(stringer_t *realm_key) {
 	return result;
 }
 
+/*
+ * @brief	Derive the initialization vector used to decrypt realm-specific key.
+ * @param	realm_key	Stringer containing the realm key.
+ * @return	Initialization vector.
+*/
 stringer_t * stacie_realm_init_vector_derive(stringer_t *realm_key) {
 
 	stringer_t *temp, *result, *pl1, *pl2;

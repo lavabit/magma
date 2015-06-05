@@ -146,6 +146,7 @@ stringer_t * st_merge_opts(uint32_t opts, chr_t *format, ...);
 stringer_t * st_append_opts(size_t align, stringer_t *s, stringer_t *append);
 
 /// shortcuts.c
+void       pl_replace(placer_t *result, void *data, size_t len);
 chr_t *    pl_char_get(placer_t place);
 void *     pl_data_get(placer_t place);
 bool_t     pl_empty(placer_t place);

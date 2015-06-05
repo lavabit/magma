@@ -14,10 +14,10 @@
 
 /**
  * @brief	Perform an HMAC using the specified digest and key.
- * @param 	digest	Digest to be used with the HMAC.
+ * @param 	digest		Digest to be used with the HMAC.
  * @param	s		Input data.
  * @param 	key		Key used in HMAC.
- * @param 	output	Stringer containing buffer for output.
+ * @param 	output		Optional stringer containing buffer for output. If NULL one is created.
  * @return	Pointer to stringer with buffer containing HMAC. NULL on failure.
  */
 stringer_t * hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, stringer_t *output) {
@@ -59,7 +59,7 @@ stringer_t * hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, strin
 	HMAC_CTX_init_d(&ctx);
 
 	if (HMAC_Init_ex_d(&ctx, st_data_get(key), st_length_get(key), (const EVP_MD *)digest, NULL) != 1) {
-		log_info("Unable to generate a data authentication code. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_error("Unable to generate a data authentication code. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
 		HMAC_CTX_cleanup_d(&ctx);
 
 		if(!output) {
@@ -70,7 +70,7 @@ stringer_t * hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, strin
 	}
 
 	if (HMAC_Update_d(&ctx, st_data_get(s), st_length_get(s)) != 1) {
-		log_info("Unable to generate a data authentication code. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_error("Unable to generate a data authentication code. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
 		HMAC_CTX_cleanup_d(&ctx);
 
 		if(!output) {
@@ -81,7 +81,7 @@ stringer_t * hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, strin
 	}
 
 	if (HMAC_Final_d(&ctx, st_data_get(result), &outlen) != 1) {
-		log_info("Unable to generate a data authentication code. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_error("Unable to generate a data authentication code. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
 		HMAC_CTX_cleanup_d(&ctx);
 
 		if(!output) {
@@ -106,7 +106,7 @@ stringer_t * hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, strin
  * @param 	digest	Digest to be used with the HMAC.
  * @param	s		Input data.
  * @param 	key		Key used in HMAC.
- * @param 	output	Stringer containing buffer for output.
+ * @param 	output		Optional stringer containing buffer for output. If NULL one is created.
  * @return	Pointer to stringer with buffer containing HMAC. NULL on failure.
  */
 stringer_t * hmac_multi_digest(uint_t rounds, digest_t *digest, stringer_t *s, stringer_t *key, stringer_t *output) {
@@ -148,7 +148,7 @@ stringer_t * hmac_multi_digest(uint_t rounds, digest_t *digest, stringer_t *s, s
 	HMAC_CTX_init_d(&ctx);
 
 	if (HMAC_Init_ex_d(&ctx, st_data_get(key), st_length_get(key), (const EVP_MD *)digest, NULL) != 1) {
-		log_info("Unable to generate a data authentication code. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_error("Unable to generate a data authentication code. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
 		HMAC_CTX_cleanup_d(&ctx);
 
 		if(!output) {
@@ -160,7 +160,7 @@ stringer_t * hmac_multi_digest(uint_t rounds, digest_t *digest, stringer_t *s, s
 
 	for(uint_t i = 0; i < rounds; ++i) {
 		 if (HMAC_Update_d(&ctx, st_data_get(s), st_length_get(s)) != 1) {
-			log_info("Unable to generate a data authentication code. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+			log_error("Unable to generate a data authentication code. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
 			HMAC_CTX_cleanup_d(&ctx);
 
 			if(!output) {
@@ -172,7 +172,7 @@ stringer_t * hmac_multi_digest(uint_t rounds, digest_t *digest, stringer_t *s, s
 	}
 
 	if (HMAC_Final_d(&ctx, st_data_get(result), &outlen) != 1) {
-		log_info("Unable to generate a data authentication code. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_error("Unable to generate a data authentication code. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
 		HMAC_CTX_cleanup_d(&ctx);
 
 		if(!output) {
@@ -195,7 +195,7 @@ stringer_t * hmac_multi_digest(uint_t rounds, digest_t *digest, stringer_t *s, s
  * @brief	HMAC-MD4
  * @param	s		Input data.
  * @param	key		HMAC key.
- * @param 	output	Stringer with HMAC
+ * @param 	output		Optional stringer containing buffer for output. If NULL one is created.
  * @return	Pointer to stringer with HMAC buffer. NULL on failure.
  */
 stringer_t * hmac_md4(stringer_t *s, stringer_t *key, stringer_t *output) {
@@ -206,7 +206,7 @@ stringer_t * hmac_md4(stringer_t *s, stringer_t *key, stringer_t *output) {
  * @brief	HMAC-MD5
  * @param	s		Input data.
  * @param	key		HMAC key.
- * @param 	output	Stringer with HMAC
+ * @param 	output		Optional stringer containing buffer for output. If NULL one is created.
  * @return	Pointer to stringer with HMAC buffer. NULL on failure.
  */
 stringer_t * hmac_md5(stringer_t *s, stringer_t *key, stringer_t *output) {
@@ -217,7 +217,7 @@ stringer_t * hmac_md5(stringer_t *s, stringer_t *key, stringer_t *output) {
  * @brief	HMAC-SHA
  * @param	s		Input data.
  * @param	key		HMAC key.
- * @param 	output	Stringer with HMAC
+ * @param 	output		Optional stringer containing buffer for output. If NULL one is created.
  * @return	Pointer to stringer with HMAC buffer. NULL on failure.
  */
 stringer_t * hmac_sha(stringer_t *s, stringer_t *key, stringer_t *output) {
@@ -228,7 +228,7 @@ stringer_t * hmac_sha(stringer_t *s, stringer_t *key, stringer_t *output) {
  * @brief	HMAC-SHA1
  * @param	s		Input data.
  * @param	key		HMAC key.
- * @param 	output	Stringer with HMAC
+ * @param 	output		Optional stringer containing buffer for output. If NULL one is created.
  * @return	Pointer to stringer with HMAC buffer. NULL on failure.
  */
 stringer_t * hmac_sha1(stringer_t *s, stringer_t *key, stringer_t *output) {
@@ -239,7 +239,7 @@ stringer_t * hmac_sha1(stringer_t *s, stringer_t *key, stringer_t *output) {
  * @brief	HMAC-SHA224
  * @param	s		Input data.
  * @param	key		HMAC key.
- * @param 	output	Stringer with HMAC
+ * @param 	output		Optional stringer containing buffer for output. If NULL one is created.
  * @return	Pointer to stringer with HMAC buffer. NULL on failure.
  */
 stringer_t * hmac_sha224(stringer_t *s, stringer_t *key, stringer_t *output) {
@@ -250,7 +250,7 @@ stringer_t * hmac_sha224(stringer_t *s, stringer_t *key, stringer_t *output) {
  * @brief	HMAC-SHA256
  * @param	s		Input data.
  * @param	key		HMAC key.
- * @param 	output	Stringer with HMAC
+ * @param 	output		Optional stringer containing buffer for output. If NULL one is created.
  * @return	Pointer to stringer with HMAC buffer. NULL on failure.
  */
 stringer_t * hmac_sha256(stringer_t *s, stringer_t *key, stringer_t *output) {
@@ -261,7 +261,7 @@ stringer_t * hmac_sha256(stringer_t *s, stringer_t *key, stringer_t *output) {
  * @brief	HMAC-SHA384
  * @param	s		Input data.
  * @param	key		HMAC key.
- * @param 	output	Stringer with HMAC
+ * @param 	output		Optional stringer containing buffer for output. If NULL one is created.
  * @return	Pointer to stringer with HMAC buffer. NULL on failure.
  */
 stringer_t * hmac_sha384(stringer_t *s, stringer_t *key, stringer_t *output) {
@@ -272,7 +272,7 @@ stringer_t * hmac_sha384(stringer_t *s, stringer_t *key, stringer_t *output) {
  * @brief	HMAC-SHA512
  * @param	s		Input data.
  * @param	key		HMAC key.
- * @param 	output	Stringer with HMAC
+ * @param 	output		Optional stringer containing buffer for output. If NULL one is created.
  * @return	Pointer to stringer with HMAC buffer. NULL on failure.
  */
 stringer_t * hmac_sha512(stringer_t *s, stringer_t *key, stringer_t *output) {
@@ -283,7 +283,7 @@ stringer_t * hmac_sha512(stringer_t *s, stringer_t *key, stringer_t *output) {
  * @brief	HMAC-RIPEMD160
  * @param	s		Input data.
  * @param	key		HMAC key.
- * @param 	output	Stringer with HMAC
+ * @param 	output		Optional stringer containing buffer for output. If NULL one is created.
  * @return	Pointer to stringer with HMAC buffer. NULL on failure.
  */
 stringer_t * hmac_ripemd160(stringer_t *s, stringer_t *key, stringer_t *output) {
@@ -295,7 +295,7 @@ stringer_t * hmac_ripemd160(stringer_t *s, stringer_t *key, stringer_t *output) 
  * @param	rounds		Number of times input is self-concantenated.
  * @param	s		Input.
  * @param	key		HMAC key.
- * @param	output		Stringer with HMAC.
+ * @param 	output		Optional stringer containing buffer for output. If NULL one is created.
  * @return	Pointer to stringer with buffer containing HMAC, NULL on failure.
 */
 stringer_t * hmac_multi_sha512(uint_t rounds, stringer_t *s, stringer_t *key, stringer_t *output) {

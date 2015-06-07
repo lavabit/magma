@@ -546,7 +546,7 @@ stringer_t * mail_insert_chunk_text(server_t *server, stringer_t *message, strin
  * @return         NULL on failure or a placer containing the specified chunk
  *                 on success.
  */
-bool_t mail_get_chunk(placer_t *result, stringer_t *message, stringer_t *boundary, int_t chunk) {
+placer_t *mail_get_chunk(placer_t *result, stringer_t *message, stringer_t *boundary, int_t chunk) {
 
 	int_t found = 0;
 	size_t start = 0, length = 0, input = 0;
@@ -565,7 +565,7 @@ bool_t mail_get_chunk(placer_t *result, stringer_t *message, stringer_t *boundar
 			// Get the start of the MIME message part.
 			if (!st_search_cs(PLACER(st_char_get(message) + start, st_length_get(message) - start), boundary, &input)) {
 				log_pedantic("The boundary doesn't appear to be part of this message.");
-				return false;
+				return NULL;
 			}
 
 			// Skip the boundary before searching again.
@@ -573,7 +573,7 @@ bool_t mail_get_chunk(placer_t *result, stringer_t *message, stringer_t *boundar
 
 			// This will detect the section ending.
 			if (st_length_get(message) - start >= 2 && mm_cmp_cs_eq(st_char_get(message) + start, "--", 2) == 1) {
-				return false;
+				return NULL;
 			}
 			// Some broken implementations use similar boundaries. This should detect those.
 			else if (st_length_get(message) - start > 0 && (*(st_char_get(message) + start) < '!' || *(st_char_get(message) + start) > '~')) {
@@ -602,7 +602,7 @@ bool_t mail_get_chunk(placer_t *result, stringer_t *message, stringer_t *boundar
 	// Setup a placer with the chunk.
 	pl_replace(result, st_char_get(message) + start, length);
 
-	return true;
+	return result;
 }
 
 /**
@@ -706,7 +706,7 @@ int_t mail_modify_part(server_t *server, mail_message_t *message, stringer_t *pa
 	size_t length;
 	stringer_t *header;
 	placer_t chunk;
-	bool_t chunk_success = true;
+	placer_t * chunk_success = NULL;
 	int_t headpart = 0;
 	size_t increment;
 	stringer_t *boundary;
@@ -800,7 +800,7 @@ int_t mail_modify_part(server_t *server, mail_message_t *message, stringer_t *pa
 		length = 1;
 		mail_get_chunk(&chunk, message->text, boundary, length);
 
-		while (chunk_success && length < 8) {
+		while (chunk_success != NULL && length < 8) {
 			length++;
 			mail_modify_part(server, message, &chunk, signum, sigkey, disposition, recursion + 1);
 			chunk_success = mail_get_chunk(&chunk, message->text, boundary, length);

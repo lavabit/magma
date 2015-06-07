@@ -568,6 +568,12 @@ placer_t *mail_get_chunk(placer_t *result, stringer_t *message, stringer_t *boun
 
 	int_t found = 0;
 	size_t start = 0, length = 0, input = 0;
+	chr_t *message_begin = st_char_get(message);
+
+	if (message_begin == NULL) {
+		log_error("couldn't find beginning of message");
+		return NULL;
+	}
 
 	while (chunk != 0) {
 
@@ -581,7 +587,7 @@ placer_t *mail_get_chunk(placer_t *result, stringer_t *message, stringer_t *boun
 		while (found == 0) {
 
 			// Get the start of the MIME message part.
-			if (!st_search_cs(PLACER(st_char_get(message) + start, st_length_get(message) - start), boundary, &input)) {
+			if (!st_search_cs(PLACER(message_begin + start, st_length_get(message) - start), boundary, &input)) {
 				log_pedantic("The boundary doesn't appear to be part of this message.");
 				return NULL;
 			}
@@ -590,11 +596,11 @@ placer_t *mail_get_chunk(placer_t *result, stringer_t *message, stringer_t *boun
 			start += input + st_length_get(boundary);
 
 			// This will detect the section ending.
-			if (st_length_get(message) - start >= 2 && mm_cmp_cs_eq(st_char_get(message) + start, "--", 2) == 1) {
+			if (st_length_get(message) - start >= 2 && mm_cmp_cs_eq(message_begin + start, "--", 2) == 1) {
 				return NULL;
 			}
 			// Some broken implementations use similar boundaries. This should detect those.
-			else if (st_length_get(message) - start > 0 && (*(st_char_get(message) + start) < '!' || *(st_char_get(message) + start) > '~')) {
+			else if (st_length_get(message) - start > 0 && (*(message_begin + start) < '!' || *(message_begin + start) > '~')) {
 				found = 1;
 			}
 		}
@@ -604,11 +610,11 @@ placer_t *mail_get_chunk(placer_t *result, stringer_t *message, stringer_t *boun
 		while (found == 0) {
 
 			// Get the end.
-			if (!st_search_cs(PLACER(st_char_get(message) + start, st_length_get(message) - start), boundary, &length)) {
+			if (!st_search_cs(PLACER(message_begin + start, st_length_get(message) - start), boundary, &length)) {
 				length = st_length_get(message) - start;
 				found = 1;
 			}
-			else if (st_length_get(message) - start - length > 0 && (*(st_char_get(message) + start) < '!' || *(st_char_get(message) + start) > '~')) {
+			else if (st_length_get(message) - start - length > 0 && (*(message_begin + start) < '!' || *(message_begin + start) > '~')) {
 				found = 1;
 			}
 
@@ -618,7 +624,7 @@ placer_t *mail_get_chunk(placer_t *result, stringer_t *message, stringer_t *boun
 	}
 
 	// Setup a placer with the chunk.
-	pl_replace(result, st_char_get(message) + start, length);
+	pl_replace(result, message_begin + start, length);
 
 	return result;
 }

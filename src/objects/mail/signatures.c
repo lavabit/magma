@@ -549,6 +549,11 @@ stringer_t * mail_insert_chunk_text(server_t *server, stringer_t *message, strin
  */
 placer_t *mail_get_chunk(placer_t *result, stringer_t *message, stringer_t *boundary, int_t chunk) {
 
+	if (result == NULL) return NULL;
+	if (message == NULL) return NULL;
+	if (boundary == NULL) return NULL;
+	if (chunk <= 0) return NULL;
+
 	int_t found = 0;
 	size_t start = 0, length = 0, input = 0;
 

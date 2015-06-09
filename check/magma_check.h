@@ -19,7 +19,7 @@
 #include <sys/ptrace.h>
 #include <sys/wait.h>
 #include <check.h>
-#include <valgrind.h>
+#include <valgrind/valgrind.h>
 
 #include "core/core_check.h"
 #include "providers/provide_check.h"

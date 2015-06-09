@@ -5,7 +5,7 @@ AM_CFLAGS = -Wfatal-errors -Werror
 
 # Note that we specify the include directories for the bundled dependencies
 # here.
-AM_CPPFLAGS = \
+COMMON_CPPFLAGS = \
 		-I$(top_srcdir)/src \
 		-I$(top_srcdir)/build_lib/sources/spf2/src/include \
 		-I$(top_srcdir)/build_lib/sources/clamav/libclamav \
@@ -50,8 +50,10 @@ magmad_LDADD = \
 #		libservers.a \
 #		libweb.a
 
+magmad_CPPFLAGS = $(COMMON_CPPFLAGS)
 magmad_SOURCES = src/magma.c
 
+libmagma_a_CPPFLAGS = $(COMMON_CPPFLAGS)
 libmagma_a_SOURCES = \
 		src/core/type.c \
 		src/core/indexes/cursors.c \

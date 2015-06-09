@@ -77,19 +77,19 @@
 #include <openssl/err.h>
 
 // LZO
-#include <lzoconf.h>
-#include <lzodefs.h>
-#include <lzoutil.h>
-#include <lzo1x.h>
+#include <lzo/lzoconf.h>
+#include <lzo/lzodefs.h>
+#include <lzo/lzoutil.h>
+#include <lzo/lzo1x.h>
 
 // XML2
-#include <xmlmemory.h>
-#include <tree.h>
-#include <valid.h>
-#include <xpath.h>
-#include <xpathInternals.h>
-#include <parserInternals.h>
-#include <xmlerror.h>
+#include <libxml/xmlmemory.h>
+#include <libxml/tree.h>
+#include <libxml/valid.h>
+#include <libxml/xpath.h>
+#include <libxml/xpathInternals.h>
+#include <libxml/parserInternals.h>
+#include <libxml/xmlerror.h>
 
 // ZLIB
 #include <zlib.h>

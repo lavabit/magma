@@ -158,7 +158,7 @@ int (*mysql_real_query_d)(MYSQL *mysql, const char *query, unsigned long length)
 int (*mysql_stmt_prepare_d)(MYSQL_STMT *stmt, const char *query, unsigned long length) __attribute__ ((common)) = NULL;
 unsigned long (*mysql_escape_string_d)(char *to, const char *from, unsigned long length) __attribute__ ((common)) = NULL;
 my_bool (*mysql_stmt_attr_set_d)(MYSQL_STMT *stmt, enum enum_stmt_attr_type attr_type, const void *attr) __attribute__ ((common)) = NULL;
-my_bool (*mysql_stmt_bind_result_d)(MYSQL_STMT *stmt, MYSQL_BIND *bind) __attribute__ ((common)) = NULL;const char * STDCALL mysql_character_set_name(MYSQL *mysql);
+my_bool (*mysql_stmt_bind_result_d)(MYSQL_STMT *stmt, MYSQL_BIND *bind) __attribute__ ((common)) = NULL;
 MYSQL * (*mysql_real_connect_d)(MYSQL * mysql, const char *name, const char *user, const char *passwd, const char *db, unsigned int port, const char *unix_socket, unsigned long client_flag) __attribute__ ((common)) = NULL;
 
 //! OPENSSL

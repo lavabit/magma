@@ -279,14 +279,37 @@ libmagma_a_SOURCES = \
 		src/web/teacher/datatier.c \
 		src/web/teacher/teacher.c
 
-#libmagmacore_check_a_CPPFLAGS = -I$(top_srcdir)/src/core -I$(top_srcdir)/check/core
-#libmagmacore_check_a_SOURCES = \
-#		check/core/core_check.c
-#
-#check_PROGRAMS = core_tests
-#
-#core_tests_CPPFLAGS = $(CHECK_CFLAGS)
-#core_tests_LDFLAGS = $(CHECK_LIBS)
-#core_tests_SOURCES = \
-#		check/core/runner.c
-#core_tests_LDADD = libmagmacore_check.a libmagmacore.a
+TESTS = tests
+check_PROGRAMS = tests
+tests_CPPFLAGS = -I$(top_srcdir)/check $(COMMON_CPPFLAGS)
+tests_SOURCES = \
+		check/magma_check.c \
+		check/core/base64_check.c \
+		check/core/core_check.c \
+		check/core/hashed_check.c \
+		check/core/hex_check.c \
+		check/core/inx_check.c \
+		check/core/linked_check.c \
+		check/core/qp_check.c \
+		check/core/qsort_check.c \
+		check/core/string_check.c \
+		check/core/system_check.c \
+		check/core/tree_check.c \
+		check/core/url_check.c \
+		check/core/zbase32_check.c \
+		check/network/address_check.c \
+		check/network/network_check.c \
+		check/objects/objects_check.c \
+		check/providers/compress_check.c \
+		check/providers/digest_check.c \
+		check/providers/dspam_check.c \
+		check/providers/ecies_check.c \
+		check/providers/provide_check.c \
+		check/providers/rand_check.c \
+		check/providers/scramble_check.c \
+		check/providers/symmetric_check.c \
+		check/providers/tank_check.c \
+		check/providers/virus_check.c \
+		check/users/users_check.c
+tests_CFLAGS = @CHECK_CFLAGS@
+tests_LDADD = libmagma.a -ldl @CHECK_LIBS@

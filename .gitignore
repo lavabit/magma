@@ -9,3 +9,4 @@ res/virus/bytecode.cld
 res/virus/mirrors.dat
 res/virus/safebrowsing.cvd
 tools/pwtool/pwtool
+build*

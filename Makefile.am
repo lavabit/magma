@@ -27,28 +27,12 @@ COMMON_CPPFLAGS = \
 
 noinst_LIBRARIES = \
 		libmagma.a
-#		libsymbols.a \
-#		libengine.a \
-#		libmagmacore.a \
-#		libproviders.a \
-#		libnetwork.a \
-#		libobjects.a \
-#		libservers.a \
-#		libweb.a
 
 bin_PROGRAMS = magmad
 
 magmad_LDADD = \
 		libmagma.a \
 		-ldl
-#		libsymbols.a \
-#		libengine.a \
-#		libmagmacore.a \
-#		libproviders.a \
-#		libnetwork.a \
-#		libobjects.a \
-#		libservers.a \
-#		libweb.a
 
 magmad_CPPFLAGS = $(COMMON_CPPFLAGS)
 magmad_SOURCES = src/magma.c

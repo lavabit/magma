@@ -10,3 +10,8 @@ res/virus/mirrors.dat
 res/virus/safebrowsing.cvd
 tools/pwtool/pwtool
 build*
+Makefile.in
+aclocal.m4
+autom4te.cache
+configure
+m4/pkg.m4

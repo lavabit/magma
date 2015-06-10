@@ -194,14 +194,14 @@ void *        scramble_vector_data(scramble_t *buffer);
 uint64_t      scramble_vector_length(scramble_t *buffer);
 
 /// stacie.c
-uint_t stacie_rounds_calculate(stringer_t *password, uint_t bonus);
-stringer_t* stacie_seed_key_derive(stringer_t *salt);
-stringer_t* stacie_seed_extract(uint_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt);
-stringer_t* stacie_hashed_key_derive(stringer_t *base, uint_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt);
-stringer_t* stacie_hashed_token_derive(stringer_t *base, stringer_t *username, stringer_t *salt, stringer_t *nonce);
-stringer_t* stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, stringer_t *shard);
-stringer_t* stacie_realm_cipher_key_derive(stringer_t *realm_key);
-stringer_t* stacie_realm_init_vector_derive(stringer_t *realm_key);
+uint_t        stacie_rounds_calculate(stringer_t *password, uint_t bonus);
+stringer_t *  stacie_seed_key_derive(stringer_t *salt);
+stringer_t *  stacie_seed_extract(uint_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt);
+stringer_t *  stacie_hashed_key_derive(stringer_t *base, uint_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt);
+stringer_t *  stacie_hashed_token_derive(stringer_t *base, stringer_t *username, stringer_t *salt, stringer_t *nonce);
+stringer_t *  stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, stringer_t *shard);
+stringer_t *  stacie_realm_cipher_key_derive(stringer_t *realm_key);
+stringer_t *  stacie_realm_init_vector_derive(stringer_t *realm_key);
 
 /// symmetric.c
 stringer_t *  symmetric_decrypt(cipher_t *cipher, stringer_t *vector, stringer_t *key, stringer_t *input);

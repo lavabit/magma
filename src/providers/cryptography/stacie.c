@@ -32,7 +32,7 @@ uint_t stacie_rounds_calculate(stringer_t *password, uint_t bonus) {
 		return 0;
 	}
 
-	if(bonus >= MAX_HASH_NUM - 2) {
+	if((MAX_HASH_NUM - 2) <= bonus) {
 		return MAX_HASH_NUM;
 	}
 
@@ -72,11 +72,11 @@ stringer_t * stacie_seed_key_derive(stringer_t *salt) {
 	salt_len = st_length_get(salt);
 
 	if(salt_len % 32) {
-		log_error("Salt should be aligned to 32 octet boundary.");
+		log_info("Salt should be aligned to 32 octet boundary.");
 	}
 
 	if(salt_len > 1024) {
-		log_error("Salt should not exceed 1024 octets.");
+		log_info("Salt should not exceed 1024 octets.");
 	}
 
 	if(salt_len != 128) {
@@ -102,7 +102,7 @@ stringer_t * stacie_seed_key_derive(stringer_t *salt) {
 			return NULL;
 		}
 
-		mm_copy(st_data_get(result), st_data_get(temp2), 64);
+		st_append(result, temp2);
 		st_free(temp2);
 		piece[salt_len + 2] = (unsigned char) 1;
 
@@ -116,7 +116,6 @@ stringer_t * stacie_seed_key_derive(stringer_t *salt) {
 		mm_copy(st_data_get(result) + 64, st_data_get(temp2), 64);
 		st_length_set(result, 128);
 		st_free(temp2);
-		st_free(temp1);
 		mm_free(piece);
 	}
 	else if(!(result = st_dupe_opts((MANAGED_T | JOINTED | SECURE), salt))) {
@@ -344,18 +343,21 @@ stringer_t * stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, 
 		log_pedantic("An empty or invalid master key was passed in.");
 		return NULL;
 	}
-	else if(st_empty(realm)) {
+
+	if(st_empty(realm)) {
 		log_pedantic("An empty realm was passed in.");
 		return NULL;
 	}
-	else if(st_empty(shard) || (st_length_get(shard) != 64)) {
+
+	if(st_empty(shard) || (st_length_get(shard) != 64)) {
 		log_pedantic("An empty or invalid shard was passed in.");
 		return NULL;
 	}
-	else if(!(hash_input = st_alloc_opts((MANAGED_T | JOINTED | SECURE), st_length_get(master_key) +
+
+	if(!(hash_input = st_alloc_opts((MANAGED_T | JOINTED | SECURE), st_length_get(master_key) +
 		+ st_length_get(realm) + st_length_get(shard)))) {
 		log_pedantic("Failed to allocate secure stringer for hash input.");
-		return NULL;
+		error = true;
 	}
 	else if(!(result = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64))) {
 		log_pedantic("Failed to allocate secure stringer for realm key.");
@@ -388,11 +390,6 @@ stringer_t * stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, 
 
 	st_cleanup(hash_input);
 	st_cleanup(hash_output);
-
-	if(error) {
-		st_cleanup(result);
-		return NULL;
-	}
 
 	return result;
 }

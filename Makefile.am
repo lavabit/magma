@@ -297,3 +297,13 @@ tests_SOURCES = \
 		check/users/users_check.c
 tests_CFLAGS = @CHECK_CFLAGS@
 tests_LDADD = libmagma.a -ldl @CHECK_LIBS@
+
+BUILT_SOURCES = $(top_srcdir)/build_lib/magmad.so
+
+# The idea here is that the build_lib directory may be provided through
+# external means (e.g., download).
+$(top_srcdir)/build_lib/magmad.so:
+		rm -rf $(top_srcdir)/build_lib && \
+		mkdir $(top_srcdir)/build_lib && \
+		cd $(top_srcdir)/build_lib && \
+		$(top_srcdir)/scripts/builders/build.lib.sh all

@@ -298,7 +298,8 @@ tests_SOURCES = \
 tests_CFLAGS = @CHECK_CFLAGS@
 tests_LDADD = libmagma.a -ldl @CHECK_LIBS@
 
-BUILT_SOURCES = $(top_srcdir)/build_lib/magmad.so
+# Targets to build before we start compiling
+BUILT_SOURCES = $(top_srcdir)/build_lib/magmad.so build.h
 
 # The idea here is that the build_lib directory may be provided through
 # external means (e.g., download).
@@ -307,3 +308,9 @@ $(top_srcdir)/build_lib/magmad.so:
 		mkdir $(top_srcdir)/build_lib && \
 		cd $(top_srcdir)/build_lib && \
 		$(top_srcdir)/scripts/builders/build.lib.sh all
+
+build.h: .FORCE
+		printf "#define MAGMA_BUILD \"6.0.1-$$(git log --format="%H" -n 1 | cut -c33-40)\"\n" > build.h
+		date +'#define MAGMA_STAMP "%Y%m%d.%H%M"' >> build.h
+
+.PHONY: .FORCE

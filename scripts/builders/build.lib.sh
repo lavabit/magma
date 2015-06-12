@@ -1753,16 +1753,24 @@ combo() {
 
 	date +"%nStarting $1 at %r on %x%n" &>> "$M_LOGS/build.txt"
 
-	($M_BUILD "clamav-$1") & CLAMAV_PID=$!
-	wait $CLAMAV_PID; error
+	($M_BUILD "openssl-$1") & OPENSSL_PID=$!
+	wait $OPENSSL_PID; error
+	($M_BUILD "mysql-$1") & MYSQL_PID=$!
+	wait $MYSQL_PID; error
+	($M_BUILD "dspam-$1") & DSPAM_PID=$!
+	wait $DSPAM_PID; error
 	($M_BUILD "gd-$1") & GD_PID=$!
 	wait $GD_PID; error
+	($M_BUILD "clamav-$1") & CLAMAV_PID=$!
+	wait $CLAMAV_PID; error
 	($M_BUILD "png-$1") & PNG_PID=$!
 	wait $PNG_PID; error
 	($M_BUILD "lzo-$1") & LZO_PID=$!
 	wait $LZO_PID; error
 	($M_BUILD "jpeg-$1") & JPEG_PID=$!
 	wait $JPEG_PID; error
+	($M_BUILD "zlib-$1") & ZLIB_PID=$!
+	wait $ZLIB_PID; error
 	($M_BUILD "curl-$1") & CURL_PID=$!
 	wait $CURL_PID; error
 	($M_BUILD "spf2-$1") & SPF2_PID=$!
@@ -1771,18 +1779,10 @@ combo() {
 	wait $XML2_PID; error
 	($M_BUILD "dkim-$1") & DKIM_PID=$!
 	wait $DKIM_PID; error
-	($M_BUILD "zlib-$1") & ZLIB_PID=$!
-	wait $ZLIB_PID; error
 	($M_BUILD "bzip2-$1") & BZIP2_PID=$!
 	wait $BZIP2_PID; error
-	($M_BUILD "mysql-$1") & MYSQL_PID=$!
-	wait $MYSQL_PID; error
-	($M_BUILD "dspam-$1") & DSPAM_PID=$!
-	wait $DSPAM_PID; error
 	($M_BUILD "geoip-$1") & GEOIP_PID=$!
 	wait $GEOIP_PID; error
-	($M_BUILD "openssl-$1") & OPENSSL_PID=$!
-	wait $OPENSSL_PID; error
 	($M_BUILD "jansson-$1") & JANSSON_PID=$!
 	wait $JANSSON_PID; error
 	($M_BUILD "freetype-$1") & FREETYPE_PID=$!

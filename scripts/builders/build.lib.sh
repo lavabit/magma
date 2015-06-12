@@ -139,16 +139,15 @@ png() {
 		;;
 		png-build)
 			cd "$M_SOURCES/png"; error
-			# Note that the CC trick below is because CPPFLAGS is ignored by
-			# libtool here, causing libpng to find a zlib.h with a mismatched
-			# version
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
 			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
-			export CC="gcc -I$M_SOURCES/zlib"
-			./configure &>> "$M_LOGS/png.txt"; error
+			# The shared library build is explicitly disabled because using the
+			# bundled zlib version seems to muck up the magic libpng uses to
+			# generate its shared library version script
+			./configure --disable-shared &>> "$M_LOGS/png.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset CC
 
 			make &>> "$M_LOGS/png.txt"; error

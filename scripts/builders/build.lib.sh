@@ -72,16 +72,14 @@ gd() {
 			cat "$M_PATCHES/gd/"gd-version.patch | patch -s -p1 -b --fuzz=0; error; error
 			cat "$M_PATCHES/gd/"gd-sigcmp.patch | patch -s -p1 -b --fuzz=0; error; error
 		;;
-		gd-configure)
+		gd-build)
 			cd "$M_SOURCES/gd"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			./configure --without-xpm --without-fontconfig --without-x --with-png="$M_SOURCES/png" --with-jpeg="$M_SOURCES/jpeg" --with-freetype="$M_SOURCES/freetype" &>> "$M_LOGS/gd.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
-		;;
-		gd-build)
-			cd "$M_SOURCES/gd"; error
+
 			make &>> "$M_LOGS/gd.txt"; error
 		;;
 		gd-check)
@@ -107,7 +105,6 @@ gd() {
 		gd)
 			gd "gd-extract"
 			gd "gd-prep"
-			gd "gd-configure"
 			gd "gd-build"
 			gd "gd-check"
 		;;
@@ -144,16 +141,14 @@ png() {
 				cat "$M_PATCHES/png/"makefile-1.6.16.patch | patch -p1 --verbose &>> "$M_LOGS/png.txt"; error
 			fi
 		;;
-		png-configure)
+		png-build)
 			cd "$M_SOURCES/png"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			./configure &>> "$M_LOGS/png.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
-		;;
-		png-build)
-			cd "$M_SOURCES/png"; error
+
 			make &>> "$M_LOGS/png.txt"; error
 		;;
 		png-check)
@@ -179,7 +174,6 @@ png() {
 		png)
 			png "png-extract"
 			png "png-prep"
-			png "png-configure"
 			png "png-build"
 			png "png-check"
 		;;
@@ -211,16 +205,14 @@ lzo() {
 		lzo-prep)
 			cd "$M_SOURCES/lzo"; error
 		;;
-		lzo-configure)
+		lzo-build)
 			cd "$M_SOURCES/lzo"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			./configure --enable-shared &>> "$M_LOGS/lzo.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
-		;;
-		lzo-build)
-			cd "$M_SOURCES/lzo"; error
+
 			make &>> "$M_LOGS/lzo.txt"; error
 		;;
 		lzo-check)
@@ -246,7 +238,6 @@ lzo() {
 		lzo)
 			lzo "lzo-extract"
 			lzo "lzo-prep"
-			lzo "lzo-configure"
 			lzo "lzo-build"
 			lzo "lzo-check"
 		;;
@@ -279,16 +270,14 @@ jpeg() {
 			cd "$M_SOURCES/jpeg"; error
 			cat "$M_PATCHES/jpeg/"jpeg-version.patch | patch -s -p1 -b --fuzz=3; error
 		;;
-		jpeg-configure)
+		jpeg-build)
 			cd "$M_SOURCES/jpeg"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			./configure &>> "$M_LOGS/jpeg.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
-		;;
-		jpeg-build)
-			cd "$M_SOURCES/jpeg"; error
+
 			make &>> "$M_LOGS/jpeg.txt"; error
 		;;
 		jpeg-check)
@@ -314,7 +303,6 @@ jpeg() {
 		jpeg)
 			jpeg "jpeg-extract"
 			jpeg "jpeg-prep"
-			jpeg "jpeg-configure"
 			jpeg "jpeg-build"
 			jpeg "jpeg-check"
 		;;
@@ -347,16 +335,14 @@ spf2() {
 			cd "$M_SOURCES/spf2"; error
 			cat "$M_PATCHES/spf2/"fix_variadic_macro_logging.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
 		;;
-		spf2-configure)
+		spf2-build)
 			cd "$M_SOURCES/spf2"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
 			./configure &>> "$M_LOGS/spf2.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
-		;;
-		spf2-build)
-			cd "$M_SOURCES/spf2"; error
+
 			make &>> "$M_LOGS/spf2.txt"; error
 		;;
 		spf2-check)
@@ -382,7 +368,6 @@ spf2() {
 		spf2)
 			spf2 "spf2-extract"
 			spf2 "spf2-prep"
-			spf2 "spf2-configure"
 			spf2 "spf2-build"
 			spf2 "spf2-check"
 		;;
@@ -415,7 +400,7 @@ curl() {
 			cd "$M_SOURCES/curl"; error
 			cat "$M_PATCHES/curl/"skip_test172-version7.23.1.patch | patch -p1 --verbose &>> "$M_LOGS/curl.txt"; error
 		;;
-		curl-configure)
+		curl-build)
 			# Note that if we don't include the debug configure option we can't run a check-full.
 			cd "$M_SOURCES/curl"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
@@ -427,9 +412,7 @@ curl() {
 				--build=x86_64-redhat-linux-gnu --target=x86_64-redhat-linux-gnu \
 				--with-pic --with-ssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" &>> "$M_LOGS/curl.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
-		;;
-		curl-build)
-			cd "$M_SOURCES/curl"; error
+
 			make &>> "$M_LOGS/curl.txt"; error
 		;;
 		curl-check)
@@ -477,7 +460,6 @@ curl() {
 		curl)
 			curl "curl-extract"
 			curl "curl-prep"
-			curl "curl-configure"
 			curl "curl-build"
 			curl "curl-check"
 		;;
@@ -518,16 +500,14 @@ xml2() {
 			rm -f result/att11.rdr; error
 			rm -f result/att11.rde; error
 		;;
-		xml2-configure)
+		xml2-build)
 			cd "$M_SOURCES/xml2"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			./configure --without-lzma --without-python --without-http --without-ftp &>> "$M_LOGS/xml2.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
-		;;
-		xml2-build)
-			cd "$M_SOURCES/xml2"; error
+
 			make --jobs=2 &>> "$M_LOGS/xml2.txt"; error
 		;;
 		xml2-check)
@@ -555,7 +535,6 @@ xml2() {
 		xml2)
 			xml2 "xml2-extract"
 			xml2 "xml2-prep"
-			xml2 "xml2-configure"
 			xml2 "xml2-build"
 			xml2 "xml2-check"
 		;;
@@ -587,16 +566,14 @@ dkim() {
 		dkim-prep)
 			cd "$M_SOURCES/dkim"; error
 		;;
-		dkim-configure)
+		dkim-build)
 			cd "$M_SOURCES/dkim"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			./configure --disable-filter --without-milter --without-sasl --without-gnutls --without-odbx --without-openldap --with-openssl &>> "$M_LOGS/dkim.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
-		;;
-		dkim-build)
-			cd "$M_SOURCES/dkim"; error
+
 			make &>> "$M_LOGS/dkim.txt"; error
 		;;
 		dkim-check)
@@ -622,7 +599,6 @@ dkim() {
 		dkim)
 			dkim "dkim-extract"
 			dkim "dkim-prep"
-			dkim "dkim-configure"
 			dkim "dkim-build"
 			dkim "dkim-check"
 		;;
@@ -664,7 +640,7 @@ zlib() {
 				cp Makefile Makefile.old &>> "$M_LOGS/zlib.txt"; error
 			fi
 		;;
-		zlib-configure)
+		zlib-build)
 			cd "$M_SOURCES/zlib"; error
 			if [[ $ZLIB == "1.2.3" ]]; then
 				export CFLAGS='-O2 -g3 -rdynamic -fPIC -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic'; error
@@ -679,9 +655,7 @@ zlib() {
 				./configure --64 &>> "$M_LOGS/zlib.txt"; error
 			fi
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
-		;;
-		zlib-build)
-			cd "$M_SOURCES/zlib"; error
+
 			make &>> "$M_LOGS/zlib.txt"; error
 		;;
 		zlib-check)
@@ -707,7 +681,6 @@ zlib() {
 		zlib)
 			zlib "zlib-extract"
 			zlib "zlib-prep"
-			zlib "zlib-configure"
 			zlib "zlib-build"
 			zlib "zlib-check"
 		;;
@@ -746,9 +719,6 @@ bzip2() {
 				cat "$M_PATCHES/bzip2/"bzip2-1.0.4-bzip2recover.patch | patch -p1 -b --suffix .bz2recover --fuzz=0 &>> "$M_LOGS/bzip2.txt"; error
 			fi
 		;;
-		bzip2-configure)
-			cd "$M_SOURCES/bzip2"; error
-		;;
 		bzip2-build)
 			cd "$M_SOURCES/bzip2"; error
 			make CC=gcc AR=ar RANLIB=ranlib 'CFLAGS=-O2 -g3 -fPIC -rdynamic -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -D_FILE_OFFSET_BITS=64' &>> "$M_LOGS/bzip2.txt"; error
@@ -776,7 +746,6 @@ bzip2() {
 		bzip2)
 			bzip2 "bzip2-extract"
 			bzip2 "bzip2-prep"
-			bzip2 "bzip2-configure"
 			bzip2 "bzip2-build"
 			bzip2 "bzip2-check"
 		;;
@@ -818,7 +787,7 @@ dspam() {
 			cat "$M_PATCHES/dspam/"dspam_version.patch | patch -p1 --verbose &>> "$M_LOGS/dspam.txt"; error
 			cat "$M_PATCHES/dspam/"dspam_bufixes_3.10.1.patch | patch -p3 --verbose &>> "$M_LOGS/dspam.txt"; error
 		;;
-		dspam-configure)
+		dspam-build)
 			cd "$M_SOURCES/dspam"; error
 			# Can't include because the library isn't there till after MySQL is compiled.
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
@@ -837,9 +806,7 @@ dspam() {
 			--with-storage-driver=mysql_drv --disable-trusted-user-security --disable-mysql4-initialization	\
 			--with-mysql-includes=$MYSQL_INC_PATH --with-mysql-libraries=$MYSQL_LIB_PATH &>> "$M_LOGS/dspam.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
-		;;
-		dspam-build)
-			cd "$M_SOURCES/dspam"; error
+
 			make &>> "$M_LOGS/dspam.txt"; error
 		;;
 		dspam-check)
@@ -865,7 +832,6 @@ dspam() {
 		dspam)
 			dspam "dspam-extract"
 			dspam "dspam-prep"
-			dspam "dspam-configure"
 			dspam "dspam-build"
 			dspam "dspam-check"
 		;;
@@ -899,7 +865,7 @@ mysql() {
 			touch libtoolT; error
 
 		;;
-		mysql-configure)
+		mysql-build)
 			cd "$M_SOURCES/mysql"; error
 			export CFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
 			export CXXFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
@@ -926,9 +892,7 @@ mysql() {
 			# TODO: Develop logic for detecting whether openssl and zlib are built ala DSPAM.
 			#--with-zlib-dir="$M_SOURCES/zlib" --with-openssl="$M_SOURCES/openssl" &>> "$M_LOGS/mysql.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
-		;;
-		mysql-build)
-			cd "$M_SOURCES/mysql"; error
+
 			make --jobs=4 &>> "$M_LOGS/mysql.txt"; error
 		;;
 		mysql-check)
@@ -966,7 +930,6 @@ mysql() {
 		mysql)
 			mysql "mysql-extract"
 			mysql "mysql-prep"
-			mysql "mysql-configure"
 			mysql "mysql-build"
 			mysql "mysql-check"
 		;;
@@ -998,16 +961,14 @@ geoip() {
 		geoip-prep)
 			cd "$M_SOURCES/geoip"; error
 		;;
-		geoip-configure)
+		geoip-build)
 			cd "$M_SOURCES/geoip"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			./configure &>> "$M_LOGS/geoip.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
-		;;
-		geoip-build)
-			cd "$M_SOURCES/geoip"; error
+
 			make &>> "$M_LOGS/geoip.txt"; error
 		;;
 		geoip-check)
@@ -1033,7 +994,6 @@ geoip() {
 		geoip)
 			geoip "geoip-extract"
 			geoip "geoip-prep"
-			geoip "geoip-configure"
 			geoip "geoip-build"
 			geoip "geoip-check"
 		;;
@@ -1099,7 +1059,7 @@ clamav() {
 			unset PNG_FILES
 
 		;;
-		clamav-configure)
+		clamav-build)
 			cd "$M_SOURCES/clamav"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
@@ -1119,9 +1079,7 @@ clamav() {
 				printf "\x23\x21/bin/bash\nexit 77\n" > "$M_SOURCES/clamav/unit_tests/check3_clamd.sh"; error
 				printf "\x23\x21/bin/bash\nexit 77\n" > "$M_SOURCES/clamav/unit_tests/check4_clamd.sh"; error
 			fi
-		;;
-		clamav-build)
-			cd "$M_SOURCES/clamav"; error
+
 			make --jobs=2 &>> "$M_LOGS/clamav.txt"; error
 		;;
 		clamav-check)
@@ -1171,7 +1129,6 @@ clamav() {
 		clamav)
 			clamav "clamav-extract"
 			clamav "clamav-prep"
-			clamav "clamav-configure"
 			clamav "clamav-build"
 			clamav "clamav-check"
 		;;
@@ -1207,14 +1164,12 @@ openssl() {
 			cd "$M_SOURCES/openssl"; error
 			if [[ $OPENSSL == "openssl-1.0.0b" ]]; then	cat "$M_PATCHES/openssl/1.0.0b_SSL_server_fix.patch" | patch -p1 --batch &>> "$M_LOGS/openssl.txt"; error; fi
 		;;
-		openssl-configure)
+		openssl-build)
 			# OpenSSL does not use environment variables to pickup additional compiler flags
 			# The -d param specifies the creation of a debug build
 			cd "$M_SOURCES/openssl"; error
 			./config -d shared zlib no-dso no-asm --openssldir="$M_SOURCES/openssl" -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 &>> "$M_LOGS/openssl.txt"; error
-		;;
-		openssl-build)
-			cd "$M_SOURCES/openssl"; error
+
 			make &>> "$M_LOGS/openssl.txt"; error
 			make install_docs &>> "$M_LOGS/openssl.txt"; error
 		;;
@@ -1241,7 +1196,6 @@ openssl() {
 		openssl)
 			openssl "openssl-extract"
 			openssl "openssl-prep"
-			openssl "openssl-configure"
 			openssl "openssl-build"
 			openssl "openssl-check"
 		;;
@@ -1283,16 +1237,14 @@ jansson() {
 			echo "$M_PATCHES/jansson/"jansson-typeof-string.patch &>> "$M_LOGS/jansson.txt"; error
 			cat "$M_PATCHES/jansson/"jansson-typeof-string.patch | patch -p1 --batch  &>> "$M_LOGS/jansson.txt"; error
 		;;
-		jansson-configure)
+		jansson-build)
 			cd "$M_SOURCES/jansson"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
 			./configure &>> "$M_LOGS/jansson.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
-		;;
-		jansson-build)
-			cd "$M_SOURCES/jansson"; error
+
 			make &>> "$M_LOGS/jansson.txt"; error
 			if [ -e "/usr/bin/sphinx-1.0-build" ] || [ -e "/usr/bin/sphinx-build" ]; then
 				make html &>> "$M_LOGS/jansson.txt"; error
@@ -1321,7 +1273,6 @@ jansson() {
 		jansson)
 			jansson "jansson-extract"
 			jansson "jansson-prep"
-			jansson "jansson-configure"
 			jansson "jansson-build"
 			jansson "jansson-check"
 		;;
@@ -1354,16 +1305,14 @@ freetype() {
 			cd "$M_SOURCES/freetype"; error
 			cat "$M_PATCHES/freetype/"freetype-version.patch | patch -s -p1 -b --fuzz=0; error
 		;;
-		freetype-configure)
+		freetype-build)
 			cd "$M_SOURCES/freetype"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			./configure --without-harfbuzz &>> "$M_LOGS/freetype.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
-		;;
-		freetype-build)
-			cd "$M_SOURCES/freetype"; error
+
 			make &>> "$M_LOGS/freetype.txt"; error
 		;;
 		freetype-check)
@@ -1389,7 +1338,6 @@ freetype() {
 		freetype)
 			freetype "freetype-extract"
 			freetype "freetype-prep"
-			freetype "freetype-configure"
 			freetype "freetype-build"
 			freetype "freetype-check"
 		;;
@@ -1430,7 +1378,7 @@ memcached() {
 				cat "$M_PATCHES/memcached/"memfunction_test_fix_1.0.18.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
 			fi
 		;;
-		memcached-configure)
+		memcached-build)
 			cd "$M_SOURCES/memcached"; error
 
 			# If Dtrace or System Tap support is enabled, the libmemcached_probes.o file will need to be manually added to the shared object
@@ -1461,9 +1409,7 @@ memcached() {
 
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 			# unset GEARMAND_BINARY; unset MEMCACHED_BINARY
-		;;
-		memcached-build)
-			cd "$M_SOURCES/memcached"; error
+
 			make &>> "$M_LOGS/memcached.txt"; error
 		;;
 		memcached-check)
@@ -1503,7 +1449,6 @@ memcached() {
 		memcached)
 			memcached "memcached-extract"
 			memcached "memcached-prep"
-			memcached "memcached-configure"
 			memcached "memcached-build"
 			memcached "memcached-check"
 		;;
@@ -1540,16 +1485,14 @@ tokyocabinet() {
 			cat "$M_PATCHES/tokyocabinet/"tcndbdup.patch | patch -p3 --verbose &>> "$M_LOGS/tokyocabinet.txt"; error
 			cat "$M_PATCHES/tokyocabinet/"fileopts.patch | patch -p3 --verbose &>> "$M_LOGS/tokyocabinet.txt"; error
 		;;
-		tokyocabinet-configure)
+		tokyocabinet-build)
 			cd "$M_SOURCES/tokyocabinet"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			./configure &>> "$M_LOGS/tokyocabinet.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
-		;;
-		tokyocabinet-build)
-			cd "$M_SOURCES/tokyocabinet"; error
+
 			make &>> "$M_LOGS/tokyocabinet.txt"; error
 		;;
 		tokyocabinet-check)
@@ -1580,7 +1523,6 @@ tokyocabinet() {
 		tokyocabinet)
 			tokyocabinet "tokyocabinet-extract"
 			tokyocabinet "tokyocabinet-prep"
-			tokyocabinet "tokyocabinet-configure"
 			tokyocabinet "tokyocabinet-build"
 			tokyocabinet "tokyocabinet-check"
 		;;
@@ -1915,7 +1857,6 @@ all() {
 	date +"Starting at %r on %x" &>> "$M_LOGS/build.txt"
 	$M_BUILD "extract"
 	$M_BUILD "prep"
-	$M_BUILD "configure"
 	$M_BUILD "build"
 
 	# The DSPAM configure script requires the Magma version of MySQL to be compiled ahead of time for linkage, to accomodate we rebuild DSPAM at this
@@ -1946,7 +1887,6 @@ if [ ! -d "$M_OBJECTS" ]; then mkdir "$M_OBJECTS"; error; fi
 # Aggregations
 if [[ $1 == "extract" ]]; then combo "$1"
 elif [[ $1 == "prep" ]]; then  combo "$1"
-elif [[ $1 == "configure" ]]; then  combo "$1"
 elif [[ $1 == "build" ]]; then combo "$1"
 elif [[ $1 == "check" ]]; then combo "$1"
 elif [[ $1 == "check-full" ]]; then combo "$1"
@@ -1988,7 +1928,7 @@ elif [[ $1 == "tail" ]]; then follow
 else
 	echo ""
 	echo $"  `basename $0` {gd|png|lzo|jpeg|curl|spf2|xml2|dkim|zlib|bzip2|dspam|mysql|geoip|clamav|openssl|freetype|memcached|tokyocabinet} and/or "
-	echo $"  `basename $0` {extract|prep|configure|build|check|check-full|clean|tail|log} or "
+	echo $"  `basename $0` {extract|prep|build|check|check-full|clean|tail|log} or "
 	echo $"  `basename $0` {combine|load|follow|log|status|all}"
 	echo ""
 	exit 2

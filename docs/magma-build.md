@@ -1,4 +1,4 @@
-#Build the magma.classic Project
+#Build the magma.classic project
 
 ## Load the Lavabit development environment
 

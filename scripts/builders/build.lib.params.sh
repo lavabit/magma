@@ -64,4 +64,5 @@ M_LDPATH="\
 	$M_SOURCES/gd/.libs/:\
 	$M_SOURCES/png/.libs/:\
 	$M_SOURCES/jpeg/.libs/:\
-	$M_SOURCES/freetype/objs/.libs/"
+	$M_SOURCES/freetype/objs/.libs/\
+	$M_SOURCES/zlib"

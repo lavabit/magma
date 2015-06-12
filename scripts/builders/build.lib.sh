@@ -1084,16 +1084,13 @@ clamav() {
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
-			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib -I$M_SOURCES/openssl/include"
-			export LDFLAGS="\
-				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib\
-				-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl\
-				-L$M_SOURCES/openssl/engines -Wl,-rpath,$M_SOURCES/openssl/engines"
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
+			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
 
 			# Note that at least in version 0.97 and 0.98, --disable-llvm breaks the unit tests.
 
-			./configure --disable-llvm --enable-check --enable-static --disable-silent-rules \
-				--with-libcurl="$M_SOURCES/curl" \
+			./configure --disable-llvm --disable-openssl --disable-xml --enable-check \
+				--enable-static --disable-silent-rules --disable-libcurl \
 				&>> "$M_LOGS/clamav.txt"; error
 
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS

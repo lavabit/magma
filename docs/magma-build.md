@@ -59,24 +59,24 @@ Get a coffee. Wait ~30 minutes, witness no red feedback in the terminal listing.
 
 ## Build the magmad executable
 
-Run Eclipse. Right click the `magma` project. Select `Build Configurations`, `Build Selected...`. Select the `.debug` configuration, verify that both the `Clean selected configurations` and `Build selected configurations` are checked and click `Ok`. Builing this configuration takes ~1 minute to complete. Upon completion the `Console`	 tab will report:
+Run Eclipse. Right click the `magma` project. Select `Build Configurations`, `Build Selected...`. Select the `.debug` configuration, verify that both the `Clean selected configurations` and `Build selected configurations` are checked and click `Ok`. Building this configuration takes ~1 minute to complete. Upon completion the `Console`	 tab will report:
 
 	...
-	Finished buildling target: magmad
+	Finished building target: magmad
 
 ## Build the libmagma.a library
 
-The `libmagma.a` static library is used by the tests maintained in the `magma.check` project's testing framework.  Right click the `magma` project. Select `Build Configurations`, `Build Selected...`. Select the `.check` configuration, verify both the `Clean selected configurations` and `Build selected configurations` are checked and click `Ok`. This configuration takes ~1 minute to complete. Upon completion the `Console` tab will report:
+The `libmagma.a` static library is used by the tests maintained in the `magma.check` project's testing framework.  Right click the `magma` project. Select `Build Configurations`, `Build Selected...`. Deselect the `.debug` configuration. Select the `.check` configuration, verify both the `Clean selected configurations` and `Build selected configurations` are checked and click `Ok`. This configuration takes ~1 minute to complete. Upon completion the `Console` tab will report:
 
 	...
-	Finished buildling target: libmagma.a
+	Finished building target: libmagma.a
 
 ## Compile the check tests
 
 Right click the `magma.check` project. Select `Build Configurations`, `Build Selected...`. Verify the `.check` configuration is selected. Verify both the `Clean selected configurations` and `Build selected configurations` are checked and click `Ok`. This configuration takes ~10 seconds to complete. Upon completion the `Console` tab should report:
 
 	...
-	Finished buildling target: magmad.check
+	Finished building target: magmad.check
 
 ## Run the check tests
 	
@@ -90,11 +90,37 @@ The values for `<mysql_user>`, `<mysql_password>` and `<mysql_schema>` are locat
 	> cd ~/bin; 
 	> schema.reset mytool aComplex1 Lavabit
 
-Check tests are now ready to run from a command line or the Eclipse IDE. Run the test from the command line with this instruction:
+Check tests are now ready to run from a command line or the Eclipse IDE. 
+
+### Running from the command line
+From the command line run all the magma.check Check tests with this instruction:
 
 	> cd ~/bin; check.run 
 
-From Eclipse:
+### Running from Eclipse
+<!--
+Manual tweak is required for eclipse because run configuration isn't currently being managed in the git repo.
+Eclipse run config is currently maintained here:
+/home/magma/Lavabit/.metadata/.plugins/org.eclipse.debug.core/.launches/magma.check\ .check.launch
+-->
+
+The `Run` configuration in Eclipse must be tweaked in order to run the Check tests from within Eclipse. Run eclipse. Right click the `magma.check` project. Select `Run as`, `Run Configurations...`.  Double click the `C/C++ Application` entry.  `In the `C/C++ Application` section, select the `magma.check .check` item. In the main dialog window, select the `Arguments` tab and deselect the `Use default` button. Click the `Workspace` button, and select the `magma.classic` project. This will update the `Working directory` entry to read `${workspace_loc:magma.classic}`.  In the `Program Arguments` window, enter `res/config/magma.sandbox.config` as the argument that will be used for this run configuration. Click the `Apply` button and `Run` to finally compile and run the tests. All output of running the tests are viewable in the Eclipse `Console` window.
+
+With these updates to the Eclipse configuration, you can re-run the Check at any time by selecting the `Run` menu, `Run As`, `1 Local C/C++ Application`.  In the `Launch Configuration Selection` window, select the first entry `magma.check .check`, `OK`.  
+
+In the `Console` windows, the last lines of a successful Check run should look similar to:
+
+```
+--------------------------------------------------------------------------
+TEST DURATION:                                                          7s
+TOTAL DURATION:                                                         8s
+--------------------------------------------------------------------------
+100%: Checks: 64, Failures: 0, Errors: 0
+--------------------------------------------------------------------------
+Magma shutdown complete.
+```
+
+
 
 
 

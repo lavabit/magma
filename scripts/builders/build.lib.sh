@@ -980,11 +980,17 @@ geoip() {
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
 			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
-			libtoolize -f &>> "$M_LOGS/geoip.txt"; error # necessary for Ubuntu 12.04 LTS
 			./configure &>> "$M_LOGS/geoip.txt"; error
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
-			make &>> "$M_LOGS/geoip.txt"; error
+			make &>> "$M_LOGS/geoip.txt"
+			if [ $? -ne 0 ]; then
+				# fix for Ubuntu 12.04 LTS
+				echo "build failed... retrying with libtoolize" > "$M_LOGS/geoip.txt"
+				libtoolize -f &>> "$M_LOGS/geoip.txt"; error
+				./configure &>> "$M_LOGS/geoip.txt"; error
+				make &>> "$M_LOGS/geoip.txt"; error
+			fi
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 		;;
 		geoip-check)
 			cd "$M_SOURCES/geoip"; error

@@ -1795,6 +1795,8 @@ combo() {
 	wait $DSPAM_PID; error
 	($M_BUILD "gd-$1") & GD_PID=$!
 	wait $GD_PID; error
+	($M_BUILD "curl-$1") & CURL_PID=$!
+	wait $CURL_PID; error
 	($M_BUILD "clamav-$1") & CLAMAV_PID=$!
 	wait $CLAMAV_PID; error
 	($M_BUILD "png-$1") & PNG_PID=$!
@@ -1803,8 +1805,6 @@ combo() {
 	wait $LZO_PID; error
 	($M_BUILD "jpeg-$1") & JPEG_PID=$!
 	wait $JPEG_PID; error
-	($M_BUILD "curl-$1") & CURL_PID=$!
-	wait $CURL_PID; error
 	($M_BUILD "spf2-$1") & SPF2_PID=$!
 	wait $SPF2_PID; error
 	($M_BUILD "xml2-$1") & XML2_PID=$!

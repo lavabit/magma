@@ -1765,8 +1765,9 @@ combo() {
 	($M_BUILD "dkim-$1") & DKIM_PID=$!
 	($M_BUILD "zlib-$1") & ZLIB_PID=$!
 	($M_BUILD "bzip2-$1") & BZIP2_PID=$!
-	($M_BUILD "dspam-$1") & DSPAM_PID=$!
 	($M_BUILD "mysql-$1") & MYSQL_PID=$!
+	wait $MYSQL_PID; error
+	($M_BUILD "dspam-$1") & DSPAM_PID=$!
 	($M_BUILD "geoip-$1") & GEOIP_PID=$!
 	($M_BUILD "openssl-$1") & OPENSSL_PID=$!
 	($M_BUILD "jansson-$1") & JANSSON_PID=$!
@@ -1785,7 +1786,6 @@ combo() {
 	wait $ZLIB_PID; error
 	wait $BZIP2_PID; error
 	wait $DSPAM_PID; error
-	wait $MYSQL_PID; error
 	wait $GEOIP_PID; error
 	wait $OPENSSL_PID; error
 	wait $JANSSON_PID; error

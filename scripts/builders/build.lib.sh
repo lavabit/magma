@@ -408,7 +408,7 @@ curl() {
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -I$M_SOURCES/openssl/include -I$M_SOURCES/zlib"
 			./configure --enable-debug --enable-static=yes --without-librtmp --without-krb4 --without-krb5 --without-libssh2 --without-ca-bundle --without-ca-path --without-libidn \
 				--disable-dict --disable-file --disable-ftp --disable-ftps --disable-gopher --disable-imap --disable-imaps --disable-pop3 --disable-pop3s \
-				--disable-rtsp --disable-smtp --disable-smtps --disable-telnet --disable-tftp --disable-ldap --disable-ssh \
+				--disable-rtsp --disable-smtp --disable-smtps --disable-telnet --disable-tftp --disable-ldap --disable-ssh --disable-shared \
 				--build=x86_64-redhat-linux-gnu --target=x86_64-redhat-linux-gnu \
 				--with-pic --with-ssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" &>> "$M_LOGS/curl.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS

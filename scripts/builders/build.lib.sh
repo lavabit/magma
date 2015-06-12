@@ -1093,7 +1093,9 @@ clamav() {
 
 			# Note that at least in version 0.97 and 0.98, --disable-llvm breaks the unit tests.
 
-			./configure --disable-llvm --enable-check --enable-static &>> "$M_LOGS/clamav.txt"; error
+			./configure --disable-llvm --enable-check --enable-static --disable-silent-rules \
+				--with-libcurl="$M_SOURCES/curl" \
+				&>> "$M_LOGS/clamav.txt"; error
 
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 

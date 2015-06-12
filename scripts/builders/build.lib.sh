@@ -971,6 +971,7 @@ geoip() {
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			libtoolize -f &>> "$M_LOGS/geoip.txt"; error # necessary for Ubuntu 12.04 LTS
 			./configure &>> "$M_LOGS/geoip.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 

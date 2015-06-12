@@ -657,6 +657,9 @@ zlib() {
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
 			make &>> "$M_LOGS/zlib.txt"; error
+
+			# Hack to make curl link properly
+			ln -s `pwd` lib
 		;;
 		zlib-check)
 			cd "$M_SOURCES/zlib"; error
@@ -1174,6 +1177,9 @@ openssl() {
 
 			make &>> "$M_LOGS/openssl.txt"; error
 			make install_docs &>> "$M_LOGS/openssl.txt"; error
+
+			# Hack to make curl link properly
+			ln -s `pwd` lib
 		;;
 		openssl-check)
 			cd "$M_SOURCES/openssl"; error

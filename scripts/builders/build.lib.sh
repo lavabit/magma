@@ -1858,12 +1858,6 @@ all() {
 	$M_BUILD "extract"
 	$M_BUILD "prep"
 	$M_BUILD "build"
-
-	# The DSPAM configure script requires the Magma version of MySQL to be compiled ahead of time for linkage, to accomodate we rebuild DSPAM at this
-	# point and replace the version linked against the system's MySQL library/headers.
-	$M_BUILD "dspam-configure"
-	$M_BUILD "dspam-build"
-
 	$M_BUILD "combine"
 	$M_BUILD "load"
 	$M_BUILD "check"

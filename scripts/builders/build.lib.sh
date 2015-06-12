@@ -77,8 +77,10 @@ gd() {
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
+			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
 			./configure --without-xpm --without-fontconfig --without-x --with-png="$M_SOURCES/png" --with-jpeg="$M_SOURCES/jpeg" --with-freetype="$M_SOURCES/freetype" &>> "$M_LOGS/gd.txt"; error
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make &>> "$M_LOGS/gd.txt"; error
 		;;
@@ -134,20 +136,20 @@ png() {
 		extract $PNG "png" &>> "$M_LOGS/png.txt"
 		;;
 		png-prep)
-			cd "$M_SOURCES/png"; error
-			if [[ $PNG == "libpng-1.6.9" ]]; then
-				cat "$M_PATCHES/png/"makefile-1.6.9.patch | patch -p1 --verbose &>> "$M_LOGS/png.txt"; error
-			else
-				cat "$M_PATCHES/png/"makefile-1.6.16.patch | patch -p1 --verbose &>> "$M_LOGS/png.txt"; error
-			fi
 		;;
 		png-build)
 			cd "$M_SOURCES/png"; error
+			# Note that the CC trick below is because CPPFLAGS is ignored by
+			# libtool here, causing libpng to find a zlib.h with a mismatched
+			# version
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
+			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
+			export CC="gcc -I$M_SOURCES/zlib"
 			./configure &>> "$M_LOGS/png.txt"; error
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset CC
 
 			make &>> "$M_LOGS/png.txt"; error
 		;;
@@ -405,13 +407,17 @@ curl() {
 			cd "$M_SOURCES/curl"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -I$M_SOURCES/openssl/include -I$M_SOURCES/zlib"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/openssl/include -I$M_SOURCES/zlib"
+			export LDFLAGS="\
+				-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl\
+				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
 			./configure --enable-debug --enable-static=yes --without-librtmp --without-krb4 --without-krb5 --without-libssh2 --without-ca-bundle --without-ca-path --without-libidn \
 				--disable-dict --disable-file --disable-ftp --disable-ftps --disable-gopher --disable-imap --disable-imaps --disable-pop3 --disable-pop3s \
-				--disable-rtsp --disable-smtp --disable-smtps --disable-telnet --disable-tftp --disable-ldap --disable-ssh --disable-shared \
+				--disable-rtsp --disable-smtp --disable-smtps --disable-telnet --disable-tftp --disable-ldap --disable-ssh \
 				--build=x86_64-redhat-linux-gnu --target=x86_64-redhat-linux-gnu \
-				--with-pic --with-ssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" &>> "$M_LOGS/curl.txt"; error
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
+				--with-pic &>> "$M_LOGS/curl.txt"; error
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make &>> "$M_LOGS/curl.txt"; error
 		;;
@@ -505,8 +511,10 @@ xml2() {
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
+			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
 			./configure --without-lzma --without-python --without-http --without-ftp &>> "$M_LOGS/xml2.txt"; error
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make --jobs=2 &>> "$M_LOGS/xml2.txt"; error
 		;;
@@ -571,8 +579,13 @@ dkim() {
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib -I$M_SOURCES/openssl/include"
+			export LDFLAGS="\
+				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib\
+				-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl\
+				-L$M_SOURCES/openssl/engines -Wl,-rpath,$M_SOURCES/openssl/engines"
 			./configure --disable-filter --without-milter --without-sasl --without-gnutls --without-odbx --without-openldap --with-openssl &>> "$M_LOGS/dkim.txt"; error
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make &>> "$M_LOGS/dkim.txt"; error
 		;;
@@ -654,12 +667,9 @@ zlib() {
 				export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 				./configure --64 &>> "$M_LOGS/zlib.txt"; error
 			fi
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
+			unset CFLAGS; unset CXXFLAGS; unset FFLAGS
 
 			make &>> "$M_LOGS/zlib.txt"; error
-
-			# Hack to make curl link properly
-			ln -s `pwd` lib
 		;;
 		zlib-check)
 			cd "$M_SOURCES/zlib"; error
@@ -796,21 +806,16 @@ dspam() {
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-
-			if [ ! -d "$M_SOURCES/mysql/libmysql/.libs/" ]; then
-				MYSQL_LIB_PATH="/usr/lib64/mysql/"
-				MYSQL_INC_PATH="/usr/include/mysql/"
-			else
-				MYSQL_LIB_PATH="$M_SOURCES/mysql/libmysql/.libs/"
-				MYSQL_INC_PATH="$M_SOURCES/mysql/include/"
-			fi
-
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
+			export LDFLAGS="-L$M_SOURCES/zlib"
 			export LD_LIBRARY_PATH="$M_SOURCES/mysql/libmysql/.libs"
+
 			./configure --enable-static --with-pic --enable-preferences-extension --enable-virtual-users \
 			--with-storage-driver=mysql_drv --disable-trusted-user-security --disable-mysql4-initialization	\
-			--with-mysql-includes=$MYSQL_INC_PATH --with-mysql-libraries=$MYSQL_LIB_PATH &>> "$M_LOGS/dspam.txt"; error
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
-			unset LD_LIBRARY_PATH
+			--with-mysql-includes="$M_SOURCES/mysql/include" \
+			--with-mysql-libraries="$M_SOURCES/mysql/libmysql/.libs" \
+			&>> "$M_LOGS/dspam.txt"; error
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset LD_LIBRARY_PATH
 
 			make &>> "$M_LOGS/dspam.txt"; error
 		;;
@@ -875,6 +880,8 @@ mysql() {
 			export CFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
 			export CXXFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
 			export CPPFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
+			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
 
 			./configure --with-pic --enable-thread-safe-client --with-readline --with-charset=latin1 --with-extra-charsets=all \
 			--with-plugins=all &>> "$M_LOGS/mysql.txt"; error
@@ -896,7 +903,7 @@ mysql() {
 
 			# TODO: Develop logic for detecting whether openssl and zlib are built ala DSPAM.
 			#--with-zlib-dir="$M_SOURCES/zlib" --with-openssl="$M_SOURCES/openssl" &>> "$M_LOGS/mysql.txt"; error
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make --jobs=4 &>> "$M_LOGS/mysql.txt"; error
 		;;
@@ -971,9 +978,11 @@ geoip() {
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
+			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
 			libtoolize -f &>> "$M_LOGS/geoip.txt"; error # necessary for Ubuntu 12.04 LTS
 			./configure &>> "$M_LOGS/geoip.txt"; error
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make &>> "$M_LOGS/geoip.txt"; error
 		;;
@@ -1070,12 +1079,17 @@ clamav() {
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib -I$M_SOURCES/openssl/include"
+			export LDFLAGS="\
+				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib\
+				-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl\
+				-L$M_SOURCES/openssl/engines -Wl,-rpath,$M_SOURCES/openssl/engines"
 
 			# Note that at least in version 0.97 and 0.98, --disable-llvm breaks the unit tests.
 
 			./configure --disable-llvm --enable-check --enable-static &>> "$M_LOGS/clamav.txt"; error
 
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LD_LIBRARY_PATH
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			if [[ $CLAMAV =~ "clamav-0.9"[7-8]"."[1-9] ]]; then
 				# The check3_clamd.sh script will fail if LLVM is disabled.
@@ -1173,14 +1187,19 @@ openssl() {
 		openssl-build)
 			# OpenSSL does not use environment variables to pickup additional compiler flags
 			# The -d param specifies the creation of a debug build
+			# See here for reasoning behind openssl-specific linker flags:
+			# https://mta.openssl.org/pipermail/openssl-users/2015-April/001053.html
 			cd "$M_SOURCES/openssl"; error
-			./config -d shared zlib no-dso no-asm --openssldir="$M_SOURCES/openssl" -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 &>> "$M_LOGS/openssl.txt"; error
+			./config \
+				-d shared zlib no-dso no-asm --openssldir="$M_SOURCES/openssl" \
+				-I"$M_SOURCES/zlib" -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
+				-L"$M_SOURCES/openssl" -Wl,-rpath,"$M_SOURCES/openssl" \
+				-L"$M_SOURCES/zlib" -Wl,-rpath,"$M_SOURCES/zlib" \
+				&>> "$M_LOGS/openssl.txt"; error
+			unset LDFLAGS
 
 			make &>> "$M_LOGS/openssl.txt"; error
 			make install_docs &>> "$M_LOGS/openssl.txt"; error
-
-			# Hack to make curl link properly
-			ln -s `pwd` lib
 		;;
 		openssl-check)
 			cd "$M_SOURCES/openssl"; error
@@ -1319,8 +1338,10 @@ freetype() {
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
+			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
 			./configure --without-harfbuzz &>> "$M_LOGS/freetype.txt"; error
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make &>> "$M_LOGS/freetype.txt"; error
 		;;
@@ -1498,7 +1519,8 @@ tokyocabinet() {
 			cd "$M_SOURCES/tokyocabinet"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -I$M_SOURCES/zlib -I$M_SOURCES/bzip2"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib -I$M_SOURCES/bzip2"
 			export LDFLAGS="-L$M_SOURCES/zlib -L$M_SOURCES/bzip2"
 			./configure &>> "$M_LOGS/tokyocabinet.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
@@ -1755,6 +1777,8 @@ combo() {
 
 	date +"%nStarting $1 at %r on %x%n" &>> "$M_LOGS/build.txt"
 
+	($M_BUILD "zlib-$1") & ZLIB_PID=$!
+	wait $ZLIB_PID; error
 	($M_BUILD "openssl-$1") & OPENSSL_PID=$!
 	wait $OPENSSL_PID; error
 	($M_BUILD "mysql-$1") & MYSQL_PID=$!
@@ -1771,8 +1795,6 @@ combo() {
 	wait $LZO_PID; error
 	($M_BUILD "jpeg-$1") & JPEG_PID=$!
 	wait $JPEG_PID; error
-	($M_BUILD "zlib-$1") & ZLIB_PID=$!
-	wait $ZLIB_PID; error
 	($M_BUILD "curl-$1") & CURL_PID=$!
 	wait $CURL_PID; error
 	($M_BUILD "spf2-$1") & SPF2_PID=$!

@@ -1498,9 +1498,10 @@ tokyocabinet() {
 			cd "$M_SOURCES/tokyocabinet"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -I$M_SOURCES/zlib -I$M_SOURCES/bzip2"
+			export LDFLAGS="-L$M_SOURCES/zlib -L$M_SOURCES/bzip2"
 			./configure &>> "$M_LOGS/tokyocabinet.txt"; error
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make &>> "$M_LOGS/tokyocabinet.txt"; error
 		;;

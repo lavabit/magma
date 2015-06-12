@@ -798,14 +798,16 @@ dspam() {
 				MYSQL_LIB_PATH="/usr/lib64/mysql/"
 				MYSQL_INC_PATH="/usr/include/mysql/"
 			else
-				MYSQL_LIB_PATH="$M_SOURCES/mysql/libmysql_r/.libs/"
+				MYSQL_LIB_PATH="$M_SOURCES/mysql/libmysql/.libs/"
 				MYSQL_INC_PATH="$M_SOURCES/mysql/include/"
 			fi
 
+			export LD_LIBRARY_PATH="$M_SOURCES/mysql/libmysql/.libs"
 			./configure --enable-static --with-pic --enable-preferences-extension --enable-virtual-users \
 			--with-storage-driver=mysql_drv --disable-trusted-user-security --disable-mysql4-initialization	\
 			--with-mysql-includes=$MYSQL_INC_PATH --with-mysql-libraries=$MYSQL_LIB_PATH &>> "$M_LOGS/dspam.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
+			unset LD_LIBRARY_PATH
 
 			make &>> "$M_LOGS/dspam.txt"; error
 		;;

@@ -9,3 +9,4 @@ addons:
     packages:
     - check
     - openssl
+    - libbsd-dev

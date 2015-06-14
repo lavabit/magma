@@ -1,4 +1,4 @@
-#Build the magma.classic project
+# Build the magma.classic project
 
 ## Load the Lavabit development environment
 
@@ -40,7 +40,7 @@ In Eclipse, using the `Git Repositories` perspective, right-click the `magma.cla
 In Eclipse, if the `C/C++` perspective is not already an option in the perspective buttons, select the `Open perspective` button and add the `C/C++` perspective. You can remove the `Java` perspective since it won't be used for this project. You should see the projects selected in the previous section in the `C/C++` perspective in the leftmost pane. The projects are:
 
 - magma - the magmad daemon
-- magma.check - for regression testing
+- magma.check - Check tests for regression testing
 - magma.classic - a view of the magma source code that is used to manage files on the github repository
 - magma.so - shared library placeholder
 - magma.web - web stuff
@@ -49,7 +49,7 @@ Exit Eclipse.
 
 ## Build the magmad.so library
 
-Use a terminal to perform these steps and to kick off the build of the `magmad.so` shared library. The `linkup.sh` script reference below recreates links to utility scripts in the `~/bin` directory. These scripts are used to build and test the magma process. 
+All supporting services that the magma server depends on are compiled into a single large shared library named magmad.so. Start the build process by using the `linkup.sh` script to add softlinks in the ~/bin directory. These utility scripts are used for building and testing the magma server.  Then use the `build.lib` script to kick off the build of the `magmad.so` shared library.  
 
 	> cd ~/Lavabit/magma.classic/scripts/; ./linkup.sh
 	> cd ~/bin
@@ -59,21 +59,15 @@ Get a coffee. Wait ~30 minutes, witness no red feedback in the terminal listing.
 
 ## Build the magmad executable
 
-Run Eclipse. Right click the `magma` project. Select `Build Configurations`, `Build Selected...`. Select the `.debug` configuration, verify that both the `Clean selected configurations` and `Build selected configurations` are checked and click `Ok`. Building this configuration takes ~1 minute to complete. Upon completion the `Console`	 tab will report:
+The `magma` Eclipse project contains two build targets;  one for the magma server executable named `.debug` and another for constructing a static library used for testing purposes named `.check`.  Ignore the `.check` build target, as is used in the next section `Compile the check tests`. Select the `magma` project in the `Project Explorer`. Build the magma executable `magmad` by selecting the `Project` menu, `Build Project` entry. If the `Build Project` entry is greyed out, select another project in the `Project Explorer` window, then reselect the `magmad` project and try again. The build takes ~1 minute to complete. Upon completion the `Console` window should report:
 
 	...
 	Finished building target: magmad
 
-## Build the libmagma.a library
-
-The `libmagma.a` static library is used by the tests maintained in the `magma.check` project's testing framework.  Right click the `magma` project. Select `Build Configurations`, `Build Selected...`. Deselect the `.debug` configuration. Select the `.check` configuration, verify both the `Clean selected configurations` and `Build selected configurations` are checked and click `Ok`. This configuration takes ~1 minute to complete. Upon completion the `Console` tab will report:
-
-	...
-	Finished building target: libmagma.a
-
 ## Compile the check tests
 
-Right click the `magma.check` project. Select `Build Configurations`, `Build Selected...`. Verify the `.check` configuration is selected. Verify both the `Clean selected configurations` and `Build selected configurations` are checked and click `Ok`. This configuration takes ~10 seconds to complete. Upon completion the `Console` tab should report:
+Select the `magma.check` project in the `Project Explorer` window.  Build the `magma.check` project by 
+selecting the `Project` menu, `Build Project` entry. This build target should finish in ~2 minutes. Upon completion the `Console` window should report:
 
 	...
 	Finished building target: magmad.check
@@ -104,11 +98,20 @@ Eclipse run config is currently maintained here:
 /home/magma/Lavabit/.metadata/.plugins/org.eclipse.debug.core/.launches/magma.check\ .check.launch
 -->
 
-The `Run` configuration in Eclipse must be tweaked in order to run the Check tests from within Eclipse. Run eclipse. Right click the `magma.check` project. Select `Run as`, `Run Configurations...`.  Double click the `C/C++ Application` entry.  `In the `C/C++ Application` section, select the `magma.check .check` item. In the main dialog window, select the `Arguments` tab and deselect the `Use default` button. Click the `Workspace` button, and select the `magma.classic` project. This will update the `Working directory` entry to read `${workspace_loc:magma.classic}`.  In the `Program Arguments` window, enter `res/config/magma.sandbox.config` as the argument that will be used for this run configuration. Click the `Apply` button and `Run` to finally compile and run the tests. All output of running the tests are viewable in the Eclipse `Console` window.
+The `Run` configuration in Eclipse must be tweaked in order to run the Check tests from within Eclipse. Run eclipse. To generate the template that we'll update with the correct information, run the project by first selecting the `magma.check` project.  Select the `Run` menu, `Run As`, `1 Local C/C++ Application`.  The `Console` window will show the progress of this command.  Wait ~2 minutes for the `Console` window to report this error:
+
+```
+...
+Initialization error. Exiting.
+magma.init != shutdown {3 != 37}
+Magma shutdown complete.
+```
+
+Select the `Run` menu again, this time select `Run Configurations...`. Note that under the `C/C++ Application` entry in the left pane that the `magmad.check` entry is highlighted. In the main dialog window, select the `Arguments` tab and deselect the `Use default` button. Click the `Workspace` button, and select the `magma.classic` project. This will update the `Working directory` entry to read `${workspace_loc:magma.classic}`.  In the `Program Arguments` window, enter `res/config/magma.sandbox.config` as the argument that will be used for this run configuration. Click the `Apply` button and `Run` to finally compile and run the tests. All output of running the tests are viewable in the Eclipse `Console` window.
 
 With these updates to the Eclipse configuration, you can re-run the Check at any time by selecting the `Run` menu, `Run As`, `1 Local C/C++ Application`.  In the `Launch Configuration Selection` window, select the first entry `magma.check .check`, `OK`.  
 
-In the `Console` windows, the last lines of a successful Check run should look similar to:
+In the `Console` window, the last lines of a successful Check run should look similar to:
 
 ```
 --------------------------------------------------------------------------
@@ -119,6 +122,11 @@ TOTAL DURATION:                                                         8s
 --------------------------------------------------------------------------
 Magma shutdown complete.
 ```
+
+<!--
+Notes: 
+magma.so build configuration is broken.  If you run the build, it fails, complaining that magmad.so isn't located.  The fix is to select the project, select properties, Select C/C++ Build, Builder Settings, change the "Build Directory" to "${workspace_loc:magma.classic}/lib", then "Apply", "Ok" to save.  Run the build configuration now to see that it succeeds in locating the magmad.so file in the {}/lib path.
+-->
 
 
 

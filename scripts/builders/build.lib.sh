@@ -1729,49 +1729,61 @@ load() {
 	# Create a file with a function that assigns the original symbols to the dynamic version.
 	echo "#include \"magma.open.check.h\"" > magma.open.symbols.c; error
 	echo "#include \"magma.open.symbols.h\"" >> magma.open.symbols.c; error
-	echo "void symbols_check(void) {" >> magma.open.symbols.c; error
-	cat magma.open.symbols.h | grep -v "^$" | grep -v "#" | awk -F'(' '{print $2}' | tr -d "*" | sed 's/_d)//g' | awk '{ print $1 "_d = &" $1 ";"}' | grep -v "^_d = &;$" >> magma.open.symbols.c; error
+	cat magma.open.symbols.h | \
+		grep "extern" | \
+		sed "s/extern //" | \
+		sed "s/;/ = NULL;/g" \
+		>> magma.open.symbols.c; error
+	echo "void symbols_check(void *magma) {" >> magma.open.symbols.c; error
+	cat magma.open.symbols.h | \
+		grep "extern" | \
+		awk -F'(' '{print $2}' | \
+		grep -v '^$' | \
+		tr -d '*' | sed 's/_d)//' | \
+		sed 's/SSL_COMP)/SSL_COMP_get_compression_methods/g' | \
+		awk '{ print "*(void **)&(" $1 "_d) = dlsym(magma, \"" $1 "\");"}' \
+		>> magma.open.symbols.c; error
 	echo "}" >> magma.open.symbols.c; error
 
-	# Because GeoIPDBDescription is an array of pointers it doesn't need the leading ampersand.
-	sed -i -e "s/GeoIPDBDescription_d = &GeoIPDBDescription;/GeoIPDBDescription_d = GeoIPDBDescription;/g" magma.open.symbols.c; error
+	## Because GeoIPDBDescription is an array of pointers it doesn't need the leading ampersand.
+	#sed -i -e "s/GeoIPDBDescription_d = &GeoIPDBDescription;/GeoIPDBDescription_d = GeoIPDBDescription;/g" magma.open.symbols.c; error
 
-	# This function prototype is prefixed with macro in paraentheses which fools the default parsing rules.
-	sed -i -e "s/SSL_COMP)_d = &SSL_COMP);/SSL_COMP_get_compression_methods_d = \&SSL_COMP_get_compression_methods;/g" magma.open.symbols.c; error
+	## This function prototype is prefixed with macro in paraentheses which fools the default parsing rules.
+	#sed -i -e "s/SSL_COMP)/SSL_COMP_get_compression_methods/g" magma.open.symbols.c; error
 
 	# The name dkim_getsighdr_d is taken by the OpenDKIM library, so we had to break convention and use dkim_getsighdrx_d.
-	sed -i -e "s/\&dkim_getsighdrx/\&dkim_getsighdr/g" magma.open.symbols.c; error
+	sed -i -e "s/\"dkim_getsighdrx\"/\"dkim_getsighdr\"/g" magma.open.symbols.c; error
 
 	# Compile the source files. If an error occurs at compile time it is probably because we have a mismatch somewhere.
 	gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_DIRS $M_SO -g3 -rdynamic -Wall -Wextra -Werror \
 		-o magma.open.check magma.open.check.c magma.open.symbols.c -ldl
 
-	# If errors are generated from invalid symbols, this should print out the specific lines that are invalid.
-	if [ $? -ne 0 ]; then
+	## If errors are generated from invalid symbols, this should print out the specific lines that are invalid.
+	#if [ $? -ne 0 ]; then
 
-		LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_DIRS $M_SO -g3 -rdynamic -Wall -Wextra -Werror \
-			-o magma.open.check magma.open.check.c magma.open.symbols.c -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
-			grep "[0-9*]" | awk '{print $1 ", " }' | sort -gu | uniq | tr -d "\n" | sed "s/, $//g"`
+	#	LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_DIRS $M_SO -g3 -rdynamic -Wall -Wextra -Werror \
+	#		-o magma.open.check magma.open.check.c magma.open.symbols.c -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
+	#		grep "[0-9*]" | awk '{print $1 ", " }' | sort -gu | uniq | tr -d "\n" | sed "s/, $//g"`
 
-		# Only output the symbol info we found lines to print.
-		if [ "$LNS" != "" ]; then
+	#	# Only output the symbol info we found lines to print.
+	#	if [ "$LNS" != "" ]; then
 
-		echo ""
-		echo "printing invalid symbols..."
-		echo "lines = " $LNS
-		echo ""
+	#	echo ""
+	#	echo "printing invalid symbols..."
+	#	echo "lines = " $LNS
+	#	echo ""
 
-		LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_DIRS $M_SO -g3 -rdynamic -Wall -Wextra -Werror \
-			-o magma.open.check magma.open.check.c magma.open.symbols.c -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
-			grep "[0-9*]" | awk '{print $1 "p;" }' | sort -gu | uniq | tr -d "\n"`
+	#	LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_DIRS $M_SO -g3 -rdynamic -Wall -Wextra -Werror \
+	#		-o magma.open.check magma.open.check.c magma.open.symbols.c -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
+	#		grep "[0-9*]" | awk '{print $1 "p;" }' | sort -gu | uniq | tr -d "\n"`
 
-		cat magma.open.symbols.c | sed -n "$LNS"; error
+	#	cat magma.open.symbols.c | sed -n "$LNS"; error
 
-		fi
+	#	fi
 
-		echo ""
-		exit 1
-	fi
+	#	echo ""
+	#	exit 1
+	#fi
 
 	# Execute the program to see if the library can be loaded successfully at run time.
 	./magma.open.check "$M_SO"; error

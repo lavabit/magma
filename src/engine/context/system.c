@@ -108,8 +108,13 @@ bool_t system_fork_daemon(void) {
 		}
 
 		// If file based logging is not enabled we'll need to close stdout/stderr so we don't retain a link to the console session.
-		freopen64("/dev/null", "a+", stdout);
-		freopen64("/dev/null", "a+", stderr);
+		if (freopen64("/dev/null", "a+", stdout) == NULL) {
+			return false;
+		}
+		if (freopen64("/dev/null", "a+", stderr) == NULL) {
+			fclose(stdout);
+			return false;
+		}
 		fclose(stdin);
 
 		// Since the process description may have changed we need to refresh it.

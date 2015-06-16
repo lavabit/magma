@@ -39,7 +39,7 @@ int mutex_init(pthread_mutex_t *lock, pthread_mutexattr_t *attr) {
  * @param	lock	a pointer to the mutex to be locked.
  * @return	0 on success, or an error number on failure.
  */
-int mutex_lock(pthread_mutex_t *lock) {
+int mutex_get_lock(pthread_mutex_t *lock) {
 
 #ifdef MAGMA_PEDANTIC
 	int result = pthread_mutex_lock(lock);

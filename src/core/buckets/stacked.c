@@ -85,7 +85,7 @@ uint64_t stacker_nodes(stacker_t *stack) {
 		return 0;
 	}
 
-	mutex_lock(&(stack->mutex));
+	mutex_get_lock(&(stack->mutex));
 	result = stack->items;
 	mutex_unlock(&(stack->mutex));
 	return result;
@@ -114,7 +114,7 @@ int_t stacker_push(stacker_t *stack, void *data) {
 	// Store the data pointer.
 	node->data = data;
 
-	mutex_lock(&(stack->mutex));
+	mutex_get_lock(&(stack->mutex));
 
 	if (stack->list == NULL) {
 		stack->last = stack->list = node;
@@ -152,7 +152,7 @@ void * stacker_pop(stacker_t *stack) {
 		return NULL;
 	}
 
-	mutex_lock(&(stack->mutex));
+	mutex_get_lock(&(stack->mutex));
 	if (stack->list != NULL) {
 		node = stack->list;
 		stack->list = (stacker_node_t *)node->next;

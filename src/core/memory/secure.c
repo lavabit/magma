@@ -68,7 +68,7 @@ bool_t mm_sec_stats(size_t *total, size_t *bytes, size_t *items) {
 		return false;
 	}
 
-	mutex_lock(&secure.slab.lock);
+	mutex_get_lock(&secure.slab.lock);
 	*total = secure.slab.length;
 	*bytes = secure.allocated.bytes;
 	*items = secure.allocated.items;
@@ -215,7 +215,7 @@ void mm_sec_free(void *block) {
 		mm_set(block, 128, len);
 		mm_set(block, 0, len);
 
-		mutex_lock(&secure.slab.lock);
+		mutex_get_lock(&secure.slab.lock);
 
 		secure.allocated.items--;
 		secure.allocated.bytes -= len;
@@ -247,7 +247,7 @@ void * mm_sec_alloc(size_t len) {
 	// Align allocations to a length of 12 bytes, which is the size of our secured_t structure.
 	len = align(16, len);
 
-	mutex_lock(&secure.slab.lock);
+	mutex_get_lock(&secure.slab.lock);
 
 	if ((chunk = mm_sec_chunk_new(secure.slab.data, len))) {
 		secure.allocated.items++;

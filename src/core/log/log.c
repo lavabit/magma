@@ -21,7 +21,7 @@ pthread_mutex_t log_mutex =	PTHREAD_MUTEX_INITIALIZER;
  * @return	This function returns no value.
  */
 void log_disable(void) {
-	mutex_lock(&log_mutex);
+	mutex_get_lock(&log_mutex);
 	log_enabled = false;
 	mutex_unlock(&log_mutex);
 	return;
@@ -32,7 +32,7 @@ void log_disable(void) {
  * @return	This function returns no value.
  */
 void log_enable(void) {
-	mutex_lock(&log_mutex);
+	mutex_get_lock(&log_mutex);
 	log_enabled = true;
 	mutex_unlock(&log_mutex);
 	return;
@@ -120,7 +120,7 @@ void log_internal(const char *file, const char *function, const int line, M_LOG_
 
 	va_start(args, format);
 
-	mutex_lock(&log_mutex);
+	mutex_get_lock(&log_mutex);
 
 	// Someone has disabled the log output.
 	if (!log_enabled) {

@@ -581,7 +581,7 @@ magma_keys_t magma_keys[] = {
 		.database = false,
 		.overwrite = false,
 		.set = false,
-		.required = true
+		.required = false
 	},
 	{
 		.store = (void *)&(magma.iface.database.port),

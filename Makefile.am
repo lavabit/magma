@@ -33,7 +33,8 @@ bin_PROGRAMS = magmad
 
 magmad_LDADD = \
 		libmagma.a \
-		-ldl
+		-ldl \
+		-lrt
 
 magmad_CPPFLAGS = $(COMMON_CPPFLAGS)
 magmad_SOURCES = src/magma.c

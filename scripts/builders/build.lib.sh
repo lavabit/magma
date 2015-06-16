@@ -1832,10 +1832,6 @@ combo() {
 	($M_BUILD "tokyocabinet-$1") & TOKYOCABINET_PID=$!
 	wait $TOKYOCABINET_PID; error
 
-	if [[ $1 != "check" ]] && [[ $1 != "check-full" ]]; then
-		wait $CLAMAV_PID; error
-	fi
-
 	date +"%nFinished $1 at %r on %x%n"
 	date +"%nFinished $1 at %r on %x%n" &>> "$M_LOGS/build.txt"
 }

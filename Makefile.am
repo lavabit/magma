@@ -309,7 +309,9 @@ $(top_srcdir)/build_lib/magmad.so:
 		rm -rf $(top_srcdir)/build_lib && \
 		mkdir $(top_srcdir)/build_lib && \
 		cd $(top_srcdir)/build_lib && \
-		../scripts/builders/build.lib.sh all
+		../scripts/builders/build.lib.sh extract && \
+		../scripts/builders/build.lib.sh prep && \
+		../scripts/builders/build.lib.sh build
 
 build.h: .FORCE
 		printf "#define MAGMA_BUILD \"6.0.1-$$(git log --format="%H" -n 1 | cut -c33-40)\"\n" > build.h

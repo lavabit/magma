@@ -77,9 +77,17 @@ gd() {
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
-			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
-			./configure --without-xpm --without-fontconfig --without-x --with-png="$M_SOURCES/png" --with-jpeg="$M_SOURCES/jpeg" --with-freetype="$M_SOURCES/freetype" &>> "$M_LOGS/gd.txt"; error
+			export CPPFLAGS="$CPPFLAGS \
+				-I$M_SOURCES/zlib \
+				-I$M_SOURCES/png \
+				-I$M_SOURCES/jpeg \
+				-I$M_SOURCES/freetype/include"
+			export LDFLAGS="\
+				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib \
+				-L$M_SOURCES/png/.libs -Wl,-rpath,$M_SOURCES/png/.libs \
+				-L$M_SOURCES/jpeg/.libs -Wl,-rpath,$M_SOURCES/jpeg/.libs \
+				-L$M_SOURCES/freetype/objs/.libs -Wl,-rpath,$M_SOURCES/freetype/objs/.libs"
+			./configure --without-xpm --without-fontconfig --without-x --with-png --with-jpeg --with-freetype &>> "$M_LOGS/gd.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make &>> "$M_LOGS/gd.txt"; error

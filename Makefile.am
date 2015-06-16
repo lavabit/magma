@@ -298,7 +298,7 @@ tests_SOURCES = \
 		check/providers/virus_check.c \
 		check/users/users_check.c
 tests_CFLAGS = @CHECK_CFLAGS@
-tests_LDADD = libmagma.a -ldl @CHECK_LIBS@
+tests_LDADD = libmagma.a -ldl -lrt @CHECK_LIBS@
 
 # Targets to build before we start compiling
 BUILT_SOURCES = $(top_srcdir)/build_lib/magmad.so build.h

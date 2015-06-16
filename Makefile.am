@@ -6,6 +6,7 @@ AM_CFLAGS = -Wfatal-errors -Werror
 # Note that we specify the include directories for the bundled dependencies
 # here.
 COMMON_CPPFLAGS = \
+		-I$(top_builddir) \
 		-I$(top_srcdir)/src \
 		-I$(top_srcdir)/build_lib/sources/spf2/src/include \
 		-I$(top_srcdir)/build_lib/sources/clamav/libclamav \

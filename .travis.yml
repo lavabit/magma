@@ -1,6 +1,6 @@
 sudo: false
 language: c
-script: autoreconf -i && ./configure && make
+script: autoreconf -i && ./configure && make && ./scripts/database/schema.init.sh && make check
 cache:
   directories:
   - build_lib
@@ -10,3 +10,6 @@ addons:
     - check
     - openssl
     - libbsd-dev
+services:
+  - mysql
+  - memcached

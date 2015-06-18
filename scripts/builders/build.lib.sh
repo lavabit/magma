@@ -1809,8 +1809,6 @@ combo() {
 	wait $MYSQL_PID; error
 	($M_BUILD "dspam-$1") & DSPAM_PID=$!
 	wait $DSPAM_PID; error
-	($M_BUILD "gd-$1") & GD_PID=$!
-	wait $GD_PID; error
 	($M_BUILD "curl-$1") & CURL_PID=$!
 	wait $CURL_PID; error
 	($M_BUILD "clamav-$1") & CLAMAV_PID=$!
@@ -1825,6 +1823,8 @@ combo() {
 	wait $SPF2_PID; error
 	($M_BUILD "xml2-$1") & XML2_PID=$!
 	wait $XML2_PID; error
+	($M_BUILD "gd-$1") & GD_PID=$!
+	wait $GD_PID; error
 	($M_BUILD "dkim-$1") & DKIM_PID=$!
 	wait $DKIM_PID; error
 	($M_BUILD "bzip2-$1") & BZIP2_PID=$!

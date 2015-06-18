@@ -306,8 +306,7 @@ BUILT_SOURCES = $(top_srcdir)/build_lib/magmad.so build.h
 # The idea here is that the build_lib directory may be provided through
 # external means (e.g., download).
 $(top_srcdir)/build_lib/magmad.so:
-		rm -rf $(top_srcdir)/build_lib && \
-		mkdir $(top_srcdir)/build_lib && \
+		mkdir -p $(top_srcdir)/build_lib && \
 		cd $(top_srcdir)/build_lib && \
 		../scripts/builders/build.lib.sh extract && \
 		../scripts/builders/build.lib.sh prep && \

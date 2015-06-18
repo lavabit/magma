@@ -1,6 +1,6 @@
 sudo: false
 language: c
-script: autoreconf -i && ./configure && make
+script: ls -a build_lib && autoreconf -i && ./configure && make && ls -a build_lib
 cache:
   directories:
   - build_lib

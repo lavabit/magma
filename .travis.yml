@@ -10,6 +10,7 @@ addons:
     - check
     - openssl
     - libbsd-dev
+    - valgrind
 services:
   - mysql
   - memcached

@@ -4,7 +4,7 @@
  *
  * @brief	The function declarations and macros needed to access the error log subsystem.
  *
- * $Author$
+ * @Author	Ladar
  * $Date$
  * $Revision$
  *
@@ -13,9 +13,7 @@
 #ifndef MAGMA_CORE_LOG_H
 #define MAGMA_CORE_LOG_H
 
-/**
- *  Options used to control the behavior of the log subsystem.
- */
+// Options used to control the behavior of the log subsystem.
 typedef enum {
 	M_LOG_PEDANTIC = 1,
 	M_LOG_INFO,
@@ -41,7 +39,7 @@ typedef enum {
 // All of the different log levels.
 #define MAGMA_LOG_LEVELS (M_LOG_PEDANTIC | M_LOG_INFO | M_LOG_INFO | M_LOG_CRITICAL)
 
-/// log.c
+// log.c
 int_t    print_backtrace();
 void     log_internal(const char *file, const char *function, const int line, M_LOG_OPTIONS options, const char *format, ...) __attribute__((format (printf, 5, 6)));
 void     log_disable(void);
@@ -52,14 +50,10 @@ void     debug_hook(void);
 
 #ifdef MAGMA_PEDANTIC
 
-/**
- * Macro used record debug information during development.
- */
+// Macro used record debug information during development.
 #define log_pedantic(...) log_internal (__FILE__, __FUNCTION__, __LINE__, M_LOG_PEDANTIC, __VA_ARGS__)
 
-/**
- * @brief	Log an error message if the specified conditional evaluates to true.
- */
+// Log an error message if the specified conditional evaluates to true.
 #define log_check(expr) if (expr) log_internal (__FILE__, __FUNCTION__, __LINE__, M_LOG_PEDANTIC, __STRING (expr))
 
 #else
@@ -69,24 +63,16 @@ void     debug_hook(void);
 
 #endif
 
-/**
- * Used to record information related to daemon performance.
- */
+// Used to record information related to daemon performance.
 #define log_info(...) log_internal (__FILE__, __FUNCTION__, __LINE__, M_LOG_INFO, __VA_ARGS__)
 
-/**
- * Used to log errors that may indicate a problem requiring user intervention to solve.
- */
+// Used to log errors that may indicate a problem requiring user intervention to solve.
 #define log_error(...) log_internal (__FILE__, __FUNCTION__, __LINE__, M_LOG_ERROR, __VA_ARGS__)
 
-/**
- * Used to record errors that could cause system instability.
- */
+// Used to record errors that could cause system instability.
 #define log_critical(...) log_internal (__FILE__, __FUNCTION__, __LINE__, M_LOG_CRITICAL, __VA_ARGS__)
 
-/**
- * Used to override the globally configured log options for a specific entry.
- */
+// Used to override the globally configured log options for a specific entry.
 #define log_options(options, ...) log_internal (__FILE__, __FUNCTION__, __LINE__, options, __VA_ARGS__)
 
 #endif

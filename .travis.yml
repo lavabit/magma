@@ -1,6 +1,6 @@
 sudo: false
 language: c
-script: autoreconf -i && ./configure && make && cp ./res/config/magma.sandbox.config.travis ./res/config/magma.sandbox.config && ./scripts/database/schema.init.sh root "" Lavabit && make check
+script: autoreconf -i && ./configure && make
 cache:
   directories:
   - build_lib

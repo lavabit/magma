@@ -37,7 +37,7 @@ typedef enum {
 } M_LOG_OPTIONS;
 
 // All of the different log levels.
-#define MAGMA_LOG_LEVELS (M_LOG_PEDANTIC | M_LOG_INFO | M_LOG_INFO | M_LOG_CRITICAL)
+#define MAGMA_LOG_LEVELS (M_LOG_PEDANTIC | M_LOG_INFO | M_LOG_ERROR | M_LOG_CRITICAL)
 
 // log.c
 int_t    print_backtrace();

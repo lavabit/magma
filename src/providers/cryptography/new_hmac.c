@@ -44,15 +44,15 @@ hmac_multi_digest_null_output (uint_t rounds, digest_t *digest, stringer_t *s, s
 	stringer_t *output, *result;
 
 	// Sanity check *digest because we need to access the function for olen
-    if (digest == NULL) {
-        log_pedantic("Digest algorithm is NULL");
-        return NULL;
-    }
+	if (digest == NULL) {
+		log_pedantic("Digest algorithm is NULL");
+		return NULL;
+	}
 
-    if ((olen = EVP_MD_size_d((const EVP_MD *)digest)) < 1) {
-        log_error("EVP_MD_size_d() returned invalid size for digest algorithm");
-        return NULL;
-    }
+	if ((olen = EVP_MD_size_d((const EVP_MD *)digest)) < 1) {
+		log_error("EVP_MD_size_d() returned invalid size for digest algorithm");
+		return NULL;
+	}
 
 	// alloc the output stringer.
 	if ((output = st_alloc (olen)) == NULL) {
@@ -66,7 +66,7 @@ hmac_multi_digest_null_output (uint_t rounds, digest_t *digest, stringer_t *s, s
 	}
 
 	/**
-     * TODO (kent) we allocated a managed buffer and defined the olen in the 
+	 * TODO (kent) we allocated a managed buffer and defined the olen in the 
 	 * alloc call.  Is is necessary to set the length again?
 	 *   if (result)
 	 *   st_length_set(result, outlen);
@@ -112,7 +112,7 @@ hmac_multi_digest (
 	uint32_t opts;
 	uint_t outlen;
 	stringer_t *result;
-    int_t retval = 1;
+	int_t retval = 1;
 
 	if (rounds < 1) {
 		log_pedantic("rounds must be > 0");
@@ -121,10 +121,10 @@ hmac_multi_digest (
 
 	if (digest == NULL) {
 		log_pedantic("Digest algorithm is NULL");
-        return NULL;
-    }
+		return NULL;
+	}
 
-    olen = EVP_MD_size_d((const EVP_MD *)digest);
+	olen = EVP_MD_size_d((const EVP_MD *)digest);
 	if (olen < 1) {
 		log_pedantic("EVP_MD_size_d() returned invalid size for digest algorithm");
 		return NULL;
@@ -185,7 +185,7 @@ hmac_multi_digest (
 		log_error ("Failed HMAC_Final_d(). {%s}", 
                    ERR_error_string_d(ERR_get_error_d(), NULL));
 		goto hmac_multi_digest_out_1;
-    }
+	}
 
 hmac_multi_digest_out_1:
 	HMAC_CTX_cleanup_d(&ctx);

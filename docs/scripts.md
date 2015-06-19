@@ -38,6 +38,7 @@ Runs doxygen on all the source files to generate doc files.
 
 ```
 scripts/builders/build.doxyfile
+```
 Doxygen file.
 
 ```

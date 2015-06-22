@@ -1219,12 +1219,12 @@ openssl() {
 			# https://mta.openssl.org/pipermail/openssl-users/2015-April/001053.html
 			cd "$M_SOURCES/openssl"; error
 			./config \
-				-d shared zlib no-dso no-asm --openssldir="$M_SOURCES/openssl" \
+				-d shared zlib no-dso no-asm \
+				--openssldir="$M_SOURCES/openssl" \
 				-I"$M_SOURCES/zlib" -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
 				-L"$M_SOURCES/openssl" -Wl,-rpath,"$M_SOURCES/openssl" \
 				-L"$M_SOURCES/zlib" -Wl,-rpath,"$M_SOURCES/zlib" \
 				&>> "$M_LOGS/openssl.txt"; error
-			unset LDFLAGS
 
 			make &>> "$M_LOGS/openssl.txt"; error
 			make install_docs &>> "$M_LOGS/openssl.txt"; error

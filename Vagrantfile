@@ -99,6 +99,10 @@ Vagrant.configure(2) do |config|
     # Make directory needed for tests
     mkdir res/spool/data
 
+    # Fix permissions warnings
+    chmod 600 ../res/config/localhost.localdomain.pem
+    chmod 600 ../res/config/dkim.localhost.localdomain.pem
+
     # Change memlock limits for mmap
     echo "* hard memlock 1024" | sudo tee -a /etc/security/limits.conf
     echo "* soft memlock 1024" | sudo tee -a /etc/security/limits.conf

@@ -591,7 +591,15 @@ dkim() {
 				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib\
 				-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl\
 				-L$M_SOURCES/openssl/engines -Wl,-rpath,$M_SOURCES/openssl/engines"
-			./configure --disable-filter --without-milter --without-sasl --without-gnutls --without-odbx --without-openldap --with-openssl &>> "$M_LOGS/dkim.txt"; error
+			./configure \
+				--disable-filter \
+				--without-milter \
+				--without-sasl \
+				--without-gnutls \
+				--without-odbx \
+				--without-openldap \
+				--with-openssl="$M_SOURCES/openssl" \
+				&>> "$M_LOGS/dkim.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make &>> "$M_LOGS/dkim.txt"; error

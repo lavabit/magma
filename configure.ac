@@ -1,6 +1,6 @@
 # Note that this has not been extensively tested with various autoconf
 # versions.  TODO - determine the minimum autoconf version we will support
-AC_PREREQ([2.68])
+AC_PREREQ([2.63])
 
 AC_INIT([magma], [0.1])
 

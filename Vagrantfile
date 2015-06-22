@@ -96,6 +96,9 @@ Vagrant.configure(2) do |config|
     # Set up sandbox config
     cp res/config/magma.sandbox.config.vagrant res/config/magma.sandbox.config
 
+    # Make directory needed for tests
+    mkdir res/spool/data
+
     # Change memlock limits for mmap
     echo "* hard memlock 1024" | sudo tee -a /etc/security/limits.conf
     echo "* soft memlock 1024" | sudo tee -a /etc/security/limits.conf

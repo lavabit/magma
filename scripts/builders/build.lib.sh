@@ -677,6 +677,10 @@ zlib() {
 			unset CFLAGS; unset CXXFLAGS; unset FFLAGS
 
 			make &>> "$M_LOGS/zlib.txt"; error
+
+			# Fool autotools checks into thinking this is a normal openssl install (e.g., clamav)
+			ln -s `pwd` lib
+			ln -s `pwd` include
 		;;
 		zlib-check)
 			cd "$M_SOURCES/zlib"; error
@@ -1212,6 +1216,9 @@ openssl() {
 
 			make &>> "$M_LOGS/openssl.txt"; error
 			make install_docs &>> "$M_LOGS/openssl.txt"; error
+
+			# Fool autotools checks into thinking this is a normal openssl install (e.g., clamav)
+			ln -s `pwd` lib
 		;;
 		openssl-check)
 			cd "$M_SOURCES/openssl"; error

@@ -46,7 +46,7 @@ magma.iface.database.host = localhost
 magma.iface.database.password =
 magma.iface.database.pool.connections = 6
 magma.iface.database.schema = Lavabit
-magma.iface.database.socket_path = /var/run/mysqld/mysqld.sock
+magma.iface.database.socket_path = /var/lib/mysql/mysql.sock
 magma.iface.database.user = root
 
 magma.iface.virus.signatures = ../res/virus/

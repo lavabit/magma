@@ -310,7 +310,8 @@ $(top_srcdir)/build_lib/magmad.so:
 		cd $(top_srcdir)/build_lib && \
 		../scripts/builders/build.lib.sh extract && \
 		../scripts/builders/build.lib.sh prep && \
-		../scripts/builders/build.lib.sh build
+		../scripts/builders/build.lib.sh build && \
+		../scripts/builders/build.lib.sh combine
 
 build.h: .FORCE
 		printf "#define MAGMA_BUILD \"6.0.1-$$(git log --format="%H" -n 1 | cut -c33-40)\"\n" > build.h

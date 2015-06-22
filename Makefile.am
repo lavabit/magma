@@ -265,7 +265,7 @@ libmagma_a_SOURCES = \
 		src/web/teacher/datatier.c \
 		src/web/teacher/teacher.c
 
-TESTS = tests
+TESTS = $(top_srcdir)/check/runner.sh
 check_PROGRAMS = tests
 tests_CPPFLAGS = -I$(top_srcdir)/check $(COMMON_CPPFLAGS)
 tests_SOURCES = \

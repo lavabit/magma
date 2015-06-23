@@ -1,6 +1,6 @@
 # Run the magma server
 
-This information relys on having previously followed the steps for building the magma server located [here] (<https://github.com/lavabit/magma.classic/blob/master/docs/magma-build.md>).
+This information relies on having previously followed the steps for building the magma server located [here] (<https://github.com/lavabit/magma.classic/blob/master/docs/magma-build.md>).
 
 ## Run magma from the Eclipse Run configuration
 

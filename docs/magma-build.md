@@ -1,9 +1,8 @@
-# Build the magma.classic project
+# Build the magma project
 
 ## Load the Lavabit development environment
 
-
-The Lavabit development environment is distributed via a VM that is referenced near the bottom of the <https://github.com/Lavabit/magma.classic> page, **Downloads section**, **Magma Development Machine, v1.0.0**. Download and install the VM into your favorite VM manager. These instructions have been tested with `VMWare Fusion Pro 7` in Yosemite OSX, but several other VM managers have been used successfully on different OS platforms. Note: credentials for the `magma` user and `root` user are in the VM info file.
+The Lavabit development environment is distributed via a VM that is referenced near the bottom of the [Lavabit Project on Github] (<https://github.com/Lavabit/magma.classic>), **Downloads section**, **Magma Development Machine, v1.0.0**. Download and install the VM into your favorite VM manager. These instructions have been tested with `VMWare Fusion Pro 7` in Yosemite OSX, but several other VM managers have been used successfully on different OS platforms. Note: credentials for the `magma` user and `root` user are in the VM info file.
 
 ## Remove the original magma installation
 
@@ -93,12 +92,12 @@ From the command line run all the magma.check Check tests with this instruction:
 
 ### Running from Eclipse
 <!--
-Manual tweak is required for eclipse because run configuration isn't currently being managed in the git repo.
+Manual tweak is required for Eclipse because run configuration isn't currently being managed in the git repo.
 Eclipse run config is currently maintained here:
-/home/magma/Lavabit/.metadata/.plugins/org.eclipse.debug.core/.launches/magma.check\ .check.launch
+/home/magma/Lavabit/.metadata/.plugins/org.Eclipse.debug.core/.launches/magma.check\ .check.launch
 -->
 
-The `Run` configuration in Eclipse must be tweaked in order to run the Check tests from within Eclipse. Run eclipse. To generate the template that we'll update with the correct information, run the project by first selecting the `magma.check` project.  Select the `Run` menu, `Run As`, `1 Local C/C++ Application`.  The `Console` window will show the progress of this command.  Wait ~2 minutes for the `Console` window to report this error:
+The `Run` configuration in Eclipse must be tweaked in order to run the Check tests from within Eclipse. Run Eclipse. To generate the template that we'll update with the correct information, run the project by first selecting the `magma.check` project.  Select the `Run` menu, `Run As`, `1 Local C/C++ Application`.  The `Console` window will show the progress of this command.  Wait ~2 minutes for the `Console` window to report this error:
 
 ```
 ...
@@ -126,6 +125,22 @@ Magma shutdown complete.
 <!--
 Notes: 
 magma.so build configuration is broken.  If you run the build, it fails, complaining that magmad.so isn't located.  The fix is to select the project, select properties, Select C/C++ Build, Builder Settings, change the "Build Directory" to "${workspace_loc:magma.classic}/lib", then "Apply", "Ok" to save.  Run the build configuration now to see that it succeeds in locating the magmad.so file in the {}/lib path.
+-->
+
+<!--
+Notes: I reset the VM to use the latest magma.classic master branch, overwriting all files in the local directories with this command:
+
+	> git reset --hard origin/feature/stacie
+	> git fetch
+	> git checkout master
+	> git merge origin/master
+	
+Then attempted to run Eclipse, selected the magma.check project, selected the run configuration to rerun the check tests from inside Eclipse on the master branch and got this error:
+
+	The program file specified in the launch configuration does not exist
+	/home/magma/Lavabit/magma.classic/check/.check/magmad.check not found
+	
+Looks like I had run part of a command that may have removed the static library magmad.check.  Rerunning the `magmad.check` build recreated the magmad.check library and all was well.
 -->
 
 

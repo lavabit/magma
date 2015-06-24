@@ -111,7 +111,7 @@ Vagrant.configure(2) do |config|
     chmod 600 res/config/dkim.localhost.localdomain.pem
 
     # Change memlock limits for mmap
-    echo "* hard memlock 40000" | sudo tee -a /etc/security/limits.conf
-    echo "* soft memlock 40000" | sudo tee -a /etc/security/limits.conf
+    echo "* hard memlock unlimited" | sudo tee -a /etc/security/limits.conf
+    echo "* soft memlock unlimited" | sudo tee -a /etc/security/limits.conf
   SHELL
 end

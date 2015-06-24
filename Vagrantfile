@@ -67,20 +67,21 @@ Vagrant.configure(2) do |config|
     sudo rpm -ivh epel-release-6-8.noarch.rpm
 
     # Install build dependencies
-    sudo yum install autoconf
-    sudo yum install automake
-    sudo yum install libtool
-    sudo yum install check-devel
-    sudo yum install ncurses-devel # (mysql)
-    sudo yum install gcc-c++
-    sudo yum install libbsd-devel # (dkim)
+    sudo yum -y install patch
+    sudo yum -y install autoconf
+    sudo yum -y install automake
+    sudo yum -y install libtool
+    sudo yum -y install check-devel
+    sudo yum -y install ncurses-devel # (mysql)
+    sudo yum -y install gcc-c++
+    sudo yum -y install libbsd-devel # (dkim)
 
     # Install test dependencies
-    sudo yum install valgrind-devel
+    sudo yum -y install valgrind-devel
 
     # Install runtime dependencies, start them, and configure them to start on boot
-    sudo yum install mysql-server
-    sudo yum install memcached
+    sudo yum -y install mysql-server
+    sudo yum -y install memcached
     sudo /sbin/service mysqld start
     sudo chkconfig mysqld on
     sudo /sbin/service memcached start
@@ -97,14 +98,14 @@ Vagrant.configure(2) do |config|
     cp res/config/magma.sandbox.config.vagrant res/config/magma.sandbox.config
 
     # Make directory needed for tests
-    mkdir res/spool/data
+    mkdir -p res/spool/data
 
     # Fix permissions warnings
-    chmod 600 ../res/config/localhost.localdomain.pem
-    chmod 600 ../res/config/dkim.localhost.localdomain.pem
+    chmod 600 res/config/localhost.localdomain.pem
+    chmod 600 res/config/dkim.localhost.localdomain.pem
 
     # Change memlock limits for mmap
-    echo "* hard memlock 1024" | sudo tee -a /etc/security/limits.conf
-    echo "* soft memlock 1024" | sudo tee -a /etc/security/limits.conf
+    echo "* hard memlock 40000" | sudo tee -a /etc/security/limits.conf
+    echo "* soft memlock 40000" | sudo tee -a /etc/security/limits.conf
   SHELL
 end

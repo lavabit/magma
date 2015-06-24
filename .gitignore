@@ -16,3 +16,4 @@ autom4te.cache
 configure
 m4/pkg.m4
 res/config/magma.sandbox.config
+.vagrant

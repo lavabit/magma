@@ -159,16 +159,16 @@ bool_t register_data_insert_user(connection_t *con, register_session_t *reg, int
 
 	// The quota.
 	if (reg->plan == 1) {
-		quota = 134217728ll; // 128 MB
+		quota = 128LL << 20; // 128 MB
 	}
 	else if (reg->plan == 2) {
-		quota = 1073741824ll; // 1,024 MB
+		quota = 1024LL << 20; // 1,024 MB
 	}
 	else if (reg->plan == 3) {
-		quota = 1073741824ll; // 1,024 MB
+		quota = 1024LL << 20; // 1,024 MB
 	}
 	else if (reg->plan == 4) {
-		quota = 8589934592ll; // 8,192 MB
+		quota = 8192LL << 20; // 8,192 MB
 	}
 
 	parameters[3].buffer_type = MYSQL_TYPE_LONGLONG;
@@ -289,17 +289,17 @@ bool_t register_data_insert_user(connection_t *con, register_session_t *reg, int
 		send_limit = 256;
 	}
 	else if (reg->plan == 2) {
-		size_limit = 67108864ll;
+		size_limit = 64LL << 20;
 		recv_limit = 1024;
 		send_limit = 256;
 	}
 	else if (reg->plan == 3) {
-		size_limit = 67108864ll;
+		size_limit = 64LL << 20;
 		recv_limit = 1024;
 		send_limit = 512;
 	}
 	else if (reg->plan == 4) {
-		size_limit = 134217728ll;
+		size_limit = 128LL << 20;
 		recv_limit = 8192;
 		send_limit = 768;
 	}

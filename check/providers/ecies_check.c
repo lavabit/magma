@@ -62,12 +62,12 @@ bool_t check_ecies_sthread(void) {
 			return false;
 		}
 
-		// Wipe and then fill the data blocks with random data.
+		// Wipe and then fill the data blocks with pseudo-random data.
 		memset(copy, 0, tlen + 1);
 		memset(text, 0, tlen + 1);
 
 		for (uint64_t j = 0; j < tlen; j++) {
-			*(copy + j) = *(text + j) = (rand() % 255);
+			copy[j] = text[j] = rand() % 256;
 		}
 
 		// Generate a key for our theoretical user.

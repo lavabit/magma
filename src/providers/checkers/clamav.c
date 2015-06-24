@@ -107,7 +107,7 @@ struct cl_engine * virus_engine_create(uint64_t *signatures) {
 
 	// Max scan size. 2048 MB.
 	// Sets the maximum amount of data to be scanned for each input file.
-	if ((state = cl_engine_set_num_d(target, CL_ENGINE_MAX_SCANSIZE, 2048ll * 1048576ll)) != CL_SUCCESS) {
+	if ((state = cl_engine_set_num_d(target, CL_ENGINE_MAX_SCANSIZE, 2048LL * 1048576LL)) != CL_SUCCESS) {
 		log_error("ClamAV configuration error. {cl_engine_set_num = %i = %s}", state, cl_strerror_d(state));
 		cl_engine_free_d(target);
 		return NULL;

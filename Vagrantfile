@@ -87,6 +87,12 @@ Vagrant.configure(2) do |config|
     sudo /sbin/service memcached start
     sudo chkconfig memcached on
 
+    # The VM will be low on entropy when we start it.  This will cause magma to
+    # hang waiting for /dev/random.  We'll use haveged to generate more entropy.
+    sudo yum -y install haveged
+    sudo /sbin/service haveged start
+    sudo chkconfig haveged on
+
     # Make sure we're in the source directory
     cd /vagrant
 

@@ -30,7 +30,7 @@ placer_t pl_null(void) {
  * @return       NULL on error or a pointer to a placer referencing the
  *               specified data.
  */
-placer_t *pl_replace(placer_t *result, void *data, size_t len) {
+placer_t *pl_init_by_addr(placer_t *result, void *data, size_t len) {
 	if (result == NULL) {
 		log_error("NULL result pointer passed to pl_replace");
 		return NULL;

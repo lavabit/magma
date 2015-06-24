@@ -624,7 +624,7 @@ placer_t *mail_get_chunk(placer_t *result, stringer_t *message, stringer_t *boun
 	}
 
 	// Setup a placer with the chunk.
-	pl_replace(result, message_begin + start, length);
+	pl_init_by_addr(result, message_begin + start, length);
 
 	return result;
 }

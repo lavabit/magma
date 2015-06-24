@@ -23,8 +23,8 @@ make check
 For a build with debug symbols:
 
 ```shell
-mkdir debug
-cd debug
+mkdir build_debug
+cd build_debug
 ../configure CPPFLAGS=-DDEBUG CFLAGS="-g -O0"
 make
 make check

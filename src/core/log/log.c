@@ -62,7 +62,7 @@ int_t print_backtrace() {
 
 	backtrace_symbols_fd(buffer,nbt,pipefds[1]);
 
-	if(!write(STDOUT_FILENO, "   ", 3)) {
+	if (write(STDOUT_FILENO, "   ", 3) != 0) {
 		return -1;
 	}
 
@@ -85,7 +85,7 @@ int_t print_backtrace() {
 				nfound++;
 
 				if (nfound != nbt) {
-					if (!write(STDOUT_FILENO, "   ", 3)) {
+					if (write(STDOUT_FILENO, "   ", 3) != 0) {
 						return -1;
 					}
 				}

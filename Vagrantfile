@@ -104,7 +104,7 @@ Vagrant.configure(2) do |config|
     cp res/config/magma.sandbox.config.vagrant res/config/magma.sandbox.config
 
     # Make directory needed for tests
-    mkdir -p res/spool/data
+    mkdir -p /home/vagrant/spool/data
 
     # Fix permissions warnings
     chmod 600 res/config/localhost.localdomain.pem

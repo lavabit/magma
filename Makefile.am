@@ -90,6 +90,7 @@ libmagma_a_SOURCES = \
 		src/core/encodings/qp.c \
 		src/core/encodings/url.c \
 		src/core/encodings/zbase32.c \
+		src/core/parsers/bitwise.c \
 		src/core/parsers/formats/nvp.c \
 		src/core/parsers/numbers/digits.c \
 		src/core/parsers/numbers/numbers.c \
@@ -123,11 +124,13 @@ libmagma_a_SOURCES = \
 		src/providers/consumers/serialization.c \
 		src/providers/cryptography/ciphers.c \
 		src/providers/cryptography/cryptex.c \
-		src/providers/cryptography/digest.c \
 		src/providers/cryptography/ecies.c \
+		src/providers/cryptography/hash.c \
+		src/providers/cryptography/hmac.c \
 		src/providers/cryptography/openssl.c \
 		src/providers/cryptography/random.c \
 		src/providers/cryptography/scramble.c \
+		src/providers/cryptography/stacie.c \
 		src/providers/cryptography/symmetric.c \
 		src/providers/database/mysql.c \
 		src/providers/database/query.c \
@@ -139,6 +142,7 @@ libmagma_a_SOURCES = \
 		src/providers/images/jpeg.c \
 		src/providers/images/png.c \
 		src/providers/parsers/json.c \
+		src/providers/parsers/utf.c \
 		src/providers/parsers/xml.c \
 		src/providers/storage/data.c \
 		src/providers/storage/tank.c \
@@ -271,11 +275,13 @@ tests_CPPFLAGS = -I$(top_srcdir)/check $(COMMON_CPPFLAGS)
 tests_SOURCES = \
 		check/magma_check.c \
 		check/core/base64_check.c \
+		check/core/bitwise_check.c \
 		check/core/core_check.c \
 		check/core/hashed_check.c \
 		check/core/hex_check.c \
 		check/core/inx_check.c \
 		check/core/linked_check.c \
+		check/core/nbo_check.c \
 		check/core/qp_check.c \
 		check/core/qsort_check.c \
 		check/core/string_check.c \
@@ -287,12 +293,14 @@ tests_SOURCES = \
 		check/network/network_check.c \
 		check/objects/objects_check.c \
 		check/providers/compress_check.c \
-		check/providers/digest_check.c \
 		check/providers/dspam_check.c \
 		check/providers/ecies_check.c \
+		check/providers/hash_check.c \
+		check/providers/hmac_check.c \
 		check/providers/provide_check.c \
 		check/providers/rand_check.c \
 		check/providers/scramble_check.c \
+		check/providers/stacie_check.c \
 		check/providers/symmetric_check.c \
 		check/providers/tank_check.c \
 		check/providers/virus_check.c \

@@ -24,7 +24,7 @@ void meta_user_ref_add(meta_user_t *user, META_PROT protocol) {
 	if (user) {
 
 		// Acquire the reference counter lock.
-		mutex_lock(&(user->refs.lock));
+		mutex_get_lock(&(user->refs.lock));
 
 		// Increment the right counter.
 		if ((protocol & META_PROT_WEB) == META_PROT_WEB) user->refs.web++;
@@ -56,7 +56,7 @@ void meta_user_ref_dec(meta_user_t *user, META_PROT protocol) {
 	if (user) {
 
 		// Acquire the reference counter lock.
-		mutex_lock(&(user->refs.lock));
+		mutex_get_lock(&(user->refs.lock));
 
 		// Decrement the right counter.
 		if ((protocol & META_PROT_WEB) == META_PROT_WEB) user->refs.web--;
@@ -88,7 +88,7 @@ uint64_t meta_user_ref_total(meta_user_t *user) {
 	if (user) {
 
 		// Acquire the reference counter lock.
-		mutex_lock(&(user->refs.lock));
+		mutex_get_lock(&(user->refs.lock));
 
 		// Sum the total.
 		result = user->refs.web + user->refs.imap + user->refs.pop + user->refs.smtp + user->refs.generic;
@@ -113,7 +113,7 @@ time_t meta_user_ref_stamp(meta_user_t *user) {
 	if (user) {
 
 		// Acquire the reference counter lock.
-		mutex_lock(&(user->refs.lock));
+		mutex_get_lock(&(user->refs.lock));
 
 		// Sum the total.
 		result = user->refs.stamp;
@@ -136,7 +136,7 @@ void meta_user_rlock(meta_user_t *user) {
 	if (user) {
 		// When read/write locking issues have been fixed, this line can be used once again.
 		// rwlock_lock_read(&(user->lock));
-		mutex_lock(&(user->lock));
+		mutex_get_lock(&(user->lock));
 		//log_pedantic("%20.li granted read lock", thread_get_thread_id());
 	}
 
@@ -153,7 +153,7 @@ void meta_user_wlock(meta_user_t *user) {
 	if (user) {
 		// When read/write locking issues have been fixed, this line can be used once again.
 		// rwlock_lock_write(&(user->lock));
-		mutex_lock(&(user->lock));
+		mutex_get_lock(&(user->lock));
 		//log_pedantic("%20.li granted write lock", thread_get_thread_id());
 	}
 

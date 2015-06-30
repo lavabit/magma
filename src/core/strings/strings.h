@@ -146,6 +146,7 @@ stringer_t * st_merge_opts(uint32_t opts, chr_t *format, ...);
 stringer_t * st_append_opts(size_t align, stringer_t *s, stringer_t *append);
 
 /// shortcuts.c
+placer_t * pl_init_by_addr(placer_t *result, void *data, size_t len);
 chr_t *    pl_char_get(placer_t place);
 void *     pl_data_get(placer_t place);
 bool_t     pl_empty(placer_t place);
@@ -228,7 +229,7 @@ int32_t    cmp_mt_mt(multi_t one, multi_t two);
 bool_t     ident_mt_mt(multi_t one, multi_t two);
 multi_t    mt_dupe(multi_t multi);
 void       mt_free(multi_t multi);
-char *     mt_get_char(multi_t multi);
+char *     mt_get_char(const multi_t *multi);
 size_t     mt_get_length(multi_t multi);
 multi_t    mt_get_null(void);
 uint64_t   mt_get_number(multi_t multi);

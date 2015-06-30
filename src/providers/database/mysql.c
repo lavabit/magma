@@ -319,7 +319,7 @@ bool_t sql_start(void) {
 	MYSQL *con;
 
 	if (ns_empty(magma.iface.database.host) || ns_empty(magma.iface.database.user) ||
-			ns_empty(magma.iface.database.password) || ns_empty(magma.iface.database.schema) ||
+			ns_empty(magma.iface.database.schema) ||
 			magma.iface.database.pool.connections == 0) {
 		log_critical("A required MySQL connection parameter is missing or invalid.");
 		return false;

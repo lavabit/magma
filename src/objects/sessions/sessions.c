@@ -49,7 +49,7 @@ uint64_t sess_number(void) {
 
 	uint64_t result;
 
-	mutex_lock(&(sessions.lock));
+	mutex_get_lock(&(sessions.lock));
 	result = sessions.number++;
 	mutex_unlock(&(sessions.lock));
 
@@ -100,7 +100,7 @@ void sess_ref_add(session_t *sess) {
 	if (sess) {
 
 		// Acquire the reference counter lock.
-		mutex_lock(&(sess->lock));
+		mutex_get_lock(&(sess->lock));
 
 		// Increment the web counter.
 		sess->refs.web++;
@@ -125,7 +125,7 @@ void sess_ref_dec(session_t *sess) {
 	if (sess) {
 
 		// Acquire the reference counter lock.
-		mutex_lock(&(sess->lock));
+		mutex_get_lock(&(sess->lock));
 
 		// Decrement the web counter.
 		sess->refs.web--;
@@ -152,7 +152,7 @@ uint64_t sess_ref_total(session_t *sess) {
 	if (sess) {
 
 		// Acquire the reference counter lock.
-		mutex_lock(&(sess->lock));
+		mutex_get_lock(&(sess->lock));
 
 		// Sum the total.
 		result = sess->refs.web;
@@ -175,7 +175,7 @@ time_t sess_ref_stamp(session_t *sess) {
 	time_t result = 0;
 
 	if (sess) {
-		mutex_lock(&(sess->lock));
+		mutex_get_lock(&(sess->lock));
 		result = sess->refs.stamp;
 		mutex_unlock(&(sess->lock));
 	}
@@ -191,7 +191,7 @@ time_t sess_ref_stamp(session_t *sess) {
 void sess_refresh_flush(session_t *sess) {
 
 	if (sess) {
-		mutex_lock(&(sess->lock));
+		mutex_get_lock(&(sess->lock));
 		sess->refresh.trigger = false;
 		sess->refresh.stamp = time(NULL);
 		mutex_unlock(&(sess->lock));
@@ -210,7 +210,7 @@ time_t sess_refresh_stamp(session_t *sess) {
 	time_t result = 0;
 
 	if (sess) {
-		mutex_lock(&(sess->lock));
+		mutex_get_lock(&(sess->lock));
 		result = sess->refresh.stamp;
 		mutex_unlock(&(sess->lock));
 	}
@@ -230,7 +230,7 @@ bool_t sess_refresh_check(session_t *sess) {
 	bool_t result = false;
 
 	if (sess) {
-		mutex_lock(&(sess->lock));
+		mutex_get_lock(&(sess->lock));
 
 		if (sess->refresh.trigger || (time(NULL) - sess->refresh.stamp) > 120) {
 			sess->refresh.trigger = false;
@@ -298,7 +298,7 @@ void sess_update(session_t *sess) {
 void sess_trigger(session_t *sess) {
 
 	if (sess) {
-		mutex_lock(&(sess->lock));
+		mutex_get_lock(&(sess->lock));
 		sess->refresh.trigger = true;
 		mutex_unlock(&(sess->lock));
 	}

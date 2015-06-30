@@ -12,8 +12,6 @@
 
 #include "magma.h"
 
-int kill_all(int signal, int names, char **namelist, struct passwd *pwent);
-
 int main(int argc, char *argv[]) {
 
 	/*if (process_kill(PLACER("magmad", 6), SIGTERM, 10) < 0) {

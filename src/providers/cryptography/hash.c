@@ -12,7 +12,7 @@
 
 #include "magma.h"
 
-digest_t * digest_name(stringer_t *name) {
+digest_t * hash_name(stringer_t *name) {
 
 	const EVP_MD *result = NULL;
 	if (!st_empty(name) && !(result = EVP_get_digestbyname_d(st_char_get(name)))) {
@@ -22,7 +22,7 @@ digest_t * digest_name(stringer_t *name) {
 	return (digest_t *)result;
 }
 
-digest_t * digest_id(int_t id) {
+digest_t * hash_id(int_t id) {
 
 	const EVP_MD *result = NULL;
 
@@ -33,7 +33,7 @@ digest_t * digest_id(int_t id) {
 	return (digest_t *)result;
 }
 
-stringer_t * digest_hash(digest_t *digest, stringer_t *s, stringer_t *output) {
+stringer_t * hash_digest(digest_t *digest, stringer_t *s, stringer_t *output) {
 
 	int_t olen;
 	uint_t rlen;
@@ -109,40 +109,40 @@ stringer_t * digest_hash(digest_t *digest, stringer_t *s, stringer_t *output) {
 	return result;
 }
 
-stringer_t * digest_md4(stringer_t *s, stringer_t *output) {
-	return digest_hash((digest_t *)EVP_md4_d(), s, output);
+stringer_t * hash_md4(stringer_t *s, stringer_t *output) {
+	return hash_digest((digest_t *)EVP_md4_d(), s, output);
 }
 
-stringer_t * digest_md5(stringer_t *s, stringer_t *output) {
-	return digest_hash((digest_t *)EVP_md5_d(), s, output);
+stringer_t * hash_md5(stringer_t *s, stringer_t *output) {
+	return hash_digest((digest_t *)EVP_md5_d(), s, output);
 }
 
-stringer_t * digest_sha(stringer_t *s, stringer_t *output) {
-	return digest_hash((digest_t *)EVP_sha_d(), s, output);
+stringer_t * hash_sha(stringer_t *s, stringer_t *output) {
+	return hash_digest((digest_t *)EVP_sha_d(), s, output);
 }
 
-stringer_t * digest_sha1(stringer_t *s, stringer_t *output) {
-	return digest_hash((digest_t *)EVP_sha1_d(), s, output);
+stringer_t * hash_sha1(stringer_t *s, stringer_t *output) {
+	return hash_digest((digest_t *)EVP_sha1_d(), s, output);
 }
 
-stringer_t * digest_sha224(stringer_t *s, stringer_t *output) {
-	return digest_hash((digest_t *)EVP_sha224_d(), s, output);
+stringer_t * hash_sha224(stringer_t *s, stringer_t *output) {
+	return hash_digest((digest_t *)EVP_sha224_d(), s, output);
 }
 
-stringer_t * digest_sha256(stringer_t *s, stringer_t *output) {
-	return digest_hash((digest_t *)EVP_sha256_d(), s, output);
+stringer_t * hash_sha256(stringer_t *s, stringer_t *output) {
+	return hash_digest((digest_t *)EVP_sha256_d(), s, output);
 }
 
-stringer_t * digest_sha384(stringer_t *s, stringer_t *output) {
-	return digest_hash((digest_t *)EVP_sha384_d(), s, output);
+stringer_t * hash_sha384(stringer_t *s, stringer_t *output) {
+	return hash_digest((digest_t *)EVP_sha384_d(), s, output);
 }
 
-stringer_t * digest_sha512(stringer_t *s, stringer_t *output) {
-	return digest_hash((digest_t *)EVP_sha512_d(), s, output);
+stringer_t * hash_sha512(stringer_t *s, stringer_t *output) {
+	return hash_digest((digest_t *)EVP_sha512_d(), s, output);
 }
 
-stringer_t * digest_ripemd160(stringer_t *s, stringer_t *output) {
-	return digest_hash((digest_t *)EVP_ripemd160_d(), s, output);
+stringer_t * hash_ripemd160(stringer_t *s, stringer_t *output) {
+	return hash_digest((digest_t *)EVP_ripemd160_d(), s, output);
 }
 
 

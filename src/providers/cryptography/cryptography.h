@@ -30,6 +30,10 @@
 #define ECIES_CIPHER NID_aes_256_cbc
 #define ECIES_ENVELOPE NID_sha512
 
+// STACIE round number constants
+#define MAX_HASH_NUM	0x00FFFFFF
+#define MIN_HASH_NUM	8
+
 typedef enum {
 	ECIES_PRIVATE_HEX = 1,
 	ECIES_PRIVATE_BINARY = 2,
@@ -107,18 +111,34 @@ void            ecies_key_free(EC_KEY *key);
 void            ecies_stop(void);
 
 /// digest.c
-digest_t *    digest_id(int_t id);
-digest_t *    digest_name(stringer_t *name);
-stringer_t *  digest_hash(digest_t *digest, stringer_t *s, stringer_t *output);
-stringer_t *  digest_md4(stringer_t *s, stringer_t *output);
-stringer_t *  digest_md5(stringer_t *s, stringer_t *output);
-stringer_t *  digest_ripemd160(stringer_t *s, stringer_t *output);
-stringer_t *  digest_sha(stringer_t *s, stringer_t *output);
-stringer_t *  digest_sha1(stringer_t *s, stringer_t *output);
-stringer_t *  digest_sha224(stringer_t *s, stringer_t *output);
-stringer_t *  digest_sha256(stringer_t *s, stringer_t *output);
-stringer_t *  digest_sha384(stringer_t *s, stringer_t *output);
-stringer_t *  digest_sha512(stringer_t *s, stringer_t *output);
+digest_t *    hash_id(int_t id);
+digest_t *    hash_name(stringer_t *name);
+stringer_t *  hash_digest(digest_t *digest, stringer_t *s, stringer_t *output);
+stringer_t *  hash_md4(stringer_t *s, stringer_t *output);
+stringer_t *  hash_md5(stringer_t *s, stringer_t *output);
+stringer_t *  hash_ripemd160(stringer_t *s, stringer_t *output);
+stringer_t *  hash_sha(stringer_t *s, stringer_t *output);
+stringer_t *  hash_sha1(stringer_t *s, stringer_t *output);
+stringer_t *  hash_sha224(stringer_t *s, stringer_t *output);
+stringer_t *  hash_sha256(stringer_t *s, stringer_t *output);
+stringer_t *  hash_sha384(stringer_t *s, stringer_t *output);
+stringer_t *  hash_sha512(stringer_t *s, stringer_t *output);
+
+/// hmac.c
+stringer_t *  hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, stringer_t *output);
+stringer_t *  hmac_multi_digest(uint_t rounds, digest_t *digest, stringer_t *s, stringer_t *key, stringer_t *output);
+stringer_t *  hmac_md4(stringer_t *s, stringer_t *key, stringer_t *output);
+stringer_t *  hmac_md5(stringer_t *s, stringer_t *key, stringer_t *output);
+stringer_t *  hmac_ripemd160(stringer_t *s, stringer_t *key, stringer_t *output);
+stringer_t *  hmac_sha(stringer_t *s, stringer_t *key, stringer_t *output);
+stringer_t *  hmac_sha1(stringer_t *s, stringer_t *key, stringer_t *output);
+stringer_t *  hmac_sha224(stringer_t *s, stringer_t *key, stringer_t *output);
+stringer_t *  hmac_sha256(stringer_t *s, stringer_t *key, stringer_t *output);
+stringer_t *  hmac_sha384(stringer_t *s, stringer_t *key, stringer_t *output);
+stringer_t *  hmac_sha512(stringer_t *s, stringer_t *key, stringer_t *output);
+stringer_t *  hmac_multi_sha512(uint_t rounds, stringer_t *s, stringer_t *key, stringer_t *output);
+
+
 
 /// openssl.c
 bool_t   lib_load_openssl(void);
@@ -172,6 +192,16 @@ uint64_t      scramble_orig_length(scramble_t *buffer);
 uint64_t      scramble_total_length(scramble_t *buffer);
 void *        scramble_vector_data(scramble_t *buffer);
 uint64_t      scramble_vector_length(scramble_t *buffer);
+
+/// stacie.c
+uint_t        stacie_rounds_calculate(stringer_t *password, uint_t bonus);
+stringer_t *  stacie_seed_key_derive(stringer_t *salt);
+stringer_t *  stacie_seed_extract(uint_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt);
+stringer_t *  stacie_hashed_key_derive(stringer_t *base, uint_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt);
+stringer_t *  stacie_hashed_token_derive(stringer_t *base, stringer_t *username, stringer_t *salt, stringer_t *nonce);
+stringer_t *  stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, stringer_t *shard);
+stringer_t *  stacie_realm_cipher_key_derive(stringer_t *realm_key);
+stringer_t *  stacie_realm_init_vector_derive(stringer_t *realm_key);
 
 /// symmetric.c
 stringer_t *  symmetric_decrypt(cipher_t *cipher, stringer_t *vector, stringer_t *key, stringer_t *input);

@@ -710,3 +710,166 @@ bool_t int8_conv_ns(char *string, int8_t *number) {
 bool_t int8_conv_st(stringer_t *string, int8_t *number) {
 	return int8_conv_bl(st_data_get(string), st_length_get(string), number);
 }
+
+/**
+ * @brief	Create a stringer, storing a 4-byte value in network byte order.
+ * @param	s		a pointer to the data buffer where the value will be inserted.
+ * @param	val		the 4 byte value to be placed in the specified buffer, in network byte order.
+ * @return	Pointer to stringer on success, NULL on failure.
+ */
+stringer_t * uint32_put_no(uint32_t val) {
+
+	unsigned char *data;
+	stringer_t *result;
+
+	if(!(result = st_alloc(4))) {
+		log_pedantic("Failed to allocate stringer");
+		return NULL;
+	}
+
+	if(!(data = st_data_get(result))) {
+		log_pedantic("Failed to retrieve data pointer from stringer");
+		return NULL;
+	}
+
+	data[0] = (val & 0xff000000) >> 24;
+	data[1] = (val & 0x00ff0000) >> 16;
+	data[2] = (val & 0x0000ff00) >> 8;
+	data[3] = val & 0x000000ff;
+
+	st_length_set(result, 4);
+	return result;
+}
+
+/**
+ * @brief	Create a stringer, storing a 3-byte value in network byte order.
+ * @param	s		a pointer to the data buffer where the value will be inserted.
+ * @param	val		the 3 byte value to be placed in the specified buffer, in network byte order.
+ * @return	Pointer to stringer on success, NULL on failure.
+ */
+stringer_t * uint24_put_no(uint32_t val) {
+
+	unsigned char *data;
+	stringer_t *result;
+
+	if(!(result = st_alloc(3))) {
+		log_pedantic("Failed to allocate stringer");
+		return NULL;
+	}
+
+	if(!(data = st_data_get(result))) {
+		log_pedantic("Failed to retrieve data pointer from stringer");
+		return NULL;
+	}
+
+	data[0] = (val & 0x00ff0000) >> 16;
+	data[1] = (val & 0x0000ff00) >> 8;
+	data[2] = val & 0x000000ff;
+
+	st_length_set(result, 3);
+	return result;
+}
+
+/**
+ * @brief	Create a stringer, storing a 2-byte value in network byte order.
+ * @param	s		a pointer to the data buffer where the value will be inserted.
+ * @param	val		the 2 byte value to be placed in the specified buffer, in network byte order.
+ * @return	Pointer to stringer on success, NULL on failure.
+ */
+stringer_t * uint16_put_no(uint16_t val) {
+
+	unsigned char *data;
+	stringer_t *result;
+
+	if(!(result = st_alloc(2))) {
+		log_pedantic("Failed to allocate stringer");
+		return NULL;
+	}
+
+	if(!(data = st_data_get(result))) {
+		log_pedantic("Failed to retrieve data pointer from stringer");
+		return NULL;
+	}
+
+	data[0] = (val & 0x0000ff00) >> 8;
+	data[1] = val & 0x000000ff;
+
+	st_length_set(result, 2);
+	return result;
+}
+
+/**
+ * @brief	Fetch a 4 byte network order value from a stringer and return it in host byte order.
+ * @param	buf	a pointer to the data buffer from which the bytes will be read.
+ * @return	the value of the first 4 network order bytes in the buffer in host byte order. 0 on failure.
+ */
+uint32_t uint32_get_no(stringer_t *s) {
+
+	unsigned char *data;
+	uint32_t result = 0;
+
+	if(!s || st_empty(s) || st_length_get(s) < 4) {
+		log_pedantic("Empty or invalid stringer was passed.");
+		return 0;
+	}
+	else if (!(data = st_data_get(s))) {
+		log_pedantic("No data buffer found in stringer.");
+	}
+
+	result |= (data[0] << 24);
+	result |= (data[1] << 16);
+	result |= (data[2] << 8);
+	result |= data[3];
+
+	return result;
+}
+
+/**
+ * @brief	Fetch a 3 byte network order value from a stringer and return it in host byte order.
+ * @param	buf	a pointer to the data buffer from which the bytes will be read.
+ * @return	the value of the first 3 network order bytes in the buffer in host byte order. 0 on failure.
+ */
+uint32_t uint24_get_no(stringer_t *s) {
+
+	unsigned char *data;
+	uint32_t result = 0;
+
+	if(!s || st_empty(s) || st_length_get(s) < 3) {
+		log_pedantic("Empty or invalid stringer was passed.");
+		return 0;
+	}
+	else if (!(data = st_data_get(s))) {
+		log_pedantic("No data buffer found in stringer.");
+	}
+
+	result |= (data[0] << 16);
+	result |= (data[1] << 8);
+	result |= data[2];
+
+	return result;
+}
+
+/**
+ * @brief	Fetch a 2 byte network order value from a stringer and return it in host byte order.
+ * @param	buf	a pointer to the data buffer from which the bytes will be read.
+ * @return	the value of the first 2 network order bytes in the buffer in host byte order. 0 on failure.
+ */
+uint16_t uint16_get_no(stringer_t *s) {
+
+	unsigned char *data;
+	uint16_t result = 0;
+
+	if(!s || st_empty(s) || st_length_get(s) < 2) {
+		log_pedantic("Empty or invalid stringer was passed.");
+		return 0;
+	}
+	else if (!(data = st_data_get(s))) {
+		log_pedantic("No data buffer found in stringer.");
+	}
+
+	result |= (data[0] << 8);
+	result |= data[1];
+
+	return result;
+}
+

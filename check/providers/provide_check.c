@@ -33,7 +33,9 @@ START_TEST (check_compress_lzo_s)
 		};
 
 		log_unit("%-64.64s", "COMPRESSION / LZO / SINGLE THREADED:");
-		outcome = check_compress_sthread(&opts);
+		if (status()) {
+			outcome = check_compress_sthread(&opts);
+		}
 		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
 		fail_unless(outcome, "check_compress_sthread failed");
 	}
@@ -200,7 +202,7 @@ START_TEST (check_ecies_s)
 	}
 END_TEST
 
-START_TEST (check_digest_s)
+START_TEST (check_hash_s)
 	{
 		bool_t outcome = true;
 		chr_t errmsg[1024];
@@ -212,14 +214,14 @@ START_TEST (check_digest_s)
 
 		mm_wipe(errmsg, sizeof(errmsg));
 
-		log_unit("%-64.64s", "CRYPTOGRAPHY / DIGEST / SINGLE THREADED:");
+		log_unit("%-64.64s", "CRYPTOGRAPHY / HASH / SINGLE THREADED:");
 
-		if (status() && !(outcome = check_digest_simple())) {
+		if (status() && !(outcome = check_hash_simple())) {
 			snprintf(errmsg, 1024, "digest methods failed to return the expected result...");
 		}
 
 		for (uint64_t i = 0; status() && outcome == true && i < (sizeof(digest_list) / sizeof(chr_t *)); i++) {
-			if (!(outcome = check_digest_sthread(digest_list[i]))) {
+			if (!(outcome = check_hash_sthread(digest_list[i]))) {
 				snprintf(errmsg, 1024, "%s failed...", digest_list[i]);
 			}
 		}
@@ -412,10 +414,94 @@ START_TEST (check_dspam_bin_s) {
 }
 END_TEST
 
+START_TEST (check_hash_calculation) {
+
+	bool_t outcome = true;
+
+	log_unit("%-64.64s", "CRYPTOGRAPHY / HASH / SINGLE THREADED:");
+
+	if(status()) {
+		log_disable();
+		outcome = check_hash_simple();
+		log_enable();
+	}
+
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, "check_hash_simple failed");
+}
+END_TEST
+
+START_TEST (check_hmac_s) {
+
+	bool_t outcome = true;
+
+	bool_t (*checks[])(void) = {
+		&check_hmac_parameters,
+		&check_hmac_simple
+	};
+
+	stringer_t *err = NULL;
+
+	stringer_t *errors[] = {
+		NULLER("check_hmac_parameters failed"),
+		NULLER("check_hmac_simple failed")
+	};
+
+	log_unit("%-64.64s", "CRYPTOGRAPHY / HMAC / SINGLE THREADED:");
+
+	for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof((checks)[0]); ++i) {
+		log_disable();
+		if(!(outcome = checks[i]())) {
+			err = errors[i];
+		}
+		log_enable();
+	}
+
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, st_data_get(err));
+}
+END_TEST
+
+START_TEST (check_stacie_s) {
+
+	bool_t outcome = true;
+
+	bool_t (*checks[])(void) = {
+		&check_stacie_parameters,
+		&check_stacie_determinism,
+		&check_stacie_rounds,
+		&check_stacie_simple
+	};
+
+	stringer_t *err = NULL;
+
+	stringer_t *errors[] = {
+		NULLER("check_stacie_parameters failed"),
+		NULLER("check_stacie_determinism failed"),
+		NULLER("check_stacie_rounds failed"),
+		NULLER("check_stacie_simple failed")
+	};
+
+	log_unit("%-64.64s", "CRYPTOGRAPHY / STACIE / SINGLE THREADED:");
+
+	for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof((checks)[0]); ++i) {
+		log_disable();
+		if(!(outcome = checks[i]())) {
+			err = errors[i];
+		}
+		log_enable();
+	}
+
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, st_data_get(err));
+}
+END_TEST
+
 Suite * suite_check_provide(void) {
 
 	TCase *tc;
 	Suite *s = suite_create("\tProviders");
+
 
 	testcase(s, tc, "Compression LZO/S", check_compress_lzo_s);
 	testcase(s, tc, "Compression LZO/M", check_compress_lzo_m);
@@ -427,9 +513,12 @@ Suite * suite_check_provide(void) {
 	testcase(s, tc, "Cryptography RAND/S", check_rand_s);
 	testcase(s, tc, "Cryptography RAND/M", check_rand_m);
 	testcase(s, tc, "Cryptography ECIES/S", check_ecies_s);
-	testcase(s, tc, "Cryptography DIGEST/S", check_digest_s);
+	testcase(s, tc, "Cryptography HASH/S", check_hash_s);
+	testcase(s, tc, "Cryptography HASH/S", check_hash_calculation);
+	testcase(s, tc, "Cryptography HMAC/S", check_hmac_s);
 	testcase(s, tc, "Cryptography SYMMETRIC/S", check_symmetric_s);
 	testcase(s, tc, "Cryptography SCRAMBLE/S", check_scramble_s);
+	testcase(s, tc, "Cryptography STACIE/S", check_stacie_s);
 
 	// Tank functionality is temporarily disabled.
 
@@ -464,6 +553,8 @@ Suite * suite_check_provide(void) {
 	} else {
 		log_unit("Skipping DSPAM checks...\n");
 	}
+
+	tcase_set_timeout(tc, 120);
 
 	return s;
 }

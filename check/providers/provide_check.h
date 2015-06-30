@@ -59,13 +59,24 @@ chr_t *  check_virus_sthread(chr_t *location);
 void     check_ecies_cleanup(EC_KEY *key, cryptex_t *ciphered, stringer_t *hex_pub, stringer_t *hex_priv, unsigned char *text, unsigned char *copy, unsigned char *original);
 bool_t   check_ecies_sthread(void);
 
-/// digest_check.c
-bool_t   check_digest_simple(void);
-bool_t   check_digest_sthread(chr_t *name);
+/// hash_check.c
+bool_t   check_hash_simple(void);
+bool_t   check_hash_sthread(chr_t *name);
+
+/// hmac_check.c
+bool_t   check_hmac_simple(void);
+bool_t   check_hmac_parameters(void);
 
 /// compress_check.c
 bool_t   check_compress_mthread(check_compress_opt_t *opts);
 void     check_compress_mthread_cnv(check_compress_opt_t *opts);
 bool_t   check_compress_sthread(check_compress_opt_t *opts);
+
+/// stacie_check.c
+bool_t   check_stacie_simple(void);
+bool_t   check_stacie_parameters(void);
+bool_t   check_stacie_rounds(void);
+bool_t   check_stacie_determinism(void);
+
 
 #endif

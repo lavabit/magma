@@ -797,6 +797,70 @@ START_TEST (check_errnames_s)
 	}
 END_TEST
 
+START_TEST (check_nbo_s) {
+
+	bool_t outcome = true;
+
+	bool_t (*checks[])(void) = {
+		&check_nbo_parameters,
+		&check_nbo_simple
+	};
+
+	stringer_t *err = NULL;
+
+	stringer_t *errors[] = {
+		NULLER("check_nbo_parameters failed"),
+		NULLER("check_nbo_simple failed")
+	};
+
+	log_unit("%-64.64s", "CORE / NETWORK BYTE ORDER / SINGLE THREADED:");
+
+	for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof((checks)[0]); ++i) {
+		log_disable();
+		if(!(outcome = checks[i]())) {
+			err = errors[i];
+		}
+		log_enable();
+	}
+
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, st_data_get(err));
+}
+END_TEST
+
+START_TEST (check_bitwise) {
+
+	bool_t outcome = true;
+
+	bool_t (*checks[])(void) = {
+		&check_bitwise_parameters,
+		&check_bitwise_determinism,
+		&check_bitwise_simple
+	};
+
+	stringer_t *err = NULL;
+
+	stringer_t *errors[] = {
+		NULLER("check_bitwise_parameters failed"),
+		NULLER("check_bitwise_determinism failed"),
+		NULLER("check_bitwise_simple failed")
+	};
+
+	log_unit("%-64.64s", "CORE / STRINGS / BITWISE / SINGLE THREADED:");
+
+	for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof((checks)[0]); ++i) {
+		log_disable();
+		if(!(outcome = checks[i]())) {
+			err = errors[i];
+		}
+		log_enable();
+	}
+
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, st_data_get(err));
+}
+END_TEST
+
 Suite * suite_check_core(void) {
 
 	TCase *tc;
@@ -813,6 +877,7 @@ Suite * suite_check_core(void) {
 	testcase(s, tc, "Strings / Print", check_print);
 	testcase(s, tc, "Strings / Compare", check_compare);
 	testcase(s, tc, "Strings / Binary Search", check_bsearch);
+	testcase(s, tc, "Strings / Bitwise Operations", check_bitwise);
 	testcase(s, tc, "Memory / Secure Address Range", check_secmem);
 	testcase(s, tc, "System / Signal Names", check_signames_s);
 	testcase(s, tc, "System / Error Names", check_errnames_s);
@@ -821,6 +886,7 @@ Suite * suite_check_core(void) {
 	testcase(s, tc, "Encoding / URL", check_url);
 	testcase(s, tc, "Encoding / Base64", check_base64);
 	testcase(s, tc, "Encoding / Zbase32", check_zbase32);
+	testcase(s, tc, "Encoding / Network Byte Order/S", check_nbo_s);
 	testcase(s, tc, "Cryptography / Hash", check_hashers);
 	testcase(s, tc, "Indexes / Linked/S", check_inx_linked_s);
 	testcase(s, tc, "Indexes / Linked/M", check_inx_linked_m);

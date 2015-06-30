@@ -77,7 +77,7 @@ void     debug_hook(void);
 /**
  * Used to log errors that may indicate a problem requiring user intervention to solve.
  */
-#define log_error(...) log_internal (__FILE__, __FUNCTION__, __LINE__, M_LOG_CRITICAL, __VA_ARGS__)
+#define log_error(...) log_internal (__FILE__, __FUNCTION__, __LINE__, M_LOG_ERROR, __VA_ARGS__)
 
 /**
  * Used to record errors that could cause system instability.

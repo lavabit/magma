@@ -1840,7 +1840,7 @@ void portal_endpoint_messages_compose(connection_t *con) {
 	}
 
 	// Get a unique composition ID.
-	mutex_lock(&(con->http.session->lock));
+	mutex_get_lock(&(con->http.session->lock));
 	key.val.u64 = ++con->http.session->composed;
 
 	// Better safe than sorry? Make sure the unique id isn't already taken.
@@ -1898,7 +1898,7 @@ void portal_endpoint_attachments_add(connection_t *con) {
 	}
 
 	// Does the specified composition actually exist?
-	mutex_lock(&(con->http.session->lock));
+	mutex_get_lock(&(con->http.session->lock));
 	key.val.u64 = cid;
 
 	if (!(comp = inx_find(con->http.session->compositions, key))) {
@@ -1974,7 +1974,7 @@ void portal_endpoint_attachments_remove(connection_t *con) {
 	}
 
 	// First make sure the composition is valid.
-	mutex_lock(&(con->http.session->lock));
+	mutex_get_lock(&(con->http.session->lock));
 	key.val.u64 = cid;
 
 	if (!(comp = inx_find(con->http.session->compositions, key))) {
@@ -2108,7 +2108,7 @@ void portal_endpoint_messages_send(connection_t *con) {
 	st_free(newbody);
 
 	// We sent the message successfully... so blow away the composition.
-	mutex_lock(&(con->http.session->lock));
+	mutex_get_lock(&(con->http.session->lock));
 	key.val.u64 = compose_id;
 
 	if (!inx_delete(con->http.session->compositions, key)) {
@@ -3089,7 +3089,7 @@ attachment_t * portal_get_upload_attachment(connection_t *con) {
 	}
 
 	// Now make sure the specified composition + attachment actually exist.
-	mutex_lock(&(con->http.session->lock));
+	mutex_get_lock(&(con->http.session->lock));
 	key.val.u64 = cnum;
 
 	if (!(comp = inx_find(con->http.session->compositions, key))) {

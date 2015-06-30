@@ -537,17 +537,43 @@ stringer_t * mail_insert_chunk_text(server_t *server, stringer_t *message, strin
 }
 
 /**
- * @brief	Get a specified chunk (mime part) of a multipart mime message.
- * @param	message		a managed string containing the mime message to be parsed.
- * @param	boundary	a managed string containing the boundary used to split the multipart mime message.
- * @param	chunk		the one-index based chunk to be retrieved from the multipart message
- * @return	NULL on failure or a placer containing the specified chunk on success.
+ * @brief          Get a specified chunk (mime part) of a multipart mime
+ *                 message.
+ * @param result   a pointer to the placer that will contain the result
+ * @param message  a managed string containing the mime message to be parsed.
+ * @param boundary a managed string containing the boundary used to split the
+ *                 multipart mime message.
+ * @param chunk    the one-index based chunk to be retrieved from the multipart message
+ * @return         NULL on failure or a pointer to the placer containing the
+ *                 specified chunk.
  */
-stringer_t * mail_get_chunk(stringer_t *message, stringer_t *boundary, int_t chunk) {
+placer_t *mail_get_chunk(placer_t *result, stringer_t *message, stringer_t *boundary, int_t chunk) {
+
+	if (result == NULL) {
+		log_error("result is NULL");
+		return NULL;
+	}
+	if (message == NULL) {
+		log_error("message is NULL");
+		return NULL;
+	}
+	if (boundary == NULL) {
+		log_error("boundary is NULL");
+		return NULL;
+	}
+	if (chunk < 1) {
+		log_error("chunk index is less than one");
+		return NULL;
+	}
 
 	int_t found = 0;
-	stringer_t *result;
 	size_t start = 0, length = 0, input = 0;
+	chr_t *message_begin = st_char_get(message);
+
+	if (message_begin == NULL) {
+		log_error("couldn't find beginning of message");
+		return NULL;
+	}
 
 	while (chunk != 0) {
 
@@ -561,7 +587,7 @@ stringer_t * mail_get_chunk(stringer_t *message, stringer_t *boundary, int_t chu
 		while (found == 0) {
 
 			// Get the start of the MIME message part.
-			if (!st_search_cs(PLACER(st_char_get(message) + start, st_length_get(message) - start), boundary, &input)) {
+			if (!st_search_cs(PLACER(message_begin + start, st_length_get(message) - start), boundary, &input)) {
 				log_pedantic("The boundary doesn't appear to be part of this message.");
 				return NULL;
 			}
@@ -570,11 +596,11 @@ stringer_t * mail_get_chunk(stringer_t *message, stringer_t *boundary, int_t chu
 			start += input + st_length_get(boundary);
 
 			// This will detect the section ending.
-			if (st_length_get(message) - start >= 2 && mm_cmp_cs_eq(st_char_get(message) + start, "--", 2) == 1) {
+			if (st_length_get(message) - start >= 2 && mm_cmp_cs_eq(message_begin + start, "--", 2) == 1) {
 				return NULL;
 			}
 			// Some broken implementations use similar boundaries. This should detect those.
-			else if (st_length_get(message) - start > 0 && (*(st_char_get(message) + start) < '!' || *(st_char_get(message) + start) > '~')) {
+			else if (st_length_get(message) - start > 0 && (*(message_begin + start) < '!' || *(message_begin + start) > '~')) {
 				found = 1;
 			}
 		}
@@ -584,11 +610,11 @@ stringer_t * mail_get_chunk(stringer_t *message, stringer_t *boundary, int_t chu
 		while (found == 0) {
 
 			// Get the end.
-			if (!st_search_cs(PLACER(st_char_get(message) + start, st_length_get(message) - start), boundary, &length)) {
+			if (!st_search_cs(PLACER(message_begin + start, st_length_get(message) - start), boundary, &length)) {
 				length = st_length_get(message) - start;
 				found = 1;
 			}
-			else if (st_length_get(message) - start - length > 0 && (*(st_char_get(message) + start) < '!' || *(st_char_get(message) + start) > '~')) {
+			else if (st_length_get(message) - start - length > 0 && (*(message_begin + start) < '!' || *(message_begin + start) > '~')) {
 				found = 1;
 			}
 
@@ -598,7 +624,7 @@ stringer_t * mail_get_chunk(stringer_t *message, stringer_t *boundary, int_t chu
 	}
 
 	// Setup a placer with the chunk.
-	result = PLACER(st_char_get(message) + start, length);
+	pl_init_by_addr(result, message_begin + start, length);
 
 	return result;
 }
@@ -703,7 +729,8 @@ int_t mail_modify_part(server_t *server, mail_message_t *message, stringer_t *pa
 	chr_t *stream;
 	size_t length;
 	stringer_t *header;
-	stringer_t *chunk;
+	placer_t chunk;
+	placer_t * chunk_success = NULL;
 	int_t headpart = 0;
 	size_t increment;
 	stringer_t *boundary;
@@ -789,18 +816,18 @@ int_t mail_modify_part(server_t *server, mail_message_t *message, stringer_t *pa
 
 	// If its a related message, we just insert into the first chunk.
 	if (type == MESSAGE_TYPE_MULTI_RELATED || type == MESSAGE_TYPE_MULTI_MIXED || type == MESSAGE_TYPE_MULTI_UNKOWN) {
-		chunk = mail_get_chunk(message->text, boundary, 1);
-		mail_modify_part(server, message, chunk, signum, sigkey, disposition, recursion + 1);
+		mail_get_chunk(&chunk, message->text, boundary, 1);
+		mail_modify_part(server, message, &chunk, signum, sigkey, disposition, recursion + 1);
 	}
 	// If its an alternative message we have to insert into each chunk.
 	else if (type == MESSAGE_TYPE_MULTI_ALTERNATIVE) {
 		length = 1;
-		chunk = mail_get_chunk(message->text, boundary, length);
+		mail_get_chunk(&chunk, message->text, boundary, length);
 
-		while (chunk != 0 && length < 8) {
+		while (chunk_success != NULL && length < 8) {
 			length++;
-			mail_modify_part(server, message, chunk, signum, sigkey, disposition, recursion + 1);
-			chunk = mail_get_chunk(message->text, boundary, length);
+			mail_modify_part(server, message, &chunk, signum, sigkey, disposition, recursion + 1);
+			chunk_success = mail_get_chunk(&chunk, message->text, boundary, length);
 		}
 
 	}

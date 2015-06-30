@@ -21,7 +21,7 @@ void con_reverse_enqueue(connection_t *con) {
 
 	int_t pending;
 
-	mutex_lock(&(con->lock));
+	mutex_get_lock(&(con->lock));
 
 	if ((pending = con->network.reverse.status) == REVERSE_EMPTY) {
 		con->network.reverse.status = REVERSE_PENDING;
@@ -46,7 +46,7 @@ void con_reverse_enqueue(connection_t *con) {
  */
 void con_reverse_domain(connection_t *con, stringer_t *domain, int_t status) {
 
-	mutex_lock(&(con->lock));
+	mutex_get_lock(&(con->lock));
 	con->network.reverse.status = status;
 	con->network.reverse.domain = domain;
 	mutex_unlock(&(con->lock));
@@ -63,7 +63,7 @@ void con_reverse_domain(connection_t *con, stringer_t *domain, int_t status) {
  */
 void con_reverse_status(connection_t *con, int_t status) {
 
-	mutex_lock(&(con->lock));
+	mutex_get_lock(&(con->lock));
 	con->network.reverse.status = status;
 	mutex_unlock(&(con->lock));
 
@@ -85,7 +85,7 @@ stringer_t * con_reverse_check(connection_t *con, uint32_t timeout) {
 
 	do {
 
-		mutex_lock(&(con->lock));
+		mutex_get_lock(&(con->lock));
 
 		if ((pending = con->network.reverse.status) == REVERSE_COMPLETE) {
 			result = con->network.reverse.domain;

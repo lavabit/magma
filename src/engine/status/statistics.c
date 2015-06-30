@@ -254,7 +254,7 @@ uint64_t stats_get_name_pos(char *name) {
 	bool_t match = false;
 
 	for (uint64_t i = 0; i < stats.count; i++) {
-		mutex_lock(&stats.locks[i][0]);
+		mutex_get_lock(&stats.locks[i][0]);
 		match = !st_cmp_cs_eq(NULLER(name), NULLER(stats.names[i]));
 		mutex_unlock(&stats.locks[i][0]);
 		if (match) return i;
@@ -274,7 +274,7 @@ char * stats_get_name(uint64_t position) {
 
 	char *name;
 
-	mutex_lock(&stats.locks[position][0]);
+	mutex_get_lock(&stats.locks[position][0]);
 	name = stats.names[position];
 	mutex_unlock(&stats.locks[position][0]);
 
@@ -295,7 +295,7 @@ void stats_set_by_name(char *name, uint64_t value) {
 		return;
 	}
 
-	mutex_lock(&stats.locks[position][1]);
+	mutex_get_lock(&stats.locks[position][1]);
 	stats.values[position] = value;
 	mutex_unlock(&stats.locks[position][1]);
 	return;
@@ -309,7 +309,7 @@ void stats_set_by_name(char *name, uint64_t value) {
  */
 void stats_set_by_num(uint64_t position, uint64_t value) {
 
-	mutex_lock(&stats.locks[position][1]);
+	mutex_get_lock(&stats.locks[position][1]);
 	stats.values[position] = value;
 	mutex_unlock(&stats.locks[position][1]);
 
@@ -329,7 +329,7 @@ uint64_t stats_get_value_by_name(char *name) {
 			return 0;
 	}
 
-	mutex_lock(&stats.locks[position][1]);
+	mutex_get_lock(&stats.locks[position][1]);
 	value = stats.values[position];
 	mutex_unlock(&stats.locks[position][1]);
 
@@ -345,7 +345,7 @@ uint64_t stats_get_value_by_num(uint64_t position) {
 
 	uint64_t value;
 
-	mutex_lock(&stats.locks[position][1]);
+	mutex_get_lock(&stats.locks[position][1]);
 	value = stats.values[position];
 	mutex_unlock(&stats.locks[position][1]);
 
@@ -366,7 +366,7 @@ void stats_adjust_by_name(char *name, int32_t value) {
 		return;
 	}
 
-	mutex_lock(&stats.locks[position][1]);
+	mutex_get_lock(&stats.locks[position][1]);
 	stats.values[position] += value;
 	mutex_unlock(&stats.locks[position][1]);
 
@@ -381,7 +381,7 @@ void stats_adjust_by_name(char *name, int32_t value) {
  */
 void stats_adjust_by_num(uint64_t position, int32_t value) {
 
-	mutex_lock(&stats.locks[position][1]);
+	mutex_get_lock(&stats.locks[position][1]);
 	stats.values[position] += value;
 	mutex_unlock(&stats.locks[position][1]);
 
@@ -401,7 +401,7 @@ void stats_increment_by_name(char *name) {
 		return;
 	}
 
-	mutex_lock(&stats.locks[position][1]);
+	mutex_get_lock(&stats.locks[position][1]);
 	stats.values[position]++;
 	mutex_unlock(&stats.locks[position][1]);
 
@@ -415,7 +415,7 @@ void stats_increment_by_name(char *name) {
  */
 void stats_increment_by_num(uint64_t position) {
 
-	mutex_lock(&stats.locks[position][1]);
+	mutex_get_lock(&stats.locks[position][1]);
 	stats.values[position]++;
 	mutex_unlock(&stats.locks[position][1]);
 
@@ -435,7 +435,7 @@ void stats_decrement_by_name(char *name) {
 		return;
 	}
 
-	mutex_lock(&stats.locks[position][1]);
+	mutex_get_lock(&stats.locks[position][1]);
 	stats.values[position]--;
 	mutex_unlock(&stats.locks[position][1]);
 
@@ -449,7 +449,7 @@ void stats_decrement_by_name(char *name) {
  */
 void stats_decrement_by_num(uint64_t position) {
 
-	mutex_lock(&stats.locks[position][1]);
+	mutex_get_lock(&stats.locks[position][1]);
 	stats.values[position]--;
 	mutex_unlock(&stats.locks[position][1]);
 

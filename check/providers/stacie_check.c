@@ -144,7 +144,6 @@ bool_t check_stacie_simple(void) {
 	st_free(seed);
 	st_free(master_key);
 	st_free(password_key);
-	st_free(verification_token_b64);
 	st_free(ephemeral_login_token);
 	st_free(shard);
 	st_free(realm_cipher_key);

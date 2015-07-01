@@ -111,55 +111,78 @@ hmac_multi_digest (
 	HMAC_CTX ctx;
 	uint32_t opts;
 	uint_t outlen;
-	stringer_t *result;
-	int_t retval = 1;
+	stringer_t *result;		// the return value
+	int_t retval = 1;		// retval must be == 1 for successful return
 
 	if (rounds < 1) {
 		log_pedantic("rounds must be > 0");
-		return NULL;
+		goto hmac_multi_digest_out;
 	}
 
 	if (digest == NULL) {
 		log_pedantic("Digest algorithm is NULL");
-		return NULL;
+		goto hmac_multi_digest_out;
 	}
 
 	olen = EVP_MD_size_d((const EVP_MD *)digest);
 	if (olen < 1) {
 		log_pedantic("EVP_MD_size_d() returned invalid size for digest algorithm");
-		return NULL;
+		goto hmac_multi_digest_out;
 	}
 
 	if (st_empty(s)) {
 		log_pedantic("Input stringer 's' is NULL or empty");
-		return NULL;
+		goto hmac_multi_digest_out;
 	}
 
 	if (st_empty(key)) {
 		log_pedantic("Key stringer 'key' is NULL or empty");
-		return NULL;
+		goto hmac_multi_digest_out;
 	}
 
 	if (output == NULL)  {
-		return hmac_multi_digest_null_output(rounds, digest, s, key);
+		// allocate on the fly and reenter the routine
+		if ((output = st_alloc (olen)) == NULL) {
+        	log_error("st_alloc() failed for 'output'. {requested = %i}", olen);
+    	}
+
+    	if ((result = hmac_multi_digest(rounds, digest, s, key, output)) == NULL) {
+        	log_error("hmac_multi_digest() failed");
+        	st_free(output);
+			goto hmac_multi_digest_out;
+    	}
+
+		/*
+		 * for some reason, there is a need to set the length if we allocated the 
+		 * buffer on the fly.
+		 */
+		if (st_length_set(result, outlen) == 0)  {
+			log_pedantic("Failed st_length_set() on new output buffer");
+			if (output == NULL)  {
+				st_free(output);
+			}
+			retval = 0;
+			goto hmac_multi_digest_out;
+		}
 	}
 
+    result = output;
 	opts = *((uint32_t *)output);
 	if (!st_valid_destination(opts)) {
-		log_error("Output Stringer 'output' failed st_valid_destination()");
-		return NULL;
+		log_error("failed st_valid_destination() on output Stringer 'output'");
+		goto hmac_multi_digest_out;
 	}
 
 	if (st_valid_avail(opts) && st_avail_get(output) < olen) {
 		log_error("'output' stringer is too small. {avail = %zu / required = %i}",
 		          st_valid_avail(opts) ? st_avail_get(output) : st_length_get(output), olen);
-		return NULL;
+		goto hmac_multi_digest_out;
 	}
 
 	if (!st_valid_avail(opts) && st_length_get(output) < olen) {
 		log_error("'output' stringer is too small. {avail = %zu / required = %i}",
 		          st_valid_avail(opts) ? st_avail_get(output) : st_length_get(output), olen);
-		return NULL;
+		goto hmac_multi_digest_out;
 	}
 
 
@@ -181,21 +204,23 @@ hmac_multi_digest (
 		}
 	} 
 
-	if ((retval = HMAC_Final_d(&ctx, st_data_get(result), &outlen)) != 1) {
+	if ((retval = HMAC_Final_d(&ctx, st_data_get(output), &outlen)) != 1) {
 		log_error ("Failed HMAC_Final_d(). {%s}", 
                    ERR_error_string_d(ERR_get_error_d(), NULL));
 		goto hmac_multi_digest_out_1;
 	}
 
-hmac_multi_digest_out_1:
+	if (st_valid_tracked(opts)) {
+        st_length_set (output, outlen);
+    }
+
+
+hmac_multi_digest_out_1:        // free ctx
 	HMAC_CTX_cleanup_d(&ctx);
 
+hmac_multi_digest_out:
 	if (retval != 1) {
-		return NULL;		// Error return
-	}
-
-	if (st_valid_tracked(opts)) {
-		st_length_set (output, outlen);
+		return NULL;            // Error return
 	}
 
 	return output;

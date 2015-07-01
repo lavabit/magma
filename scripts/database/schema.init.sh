@@ -31,13 +31,13 @@ if [ -z "$MYSQL_USER" ]; then
 fi
 
 if [ -z "$MYSQL_PASSWORD" ]; then
-	if [ -z "$2" ]; then
-		usage
-		echo "Please pass in the MySQL Password for $MYSQL_USER"
-		exit 1
-	else
+	#if [ -z "$2" ]; then
+	#	usage
+	#	echo "Please pass in the MySQL Password for $MYSQL_USER"
+	#	exit 1
+	#else
 		MYSQL_PASSWORD="$2"
-	fi
+	#fi
 fi
 
 if [ -z "$MYSQL_SCHEMA" ]; then

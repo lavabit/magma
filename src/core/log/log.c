@@ -21,7 +21,7 @@ pthread_mutex_t log_mutex =	PTHREAD_MUTEX_INITIALIZER;
  * @return	This function returns no value.
  */
 void log_disable(void) {
-	mutex_lock(&log_mutex);
+	mutex_get_lock(&log_mutex);
 	log_enabled = false;
 	mutex_unlock(&log_mutex);
 	return;
@@ -32,7 +32,7 @@ void log_disable(void) {
  * @return	This function returns no value.
  */
 void log_enable(void) {
-	mutex_lock(&log_mutex);
+	mutex_get_lock(&log_mutex);
 	log_enabled = true;
 	mutex_unlock(&log_mutex);
 	return;
@@ -62,7 +62,9 @@ int_t print_backtrace() {
 
 	backtrace_symbols_fd(buffer,nbt,pipefds[1]);
 
-	write(STDOUT_FILENO, "   ", 3);
+	if (write(STDOUT_FILENO, "   ", 3) != 0) {
+		return -1;
+	}
 
 	while (nfound < nbt) {
 		nread = read(pipefds[0], strbuf, sizeof(strbuf));
@@ -75,13 +77,17 @@ int_t print_backtrace() {
 		}
 
 		for (i = 0; i < nread; i++) {
-			write (STDOUT_FILENO, &strbuf[i], 1);
+			if (!write (STDOUT_FILENO, &strbuf[i], 1)) {
+				return -1;
+			}
 
 			if (strbuf[i] == '\n') {
 				nfound++;
 
 				if (nfound != nbt) {
-					write(STDOUT_FILENO, "   ", 3);
+					if (write(STDOUT_FILENO, "   ", 3) != 0) {
+						return -1;
+					}
 				}
 
 			}
@@ -114,7 +120,7 @@ void log_internal(const char *file, const char *function, const int line, M_LOG_
 
 	va_start(args, format);
 
-	mutex_lock(&log_mutex);
+	mutex_get_lock(&log_mutex);
 
 	// Someone has disabled the log output.
 	if (!log_enabled) {
@@ -158,8 +164,7 @@ void log_internal(const char *file, const char *function, const int line, M_LOG_
 	if ((magma.log.stack || M_LOG_STACK_TRACE == (options & M_LOG_STACK_TRACE)) && !(M_LOG_STACK_TRACE_DISABLE == (options & M_LOG_STACK_TRACE_DISABLE))) {
 
 		if (print_backtrace() < 0) {
-			errmsg = "Error printing stack backtrace to stdout!\n";
-			write(STDERR_FILENO,errmsg,ns_length_get(errmsg));
+			fprintf(stdout, "Error printing stack backtrace to stdout!\n");
 		}
 
 		/*size = backtrace(array, 1024);

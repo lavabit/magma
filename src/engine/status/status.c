@@ -32,7 +32,7 @@ bool_t status(void) {
 
 	bool_t result = false;
 
-	mutex_lock(&status_mutex);
+	mutex_get_lock(&status_mutex);
 	if (status_level >= 0) result = true;
 	mutex_unlock(&status_mutex);
 
@@ -46,7 +46,7 @@ bool_t status(void) {
  * @return	This function returns no value.
  */
 void status_set(int value) {
-	mutex_lock(&status_mutex);
+	mutex_get_lock(&status_mutex);
 	status_level = value;
 	mutex_unlock(&status_mutex);
 	return;
@@ -59,7 +59,7 @@ void status_set(int value) {
  */
 int status_get(void) {
 	int value;
-	mutex_lock(&status_mutex);
+	mutex_get_lock(&status_mutex);
 	value = status_level;
 	mutex_unlock(&status_mutex);
 	return value;

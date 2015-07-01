@@ -10,7 +10,7 @@ DKIM="opendkim-2.9.0"
 ZLIB="zlib-1.2.8"
 JPEG="jpeg-9a"
 BZIP2="bzip2-1.0.6"
-DSPAM="dspam-3.10.1" 
+DSPAM="dspam-3.10.1"
 MYSQL="mysql-5.1.73"
 GEOIP="GeoIP-1.4.8"
 CLAMAV="clamav-0.98.4"
@@ -25,14 +25,15 @@ XML2TEST="libxml2-tests-2.9.0"
 
 M_SO="$M_ROOT/magmad.so"
 M_LOGS="$M_ROOT/logs"
-M_ARCHIVES="$M_ROOT/archives"
-M_PATCHES="$M_ROOT/patches"
+M_ARCHIVES="$M_PROJECT_ROOT/lib/archives"
+M_PATCHES="$M_PROJECT_ROOT/lib/patches"
 M_SOURCES="$M_ROOT/sources"
 M_OBJECTS="$M_ROOT/objects"
 M_CHECK="$M_ROOT/check"
+M_CHECK_SO_SOURCES="$M_PROJECT_ROOT/lib/check"
 
 # Where the symbols.h file can be found
-M_SYM_FILE="../../src/providers/symbols.h"
+M_SYM_FILE="$M_PROJECT_ROOT/src/providers/symbols.h"
 
 # The following symbols are not in defined in any of the public header files
 M_SYM_SKIP="tcndbgetboth|my_once_free|lt_dlexit"
@@ -44,8 +45,24 @@ M_SYM_DIRS="-I$M_SOURCES/clamav/libclamav -I$M_SOURCES/mysql/include -I$M_SOURCE
 -I$M_SOURCES/dkim/libopendkim -I$M_SOURCES/dspam/src/ -I$M_SOURCES/jansson/src/ -I$M_SOURCES/gd -I$M_SOURCES/png -I$M_SOURCES/jpeg \
 -I$M_SOURCES/freetype/include/freetype -I$M_SOURCES/freetype/include"
 
-M_LDPATH="$M_SOURCES/curl/lib/.libs/:$M_SOURCES/curl/lib/.libs/:$M_SOURCES/memcached/libmemcached/.libs/:$M_SOURCES/spf2/src/libspf2/.libs/:\
-$M_SOURCES/tokyocabinet/:$M_SOURCES/lzo/src/.libs/:$M_SOURCES/openssl/engines/:$M_SOURCES/openssl/:$M_SOURCES/clamav/libclamav/.libs/:\
-$M_SOURCES/mysql/libmysql/.libs/:$M_SOURCES/xml2/.libs/:$M_SOURCES/xml2/python/.libs/:$M_SOURCES/geoip/libGeoIP/.libs/:\
-$M_SOURCES/dkim/libopendkim/.libs/:$M_SOURCES/dspam/src/.libs/:$M_SOURCES/jansson/src/.libs/:$M_SOURCES/gd/.libs/:$M_SOURCES/png/.libs/:\
-$M_SOURCES/jpeg/.libs/:$M_SOURCES/freetype/objs/.libs/"
+M_LDPATH="\
+	$M_SOURCES/curl/lib/.libs/:\
+	$M_SOURCES/memcached/libmemcached/.libs/:\
+	$M_SOURCES/spf2/src/libspf2/.libs/:\
+	$M_SOURCES/tokyocabinet/:\
+	$M_SOURCES/lzo/src/.libs/:\
+	$M_SOURCES/openssl/engines/:\
+	$M_SOURCES/openssl/:\
+	$M_SOURCES/clamav/libclamav/.libs/:\
+	$M_SOURCES/mysql/libmysql/.libs/:\
+	$M_SOURCES/xml2/.libs/:\
+	$M_SOURCES/xml2/python/.libs/:\
+	$M_SOURCES/geoip/libGeoIP/.libs/:\
+	$M_SOURCES/dkim/libopendkim/.libs/:\
+	$M_SOURCES/dspam/src/.libs/:\
+	$M_SOURCES/jansson/src/.libs/:\
+	$M_SOURCES/gd/.libs/:\
+	$M_SOURCES/png/.libs/:\
+	$M_SOURCES/jpeg/.libs/:\
+	$M_SOURCES/freetype/objs/.libs/\
+	$M_SOURCES/zlib"

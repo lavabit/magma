@@ -2,11 +2,6 @@ bin/magmad
 bin/magmad.so
 bin/magmad.stripped
 bin/magmad.so.stripped
-lib/check/magma.open.check
-lib/logs/*
-lib/objects/*
-lib/sources/*
-lib/magmad.so
 res/logs/*
 res/spool/*
 res/virus/main.cld
@@ -14,3 +9,11 @@ res/virus/bytecode.cld
 res/virus/mirrors.dat
 res/virus/safebrowsing.cvd
 tools/pwtool/pwtool
+build*
+Makefile.in
+aclocal.m4
+autom4te.cache
+configure
+m4/pkg.m4
+res/config/magma.sandbox.config
+.vagrant

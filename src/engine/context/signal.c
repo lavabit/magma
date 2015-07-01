@@ -135,7 +135,7 @@ void signal_status(int signal) {
  */
 void signal_refresh(int signal) {
 
-	mutex_lock (&sig_hup_mutex);
+	mutex_get_lock (&sig_hup_mutex);
 
 	if (!http_content_refresh()) {
 		log_error("An error occurred while trying to refresh disk based content.");

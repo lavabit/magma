@@ -1,15 +1,12 @@
 
 #include "magma.open.check.h"
 
-void symbols_check(void);
+void symbols_check(void *);
 
 int main(int argc, char **argv) {
 
 	void *handle;
 	char libpath[1024];
-
-	// Check and see if any of our symbols trigger an error.
-	symbols_check();
 
 	if (argc >= 2)
 			snprintf(libpath, 1024, "%s", argv[1]);
@@ -22,6 +19,9 @@ int main(int argc, char **argv) {
 	}
 
 	printf("%s loaded...\n\n", libpath);
+
+	// Check and see if any of our symbols trigger an error.
+	symbols_check(handle);
 
 	if (dlclose(handle)) {
 		fprintf(stderr, "%s\n", dlerror());

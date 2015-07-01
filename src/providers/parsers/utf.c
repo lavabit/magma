@@ -17,6 +17,10 @@
  * @param	utf_string		Data stringer to be checked.
  * @return	true if good, false if not.
  * NOTE: FIXME TODO Place-holder only supporting a subset of UTF-8 (ASCII)
+ * TODO (Kent): clean this up.  utf_is_good -> utf_is_valid.
+ * TODO (Kent): 0 length should be valid.
+ * TODO (Kent): does false indiate not-valid?  Or an error condition?  Note: it
+ * can't be both!
  */
 bool_t utf_is_good(stringer_t *utf_string) {
 
@@ -47,9 +51,16 @@ bool_t utf_is_good(stringer_t *utf_string) {
  * @brief	Check size of UTF-8 data.
  * @param	utf_string	UTF-8 data in a stringer.
  * @return	Size of utf_string in UTF characters, 0 on failure.
+ * TODO - This routine should return the length of the utf string period,
+ *        0 should be a valid length, -1 on error.  A length routine
+ *        should not be validating the utf string unless there's a way
+ *        to indicate an error.
+ *
  * NOTE: FIXME TODO Place-holder only supporting a subset of UTF-8 (ASCII)
+ * TODO (KENT): How to report an error?  0 should be a valid length if the string
+ * contains no data.  So, 0 can't be an error.  -1 is error?
 */
-size_t utf_length_get(stringer_t *utf_string) {
+size_t utf_length_get (stringer_t *utf_string) {
 
 	if(st_empty(utf_string)) {
 		log_pedantic("A NULL pointer was passed in.");

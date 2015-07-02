@@ -3,100 +3,28 @@
  *
  * @brief   Functions used to create hmac's using specified digest functions.
  *
- * @Author	Ivan
+ * @Author  Ivan
  * $Date$
  * $Revision$
- * 6/4/2015:(Kent) Simplified hmac_digest routine by unloading multiple use of 
- *          the param "output".  Callers that pass in an "output" stringer call 
- *          the hmac_digest() routine directly as before.  Callers that pass in 
- *          a NULL "output" stringer are routed to a new routine called 
- *          hmac_digest_null_output() that grows an output buffer on the fly, 
- *          then calls the hmac_digest() routine to complete the work.
+ * 7/1/2015: Kent. Refactored hmac_digest to have a single routine that does
+ *          most of the work: hmac_multi_digest().  If called with a null
+ *          output param, the output param is allocated and a recursive call
+ *          back to hmac_multi_digest() is made.  The simpler routine:
+ *          hmac_digest() is replaced with a call to hmac_multi_digest() with
+ *          a rounds count of 1.
  */
 
 #include "magma.h"
 
 /**
- * @brief   Perform an HMAC_digest using the specified digest and key.  Lazy 
- *          implies this routine will allocate it's own output buffer.  Note, 
- *          the caller is required to free the resulting returned object if 
- *          the call is successful.
- * @Author	Kent
- * @see     hmac_digest()
- * @note    hmac_digest_null_output() wraps the call to hmac_digest allowing an 
- *          interface to the hmac_digest() call that mallocs an 'output' stringer
- *          on the fly instead of requiring the caller to pass one in to 
- *          hmac_digest().
- * @param   rounds  The amount of times that input s should be self-concatenated
- * @param   digest  Digest to be used with the HMAC.
- * @param   s       Input data.
- * @param   key     Key used in HMAC.
- * @return  Pointer to stringer with buffer containing HMAC. NULL on failure.
- */
-
-//       1         2         3         4         5         6         7         8
-//345678911234567892123456789312345678941234567895123456789612345678971234567890
-
-stringer_t *
-hmac_multi_digest_null_output (uint_t rounds, digest_t *digest, stringer_t *s, stringer_t *key)
-{
-	int_t olen;
-	stringer_t *output, *result;
-
-	// Sanity check *digest because we need to access the function for olen
-	if (digest == NULL) {
-		log_pedantic("Digest algorithm is NULL");
-		return NULL;
-	}
-
-	if ((olen = EVP_MD_size_d((const EVP_MD *)digest)) < 1) {
-		log_error("EVP_MD_size_d() returned invalid size for digest algorithm");
-		return NULL;
-	}
-
-	// alloc the output stringer.
-	if ((output = st_alloc (olen)) == NULL) {
-		log_error("st_alloc() failed for 'output'. {requested = %i}", olen);
-		return NULL;
-	}
-
-	if ((result = hmac_multi_digest(rounds, digest, s, key, output)) == NULL) {
-		log_error("hmac_digest() failed");
-		st_free(output);
-	}
-
-	/**
-	 * TODO (kent) we allocated a managed buffer and defined the olen in the 
-	 * alloc call.  Is is necessary to set the length again?
-	 *   if (result)
-	 *   st_length_set(result, outlen);
-	 */
-	return result;
-}   // hmac_digest_null_output()
-
-/**
- * @brief	Perform an HMAC using the specified digest and key.
- * @param 	digest	Digest to be used with the HMAC.
- * @param	s		Input data.
- * @param 	key		Key used in HMAC.
- * @param 	output	Stringer containing buffer for output.  
- * @return	Pointer to stringer with buffer containing HMAC. NULL on failure.
- */
-stringer_t *
-hmac_digest (digest_t *digest, stringer_t *s, stringer_t *key, stringer_t *output)
-{
-	return hmac_multi_digest (1, digest, s, key, output);
-}	// hmac_digest()
-
-/**
- * @brief   Perform an HMAC on a multi-concatenated input using the specified 
-			digest and key.
- * @param	rounds	The amount of times that input s should be self-concatenated to 
+ * @brief   hmac_multi_digest: perform an HMAC on a multi-concatenated input
+			using the specified digest and key.
+ * @param   rounds  The amount of times that input s should be self-concatenated to
 					serve as the input of the digest.
  * @param   digest  Digest to be used with the HMAC.
  * @param   s       Input data.
  * @param   key     Key used in HMAC.
- * @param   output  Stringer containing buffer for output.  
+ * @param   output  Stringer containing buffer for output.
  * @return  Pointer to stringer with buffer containing HMAC. NULL on failure.
  */
 stringer_t *
@@ -111,127 +39,152 @@ hmac_multi_digest (
 	HMAC_CTX ctx;
 	uint32_t opts;
 	uint_t outlen;
-	stringer_t *result;		// the return value
-	int_t retval = 1;		// retval must be == 1 for successful return
+	stringer_t *result;     // the return value
+	int_t retval = 0;       // retval must be == 1 for successful return
 
 	if (rounds < 1) {
 		log_pedantic("rounds must be > 0");
-		goto hmac_multi_digest_out;
+		goto out;
 	}
 
 	if (digest == NULL) {
 		log_pedantic("Digest algorithm is NULL");
-		goto hmac_multi_digest_out;
+		goto out;
 	}
 
 	olen = EVP_MD_size_d((const EVP_MD *)digest);
 	if (olen < 1) {
 		log_pedantic("EVP_MD_size_d() returned invalid size for digest algorithm");
-		goto hmac_multi_digest_out;
+		goto out;
 	}
 
 	if (st_empty(s)) {
 		log_pedantic("Input stringer 's' is NULL or empty");
-		goto hmac_multi_digest_out;
+		goto out;
 	}
 
 	if (st_empty(key)) {
 		log_pedantic("Key stringer 'key' is NULL or empty");
-		goto hmac_multi_digest_out;
+		goto out;
 	}
 
 	if (output == NULL)  {
 		// allocate on the fly and reenter the routine
-		if ((output = st_alloc (olen)) == NULL) {
-        	log_error("st_alloc() failed for 'output'. {requested = %i}", olen);
-    	}
+		output = st_alloc (olen);
 
-    	if ((result = hmac_multi_digest(rounds, digest, s, key, output)) == NULL) {
-        	log_error("hmac_multi_digest() failed");
-        	st_free(output);
-			goto hmac_multi_digest_out;
-    	}
+		if (output == NULL) {
+			log_error("st_alloc() failed for 'output'. {requested = %i}", olen);
+			goto out;
+		}
 
 		/*
-		 * for some reason, there is a need to set the length if we allocated the 
-		 * buffer on the fly.
+		 * Note: you can't return on the recursive call to hmac_multi_digest()
+		 * because you've allocated the output stringer on the fly.  If
+		 * you fail, you have to cleanup.
+		 */
+		result = hmac_multi_digest(rounds, digest, s, key, output);
+
+		if (result == NULL) {
+			log_error("hmac_multi_digest() failed");
+			st_free(output);
+			goto out;
+		} else {
+			retval = 1;
+			goto out;
+		}
+
+#if 0
+		/*
+		 * Todo: IVAN! if olen is the size of the digest, and we've allocated a
+		 * new buffer of the same size, why would we need to reset the length as
+		 * is shown in your version of hmac, line 187?
 		 */
 		if (st_length_set(result, outlen) == 0)  {
-			log_pedantic("Failed st_length_set() on new output buffer");
-			if (output == NULL)  {
-				st_free(output);
-			}
-			retval = 0;
-			goto hmac_multi_digest_out;
+			log_error("Failed st_length_set() on new output buffer");
+			st_free(output);
+			result = NULL;
+			goto out;
 		}
+#endif
 	}
 
     result = output;
-	opts = *((uint32_t *)output);
-	if (!st_valid_destination(opts)) {
-		log_error("failed st_valid_destination() on output Stringer 'output'");
-		goto hmac_multi_digest_out;
+	opts = *((uint32_t *)result);
+	if (st_valid_destination(opts) == NULL) {
+		log_error("failed st_valid_destination() on Stringer 'result'");
+		goto out;
 	}
 
-	if (st_valid_avail(opts) && st_avail_get(output) < olen) {
-		log_error("'output' stringer is too small. {avail = %zu / required = %i}",
-		          st_valid_avail(opts) ? st_avail_get(output) : st_length_get(output), olen);
-		goto hmac_multi_digest_out;
+	if ((st_valid_avail(opts) != NULL) && (st_avail_get(result) < olen)) {
+		log_error("'result' stringer is too small. {avail = %zu / required = %i}",
+                  st_valid_avail(opts) ? st_avail_get(result) : st_length_get(result), olen);
+		goto out;
 	}
 
-	if (!st_valid_avail(opts) && st_length_get(output) < olen) {
-		log_error("'output' stringer is too small. {avail = %zu / required = %i}",
-		          st_valid_avail(opts) ? st_avail_get(output) : st_length_get(output), olen);
-		goto hmac_multi_digest_out;
+	if ((st_valid_avail(opts) == NULL) && (st_length_get(result) < olen)) {
+		log_error("'result' stringer is too small. {avail = %zu / required = %i}",
+		          st_valid_avail(opts) ? st_avail_get(result) : st_length_get(result), olen);
+		goto out;
 	}
 
 
 	HMAC_CTX_init_d(&ctx);
 
-	if ((retval = HMAC_Init_ex_d(&ctx, st_data_get(key), st_length_get(key), 
-                                 (const EVP_MD *)digest, NULL)) != 1) {
-		log_error ("Failed HMAC_Init_ex_d(). {%s}",
-                   ERR_error_string_d(ERR_get_error_d(), 
-                   NULL));
-		goto hmac_multi_digest_out_1;
-	} 
+	retval = HMAC_Init_ex_d(&ctx, st_data_get(key), st_length_get(key), (const EVP_MD *)digest, NULL);
+	if (retval != 1)  {
+		log_error ("Failed HMAC_Init_ex_d(). {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		goto out_cleanup_ctx;
+	}
 
 	for (uint_t i = 0; i < rounds; i++) {
-		if ((retval = HMAC_Update_d(&ctx, st_data_get(s), st_length_get(s))) != 1) {
-			log_error ("Failed HMAC_Update_d(). {%s}", 
-                       ERR_error_string_d(ERR_get_error_d(), NULL));
-			goto hmac_multi_digest_out_1;
+		retval = HMAC_Update_d(&ctx, st_data_get(s), st_length_get(s));
+		if (retval != 1) {
+			log_error ("Failed HMAC_Update_d(). {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+			goto out_cleanup_ctx;
 		}
-	} 
-
-	if ((retval = HMAC_Final_d(&ctx, st_data_get(output), &outlen)) != 1) {
-		log_error ("Failed HMAC_Final_d(). {%s}", 
-                   ERR_error_string_d(ERR_get_error_d(), NULL));
-		goto hmac_multi_digest_out_1;
 	}
 
+	retval = HMAC_Final_d(&ctx, st_data_get(result), &outlen);
+	if (retval != 1) {
+		log_error ("Failed HMAC_Final_d(). {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		goto out_cleanup_ctx;
+	}
+
+	// IVAN, is this necessary??
 	if (st_valid_tracked(opts)) {
-        st_length_set (output, outlen);
+        st_length_set (result, outlen);
     }
 
-
-hmac_multi_digest_out_1:        // free ctx
+out_cleanup_ctx:
 	HMAC_CTX_cleanup_d(&ctx);
 
-hmac_multi_digest_out:
+out:                            // Error return
 	if (retval != 1) {
-		return NULL;            // Error return
+		return NULL;
 	}
 
-	return output;
-}	// hmac_multi_digest()
+	return result;
+}   // hmac_multi_digest()
 
 /**
- * @brief	Helper functions
- * @param	s		Input data.
- * @param	key		HMAC key.
- * @param 	output	Stringer with HMAC
- * @return	Pointer to stringer with HMAC buffer. NULL on failure.
+ * @brief  hmac_digest: perform an HMAC using the specified digest and key.
+ * @param  digest   Digest to be used with the HMAC.
+ * @param  s        Input data.
+ * @param  key      Key used in HMAC.
+ * @param  output   Stringer containing buffer for output.
+ * @return Pointer to stringer with buffer containing HMAC. NULL on failure.
+ */
+stringer_t *
+hmac_digest (digest_t *digest, stringer_t *s, stringer_t *key, stringer_t *output) {
+	return hmac_multi_digest (1, digest, s, key, output);
+}   // hmac_digest()
+
+/**
+ * @brief   Helper functions
+ * @param   s       Input data.
+ * @param   key     HMAC key.
+ * @param   output  Stringer with HMAC
+ * @return  Pointer to stringer with HMAC buffer. NULL on failure.
  */
 stringer_t * hmac_md4(stringer_t *s, stringer_t *key, stringer_t *output) {
 	return hmac_digest((digest_t *)EVP_md4_d(), s, key, output);
@@ -270,15 +223,14 @@ stringer_t * hmac_ripemd160(stringer_t *s, stringer_t *key, stringer_t *output) 
 }
 
 /**
- * @brief	Multi-concatenated HMAC-SHA512
- * @param	rounds		Number of times input is self-concantenated.
- * @param	s		Input.
- * @param	key		HMAC key.
- * @param	output		Stringer with HMAC.
- * @return	Pointer to stringer with buffer containing HMAC, NULL on failure.
+ * @brief   Multi-concatenated HMAC-SHA512
+ * @param   rounds  Number of times input is self-concantenated.
+ * @param   s       Input.
+ * @param   key     HMAC key.
+ * @param   output  Stringer with HMAC.
+ * @return  Pointer to stringer with buffer containing HMAC, NULL on failure.
 */
 stringer_t * hmac_multi_sha512(uint_t rounds, stringer_t *s, stringer_t *key, stringer_t *output) {
 	return hmac_multi_digest(rounds, (digest_t *)EVP_sha512_d(), s, key, output);
 }
-
 

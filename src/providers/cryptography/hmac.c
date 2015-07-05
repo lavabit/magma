@@ -25,7 +25,7 @@
 
 static
 size_t
-buffer_size_get(stringer_t * buffer) {
+buffer_size_get (stringer_t * buffer) {
 	uint32_t opts;
 
 	opts = *((uint32_t *)buffer);
@@ -34,7 +34,7 @@ buffer_size_get(stringer_t * buffer) {
 	} else {
 		return st_length_get(buffer);
 	}
-}
+}   // buffer_size_get()
 
 static
 stringer_t *
@@ -146,11 +146,11 @@ cleanup_ctx:
 	HMAC_CTX_cleanup_d(&ctx);
 error:
 	return NULL;
-}
+}   // hmac_multi_digest_nonnull_output()
 
 static
 stringer_t *
-hmac_multi_digest_null_output(
+hmac_multi_digest_null_output (
 	uint_t rounds,
 	digest_t *digest,
 	stringer_t *s,
@@ -185,7 +185,7 @@ cleanup_alloced_output:
 	st_free(alloced_output);
 error:
 	return NULL;
-}
+}   // hmac_multi_digest_null_output()
 
 /**
  * @brief   hmac_multi_digest: perform an HMAC on a multi-concatenated input
@@ -199,7 +199,7 @@ error:
  * @return  Pointer to stringer with buffer containing HMAC. NULL on failure.
  */
 stringer_t *
-hmac_multi_digest(
+hmac_multi_digest (
 	uint_t rounds,
 	digest_t *digest,
 	stringer_t *s,
@@ -224,7 +224,7 @@ hmac_multi_digest(
 	}
 
 	return output;
-}
+}   // hmac_multi_digest()
 
 /**
  * @brief  hmac_digest: perform an HMAC using the specified digest and key.
@@ -246,39 +246,39 @@ hmac_digest (digest_t *digest, stringer_t *s, stringer_t *key, stringer_t *outpu
  * @param   output  Stringer with HMAC
  * @return  Pointer to stringer with HMAC buffer. NULL on failure.
  */
-stringer_t * hmac_md4(stringer_t *s, stringer_t *key, stringer_t *output) {
+stringer_t * hmac_md4 (stringer_t *s, stringer_t *key, stringer_t *output) {
 	return hmac_digest((digest_t *)EVP_md4_d(), s, key, output);
 }
 
-stringer_t * hmac_md5(stringer_t *s, stringer_t *key, stringer_t *output) {
+stringer_t * hmac_md5 (stringer_t *s, stringer_t *key, stringer_t *output) {
 	return hmac_digest((digest_t *)EVP_md5_d(), s, key, output);
 }
 
-stringer_t * hmac_sha(stringer_t *s, stringer_t *key, stringer_t *output) {
+stringer_t * hmac_sha (stringer_t *s, stringer_t *key, stringer_t *output) {
 	return hmac_digest((digest_t *)EVP_sha_d(), s, key, output);
 }
 
-stringer_t * hmac_sha1(stringer_t *s, stringer_t *key, stringer_t *output) {
+stringer_t * hmac_sha1 (stringer_t *s, stringer_t *key, stringer_t *output) {
 	return hmac_digest((digest_t *)EVP_sha1_d(), s, key, output);
 }
 
-stringer_t * hmac_sha224(stringer_t *s, stringer_t *key, stringer_t *output) {
+stringer_t * hmac_sha224 (stringer_t *s, stringer_t *key, stringer_t *output) {
 	return hmac_digest((digest_t *)EVP_sha224_d(), s, key, output);
 }
 
-stringer_t * hmac_sha256(stringer_t *s, stringer_t *key, stringer_t *output) {
+stringer_t * hmac_sha256 (stringer_t *s, stringer_t *key, stringer_t *output) {
 	return hmac_digest((digest_t *)EVP_sha256_d(), s, key, output);
 }
 
-stringer_t * hmac_sha384(stringer_t *s, stringer_t *key, stringer_t *output) {
+stringer_t * hmac_sha384 (stringer_t *s, stringer_t *key, stringer_t *output) {
 	return hmac_digest((digest_t *)EVP_sha384_d(), s, key, output);
 }
 
-stringer_t * hmac_sha512(stringer_t *s, stringer_t *key, stringer_t *output) {
+stringer_t * hmac_sha512 (stringer_t *s, stringer_t *key, stringer_t *output) {
 	return hmac_digest((digest_t *)EVP_sha512_d(), s, key, output);
 }
 
-stringer_t * hmac_ripemd160(stringer_t *s, stringer_t *key, stringer_t *output) {
+stringer_t * hmac_ripemd160 (stringer_t *s, stringer_t *key, stringer_t *output) {
 	return hmac_digest((digest_t *)EVP_ripemd160_d(), s, key, output);
 }
 
@@ -290,8 +290,7 @@ stringer_t * hmac_ripemd160(stringer_t *s, stringer_t *key, stringer_t *output) 
  * @param   output  Stringer with HMAC.
  * @return  Pointer to stringer with buffer containing HMAC, NULL on failure.
 */
-stringer_t * hmac_multi_sha512(uint_t rounds, stringer_t *s, stringer_t *key, stringer_t *output) {
+stringer_t * hmac_multi_sha512 (uint_t rounds, stringer_t *s, stringer_t *key, stringer_t *output) {
 	return hmac_multi_digest(rounds, (digest_t *)EVP_sha512_d(), s, key, output);
 }
-
 

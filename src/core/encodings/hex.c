@@ -343,3 +343,77 @@ stringer_t * hex_decode_st(stringer_t *h, stringer_t *output) {
 
 	return result;
 }
+
+/**
+ * @brief	Allocates an output string of appropriate size with specified opts for hex encoding of input
+ * @param	input	Input stringer to be encoded.
+ * @return	NULL on failure, otherwise allocated stringer with encoded data.
+ */
+stringer_t * hex_encode_opts(stringer_t *input, uint32_t opts) {
+
+	stringer_t *result = NULL;
+
+	if(st_empty(input)) {
+		log_pedantic("Empty stringer was passed in.");
+		goto end;
+	}
+
+	if(!opts) {
+		log_pedantic("Invalid stringer options were passed in.");
+		goto end;
+	}
+
+	if(!(result = st_alloc_opts(opts, st_length_get(input) * 2))) {
+		log_error("Failed to allocate memory for hex-encoded output.");
+		goto end;
+	}
+
+	if(result != hex_encode_st(input, result)) {
+		log_error("Failed to encode data.");
+		goto cleanup_result;
+	}
+
+cleanup_result:
+	st_free(result);
+	result = NULL;
+end:
+	return result;
+}
+
+/**
+ * @brief	Allocates an output string of appropriate size with specified opts for hex decoding of input
+ * @param	input	Input stringer to be decoded.
+ * @return	NULL on failure, otherwise allocated stringer with decoded data.
+ */
+stringer_t * hex_decode_opts(stringer_t *input, uint32_t opts) {
+
+	stringer_t *result = NULL;
+	size_t insize;
+
+	if(st_empty(input)) {
+		log_pedantic("Empty stringer was passed in.");
+	}
+
+	if(!opts) {
+		log_pedantic("Invalid stringer options were passed in.");
+		goto end;
+	}
+
+	in_size = st_length_get(input);
+
+	if(!(result = st_alloc_opts(opts, (insize % 2) ? ((insize + 1) / 2) : (insize / 2) ))) {
+		log_error("Failed to allocate memory for hex-encoded output.");
+		goto end;
+	}
+
+	if(result != hex_decode_st(input, result)) {
+		log_error("Failed to encode data.");
+		goto cleanup_result;
+	}
+
+cleanup_result:
+	st_free(result);
+	result = NULL;
+end:
+	return result;
+}

@@ -174,6 +174,8 @@ credential_t * credential_alloc_mail(stringer_t *address) {
 		return NULL;
 	}
 
+	result->authentication = NONE;
+
 	// Boil the address
 	if ((result->type = CREDENTIAL_MAIL) != CREDENTIAL_MAIL || !(result->mail.address = credential_address(address)) ||
 		// QUESTION: What is mail.domain being used for?
@@ -206,67 +208,157 @@ credential_t * credential_alloc_mail(stringer_t *address) {
  */
 credential_t * credential_alloc_auth(stringer_t *username, stringer_t *password) {
 
+	credential_t *result = NULL, *cred;
 	size_t at;
-	credential_t *result = NULL;
-	stringer_t *binary, *sanitized, *combo[3] = { NULL, NULL, NULL };
+	stringer_t *binary, *temp, *sanitized, *combo, *salt, *seed, *passkey;
+	uint_t rounds;
 
-	if (st_empty(username) || st_empty(password) || !(sanitized = credential_address(username))) {
-		return NULL;
+	if(st_empty(username)) {
+		log_error("NULL or empty username passed.");
+		goto end;
 	}
 
-	if (!(result = mm_alloc(sizeof(credential_t)))) {
-		st_free(sanitized);
-		return NULL;
+	if(st_empty(password)) {
+		log_error("NULL or empty password passed.");
+		goto end;
 	}
 
-	// Boil the username
-	if (!(result->type = CREDENTIAL_AUTH) || !(result->auth.password = st_alloc_opts(MANAGED_T | CONTIGUOUS | SECURE, 129)) ||
-		!(result->auth.key = st_alloc_opts(MANAGED_T | CONTIGUOUS | SECURE, 129)) || !(result->auth.username = credential_username(sanitized))) {
-		credential_free(result);
-		st_free(sanitized);
-		return NULL;
+	if(!(sanitized = credential_address(username))) {
+		log_error("Failed to sanitize username.");
+		goto end;
 	}
 
-	// Were done with the sanitized address.
+	if(!(cred = mm_alloc(sizeof(credential_t)))) {
+		log_error("Failed to allocate memory for credentials object.");
+		goto cleanup_sanitized;
+	}
+
+	cred->type = CREDENTIAL_AUTH;
+	cred->auth_username = credential_username(sanitized);
 	st_free(sanitized);
 
-	// If applicable, look for the domain portion of the username.
-	if (st_search_cs(result->auth.username, PLACER("@", 1), &at) && (st_length_get(result->auth.username) - at) > 1) {
+	if(!cred->auth.username) {
+		log_error("Failed to boil the username from address.");
+		goto cleanup_cred;
+	}
 
-		if (!(result->auth.domain = st_alloc_opts(MANAGED_T | JOINTED | SECURE, st_length_get(result->auth.username)))) {
-			credential_free(result);
-			return NULL;
+	if(!(salt = credential_fetch_salt(cred->auth.username))) {
+		log_error("Failed to fetch the user salt.");
+		goto cleanup_cred;
+	}
+
+// If the salt is empty we use the old authentication method.
+	if(st_empty(salt)) {
+		cred->authentication = NATIVE;
+
+		if(st_search_cs(cred->auth.username, PLACER("@", 1), &at) && (st_length_get(cred->auth.username) - at) > 1) {
+
+			if(!(cred->auth.domain = st_alloc_opts((MANAGED_T | JOINTED | SECURE), st_length_get(cred->auth.username) - at - 1))) {
+				log_error("Failed to allocate email domain stringer.");
+				goto cleanup_cred;
+			}
+
+			st_copy_in(cred->auth.domain, st_data_get(cred->auth.username) + at + 1, st_length_get(result->auth.username) - at - 1);
+		}
+		else if (!(cred->auth.domain = st_merge_opts((MANAGED_T | JOINTED | SECURE), "s", magma.system.domain))) {
+			log_error("Failed to create default magma domain stringer.");
+			goto cleanup_cred;
 		}
 
-		st_copy_in(result->auth.domain, st_data_get(result->auth.username)+at+1, st_length_get(result->auth.username)-at-1);
+		if(!(binary = st_alloc_opts((BLOCK_T | CONTIGUOUS | SECURE), 64))) {
+			log_error("Failed to allocate block for binary data.");
+			goto cleanup_cred;
+		}
+		else if(!(combo = st_merge_opts((MANAGED_T | CONTIGUOUS | SECURE), "sss", result->auth.username, magma.secure.salt, password))) {
+			log_error("Failed to merge authentication information for hashing key.");
+			goto cleanup_binary;
+		}
+
+		temp = hash_sha512(combo, binary);
+		st_free(combo);
+
+		if(temp != binary) {
+			log_error("Failed to hash authentication information.");
+			goto cleanup_binary;
+		}
+		else if(!(cred->auth.key = hex_encode_opts(binary, (MANAGED_T | CONTIGUOUS | SECURE)))) {
+			log_error("Failed to encode authentication key");
+			goto cleanup_binary;
+		}
+		else if(!(combo = st_merge_opts((MANAGED_T | CONTIGUOUS | SECURE), "ss", password, binary))) {
+			log_error("Failed to merge authentication information for first round password hashing.");
+			goto cleanup_binary;
+		}
+
+		temp = hash_sha512(combo, binary);
+		st_free(combo);
+
+		if(temp != binary) {
+			log_error("Failed first round of password hashing.");
+			goto cleanup_binary;
+		}
+		else if(!(combo = st_merge_opts(MANAGED_T | CONTIGUOUS | SECURE), "ss", password, binary)) {
+			log_error("Failed to merge authentication information for second round password hashing.");
+			goto cleanup_binary;
+		}
+
+		temp = hash_sha512(combo, binary);
+		st_free(combo);
+
+		if(temp != binary) {
+			log_error("Failed second round of password hashing.");
+			goto cleanup_binary;
+		}
+		else if(cred->auth.password = hex_encode_opts(binary, (MANAGED_T | CONTIGUOUS | SECURE))) {
+			log_error("Failed to encode password hash.");
+			goto cleanup_binary;
+		}
+
+		st_free(binary);
 	}
-	// Otherwise set to the default domain.
-	else if (!(result->auth.domain = st_merge_opts(MANAGED_T | JOINTED | SECURE, "s", magma.system.domain))) {
-			credential_free(result);
-			return NULL;
+	else {
+		cred->authentication = STACIE;
+
+		//FIXME TODO: ADD magma.secure.bonus value to magma config file and make sure it gets imported correctly.
+		if(!(rounds = stacie_rounds_calculate(password, 0 /* should be magma.secure.bonus */ ))) {
+			log_error("Failed to calculate STACIE rounds number.");
+			goto cleanup_cred;
+		}
+		else if(!(seed = stacie_seed_extract(rounds, cred->auth.username, password, salt))) {
+			log_error("Failed STACIE entropy seed extraction.");
+			goto cleanup_cred;
+		}
+
+		cred->auth.key = stacie_hashed_key_derive(seed, rounds, cred->auth.username, password, salt);
+		st_free(seed);
+
+		if(!cred->auth.key) {
+			log_error("Failed STACIE master key derivation.");
+			goto cleanup_cred;
+		}
+		else if(!(passkey = stacie_hashed_key_derive(cred->auth.key, rounds, cred->auth.username, password, salt))) {
+			log_error("Failed STACIE password key derivation.");
+			goto cleanup_cred;
+		}
+
+		cred->auth.password = stacie_hashed_token_derive(passkey, cred->auth.username, salt, NULL);
+		st_free(passkey);
+
+		if(!cred->auth.password) {
+			log_error("Failed STACIE verification token derivation.");
+			goto cleanup_cred;
+		}
+
 	}
 
-	if (!(binary = st_alloc_opts(BLOCK_T | CONTIGUOUS | SECURE, 64))) {
-		credential_free(result);
-		return NULL;
-	}
-	// Build the key and then iterate two more times to build the password hash. If an error free the result, but continue so the
-	// standard cleanup code can free any of the buffers that were used.
-	else if (!(combo[0] = st_merge_opts(MANAGED_T | CONTIGUOUS | SECURE, "sss", result->auth.username, magma.secure.salt, password)) ||
-		hash_sha512(combo[0], binary) != binary || hex_encode_st(binary, result->auth.key) != result->auth.key ||
-		!(combo[1] = st_merge_opts(MANAGED_T | CONTIGUOUS | SECURE, "ss", password, binary)) || hash_sha512(combo[1], binary) != binary ||
-		!(combo[2] = st_merge_opts(MANAGED_T | CONTIGUOUS | SECURE, "ss", password, binary)) || hash_sha512(combo[2], binary) != binary ||
-		hex_encode_st(binary, result->auth.password) != result->auth.password) {
-		credential_free(result);
-		result = NULL;
-	}
+	result = cred;
+	goto end;
 
-	st_cleanup(combo[2]);
-	st_cleanup(combo[1]);
-	st_cleanup(combo[0]);
+cleanup_binary:
 	st_free(binary);
-
+cleanup_cred:
+	credential_free(cred);
+end:
 	return result;
-
 }
 

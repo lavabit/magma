@@ -68,6 +68,8 @@ stringer_t * hex_decode_st(stringer_t *h, stringer_t *output);
 stringer_t * hex_encode_st(stringer_t *b, stringer_t *output);
 uchr_t * hex_encode_chr(byte_t b, uchr_t *output);
 stringer_t * hex_encode_st_debug(stringer_t *input, size_t maxlen);
+stringer_t * hex_encode_opts(stringer_t *input, uint32_t opts);
+stringer_t * hex_decode_opts(stringer_t *input, uint32_t opts);
 
 /// qp.c
 stringer_t * qp_decode(stringer_t *s);

@@ -16,6 +16,12 @@ AC_CONFIG_SRCDIR([src/magma.h])
 # Auxiliary autotools files go here
 AC_CONFIG_AUX_DIR([build-aux])
 
+AC_ARG_VAR([MAGMA_SHARED_LIB_DIR], [Directory used to build magmad.so (default=build_lib)])
+
+if test -z "$MAGMA_SHARED_LIB_DIR"; then
+	MAGMA_SHARED_LIB_DIR=${srcdir}/build_lib
+fi
+
 # Note that this has not been extensively tested with various automake
 # versions.  TODO - determine the minimum automake version we will support.
 #

@@ -1,1 +1,1 @@
-UPDATE Hosts SET hostname = 'dark.lavabit.com' WHERE hostnum = 1;
+UPDATE Hosts SET hostname = 'localhost.localdomain' WHERE hostnum = 1;

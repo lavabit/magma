@@ -135,7 +135,7 @@ void imap_login(connection_t *con) {
 	}
 
 	// Try getting the session out of the global cache.
-	state = meta_get(cred->auth.username, cred->auth.domain, cred->auth.password, cred->auth.key, META_PROT_IMAP, META_GET_MESSAGES | META_GET_FOLDERS, &(con->imap.user));
+	state = meta_get(cred, META_PROT_IMAP, META_GET_MESSAGES | META_GET_FOLDERS, &(con->imap.user));
 	credential_free(cred);
 
 	// Not found, or invalid password.

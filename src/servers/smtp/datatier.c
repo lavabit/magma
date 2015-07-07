@@ -580,6 +580,7 @@ int_t smtp_fetch_authorization(credential_t *cred, smtp_outbound_prefs_t **outpu
 	int_t locked;
 	table_t *result;
 	MYSQL_BIND parameters[2];
+	MYSQL_STMT **auth_stmt;
 	smtp_outbound_prefs_t *outbound;
 
 	if (!cred || cred->type != CREDENTIAL_AUTH || !output) {
@@ -588,6 +589,20 @@ int_t smtp_fetch_authorization(credential_t *cred, smtp_outbound_prefs_t **outpu
 
 	*output = NULL;
 	mm_wipe(parameters, sizeof(parameters));
+
+	switch(cred->authentication) {
+
+	case NATIVE:
+		auth_stmt = stmts.select_users_auth;
+		break;
+	case STACIE:
+		auth_stmt = stmts.smtp_select_user_stacie_auth;
+		break;
+	default:
+		log_error("Invalid authentication type specified in credentials object.");
+		break;
+
+	}
 
 	// Parameters
 	parameters[0].buffer_type = MYSQL_TYPE_STRING;
@@ -598,7 +613,7 @@ int_t smtp_fetch_authorization(credential_t *cred, smtp_outbound_prefs_t **outpu
 	parameters[1].buffer_length = st_length_get(cred->auth.password);
 	parameters[1].buffer = st_char_get(cred->auth.password);
 
-	if (!(result = stmt_get_result(stmts.select_users_auth, parameters))) {
+	if (!(result = stmt_get_result(auth_stmt, parameters))) {
 		log_pedantic("Authentication attempt failed by database error.");
 		return -1;
 	}

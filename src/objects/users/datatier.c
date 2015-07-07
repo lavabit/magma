@@ -1259,18 +1259,34 @@ bool_t meta_data_fetch_user(meta_user_t *user) {
  * @param	user		a user meta object with the username field populated.
  * @param	passhash	a managed string with a multi-round hashed of the user's password for mysql database lookup.
  * @param 	passkeys		a managed string with a single-pass hash of the user's password.
+ * @param	type		Type of user authentication (STACIE or NATIVE)
  * @return	-1 for unexpected program/system error, 0 for password auth failure, or 1 on success.
  */
-int_t meta_data_user_build(meta_user_t *user, stringer_t *passhash, stringer_t *passkey) {
+int_t meta_data_user_build(meta_user_t *user, stringer_t *passhash, stringer_t *passkey, auth_type type) {
 
 	row_t *row;
 	table_t *result;
 	MYSQL_BIND parameters[2];
+	MYSQL_STMT **auth_stmt;
 
 	// Sanity check.
 	if (!user || st_empty(user->username) || !passhash || st_empty(passhash)) {
 		log_pedantic("Invalid data passed for structure build.");
 		return -1;
+	}
+
+	switch(type) {
+
+	case NATIVE:
+		auth_stmt = stmts.select_user;
+		break;
+	case STACIE:
+		auth_stmt = stmts.select_user_stacie.auth;
+		break;
+	default:
+		log_error("Invalid authentication type.");
+		break;
+
 	}
 
 	// Clear it out, just in case we don't have a valid password hash and then overwrite the buffer with a new passhash.
@@ -1290,7 +1306,7 @@ int_t meta_data_user_build(meta_user_t *user, stringer_t *passhash, stringer_t *
 	parameters[1].buffer_length = st_length_get(passhash);
 	parameters[1].buffer = st_char_get(passhash);
 
-	if (!(result = stmt_get_result(stmts.select_user, parameters))) {
+	if (!(result = stmt_get_result(auth_stmt, parameters))) {
 		return -1;
 	} else if (!(row = res_row_next(result))) {
 		res_table_free(result);

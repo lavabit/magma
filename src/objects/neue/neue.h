@@ -20,7 +20,7 @@ enum {
 
 typedef enum {
 	NONE,
-	NATIVE,
+	LEGACY,
 	STACIE
 } auth_type;
 

@@ -424,7 +424,7 @@ int_t meta_user_build(meta_user_t *user, credential_t *cred, META_LOCK_STATUS lo
 		if (!(user->username = st_dupe(cred->auth.username))) {
 			result = -1;
 		}
-		else if ((result = meta_data_user_build(user, cred->auth.password, cred->auth.key, cred->authentication)) == 1 && (result = meta_data_fetch_mailbox_aliases(user)) &&
+		else if ((result = meta_data_user_build(user, cred)) == 1 && (result = meta_data_fetch_mailbox_aliases(user)) &&
 			!(user->serials.user = serial_get(OBJECT_USER, user->usernum))) {
 			user->serials.user = serial_increment(OBJECT_USER, user->usernum);
 		}

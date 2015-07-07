@@ -592,7 +592,7 @@ int_t smtp_fetch_authorization(credential_t *cred, smtp_outbound_prefs_t **outpu
 
 	switch(cred->authentication) {
 
-	case NATIVE:
+	case LEGACY:
 		auth_stmt = stmts.select_users_auth;
 		break;
 	case STACIE:

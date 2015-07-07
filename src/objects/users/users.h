@@ -106,7 +106,7 @@ int_t      meta_data_truncate_tags(meta_message_t *message);
 uint64_t   meta_data_update_folder_name(uint64_t usernum, uint64_t foldernum, stringer_t *name, uint64_t parent, uint32_t order);
 void       meta_data_update_lock(uint64_t usernum, uint8_t lock);
 void       meta_data_update_log(meta_user_t *user, META_PROT prot);
-int_t      meta_data_user_build(meta_user_t *user, stringer_t *passhash, stringer_t *passkey, auth_type type);
+int_t      meta_data_user_build(meta_user_t *user, credential_t *cred);
 int_t      meta_data_user_build_storage_keys(uint64_t usernum, stringer_t *passkey, stringer_t **priv_out, stringer_t **pub_out, bool_t dont_create, bool_t do_trans, uint32_t tid);
 int_t      meta_data_user_save_storage_keys(uint64_t usernum, stringer_t *passkey, stringer_t *pubkey, stringer_t *privkey, bool_t do_trans, uint32_t tid);
 

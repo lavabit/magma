@@ -12,6 +12,13 @@
 
 #include "magma.h"
 
+static int credential_init(credential_t *cred, stringer_t *username, stringer_t *password, stringer_t *salt);
+
+static int credential_init_legacy(credential_t *cred, stringer_t *username, stringer_t *password);
+
+static int credential_init_stacie(credential_t *cred, stringer_t *username, stringer_t *password, stringer_t *salt);
+
+
 /// LOW: Add a function for detecting potentially illegal username/address sequences. Valid usernames must start with an alpha character,
 /// end with an alphanumeric character and not user consecutive underscores. If present, the domain portion of the username must follow the
 /// applicable standard for the TLD being used.
@@ -208,24 +215,24 @@ credential_t * credential_alloc_mail(stringer_t *address) {
  */
 credential_t * credential_alloc_auth(stringer_t *username, stringer_t *password) {
 
-	credential_t *result = NULL, *cred;
-	size_t at;
-	stringer_t *binary, *temp, *sanitized, *combo, *salt, *seed, *passkey;
+	credential_t *cred;
+	size_t at_offset;
+	stringer_t *binary, *sanitized, *salt;
 	uint_t rounds;
 
 	if(st_empty(username)) {
-		log_error("NULL or empty username passed.");
-		goto end;
+		log_pedantic("NULL or empty username passed.");
+		goto error;
 	}
 
 	if(st_empty(password)) {
-		log_error("NULL or empty password passed.");
-		goto end;
+		log_pedantic("NULL or empty password passed.");
+		goto error;
 	}
 
 	if(!(cred = mm_alloc(sizeof(credential_t)))) {
 		log_error("Failed to allocate memory for credentials object.");
-		goto end;
+		goto error;
 	}
 
 	if(!(sanitized = credential_address(username))) {
@@ -242,123 +249,193 @@ credential_t * credential_alloc_auth(stringer_t *username, stringer_t *password)
 		goto cleanup_cred;
 	}
 
+	if(st_search_cs(cred->auth.username, PLACER("@", 1), &at_offset) && (st_length_get(cred->auth.username) - at_offset) > 1) {
+
+		if(!(cred->auth.domain = st_alloc_opts((MANAGED_T | JOINTED | SECURE), st_length_get(cred->auth.username) - (at_offset + 1)))) {
+			log_error("Failed to allocate email domain stringer.");
+			goto cleanup_cred;
+		}
+
+		st_copy_in(cred->auth.domain, st_data_get(cred->auth.username) + at_offset + 1, st_length_get(cred->auth.username) - (at_offset + 1));
+	}
+
+	if (!(cred->auth.domain = st_merge_opts((MANAGED_T | JOINTED | SECURE), "s", magma.system.domain))) {
+		log_error("Failed to create default magma domain stringer.");
+		goto cleanup_cred;
+	}
+
 	if(!(salt = credential_fetch_salt(cred->auth.username))) {
 		log_error("Failed to fetch the user salt.");
 		goto cleanup_cred;
 	}
 
-// If the salt is empty we use the old authentication method.
-	if(st_empty(salt)) {
-		cred->authentication = NATIVE;
-
-		if(st_search_cs(cred->auth.username, PLACER("@", 1), &at) && (st_length_get(cred->auth.username) - at) > 1) {
-
-			if(!(cred->auth.domain = st_alloc_opts((MANAGED_T | JOINTED | SECURE), st_length_get(cred->auth.username) - at - 1))) {
-				log_error("Failed to allocate email domain stringer.");
-				goto cleanup_cred;
-			}
-
-			st_copy_in(cred->auth.domain, st_data_get(cred->auth.username) + at + 1, st_length_get(result->auth.username) - at - 1);
-		}
-		else if (!(cred->auth.domain = st_merge_opts((MANAGED_T | JOINTED | SECURE), "s", magma.system.domain))) {
-			log_error("Failed to create default magma domain stringer.");
-			goto cleanup_cred;
-		}
-
-		if(!(binary = st_alloc_opts((BLOCK_T | CONTIGUOUS | SECURE), 64))) {
-			log_error("Failed to allocate block for binary data.");
-			goto cleanup_cred;
-		}
-		else if(!(combo = st_merge_opts((MANAGED_T | CONTIGUOUS | SECURE), "sss", result->auth.username, magma.secure.salt, password))) {
-			log_error("Failed to merge authentication information for hashing key.");
-			goto cleanup_binary;
-		}
-
-		temp = hash_sha512(combo, binary);
-		st_free(combo);
-
-		if(temp != binary) {
-			log_error("Failed to hash authentication information.");
-			goto cleanup_binary;
-		}
-		else if(!(cred->auth.key = hex_encode_opts(binary, (MANAGED_T | CONTIGUOUS | SECURE)))) {
-			log_error("Failed to encode authentication key");
-			goto cleanup_binary;
-		}
-		else if(!(combo = st_merge_opts((MANAGED_T | CONTIGUOUS | SECURE), "ss", password, binary))) {
-			log_error("Failed to merge authentication information for first round password hashing.");
-			goto cleanup_binary;
-		}
-
-		temp = hash_sha512(combo, binary);
-		st_free(combo);
-
-		if(temp != binary) {
-			log_error("Failed first round of password hashing.");
-			goto cleanup_binary;
-		}
-		else if(!(combo = st_merge_opts((MANAGED_T | CONTIGUOUS | SECURE), "ss", password, binary))) {
-			log_error("Failed to merge authentication information for second round password hashing.");
-			goto cleanup_binary;
-		}
-
-		temp = hash_sha512(combo, binary);
-		st_free(combo);
-
-		if(temp != binary) {
-			log_error("Failed second round of password hashing.");
-			goto cleanup_binary;
-		}
-		else if(cred->auth.password = hex_encode_opts(binary, (MANAGED_T | CONTIGUOUS | SECURE))) {
-			log_error("Failed to encode password hash.");
-			goto cleanup_binary;
-		}
-
-		st_free(binary);
+	if(!credential_init(cred, username, password, salt)) {
+		log_error("Failed to initialize credentials object.");
+		goto cleanup_cred;
 	}
-	else {
-		cred->authentication = STACIE;
 
-		//FIXME TODO: ADD magma.secure.bonus value to magma config file and make sure it gets imported correctly.
-		if(!(rounds = stacie_rounds_calculate(password, 0 /* should be magma.secure.bonus */ ))) {
-			log_error("Failed to calculate STACIE rounds number.");
-			goto cleanup_cred;
-		}
-		else if(!(seed = stacie_seed_extract(rounds, cred->auth.username, password, salt))) {
-			log_error("Failed STACIE entropy seed extraction.");
-			goto cleanup_cred;
-		}
+	return cred;
 
-		cred->auth.key = stacie_hashed_key_derive(seed, rounds, cred->auth.username, password, salt);
-		st_free(seed);
+cleanup_cred:
+	credential_free(cred);
+error:
+	return NULL;
+}
 
-		if(!cred->auth.key) {
-			log_error("Failed STACIE master key derivation.");
-			goto cleanup_cred;
-		}
-		else if(!(passkey = stacie_hashed_key_derive(cred->auth.key, rounds, cred->auth.username, password, salt))) {
-			log_error("Failed STACIE password key derivation.");
-			goto cleanup_cred;
-		}
 
-		cred->auth.password = stacie_hashed_token_derive(passkey, cred->auth.username, salt, NULL);
-		st_free(passkey);
+static int credential_init(credential_t *cred, stringer_t *username, stringer_t *password, stringer_t *salt) {
 
-		if(!cred->auth.password) {
-			log_error("Failed STACIE verification token derivation.");
-			goto cleanup_cred;
-		}
+	if(!cred) {
+		log_pedantic("NULL credential object passed in.");
+		goto error;
+	}
+
+	if(st_empty(username)) {
+		log_pedantic("NULL or empty username stringer passed in.");
+		goto error;
+	}
+
+	if(st_empty(password)) {
+		log_pedantic("NULL or empty password stringer passed in.");
+		goto error;
+	}
+
+	if(!salt) {
+		log_pedantic("NULL salt stringer passed in.");
+		goto error;
+	}
+
+	switch(st_empty(salt)) {
+
+	case true:
+		return credential_init_legacy(cred, username, password);
+	case false:
+		return credential_init_stacie(cred, username, password, salt);
+	default:
+		goto error;
 
 	}
 
-	result = cred;
-	goto end;
+error:
+	return 0;
+}
+
+/**
+ * @brief	Populates
+ */
+static int credential_init_legacy(credential_t *cred, stringer_t *username, stringer_t *password) {
+
+	size_t at_offset;
+	stringer_t *binary, *combo;
+
+	cred->authentication = LEGACY;
+
+	if(!(binary = st_alloc_opts((BLOCK_T | CONTIGUOUS | SECURE), 64))) {
+		log_error("Failed to allocate block for binary data.");
+		goto error;
+	}
+
+	if(!(combo = st_merge_opts((MANAGED_T | CONTIGUOUS | SECURE), "sss", cred->auth.username, magma.secure.salt, password))) {
+		log_error("Failed to merge authentication information for hashing key.");
+		goto cleanup_binary;
+	}
+
+	binary = hash_sha512(combo, binary);
+	st_free(combo);
+
+	if(!binary) {
+		log_error("Failed to hash authentication information.");
+		goto cleanup_binary;
+	}
+
+	if(!(cred->auth.key = hex_encode_opts(binary, (MANAGED_T | CONTIGUOUS | SECURE)))) {
+		log_error("Failed to encode authentication key");
+		goto cleanup_binary;
+	}
+
+	if(!(combo = st_merge_opts((MANAGED_T | CONTIGUOUS | SECURE), "ss", password, binary))) {
+		log_error("Failed to merge authentication information for first round password hashing.");
+		goto cleanup_binary;
+	}
+
+	binary = hash_sha512(combo, binary);
+	st_free(combo);
+
+	if(!binary) {
+		log_error("Failed first round of password hashing.");
+		goto cleanup_binary;
+	}
+
+	if(!(combo = st_merge_opts((MANAGED_T | CONTIGUOUS | SECURE), "ss", password, binary))) {
+		log_error("Failed to merge authentication information for second round password hashing.");
+		goto cleanup_binary;
+	}
+
+	binary = hash_sha512(combo, binary);
+	st_free(combo);
+
+	if(!binary) {
+		log_error("Failed second round of password hashing.");
+		goto cleanup_binary;
+	}
+
+	if(cred->auth.password = hex_encode_opts(binary, (MANAGED_T | CONTIGUOUS | SECURE))) {
+		log_error("Failed to encode password hash.");
+		goto cleanup_binary;
+	}
+
+	st_free(binary);
+
+	return 1;
 
 cleanup_binary:
 	st_free(binary);
-cleanup_cred:
-	credential_free(cred);
-end:
-	return result;
+error:
+	return 0;
+}
+
+static int credential_init_stacie(credential_t *cred, stringer_t *username, stringer_t *password, stringer_t *salt) {
+
+	uint_t rounds;
+	stringer_t *seed, *passkey;
+
+	cred->authentication = STACIE;
+
+	//FIXME TODO: ADD magma.secure.bonus value to magma config file and make sure it gets imported correctly.
+	if(!(rounds = stacie_rounds_calculate(password, 0 /* should be magma.secure.bonus */ ))) {
+		log_error("Failed to calculate STACIE rounds number.");
+		goto error;
+	}
+
+	if(!(seed = stacie_seed_extract(rounds, cred->auth.username, password, salt))) {
+		log_error("Failed STACIE entropy seed extraction.");
+		goto error;
+	}
+
+	cred->auth.key = stacie_hashed_key_derive(seed, rounds, cred->auth.username, password, salt);
+	st_free(seed);
+
+	if(!cred->auth.key) {
+		log_error("Failed STACIE master key derivation.");
+		goto error;
+	}
+
+	if(!(passkey = stacie_hashed_key_derive(cred->auth.key, rounds, cred->auth.username, password, salt))) {
+		log_error("Failed STACIE password key derivation.");
+		goto error;
+	}
+
+	cred->auth.password = stacie_hashed_token_derive(passkey, cred->auth.username, salt, NULL);
+	st_free(passkey);
+
+	if(!cred->auth.password) {
+		log_error("Failed STACIE verification token derivation.");
+		goto error;
+	}
+
+	return 1;
+
+error:
+	return 0;
 }
 

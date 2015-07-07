@@ -355,17 +355,17 @@ stringer_t * hex_encode_opts(stringer_t *input, uint32_t opts) {
 
 	if(st_empty(input)) {
 		log_pedantic("Empty stringer was passed in.");
-		goto end;
+		goto error;
 	}
 
 	if(!opts) {
 		log_pedantic("Invalid stringer options were passed in.");
-		goto end;
+		goto error;
 	}
 
 	if(!(result = st_alloc_opts(opts, st_length_get(input) * 2))) {
 		log_error("Failed to allocate memory for hex-encoded output.");
-		goto end;
+		goto error;
 	}
 
 	if(result != hex_encode_st(input, result)) {
@@ -373,11 +373,12 @@ stringer_t * hex_encode_opts(stringer_t *input, uint32_t opts) {
 		goto cleanup_result;
 	}
 
+	return result;
+
 cleanup_result:
 	st_free(result);
-	result = NULL;
-end:
-	return result;
+error:
+	return NULL;
 }
 
 /**
@@ -396,14 +397,14 @@ stringer_t * hex_decode_opts(stringer_t *input, uint32_t opts) {
 
 	if(!opts) {
 		log_pedantic("Invalid stringer options were passed in.");
-		goto end;
+		goto error;
 	}
 
 	insize = st_length_get(input);
 
 	if(!(result = st_alloc_opts(opts, (insize % 2) ? ((insize + 1) / 2) : (insize / 2) ))) {
 		log_error("Failed to allocate memory for hex-encoded output.");
-		goto end;
+		goto error;
 	}
 
 	if(result != hex_decode_st(input, result)) {
@@ -411,9 +412,10 @@ stringer_t * hex_decode_opts(stringer_t *input, uint32_t opts) {
 		goto cleanup_result;
 	}
 
+	return result;
+
 cleanup_result:
 	st_free(result);
-	result = NULL;
-end:
-	return result;
+error:
+	return NULL;
 }

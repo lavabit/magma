@@ -26,7 +26,7 @@ START_TEST (check_users_credentials_valid_s) {
 		if (!(user_check_cred = credential_alloc_auth(CONSTANT("magma"), CONSTANT("test")))) {
 			errmsg = st_import("Credential creation failed. { user = magma / password = test }", 63);
 		}
-		else if ((state = meta_get(user_check_cred->auth.username, user_check_cred->auth.domain, user_check_cred->auth.password, user_check_cred->auth.key, META_PROT_GENERIC,
+		else if ((state = meta_get(user_check_cred, META_PROT_GENERIC,
 			META_GET_MESSAGES | META_GET_FOLDERS | META_GET_CONTACTS, &(user_check_data))) != 1) {
 			errmsg = st_aprint("Authentication should have succeeded. { user = magma / password = test / meta_get = %i }", state);
 		}
@@ -48,14 +48,14 @@ START_TEST (check_users_credentials_valid_s) {
 		if (!errmsg && !(user_check_cred = credential_alloc_auth(CONSTANT("magma@lavabit.com"), CONSTANT("test")))) {
 			errmsg = st_import("Credential creation failed. { user = magma@lavabit.com / password = test }", 75);
 		}
-		else if (!errmsg && (state = meta_get(user_check_cred->auth.username, user_check_cred->auth.domain, user_check_cred->auth.password, user_check_cred->auth.key, META_PROT_GENERIC,
+		else if (!errmsg && (state = meta_get(user_check_cred, META_PROT_GENERIC,
 			META_GET_MESSAGES | META_GET_FOLDERS | META_GET_CONTACTS, &(user_check_data))) != 1) {
 			errmsg = st_aprint("Authentication should have succeeded. { user = magma@lavabit.com / password = test / meta_get = %i }", state);
 		}
 
 		if (user_check_data) {
-			meta_remove(user_check_cred->auth.username, META_PROT_GENERIC);
-			if (meta_user_prune(user_check_cred->auth.username) < 1) {
+			meta_remove(user_check_cred, META_PROT_GENERIC);
+			if (meta_user_prune(user_check_cred) < 1) {
 				errmsg = st_import("An error occurred while trying to prune the user data from the object cache. { user = magma@lavabit.com / password = test }", 124);
 			}
 			user_check_data = NULL;
@@ -70,14 +70,14 @@ START_TEST (check_users_credentials_valid_s) {
 		if (!errmsg && !(user_check_cred = credential_alloc_auth(CONSTANT("magma+label@lavabit.com"), CONSTANT("test")))) {
 			errmsg = st_import("Credential creation failed. { user = magma+label@lavabit.com / password = test }", 81);
 		}
-		else if (!errmsg && (state = meta_get(user_check_cred->auth.username, user_check_cred->auth.domain, user_check_cred->auth.password, user_check_cred->auth.key, META_PROT_GENERIC,
+		else if (!errmsg && (state = meta_get(user_check_cred, META_PROT_GENERIC,
 			META_GET_MESSAGES | META_GET_FOLDERS | META_GET_CONTACTS, &(user_check_data))) != 1) {
 			errmsg = st_aprint("Authentication should have succeeded. { user = magma+label@lavabit.com / password = test / meta_get = %i }", state);
 		}
 
 		if (user_check_data) {
-			meta_remove(user_check_cred->auth.username, META_PROT_GENERIC);
-			if (meta_user_prune(user_check_cred->auth.username) < 1) {
+			meta_remove(user_check_cred, META_PROT_GENERIC);
+			if (meta_user_prune(user_check_cred) < 1) {
 				errmsg = st_import("An error occurred while trying to prune the user data from the object cache. { user = magma+label@lavabit.com / password = test }", 130);
 			}
 			user_check_data = NULL;
@@ -124,8 +124,7 @@ START_TEST (check_users_credentials_invalid_s) {
 	if (!errmsg && !(user_check_cred = credential_alloc_auth(CONSTANT("magma"), CONSTANT("password")))) {
 		errmsg = st_import("Credential creation failed. Authentication was not attempted. { user = magma / password = password }", 101);
 	}
-	else if (!errmsg && (state = meta_get(user_check_cred->auth.username, user_check_cred->auth.domain, user_check_cred->auth.password, user_check_cred->auth.key,
-			META_PROT_GENERIC, META_GET_MESSAGES | META_GET_FOLDERS | META_GET_CONTACTS, &(user_check_data))) != 0) {
+	else if (!errmsg && (state = meta_get(user_check_cred, META_PROT_GENERIC, META_GET_MESSAGES | META_GET_FOLDERS | META_GET_CONTACTS, &(user_check_data))) != 0) {
 		errmsg = st_aprint("Authentication should have failed but succeeded instead. { user = magma / password = password / meta_get = %i }", state);
 	}
 
@@ -143,8 +142,7 @@ START_TEST (check_users_credentials_invalid_s) {
 	if (!errmsg && !(user_check_cred = credential_alloc_auth(CONSTANT("magma@lavabit.com"), CONSTANT("password")))) {
 		errmsg = st_import("Credential creation failed. Authentication was not attempted. { user = magma@lavabit.com / password = password }", 113);
 	}
-	else if (!errmsg && (state = meta_get(user_check_cred->auth.username, user_check_cred->auth.domain, user_check_cred->auth.password, user_check_cred->auth.key,
-			META_PROT_GENERIC, META_GET_MESSAGES | META_GET_FOLDERS | META_GET_CONTACTS, &(user_check_data))) != 0) {
+	else if (!errmsg && (state = meta_get(user_check_cred, META_PROT_GENERIC, META_GET_MESSAGES | META_GET_FOLDERS | META_GET_CONTACTS, &(user_check_data))) != 0) {
 		errmsg = st_aprint("Authentication should have failed but succeeded instead. { user = magma@lavabit.com / password = password / meta_get = %i }", state);
 	}
 
@@ -162,8 +160,7 @@ START_TEST (check_users_credentials_invalid_s) {
 	if (!errmsg && !(user_check_cred = credential_alloc_auth(CONSTANT("magma+label@lavabit.com"), CONSTANT("password")))) {
 		errmsg = st_import("Credential creation failed. Authentication was not attempted. { user = magma+label@lavabit.com / password = password }", 119);
 	}
-	else if (!errmsg && (state = meta_get(user_check_cred->auth.username, user_check_cred->auth.domain, user_check_cred->auth.password, user_check_cred->auth.key,
-			META_PROT_GENERIC, META_GET_MESSAGES | META_GET_FOLDERS | META_GET_CONTACTS, &(user_check_data))) != 0) {
+	else if (!errmsg && (state = meta_get(user_check_cred, META_PROT_GENERIC, META_GET_MESSAGES | META_GET_FOLDERS | META_GET_CONTACTS, &(user_check_data))) != 0) {
 		errmsg = st_aprint("Authentication should have failed but succeeded instead. { user = magma+label@lavabit.com / password = password / meta_get = %i }", state);
 	}
 
@@ -182,8 +179,7 @@ START_TEST (check_users_credentials_invalid_s) {
 	if (!errmsg && !(user_check_cred = credential_alloc_auth(CONSTANT("magma@nerdshack.com"), CONSTANT("test")))) {
 		errmsg = st_import("Credential creation failed. Authentication was not attempted. { user = magma@nerdshack.com / password = test }", 115);
 	}
-	else if (!errmsg && (state = meta_get(user_check_cred->auth.username, user_check_cred->auth.domain, user_check_cred->auth.password, user_check_cred->auth.key,
-			META_PROT_GENERIC, META_GET_MESSAGES | META_GET_FOLDERS | META_GET_CONTACTS, &(user_check_data))) != 0) {
+	else if (!errmsg && (state = meta_get(user_check_cred, META_PROT_GENERIC, META_GET_MESSAGES | META_GET_FOLDERS | META_GET_CONTACTS, &(user_check_data))) != 0) {
 		errmsg = st_aprint("Authentication should have failed but succeeded instead. At least until an email address can be mapped to a username. { user = magma@nerdshack.com / password = test / meta_get = %i }", state);
 	}
 
@@ -205,8 +201,7 @@ START_TEST (check_users_credentials_invalid_s) {
 		else if (!(user_check_cred = credential_alloc_auth(username, CONSTANT("test")))) {
 			errmsg = st_aprint("Credential creation failed. Authentication was not attempted. { user = %.*s / password = test }",	st_length_int(username), st_char_get(username));
 		}
-		else if ((state = meta_get(user_check_cred->auth.username, user_check_cred->auth.domain, user_check_cred->auth.password, user_check_cred->auth.key,
-				META_PROT_GENERIC, META_GET_MESSAGES | META_GET_FOLDERS | META_GET_CONTACTS, &(user_check_data))) != 0) {
+		else if ((state = meta_get(user_check_cred, META_PROT_GENERIC, META_GET_MESSAGES | META_GET_FOLDERS | META_GET_CONTACTS, &(user_check_data))) != 0) {
 			errmsg = st_aprint("Authentication should have failed but succeeded instead. { user = RANDOM BINARY DATA / password = RANDOM BINARY DATA / meta_get = %i }", state);
 		}
 
@@ -231,7 +226,7 @@ START_TEST (check_users_credentials_invalid_s) {
 		if (!username || !rand_write(username)) {
 			errmsg = st_import("An error occurred while trying to generate a random username. { user = NULL }", 78);
 		}
-		else if ((user_check_cred = credential_alloc_auth(username, CONSTANT("test"))) && (state = meta_get(user_check_cred->auth.username, user_check_cred->auth.domain, user_check_cred->auth.password, user_check_cred->auth.key,
+		else if ((user_check_cred = credential_alloc_auth(username, CONSTANT("test"))) && (state = meta_get(user_check_cred,
 				META_PROT_GENERIC, META_GET_MESSAGES | META_GET_FOLDERS | META_GET_CONTACTS, &(user_check_data))) != 0) {
 			errmsg = st_aprint("Authentication should have failed but succeeded instead. { user = RANDOM BINARY DATA / password = test / meta_get = %i }", state);
 		}
@@ -258,8 +253,7 @@ START_TEST (check_users_credentials_invalid_s) {
 		if (!username || !rand_write(username) || !password || !rand_write(password)) {
 			errmsg = st_import("Random username and password generation failed. { user = NULL / password = NULL }", 82);
 		}
-		else if ((user_check_cred = credential_alloc_auth(username, password)) && (state = meta_get(user_check_cred->auth.username, user_check_cred->auth.domain,
-			user_check_cred->auth.password, user_check_cred->auth.key, META_PROT_GENERIC, META_GET_MESSAGES | META_GET_FOLDERS | META_GET_CONTACTS, &(user_check_data))) != 0) {
+		else if ((user_check_cred = credential_alloc_auth(username, password)) && (state = meta_get(user_check_cred, META_PROT_GENERIC, META_GET_MESSAGES | META_GET_FOLDERS | META_GET_CONTACTS, &(user_check_data))) != 0) {
 			errmsg = st_aprint("Authentication should have failed but succeeded instead. { user = RANDOM BINARY DATA / password = RANDOM BINARY DATA / meta_get = %i }", state);
 		}
 

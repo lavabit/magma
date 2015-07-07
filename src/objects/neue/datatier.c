@@ -23,6 +23,11 @@ stringer_t * credential_fetch_salt(stringer_t *username) {
 	stringer_t *temp, *result = NULL;
 	table_t *query;
 
+	if(st_empty(username)) {
+		log_pedantic("NULL username was passed in.");
+		goto end;
+	}
+
 	parameters[0].buffer_type = MYSQL_TYPE_STRING;
 	parameters[0].buffer_length = st_length_get(username);
 	parameters[0].buffer = st_char_get(username);
@@ -61,6 +66,7 @@ stringer_t * credential_fetch_salt(stringer_t *username) {
 
 		if(!(result = hex_decode_opts(temp, (MANAGED_T | JOINTED | SECURE)))) {
 			log_error("Failed to duplicate salt stringer.");
+			goto cleanup_temp;
 		}
 
 	}

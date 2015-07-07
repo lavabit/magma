@@ -1257,12 +1257,10 @@ bool_t meta_data_fetch_user(meta_user_t *user) {
 /**
  * @brief	Build a meta user object by username, hashed password, and hashed key storage password.
  * @param	user		a user meta object with the username field populated.
- * @param	passhash	a managed string with a multi-round hashed of the user's password for mysql database lookup.
- * @param 	passkeys		a managed string with a single-pass hash of the user's password.
- * @param	type		Type of user authentication (STACIE or NATIVE)
+ * @param	cred		Credential object containing user password, passkey and authentication type.
  * @return	-1 for unexpected program/system error, 0 for password auth failure, or 1 on success.
  */
-int_t meta_data_user_build(meta_user_t *user, stringer_t *passhash, stringer_t *passkey, auth_type type) {
+int_t meta_data_user_build(meta_user_t *user, credential_t *cred) {
 
 	row_t *row;
 	table_t *result;
@@ -1270,14 +1268,14 @@ int_t meta_data_user_build(meta_user_t *user, stringer_t *passhash, stringer_t *
 	MYSQL_STMT **auth_stmt;
 
 	// Sanity check.
-	if (!user || st_empty(user->username) || !passhash || st_empty(passhash)) {
+	if (!user || st_empty(user->username) || !cred->auth.password || st_empty(cred->auth.password)) {
 		log_pedantic("Invalid data passed for structure build.");
 		return -1;
 	}
 
-	switch(type) {
+	switch(cred->authentication) {
 
-	case NATIVE:
+	case LEGACY:
 		auth_stmt = stmts.select_user;
 		break;
 	case STACIE:
@@ -1303,8 +1301,8 @@ int_t meta_data_user_build(meta_user_t *user, stringer_t *passhash, stringer_t *
 	parameters[0].buffer = st_char_get(user->username);
 
 	parameters[1].buffer_type = MYSQL_TYPE_STRING;
-	parameters[1].buffer_length = st_length_get(passhash);
-	parameters[1].buffer = st_char_get(passhash);
+	parameters[1].buffer_length = st_length_get(cred->auth.password);
+	parameters[1].buffer = st_char_get(cred->auth.password);
 
 	if (!(result = stmt_get_result(auth_stmt, parameters))) {
 		return -1;
@@ -1354,7 +1352,7 @@ int_t meta_data_user_build(meta_user_t *user, stringer_t *passhash, stringer_t *
 		user->lock_status = 0;
 	}
 
-	if ((user->passhash = st_dupe(passhash)) == NULL) {
+	if ((user->passhash = st_dupe(cred->auth.password)) == NULL) {
 		log_pedantic("Unable to copy password hash.");
 		return -1;
 	}
@@ -1372,11 +1370,11 @@ int_t meta_data_user_build(meta_user_t *user, stringer_t *passhash, stringer_t *
 	// Finally, we make sure that the user has generated an EC pair for on-drive mail storage encryption - if they need one.
 	// But they still might need a storage key if the the secure flag is off and there is a batch of encrypted mail messages that needs to be decrypted.
 	if ((user->flags & META_USER_ENCRYPT_DATA) &&
-		(meta_data_user_build_storage_keys (user->usernum, passkey, &(user->storage_privkey), &(user->storage_pubkey), false, false, 0) < 0)) {
+		(meta_data_user_build_storage_keys (user->usernum, cred->auth.key, &(user->storage_privkey), &(user->storage_pubkey), false, false, 0) < 0)) {
 		log_pedantic("A user with the secure storage feature enabled does not have storage keys and the creation attempt failed.");
 		return -1;
 	} else if (!(user->flags & META_USER_ENCRYPT_DATA) &&
-		(meta_data_user_build_storage_keys (user->usernum, passkey, &(user->storage_privkey), &(user->storage_pubkey), true, false, 0) < 0)) {
+		(meta_data_user_build_storage_keys (user->usernum, cred->auth.key, &(user->storage_privkey), &(user->storage_pubkey), true, false, 0) < 0)) {
 		//log_pedantic("A user with the secure storage feature disabled does not have storage keys in the database.");
 	}
 

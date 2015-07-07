@@ -11,7 +11,6 @@
  */
 
 #include "magma.h"
-#include "build.h"
 
 #ifndef MAGMA_BUILD
 #error Magma build version is missing.

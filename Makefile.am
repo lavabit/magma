@@ -6,25 +6,24 @@ AM_CFLAGS = -Wfatal-errors -Werror
 # Note that we specify the include directories for the bundled dependencies
 # here.
 COMMON_CPPFLAGS = \
-		-I$(top_builddir) \
 		-I$(top_srcdir)/src \
-		-I$(top_srcdir)/build_lib/sources/spf2/src/include \
-		-I$(top_srcdir)/build_lib/sources/clamav/libclamav \
-		-I$(top_srcdir)/build_lib/sources/mysql/include \
-		-I$(top_srcdir)/build_lib/sources/openssl/include \
-		-I$(top_srcdir)/build_lib/sources/lzo/include \
-		-I$(top_srcdir)/build_lib/sources/xml2/include \
-		-I$(top_srcdir)/build_lib/sources/zlib \
-		-I$(top_srcdir)/build_lib/sources/bzip2 \
-		-I$(top_srcdir)/build_lib/sources/tokyocabinet \
-		-I$(top_srcdir)/build_lib/sources/memcached \
-		-I$(top_srcdir)/build_lib/sources/dkim/libopendkim \
-		-I$(top_srcdir)/build_lib/sources/dspam/src \
-		-I$(top_srcdir)/build_lib/sources/jansson/src \
-		-I$(top_srcdir)/build_lib/sources/gd \
-		-I$(top_srcdir)/build_lib/sources/png \
-		-I$(top_srcdir)/build_lib/sources/jpeg \
-		-I$(top_srcdir)/build_lib/sources/freetype/include
+		-I@MAGMA_SHARED_LIB_DIR@/sources/spf2/src/include \
+		-I@MAGMA_SHARED_LIB_DIR@/sources/clamav/libclamav \
+		-I@MAGMA_SHARED_LIB_DIR@/sources/mysql/include \
+		-I@MAGMA_SHARED_LIB_DIR@/sources/openssl/include \
+		-I@MAGMA_SHARED_LIB_DIR@/sources/lzo/include \
+		-I@MAGMA_SHARED_LIB_DIR@/sources/xml2/include \
+		-I@MAGMA_SHARED_LIB_DIR@/sources/zlib \
+		-I@MAGMA_SHARED_LIB_DIR@/sources/bzip2 \
+		-I@MAGMA_SHARED_LIB_DIR@/sources/tokyocabinet \
+		-I@MAGMA_SHARED_LIB_DIR@/sources/memcached \
+		-I@MAGMA_SHARED_LIB_DIR@/sources/dkim/libopendkim \
+		-I@MAGMA_SHARED_LIB_DIR@/sources/dspam/src \
+		-I@MAGMA_SHARED_LIB_DIR@/sources/jansson/src \
+		-I@MAGMA_SHARED_LIB_DIR@/sources/gd \
+		-I@MAGMA_SHARED_LIB_DIR@/sources/png \
+		-I@MAGMA_SHARED_LIB_DIR@/sources/jpeg \
+		-I@MAGMA_SHARED_LIB_DIR@/sources/freetype/include
 
 noinst_LIBRARIES = \
 		libmagma.a
@@ -39,7 +38,10 @@ magmad_LDADD = \
 magmad_CPPFLAGS = $(COMMON_CPPFLAGS)
 magmad_SOURCES = src/magma.c
 
-libmagma_a_CPPFLAGS = $(COMMON_CPPFLAGS)
+libmagma_a_CPPFLAGS = \
+		-DMAGMA_BUILD="\"$(shell cat .magma_build)\"" \
+		-DMAGMA_STAMP="\"$(shell cat .magma_stamp)\"" \
+		$(COMMON_CPPFLAGS)
 libmagma_a_SOURCES = \
 		src/core/type.c \
 		src/core/indexes/cursors.c \
@@ -310,20 +312,38 @@ tests_CFLAGS = @CHECK_CFLAGS@
 tests_LDADD = libmagma.a -ldl -lrt @CHECK_LIBS@
 
 # Targets to build before we start compiling
-BUILT_SOURCES = $(top_srcdir)/build_lib/magmad.so build.h
+BUILT_SOURCES = @MAGMA_SHARED_LIB_DIR@/magmad.so git_stamp date_stamp
 
-# The idea here is that the build_lib directory may be provided through
+# The idea here is that the MAGMA_SHARED_LIB_DIR directory may be provided through
 # external means (e.g., download).
-$(top_srcdir)/build_lib/magmad.so:
-		mkdir -p $(top_srcdir)/build_lib && \
-		cd $(top_srcdir)/build_lib && \
-		../scripts/builders/build.lib.sh extract && \
-		../scripts/builders/build.lib.sh prep && \
-		../scripts/builders/build.lib.sh build && \
-		../scripts/builders/build.lib.sh combine
+@MAGMA_SHARED_LIB_DIR@/magmad.so:
+		mkdir -p @MAGMA_SHARED_LIB_DIR@ && \
+		cd @MAGMA_SHARED_LIB_DIR@ && \
+		$(top_srcdir)/scripts/builders/build.lib.sh extract && \
+		$(top_srcdir)/scripts/builders/build.lib.sh prep && \
+		$(top_srcdir)/scripts/builders/build.lib.sh build && \
+		$(top_srcdir)/scripts/builders/build.lib.sh combine
 
-build.h: .FORCE
-		printf "#define MAGMA_BUILD \"6.0.1-$$(git log --format="%H" -n 1 | cut -c33-40)\"\n" > build.h
-		date +'#define MAGMA_STAMP "%Y%m%d.%H%M"' >> build.h
+git_stamp:
+	NEW_GIT_STAMP=`git log --format="%H" -n 1 | cut -c33-40`; \
+	if test ! -f $(top_builddir)/.magma_build; then \
+		echo "$$NEW_GIT_STAMP" > $(top_builddir)/.magma_build; \
+	else \
+		OLD_GIT_STAMP=`cat $(top_builddir)/.magma_build`; \
+		if test "$$OLD_GIT_STAMP" != "$$NEW_GIT_STAMP" ; then \
+			echo "$$NEW_GIT_STAMP" > $(top_builddir)/.magma_build; \
+		fi \
+	fi
 
-.PHONY: .FORCE
+date_stamp:
+	NEW_DATE_STAMP=`date +'%Y%m%d.%H%M'`; \
+	if test ! -f $(top_builddir)/.magma_stamp; then \
+		echo "$$NEW_DATE_STAMP" > $(top_builddir)/.magma_stamp; \
+	else \
+		OLD_DATE_STAMP=`cat $(top_builddir)/.magma_stamp`; \
+		if test "$$OLD_DATE_STAMP" != "$$NEW_DATE_STAMP" ; then \
+			echo "$$NEW_DATE_STAMP" > $(top_builddir)/.magma_stamp; \
+		fi \
+	fi
+
+.PHONY: git_stamp date_stamp

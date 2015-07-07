@@ -1,7 +1,3 @@
-# 7/1/2015 Deprecated.
-
-Todo: These instructions are out of date since the autotools/vagrant update.  Update is needed.
-
 # Run the magma server
 
 This information relies on having previously followed the steps for building the magma server located [here] (<https://github.com/lavabit/magma.classic/blob/master/docs/magma-build.md>).

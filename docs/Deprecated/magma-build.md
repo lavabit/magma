@@ -1,7 +1,3 @@
-# 7/1/2015 Deprecated. 
-
-Todo: These instructions are out of date since autotools has been used to replace the eclipse based build directives.  An update is needed.
-
 # Build the magma project
 
 ## Load the Lavabit development environment

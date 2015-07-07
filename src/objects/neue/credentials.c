@@ -223,18 +223,18 @@ credential_t * credential_alloc_auth(stringer_t *username, stringer_t *password)
 		goto end;
 	}
 
-	if(!(sanitized = credential_address(username))) {
-		log_error("Failed to sanitize username.");
+	if(!(cred = mm_alloc(sizeof(credential_t)))) {
+		log_error("Failed to allocate memory for credentials object.");
 		goto end;
 	}
 
-	if(!(cred = mm_alloc(sizeof(credential_t)))) {
-		log_error("Failed to allocate memory for credentials object.");
-		goto cleanup_sanitized;
+	if(!(sanitized = credential_address(username))) {
+		log_error("Failed to sanitize username.");
+		goto cleanup_cred;
 	}
 
 	cred->type = CREDENTIAL_AUTH;
-	cred->auth_username = credential_username(sanitized);
+	cred->auth.username = credential_username(sanitized);
 	st_free(sanitized);
 
 	if(!cred->auth.username) {
@@ -297,7 +297,7 @@ credential_t * credential_alloc_auth(stringer_t *username, stringer_t *password)
 			log_error("Failed first round of password hashing.");
 			goto cleanup_binary;
 		}
-		else if(!(combo = st_merge_opts(MANAGED_T | CONTIGUOUS | SECURE), "ss", password, binary)) {
+		else if(!(combo = st_merge_opts((MANAGED_T | CONTIGUOUS | SECURE), "ss", password, binary))) {
 			log_error("Failed to merge authentication information for second round password hashing.");
 			goto cleanup_binary;
 		}

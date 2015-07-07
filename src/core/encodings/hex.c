@@ -399,7 +399,7 @@ stringer_t * hex_decode_opts(stringer_t *input, uint32_t opts) {
 		goto end;
 	}
 
-	in_size = st_length_get(input);
+	insize = st_length_get(input);
 
 	if(!(result = st_alloc_opts(opts, (insize % 2) ? ((insize + 1) / 2) : (insize / 2) ))) {
 		log_error("Failed to allocate memory for hex-encoded output.");

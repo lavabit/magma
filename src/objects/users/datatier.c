@@ -1281,7 +1281,7 @@ int_t meta_data_user_build(meta_user_t *user, stringer_t *passhash, stringer_t *
 		auth_stmt = stmts.select_user;
 		break;
 	case STACIE:
-		auth_stmt = stmts.select_user_stacie.auth;
+		auth_stmt = stmts.select_user_stacie_auth;
 		break;
 	default:
 		log_error("Invalid authentication type.");

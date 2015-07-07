@@ -597,27 +597,27 @@ int_t meta_get(credential_t *cred, META_PROT flags, META_GET get, meta_user_t **
 	// Are we supposed to get the messages.
 	if ((get & META_GET_MESSAGES) && meta_messages_update(user, META_LOCKED) < 0) {
 		meta_user_unlock(user);
-		meta_remove(username, flags);
+		meta_remove(cred->auth.username, flags);
 		return -1;
 	}
 
 	if ((get & META_GET_FOLDERS) && meta_message_folders_update(user, META_LOCKED) < 0) {
 		meta_user_unlock(user);
-		meta_remove(username, flags);
+		meta_remove(cred->auth.username, flags);
 		return -1;
 	}
 
 	// Are we supposed to update the folders.
 	if ((get & META_GET_FOLDERS) && meta_folders_update(user, META_LOCKED) < 0) {
 		meta_user_unlock(user);
-		meta_remove(username, flags);
+		meta_remove(cred->auth.username, flags);
 		return -1;
 	}
 
 	// Are we supposed to update the folders.
 	if ((get & META_GET_CONTACTS) && meta_contacts_update(user, META_LOCKED) < 0) {
 		meta_user_unlock(user);
-		meta_remove(username, flags);
+		meta_remove(cred->auth.username, flags);
 		return -1;
 	}
 

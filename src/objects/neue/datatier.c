@@ -53,7 +53,7 @@ stringer_t * credential_fetch_salt(stringer_t *username) {
 			goto cleanup_query;
 		}
 
-		mm_set(st_data_get(result, 0, 1));
+		mm_set(st_data_get(result), 0, 1);
 		st_length_set(result, 0);
 		goto cleanup_query;
 	}

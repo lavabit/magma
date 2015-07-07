@@ -1105,9 +1105,11 @@ clamav() {
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
 			export CPPFLAGS="$CPPFLAGS \
+				-I$M_SOURCES/curl/include \
 				-I$M_SOURCES/openssl/include \
 				-I$M_SOURCES/zlib"
 			export LDFLAGS="\
+				-L$M_SOURCES/curl/lib -Wl,-rpath,$M_SOURCES/curl/lib\
 				-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl\
 				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
 

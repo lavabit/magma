@@ -75,6 +75,7 @@ Vagrant.configure(2) do |config|
     sudo yum -y install ncurses-devel # (mysql)
     sudo yum -y install gcc-c++
     sudo yum -y install libbsd-devel # (dkim)
+    sudo yum -y install git # (for generating build stamps)
 
     # Install test dependencies
     sudo yum -y install valgrind-devel

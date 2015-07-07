@@ -39,7 +39,10 @@ magmad_LDADD = \
 magmad_CPPFLAGS = $(COMMON_CPPFLAGS)
 magmad_SOURCES = src/magma.c
 
-libmagma_a_CPPFLAGS = $(COMMON_CPPFLAGS)
+libmagma_a_CPPFLAGS = \
+		-DMAGMA_BUILD="\"$(shell cat .magma_build)\"" \
+		-DMAGMA_STAMP="\"$(shell cat .magma_stamp)\"" \
+		$(COMMON_CPPFLAGS)
 libmagma_a_SOURCES = \
 		src/core/type.c \
 		src/core/indexes/cursors.c \
@@ -309,7 +312,7 @@ tests_CFLAGS = @CHECK_CFLAGS@
 tests_LDADD = libmagma.a -ldl -lrt @CHECK_LIBS@
 
 # Targets to build before we start compiling
-BUILT_SOURCES = $(top_srcdir)/build_lib/magmad.so build.h
+BUILT_SOURCES = $(top_srcdir)/build_lib/magmad.so stamps
 
 # The idea here is that the build_lib directory may be provided through
 # external means (e.g., download).
@@ -321,8 +324,18 @@ $(top_srcdir)/build_lib/magmad.so:
 		../scripts/builders/build.lib.sh build && \
 		../scripts/builders/build.lib.sh combine
 
-build.h: .FORCE
-		printf "#define MAGMA_BUILD \"6.0.1-$$(git log --format="%H" -n 1 | cut -c33-40)\"\n" > build.h
-		date +'#define MAGMA_STAMP "%Y%m%d.%H%M"' >> build.h
+stamps:
+	NEW_GIT_STAMP=`git log --format="%H" -n 1 | cut -c33-40`; \
+	NEW_DATE_STAMP=`date +'%Y%m%d.%H%M'`; \
+	if test ! -f $(top_builddir)/.magma_build; then \
+		echo "$$NEW_GIT_STAMP" > $(top_builddir)/.magma_build; \
+		echo "$$NEW_DATE_STAMP" > $(top_builddir)/.magma_stamp; \
+	else \
+		OLD_GIT_STAMP=`cat $(top_builddir)/.magma_build`; \
+		if test "$$OLD_GIT_STAMP" != "$$NEW_GIT_STAMP" ; then \
+			echo "$$NEW_GIT_STAMP" > $(top_builddir)/.magma_build; \
+			echo "$$NEW_DATE_STAMP" > $(top_builddir)/.magma_stamp; \
+		fi \
+	fi
 
-.PHONY: .FORCE
+.PHONY: stamps

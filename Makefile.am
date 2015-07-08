@@ -251,6 +251,9 @@ libmagma_a_SOURCES = \
 		src/web/contact/abuse.c \
 		src/web/contact/business.c \
 		src/web/contact/contact.c \
+		src/web/json_api/json_api.c \
+		src/web/json_api/endpoints.c \
+		src/web/json_api/helpers.c \
 		src/web/portal/config.c \
 		src/web/portal/contacts.c \
 		src/web/portal/endpoint.c \

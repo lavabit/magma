@@ -80,12 +80,43 @@ the new Lavabot service, but I'd think might be a useful addition early on. Whil
 to imagine circumstances in which the encrypted mailbox keys could be compromised, having
 a way to request a key change couldn't hurt and might just help.
 
+## Mailbox lifetime
+
+Another interesting decision is how long a mailbox should exist after creation, and can we aid
+self-identifying account owners in recovering passwords. It is certain that a few customers will lock
+themselves out of their accounts and blame it on password change failure. It might even be true!
+How can we help them? Obviously a devops tool should exist for setting passwords on accounts, but
+this can be a tricksy thing. Since mailbox encryption keys aren't available without the proper
+stacie password, a forced password change would result in the loss of all mail stored on the server.
+Even a devops tool would be unable to recover encrypted mailbox contents because the decryption keys
+are themselves encrypted with keys generated in the course of a stacie login. Another issue is that
+new mail *would* be available after a forced password change, whether the change was requested by the 
+legitimate account owner, a social engineering hack, or a legal court order.
+
+I see no serious objections to permitting forced password changes if the account owner has not 
+explicitly forbidden such an action (hey, a new feature to sell!) and with the understanding that all
+email on the server will be lost.
+
+What about mailbox addresses associated with inactive accounts?
+A policy on inactive account lifetime should also be carefully thought through. The simplest and
+arguably safest policy would be to assign a mailbox name once per existence of the Universe of discourse.
+If a customer abandons the account, and thereby the email address, it will remain forever unused.
+Releasing inactive account email addresses back into the pool of available names has its own set
+of concerns. One is that somewhere, someone has that email address in their contact list and
+might send email to the address. The new account holder would be able to impersonate the previous
+account holder(s) unless the sending party is cautious. On a side note, legal orders taking possession 
+of an account would enable impersonation of the previous account holder without any real recourse
+on the part of the server's owners. This is, after all, a trustful mode mail service.
+
+I see no serious objections to releasing mailbox names form inactive accounts after some reasonable 
+period of inactivity, say 1 or 2 years. All stored email would, of course, be lost.
+
 ## Other issues
 
 We should probably set some time after which legacy accounts will be purged from the system, if only to put
 a bit of urgency in the minds of existing customers. Good housekeeping also suggests removing old, unclaimed
 accounts at some point, and the released mailbox names could be made available again if the original
-customer does not claim her account.
+customer does not claim her account (but see the section above, **Mailbox lifetime**).
 
 I suggest we work to make all *stacification* mechanisms resemble non-legacy mechanisms as closely
 as possible (e.g., the initial *staciefication* password change should resemble a normal password

@@ -195,6 +195,7 @@ libmagma_a_SOURCES = \
 		src/objects/messages/meta.c \
 		src/objects/neue/credentials.c \
 		src/objects/neue/neue.c \
+		src/objects/neue/datatier.c \
 		src/objects/sessions/sessions.c \
 		src/objects/users/alerts.c \
 		src/objects/users/aliases.c \

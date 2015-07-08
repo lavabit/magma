@@ -376,20 +376,24 @@ int_t meta_user_update(meta_user_t *user, META_LOCK_STATUS locked) {
  * @brief	Build a user's meta information from specified data parameters.
  * @note	The user object will be pulled from the cache, if possible, or falls back to a database lookup by username+password.
  * @param	user		a pointer to the meta user object of the user that is to be filled.
- * @param	passhash	a managed string with a multi-round hash of the user's password.
- * @param	passkey		a managed string with a single-round hash of the user's password.
+ * @param	cred		Credentials object containing user authentication.
  * @param	locked		the meta lock status of the operation (if META_NEED_LOCK is supplied, the meta user object will be
  * 						locked for the duration of the function.
- * @return	true on success or false on failure.
+ * @return	-1 on error, 1 on success.
  */
 // TODO: The return convention here is pretty weird. It should probably be cleaned up at some point.
-int_t meta_user_build(meta_user_t *user, stringer_t *username, stringer_t *passhash, stringer_t *passkey, META_LOCK_STATUS locked) {
+int_t meta_user_build(meta_user_t *user, credential_t *cred, META_LOCK_STATUS locked) {
 
 	uint64_t serial;
 	int_t result = 0;
 
 	// Sanity.
-	if (!user || st_empty(username)) {
+	if (!user || st_empty(cred->auth.username) || st_empty(cred->auth.password) || st_empty(cred->auth.key)) {
+		return -1;
+	}
+
+	if(cred->type != CREDENTIAL_AUTH) {
+		log_error("Credential object needs to be of type CREDENTIAL_AUTH to be used to build a meta_user_t.");
 		return -1;
 	}
 
@@ -417,10 +421,10 @@ int_t meta_user_build(meta_user_t *user, stringer_t *username, stringer_t *passh
 		// If were reusing a cache structure, we might need to destroy the old copy of the username.
 		st_cleanup(user->username);
 
-		if (!(user->username = st_dupe(username))) {
+		if (!(user->username = st_dupe(cred->auth.username))) {
 			result = -1;
 		}
-		else if ((result = meta_data_user_build(user, passhash, passkey)) == 1 && (result = meta_data_fetch_mailbox_aliases(user)) &&
+		else if ((result = meta_data_user_build(user, cred)) == 1 && (result = meta_data_fetch_mailbox_aliases(user)) &&
 			!(user->serials.user = serial_get(OBJECT_USER, user->usernum))) {
 			user->serials.user = serial_increment(OBJECT_USER, user->usernum);
 		}
@@ -519,10 +523,7 @@ bool_t meta_user_serial_check(meta_user_t *user, uint64_t object) {
 /**
  * @brief	Lookup user by information and and return a meta user object.
  * @note	If the user is not found, one will be created.
- * @param	username	the username to be looked up.
- * @param	mboxdomain	if not NULL, an optional managed string containing the domain suffix of a mailbox address to be verified first.
- * @param	passhash	a managed string with a multi-round hash of the user's password.
- * @param	passkey		a managed string with a single-round hash of the user's password.
+ * @param	cred		Credentials object containing user log in information.
  * @param	flags		a set of flags specifying the protocol used by the calling function. Values can be META_PROT_NONE,
  * 						META_PROT_SMTP, META_PROT_POP, META_PROT_IMAP,  META_PROT_WEB, or META_PROT_GENERIC.
  * @param	get			a set of flags specifying the data to be retrieved (META_GET_NONE, META_GET_MESSAGES,
@@ -530,22 +531,27 @@ bool_t meta_user_serial_check(meta_user_t *user, uint64_t object) {
  * @param	output		the address of a meta user object that will store a pointer to the result of the lookup.
  * @return	-1 on error, 0 if the username information exists but there was an error, and 1 on success.
  */
-int_t meta_get(stringer_t *username, stringer_t *mboxdomain, stringer_t *passhash, stringer_t *passkey, META_PROT flags, META_GET get, meta_user_t **output) {
+int_t meta_get(credential_t *cred, META_PROT flags, META_GET get, meta_user_t **output) {
 
 	int_t state;
 	meta_user_t *user = NULL;
 	stringer_t *mailbox = NULL;
-	multi_t key = { .type = M_TYPE_STRINGER, .val.st = username };
+	multi_t key = { .type = M_TYPE_STRINGER, .val.st = cred->auth.username };
 
-	if (st_empty(username)) {
+	if (st_empty(cred->auth.username)) {
 		return 0;
 	}
 
+	if(cred->type != CREDENTIAL_AUTH) {
+		log_error("Specified credential object is not an authentication type.");
+		return -1;
+	}
+
 	// Fail if the specified mailbox does not even exist.
-	if (mboxdomain && !(mailbox = st_merge("sns", username, "@", mboxdomain))) {
+	if (cred->auth.domain && !(mailbox = st_merge("sns", cred->auth.username, "@", cred->auth.domain))) {
 		log_error("Unable to allocate space for user mailbox name.");
 		return -1;
-	} else if (mboxdomain && (!meta_data_check_mailbox(mailbox))) {
+	} else if (cred->auth.domain && (!meta_data_check_mailbox(mailbox))) {
 		st_free(mailbox);
 		return 0;
 	}
@@ -575,43 +581,43 @@ int_t meta_get(stringer_t *username, stringer_t *mboxdomain, stringer_t *passhas
 	meta_user_wlock(user);
 
 	// Pull the user information.
-	if ((state = meta_user_build(user, username, passhash, passkey, META_LOCKED)) < 0) {
+	if ((state = meta_user_build(user, cred, META_LOCKED)) < 0) {
 		meta_user_unlock(user);
 		// QUESTION: Why not using meta_user_ref_dec() on these?
-		meta_remove(username, flags);
+		meta_remove(cred->auth.username, flags);
 		return state;
 	}
 	// If we have the user information already.
-	else if (st_cmp_cs_eq(user->passhash, passhash)) {
+	else if (st_cmp_cs_eq(user->passhash, cred->auth.password)) {
 		meta_user_unlock(user);
-		meta_remove(username, flags);
+		meta_remove(cred->auth.username, flags);
 		return 0;
 	}
 
 	// Are we supposed to get the messages.
 	if ((get & META_GET_MESSAGES) && meta_messages_update(user, META_LOCKED) < 0) {
 		meta_user_unlock(user);
-		meta_remove(username, flags);
+		meta_remove(cred->auth.username, flags);
 		return -1;
 	}
 
 	if ((get & META_GET_FOLDERS) && meta_message_folders_update(user, META_LOCKED) < 0) {
 		meta_user_unlock(user);
-		meta_remove(username, flags);
+		meta_remove(cred->auth.username, flags);
 		return -1;
 	}
 
 	// Are we supposed to update the folders.
 	if ((get & META_GET_FOLDERS) && meta_folders_update(user, META_LOCKED) < 0) {
 		meta_user_unlock(user);
-		meta_remove(username, flags);
+		meta_remove(cred->auth.username, flags);
 		return -1;
 	}
 
 	// Are we supposed to update the folders.
 	if ((get & META_GET_CONTACTS) && meta_contacts_update(user, META_LOCKED) < 0) {
 		meta_user_unlock(user);
-		meta_remove(username, flags);
+		meta_remove(cred->auth.username, flags);
 		return -1;
 	}
 

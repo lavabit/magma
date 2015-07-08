@@ -18,9 +18,16 @@ enum {
 	M_NEUE_FLAGS_YYYY = 2 //!< M_NEUE_FLAGS_YYYY
 };
 
+typedef enum {
+	NONE,
+	LEGACY,
+	STACIE
+} auth_type;
+
 typedef struct {
 
 	int_t type;
+	auth_type authentication;
 
 	/// TODO: Add usernum to structure and call the appropriate fetch function to lookup its value.
 
@@ -62,6 +69,10 @@ credential_t *  credential_alloc_auth(stringer_t *username, stringer_t *password
 credential_t *  credential_alloc_mail(stringer_t *address);
 void            credential_free(credential_t *cred);
 stringer_t *    credential_username(stringer_t *s);
+
+/// datatier.c
+
+stringer_t *    credential_fetch_salt(stringer_t *username);
 
 #endif
 

@@ -217,7 +217,7 @@ void pop_pass(connection_t *con) {
 	st_free(password);
 
 	// Pull the user info out.
-	state = meta_get(con->pop.username, cred->auth.domain, cred->auth.password, cred->auth.key, META_PROT_POP, META_GET_MESSAGES, &(con->pop.user));
+	state = meta_get(cred, META_PROT_POP, META_GET_MESSAGES, &(con->pop.user));
 
 	// Securely delete this information, as these are the keys to the castle.
 	credential_free(cred);

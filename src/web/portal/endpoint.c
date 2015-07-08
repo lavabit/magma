@@ -225,7 +225,7 @@ void portal_endpoint_auth(connection_t *con) {
 	}
 
 	// Try getting the session out of the global cache.
-	state = meta_get(cred->auth.username, cred->auth.domain, cred->auth.password, cred->auth.key, META_PROT_WEB, META_GET_MESSAGES | META_GET_FOLDERS | META_GET_CONTACTS, &(user));
+	state = meta_get(cred, META_PROT_WEB, META_GET_MESSAGES | META_GET_FOLDERS | META_GET_CONTACTS, &(user));
 	con->http.session->warden.cred = cred;
 
 	// Not found, or invalid password.

@@ -306,7 +306,6 @@ stacie_hashed_key_derive (
 {
 	void *opt1;
 	void *opt2;
-	size_t input_len;
 	stringer_t *hashed_key;
 	stringer_t *hash_input;
 	stringer_t *count;
@@ -334,6 +333,7 @@ stacie_hashed_key_derive (
 	// The salt param is allowed to be NULL.  If it's not NULL, it must be
 	// less than 64 bytes long.
 	size_t salt_len;
+	// this will detect true for both NULL and zero length salt stringers
 	if (st_empty(salt)) {
 		salt_len = 0;
 	} else {
@@ -351,6 +351,7 @@ stacie_hashed_key_derive (
 		goto error;
 	}   // hashed_key is allocated
 
+	size_t input_len;
 	input_len = 64;
 	input_len += st_length_get(base);
 	input_len += st_length_get(username);
@@ -488,8 +489,6 @@ stacie_hashed_token_derive (
 	stringer_t *salt,
 	stringer_t *nonce)
 {
-	size_t salt_len = 0
-	size_t nonce_len = 0;
 	stringer_t *hashed_token;
 	stringer_t *hash_input;
 	stringer_t *count;
@@ -504,24 +503,40 @@ stacie_hashed_token_derive (
 		goto error;
 	}
 
-	if (!st_empty(salt) && ((salt_len = st_length_get(salt)) < 64)) {
-		log_pedantic("salt is NULL, empty or length != 64");
-		goto error;
+// is salt allowed to be null or empty?  This would suggest not (unlike the other 
+// times where salt can be null like stacie_seed_extract()
+	size_t salt_len = 0;
+	if (!st_empty(salt)) {
+		if ((salt_len = st_length_get(salt)) < 64) {
+			log_pedantic("salt is NULL, empty or length != 64");
+			goto error;
+		}
 	}
 
-	if (!st_empty(nonce) && ((nonce_len = st_length_get(nonce)) < 64)) {
-		log_pedantic("nonce is NULL, empty or length != 64");
-		goto error;
+	size_t nonce_len = 0;
+	if (!st_empty(nonce)) {
+		if ((nonce_len = st_length_get(nonce)) < 64) {
+			log_pedantic("nonce is NULL, empty or length != 64");
+			goto error;
+		}
 	}
 
-	if (!(hashed_token = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64))) {
+	hashed_token = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64);
+	if (hashed_token == NULL) {
 		log_error("st_alloc_opts() failed");
 		goto error;
 	}   // hashed_token is allocated
 
-	if (!(hash_input = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64 +
-		+ st_length_get(base) + st_length_get(username) +
-		+ salt_len + nonce_len + 3))) {
+	size_t input_len;
+	input_len = 64;
+	input_len += st_length_get(base);
+	input_len += st_length_get(username);
+	input_len += salt_len;
+	input_len += nonce_len;
+	input_len += 3;     // Replace this with a named constant
+	
+	hash_input = st_alloc_opts((MANAGED_T | JOINTED | SECURE), input_len);
+	if (hash_input == NULL) {
 		log_error("st_alloc_opts() failed");
 		goto cleanup_hashed_token;
 	}   // hash_input is allocated
@@ -537,7 +552,7 @@ stacie_hashed_token_derive (
 		if (nonce_len) {
 			hash_input = st_append(hash_input, nonce);
 		}
-		count = uint24_put_no(i);
+		count = uint24_put_no(i);  // TODO: allocated on the heap?
 		hash_input = st_append(hash_input, count);
 		hashed_token = hash_sha512(hash_input, hashed_token);
 		st_wipe(hash_input);
@@ -547,6 +562,8 @@ stacie_hashed_token_derive (
 
 	return hashed_token;
 
+cleanup_hashed_token:
+	st_free(hashed_token);
 error:
 	return NULL;
 } stacie_hashed_token_derive()

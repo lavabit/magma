@@ -715,9 +715,9 @@ error:
 */
 stringer_t *
 stacie_realm_init_vector_derive (stringer_t *realm_key) {
-	stringer_t *init_vector;
 	stringer_t *pl1;
 	stringer_t *pl2;
+	stringer_t *init_vector;
 
 	if (st_empty(realm_key) || (st_length_get(realm_key) != 64)) {
 		log_pedantic("Realm key is zero, NULL or length != 64");
@@ -727,7 +727,7 @@ stacie_realm_init_vector_derive (stringer_t *realm_key) {
 	pl1 = PLACER(st_data_get(realm_key), 16);
 	pl2 = PLACER(st_data_get(realm_key) + 16, 16);
     if (pl1 == NULL || pl2 == NULL) {
-		log_error("Setting PLACERs in realm_key failed");
+		log_error("PLACER sets in realm_key failed");
 		goto error;
 	}
 

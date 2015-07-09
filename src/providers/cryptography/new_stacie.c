@@ -31,7 +31,7 @@ uint_clamp (uint_t x, uint_t min, uint_t max) {
 
 /**
  * @brief   Calculate total number of hash rounds for key derivation.
- * @author  Ivan
+ * @author  Ivan.  Kent - refactored
  * @param   password    User password.
  * @param   bonus       Number of bonus hash rounds.
  * @return  Total number of hash rounds, 0 on failure.
@@ -39,7 +39,7 @@ uint_clamp (uint_t x, uint_t min, uint_t max) {
 uint_t
 stacie_rounds_calculate (stringer_t *password, uint_t bonus) {
 	uint_t pass_len;
-	uint_t hash_rounds;
+	uint_t hash_rounds = 0;
 
 	/*
      * Between this call to st_empty() and the following call to
@@ -50,30 +50,34 @@ stacie_rounds_calculate (stringer_t *password, uint_t bonus) {
 		goto error;
 	}
 
-#if 0  // cleanup the utf code then re-enable this section
-	if (pass_len = utf_length_get(password) == 0) {
+	// the utf_ code is clearly wip, Fix it.
+	pass_len = utf_length_get(password);
+	if (pass_len == 0) {
 		log_pedantic("password length is 0");
-		return 0;
-	}
-#endif
+		goto error;
+    }
 
 	if (bonus >= (MAX_HASH_NUM - 2)) {
 		hash_rounds = MAX_HASH_NUM;
+		goto out;
+	} 
+
+	if (pass_len >= 24) {
+		hash_rounds = 2;
 	} else {
-		if (pass_len >= 24) {
-			hash_rounds = 2;
-		} else {
-			// There must be a clearer way to describe the following.  
-			// As it's written, I couldn't tell whether it's right or 
-			// not.
-			hash_rounds = ((uint_t) 2) << (23 - pass_len);
-		}
+		// There must be a clearer way to describe the following.  
+		// As it's written, I couldn't tell whether it's right or 
+		// not.
+		hash_rounds = ((uint_t) 2) << (23 - pass_len);
 	}
 
 	hash_rounds += bonus;
 
 	// clamp the return hash_rounds between MIN and MAX
-	return uint_clamp(hash_rounds, MIN_HASH_NUM, MAX_HASH_NUM);
+	hash_rounds = uint_clamp(hash_rounds, MIN_HASH_NUM, MAX_HASH_NUM);
+
+out:
+	return hash_rounds;
 
 error:
 	return 0;
@@ -81,7 +85,7 @@ error:
 
 /*
  * @brief   Computer the key used to extract the entropy seed.
- * @author  Ivan
+ * @author  Ivan.  Kent - refactored
  * @param   salt  User specific salt.
  * @return  Key   used by the hmac function to extract seed.
  *
@@ -180,7 +184,7 @@ error:
 
 /*
  * @brief   Extract the seed from user password.
- * @author  Ivan
+ * @author  Ivan.  Kent - refactored
  * @param   rounds      Number of hashing rounds.
  * @param   username    User username.
  * @param   password    User password.
@@ -262,7 +266,7 @@ error:
 
 /*
  * @brief   Derive the hashed key from a seed and user credentials.
- * @author  Ivan
+ * @author  Ivan.  Kent - refactored
  * @param   base       Entropy seed for master key derivation, master key
  *                     for password key derivation.
  * @param   username   Username.
@@ -464,7 +468,7 @@ error:
 
 /*
  * @brief   Derive hashed token as per STACIE authentication protocol.
- * @author  Ivan
+ * @author  Ivan.  Kent - refactored
  * @param   base        The base input that will be hashed into the token, 
  *                      either a password_key or verification token
  * @param   username    Username stringer.
@@ -586,7 +590,7 @@ error:
 
 /*
  * @brief   Derive the realm key used to decrypt keys for realm-specific user information.
- * @author  Ivan
+ * @author  Ivan.  Kent - refactored
  * @param   master_key  Stringer containing master key derived from user password.
  * @param   realm       Realm name.
  * @param   shard       Shard serves as a realm-specific salt.
@@ -676,7 +680,7 @@ error:
 
 /*
  * @brief   Derive the encryption key used to decrypt realm-specific key.
- * @author  Ivan
+ * @author  Ivan.  Kent - refactored
  * @param   realm_key  Stringer containing the realm key.
  * @return  Encryption key.
 */
@@ -710,7 +714,7 @@ error:
 
 /*
  * @brief   Derive the initialization vector used to decrypt realm-specific key.
- * @author  Ivan
+ * @author  Ivan.  Kent - refactored
  * @param   realm_key  Stringer containing the realm key.
  * @return  Initialization vector.
 */

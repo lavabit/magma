@@ -69,10 +69,11 @@ credential_t *  credential_alloc_auth(stringer_t *username, stringer_t *password
 credential_t *  credential_alloc_mail(stringer_t *address);
 void            credential_free(credential_t *cred);
 stringer_t *    credential_username(stringer_t *s);
+stringer_t *    credential_salt_generate(void);
 
 /// datatier.c
 
-stringer_t *    credential_fetch_salt(stringer_t *username);
+stringer_t *    credential_salt_fetch(stringer_t *username);
 
 #endif
 

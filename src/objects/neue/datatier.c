@@ -12,11 +12,11 @@
 #include "magma.h"
 
 /*
- * @brief	Fetches salt for specified username.
+ * @brief	Fetches salt for the specified user name from the database.
  * @param	username	Stringer containing username.
  * @return	Stringer containing salt. If error or user does not exist return NULL, if user exists but no salt exists return an empty stringer.
  */
-stringer_t * credential_fetch_salt(stringer_t *username) {
+stringer_t * credential_salt_fetch(stringer_t *username) {
 
 	MYSQL_BIND parameters[1];
 	row_t *row;
@@ -28,6 +28,8 @@ stringer_t * credential_fetch_salt(stringer_t *username) {
 		goto end;
 	}
 
+	mm_wipe(parameters, sizeof(parameters));
+
 	parameters[0].buffer_type = MYSQL_TYPE_STRING;
 	parameters[0].buffer_length = st_length_get(username);
 	parameters[0].buffer = st_char_get(username);
@@ -38,10 +40,11 @@ stringer_t * credential_fetch_salt(stringer_t *username) {
 	}
 
 	if(!res_row_count(query)) {
-		log_error("Failed query.");
+		log_error("Specified user does not exist in the database.");
 		goto cleanup_query;
 	}
-	else if(res_row_count(query) > 1) {
+
+	if(res_row_count(query) > 1) {
 		log_pedantic("Non-unique username.");
 		goto cleanup_query;
 	}
@@ -62,13 +65,10 @@ stringer_t * credential_fetch_salt(stringer_t *username) {
 		st_length_set(result, 0);
 		goto cleanup_query;
 	}
-	else {
 
-		if(!(result = hex_decode_opts(temp, (MANAGED_T | JOINTED | SECURE)))) {
-			log_error("Failed to duplicate salt stringer.");
-			goto cleanup_temp;
-		}
-
+	if(!(result = hex_decode_opts(temp, (MANAGED_T | JOINTED | SECURE)))) {
+		log_error("Failed to duplicate salt stringer.");
+		goto cleanup_temp;
 	}
 
 cleanup_temp:

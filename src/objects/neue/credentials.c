@@ -264,9 +264,8 @@ credential_t * credential_alloc_auth(stringer_t *username, stringer_t *password)
 		goto cleanup_cred;
 	}
 
-	if(!(salt = credential_fetch_salt(cred->auth.username))) {
-		log_error("Failed to fetch the user salt.");
-		goto cleanup_cred;
+	if(!(salt = credential_salt_fetch(cred->auth.username))) {
+		log_info("Failed to fetch the user salt.");
 	}
 
 	if(!credential_init(cred, username, password, salt)) {
@@ -283,6 +282,46 @@ error:
 }
 
 
+/**
+ * @brief	Generates a new salt value.
+ * @return	Stringer containing a newly generated salt.
+ */
+stringer_t *    credential_salt_generate(void) {
+
+	size_t salt_len;
+	stringer_t *result;
+
+/// FIXME TODO: We need a configuration line in our config file that specifies our server's salt length.
+
+	salt_len = 128;
+
+	if(!(result = st_alloc_opts((MANAGED_T | CONTIGUOUS | SECURE), salt_len))) {
+		log_error("Failed to allocate secure stringer for user salt.");
+		goto error;
+	}
+
+	if(salt_len != rand_write(result)) {
+		log_error("Failed to write random bytes into user salt stringer.");
+		goto cleanup_result;
+	}
+
+	return result;
+
+cleanup_result:
+	st_free(result);
+error:
+	return NULL;
+}
+
+
+/**
+ * @brief	Initializes an already allocated credential objects with appropriate values for the specified inputs.
+ * @param	cred		Newly allocated credential_t object to be initialized.
+ * @param	username	Stringer containing username.
+ * @param	password	Stringer containing password.
+ * @param	salt		Stringer containing salt, or NULL if no salt was available.
+ * @return	1 on success, 0 on failure.
+ */
 static int credential_init(credential_t *cred, stringer_t *username, stringer_t *password, stringer_t *salt) {
 
 	if(!cred) {
@@ -321,7 +360,11 @@ error:
 }
 
 /**
- * @brief	Populates
+ * @brief	Initializes the provided credential object with values according to legacy authorization mechanic.
+ * @param	cred		Credential_t object to be populated.
+ * @param	username	Stringer containing username.
+ * @param	password	Stringer containing password.
+ * @return	1 on success, 0 on failure.
  */
 static int credential_init_legacy(credential_t *cred, stringer_t *username, stringer_t *password) {
 
@@ -379,7 +422,7 @@ static int credential_init_legacy(credential_t *cred, stringer_t *username, stri
 		goto cleanup_binary;
 	}
 
-	if(cred->auth.password = hex_encode_opts(binary, (MANAGED_T | CONTIGUOUS | SECURE))) {
+	if(!(cred->auth.password = hex_encode_opts(binary, (MANAGED_T | CONTIGUOUS | SECURE)))) {
 		log_error("Failed to encode password hash.");
 		goto cleanup_binary;
 	}
@@ -394,6 +437,13 @@ error:
 	return 0;
 }
 
+/**
+ * @brief	Initializes the provided credential object with values according to STACIE spec.
+ * @param	cred		Credential_t object to be populated.
+ * @param	username	Stringer containing username.
+ * @param	password	Stringer containing password.
+ * @return	1 on success, 0 on failure.
+ */
 static int credential_init_stacie(credential_t *cred, stringer_t *username, stringer_t *password, stringer_t *salt) {
 
 	uint_t rounds;

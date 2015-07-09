@@ -101,8 +101,9 @@ void imap_logout(connection_t *con) {
  */
 void imap_login(connection_t *con) {
 
-	int_t state = 1;
+	int_t state = 1, cred_res;
 	credential_t *cred;
+	stringer_t *salt;
 
 	// The LOGIN command is only valid in the non-authenticated state.
 	if (con->imap.session_state != 0) {
@@ -118,8 +119,26 @@ void imap_login(connection_t *con) {
 		return;
 	}
 
-	// Convert the strings into a full fledged credential context.
-	if (!(cred = credential_alloc_auth(imap_get_st_ar(con->imap.arguments, 0), imap_get_st_ar(con->imap.arguments, 1)))) {
+	if(!(cred = credential_alloc_auth(imap_get_st_ar(con->imap.arguments, 0)))) {
+		con_print(con, "%.*s NO [ALERT] Internal server error. Please try again in a few minutes.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
+		return;
+	}
+
+	cred_res = credential_salt_fetch(cred->auth.username, &salt);
+
+	if(cred_res == 0) {
+		cred_res = credential_calc_auth(cred, imap_get_st_ar(con->imap.arguments, 1), salt);
+		st_free(salt);
+	}
+	else if(cred_res == 1) {
+		cred_res = credential_calc_auth(cred, imap_get_st_ar(con->imap.arguments, 1), NULL);
+	}
+	else {
+		cred_res = 0;
+	}
+
+	if (!cred_res) {
+		credential_free(cred);
 		con_print(con, "%.*s NO [ALERT] Internal server error. Please try again in a few minutes.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		return;
 	}
@@ -129,8 +148,8 @@ void imap_login(connection_t *con) {
 	con->imap.username = NULL;
 
 	if (!(con->imap.username = st_dupe_opts(MANAGED_T | CONTIGUOUS | HEAP, cred->auth.username))) {
-		con_print(con, "%.*s NO [ALERT] Internal server error. Please try again in a few minutes.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		credential_free(cred);
+		con_print(con, "%.*s NO [ALERT] Internal server error. Please try again in a few minutes.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		return;
 	}
 

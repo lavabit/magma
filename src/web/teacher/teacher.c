@@ -282,8 +282,8 @@ void teacher_process(connection_t *con) {
 	}
 
 	else if (http_data_get(con, HTTP_DATA_POST, "submit")) {
-
-		if (!(pass = http_data_get(con, HTTP_DATA_POST, "password")) || !pass->value || !(credential = credential_alloc_auth(teach->username, pass->value)) ||
+/** TODO FIXME: Memory leaks here. This part isn't fixed to work with the new credentials functions, so be careful reusing this code.*/
+		if (!(pass = http_data_get(con, HTTP_DATA_POST, "password")) || !pass->value || !(credential = credential_alloc_auth(teach->username)) ||
 			st_cmp_cs_eq(teach->password, credential->auth.password)) {
 			teacher_print_form(con, teacher_add_error("//xhtml:input[@id='password']", "password_msg", "An invalid password was provided. Please try again."), teach);
 		}

@@ -174,9 +174,9 @@ void pop_user(connection_t *con) {
  */
 void pop_pass(connection_t *con) {
 
-	int_t state;
+	int_t state, cred_res;
 	credential_t *cred;
-	stringer_t *password, *username;
+	stringer_t *password, *username, *salt;
 
 	if (con->pop.session_state != 0) {
 		pop_invalid(con);
@@ -198,23 +198,42 @@ void pop_pass(connection_t *con) {
 	// Hash the password.
 	// First we need to get the regular username from the fully qualified one.
 	if (!(username = credential_username(con->pop.username))) {
-		con_write_bl(con, "-ERR Internal server error. Please try again later.\r\n", 53);
 		st_wipe(password);
 		st_free(password);
+		con_write_bl(con, "-ERR Internal server error. Please try again later.\r\n", 53);
 	}
 
 	st_free(con->pop.username);
 	con->pop.username = username;
 
-	if (!(cred = credential_alloc_auth(con->pop.username, password))) {
-		con_write_bl(con, "-ERR Internal server error. Please try again later.\r\n", 53);
+	if(!(cred = credential_alloc_auth(con->pop.username))) {
 		st_wipe(password);
 		st_free(password);
+		con_write_bl(con, "-ERR Internal server error. Please try again later.\r\n", 53);
 		return;
+	}
+
+	cred_res = credential_salt_fetch(cred->auth.username, &salt);
+
+	if(cred_res == 0) {
+		cred_res = credential_calc_auth(cred, password, salt);
+		st_free(salt);
+	}
+	else if(cred_res == 1) {
+		cred_res = credential_calc_auth(cred, password, NULL);
+	}
+	else {
+		cred_res = 0;
 	}
 
 	st_wipe(password);
 	st_free(password);
+
+	if(!cred_res) {
+		credential_free(cred);
+		con_write_bl(con, "-ERR Internal server error. Please try again later.\r\n", 53);
+		return;
+	}
 
 	// Pull the user info out.
 	state = meta_get(cred, META_PROT_POP, META_GET_MESSAGES, &(con->pop.user));

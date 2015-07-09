@@ -23,8 +23,11 @@ START_TEST (check_users_credentials_valid_s) {
 	log_unit("%-64.64s", "USERS / CREDENTIAL / VALID / SINGLE THREADED:");
 
 		// Try the simplest use case. Login as the actual username.
-		if (!(user_check_cred = credential_alloc_auth(CONSTANT("magma"), CONSTANT("test")))) {
-			errmsg = st_import("Credential creation failed. { user = magma / password = test }", 63);
+		if (!(user_check_cred = credential_alloc_auth(CONSTANT("magma")))) {
+			errmsg = st_import("Credential creation failed. { user = magma}", 63);
+		} 
+		else if(!credential_calc_auth(user_check_cred, CONSTANT("test"), NULL)) {
+			errmsg = st_import("Credential calculation failed. { password = test}", 63);
 		}
 		else if ((state = meta_get(user_check_cred, META_PROT_GENERIC,
 			META_GET_MESSAGES | META_GET_FOLDERS | META_GET_CONTACTS, &(user_check_data))) != 1) {

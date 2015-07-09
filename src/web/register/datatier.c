@@ -111,9 +111,10 @@ bool_t register_data_check_username(stringer_t *username) {
 bool_t register_data_insert_user(connection_t *con, register_session_t *reg, int_t transaction, uint64_t *outuser) {
 
 	chr_t buffer[32];
+	int_t cred_res;
 	MYSQL_BIND parameters[8];
 	credential_t *credential;
-	stringer_t *privkey, *pubkey, *newaddr;
+	stringer_t *privkey, *pubkey, *newaddr, *salt;
 	size_t key_len = 512;
 	uint64_t name_len, plan_len, date_len = 10;
 	uint64_t quota = 0, usernum, inbox, size_limit, send_limit, recv_limit;
@@ -189,8 +190,28 @@ bool_t register_data_insert_user(connection_t *con, register_session_t *reg, int
 	parameters[4].length = &date_len;
 
 	// Hash the password.
-	if (!(credential = credential_alloc_auth(reg->username, reg->password))) {
-		log_pedantic("Unable to hash the password.");
+
+	if(!(credential = credential_alloc_auth(reg->username))) {
+		log_error("Failed to allocate credentials structure.");
+		return false;
+	}
+
+	cred_res = credential_salt_fetch(credential->auth.username, &salt);
+
+	if(cred_res == 0) {
+		cred_res = credential_calc_auth(credential, reg->password, salt);
+		st_free(salt);
+	}
+	else if(cred_res == 1) {
+		cred_res = credential_calc_auth(credential, reg->password, NULL);
+	}
+	else {
+		cred_res = 0;
+	}
+
+	if(!cred_res) {
+		credential_free(credential);
+		log_error("Failed to calculate user credentials.");
 		return false;
 	}
 

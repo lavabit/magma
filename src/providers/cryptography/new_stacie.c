@@ -6,6 +6,11 @@
  * $Date$
  * $Revision$
  *
+ * TODO Kent. Where does this clamp() helper function belong?
+ * TODO Kent. Which if any of these routines are private?  Mark the private routines
+ *          as constant and can only be calls from this scope.
+ * TODO Kent. scan entire code base for uses of st_append() of the form: 
+ *          a = st_append(a, b) and fix or leak memory on failure.
  */
 
 #include "magma.h"
@@ -17,25 +22,6 @@
  * @param   x    number to be clamped
  * @param   min  minimum value for the clamp
  * @param   max  maximum value for the clamp
- * TODO Kent. Where does this clamp() helper function belong?
- * TODO Kent. Which if any of these routines are private?  Mark the private routines
- *          as constant and can only be calls from this scope.
- * TODO Kent. scan entire code base for uses of st_append() of the form: 
- *          a = st_append(a, b) and fix or leak memory on failure.
- * Fixed:   stacie_hashed_key_derive() failed to error out when it detected
- *          the hash_input stringer failed to allocate.
- * Fixed:   none of the calls to st_append were being checked for failure.  
- *          added checks for all.
- * Fixed:   there was basically no error checking in stacie_hashed_key_derive().
- *          Added error checking for all calls that could fail
- * Fixed:   stacie_hashed_token_derive failed to free result in the case of the 
- *          allocation call to create hash_input stringer.
- * Fixed:   All calls to st_append() of the form a = st_append(a, b) are unsafe
- *          and will result in leaked heap memory in the event of st_append() 
- *          returning an error.  NEVER use the code stucture:
- *          a = st_append(a, b) where the 'a' parameter will get overwritten!!!
- * Fixed:   stacie_seed_key_derive: first call to st_append() failed to free temp2
- *          on error.
  */
 static
 uint_t

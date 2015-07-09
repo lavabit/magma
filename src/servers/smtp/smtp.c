@@ -245,10 +245,10 @@ void smtp_rset(connection_t *con) {
 ///		back-and-forth traffic.
 void smtp_auth_plain(connection_t *con) {
 
-	int_t state;
+	int_t state, cred_res;
 	credential_t *cred;
 	smtp_outbound_prefs_t *outbound;
-	stringer_t *decoded, *argument = NULL;
+	stringer_t *decoded, *argument = NULL, *salt;
 	placer_t username = { .opts = PLACER_T | JOINTED | STACK | FOREIGNDATA}, password = { .opts = PLACER_T | JOINTED | STACK | FOREIGNDATA},
 		authorize_id = { .opts = PLACER_T | JOINTED | STACK | FOREIGNDATA };
 
@@ -311,13 +311,33 @@ void smtp_auth_plain(connection_t *con) {
 	/// errors which are temporary. We approximate this functionality by not rejecting "@domain.com" as a username via the credentials
 	/// function, but instead check for leading at symbols explicitly below.
 	// Create the credential context.
-	if (!(cred = credential_alloc_auth(&username, &password))) {
-		st_free(decoded);
+
+	cred = credential_alloc_auth(&username);
+	st_free(decoded);
+
+	if(!cred) {
 		con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
 		return;
 	}
 
-	st_free(decoded);
+	cred_res = credential_salt_fetch(cred->auth.username, &salt);
+
+	if(cred_res == 0) {
+		cred_res = credential_calc_auth(cred, &password, salt);
+		st_free(salt);
+	}
+	else if(cred_res == 1) {
+		cred_res = credential_calc_auth(cred, &password, NULL);
+	}
+	else {
+		cred_res = 0;
+	}
+
+	if(!cred_res) {
+		credential_free(cred);
+		con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
+		return;
+	}
 
 	// Check to make sure the username doesn't start with an at symbol.
 	if (!st_cmp_cs_starts(cred->auth.username, PLACER("@", 1))) {
@@ -359,10 +379,10 @@ void smtp_auth_plain(connection_t *con) {
 
 void smtp_auth_login(connection_t *con) {
 
-	int_t state;
+	int_t state, cred_res;
 	credential_t *cred;
 	smtp_outbound_prefs_t *outbound;
-	stringer_t *username = NULL, *password = NULL, *argument = NULL;
+	stringer_t *username = NULL, *password = NULL, *argument = NULL, *salt;
 
 	// If the user is already authenticated.
 	if (con->smtp.authenticated == true) {
@@ -414,15 +434,32 @@ void smtp_auth_login(connection_t *con) {
 	/// errors which are temporary. We approximate this functionality by not rejecting "@domain.com" as a username via the credentials
 	/// function, but instead check for leading at symbols explicitly below.
 	// Create the credential context.
-	if (!(cred = credential_alloc_auth(username, password))) {
-		st_free(username);
-		st_free(password);
+	if(!(cred = credential_alloc_auth(username))) {
 		con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
 		return;
 	}
 
+	cred_res = credential_salt_fetch(cred->auth.username, &salt);
+
+	if(cred_res == 0) {
+		cred_res = credential_calc_auth(cred, password, salt);
+		st_free(salt);
+	}
+	else if(cred_res == 1) {
+		cred_res = credential_calc_auth(cred, password, NULL);
+	}
+	else {
+		cred_res = 0;
+	}
+
 	st_free(username);
 	st_free(password);
+
+	if(!cred_res) {
+		credential_free(cred);
+		con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
+		return;
+	}
 
 	// Check to make sure the username doesn't start with an at symbol.
 	if (!st_cmp_cs_starts(cred->auth.username, PLACER("@", 1))) {

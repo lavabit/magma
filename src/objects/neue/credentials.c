@@ -12,11 +12,9 @@
 
 #include "magma.h"
 
-static int credential_init(credential_t *cred, stringer_t *username, stringer_t *password, stringer_t *salt);
+static int_t credential_calc_legacy(credential_t *cred, stringer_t *password);
 
-static int credential_init_legacy(credential_t *cred, stringer_t *username, stringer_t *password);
-
-static int credential_init_stacie(credential_t *cred, stringer_t *username, stringer_t *password, stringer_t *salt);
+static int_t credential_calc_stacie(credential_t *cred, stringer_t *password, stringer_t *salt);
 
 
 /// LOW: Add a function for detecting potentially illegal username/address sequences. Valid usernames must start with an alpha character,
@@ -207,26 +205,20 @@ credential_t * credential_alloc_mail(stringer_t *address) {
 }
 
 /**
- * @brief	Construct a user credential object from supplied username and password.
+ * @brief	Construct a user credential object from supplied username.
  * @note	The credential's auth.key field becomes a single pass hash of the password, while auth.password is created from a three-time hash.
  * @param	username	the input username.
- * @param	password	the plaintext password of the user.
  * @return	NULL on failure, or a pointer to the requested user's auth credentials on success.
  */
-credential_t * credential_alloc_auth(stringer_t *username, stringer_t *password) {
+credential_t * credential_alloc_auth(stringer_t *username) {
 
 	credential_t *cred;
 	size_t at_offset;
-	stringer_t *binary, *sanitized, *salt;
+	stringer_t *binary, *sanitized;
 	uint_t rounds;
 
 	if(st_empty(username)) {
 		log_pedantic("NULL or empty username passed.");
-		goto error;
-	}
-
-	if(st_empty(password)) {
-		log_pedantic("NULL or empty password passed.");
 		goto error;
 	}
 
@@ -261,15 +253,6 @@ credential_t * credential_alloc_auth(stringer_t *username, stringer_t *password)
 
 	if (!(cred->auth.domain = st_merge_opts((MANAGED_T | JOINTED | SECURE), "s", magma.system.domain))) {
 		log_error("Failed to create default magma domain stringer.");
-		goto cleanup_cred;
-	}
-
-	if(!(salt = credential_salt_fetch(cred->auth.username))) {
-		log_info("Failed to fetch the user salt.");
-	}
-
-	if(!credential_init(cred, username, password, salt)) {
-		log_error("Failed to initialize credentials object.");
 		goto cleanup_cred;
 	}
 
@@ -317,43 +300,47 @@ error:
 /**
  * @brief	Initializes an already allocated credential objects with appropriate values for the specified inputs.
  * @param	cred		Newly allocated credential_t object to be initialized.
- * @param	username	Stringer containing username.
  * @param	password	Stringer containing password.
  * @param	salt		Stringer containing salt, or NULL if no salt was available.
  * @return	1 on success, 0 on failure.
  */
-static int credential_init(credential_t *cred, stringer_t *username, stringer_t *password, stringer_t *salt) {
+int_t credential_calc_auth(credential_t *cred, stringer_t *password, stringer_t *salt) {
+
+	int_t result;
 
 	if(!cred) {
-		log_pedantic("NULL credential object passed in.");
+		log_pedantic("NULL credential object was passed in.");
 		goto error;
 	}
 
-	if(st_empty(username)) {
-		log_pedantic("NULL or empty username stringer passed in.");
+	if(!st_empty(password)) {
+		log_pedantic("NULL or empty password was passed in.");
 		goto error;
 	}
 
-	if(st_empty(password)) {
-		log_pedantic("NULL or empty password stringer passed in.");
+	if(cred->type != CREDENTIAL_AUTH) {
+		log_error("Invalid credential type object was passed in.");
+		goto error;
+	}
+
+	if(st_empty(cred->auth.username)) {
+		log_error("Credential object has NULL or empty username field.");
+		goto error;
+	}
+
+	if(st_empty(cred->auth.domain)) {
+		log_error("Credential object has NULL or empty domain field.");
 		goto error;
 	}
 
 	if(!salt) {
-		log_pedantic("NULL salt stringer passed in.");
-		goto error;
+		result = credential_calc_legacy(cred, password);
+	}
+	else {
+		result = credential_calc_stacie(cred, password, salt);
 	}
 
-	switch(st_empty(salt)) {
-
-	case true:
-		return credential_init_legacy(cred, username, password);
-	case false:
-		return credential_init_stacie(cred, username, password, salt);
-	default:
-		goto error;
-
-	}
+	return result;
 
 error:
 	return 0;
@@ -362,11 +349,10 @@ error:
 /**
  * @brief	Initializes the provided credential object with values according to legacy authorization mechanic.
  * @param	cred		Credential_t object to be populated.
- * @param	username	Stringer containing username.
  * @param	password	Stringer containing password.
  * @return	1 on success, 0 on failure.
  */
-static int credential_init_legacy(credential_t *cred, stringer_t *username, stringer_t *password) {
+static int_t credential_calc_legacy(credential_t *cred, stringer_t *password) {
 
 	size_t at_offset;
 	stringer_t *binary, *combo;
@@ -440,11 +426,11 @@ error:
 /**
  * @brief	Initializes the provided credential object with values according to STACIE spec.
  * @param	cred		Credential_t object to be populated.
- * @param	username	Stringer containing username.
  * @param	password	Stringer containing password.
+ * @param	salt		User specific stacie salt.
  * @return	1 on success, 0 on failure.
  */
-static int credential_init_stacie(credential_t *cred, stringer_t *username, stringer_t *password, stringer_t *salt) {
+static int_t credential_calc_stacie(credential_t *cred, stringer_t *password, stringer_t *salt) {
 
 	uint_t rounds;
 	stringer_t *seed, *passkey;

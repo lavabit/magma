@@ -199,11 +199,12 @@ void portal_endpoint_response(connection_t *con, chr_t *format, ...) {
  */
 void portal_endpoint_auth(connection_t *con) {
 
-	int_t state;
+	int_t state, cred_res;
 	json_error_t err;
 	meta_user_t *user;
 	credential_t *cred;
 	chr_t *username, *password;
+	stringer_t *salt;
 
 	// Check the session state.
 	if (!con->http.session || con->http.session->state != SESSION_STATE_NEUTRAL) {
@@ -219,7 +220,26 @@ void portal_endpoint_auth(connection_t *con) {
 	}
 
 	// Convert the strings into a full fledged credential context.
-	else if (!(cred = credential_alloc_auth(NULLER(username), NULLER(password)))) {
+	if(!(cred = credential_alloc_auth(NULLER(username)))) {
+		portal_endpoint_error(con, 200, PORTAL_ENDPOINT_ERROR_AUTH, "Internal server error. Please try again in a few minutes.");
+		return;
+	}
+
+	cred_res = credential_salt_fetch(cred->auth.username, &salt);
+
+	if(cred_res == 0) {
+		cred_res = credential_calc_auth(cred, NULLER(password), salt);
+		st_free(salt);
+	}
+	else if(cred_res == 1) {
+		cred_res = credential_calc_auth(cred, NULLER(password), NULL);
+	}
+	else {
+		cred_res = 0;
+	}
+
+	if(!cred_res) {
+		credential_free(cred);
 		portal_endpoint_error(con, 200, PORTAL_ENDPOINT_ERROR_AUTH, "Internal server error. Please try again in a few minutes.");
 		return;
 	}

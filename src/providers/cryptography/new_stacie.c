@@ -681,11 +681,8 @@ error:
 */
 stringer_t *
 stacie_realm_cipher_key_derive (stringer_t *realm_key) {
-	stringer_t *realm_cipher_key;
 	stringer_t *pl;
-
-start here
-oops
+	stringer_t *realm_cipher_key;
 
 	if (st_empty(realm_key) || (st_length_get(realm_key) != 64)) {
 		log_pedantic("Realm key is zero, NULL or length != 64");
@@ -694,7 +691,7 @@ oops
 
 	pl = PLACER(st_data_get(realm_key) + 32, 32);
 	if (pl == NULL) {
-		log_error("Stting PLACER in realm_key failed");
+		log_error("PLACER set in realm_key failed");
 		goto error;
 	}
 

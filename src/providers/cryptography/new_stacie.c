@@ -47,7 +47,7 @@ stacie_rounds_calculate (stringer_t *password, uint_t bonus) {
 	 */
 	if (st_empty(password)) {
 		log_pedantic("password is empty.");
-		goto error:
+		goto error;
 	}
 
 #if 0  // cleanup the utf code then re-enable this section
@@ -318,8 +318,9 @@ stacie_hashed_key_derive (
 		salt_len = st_length_get(salt);
 
 		if (salt_len < 64) {
-		log_pedantic("Non null salt length is < 64 bytes");
-		goto error;
+			log_pedantic("Non null salt length is < 64 bytes");
+			goto error;
+		}
 	}
 
 

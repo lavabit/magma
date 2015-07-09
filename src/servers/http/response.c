@@ -463,7 +463,7 @@ void http_response(connection_t *con) {
 	else if (!st_cmp_ci_starts(con->http.location, PLACER("/portal", 7))) {
 		portal_process(con);
 	}
-	else if (!st_cmp_ci_starts(con->http.location, PLACER("/api", 4))) {
+	else if (!st_cmp_ci_starts(con->http.location, PLACER("/json", 4))) {
 		json_api_dispatch(con);
 	}
 

@@ -481,9 +481,6 @@ error:
  * @param   nonce       Token-specific nonce.
  * @return  Stringer containing the hashed token.
 */
-start here
-oops
-
 stringer_t *
 stacie_hashed_token_derive (
 	stringer_t *base,
@@ -493,47 +490,45 @@ stacie_hashed_token_derive (
 {
 	size_t salt_len = 0
 	size_t nonce_len = 0;
-	stringer_t *result;
+	stringer_t *hashed_token;
 	stringer_t *hash_input;
 	stringer_t *count;
 
 	if (st_empty(base) || (st_length_get(base) != 64)) {
 		log_pedantic("base is NULL, empty or length != 64");
 		goto error;
-		return NULL;
 	}
-	else if (st_empty(username)) {
+
+	if (st_empty(username)) {
 		log_pedantic("username is NULL or empty");
 		goto error;
-		return NULL;
 	}
-	else if (!st_empty(salt) && ((salt_len = st_length_get(salt)) < 64)) {
+
+	if (!st_empty(salt) && ((salt_len = st_length_get(salt)) < 64)) {
 		log_pedantic("salt is NULL, empty or length != 64");
 		goto error;
-		return NULL;
 	}
-	else if (!st_empty(nonce) && ((nonce_len = st_length_get(nonce)) < 64)) {
+
+	if (!st_empty(nonce) && ((nonce_len = st_length_get(nonce)) < 64)) {
 		log_pedantic("nonce is NULL, empty or length != 64");
 		goto error;
-		return NULL;
 	}
-	else if (!(result = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64))) {
+
+	if (!(hashed_token = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64))) {
 		log_error("st_alloc_opts() failed");
 		goto error;
-		return NULL;
-	}   // result is allocated
+	}   // hashed_token is allocated
 
-	else if (!(hash_input = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64 +
+	if (!(hash_input = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64 +
 		+ st_length_get(base) + st_length_get(username) +
 		+ salt_len + nonce_len + 3))) {
 		log_error("st_alloc_opts() failed");
-		goto cleanup_result;
-		return NULL;
+		goto cleanup_hashed_token;
 	}   // hash_input is allocated
 
 	for(uint_t i = 0; i < MIN_HASH_NUM; i++) {
-		hash_input = st_append(hash_input, result);
-		st_wipe(result);
+		hash_input = st_append(hash_input, hashed_token);
+		st_wipe(hashed_token);
 		hash_input = st_append(hash_input, base);
 		hash_input = st_append(hash_input, username);
 		if (salt_len) {
@@ -544,15 +539,16 @@ stacie_hashed_token_derive (
 		}
 		count = uint24_put_no(i);
 		hash_input = st_append(hash_input, count);
-		result = hash_sha512(hash_input, result);
+		hashed_token = hash_sha512(hash_input, hashed_token);
 		st_wipe(hash_input);
 	}
 
 // where is hash_input being freed?  KDH
 
-	return result;
+	return hashed_token;
 
-
+error:
+	return NULL;
 } stacie_hashed_token_derive()
 
 /*

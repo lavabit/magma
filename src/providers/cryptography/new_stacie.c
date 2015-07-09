@@ -20,13 +20,8 @@
  * TODO Kent. Where does this clamp() helper function belong?
  * TODO Kent. Which if any of these routines are private?  Mark the private routines
  *          as constant and can only be calls from this scope.
- * TODO Kent. count: does uint24_put_no() allocate heap space? If so, comment, 
- *          add an error case for cleaning it up and verify it gets cleaned
- *          up in the success case.
  * TODO Kent. scan entire code base for uses of st_append() of the form: 
  *          a = st_append(a, b) and fix or leak memory on failure.
- * TODO Kent. verify and add a call to st_wipe to the st_free routine if
- *          the SECURE flag is set!
  * Fixed:   stacie_hashed_key_derive() failed to error out when it detected
  *          the hash_input stringer failed to allocate.
  * Fixed:   none of the calls to st_append were being checked for failure.  
@@ -372,7 +367,12 @@ stacie_hashed_key_derive (
 
 	st_append(hash_input, password);
 
-	count = uint24_put_no(0);  // TODO: did something just get allocated on the heap?
+	// Note: count creates a stringer on the heap and must be freed. KDH
+	count = uint24_put_no(0);
+	if (count == NULL) {
+		log_error("uint23_put_no() failed");
+		goto cleanup_hash_input;
+	}   // count is allocated
 
 	/*
 	 * NOTE: it is sufficient to check for an error condition at the 
@@ -384,8 +384,9 @@ stacie_hashed_key_derive (
 	
 	if (st_append(hash_input, count) == NULL) {
 		log_error("st_append() failed");
-		goto cleanup_hash_input;
+		goto cleanup_count;
 	}
+	st_free(count);
 
 	// Note: hashed_key gets updated in the hash_sha512() call
 	if (hash_sha512(hash_input, hashed_key) == NULL) {
@@ -393,8 +394,6 @@ stacie_hashed_key_derive (
 		goto cleanup_hash_input;
 	}
 
-	// TODO: verify and add a call to st_wipe to the st_free routine if
-	// the SECURE flag is set!
 	st_wipe(hash_input);
 
 	// Note: all the following st_append() calls are updating the 
@@ -411,13 +410,18 @@ stacie_hashed_key_derive (
 
 	st_append(hash_input, password);
 
-	count = uint24_put_no(1);  // TODO: allocated on the heap?
+	count = uint24_put_no(1);
+	if (count == NULL) {
+		log_error("uint23_put_no() failed");
+		goto cleanup_hash_input;
+	}   // count is allocated
 
 	// last st_append in this cascade
 	if (st_append(hash_input, count) == NULL) {
 		log_error("st_append() failed");
-		goto cleanup_hash_input;
+		goto cleanup_count;
 	}
+	st_free(count);
 
 	if (hash_sha512(hash_input, hashed_key) == NULL) {
 		log_error("hash_sha512() failed");
@@ -440,27 +444,29 @@ stacie_hashed_key_derive (
 			log_error("st_length_set() failed");
 			goto cleanup_hash_input;
 		}
-		count = uint24_put_no(i);  // TODO: allocated on the heap?
+		count = uint24_put_no(i);
 
 		if (st_append(hash_input, count) == NULL) {
 			log_error("st_data_get() failed");
-			goto cleanup_hash_input;
+			goto cleanup_count;
 		}
+		st_free(count);
+
 		if (hash_sha512(hash_input, hashed_key) == NULL) {
 			log_error("hash_sha512() failed");
 			goto cleanup_hash_input;
 		}
 	}
 
-	/*
-	 * TODO: add st_wipe() to the st_free routine if the SECURE memory
-	 * field is set and remove this call.
-	 */
-	st_wipe(hash_input);
+	// no need to call st_wipe here.  SECURE flag in the alloc guarantees 3 
+	// memory set operations performed on the data in the st_free routine.
+	// st_wipe(hash_input);
 	st_free(hash_input);
 
 	return hashed_key;
 
+cleanup_count:
+	st_free(count);
 cleanup_hash_input:
 	st_free(hash_input);
 cleanup_hashed_key:
@@ -558,11 +564,17 @@ stacie_hashed_token_derive (
 			st_append(hash_input, nonce);
 		}
 
-		count = uint24_put_no(i);              // TODO: allocated on the heap?
+		count = uint24_put_no(i);
+		if (count == NULL) {
+			log_error("uint24_put_no() failed");
+			goto cleanup_hash_input;
+		}   // count is allocated
+
 		if (st_append(hash_input, count) == NULL) {
 			log_error("st_append() failed");
-			goto cleanup_hash_input;
+			goto cleanup_count;
 		}
+		st_free(count);
 
 		// perform digest and store the result into hashed_token
 		if (hash_sha512(hash_input, hashed_token) == NULL) {
@@ -571,10 +583,12 @@ stacie_hashed_token_derive (
 		}
 	}
 
-	st_free(hash_input);                       // TODO: st_free should wipe because this is secure!!
+	st_free(hash_input);
 
 	return hashed_token;
 
+cleanup_count:
+	st_free(count);
 cleanup_hash_input:
 	st_free(hash_input);
 cleanup_hashed_token:

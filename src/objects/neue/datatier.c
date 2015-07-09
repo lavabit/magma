@@ -15,7 +15,7 @@
  * @brief	Fetches salt for the specified user name from the database.
  * @param	username	Stringer containing username.
  * @param	salt		Pointer to a pointer to a stringer, where the result is stored.
- * @return	0 if the salt is pulled correctly. 1 if the salt for the user did not exist. 2 if the user did not exist. -1 if an unknown error occurred.
+ * @return	0 if the salt is pulled correctly. 1 if the salt for the user is NULL. 2 if the user did not exist. -1 if an unknown error occurred.
  */
 int_t credential_salt_fetch(stringer_t *username, stringer_t **salt) {
 

@@ -240,7 +240,12 @@ stringer_t * pop_pass_parse(connection_t *con) {
 	}
 
 	// Import the PASS argument into a stringer.
-	if (!(result = st_import(input, holder - input))) {
+	if(!(result = st_alloc_opts((MANAGED_T | CONTIGUOUS | SECURE), holder - input))) {
+		log_error("Failed to allocate secure stringer for pop password.");
+		return NULL;
+	}
+
+	if (!(result = st_copy_in(result, input, holder - input))) {
 		log_pedantic("POP3 PASS argument could not be retrieved.");
 	}
 

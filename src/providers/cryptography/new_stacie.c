@@ -26,6 +26,10 @@
  * TODO Kent. count: does uint24_put_no() allocate heap space? If so, comment, 
  *          add an error case for cleaning it up and verify it gets cleaned
  *          up in the success case.
+ * TODO Kent. scan entire code base for uses of st_append() of the form: 
+ *          a = st_append(a, b) and fix or leak memory on failure.
+ * TODO Kent. verify and add a call to st_wipe to the st_free routine if
+ *          the SECURE flag is set!
  * Fixed:   stacie_hashed_key_derive() failed to error out when it detected
  *          the hash_input stringer failed to allocate.
  * Fixed:   none of the calls to st_append were being checked for failure.  
@@ -38,6 +42,8 @@
  *          and will result in leaked heap memory in the event of st_append() 
  *          returning an error.  NEVER use the code stucture:
  *          a = st_append(a, b) where the 'a' parameter will get overwritten!!!
+ * Fixed:   stacie_seed_key_derive: first call to st_append() failed to free temp2
+ *          on error.
  */
 static
 uint_t
@@ -166,7 +172,7 @@ stacie_seed_key_derive (stringer_t *salt) {
 		if (temp2 == NULL) {
 			log_error("hash_sha512() failed to hash salt string");
 			goto cleanup_piece;
-		}
+		}   // temp2 is allocated
 
 		// '64' snd '128' hould be a properly named constants
 		mm_copy(st_data_get(seed_key) + 64, st_data_get(temp2), 64);
@@ -177,7 +183,7 @@ stacie_seed_key_derive (stringer_t *salt) {
 		// salt_len == 128
 		seed_key = st_dupe_opts((MANAGED_T | JOINTED | SECURE), salt);
 		if (seed_key == NULL) {
-			log_error("st_dupe_ops() Failed to duplicate salt stringer");
+			log_error("st_dupe_ops() failed");
 			goto error;
 		}
 	}
@@ -239,8 +245,9 @@ stacie_seed_extract (
 		goto out;
 	}
 
-	if ((salt_len = st_length_get(salt)) < 64) {
-		log_pedantic("Salt is too short (must be at least 64 octets.)");
+	salt_len = st_length_get(salt);
+	if (salt_len < 64) {
+		log_pedantic("Salt length < 64 octets.)");
 		goto error;
 	}
 
@@ -367,10 +374,7 @@ stacie_hashed_key_derive (
 
 	st_append(hash_input, password);
 
-	// TODO: does uint24_put_no() allocate heap space? If so, comment, 
-	// add an error case for cleaning it up and verify it gets cleaned
-	// up in the success case.
-	count = uint24_put_no(0);
+	count = uint24_put_no(0);  // TODO: did something just get allocated on the heap?
 
 	/*
 	 * NOTE: it is sufficient to check for an error condition at the 
@@ -378,17 +382,7 @@ stacie_hashed_key_derive (
      * due to running out of heap space will not adversely affect 
      * additional calls to st_append(). 
      *
-     * NOTE: NEVER use the function return to reassign the value of the 
-     * first parameter by name. Doing so will guarantee heap memory 
-     * leakage since the stringer used in the first pararmeter will be 
-     * overwritten with NULL.
-     * Example:
-     *     hash_input = st_append(hash_input, count);
-     * 
-     * If error, hash_input is overwritten with NULL at the caller level
-     * and the heap memory of what hash_input had pointed to is leaked
-     * and unrecoverable.
-	 */
+     */
 	
 	if (st_append(hash_input, count) == NULL) {
 		log_error("st_append() failed");
@@ -410,30 +404,18 @@ stacie_hashed_key_derive (
 	// the last call to st_append() in the following cascade of calls.
 
 	st_append(hash_input, hashed_key);
-
-	if (st_append(hash_input, base) == NULL) {
-		log_error("st_append() failed");
-		goto cleanup_hash_input;
-	}
-	if (st_append(hash_input, username) == NULL) {
-		log_error("st_append() failed");
-		goto cleanup_hash_input;
-	}
+	st_append(hash_input, base);
+	st_append(hash_input, username);
 
 	if (salt_len != 0) {
-		if (st_append(hash_input, salt) == NULL) {
-			log_error("st_append() failed");
-			goto cleanup_hash_input;
-		}
+		st_append(hash_input, salt);
 	}
 
-	if (st_append(hash_input, password) == NULL) {
-			log_error("st_append() failed");
-			goto cleanup_hash_input;
-	}
+	st_append(hash_input, password);
 
-	count = uint24_put_no(1);
+	count = uint24_put_no(1);  // TODO: allocated on the heap?
 
+	// last st_append in this cascade
 	if (st_append(hash_input, count) == NULL) {
 		log_error("st_append() failed");
 		goto cleanup_hash_input;
@@ -460,7 +442,7 @@ stacie_hashed_key_derive (
 			log_error("st_length_set() failed");
 			goto cleanup_hash_input;
 		}
-		count = uint24_put_no(i);
+		count = uint24_put_no(i);  // TODO: allocated on the heap?
 
 		if (st_append(hash_input, count) == NULL) {
 			log_error("st_data_get() failed");
@@ -473,11 +455,10 @@ stacie_hashed_key_derive (
 	}
 
 	/*
-	 * st_wipe doesn't deallocate anything and should only be used 
-	 * when the data  needs to be erased or the stringer is going 
-	 * to be reused for other purposes.
+	 * TODO: add st_wipe() to the st_free routine if the SECURE memory
+	 * field is set and remove this call.
 	 */
-	// st_wipe(hash_input);
+	st_wipe(hash_input);
 	st_free(hash_input);
 
 	return hashed_key;

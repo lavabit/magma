@@ -481,6 +481,10 @@ error:
  * @param   salt        User-specific salt.
  * @param   nonce       Token-specific nonce.
  * @return  Stringer containing the hashed token.
+ *
+ * Note: both the salt and nonce parameters are allowed to be NULL or 
+ * zero length stringers here.  Test coverage exists for these cases
+ * in the check tests. KDH
 */
 stringer_t *
 stacie_hashed_token_derive (
@@ -503,8 +507,6 @@ stacie_hashed_token_derive (
 		goto error;
 	}
 
-// is salt allowed to be null or empty?  This would suggest not (unlike the other 
-// times where salt can be null like stacie_seed_extract()
 	size_t salt_len = 0;
 	if (!st_empty(salt)) {
 		if ((salt_len = st_length_get(salt)) < 64) {
@@ -542,26 +544,42 @@ stacie_hashed_token_derive (
 	}   // hash_input is allocated
 
 	for(uint_t i = 0; i < MIN_HASH_NUM; i++) {
-		hash_input = st_append(hash_input, hashed_token);
-		st_wipe(hashed_token);
-		hash_input = st_append(hash_input, base);
-		hash_input = st_append(hash_input, username);
-		if (salt_len) {
-			hash_input = st_append(hash_input, salt);
+		st_wipe(hash_input);                   // reset the temp hash_input
+
+		// Build hash_input by starting with the value for hashed_token
+		st_append(hash_input, hashed_token);
+		st_wipe(hashed_token);                 // why?
+
+		st_append(hash_input, base);
+		st_append(hash_input, username);
+
+		if (salt_len != 0) {
+			st_append(hash_input, salt);
 		}
-		if (nonce_len) {
-			hash_input = st_append(hash_input, nonce);
+
+		if (nonce_len != 0) {
+			st_append(hash_input, nonce);
 		}
-		count = uint24_put_no(i);  // TODO: allocated on the heap?
-		hash_input = st_append(hash_input, count);
-		hashed_token = hash_sha512(hash_input, hashed_token);
-		st_wipe(hash_input);
+
+		count = uint24_put_no(i);              // TODO: allocated on the heap?
+		if (st_append(hash_input, count) == NULL) {
+			log_error("st_append() failed");
+			goto cleanup_hash_input;
+		}
+
+		// perform digest and store the result into hashed_token
+		if (hash_sha512(hash_input, hashed_token) == NULL) {
+			log_error("hash_sha512() failed");
+			goto cleanup_hash_input;
+		}
 	}
 
-// where is hash_input being freed?  KDH
+	st_free(hash_input);                       // TODO: st_free should wipe because this is secure!!
 
 	return hashed_token;
 
+cleanup_hash_input:
+	st_free(hash_input);
 cleanup_hashed_token:
 	st_free(hashed_token);
 error:

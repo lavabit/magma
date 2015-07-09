@@ -10,6 +10,6 @@ submit() {
 	curl --verbose --cookie "$COOKIES" --cookie-jar "$COOKIES" --data "$1" "$API_PATH"
 }
 
-submit "{\"id\":1,\"method\":\"auth\"}"
+submit "{\"id\":1,\"method\":\"auth\",\"params\":{\"username\":\"princess\",\"password\":\"test\"}}"
 
 rm -f "$COOKIES"

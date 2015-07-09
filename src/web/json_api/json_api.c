@@ -82,7 +82,7 @@ void json_api_dispatch(connection_t *con) {
 	};
 
 	if (
-		magma.web.portal.safeguard &&
+		//magma.web.portal.safeguard &&
 		!is_ssl(con) &&
 		!is_localhost(con))
 	{

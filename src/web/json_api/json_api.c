@@ -102,11 +102,10 @@ void json_api_dispatch(connection_t *con) {
 		internal_error(con);
 		goto out;
 	}
-	else {
-		// Inform http_session_reset that it needs to clean up the
-		// portal-specific fields
-		con->http.merged = HTTP_PORTAL;
-	}
+
+	// Inform http_session_reset that it needs to clean up the
+	// portal-specific fields
+	con->http.merged = HTTP_PORTAL;
 
 	// Try extracting the session from either a cookie, or the location.
 	http_parse_context(

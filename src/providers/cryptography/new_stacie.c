@@ -18,11 +18,8 @@
  * @param   min  minimum value for the clamp
  * @param   max  maximum value for the clamp
  * TODO Kent. Where does this clamp() helper function belong?
- * TODO Kent. Does st_xor() return a newly allocated stringer?  Or is that a
  * TODO Kent. Which if any of these routines are private?  Mark the private routines
  *          as constant and can only be calls from this scope.
- *          function of whether the last argument to st_xor is null or nonnull?
- *          Find out which is the case and cleanup all calls to st_xor() here.
  * TODO Kent. count: does uint24_put_no() allocate heap space? If so, comment, 
  *          add an error case for cleaning it up and verify it gets cleaned
  *          up in the success case.
@@ -584,7 +581,7 @@ cleanup_hashed_token:
 	st_free(hashed_token);
 error:
 	return NULL;
-} stacie_hashed_token_derive()
+}   // stacie_hashed_token_derive()
 
 /*
  * @brief   Derive the realm key used to decrypt keys for realm-specific user information.
@@ -600,10 +597,9 @@ stacie_realm_key_derive (
 	stringer_t *realm,
 	stringer_t *shard)
 {
-	bool_t error = false;
 	stringer_t *hash_input = NULL;
-	stringer_t *realm_key= NULL;
 	stringer_t *hash_output = NULL;
+	stringer_t *realm_key= NULL;
 
 	if (st_empty(master_key) || (st_length_get(master_key) != 64)) {
 		log_pedantic("An empty or invalid master key was passed in.");
@@ -620,55 +616,46 @@ stacie_realm_key_derive (
 		goto error;
 	}
 
-	hash_input = st_alloc_opts(
-		(MANAGED_T | JOINTED | SECURE),
-		st_length_get(master_key) + st_length_get(realm) + st_length_get(shard)
-	);
-	if (hash_input == NULL) {
-		log_error("Failed to allocate secure stringer for hash input.");
-		goto error;
-	}
+	size_t input_len = 0;
+	input_len += st_length_get(master_key);
+	input_len += st_length_get(realm);
+	input_len += st_length_get(shard);
 
-	realm_key = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64);
-	if (realm_key == NULL) {
-		log_error("Failed to allocate secure stringer for realm key.");
-		goto cleanup_hash_input;
-	}
+	hash_input = st_alloc_opts((MANAGED_T | JOINTED | SECURE), input_len);
+	if (hash_input == NULL) {
+		log_error("st_alloc_opts() failed");
+		goto error;
+	}   // hash_input is allocated
 
 	hash_output = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64);
 	if (hash_output == NULL) {
-		log_error("Failed to allocate secure stringer for hash output.");
+		log_error("st_alloc_opts() failed");
+		goto cleanup_hash_input;
+	}   // hash_output is allocated
+
+	realm_key = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64);
+	if (realm_key == NULL) {
+		log_error("st_alloc_opts() failed");
+		goto cleanup_hash_output;
+	}   // realm_key is allocated
+
+	st_append(hash_input, master_key);
+	st_append(hash_input, realm);
+
+	// last st_append in cascade of st_appends is always checked for error
+	if (st_append(hash_input, shard) == NULL) {
+		log_error("st_append() failed");
 		goto cleanup_realm_key;
 	}
 
-	hash_input = st_append(hash_input, master_key);
-	if (hash_input == NULL) {
-		log_error("Failed to append hash input stringer with master key.");
-		goto cleanup_hash_output;
+	if (hash_sha512(hash_input, hash_output) == NULL) {
+		log_error("hash_sha512() failed");
+		goto cleanup_realm_key;
 	}
 
-	hash_input = st_append(hash_input, realm);
-	if (hash_input == NULL) {
-		log_error("Failed to append hash input stringer with realm key.");
-		goto cleanup_hash_output;
-	}
-
-	hash_input = st_append(hash_input, shard);
-	if (hash_input == NULL) {
-		log_error("Failed to append hash input stringer with shard.");
-		goto cleanup_hash_output;
-	}
-
-	hash_output = hash_sha512(hash_input, hash_output);
-	if (hash_output == NULL) {
-		log_error("Failed to hash input stringer.");
-		goto cleanup_hash_output;
-	}
-
-	realm_key = st_xor(hash_output, shard, realm_key);
-	if (realm_key == NULL) {
-		log_error("Failed to xor input stringer with shard.");
-		goto cleanup_hash_output;
+	if (st_xor(hash_output, shard, realm_key) == NULL) {
+		log_error("st_xor() failed");
+		goto cleanup_realm_key;
 	}
 
     st_free(hash_input);
@@ -676,11 +663,10 @@ stacie_realm_key_derive (
 
 	return realm_key;
 
-
-cleanup_hash_output:
-	st_free(hash_output);
 cleanup_realm_key:
 	st_free(realm_key);
+cleanup_hash_output:
+	st_free(hash_output);
 cleanup_hash_input:
 	st_free(hash_input);
 error:
@@ -697,6 +683,9 @@ stringer_t *
 stacie_realm_cipher_key_derive (stringer_t *realm_key) {
 	stringer_t *realm_cipher_key;
 	stringer_t *pl;
+
+start here
+oops
 
 	if (st_empty(realm_key) || (st_length_get(realm_key) != 64)) {
 		log_pedantic("Realm key is zero, NULL or length != 64");
@@ -732,7 +721,6 @@ stacie_realm_init_vector_derive (stringer_t *realm_key) {
 	stringer_t *init_vector;
 	stringer_t *pl1;
 	stringer_t *pl2;
-	stringer_t *temp;
 
 	if (st_empty(realm_key) || (st_length_get(realm_key) != 64)) {
 		log_pedantic("Realm key is zero, NULL or length != 64");
@@ -746,22 +734,21 @@ stacie_realm_init_vector_derive (stringer_t *realm_key) {
 		goto error;
 	}
 
-	temp = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 16);
-	if (temp == NULL) {
+	init_vector = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 16);
+	if (init_vector == NULL) {
 		log_error("st_alloc_opts() failed");
 		goto error;
-	}   // temp is allocated
+	}   // init_vector is allocated
 
-	init_vector = st_xor(pl1, pl2, temp);
-	if (init_vector == NULL) {
+	if (st_xor(pl1, pl2, init_vector) == NULL) {
 		log_error("st_xor() failed");
-		goto cleanup_temp;
+		goto cleanup_init_vector;
 	}
 
 	return init_vector;
 
-cleanup_temp:
-	st_free(temp);
+cleanup_init_vector:
+	st_free(init_vector);
 error:
 	return NULL;
 }   // stacie_realm_init_vector_derive()

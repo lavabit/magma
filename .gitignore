@@ -14,6 +14,7 @@ Makefile.in
 aclocal.m4
 autom4te.cache
 configure
+tags
 m4/pkg.m4
 res/config/magma.sandbox.config
 .vagrant

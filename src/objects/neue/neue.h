@@ -33,7 +33,7 @@ typedef enum {
 
 typedef enum {
 	INTERNAL_ERROR,
-	USER_ERROR,
+	AUTHENTICATION_ERROR,
 	LOGGED_IN
 } user_state_t;
 

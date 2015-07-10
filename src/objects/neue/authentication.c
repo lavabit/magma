@@ -63,7 +63,7 @@ user_state_t credential_login(stringer_t *username, stringer_t *password, META_P
 		credential_calc_auth(cred, password, NULL);
 		break;
 	case NO_USER:
-		state = USER_ERROR;
+		state = AUTHENTICATION_ERROR;
 		goto cleanup_cred;
 	case ERROR:
 		log_error("Error occurred while fetching using salt.");
@@ -82,7 +82,7 @@ user_state_t credential_login(stringer_t *username, stringer_t *password, META_P
 	case 1:
 		break;
 	case 0:
-		state = USER_ERROR;
+		state = AUTHENTICATION_ERROR;
 		break;
 	case -1:
 		log_error("Error occurred during creation of the user object.");
@@ -98,3 +98,5 @@ cleanup_cred:
 error:
 	return state;
 }
+
+

@@ -1,12 +1,12 @@
 #!/bin/bash
 
 API_PATH="http://localhost:10000/json"
-read -d '' JSON <<"EOF"
+read -d '' JSON <<EOF
 {
 	"id": 1,
 	"method": "delete_user",
 	"params": {
-		"username": "testuser1"
+		"username": "$1"
 	}
 }
 EOF

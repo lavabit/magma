@@ -13,6 +13,8 @@ read -d '' JSON <<"EOF"
 }
 EOF
 
+echo "Request:"
 echo "$JSON"
+echo "Response:"
 curl --silent --data "$JSON" "$API_PATH"
 echo ""

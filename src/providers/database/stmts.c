@@ -438,7 +438,7 @@ uint64_t stmt_insert(MYSQL_STMT **group, MYSQL_BIND *parameters) {
  * @return	-1 on failure, 0 on failure or no rows affected, and a positive number on success.
 */
 // QUESTION: These return types are totally messed up. All errors should return -1.
-uint64_t stmt_exec_affected_conn(MYSQL_STMT **group, MYSQL_BIND *parameters, uint32_t connection) {
+int64_t stmt_exec_affected_conn(MYSQL_STMT **group, MYSQL_BIND *parameters, uint32_t connection) {
 
 	MYSQL_STMT *local;
 
@@ -470,7 +470,7 @@ uint64_t stmt_exec_affected_conn(MYSQL_STMT **group, MYSQL_BIND *parameters, uin
  * @return	-1 on failure, 0 on failure or no rows affected, and a positive number on success.
  */
 // QUESTION: These return types are totally messed up. All errors should return -1.
-uint64_t stmt_exec_affected(MYSQL_STMT **group, MYSQL_BIND *parameters) {
+int64_t stmt_exec_affected(MYSQL_STMT **group, MYSQL_BIND *parameters) {
 
 	uint64_t result;
 	uint32_t connection;

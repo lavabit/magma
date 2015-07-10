@@ -1,28 +1,29 @@
 #include "magma.h"
 
 typedef struct {
-	char *string;
-	size_t length;
+	chr_t *string;
 	void (*callback)(connection_t *con);
 } api_lookup_t;
 
+// NOTE - These must be sorted alphabetically!
 static
 api_lookup_t
 api_methods[] = {
 	{
 		.string = "auth",
-		.length = 4,
 		.callback = &api_endpoint_auth
 	},
 	{
-		.string = "register",
-		.length = 8,
-		.callback = &api_endpoint_register
+		.string = "change_password",
+		.callback = &api_endpoint_change_password
 	},
 	{
-		.string = "change_password",
-		.length = 15,
-		.callback = &api_endpoint_change_password
+		.string = "delete_user",
+		.callback = &api_endpoint_delete_user
+	},
+	{
+		.string = "register",
+		.callback = &api_endpoint_register
 	}
 };
 
@@ -35,9 +36,7 @@ api_method_compare(
 	api_lookup_t *cmd = (api_lookup_t *)command;
 	api_lookup_t *cmp = (api_lookup_t *)compare;
 
-	return st_cmp_ci_eq(
-		PLACER(cmp->string, cmp->length),
-		PLACER(cmd->string, cmd->length));
+	return strcmp(cmp->string, cmd->string);
 }
 
 static
@@ -195,9 +194,9 @@ void json_api_dispatch(connection_t *con) {
 		con->http.portal.request,
 		"params");
 
+	// A
 	// Generate the method lookup structure.
 	method_lookup.string = (chr_t *)json_string_value_d(method);
-	method_lookup.length = ns_length_get((chr_t *)json_string_value_d(method));
 
 	// If a method callback is found, execute it.
 	found_method = bsearch(

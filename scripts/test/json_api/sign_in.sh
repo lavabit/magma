@@ -3,12 +3,12 @@
 API_PATH="http://localhost:10000/json"
 read -d '' JSON <<EOF
 {
-	"id": 1,
-	"method": "auth",
-	"params": {
-		"username": "$1",
-		"password": "$2"
-	}
+    "id": 1,
+    "method": "auth",
+    "params": {
+        "username": "$1",
+        "password": "$2"
+    }
 }
 EOF
 

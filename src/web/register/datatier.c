@@ -228,7 +228,6 @@ bool_t register_data_insert_user(
 	parameters[1].buffer = st_data_get(hex_salt);
 	parameters[1].buffer_length = st_length_get(hex_salt);
 
-	st_free(hex_salt);
 
 	// The stacie verification token.
 	parameters[2].buffer_type = MYSQL_TYPE_STRING;
@@ -241,6 +240,8 @@ bool_t register_data_insert_user(
 		credential_free(credential);
 		return false;
 	}
+
+	st_free(hex_salt);
 
 	// Create a pair of storage keys for the new user.
 	if ((!(privkey = st_alloc_opts(MANAGED_T | CONTIGUOUS | SECURE, key_len))) || (!(pubkey = st_alloc_opts(MANAGED_T | CONTIGUOUS | SECURE, key_len)))) {

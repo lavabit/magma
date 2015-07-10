@@ -79,7 +79,7 @@ api_endpoint_auth(connection_t *con) {
 	//		HTTP_ERROR_400,
 	//		PORTAL_ENDPOINT_ERROR_AUTH,
 	//		"Unable to authenticate with given username and password.");
-	//	goto cleanup_username_password;
+	//	goto cleanup;
 	//}
 
 	if (is_locked(user)) {
@@ -88,7 +88,7 @@ api_endpoint_auth(connection_t *con) {
 			HTTP_ERROR_400,
 			PORTAL_ENDPOINT_ERROR_AUTH,
 			lock_error_message(user));
-		goto cleanup_user;
+		goto cleanup;
 	}
 
 	con->http.session->state = SESSION_STATE_AUTHENTICATED;
@@ -111,11 +111,8 @@ api_endpoint_auth(connection_t *con) {
 		"jsonrpc", "2.0",
 		"id", con->http.portal.id);
 
-cleanup_user:
+cleanup:
 	meta_remove(user->username, META_PROT_JSON);
-cleanup_username_password:
-	ns_free(username);
-	ns_free(password);
 out:
 	return;
 }
@@ -164,7 +161,7 @@ api_endpoint_register(connection_t *con) {
 			HTTP_ERROR_500,
 			JSON_RPC_2_ERROR_SERVER_INTERNAL,
 			"Internal server error.");
-		goto cleanup;
+		goto out;
 	}
 
 	// Database insert.
@@ -183,7 +180,7 @@ api_endpoint_register(connection_t *con) {
 			HTTP_ERROR_500,
 			JSON_RPC_2_ERROR_SERVER_INTERNAL,
 			"Internal server error.");
-		goto cleanup;
+		goto out;
 	}
 
 	// Were finally done.
@@ -199,10 +196,6 @@ api_endpoint_register(connection_t *con) {
 		"jsonrpc", "2.0",
 		"id", con->http.portal.id);
 
-cleanup:
-	ns_free(username);
-	ns_free(password);
-	ns_free(password_verification);
 out:
 	return;
 }
@@ -252,7 +245,7 @@ api_endpoint_delete_user(connection_t *con) {
 			HTTP_ERROR_422,
 			JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS,
 			"No such user.");
-		goto cleanup;
+		goto out;
 	}
 	if (-1 == num_deleted) {
 		api_error(
@@ -269,8 +262,6 @@ api_endpoint_delete_user(connection_t *con) {
 		"jsonrpc", "2.0",
 		"id", con->http.portal.id);
 
-cleanup:
-	ns_free(username);
 out:
 	return;
 }
@@ -310,10 +301,6 @@ api_endpoint_change_password(connection_t *con) {
 
 	// TODO - wire up here
 
-cleanup:
-	ns_free(password);
-	ns_free(new_password);
-	ns_free(new_password_verification);
 out:
 	return;
 }

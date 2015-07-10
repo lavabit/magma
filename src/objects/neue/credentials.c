@@ -313,7 +313,7 @@ int_t credential_calc_auth(credential_t *cred, stringer_t *password, stringer_t 
 		goto error;
 	}
 
-	if(!st_empty(password)) {
+	if(st_empty(password)) {
 		log_pedantic("NULL or empty password was passed in.");
 		goto error;
 	}

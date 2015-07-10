@@ -103,6 +103,7 @@ void imap_login(connection_t *con) {
 
 	int_t state = 1, cred_res;
 	credential_t *cred;
+	salt_state_t salt_res;
 	stringer_t *salt;
 
 	// The LOGIN command is only valid in the non-authenticated state.
@@ -124,13 +125,13 @@ void imap_login(connection_t *con) {
 		return;
 	}
 
-	cred_res = credential_salt_fetch(cred->auth.username, &salt);
+	salt_res = credential_salt_fetch(cred->auth.username, &salt);
 
-	if(cred_res == 0) {
+	if(salt_res == USER_SALT) {
 		cred_res = credential_calc_auth(cred, imap_get_st_ar(con->imap.arguments, 1), salt);
 		st_free(salt);
 	}
-	else if(cred_res == 1) {
+	else if(salt_res == USER_NO_SALT) {
 		cred_res = credential_calc_auth(cred, imap_get_st_ar(con->imap.arguments, 1), NULL);
 	}
 	else {

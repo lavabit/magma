@@ -245,8 +245,9 @@ void smtp_rset(connection_t *con) {
 ///		back-and-forth traffic.
 void smtp_auth_plain(connection_t *con) {
 
-	int_t state, cred_res;
 	credential_t *cred;
+	int_t state, cred_res;
+	salt_state_t salt_res;
 	smtp_outbound_prefs_t *outbound;
 	stringer_t *decoded, *argument = NULL, *salt;
 	placer_t username = { .opts = PLACER_T | JOINTED | STACK | FOREIGNDATA}, password = { .opts = PLACER_T | JOINTED | STACK | FOREIGNDATA},
@@ -320,13 +321,13 @@ void smtp_auth_plain(connection_t *con) {
 		return;
 	}
 
-	cred_res = credential_salt_fetch(cred->auth.username, &salt);
+	salt_res = credential_salt_fetch(cred->auth.username, &salt);
 
-	if(cred_res == 0) {
+	if(salt_res == USER_SALT) {
 		cred_res = credential_calc_auth(cred, &password, salt);
 		st_free(salt);
 	}
-	else if(cred_res == 1) {
+	else if(salt_res == USER_NO_SALT) {
 		cred_res = credential_calc_auth(cred, &password, NULL);
 	}
 	else {
@@ -379,8 +380,9 @@ void smtp_auth_plain(connection_t *con) {
 
 void smtp_auth_login(connection_t *con) {
 
-	int_t state, cred_res;
 	credential_t *cred;
+	int_t state, cred_res;
+	salt_state_t salt_res;
 	smtp_outbound_prefs_t *outbound;
 	stringer_t *username = NULL, *password = NULL, *argument = NULL, *salt;
 
@@ -439,13 +441,13 @@ void smtp_auth_login(connection_t *con) {
 		return;
 	}
 
-	cred_res = credential_salt_fetch(cred->auth.username, &salt);
+	salt_res = credential_salt_fetch(cred->auth.username, &salt);
 
-	if(cred_res == 0) {
+	if(salt_res == USER_SALT) {
 		cred_res = credential_calc_auth(cred, password, salt);
 		st_free(salt);
 	}
-	else if(cred_res == 1) {
+	else if(salt_res == USER_NO_SALT) {
 		cred_res = credential_calc_auth(cred, password, NULL);
 	}
 	else {

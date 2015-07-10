@@ -310,13 +310,13 @@ stacie_hashed_key_derive (
 		goto error;
 	}
 
-	// The salt param is allowed to be NULL.  If it's not NULL, it must be
-	// less than 64 bytes long.
+	// The salt param is allowed to be NULL.  If non-NULL, the salt must be
+	// at least 64 bytes long.
 	size_t salt_len;
-	// this will detect true for both NULL and zero length salt stringers
-	if (st_empty(salt)) {
+
+	if (st_empty(salt)) { // salt is NULL or empty
 		salt_len = 0;
-	} else {
+	} else {              // if salt is non-mull salt len must be >= 64 bytes
 		salt_len = st_length_get(salt);
 
 		if (salt_len < 64) {
@@ -324,7 +324,6 @@ stacie_hashed_key_derive (
 			goto error;
 		}
 	}
-
 
 	hashed_key = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64);
 	if (hashed_key == NULL) {
@@ -500,7 +499,7 @@ stacie_hashed_token_derive (
 	}
 
 	size_t salt_len = 0;
-	if (!st_empty(salt)) {
+	if (!st_empty(salt)) {   // if non-null, salt len must be >= 64 
 		if ((salt_len = st_length_get(salt)) < 64) {
 			log_pedantic("salt is NULL, empty or length != 64");
 			goto error;
@@ -508,7 +507,7 @@ stacie_hashed_token_derive (
 	}
 
 	size_t nonce_len = 0;
-	if (!st_empty(nonce)) {
+	if (!st_empty(nonce)) {  // same with nonce
 		if ((nonce_len = st_length_get(nonce)) < 64) {
 			log_pedantic("nonce is NULL, empty or length != 64");
 			goto error;

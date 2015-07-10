@@ -192,6 +192,13 @@ api_endpoint_register(connection_t *con) {
 	// And finally, increment the abuse counter.
 	register_abuse_increment_history(con);
 
+	api_response(
+		con,
+		HTTP_OK,
+		"{s:s, s:I}",
+		"jsonrpc", "2.0",
+		"id", con->http.portal.id);
+
 cleanup:
 	ns_free(username);
 	ns_free(password);

@@ -145,7 +145,7 @@
 #define UPDATE_SIGNATURE_FLAGS_REMOVE "UPDATE Messages SET status = ((status | ?) ^ ?) WHERE usernum = ? AND signum = ?"
 #define DELETE_SIGNATURE "DELETE FROM Signatures WHERE signum = ?"
 
-// For the portal.
+// For the portal/user management.
 #define REGISTER_CHECK_USERNAME	"SELECT usernum FROM Users WHERE userid = ?"
 #define REGISTER_INSERT_USER "INSERT INTO Users (`userid`, `password`, `plan`, `quota`, `plan_expiration`) VALUES (?, ?, ?, ?, ?)"
 #define REGISTER_INSERT_STACIE_USER "INSERT INTO Users (`userid`, `stacie_salt`, `stacie_auth_token`, `plan`, `quota`, `plan_expiration`) VALUES (?, ?, ?, ?, ?, ?)"
@@ -156,6 +156,7 @@
 #define REGISTER_INSERT_DISPATCH "INSERT INTO Dispatch (`usernum`, `spamfolder`, `inbox`, `send_size_limit`, `recv_size_limit`, `daily_send_limit`, `daily_recv_limit`, `daily_recv_limit_ip`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
 #define REGISTER_INSERT_MAILBOXES "INSERT INTO Mailboxes (`address`, `usernum`) VALUES (?, ?)"
 #define REGISTER_FETCH_BLOCKLIST "SELECT sequence FROM Banned"
+#define DELETE_USER "DELETE FROM Users WHERE userid = ?"
 
 // For handling the portal statistics app
 #define STATISTICS_GET_TOTAL_USERS "SELECT COUNT(*) FROM Users"
@@ -263,6 +264,7 @@
 											REGISTER_INSERT_DISPATCH, \
 											REGISTER_INSERT_MAILBOXES, \
 											REGISTER_FETCH_BLOCKLIST, \
+											DELETE_USER, \
 											STATISTICS_GET_TOTAL_USERS, \
 											STATISTICS_GET_USERS_CHECKED_EMAIL_TODAY, \
 											STATISTICS_GET_USERS_CHECKED_EMAIL_WEEK, \
@@ -359,6 +361,7 @@
 											**register_insert_dispatch, \
 											**register_insert_mailboxes, \
 											**register_fetch_blocklist, \
+											**delete_user, \
 											**statistics_get_total_users, \
 											**statistics_get_users_checked_email_today, \
 											**statistics_get_users_checked_email_week, \

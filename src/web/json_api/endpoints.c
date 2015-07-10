@@ -208,6 +208,65 @@ out:
 }
 
 void
+api_endpoint_delete_user(connection_t *con) {
+	json_error_t jansson_err;
+	chr_t *username;
+	uint64_t num_deleted;
+	MYSQL_BIND parameters[1];
+
+	if (
+		json_unpack_ex_d(
+			con->http.portal.params,
+			&jansson_err,
+			JSON_STRICT,
+			"{s:s}",
+			"username", &username)
+		!= 0)
+	{
+		log_pedantic(
+			"Received invalid portal auth request parameters "
+			"{ user = %s, errmsg = %s }",
+			st_char_get(con->http.session->user->username),
+			jansson_err.text);
+
+		api_error(
+			con,
+			HTTP_ERROR_400,
+			JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS,
+			"Invalid method parameters.");
+
+		goto out;
+	}
+
+	// Key
+	parameters[0].buffer_type = MYSQL_TYPE_STRING;
+	parameters[0].buffer_length = ns_length_get(username);
+	parameters[0].buffer = username;
+
+	num_deleted = stmt_exec_affected(stmts.delete_user, parameters);
+	if (0 == num_deleted) {
+		api_error(
+			con,
+			HTTP_ERROR_422,
+			JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS,
+			"No such user.");
+		goto cleanup;
+	}
+
+	api_response(
+		con,
+		HTTP_OK,
+		"{s:s, s:I}",
+		"jsonrpc", "2.0",
+		"id", con->http.portal.id);
+
+cleanup:
+	ns_free(username);
+out:
+	return;
+}
+
+void
 api_endpoint_change_password(connection_t *con) {
 	json_error_t jansson_err;
 	chr_t *password;

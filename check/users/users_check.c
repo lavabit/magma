@@ -14,7 +14,7 @@
 
 START_TEST (check_users_credentials_valid_s) {
 
-	int_t state;
+	int_t state, cred_res;
 	salt_state_t salt_res;
 	stringer_t *errmsg = NULL, *salt = NULL;
 	meta_user_t *user_check_data = NULL;
@@ -75,12 +75,19 @@ START_TEST (check_users_credentials_valid_s) {
 
 		salt_res = credential_salt_fetch(user_check_cred->auth.username, &salt);
 
-		if((salt_res == ERROR) || (salt_res == NO_USER)) {
+		if(salt_res == USER_SALT) {
+			cred_res = credential_calc_auth(user_check_cred, tests[i].password, salt);
+			st_free(salt);
+		}
+		else if(salt_res == USER_NO_SALT) {
+			cred_res = credential_calc_auth(user_check_cred, tests[i].password, NULL);
+		}
+		else {
 			errmsg = st_aprint("Error looking for user salt. { user = %s }", st_char_get(tests[i].username));
 			goto error;
 		}
 
-		if(!credential_calc_auth(user_check_cred, tests[i].password, salt)) {
+		if(!cred_res) {
 			errmsg = st_aprint("Credential allocation failed. { password = %s / salt = NULL }", st_char_get(tests[i].password));
 			goto cleanup_cred;
 		}

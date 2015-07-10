@@ -396,8 +396,11 @@ START_TEST (check_credential_auth_creation_s) {
 
 	log_unit("%-64.64s", "OBJECTS / USERS / CREDENTIALS / AUTH CREATION / SINGLE THREADED:");
 
-	if (!(cred = credential_alloc_auth(CONSTANT("ladar"), CONSTANT("test")))) {
-		errmsg = "Credential creation failed.";
+	if (!(cred = credential_alloc_auth(CONSTANT("ladar")))) {
+		errmsg = "Credential allocation failed.";
+	}
+	else if(!credential_calc_auth(cred, CONSTANT("test"), NULL)) {
+		errmsg = "Credential calculation failed.";
 	}
 	else if (st_cmp_cs_eq(cred->auth.password, CONSTANT("46c3c0f5c777aacbdb0c25b14d6889b98efa62fa0ae551ec067d7aa126392805e3e3a2ce07d36" \
 		"df7e715e24f35c88105fff5a9eebff0532f990644cf07a4751f"))) {
@@ -409,8 +412,11 @@ START_TEST (check_credential_auth_creation_s) {
 		cred = NULL;
 	}
 
-	if (!errmsg && !(cred = credential_alloc_auth(CONSTANT("ladar@lavabit.com"), CONSTANT("test")))) {
-		errmsg = "Credential creation failed.";
+	if (!errmsg && !(cred = credential_alloc_auth(CONSTANT("ladar@lavabit.com")))) {
+		errmsg = "Credential allocation failed.";
+	}
+	else if(!errmsg && !credential_calc_auth(cred, CONSTANT("test"), NULL)) {
+		errmsg = "Credential calculation failed.";
 	}
 	else if (!errmsg && st_cmp_cs_eq(cred->auth.password, CONSTANT("46c3c0f5c777aacbdb0c25b14d6889b98efa62fa0ae551ec067d7aa126392805e3e3a2ce07d36" \
 		"df7e715e24f35c88105fff5a9eebff0532f990644cf07a4751f"))) {

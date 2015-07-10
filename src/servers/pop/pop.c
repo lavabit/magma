@@ -174,6 +174,7 @@ void pop_user(connection_t *con) {
  */
 void pop_pass(connection_t *con) {
 
+	salt_state_t salt_res;
 	int_t state, cred_res;
 	credential_t *cred;
 	stringer_t *password, *username, *salt;
@@ -213,13 +214,13 @@ void pop_pass(connection_t *con) {
 		return;
 	}
 
-	cred_res = credential_salt_fetch(cred->auth.username, &salt);
+	salt_res = credential_salt_fetch(cred->auth.username, &salt);
 
-	if(cred_res == 0) {
+	if(salt_res == USER_SALT) {
 		cred_res = credential_calc_auth(cred, password, salt);
 		st_free(salt);
 	}
-	else if(cred_res == 1) {
+	else if(salt_res == USER_NO_SALT) {
 		cred_res = credential_calc_auth(cred, password, NULL);
 	}
 	else {

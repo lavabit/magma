@@ -22,12 +22,19 @@ typedef enum {
 	NONE,
 	LEGACY,
 	STACIE
-} auth_type;
+} auth_type_t;
+
+typedef enum {
+	USER_SALT,
+	USER_NO_SALT,
+	NO_USER,
+	ERROR
+} salt_state_t;
 
 typedef struct {
 
 	int_t type;
-	auth_type authentication;
+	auth_type_t authentication;
 
 	/// TODO: Add usernum to structure and call the appropriate fetch function to lookup its value.
 
@@ -74,7 +81,7 @@ stringer_t *    credential_salt_generate(void);
 
 /// datatier.c
 
-int_t           credential_salt_fetch(stringer_t *username, stringer_t ** salt);
+salt_state      credential_salt_fetch(stringer_t *username, stringer_t ** salt);
 
 #endif
 

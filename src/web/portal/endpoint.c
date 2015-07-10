@@ -204,6 +204,7 @@ void portal_endpoint_auth(connection_t *con) {
 	meta_user_t *user;
 	credential_t *cred;
 	chr_t *username, *password;
+	salt_state_t salt_res;
 	stringer_t *salt;
 
 	// Check the session state.
@@ -225,13 +226,13 @@ void portal_endpoint_auth(connection_t *con) {
 		return;
 	}
 
-	cred_res = credential_salt_fetch(cred->auth.username, &salt);
+	salt_res = credential_salt_fetch(cred->auth.username, &salt);
 
-	if(cred_res == 0) {
+	if(salt_res == USER_SALT) {
 		cred_res = credential_calc_auth(cred, NULLER(password), salt);
 		st_free(salt);
 	}
-	else if(cred_res == 1) {
+	else if(salt_res == USER_NO_SALT) {
 		cred_res = credential_calc_auth(cred, NULLER(password), NULL);
 	}
 	else {

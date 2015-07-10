@@ -114,6 +114,7 @@ bool_t register_data_insert_user(connection_t *con, register_session_t *reg, int
 	int_t cred_res;
 	MYSQL_BIND parameters[8];
 	credential_t *credential;
+	salt_state_t salt_res;
 	stringer_t *privkey, *pubkey, *newaddr, *salt;
 	size_t key_len = 512;
 	uint64_t name_len, plan_len, date_len = 10;
@@ -196,13 +197,13 @@ bool_t register_data_insert_user(connection_t *con, register_session_t *reg, int
 		return false;
 	}
 
-	cred_res = credential_salt_fetch(credential->auth.username, &salt);
+	salt_res = credential_salt_fetch(credential->auth.username, &salt);
 
-	if(cred_res == 0) {
+	if(salt_res == USER_SALT) {
 		cred_res = credential_calc_auth(credential, reg->password, salt);
 		st_free(salt);
 	}
-	else if(cred_res == 1) {
+	else if(salt_res == USER_NO_SALT) {
 		cred_res = credential_calc_auth(credential, reg->password, NULL);
 	}
 	else {

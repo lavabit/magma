@@ -118,11 +118,9 @@ bool_t register_data_insert_user(
 {
 
 	chr_t buffer[32];
-	int_t cred_res;
 	MYSQL_BIND parameters[8];
 	credential_t *credential;
-	salt_state_t salt_res;
-	stringer_t *privkey, *pubkey, *newaddr, *salt;
+	stringer_t *privkey, *pubkey, *newaddr, *salt, *hex_salt;
 	size_t key_len = 512;
 	uint64_t name_len, plan_len, date_len = 10;
 	uint64_t quota = 0, usernum, inbox, size_limit, send_limit, recv_limit;
@@ -139,27 +137,27 @@ bool_t register_data_insert_user(
 	// The plan.
 	if (plan == 1) {
 		plan_len = 5;
-		parameters[2].buffer_type = MYSQL_TYPE_STRING;
-		parameters[2].buffer = (chr_t *)basic;
-		parameters[2].length = &plan_len;
+		parameters[3].buffer_type = MYSQL_TYPE_STRING;
+		parameters[3].buffer = (chr_t *)basic;
+		parameters[3].length = &plan_len;
 	}
 	else if (plan == 2) {
 		plan_len = 8;
-		parameters[2].buffer_type = MYSQL_TYPE_STRING;
-		parameters[2].buffer = (chr_t *)personal;
-		parameters[2].length = &plan_len;
+		parameters[3].buffer_type = MYSQL_TYPE_STRING;
+		parameters[3].buffer = (chr_t *)personal;
+		parameters[3].length = &plan_len;
 	}
 	else if (plan == 3) {
 		plan_len = 8;
-		parameters[2].buffer_type = MYSQL_TYPE_STRING;
-		parameters[2].buffer = (chr_t *)enhanced;
-		parameters[2].length = &plan_len;
+		parameters[3].buffer_type = MYSQL_TYPE_STRING;
+		parameters[3].buffer = (chr_t *)enhanced;
+		parameters[3].length = &plan_len;
 	}
 	else if (plan == 4) {
 		plan_len = 7;
-		parameters[2].buffer_type = MYSQL_TYPE_STRING;
-		parameters[2].buffer = (chr_t *)premium;
-		parameters[2].length = &plan_len;
+		parameters[3].buffer_type = MYSQL_TYPE_STRING;
+		parameters[3].buffer = (chr_t *)premium;
+		parameters[3].length = &plan_len;
 	}
 	else {
 		log_pedantic("Invalid plan number specified.");
@@ -180,10 +178,10 @@ bool_t register_data_insert_user(
 		quota = 8589934592ll; // 8,192 MB
 	}
 
-	parameters[3].buffer_type = MYSQL_TYPE_LONGLONG;
-	parameters[3].buffer_length = sizeof(uint64_t);
-	parameters[3].buffer = &quota;
-	parameters[3].is_unsigned = true;
+	parameters[4].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[4].buffer_length = sizeof(uint64_t);
+	parameters[4].buffer = &quota;
+	parameters[4].is_unsigned = true;
 
 	// Calculate the date.
 	// Removed code for paid plan time calculation.
@@ -193,9 +191,9 @@ bool_t register_data_insert_user(
 		return false;
 	}
 
-	parameters[4].buffer_type = MYSQL_TYPE_STRING;
-	parameters[4].buffer = &buffer;
-	parameters[4].length = &date_len;
+	parameters[5].buffer_type = MYSQL_TYPE_STRING;
+	parameters[5].buffer = &buffer;
+	parameters[5].length = &date_len;
 
 	// Hash the password.
 
@@ -204,32 +202,41 @@ bool_t register_data_insert_user(
 		return false;
 	}
 
-	salt_res = credential_salt_fetch(credential->auth.username, &salt);
-
-	if(salt_res == USER_SALT) {
-		cred_res = credential_calc_auth(credential, password, salt);
-		st_free(salt);
-	}
-	else if(salt_res == USER_NO_SALT) {
-		cred_res = credential_calc_auth(credential, password, NULL);
-	}
-	else {
-		cred_res = 0;
-	}
-
-	if(!cred_res) {
+	if(!(salt = credential_salt_generate())) {
+		log_error("Failed to generate a new user salt.");
 		credential_free(credential);
+		return false;
+	}
+	
+	if(!credential_calc_auth(credential, password, salt)) {
 		log_error("Failed to calculate user credentials.");
+		credential_free(credential);
+		st_free(salt);
 		return false;
 	}
 
-	// The password.
+	hex_salt = hex_encode_opts(salt, (MANAGED_T | CONTIGUOUS | SECURE));
+	st_free(salt);
+
+	if(!hex_salt) {
+		log_error("Failed to hex encode the user salt.");
+		credential_free(credential);
+		return false;
+	}
+	
 	parameters[1].buffer_type = MYSQL_TYPE_STRING;
-	parameters[1].buffer = st_data_get(credential->auth.password);
-	parameters[1].buffer_length = st_length_get(credential->auth.password);
+	parameters[1].buffer = st_data_get(hex_salt);
+	parameters[1].buffer_length = st_length_get(hex_salt);
+
+	st_free(hex_salt);
+
+	// The stacie verification token.
+	parameters[2].buffer_type = MYSQL_TYPE_STRING;
+	parameters[2].buffer = st_data_get(credential->auth.password);
+	parameters[2].buffer_length = st_length_get(credential->auth.password);
 
 	// Insert the user.
-	if ((usernum = stmt_insert_conn(stmts.register_insert_user, parameters, transaction)) == 0) {
+	if ((usernum = stmt_insert_conn(stmts.register_insert_stacie_user, parameters, transaction)) == 0) {
 		log_pedantic("Unable to insert the user into the database. (Failed on User table.)");
 		credential_free(credential);
 		return false;

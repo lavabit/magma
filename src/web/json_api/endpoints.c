@@ -40,6 +40,7 @@ api_endpoint_auth(connection_t *con) {
 	chr_t *username;
 	chr_t *password;
 	meta_user_t *user;
+	user_state_t login_result;
 
 	if (
 		json_unpack_ex_d(
@@ -66,21 +67,30 @@ api_endpoint_auth(connection_t *con) {
 		goto out;
 	}
 
-	// TODO! - wire this up here!
-	//if (
-	//	!authenticate_stub_REPLACE_ME(
-	//		user,
-	//		username,
-	//		password,
-	//		META_PROT_JSON))
-	//{
-	//	api_error(
-	//		con,
-	//		HTTP_ERROR_400,
-	//		PORTAL_ENDPOINT_ERROR_AUTH,
-	//		"Unable to authenticate with given username and password.");
-	//	goto cleanup_username_password;
-	//}
+	login_result = credential_login(
+		username,
+		password,
+		META_PROT_JSON,
+		META_GET_NONE,
+		&user);
+
+	if (login_result == INTERNAL_ERROR) {
+		api_error(
+			con,
+			HTTP_ERROR_500,
+			JSON_RPC_2_ERROR_SERVER_INTERNAL,
+			"Internal server error.");
+		goto out;
+	}
+
+	if (login_result == USER_ERROR) {
+		api_error(
+			con,
+			HTTP_ERROR_400,
+			PORTAL_ENDPOINT_ERROR_AUTH,
+			"Unable to authenticate with given username and password.");
+		goto out;
+	}
 
 	if (is_locked(user)) {
 		api_error(
@@ -88,7 +98,7 @@ api_endpoint_auth(connection_t *con) {
 			HTTP_ERROR_400,
 			PORTAL_ENDPOINT_ERROR_AUTH,
 			lock_error_message(user));
-		goto cleanup_user;
+		goto cleanup;
 	}
 
 	con->http.session->state = SESSION_STATE_AUTHENTICATED;
@@ -111,11 +121,8 @@ api_endpoint_auth(connection_t *con) {
 		"jsonrpc", "2.0",
 		"id", con->http.portal.id);
 
-cleanup_user:
+cleanup:
 	meta_remove(user->username, META_PROT_JSON);
-cleanup_username_password:
-	ns_free(username);
-	ns_free(password);
 out:
 	return;
 }
@@ -164,7 +171,7 @@ api_endpoint_register(connection_t *con) {
 			HTTP_ERROR_500,
 			JSON_RPC_2_ERROR_SERVER_INTERNAL,
 			"Internal server error.");
-		goto cleanup;
+		goto out;
 	}
 
 	// Database insert.
@@ -183,7 +190,7 @@ api_endpoint_register(connection_t *con) {
 			HTTP_ERROR_500,
 			JSON_RPC_2_ERROR_SERVER_INTERNAL,
 			"Internal server error.");
-		goto cleanup;
+		goto out;
 	}
 
 	// Were finally done.
@@ -195,14 +202,80 @@ api_endpoint_register(connection_t *con) {
 	api_response(
 		con,
 		HTTP_OK,
-		"{s:s, s:I}",
+		"{s:s, s:{s:s}, s:I}",
 		"jsonrpc", "2.0",
+		"result",
+			"register", "success",
 		"id", con->http.portal.id);
 
-cleanup:
-	ns_free(username);
-	ns_free(password);
-	ns_free(password_verification);
+out:
+	return;
+}
+
+void
+api_endpoint_delete_user(connection_t *con) {
+	json_error_t jansson_err;
+	chr_t *username;
+	int64_t num_deleted;
+	MYSQL_BIND parameters[1];
+
+	mm_wipe(parameters, sizeof(parameters));
+
+	if (
+		json_unpack_ex_d(
+			con->http.portal.params,
+			&jansson_err,
+			JSON_STRICT,
+			"{s:s}",
+			"username", &username)
+		!= 0)
+	{
+		log_pedantic(
+			"Received invalid portal auth request parameters "
+			"{ user = %s, errmsg = %s }",
+			st_char_get(con->http.session->user->username),
+			jansson_err.text);
+
+		api_error(
+			con,
+			HTTP_ERROR_400,
+			JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS,
+			"Invalid method parameters.");
+
+		goto out;
+	}
+
+	// Key
+	parameters[0].buffer_type = MYSQL_TYPE_STRING;
+	parameters[0].buffer_length = ns_length_get(username);
+	parameters[0].buffer = username;
+
+	num_deleted = stmt_exec_affected(stmts.delete_user, parameters);
+	if (0 == num_deleted) {
+		api_error(
+			con,
+			HTTP_ERROR_422,
+			JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS,
+			"No such user.");
+		goto out;
+	}
+	if (-1 == num_deleted) {
+		api_error(
+			con,
+			HTTP_ERROR_500,
+			JSON_RPC_2_ERROR_SERVER_INTERNAL,
+			"Internal server error.");
+	}
+
+	api_response(
+		con,
+		HTTP_OK,
+		"{s:s, s:{s:s}, s:I}",
+		"jsonrpc", "2.0",
+		"result",
+			"delete_user", "success",
+		"id", con->http.portal.id);
+
 out:
 	return;
 }
@@ -242,10 +315,6 @@ api_endpoint_change_password(connection_t *con) {
 
 	// TODO - wire up here
 
-cleanup:
-	ns_free(password);
-	ns_free(new_password);
-	ns_free(new_password_verification);
 out:
 	return;
 }

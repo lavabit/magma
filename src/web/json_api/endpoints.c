@@ -192,8 +192,10 @@ api_endpoint_register(connection_t *con) {
 	api_response(
 		con,
 		HTTP_OK,
-		"{s:s, s:I}",
+		"{s:s, s:{s:s}, s:I}",
 		"jsonrpc", "2.0",
+		"result",
+			"register", "success",
 		"id", con->http.portal.id);
 
 out:
@@ -258,8 +260,10 @@ api_endpoint_delete_user(connection_t *con) {
 	api_response(
 		con,
 		HTTP_OK,
-		"{s:s, s:I}",
+		"{s:s, s:{s:s}, s:I}",
 		"jsonrpc", "2.0",
+		"result",
+			"delete_user", "success",
 		"id", con->http.portal.id);
 
 out:

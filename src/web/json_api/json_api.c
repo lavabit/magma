@@ -96,7 +96,7 @@ void json_api_dispatch(connection_t *con) {
 		!is_localhost(con))
 	{
 		log_pedantic("Insecure request denied");
-		con->http.mode = HTTP_ERROR_400;
+		bad_request_error(con);
 		goto out;
 	}
 

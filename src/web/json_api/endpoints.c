@@ -40,6 +40,7 @@ api_endpoint_auth(connection_t *con) {
 	chr_t *username;
 	chr_t *password;
 	meta_user_t *user;
+	user_state_t login_result;
 
 	if (
 		json_unpack_ex_d(
@@ -66,21 +67,30 @@ api_endpoint_auth(connection_t *con) {
 		goto out;
 	}
 
-	// TODO! - wire this up here!
-	//if (
-	//	!authenticate_stub_REPLACE_ME(
-	//		user,
-	//		username,
-	//		password,
-	//		META_PROT_JSON))
-	//{
-	//	api_error(
-	//		con,
-	//		HTTP_ERROR_400,
-	//		PORTAL_ENDPOINT_ERROR_AUTH,
-	//		"Unable to authenticate with given username and password.");
-	//	goto cleanup;
-	//}
+	login_result = credential_login(
+		username,
+		password,
+		META_PROT_JSON,
+		META_GET_NONE,
+		&user);
+
+	if (login_result == INTERNAL_ERROR) {
+		api_error(
+			con,
+			HTTP_ERROR_500,
+			JSON_RPC_2_ERROR_SERVER_INTERNAL,
+			"Internal server error.");
+		goto out;
+	}
+
+	if (login_result == USER_ERROR) {
+		api_error(
+			con,
+			HTTP_ERROR_400,
+			PORTAL_ENDPOINT_ERROR_AUTH,
+			"Unable to authenticate with given username and password.");
+		goto out;
+	}
 
 	if (is_locked(user)) {
 		api_error(

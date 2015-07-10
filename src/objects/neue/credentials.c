@@ -433,7 +433,7 @@ error:
 static int_t credential_calc_stacie(credential_t *cred, stringer_t *password, stringer_t *salt) {
 
 	uint_t rounds;
-	stringer_t *seed, *passkey;
+	stringer_t *seed, *passkey, *temp;
 
 	cred->authentication = STACIE;
 
@@ -448,29 +448,47 @@ static int_t credential_calc_stacie(credential_t *cred, stringer_t *password, st
 		goto error;
 	}
 
-	cred->auth.key = stacie_hashed_key_derive(seed, rounds, cred->auth.username, password, salt);
+	temp = stacie_hashed_key_derive(seed, rounds, cred->auth.username, password, salt);
 	st_free(seed);
 
-	if(!cred->auth.key) {
+	if(!temp) {
 		log_error("Failed STACIE master key derivation.");
 		goto error;
 	}
 
-	if(!(passkey = stacie_hashed_key_derive(cred->auth.key, rounds, cred->auth.username, password, salt))) {
+	if(!(cred->auth.key = hex_encode_opts(temp, (MANAGED_T | CONTIGUOUS | SECURE)))) {
+		log_error("Failed to hex encode STACIE master key.");
+		goto cleanup_temp;
+	}
+
+	passkey = stacie_hashed_key_derive(temp, rounds, cred->auth.username, password, salt);
+	st_free(temp);
+
+	if(!passkey) {
 		log_error("Failed STACIE password key derivation.");
 		goto error;
 	}
 
-	cred->auth.password = stacie_hashed_token_derive(passkey, cred->auth.username, salt, NULL);
+	temp = stacie_hashed_token_derive(passkey, cred->auth.username, salt, NULL);
 	st_free(passkey);
 
-	if(!cred->auth.password) {
+	if(!temp) {
 		log_error("Failed STACIE verification token derivation.");
+		goto error;
+	}
+
+	cred->auth.password = hex_encode_opts(temp, (MANAGED_T | CONTIGUOUS | SECURE));
+	st_free(temp);
+
+	if(!cred->auth.password) {
+		log_error("Failed to hex encode STACIE verification token.");
 		goto error;
 	}
 
 	return 1;
 
+cleanup_temp:
+	st_free(temp);
 error:
 	return 0;
 }

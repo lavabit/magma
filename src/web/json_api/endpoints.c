@@ -211,8 +211,10 @@ void
 api_endpoint_delete_user(connection_t *con) {
 	json_error_t jansson_err;
 	chr_t *username;
-	uint64_t num_deleted;
+	int64_t num_deleted;
 	MYSQL_BIND parameters[1];
+
+	mm_wipe(parameters, sizeof(parameters));
 
 	if (
 		json_unpack_ex_d(
@@ -251,6 +253,13 @@ api_endpoint_delete_user(connection_t *con) {
 			JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS,
 			"No such user.");
 		goto cleanup;
+	}
+	if (-1 == num_deleted) {
+		api_error(
+			con,
+			HTTP_ERROR_500,
+			JSON_RPC_2_ERROR_SERVER_INTERNAL,
+			"Internal server error.");
 	}
 
 	api_response(

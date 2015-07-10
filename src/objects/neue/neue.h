@@ -31,6 +31,12 @@ typedef enum {
 	ERROR
 } salt_state_t;
 
+typedef enum {
+	INTERNAL_ERROR,
+	USER_ERROR,
+	LOGGED_IN
+} user_state_t;
+
 typedef struct {
 
 	int_t type;
@@ -81,7 +87,11 @@ stringer_t *    credential_salt_generate(void);
 
 /// datatier.c
 
-salt_state_t      credential_salt_fetch(stringer_t *username, stringer_t ** salt);
+salt_state_t    credential_salt_fetch(stringer_t *username, stringer_t ** salt);
+
+/// authentication.c
+
+user_state_t    credential_login(stringer_t *username, stringer_t *password, META_PROT protocol, META_GET data, meta_user_t **user);
 
 #endif
 

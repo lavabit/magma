@@ -75,6 +75,8 @@ START_TEST (check_users_credentials_valid_s) {
 end:
 	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
 	fail_unless(!errmsg, st_char_get(errmsg));
+	return;
+
 cleanup_cred:
 	credential_free(user_check_cred);
 	goto end;
@@ -147,6 +149,17 @@ START_TEST (check_users_credentials_invalid_s) {
 
 		credential_free(user_check_cred);
 	}
+
+end:
+	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
+	fail_unless(!errmsg, st_char_get(errmsg));
+	return;
+
+cleanup_data:
+	meta_remove(user_check_cred->auth.username, META_PROT_GENERIC);
+cleanup_cred:
+	credential_free(user_check_cred);
+	goto end;
 
 
 	// Attempt a credentials creation using a series of randomly generated, but valid usernames.
@@ -230,14 +243,6 @@ START_TEST (check_users_credentials_invalid_s) {
 	}
 */
 
-end:
-	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
-	fail_unless(!errmsg, st_char_get(errmsg));
-cleanup_data:
-	meta_remove(user_check_cred->auth.username, META_PROT_GENERIC);
-cleanup_cred:
-	credential_free(user_check_cred);
-	goto end;
 
 } END_TEST
 

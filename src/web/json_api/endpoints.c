@@ -68,8 +68,8 @@ api_endpoint_auth(connection_t *con) {
 	}
 
 	login_result = credential_login(
-		username,
-		password,
+		NULLER(username),
+		NULLER(password),
 		META_PROT_JSON,
 		META_GET_NONE,
 		&user);

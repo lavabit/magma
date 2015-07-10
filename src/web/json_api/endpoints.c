@@ -2,17 +2,6 @@
 
 static
 bool_t
-authenticate_stub_REPLACE_ME(
-	meta_user_t *user,
-	chr_t const *username,
-	chr_t const *password,
-	META_PROT protocol)
-{
-	return true;
-}
-
-static
-bool_t
 is_locked(meta_user_t *user) {
 	return user->lock_status < 5;
 }
@@ -77,20 +66,21 @@ api_endpoint_auth(connection_t *con) {
 		goto out;
 	}
 
-	if (
-		!authenticate_stub_REPLACE_ME(
-			user,
-			username,
-			password,
-			META_PROT_JSON))
-	{
-		api_error(
-			con,
-			HTTP_ERROR_400,
-			PORTAL_ENDPOINT_ERROR_AUTH,
-			"Unable to authenticate with given username and password.");
-		goto cleanup_username_password;
-	}
+	// TODO! - wire this up here!
+	//if (
+	//	!authenticate_stub_REPLACE_ME(
+	//		user,
+	//		username,
+	//		password,
+	//		META_PROT_JSON))
+	//{
+	//	api_error(
+	//		con,
+	//		HTTP_ERROR_400,
+	//		PORTAL_ENDPOINT_ERROR_AUTH,
+	//		"Unable to authenticate with given username and password.");
+	//	goto cleanup_username_password;
+	//}
 
 	if (is_locked(user)) {
 		api_error(
@@ -132,16 +122,123 @@ out:
 
 void
 api_endpoint_register(connection_t *con) {
-}
+	json_error_t jansson_err;
+	chr_t *username;
+	chr_t *password;
+	chr_t *password_verification;
 
-void
-api_endpoint_register_legacy(connection_t *con) {
+	int64_t transaction;
+	uint64_t usernum = 0;
+
+	if (
+		json_unpack_ex_d(
+			con->http.portal.params,
+			&jansson_err,
+			JSON_STRICT,
+			"{s:s, s:s, s:s}",
+			"username", &username,
+			"password", &password,
+			"password_verification", &password_verification)
+		!= 0)
+	{
+		log_pedantic(
+			"Received invalid portal auth request parameters "
+			"{ user = %s, errmsg = %s }",
+			st_char_get(con->http.session->user->username),
+			jansson_err.text);
+
+		api_error(
+			con,
+			HTTP_ERROR_400,
+			JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS,
+			"Invalid method parameters.");
+
+		goto out;
+	}
+
+	// Start the transaction.
+	transaction = tran_start();
+	if (transaction == -1) {
+		api_error(
+			con,
+			HTTP_ERROR_500,
+			JSON_RPC_2_ERROR_SERVER_INTERNAL,
+			"Internal server error.");
+		goto cleanup;
+	}
+
+	// Database insert.
+	if (
+		!register_data_insert_user(
+			con,
+			1,
+			NULLER(username),
+			NULLER(password),
+			transaction,
+			&usernum))
+	{
+		tran_rollback(transaction);
+		api_error(
+			con,
+			HTTP_ERROR_500,
+			JSON_RPC_2_ERROR_SERVER_INTERNAL,
+			"Internal server error.");
+		goto cleanup;
+	}
+
+	// Were finally done.
+	tran_commit(transaction);
+
+	// And finally, increment the abuse counter.
+	register_abuse_increment_history(con);
+
+cleanup:
+	ns_free(username);
+	ns_free(password);
+	ns_free(password_verification);
+out:
+	return;
 }
 
 void
 api_endpoint_change_password(connection_t *con) {
-}
+	json_error_t jansson_err;
+	chr_t *password;
+	chr_t *new_password;
+	chr_t *new_password_verification;
 
-void
-api_endpoint_migrate_account(connection_t *con) {
+	if (
+		json_unpack_ex_d(
+			con->http.portal.params,
+			&jansson_err,
+			JSON_STRICT,
+			"{s:s, s:s, s:s}",
+			"password", &password,
+			"new_password", &new_password,
+			"new_password_verification", &new_password_verification)
+		!= 0)
+	{
+		log_pedantic(
+			"Received invalid portal auth request parameters "
+			"{ user = %s, errmsg = %s }",
+			st_char_get(con->http.session->user->username),
+			jansson_err.text);
+
+		api_error(
+			con,
+			HTTP_ERROR_400,
+			JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS,
+			"Invalid method parameters.");
+
+		goto out;
+	}
+
+	// TODO - wire up here
+
+cleanup:
+	ns_free(password);
+	ns_free(new_password);
+	ns_free(new_password_verification);
+out:
+	return;
 }

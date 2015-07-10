@@ -108,7 +108,14 @@ bool_t register_data_check_username(stringer_t *username) {
  * @param	outuser		a pointer to a numerical id to receive the newly generated and inserted user id.
  * @result	true if the new user account was successfully created, or false on failure.
  */
-bool_t register_data_insert_user(connection_t *con, register_session_t *reg, int_t transaction, uint64_t *outuser) {
+bool_t register_data_insert_user(
+	connection_t *con,
+	uint16_t plan,
+	stringer_t *username,
+	stringer_t *password,
+	int_t transaction,
+	uint64_t *outuser)
+{
 
 	chr_t buffer[32];
 	int_t cred_res;
@@ -124,31 +131,31 @@ bool_t register_data_insert_user(connection_t *con, register_session_t *reg, int
 	mm_wipe(parameters, sizeof(parameters));
 
 	// The username.
-	name_len = st_length_get(reg->username);
+	name_len = st_length_get(username);
 	parameters[0].buffer_type = MYSQL_TYPE_STRING;
-	parameters[0].buffer = (chr_t *)st_char_get(reg->username);
+	parameters[0].buffer = (chr_t *)st_char_get(username);
 	parameters[0].length = &name_len;
 
 	// The plan.
-	if (reg->plan == 1) {
+	if (plan == 1) {
 		plan_len = 5;
 		parameters[2].buffer_type = MYSQL_TYPE_STRING;
 		parameters[2].buffer = (chr_t *)basic;
 		parameters[2].length = &plan_len;
 	}
-	else if (reg->plan == 2) {
+	else if (plan == 2) {
 		plan_len = 8;
 		parameters[2].buffer_type = MYSQL_TYPE_STRING;
 		parameters[2].buffer = (chr_t *)personal;
 		parameters[2].length = &plan_len;
 	}
-	else if (reg->plan == 3) {
+	else if (plan == 3) {
 		plan_len = 8;
 		parameters[2].buffer_type = MYSQL_TYPE_STRING;
 		parameters[2].buffer = (chr_t *)enhanced;
 		parameters[2].length = &plan_len;
 	}
-	else if (reg->plan == 4) {
+	else if (plan == 4) {
 		plan_len = 7;
 		parameters[2].buffer_type = MYSQL_TYPE_STRING;
 		parameters[2].buffer = (chr_t *)premium;
@@ -160,16 +167,16 @@ bool_t register_data_insert_user(connection_t *con, register_session_t *reg, int
 	}
 
 	// The quota.
-	if (reg->plan == 1) {
+	if (plan == 1) {
 		quota = 134217728ll; // 128 MB
 	}
-	else if (reg->plan == 2) {
+	else if (plan == 2) {
 		quota = 1073741824ll; // 1,024 MB
 	}
-	else if (reg->plan == 3) {
+	else if (plan == 3) {
 		quota = 1073741824ll; // 1,024 MB
 	}
-	else if (reg->plan == 4) {
+	else if (plan == 4) {
 		quota = 8589934592ll; // 8,192 MB
 	}
 
@@ -192,7 +199,7 @@ bool_t register_data_insert_user(connection_t *con, register_session_t *reg, int
 
 	// Hash the password.
 
-	if(!(credential = credential_alloc_auth(reg->username))) {
+	if(!(credential = credential_alloc_auth(username))) {
 		log_error("Failed to allocate credentials structure.");
 		return false;
 	}
@@ -200,11 +207,11 @@ bool_t register_data_insert_user(connection_t *con, register_session_t *reg, int
 	salt_res = credential_salt_fetch(credential->auth.username, &salt);
 
 	if(salt_res == USER_SALT) {
-		cred_res = credential_calc_auth(credential, reg->password, salt);
+		cred_res = credential_calc_auth(credential, password, salt);
 		st_free(salt);
 	}
 	else if(salt_res == USER_NO_SALT) {
-		cred_res = credential_calc_auth(credential, reg->password, NULL);
+		cred_res = credential_calc_auth(credential, password, NULL);
 	}
 	else {
 		cred_res = 0;
@@ -305,22 +312,22 @@ bool_t register_data_insert_user(connection_t *con, register_session_t *reg, int
 	parameters[2].buffer = &inbox;
 	parameters[2].is_unsigned = true;
 
-	if (reg->plan == 1) {
+	if (plan == 1) {
 		size_limit = 33554432;
 		recv_limit = 1024;
 		send_limit = 256;
 	}
-	else if (reg->plan == 2) {
+	else if (plan == 2) {
 		size_limit = 67108864ll;
 		recv_limit = 1024;
 		send_limit = 256;
 	}
-	else if (reg->plan == 3) {
+	else if (plan == 3) {
 		size_limit = 67108864ll;
 		recv_limit = 1024;
 		send_limit = 512;
 	}
-	else if (reg->plan == 4) {
+	else if (plan == 4) {
 		size_limit = 134217728ll;
 		recv_limit = 8192;
 		send_limit = 768;
@@ -362,7 +369,7 @@ bool_t register_data_insert_user(connection_t *con, register_session_t *reg, int
 		return false;
 	}
 
-	if (!(newaddr = st_merge("sns", reg->username, "@", magma.system.domain))) {
+	if (!(newaddr = st_merge("sns", username, "@", magma.system.domain))) {
 		log_pedantic("Unable to generate an email address for the new user.");
 		return false;
 	}

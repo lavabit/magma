@@ -20,19 +20,9 @@ api_methods[] = {
 		.callback = &api_endpoint_register
 	},
 	{
-		.string = "register_legacy",
-		.length = 15,
-		.callback = &api_endpoint_register_legacy
-	},
-	{
 		.string = "change_password",
 		.length = 15,
 		.callback = &api_endpoint_change_password
-	},
-	{
-		.string = "migrate_account",
-		.length = 15,
-		.callback = &api_endpoint_migrate_account
 	}
 };
 

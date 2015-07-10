@@ -78,7 +78,8 @@ it might be prudent to offer a mechanism to force such a reset of mailbox keys a
 of messages on the server. This mechanism does not necessarily need to be present at launch of 
 the new Lavabot service, but I'd think might be a useful addition early on. While it might be difficult
 to imagine circumstances in which the encrypted mailbox keys could be compromised, having
-a way to request a key change couldn't hurt and might just help.
+a way to request a key change couldn't hurt and might just help. Note that preserving on server
+email would require the current stacie password to enable decryption of existing email.
 
 ## Mailbox lifetime
 

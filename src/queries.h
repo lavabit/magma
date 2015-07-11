@@ -33,6 +33,8 @@
 	ON Users.usernum = Dispatch.usernum\
 	WHERE userid = ? AND stacie_auth_token = ? AND email = 1\
 	LIMIT 1"
+#define SELECT_CHECK_AUTH_LEGACY "SELECT usernum FROM Users WHERE userid = ? AND password = ? AND email = 1"
+#define SELECT_CHECK_AUTH_STACIE "SELECT usernum FROM Users WHERE userid = ? AND stacie_auth_token = ? AND email = 1"
 #define SELECT_USER_RECORD "SELECT password, Dispatch.secure, locked, `ssl`, overquota FROM Users INNER JOIN Dispatch ON Users.usernum = Dispatch.usernum WHERE Users.usernum = ? AND email = 1"
 #define SELECT_USER_STACIE_SALT "\
 	SELECT stacie_salt\
@@ -189,6 +191,8 @@
 											INSERT_OBJECT, \
 											SELECT_USER, \
 											SELECT_USER_STACIE_AUTH, \
+											SELECT_CHECK_AUTH_LEGACY, \
+											SELECT_CHECK_AUTH_STACIE, \
 											SELECT_USER_RECORD, \
 											SELECT_USER_STACIE_SALT, \
 											SELECT_USER_STORAGE_KEYS, \
@@ -286,6 +290,8 @@
 											**insert_object, \
 											**select_user, \
 											**select_user_stacie_auth, \
+											**select_check_auth_legacy, \
+											**select_check_auth_stacie, \
 											**select_user_record, \
 											**select_user_stacie_salt, \
 											**select_user_storage_keys, \

@@ -13,6 +13,8 @@
 
 static user_state_t credential_build_full(stringer_t *username, stringer_t *password, credential_t **credential);
 
+static user_state_t credential_auth_check(credential_t *cred);
+
 /**
  * @brief	Performs the entirety of the login process and creates the meta_user_t object on success.
  * @param	username	Username specified by the user.
@@ -214,5 +216,22 @@ static user_state_t credential_build_full(stringer_t *username, stringer_t *pass
 cleanup_cred:
 	credential_free(cred);
 error:
+	return state;
+}
+
+/**
+ * @brief	Check the validity of specified user credentials.
+ * @param	cred		Object containing user credentials.
+ * @return	SUCCESS if credentials are valid, AUTHENTICATION_ERROR if credentials are invalid, INTERNAL_ERROR if some error occurred.
+*/
+
+static user_state_t credential_auth_check(credential_t *cred) {
+
+	uint64_t num;
+	user_state_t state;
+
+	state = credential_usernum_fetch(cred, &num);
+	num = 0;
+
 	return state;
 }

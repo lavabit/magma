@@ -88,7 +88,7 @@ stringer_t *    credential_salt_generate(void);
 /// datatier.c
 
 salt_state_t    credential_salt_fetch(stringer_t *username, stringer_t ** salt);
-user_state_t    credential_auth_check(credential_t *cred);
+user_state_t    credential_usernum_fetch(credential_t *cred, uint64_t *usernum);
 
 /// authentication.c
 

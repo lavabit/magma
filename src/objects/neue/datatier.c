@@ -89,14 +89,16 @@ error:
 }
 
 /**
- * @brief	Check whether user with the specified credentials exists.
- * @param	cred		Credentials object of the user whose credentials are to be checked.
- * @return	SUCCESS if user exists, AUTHENTICATION_ERROR if user does not exist, INTERNAL_ERROR if an internal error occurred.
+ * @brief	Fetch the usernum of the user specified by the credentials object.
+ * @param	cred		Credentials object of the user whose usernum is to be fetched.
+ * @param	usernum		The place in memory where the fetched usernum will be stored.
+ * @return	SUCCESS if usernum was successfully fetched, AUTHENTICATION_ERROR if user does not exist or did not authenticate, INTERNAL_ERROR if an internal error occurred.
 */
-user_state_t    credential_auth_check(credential_t *cred) {
+user_state_t    credential_usernum_fetch(credential_t *cred, uint64_t *usernum) {
 
 	MYSQL_BIND parameters[2];
 	MYSQL_STMT **auth_stmt;
+	row_t *row;
 	table_t *query;
 	uint64_t row_count;
 	user_state_t state;
@@ -104,25 +106,25 @@ user_state_t    credential_auth_check(credential_t *cred) {
 	if(!cred) {
 		log_pedantic("NULL credentials object was passed in.");
 		state = INTERNAL_ERROR;
-		goto out;
+		goto error;
 	}
 
 	if(cred->type != CREDENTIAL_AUTH) {
 		log_error("Credentials passed are not of authentication type.");
 		state = INTERNAL_ERROR;
-		goto out;
+		goto error;
 	}
 
 	if(st_empty(cred->auth.username)) {
 		log_error("Credentials have a NULL or empty username stringer.");
 		state = INTERNAL_ERROR;
-		goto out;
+		goto error;
 	}
 
 	if(st_empty(cred->auth.password)) {
 		log_error("Credentials have a NULL or empty hashed password token stringer.");
 		state = INTERNAL_ERROR;
-		goto out;
+		goto error;
 	}
 
 	mm_wipe(parameters, sizeof(parameters));
@@ -130,15 +132,15 @@ user_state_t    credential_auth_check(credential_t *cred) {
 	switch(cred->authentication) {
 
 	case LEGACY:
-		auth_stmt = stmts.select_check_auth_legacy;
+		auth_stmt = stmts.select_usernum_auth_legacy;
 		break;
 	case STACIE:
-		auth_stmt = stmts.select_check_auth_stacie;
+		auth_stmt = stmts.select_usernum_auth_stacie;
 		break;
 	default:
 		log_error("Invalid authentication type.");
 		state = INTERNAL_ERROR;
-		goto out;
+		goto error;
 
 	}
 
@@ -153,23 +155,39 @@ user_state_t    credential_auth_check(credential_t *cred) {
 	if(!(query = stmt_get_result(auth_stmt, parameters))) {
 		log_error("Database query failed.");
 		state = INTERNAL_ERROR;
-		goto out;
+		goto error;
 	}
 
 	row_count = res_row_count(query);
-	res_table_free(query);
 
 	if(row_count > 1) {
 		log_error("Multiple accounts returned with the same name and password hash");
 		state = INTERNAL_ERROR;
-		goto out;
+		goto cleanup_query;
 	} else if(!row_count){
 		state = AUTHENTICATION_ERROR;
-		goto out;
-	} else {
-		state = SUCCESS;
+		goto cleanup_query;
 	}
 
-out:
+	if ((row = res_row_next(query))) {
+		log_error("Failed to select row from queried data.");
+		state = INTERNAL_ERROR;
+		goto cleanup_query;
+	}
+
+	*usernum = res_field_uint64(row, 0);
+	res_table_free(query);
+
+	if(!(*usernum)) {
+		log_error("Failed to retrieve user num from row.");
+		state = INTERNAL_ERROR;
+		goto error;
+	}
+
+	return SUCCESS;
+
+cleanup_query:
+	res_table_free(query);
+error:
 	return state;
 }

@@ -14,17 +14,37 @@
 
 START_TEST (check_users_credentials_valid_s) {
 
-	int_t state;
-	stringer_t *errmsg = NULL;
+	int_t state, cred_res;
+	salt_state_t salt_res;
+	stringer_t *errmsg = NULL, *salt = NULL;
 	meta_user_t *user_check_data = NULL;
 	credential_t *user_check_cred = NULL;
+
 
 	typedef struct {
 		stringer_t *username;
 		stringer_t *password;
 	} name_pass;
+#if 0
 
-	name_pass tests[3] = {
+/** use this to generate new user info*/
+	stringer_t *temp_salt, *temp_hex;
+	credential_t *stacie;
+
+	fprintf(stderr, "\n\n");
+
+	stacie = credential_alloc_auth(CONSTANT("stacie"));
+
+	temp_salt = credential_salt_generate();
+	temp_hex = hex_encode_opts(temp_salt, (MANAGED_T | CONTIGUOUS | HEAP));
+
+	fprintf(stderr, "%s\n", st_char_get(temp_hex));
+
+	credential_calc_auth(stacie, CONSTANT("magma"), temp_salt);
+
+	fprintf(stderr, "%s\n\n", st_char_get(stacie->auth.password));
+#endif
+	name_pass tests[4] = {
 		{
 			CONSTANT("magma"),
 			CONSTANT("test")
@@ -36,6 +56,10 @@ START_TEST (check_users_credentials_valid_s) {
 		{
 			CONSTANT("magma+label@lavabit.com"),
 			CONSTANT("test")
+		},
+		{
+			CONSTANT("stacie"),
+			CONSTANT("magma")
 		}
 	};
 
@@ -46,10 +70,24 @@ START_TEST (check_users_credentials_valid_s) {
 
 		if(!(user_check_cred = credential_alloc_auth(tests[i].username))) {
 			errmsg = st_aprint("Credential allocation failed. { user = %s }", st_char_get(tests[i].username));
-			goto end;
+			goto error;
 		}
 
-		if(!credential_calc_auth(user_check_cred, tests[i].password, NULL)) {
+		salt_res = credential_salt_fetch(user_check_cred->auth.username, &salt);
+
+		if(salt_res == USER_SALT) {
+			cred_res = credential_calc_auth(user_check_cred, tests[i].password, salt);
+			st_free(salt);
+		}
+		else if(salt_res == USER_NO_SALT) {
+			cred_res = credential_calc_auth(user_check_cred, tests[i].password, NULL);
+		}
+		else {
+			errmsg = st_aprint("Error looking for user salt. { user = %s }", st_char_get(tests[i].username));
+			goto error;
+		}
+
+		if(!cred_res) {
 			errmsg = st_aprint("Credential allocation failed. { password = %s / salt = NULL }", st_char_get(tests[i].password));
 			goto cleanup_cred;
 		}
@@ -72,14 +110,15 @@ START_TEST (check_users_credentials_valid_s) {
 		credential_free(user_check_cred);
 	}
 
-end:
 	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
 	fail_unless(!errmsg, st_char_get(errmsg));
 	return;
 
 cleanup_cred:
 	credential_free(user_check_cred);
-	goto end;
+error:
+	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
+	fail_unless(!errmsg, st_char_get(errmsg));
 
 } END_TEST
 
@@ -126,14 +165,14 @@ START_TEST (check_users_credentials_invalid_s) {
 
 	if (!(user_check_cred = credential_alloc_auth(CONSTANT("magma")))) {
 		errmsg = st_merge("n", "Credential allocation failed. { user = magma }");
-		goto end;
+		goto error;
 	}
 
 	for(uint_t i = 0; i < sizeof(tests)/sizeof(tests[0]); ++i) {
 
 		if (!(user_check_cred = credential_alloc_auth(tests[i].username))) {
 			errmsg = st_aprint("Credential creation failed. Authentication was not attempted. { user = %s }", st_char_get(tests[i].username));
-			goto end;
+			goto error;
 		}
 
 		if(!credential_calc_auth(user_check_cred, tests[i].password, NULL)) {
@@ -150,7 +189,6 @@ START_TEST (check_users_credentials_invalid_s) {
 		credential_free(user_check_cred);
 	}
 
-end:
 	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
 	fail_unless(!errmsg, st_char_get(errmsg));
 	return;
@@ -159,12 +197,13 @@ cleanup_data:
 	meta_remove(user_check_cred->auth.username, META_PROT_GENERIC);
 cleanup_cred:
 	credential_free(user_check_cred);
-	goto end;
-
+error:
+	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
+	fail_unless(!errmsg, st_char_get(errmsg));
 
 	// Attempt a credentials creation using a series of randomly generated, but valid usernames.
 	/* In my opinion these tests are no good so I am commenting them out - IVAN */
-/*
+#if 0
 	for (uint_t i = 0; !errmsg && i < OBJECT_CHECK_ITERATIONS; i++) {
 		if (!(username = rand_choices("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_", (rand_get_uint8() % 128) + 1))) {
 			errmsg = st_import("An error occurred while trying to generate a random username. { user = NULL }", 78);
@@ -241,7 +280,7 @@ cleanup_cred:
 		st_cleanup(username);
 		st_cleanup(password);
 	}
-*/
+#endif
 
 
 } END_TEST

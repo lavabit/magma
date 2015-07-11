@@ -1,19 +1,30 @@
 #include "magma.h"
 
 typedef struct {
-	char *string;
-	size_t length;
+	chr_t *string;
 	void (*callback)(connection_t *con);
 } api_lookup_t;
 
+// NOTE - These must be sorted alphabetically!
 static
 api_lookup_t
 api_methods[] = {
 	{
-		.string = "auth" ,
-		.length = 4,
+		.string = "auth",
 		.callback = &api_endpoint_auth
 	},
+	{
+		.string = "change_password",
+		.callback = &api_endpoint_change_password
+	},
+	{
+		.string = "delete_user",
+		.callback = &api_endpoint_delete_user
+	},
+	{
+		.string = "register",
+		.callback = &api_endpoint_register
+	}
 };
 
 static
@@ -25,9 +36,7 @@ api_method_compare(
 	api_lookup_t *cmd = (api_lookup_t *)command;
 	api_lookup_t *cmp = (api_lookup_t *)compare;
 
-	return st_cmp_ci_eq(
-		PLACER(cmp->string, cmp->length),
-		PLACER(cmd->string, cmd->length));
+	return strcmp(cmp->string, cmd->string);
 }
 
 static
@@ -82,12 +91,12 @@ void json_api_dispatch(connection_t *con) {
 	};
 
 	if (
-		magma.web.portal.safeguard &&
+		//magma.web.portal.safeguard &&
 		!is_ssl(con) &&
 		!is_localhost(con))
 	{
 		log_pedantic("Insecure request denied");
-		con->http.mode = HTTP_ERROR_400;
+		bad_request_error(con);
 		goto out;
 	}
 
@@ -185,9 +194,9 @@ void json_api_dispatch(connection_t *con) {
 		con->http.portal.request,
 		"params");
 
+	// A
 	// Generate the method lookup structure.
 	method_lookup.string = (chr_t *)json_string_value_d(method);
-	method_lookup.length = ns_length_get((chr_t *)json_string_value_d(method));
 
 	// If a method callback is found, execute it.
 	found_method = bsearch(

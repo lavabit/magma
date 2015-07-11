@@ -9,7 +9,7 @@
  * TODO Kent. Where does this clamp() helper function belong?
  * TODO Kent. Which if any of these routines are private?  Mark the private routines
  *          as constant and can only be calls from this scope.
- * TODO Kent. scan entire code base for uses of st_append() of the form: 
+ * TODO Kent. scan entire code base for uses of st_append() of the form:
  *          a = st_append(a, b) and fix or leak memory on failure.
  */
 
@@ -26,7 +26,7 @@
 static
 uint_t
 uint_clamp (uint_t x, uint_t min, uint_t max) {
-    return x > max? max : x < min? min: x;
+	return x > max? max : x < min? min: x;
 }   // uint_clamp()
 
 /**
@@ -41,10 +41,8 @@ stacie_rounds_calculate (stringer_t *password, uint_t bonus) {
 	uint_t pass_len;
 	uint_t hash_rounds = 0;
 
-	/*
-     * Between this call to st_empty() and the following call to
-	 * utf_length_get() st_empty() is called 3 times.
-	 */
+	// Between this call to st_empty() and the following call to
+	// utf_length_get() st_empty() is called 3 times.
 	if (st_empty(password)) {
 		log_pedantic("password is empty.");
 		goto error;
@@ -55,7 +53,7 @@ stacie_rounds_calculate (stringer_t *password, uint_t bonus) {
 	if (pass_len == 0) {
 		log_pedantic("password length is 0");
 		goto error;
-    }
+	}
 
 	if (bonus >= (MAX_HASH_NUM - 2)) {
 		hash_rounds = MAX_HASH_NUM;
@@ -65,8 +63,8 @@ stacie_rounds_calculate (stringer_t *password, uint_t bonus) {
 	if (pass_len >= 24) {
 		hash_rounds = 2;
 	} else {
-		// There must be a clearer way to describe the following.  
-		// As it's written, I couldn't tell whether it's right or 
+		// There must be a clearer way to describe the following.
+		// As it's written, I couldn't tell whether it's right or
 		// not.
 		hash_rounds = ((uint_t) 2) << (23 - pass_len);
 	}
@@ -142,7 +140,7 @@ stacie_seed_key_derive (stringer_t *salt) {
 
 		if (st_append(seed_key, temp2) == NULL) {
 			log_error("st_append() failed");
-		    goto cleanup_temp2;
+			goto cleanup_temp2;
 		}
 
 		st_free(temp2);
@@ -175,7 +173,7 @@ stacie_seed_key_derive (stringer_t *salt) {
 cleanup_temp2:
 	st_free(temp2);
 cleanup_piece:
-    mm_free(piece);
+	mm_free(piece);
 cleanup_seed_key:
 	st_free(seed_key);
 error:
@@ -220,7 +218,7 @@ stacie_seed_extract (
 			log_error("hash_sha512() failed");
 			goto error;
 		}   // salt is allocated
-		
+
 		// recurse, free the temp salt stringer and return
 		seed = stacie_seed_extract(rounds, username, password, salt);
 		st_free(salt);
@@ -275,7 +273,7 @@ error:
  * @return  Pointer to derived hashed key.
  *
  * Note: when there's a cascade of st_append calls on the same stringer it
- * is only necessary to check the error of the last call in the cascade.  
+ * is only necessary to check the error of the last call in the cascade.
  * Reference the notes below for the explanation of this structure.
 */
 stringer_t *
@@ -312,13 +310,13 @@ stacie_hashed_key_derive (
 		goto error;
 	}
 
-	// The salt param is allowed to be NULL.  If it's not NULL, it must be
-	// less than 64 bytes long.
+	// The salt param is allowed to be NULL.  If non-NULL, the salt must be
+	// at least 64 bytes long.
 	size_t salt_len;
-	// this will detect true for both NULL and zero length salt stringers
-	if (st_empty(salt)) {
+
+	if (st_empty(salt)) { // salt is NULL or empty
 		salt_len = 0;
-	} else {
+	} else {              // if salt is non-mull salt len must be >= 64 bytes
 		salt_len = st_length_get(salt);
 
 		if (salt_len < 64) {
@@ -326,7 +324,6 @@ stacie_hashed_key_derive (
 			goto error;
 		}
 	}
-
 
 	hashed_key = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64);
 	if (hashed_key == NULL) {
@@ -348,7 +345,7 @@ stacie_hashed_key_derive (
 		goto cleanup_hashed_key;
 	}   // hash_input is allocated
 
-	// Do not add checks for each call to the st_append cascade.  
+	// Do not add checks for each call to the st_append cascade.
 	st_append(hash_input, base);
 	st_append(hash_input, username);
 
@@ -366,13 +363,13 @@ stacie_hashed_key_derive (
 	}   // count is allocated
 
 	/*
-	 * NOTE: it is sufficient to check for an error condition at the 
-     * end of a cascade of st_append() calls since any error that occurs
-     * due to running out of heap space will not adversely affect 
-     * additional calls to st_append(). 
-     *
-     */
-	
+	 * NOTE: it is sufficient to check for an error condition at the
+	 * end of a cascade of st_append() calls since any error that occurs
+	 * due to running out of heap space will not adversely affect
+	 * additional calls to st_append().
+	 *
+	 */
+
 	if (st_append(hash_input, count) == NULL) {
 		log_error("st_append() failed");
 		goto cleanup_count;
@@ -387,7 +384,7 @@ stacie_hashed_key_derive (
 
 	st_wipe(hash_input);
 
-	// Note: all the following st_append() calls are updating the 
+	// Note: all the following st_append() calls are updating the
 	// first argument 'hash_input'.  Use same trick for only error checking
 	// the last call to st_append() in the following cascade of calls.
 
@@ -427,7 +424,7 @@ stacie_hashed_key_derive (
 		goto cleanup_hash_input;
 	}
 
-	// initialization for this for loop is confusing.  why 
+	// initialization for this for loop is confusing.  why
 	// start at 2?
 	for(uint_t i = 2; i < rounds; i++) {
 		mm_copy(opt2, opt1, 64);
@@ -449,7 +446,7 @@ stacie_hashed_key_derive (
 		}
 	}
 
-	// no need to call st_wipe here.  SECURE flag in the alloc guarantees 3 
+	// no need to call st_wipe here.  SECURE flag in the alloc guarantees 3
 	// memory set operations performed on the data in the st_free routine.
 	// st_wipe(hash_input);
 	st_free(hash_input);
@@ -469,14 +466,14 @@ error:
 /*
  * @brief   Derive hashed token as per STACIE authentication protocol.
  * @author  Ivan.  Kent - refactored
- * @param   base        The base input that will be hashed into the token, 
+ * @param   base        The base input that will be hashed into the token,
  *                      either a password_key or verification token
  * @param   username    Username stringer.
  * @param   salt        User-specific salt.
  * @param   nonce       Token-specific nonce.
  * @return  Stringer containing the hashed token.
  *
- * Note: both the salt and nonce parameters are allowed to be NULL or 
+ * Note: both the salt and nonce parameters are allowed to be NULL or
  * zero length stringers here.  Test coverage exists for these cases
  * in the check tests. KDH
 */
@@ -502,7 +499,7 @@ stacie_hashed_token_derive (
 	}
 
 	size_t salt_len = 0;
-	if (!st_empty(salt)) {
+	if (!st_empty(salt)) {   // if non-null, salt len must be >= 64 
 		if ((salt_len = st_length_get(salt)) < 64) {
 			log_pedantic("salt is NULL, empty or length != 64");
 			goto error;
@@ -510,7 +507,7 @@ stacie_hashed_token_derive (
 	}
 
 	size_t nonce_len = 0;
-	if (!st_empty(nonce)) {
+	if (!st_empty(nonce)) {  // same with nonce
 		if ((nonce_len = st_length_get(nonce)) < 64) {
 			log_pedantic("nonce is NULL, empty or length != 64");
 			goto error;
@@ -530,7 +527,7 @@ stacie_hashed_token_derive (
 	input_len += salt_len;
 	input_len += nonce_len;
 	input_len += 3;     // Replace this with a named constant
-	
+
 	hash_input = st_alloc_opts((MANAGED_T | JOINTED | SECURE), input_len);
 	if (hash_input == NULL) {
 		log_error("st_alloc_opts() failed");
@@ -663,8 +660,8 @@ stacie_realm_key_derive (
 		goto cleanup_realm_key;
 	}
 
-    st_free(hash_input);
-    st_free(hash_output);
+	st_free(hash_input);
+	st_free(hash_output);
 
 	return realm_key;
 
@@ -731,7 +728,7 @@ stacie_realm_init_vector_derive (stringer_t *realm_key) {
 
 	pl1 = PLACER(st_data_get(realm_key), 16);
 	pl2 = PLACER(st_data_get(realm_key) + 16, 16);
-    if (pl1 == NULL || pl2 == NULL) {
+	if (pl1 == NULL || pl2 == NULL) {
 		log_error("PLACER sets in realm_key failed");
 		goto error;
 	}

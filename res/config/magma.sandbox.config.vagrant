@@ -31,7 +31,7 @@ magma.secure.salt = +!l6M6rz0c0!+
 magma.secure.sessions = +!l6M6rz0c0!+
 
 magma.http.close = true
-magma.web.portal.indent = false
+magma.web.portal.indent = true
 magma.http.allow_cross_domain = true
 magma.config.output_config = false
 

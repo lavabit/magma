@@ -17,7 +17,7 @@
  * @param	salt		Pointer to a pointer to a stringer, where the result is stored.
  * @return	0 if the salt is pulled correctly. 1 if the salt for the user is NULL. 2 if the user did not exist. -1 if an unknown error occurred.
  */
-salt_state credential_salt_fetch(stringer_t *username, stringer_t **salt) {
+salt_state_t credential_salt_fetch(stringer_t *username, stringer_t **salt) {
 
 	salt_state_t result;
 	MYSQL_BIND parameters[1];
@@ -86,4 +86,90 @@ cleanup_query:
 error:
 	*salt = NULL;
 	return result;
+}
+
+/**
+ * @brief	Check whether user with the specified credentials exists.
+ * @param	cred		Credentials object of the user whose credentials are to be checked.
+ * @return	SUCCESS if user exists, AUTHENTICATION_ERROR if user does not exist, INTERNAL_ERROR if an internal error occurred.
+*/
+user_state_t    credential_auth_check(credential_t *cred) {
+
+	MYSQL_BIND parameters[2];
+	MYSQL_STMT **auth_stmt;
+	table_t *query;
+	uint64_t row_count;
+	user_state_t state;
+
+	if(!cred) {
+		log_pedantic("NULL credentials object was passed in.");
+		state = INTERNAL_ERROR;
+		goto out;
+	}
+
+	if(cred->type != CREDENTIAL_AUTH) {
+		log_error("Credentials passed are not of authentication type.");
+		state = INTERNAL_ERROR;
+		goto out;
+	}
+
+	if(st_empty(cred->auth.username)) {
+		log_error("Credentials have a NULL or empty username stringer.");
+		state = INTERNAL_ERROR;
+		goto out;
+	}
+
+	if(st_empty(cred->auth.password)) {
+		log_error("Credentials have a NULL or empty hashed password token stringer.");
+		state = INTERNAL_ERROR;
+		goto out;
+	}
+
+	mm_wipe(parameters, sizeof(parameters));
+
+	switch(cred->authentication) {
+
+	case LEGACY:
+		auth_stmt = stmts.select_check_auth_legacy;
+		break;
+	case STACIE:
+		auth_stmt = stmts.select_check_auth_stacie;
+		break;
+	default:
+		log_error("Invalid authentication type.");
+		state = INTERNAL_ERROR;
+		goto out;
+
+	}
+
+	parameters[0].buffer_type = MYSQL_TYPE_STRING;
+	parameters[0].buffer = st_char_get(cred->auth.username);
+	parameters[0].buffer_length = st_length_get(cred->auth.username);
+
+	parameters[1].buffer_type = MYSQL_TYPE_STRING;
+	parameters[1].buffer = (chr_t *)st_char_get(cred->auth.password);
+	parameters[1].buffer_length = st_length_get(cred->auth.password);
+
+	if(!(query = stmt_get_result(auth_stmt, parameters))) {
+		log_error("Database query failed.");
+		state = INTERNAL_ERROR;
+		goto out;
+	}
+
+	row_count = res_row_count(query);
+	res_table_free(query);
+
+	if(row_count > 1) {
+		log_error("Multiple accounts returned with the same name and password hash");
+		state = INTERNAL_ERROR;
+		goto out;
+	} else if(!row_count){
+		state = AUTHENTICATION_ERROR;
+		goto out;
+	} else {
+		state = SUCCESS;
+	}
+
+out:
+	return state;
 }

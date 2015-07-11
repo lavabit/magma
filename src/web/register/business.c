@@ -216,7 +216,15 @@ chr_t * register_business_step2(connection_t *con, register_session_t *reg) {
 	}
 
 	// Database insert.
-	if (!register_data_insert_user(con, reg, transaction, &usernum)) {
+	if (
+		!register_data_insert_user(
+			con,
+			reg->plan,
+			reg->username,
+			reg->password,
+			transaction,
+			&usernum))
+	{
 		tran_rollback(transaction);
 		return "\n\t\t\t\t<p id=\"error\">It appears that between the time its taken you to complete step one and step two the username "
 			"you selected has been taken. Please return to step one and select a different username.</p>";

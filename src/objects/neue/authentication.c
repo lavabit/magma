@@ -52,7 +52,6 @@ user_state_t credential_login(stringer_t *username, stringer_t *password, META_P
 	}
 
 	salt_res = credential_salt_fetch(cred->auth.username, &salt);
-	credential_free(cred);
 
 	switch(salt_res) {
 

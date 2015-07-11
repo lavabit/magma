@@ -3,7 +3,7 @@
 static
 bool_t
 is_locked(meta_user_t *user) {
-	return user->lock_status < 5;
+	return user->lock_status != 0;
 }
 
 static
@@ -13,9 +13,6 @@ lock_error_message(meta_user_t *user)
 	chr_t *result;
 
 	switch (user->lock_status) {
-		case 0:
-			result = "This account has been locked.";
-			break;
 		case 1:
 			result = "This account has been administratively locked.";
 			break;
@@ -29,8 +26,11 @@ lock_error_message(meta_user_t *user)
 			result = "This account has been locked at the request of the user.";
 			break;
 		default:
+			result = "";
 			break;
 	}
+
+	return result;
 }
 
 void

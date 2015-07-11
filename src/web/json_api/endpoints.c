@@ -83,7 +83,7 @@ api_endpoint_auth(connection_t *con) {
 		goto out;
 	}
 
-	if (login_result == USER_ERROR) {
+	if (login_result == AUTHENTICATION_ERROR) {
 		api_error(
 			con,
 			HTTP_ERROR_400,

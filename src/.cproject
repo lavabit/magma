@@ -69,7 +69,11 @@
 								<option id="gnu.c.compiler.option.warnings.toerrors.1620827444" name="Warnings as errors (-Werror)" superClass="gnu.c.compiler.option.warnings.toerrors" value="true" valueType="boolean"/>
 								<option id="gnu.c.compiler.option.debugging.gprof.1408617579" name="Generate gprof information (-pg)" superClass="gnu.c.compiler.option.debugging.gprof" value="false" valueType="boolean"/>
 								<option id="gnu.c.compiler.option.debugging.prof.1756980964" name="Generate prof information (-p)" superClass="gnu.c.compiler.option.debugging.prof" value="false" valueType="boolean"/>
-								<option id="gnu.c.compiler.option.include.files.100859659" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files"/>
+								<option id="gnu.c.compiler.option.include.files.100859659" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" valueType="includeFiles">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/magma.h}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/queries.h}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/providers/providers.h}&quot;"/>
+								</option>
 								<option id="gnu.c.compiler.option.preprocessor.nostdinc.1103468312" name="Do not search system directories (-nostdinc)" superClass="gnu.c.compiler.option.preprocessor.nostdinc" value="false" valueType="boolean"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.20437627" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -178,7 +182,11 @@
 								<option id="gnu.c.compiler.option.warnings.pedantic.error.433547860" name="Pedantic warnings as errors (-pedantic-errors)" superClass="gnu.c.compiler.option.warnings.pedantic.error" value="false" valueType="boolean"/>
 								<option id="gnu.c.compiler.option.debugging.prof.952929721" name="Generate prof information (-p)" superClass="gnu.c.compiler.option.debugging.prof" value="false" valueType="boolean"/>
 								<option id="gnu.c.compiler.option.debugging.gprof.2018949524" name="Generate gprof information (-pg)" superClass="gnu.c.compiler.option.debugging.gprof" value="false" valueType="boolean"/>
-								<option id="gnu.c.compiler.option.include.files.260039357" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files"/>
+								<option id="gnu.c.compiler.option.include.files.260039357" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" valueType="includeFiles">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/magma.h}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/queries.h}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/providers/providers.h}&quot;"/>
+								</option>
 								<option id="gnu.c.compiler.option.preprocessor.nostdinc.485711968" name="Do not search system directories (-nostdinc)" superClass="gnu.c.compiler.option.preprocessor.nostdinc" value="false" valueType="boolean"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.831798056" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>

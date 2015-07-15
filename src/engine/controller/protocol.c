@@ -21,6 +21,7 @@ bool_t protocol_init(void) {
 	pop_sort();
 	imap_sort();
 	smtp_sort();
+	dmtp_sort();
 	molten_sort();
 	portal_endpoint_sort();
 	return true;
@@ -62,6 +63,11 @@ void protocol_enqueue(connection_t *con) {
 		if (con_secure(con) == 1) stats_increment_by_name("smtp.connections.secure");
 		function = &smtp_init;
 		break;
+	case (DMTP):
+		stats_increment_by_name("dmtp.connections.total");
+		if (con_secure(con) == 1) stats_increment_by_name("dmtp.connections.secure");
+		function = &dmtp_init;
+		break;
 	case (SUBMISSION):
 		stats_increment_by_name("smtp.connections.total");
 		if (con_secure(con) == 1) stats_increment_by_name("smtp.connections.secure");
@@ -99,7 +105,7 @@ void protocol_secure(connection_t *con) {
 	// Create a new SSL object.
 	if (!(con->network.ssl = ssl_alloc(con->server, con->network.sockd, BIO_NOCLOSE))) {
 
-		log_pedantic("The SSL connection attempt failed.");
+		log_pedantic("The SSL/TLS connection attempt failed.");
 
 		// We manually free the connection structure since calling con_destroy() would improperly decrement the statistical counters.
 		if (con->network.ssl) ssl_free(con->network.ssl);

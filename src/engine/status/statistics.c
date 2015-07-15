@@ -28,6 +28,10 @@ struct {
 			"smtp.connections.total",
 			"smtp.connections.secure",
 
+			// DMTP Statistics
+			"dmtp.connections.total",
+			"dmtp.connections.secure",
+
 			// HTTP Statistics
 			"http.connections.total",
 			"http.connections.secure",
@@ -91,7 +95,7 @@ struct {
 			// system.uptime
 			// system.load (1, 5, 15, or all?)
 			// system.cpu.total
-			// system.cpu.user
+			// system.cpu.users
 			// system.cpu.system
 			// system.mem.peak
 			// system.mem.size

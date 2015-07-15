@@ -358,6 +358,8 @@ void servers_output_settings(void) {
 						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "IMAP");
 					else if (*((M_PROTOCOL *)(((char *)magma.servers[i]) + server_keys[j].offset)) == SMTP)
 						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "SMTP");
+					else if (*((M_PROTOCOL *)(((char *)magma.servers[i]) + server_keys[j].offset)) == DMTP)
+						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "DMTP");
 					else if (*((M_PROTOCOL *)(((char *)magma.servers[i]) + server_keys[j].offset)) == SUBMISSION)
 						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "SUBMISSION");
 					else if (*((M_PROTOCOL *)(((char *)magma.servers[i]) + server_keys[j].offset)) == EMPTY)
@@ -476,6 +478,8 @@ bool_t servers_set_value(server_keys_t *setting, server_t *server, stringer_t *v
 				*((M_PROTOCOL *)(((char *)server) + setting->offset)) = HTTP;
 			else if (!st_cmp_ci_eq(value, CONSTANT("SMTP")))
 				*((M_PROTOCOL *)(((char *)server) + setting->offset)) = SMTP;
+			else if (!st_cmp_ci_eq(value, CONSTANT("DMTP")))
+				*((M_PROTOCOL *)(((char *)server) + setting->offset)) = DMTP;
 			else if (!st_cmp_ci_eq(value, CONSTANT("POP")))
 				*((M_PROTOCOL *)(((char *)server) + setting->offset)) = POP;
 			else if (!st_cmp_ci_eq(value, CONSTANT("IMAP")))

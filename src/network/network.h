@@ -39,6 +39,7 @@
 #include "sessions.h"
 #include "pop.h"
 #include "smtp.h"
+#include "dmtp.h"
 #include "imap.h"
 #include "http.h"
 
@@ -72,6 +73,7 @@ typedef struct {
 		pop_session_t pop;
 		imap_session_t imap;
 		smtp_session_t smtp;
+		dmtp_session_t dmtp;
 		http_session_t http;
 	};
 
@@ -137,7 +139,8 @@ client_t *  client_connect(chr_t *host, uint32_t port);
 int_t       client_secure(client_t *client);
 int_t       client_status(client_t *client);
 
-/// options.c
+/// options.c#include "smtp.h"
+
 bool_t   net_set_buffer_length(int sd, int buffer_recv, int buffer_send);
 bool_t   net_set_keepalive(int sd, bool_t keepalive, int_t idle, int_t interval, int_t tolerance);
 bool_t   net_set_linger(int sd, bool_t linger, int_t timeout);

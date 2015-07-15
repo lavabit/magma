@@ -132,6 +132,8 @@ void config_output_value_generic(chr_t *prefix, chr_t *name, M_TYPE type, void *
 					log_info("%s%s%s = IMAP", prefix, name, reqstr);
 				else if (*((M_PROTOCOL *)((char *)val)) == SMTP)
 					log_info("%s%s%s = SMTP", prefix, name, reqstr);
+				else if (*((M_PROTOCOL *)((char *)val)) == DMTP)
+					log_info("%s%s%s = DMTP", prefix, name, reqstr);
 				else if (*((M_PROTOCOL *)((char *)val)) == SUBMISSION)
 					log_info("%s%s%s = SUBMISSION", prefix, name, reqstr);
 				else if (*((M_PROTOCOL *)((char *)val)) == EMPTY)

@@ -250,6 +250,12 @@ libmagma_a_SOURCES = \
 		src/servers/smtp/session.c \
 		src/servers/smtp/smtp.c \
 		src/servers/smtp/transmit.c \
+		src/servers/dmtp/commands.h \
+		src/servers/dmtp/dmtp.h \
+		src/servers/dmtp/commands.c \
+		src/servers/dmtp/dmtp.c \
+		src/servers/dmtp/parse.c \
+		src/servers/dmtp/session.c \
 		src/web/contact/abuse.c \
 		src/web/contact/business.c \
 		src/web/contact/contact.c \

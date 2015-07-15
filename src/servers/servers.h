@@ -20,5 +20,6 @@
 #include "molten/molten.h"
 #include "pop/pop.h"
 #include "smtp/smtp.h"
+#include "dmtp/dmtp.h"
 
 #endif

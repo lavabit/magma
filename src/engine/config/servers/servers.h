@@ -24,6 +24,7 @@ typedef enum {
 	POP,
 	IMAP,
 	SMTP,
+	DMTP,
 	SUBMISSION
 } M_PROTOCOL;
 

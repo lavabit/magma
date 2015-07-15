@@ -213,7 +213,7 @@ void smtp_quit(connection_t *con) {
 /**
  * @brief	Reset the SMTP session, in response to an SMTP RSET command.
  * @note	This command clears any sender, recipient, and mail data, along with all buffers and state tables.
- * 			In other words, return to the state immediately after HELO.
+ * 			The connection structure is reset to the same it was in immediately after the HELO/EHLO command.
  * @param	con		the SMTP client connection issuing the command.
  * @return	This function returns no value.
  */

@@ -46,8 +46,8 @@ void smtp_requeue(connection_t *con) {
 }
 
 /**
- * @brief	The main entry point in the smtp server for processing commands issued by clients.
- * @param	con		a pointer to the connection object of the client issuing the smtp command.
+ * @brief	The main entry point in the SMTP server for processing commands issued by clients.
+ * @param	con		a pointer to the connection object of the client issuing the SMTP command.
  * @return	This function returns no value.
  */
 void smtp_process(connection_t *con) {

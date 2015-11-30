@@ -333,7 +333,7 @@ int_t credential_calc_auth(credential_t *cred, stringer_t *password, stringer_t 
 		goto error;
 	}
 
-	if(!salt) {
+	if(salt == NULL) {
 		result = credential_calc_legacy(cred, password);
 	}
 	else {

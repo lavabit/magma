@@ -16,7 +16,7 @@ char ssl_version[16];
 pthread_mutex_t **ssl_locks = NULL;
 
 /**
- * @brief	Return the version string of the openssl library.
+ * @brief	Return the version string of the OpenSSL library.
  * @return	a pointer to a character string containing the libopenssl version information.
  */
 const char * lib_version_openssl(void) {
@@ -25,7 +25,7 @@ const char * lib_version_openssl(void) {
 }
 
 /**
- * @brief	Initialize the openssl library and bind dynamically to the exported functions that are required.
+ * @brief	Initialize the OpenSSL library and bind dynamically to the exported functions that are required.
  * @result	true on success or false on failure.
  */
 bool_t lib_load_openssl(void) {
@@ -79,10 +79,10 @@ bool_t lib_load_openssl(void) {
 }
 
 /**
- * @brief	Get a textual representation of the last openssl error message.
- * @param	buffer	a buffer that will receive the last openssl error message.
- * @param	length	the size, in bytes, of the buffer that will contain the last openssl error message.
- * @return	NULL on failure, or a pointer to the buffer where the last openssl error message has been stored.
+ * @brief	Get a textual representation of the last OpenSSL error message.
+ * @param	buffer	a buffer that will receive the last OpenSSL error message.
+ * @param	length	the size, in bytes, of the buffer that will contain the last OpenSSL error message.
+ * @return	NULL on failure, or a pointer to the buffer where the last OpenSSL error message has been stored.
  */
 char * ssl_error_string(chr_t *buffer, int_t length) {
 

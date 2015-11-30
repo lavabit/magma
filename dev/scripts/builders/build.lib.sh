@@ -20,7 +20,7 @@ M_BUILD=`readlink -f $0`
 # bundled tarballs, patches, etc.)
 if [ -z "$M_PROJECT_ROOT" ]; then M_PROJECT_ROOT=`readlink -f ..`; fi
 
-. "$M_PROJECT_ROOT/scripts/builders/build.lib.params.sh"
+. "$M_PROJECT_ROOT/dev/scripts/builders/build.lib.params.sh"
 
 mkdir -p "$M_LOGS"
 mkdir -p "$M_SOURCES"

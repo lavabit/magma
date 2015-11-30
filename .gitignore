@@ -26,3 +26,8 @@ src/.check/
 src/.check/*.o
 src/.check/*.d
 src/.check/libmagma.a
+lib/logs/
+lib/objects/
+lib/sources/
+lib/magmad.so
+

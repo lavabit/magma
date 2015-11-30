@@ -39,7 +39,9 @@ magmad_CPPFLAGS = $(COMMON_CPPFLAGS)
 magmad_SOURCES = src/magma.c
 
 libmagma_a_CPPFLAGS = \
-		-DMAGMA_BUILD="\"$(shell cat .magma_build)\"" \
+		-DMAGMA_PEDANTIC \
+		-DMAGMA_BUILD="\"$(VERSION)\"" \
+		-DMAGMA_COMMIT="\"$(shell cat .magma_commit)\"" \
 		-DMAGMA_STAMP="\"$(shell cat .magma_stamp)\"" \
 		$(COMMON_CPPFLAGS)
 libmagma_a_SOURCES = \
@@ -329,19 +331,19 @@ BUILT_SOURCES = @MAGMA_SHARED_LIB_DIR@/magmad.so git_stamp date_stamp
 @MAGMA_SHARED_LIB_DIR@/magmad.so:
 		mkdir -p @MAGMA_SHARED_LIB_DIR@ && \
 		cd @MAGMA_SHARED_LIB_DIR@ && \
-		$(top_srcdir)/scripts/builders/build.lib.sh extract && \
-		$(top_srcdir)/scripts/builders/build.lib.sh prep && \
-		$(top_srcdir)/scripts/builders/build.lib.sh build && \
-		$(top_srcdir)/scripts/builders/build.lib.sh combine
+		$(abs_top_srcdir)/dev/scripts/builders/build.lib.sh extract && \
+		$(abs_top_srcdir)/dev/scripts/builders/build.lib.sh prep && \
+		$(abs_top_srcdir)/dev/scripts/builders/build.lib.sh build && \
+		$(abs_top_srcdir)/dev/scripts/builders/build.lib.sh combine
 
 git_stamp:
 	NEW_GIT_STAMP=`git log --format="%H" -n 1 | cut -c33-40`; \
-	if test ! -f $(top_builddir)/.magma_build; then \
-		echo "$$NEW_GIT_STAMP" > $(top_builddir)/.magma_build; \
+	if test ! -f $(top_builddir)/.magma_commit; then \
+		echo "$$NEW_GIT_STAMP" > $(top_builddir)/.magma_commit; \
 	else \
-		OLD_GIT_STAMP=`cat $(top_builddir)/.magma_build`; \
+		OLD_GIT_STAMP=`cat $(top_builddir)/.magma_commit`; \
 		if test "$$OLD_GIT_STAMP" != "$$NEW_GIT_STAMP" ; then \
-			echo "$$NEW_GIT_STAMP" > $(top_builddir)/.magma_build; \
+			echo "$$NEW_GIT_STAMP" > $(top_builddir)/.magma_commit; \
 		fi \
 	fi
 

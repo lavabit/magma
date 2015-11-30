@@ -34,23 +34,27 @@ And the army of Kickstarter supporters who contributed to this project.
 # Tarball Contents
 
 ```
-magma.distribution/  
-	bin/  
-	check/  
-	docs/  
+magma/  
+	bin/
+	check/
+	dev/
+		docs/  
+		sandbox/  
+		scripts/  
+		tools/    
 	lib/  
 	res/  
-	scripts/  
 	src/  
-	tools/  
 	web/  
+	configure.ac  
 	INSTALL  
-	README  
+	Makefile.am
+	README.md  
 ```
 
 # Installation Instructions
 
-These instructions are targeted at systems running CentOS 6.6.
+These instructions are targeted at systems running CentOS 6.
 
 ### Prerequisites
 
@@ -90,7 +94,7 @@ yum install gettext-devel
 The freshen.clamav.sh script will update, or download, the ClamAV virus definitions.
 
 ```shell
-magma.distribution/scripts/freshen/freshen.clamav.sh
+magma/dev/scripts/freshen/freshen.clamav.sh
 ```
 
 ### Compiling
@@ -110,7 +114,7 @@ Run the INSTALL script.
 To link up the development scripts run linkup.sh. 
 
 ```shell
-magma.distribution/scripts/linkup.sh
+magma/dev/scripts/linkup.sh
 ```
 
 Development environments need to create the database manually.

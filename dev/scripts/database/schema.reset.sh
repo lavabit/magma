@@ -6,7 +6,7 @@ readonly PROGNAME=$(basename $0)
 LINK=`readlink -f $0`
 BASE=`dirname $LINK`
 
-cd $BASE/../../
+cd $BASE/../../../
 
 MAGMA_DIST=`pwd`
 SQL="res/sql/"

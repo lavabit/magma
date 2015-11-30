@@ -3,7 +3,7 @@
 LINK=`readlink -f $0`
 BASE=`dirname $LINK`
 
-cd $BASE/../../src/
+cd $BASE/../../../src/
 
 MAGMA_ROOT=`pwd`
 

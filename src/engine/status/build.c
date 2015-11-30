@@ -16,6 +16,10 @@
 #error Magma build version is missing.
 #endif
 
+#ifndef MAGMA_COMMIT
+#error Magma commit identity is missing.
+#endif
+
 #ifndef MAGMA_STAMP
 #error Magma timestamp is missing.
 #endif
@@ -26,6 +30,14 @@
  */
 const char * build_version(void) {
 	return (const char *)MAGMA_BUILD;
+}
+
+/**
+ * @brief	Get the magma commit identity.
+ * @return	a pointer to a null-terminated string containing the last eight characters of current commit identity.
+ */
+const char * build_commit(void) {
+	return (const char *)MAGMA_COMMIT;
 }
 
 /**

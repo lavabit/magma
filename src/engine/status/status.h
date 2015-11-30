@@ -15,6 +15,7 @@
 
 /************  BUILD  ************/
 const char * build_stamp(void);
+const char * build_commit(void);
 const char * build_version(void);
 /************  BUILD  ************/
 

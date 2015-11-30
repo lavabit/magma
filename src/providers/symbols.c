@@ -538,7 +538,7 @@ bool_t lib_load(void) {
 	}
 
 	log_pedantic("-------------------------------- VERSIONS --------------------------------\n\n" \
-		"%-10.10s %63.63s\n%-10.10s %63.63s\n\n" \
+		"%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n\n" \
 		"%-10.10s %63.63s\n%-10.10s %63.63s\n\n" \
 		"%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n\n" \
 		"%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n" \
@@ -546,7 +546,8 @@ bool_t lib_load(void) {
 		"%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n" \
 		"%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n",
 			"MAGMA:", build_version(),
-			"BUILD:", build_stamp(),
+			"COMMIT:", build_commit(),
+			"TIMESTAMP:", build_stamp(),
 			"PLATFORM:", st_char_get(host_platform(MANAGEDBUF(128))),
 			"KERNEL:", st_char_get(host_version(MANAGEDBUF(128))),
 			"DATABASE:", serv_type_mysql(),

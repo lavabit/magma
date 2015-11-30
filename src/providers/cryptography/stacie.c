@@ -58,7 +58,7 @@ stacie_rounds_calculate (stringer_t *password, uint_t bonus) {
 	if (bonus >= (MAX_HASH_NUM - 2)) {
 		hash_rounds = MAX_HASH_NUM;
 		goto out;
-	} 
+	}
 
 	if (pass_len >= 24) {
 		hash_rounds = 2;
@@ -291,7 +291,7 @@ stacie_hashed_key_derive (
 	stringer_t *count;
 
 	if (st_empty(base)) {
-		log_pedantic("base is NULL or empty")
+		log_pedantic("base is NULL or empty");
 		goto error;
 	}
 
@@ -499,7 +499,7 @@ stacie_hashed_token_derive (
 	}
 
 	size_t salt_len = 0;
-	if (!st_empty(salt)) {   // if non-null, salt len must be >= 64 
+	if (!st_empty(salt)) {   // if non-null, salt len must be >= 64
 		if ((salt_len = st_length_get(salt)) < 64) {
 			log_pedantic("salt is NULL, empty or length != 64");
 			goto error;

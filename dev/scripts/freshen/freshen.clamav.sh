@@ -4,7 +4,7 @@
 LINK=`readlink -f $0`
 BASE=`dirname $LINK`
 
-cd $BASE/../../
+cd $BASE/../../../
 
 export MAGMA_DIST=`pwd`
 

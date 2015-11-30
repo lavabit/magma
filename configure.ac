@@ -1,8 +1,8 @@
 # Note that this has not been extensively tested with various autoconf
 # versions.  TODO - determine the minimum autoconf version we will support
 AC_PREREQ([2.63])
-
-AC_INIT([magma], [0.1])
+ec21e395
+AC_INIT([magma], [6.0.2])
 
 # Look for macros in the m4 directory
 AC_CONFIG_MACRO_DIR([m4])
@@ -16,10 +16,10 @@ AC_CONFIG_SRCDIR([src/magma.h])
 # Auxiliary autotools files go here
 AC_CONFIG_AUX_DIR([build-aux])
 
-AC_ARG_VAR([MAGMA_SHARED_LIB_DIR], [Directory used to build magmad.so (default=build_lib)])
+AC_ARG_VAR([MAGMA_SHARED_LIB_DIR], [Directory used to build magmad.so (default=lib)])
 
 if test -z "$MAGMA_SHARED_LIB_DIR"; then
-	MAGMA_SHARED_LIB_DIR=${srcdir}/build_lib
+	MAGMA_SHARED_LIB_DIR=${srcdir}/lib
 fi
 
 # Note that this has not been extensively tested with various automake

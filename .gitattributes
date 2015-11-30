@@ -1,4 +1,4 @@
-web/js/* linguist-vendored=false
-web/dev/* linguist-vendored=false
-web/ckeditor/* linguist-vendored=false
-web/tiny_mce/* linguist-vendored=false
+web/js/* linguist-vendored=true
+web/dev/* linguist-vendored=true
+web/ckeditor/* linguist-vendored=true
+web/tiny_mce/* linguist-vendored=true

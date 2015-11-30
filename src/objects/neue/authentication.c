@@ -1,7 +1,7 @@
 /**
  * @file /magma/objects/neue/authentication.c
  *
- * @brief Functions that encapsualte entire user-level account decisions.
+ * @brief Functions that encapsulate entire user-level account decisions.
  *
  * Author: Ivan
  * Date: 07/10/2015
@@ -210,9 +210,9 @@ static user_state_t credential_build_full(stringer_t *username, stringer_t *pass
 	}
 
 	*credential = cred;
-	
+
 	return SUCCESS;
-	
+
 cleanup_cred:
 	credential_free(cred);
 error:

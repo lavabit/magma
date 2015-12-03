@@ -168,7 +168,7 @@ void json_api_dispatch(connection_t *con) {
 
 	// And a request ID.
 	id = json_object_get_d(con->http.portal.request, "id");
-	if (id == NULL || !json_is_string(id) && !json_is_integer(id)) {
+	if (id == NULL || (!json_is_string(id) && !json_is_integer(id))) {
 		log_pedantic("API request does not contain a valid id");
 		bad_request_error(con);
 		goto out;

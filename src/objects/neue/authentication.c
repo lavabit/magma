@@ -27,9 +27,7 @@ static user_state_t credential_auth_check(credential_t *cred);
 user_state_t credential_login(stringer_t *username, stringer_t *password, META_PROT protocol, META_GET data, meta_user_t **user) {
 
 	credential_t *cred;
-	int_t cred_res, meta_res;
-	salt_state_t salt_res;
-	stringer_t *salt = NULL;
+	int_t meta_res;
 	user_state_t state;
 
 	if(st_empty(username)) {
@@ -85,8 +83,6 @@ user_state_t credential_login(stringer_t *username, stringer_t *password, META_P
 
 	return SUCCESS;
 
-cleanup_cred:
-	credential_free(cred);
 error:
 	return state;
 }
@@ -100,9 +96,7 @@ error:
 */
 user_state_t credential_authenticate(stringer_t *username, stringer_t *password) {
 
-	MYSQL_STMT **auth_stmt;
 	credential_t *cred;
-	table_t *query;
 	user_state_t state;
 
 	if(st_empty(username)) {

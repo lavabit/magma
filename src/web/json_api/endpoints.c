@@ -35,7 +35,6 @@ lock_error_message(meta_user_t *user)
 
 void
 api_endpoint_auth(connection_t *con) {
-	size_t count;
 	json_error_t jansson_err;
 	chr_t *username;
 	chr_t *password;

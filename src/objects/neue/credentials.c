@@ -214,8 +214,7 @@ credential_t * credential_alloc_auth(stringer_t *username) {
 
 	credential_t *cred;
 	size_t at_offset;
-	stringer_t *binary, *sanitized;
-	uint_t rounds;
+	stringer_t *sanitized;
 
 	if(st_empty(username)) {
 		log_pedantic("NULL or empty username passed.");
@@ -354,7 +353,6 @@ error:
  */
 static int_t credential_calc_legacy(credential_t *cred, stringer_t *password) {
 
-	size_t at_offset;
 	stringer_t *binary, *combo;
 
 	cred->authentication = LEGACY;

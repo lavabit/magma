@@ -197,8 +197,7 @@ stacie_seed_extract (
 	stringer_t *salt)
 {
 	stringer_t *seed = NULL;
-	stringer_t *temp;
-	stringer_t  *key;
+	stringer_t *key;
 	size_t salt_len;
 
 	if (rounds < MIN_HASH_NUM || rounds > MAX_HASH_NUM) {

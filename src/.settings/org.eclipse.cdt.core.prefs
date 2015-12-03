@@ -1,4 +1,3 @@
-#Wed Aug 31 07:11:39 CDT 2011
 eclipse.preferences.version=1
 environment/project/cdt.managedbuild.config.gnu.exe.debug.1006571712.309384821/append=true
 environment/project/cdt.managedbuild.config.gnu.exe.debug.1006571712.309384821/appendContributed=true
@@ -8,11 +7,14 @@ environment/project/cdt.managedbuild.config.gnu.exe.debug.689728174/append=true
 environment/project/cdt.managedbuild.config.gnu.exe.debug.689728174/appendContributed=true
 indexer/filesToParseUpFront=time.h, stdio.h, stdlib.h, cstdarg, stdarg.h, stddef.h, sys/resource.h, ctime, sys/types.h, signal.h, cstdio
 indexer/indexAllFiles=true
+indexer/indexAllHeaderVersions=false
+indexer/indexAllVersionsSpecificHeaders=
 indexer/indexOnOpen=true
 indexer/indexUnusedHeadersWithDefaultLang=false
 indexer/indexerId=org.eclipse.cdt.core.fastIndexer
 indexer/skipFilesLargerThanMB=128
 indexer/skipImplicitReferences=false
+indexer/skipIncludedFilesLargerThanMB=16
 indexer/skipMacroReferences=false
 indexer/skipReferences=false
 indexer/skipTypeReferences=false

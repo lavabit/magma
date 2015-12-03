@@ -32,7 +32,7 @@ SRCFILES				= $(foreach dir,$(SRCDIRS),$(wildcard $(dir)/*.c))
 # Compiler Parameters
 CC						= gcc
 
-CFLAGS					= -std=gnu99 -Wall  -O0 -fPIC -fmessage-length=0 -ggdb3 -rdynamic -c -MMD 
+CFLAGS					= -std=gnu99 -O0 -fPIC -fmessage-length=0 -ggdb3 -rdynamic -c -Wall -Werror -MMD 
 CFLAGS_PEDANTIC			= -Wextra -Wpacked -Wunreachable-code -Wformat=2
 
 CINCLUDES				= -I$(SRCDIR) 

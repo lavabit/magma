@@ -2,4 +2,4 @@ web/js/* linguist-vendored=true
 web/dev/* linguist-vendored=true
 web/ckeditor/* linguist-vendored=true
 web/tiny_mce/* linguist-vendored=true
-Readme linguist-language=Markdown
+README linguist-language=Markdown

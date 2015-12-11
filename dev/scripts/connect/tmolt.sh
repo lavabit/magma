@@ -1,10 +1,10 @@
 #/bin/bash
 
-# Name: sslnet.sh
+# Name: tmolt.sh
 # Author: Ladar Levison
 #
-# Description: Used for quickly connecting to a magmad instance. This script sets up a TLS  
-# connection to the SMTPS port specified in bundled sandbox config file. Because the sandbox 
+# Description: Used for quickly connecting to a magmad instance. This script sets up a TCP  
+# connection to the MOLTEN port specified in bundled sandbox config file. Because the sandbox 
 # environment uses non-standard ports, we only suggest using this script during development 
 # and testing.
 
@@ -16,5 +16,4 @@ if [ -z "$PID" ]; then
 	exit 2
 fi
 
-openssl  s_client -connect localhost:7500
-
+telnet localhost 6000

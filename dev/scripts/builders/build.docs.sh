@@ -7,4 +7,4 @@ cd $BASE/../../../
 
 MAGMA_DIST=`pwd`
 
-doxygen $MAGMA_DIST/scripts/builders/build.doxyfile
+doxygen $MAGMA_DIST/dev/scripts/builders/build.doxyfile

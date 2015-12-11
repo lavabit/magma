@@ -16,7 +16,7 @@ process() {
 }
 
 process "build.lib.sh" "build.lib"
-process "build.prep.sh" "build.prep"
+process "build.docs.sh" "build.docs"
 process "build.check.sh" "build.check"
 process "build.magma.sh" "build.magma"
 

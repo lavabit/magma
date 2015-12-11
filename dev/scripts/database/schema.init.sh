@@ -1,4 +1,11 @@
-#!/bin/bash
+#/bin/bash
+
+# Name: schema.init.sh
+# Author: Ladar Levison
+#
+# Description: Used for quickly initializing the MySQL database used by the by the 
+# magma daemon. This script should be only be run once in a production environment. 
+# It may be used at the user's discretion against a sandbox environment.
 
 LINK=`readlink -f $0`
 BASE=`dirname $LINK`
@@ -6,24 +13,28 @@ BASE=`dirname $LINK`
 cd $BASE/../../../
 
 MAGMA_DIST=`pwd`
+MAGMA_RES_SQL="res/sql/" 
 
-readonly PROGNAME=$(basename $0)
-
-usage () {
-	cat <<- EOF
-	Usage: $PROGNAME <mysql_user> <mysql_password> <mysql_schema>
-	
-	Resets the database to factory defaults
-	
-	Example: $PROGNAME magma volcano Lavabit
-	
-	EOF
-}
+case $# in
+	0) 
+    	echo "Using the default sandbox values for the MySQL username, password and schema name."
+		MYSQL_USER="mytool"
+		MYSQL_PASSWORD="aComplex1"
+		MYSQL_SCHEMA="Lavabit"
+	;;
+	*!3*)
+		echo "Ini "res/sql/" tialize the MySQL database used by the magma daemon."
+		echo ""
+		echo "Usage:    $0 \<mysql_user\> \<mysql_password\> \<mysql_schema\>"
+		echo "Example:  $0 magma volcano Lavabit"
+		echo ""
+		exit 1
+	;;
+esac
 
 if [ -z "$MYSQL_USER" ]; then
 	if [ -z "$1" ]; then
-		usage
-		echo "Please pass in the MySQL Username"
+		echo "Please pass in the MySQL username."
 		exit 1
 	else
 		MYSQL_USER="$1"
@@ -31,29 +42,25 @@ if [ -z "$MYSQL_USER" ]; then
 fi
 
 if [ -z "$MYSQL_PASSWORD" ]; then
-	#if [ -z "$2" ]; then
-	#	usage
-	#	echo "Please pass in the MySQL Password for $MYSQL_USER"
-	#	exit 1
-	#else
+	if [ -z "$2" ]; then
+		echo "Please pass in the MySQL password."
+		exit 1
+	else
 		MYSQL_PASSWORD="$2"
-	#fi
+	fi
 fi
 
 if [ -z "$MYSQL_SCHEMA" ]; then
 	if [ -z "$3" ]; then
-		usage
-		echo "Please pass in the MySQL Schema"
+		echo "Please pass in the MySQL schema name."
 		exit 1
 	else
 		MYSQL_SCHEMA="$3"
 	fi
 fi
 
-SQL="./res/sql/"
-
-if [ ! -d "$SQL" ]; then
-	echo "Can't find directory with *.sql files: $SQL"
+if [ ! -d $MAGMA_RES_SQL ]; then
+	echo "The SQL scripts directory appears to be missing. { path = $MAGMA_RES_SQL }"
 	exit 1
 fi
 
@@ -63,19 +70,21 @@ CREATE DATABASE IF NOT EXISTS \`${MYSQL_SCHEMA}\`;
 USE \`${MYSQL_SCHEMA}\`;
 
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
-SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;" > $SQL/Start.sql
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;" > $MAGMA_RES_SQL/Start.sql
 
 if [ -z "$HOSTNAME" ]; then
 	HOSTNAME=$(hostname)
 fi
 
 # Generate Hostname.sql with the system's Hostname
-echo "UPDATE Hosts SET hostname = '$HOSTNAME' WHERE hostnum = 1;" > $SQL/Hostname.sql
+echo "UPDATE Hosts SET hostname = '$HOSTNAME' WHERE hostnum = 1;" > $MAGMA_RES_SQL/Hostname.sql
 
-cat $SQL/Start.sql \
-	$SQL/Schema.sql \
-	$SQL/Data.sql \
-	$SQL/Migration.sql \
-	$SQL/Finish.sql \
-	$SQL/Hostname.sql \
+cat $MAGMA_RES_SQL/Start.sql \
+	$MAGMA_RES_SQL/Schema.sql \
+	$MAGMA_RES_SQL/Data.sql \
+	$MAGMA_RES_SQL/Migration.sql \
+	$MAGMA_RES_SQL/Finish.sql \
+	$MAGMA_RES_SQL/Hostname.sql \
 	| mysql --batch -u ${MYSQL_USER} --password=${MYSQL_PASSWORD}
+
+

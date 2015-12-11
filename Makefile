@@ -132,7 +132,7 @@ endif
 # Special Make Directives
 .NOTPARALLEL: warning conifg
 
-.PHONY: warning config all check
+.PHONY: warning config all check 
 all: config warning $(MAGMA_PROGRAM) $(CHECK_PROGRAM)
 
 check: config warning $(CHECK_PROGRAM)
@@ -156,7 +156,7 @@ config:
 # Alias the target names on Windows to the equivalent without the exe extension.
 ifeq ($(HOSTTYPE),Windows)
 
-.PHONY: $(basename $(MAGMA_PROGRAM))
+.PHONY: $(basename $(MAGMA_PROGRA$(OBJDIR)/src/%.o: src/%.cM))
 $(basename $(MAGMA_PROGRAM)): $(MAGMA_PROGRAM)
 
 .PHONY: $(basename $(CHECK_PROGRAM))

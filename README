@@ -1,3 +1,5 @@
+vim: set filetype=markdown:
+
 # Description
 
 Magma was originally designed and developed by Ladar Levison for lavabit.com. This Magma Classic release is the based on the development branch for Lavabit's service. Because we started with the development branch, some of the features and functions are unstable. It needs work. Happy hacking.

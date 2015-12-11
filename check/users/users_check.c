@@ -128,7 +128,6 @@ START_TEST (check_users_credentials_invalid_s) {
 	stringer_t *errmsg = NULL;
 	meta_user_t *user_check_data = NULL;
 	credential_t *user_check_cred = NULL;
-	stringer_t *username = NULL, *password = NULL;
 
 	typedef struct {
 		stringer_t *username;
@@ -204,6 +203,7 @@ error:
 	// Attempt a credentials creation using a series of randomly generated, but valid usernames.
 	/* In my opinion these tests are no good so I am commenting them out - IVAN */
 #if 0
+	stringer_t *username = NULL, *password = NULL;
 	for (uint_t i = 0; !errmsg && i < OBJECT_CHECK_ITERATIONS; i++) {
 		if (!(username = rand_choices("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_", (rand_get_uint8() % 128) + 1))) {
 			errmsg = st_import("An error occurred while trying to generate a random username. { user = NULL }", 78);

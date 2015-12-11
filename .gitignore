@@ -1,6 +1,7 @@
-src/.deps/
-src/.objs/
-src/magmad
+.deps/
+.objs/
+magmad
+magmad.check
 res/logs/*
 res/spool/*
 res/virus/main.cld

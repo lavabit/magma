@@ -12,7 +12,6 @@ BASE=`dirname $LINK`
 
 cd $BASE/../../../
 
-MAGMA_DIST=`pwd`
 MAGMA_RES_SQL="res/sql/" 
 
 case $# in
@@ -65,8 +64,7 @@ if [ ! -d $MAGMA_RES_SQL ]; then
 fi
 
 # Generate Start.sql from the user-provided Schema
-echo "DROP DATABASE IF EXISTS \`${MYSQL_SCHEMA}\`;
-CREATE DATABASE IF NOT EXISTS \`${MYSQL_SCHEMA}\`;
+echo "CREATE DATABASE IF NOT EXISTS \`${MYSQL_SCHEMA}\`;
 USE \`${MYSQL_SCHEMA}\`;
 
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;

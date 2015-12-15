@@ -6,11 +6,8 @@ res/logs/*
 res/spool/*
 res/sql/Start.sql
 res/sql/Hostname.sql
-res/virus/main.cld
-res/virus/bytecode.cld
-res/virus/mirrors.dat
-res/virus/safebrowsing.cvd
 tools/pwtool/pwtool
+sandbox/virus/
 lib/logs/
 lib/objects/
 lib/sources/

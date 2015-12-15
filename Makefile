@@ -6,7 +6,7 @@
 
 TOPDIR					= $(realpath .)
 MFLAGS					=
-MAKEFLAGS				= --output-sync=target --jobs=6
+MAKEFLAGS				= --output-sync=target
 
 # Identity of this package.
 PACKAGE_NAME			= "Magma Daemon"

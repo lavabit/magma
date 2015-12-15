@@ -521,9 +521,6 @@ Suite * suite_check_provide(void) {
 	testcase(s, tc, "Cryptography STACIE/S", check_stacie_s);
 
 	// Tank functionality is temporarily disabled.
-
-	do_tank_check = false;
-
 	if (do_tank_check) {
 		testcase(s, tc, "Tank LZO/S", check_tank_lzo_s);
 		testcase(s, tc, "Tank LZO/M", check_tank_lzo_m);

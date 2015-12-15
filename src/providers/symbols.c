@@ -514,6 +514,8 @@ void lib_unload(void) {
  */
 bool_t lib_load(void) {
 
+	chr_t *lib_error = NULL;
+
 	if (!magma.config.file) {
 		log_critical("The Magma shared library path is empty.");
 		return false;
@@ -525,8 +527,8 @@ bool_t lib_load(void) {
 		lib_magma = dlopen(magma.library.file, RTLD_NOW | RTLD_GLOBAL);
 	}
 
-	if (!lib_magma) {
-		log_critical("%s", dlerror());
+	if ((lib_error = dlerror()) || !lib_magma) {
+		log_critical("%s", lib_error);
 		return false;
 	}
 

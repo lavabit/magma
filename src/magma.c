@@ -14,12 +14,14 @@
 
 int main(int argc, char *argv[]) {
 
-	/*if (process_kill(PLACER("magmad", 6), SIGTERM, 10) < 0) {
-		log_error("Another instance of the Magma Daemon is already running and refuses to die.");
-		exit(EXIT_FAILURE);
-	}*/
+	pid_t pid = 0;
 
-	// Updates the location of the config file if it was specified on the command line.
+	if ((pid = process_pid(PLACER("magmad", 6))) != 0) {
+		log_error("Another instance of magma is already running. {pid = %i}", pid);
+		exit(EXIT_FAILURE);
+	}
+
+	// Overwrites the default config file location with the value provided on the command line.
 	if (!args_parse(argc, argv)) {
 		exit(EXIT_FAILURE);
 	}

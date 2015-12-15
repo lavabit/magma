@@ -43,7 +43,9 @@ chr_t *  signal_name(int signal, char *buffer, size_t length);
 int_t   folder_exists(stringer_t *path, bool_t create);
 
 /// process.c
-int_t   process_kill(stringer_t *name, int_t signal, int_t wait);
+pid_t		process_pid(stringer_t *name);
+int_t   process_kill(stringer_t *name, int_t signum, int_t wait);
+
 
 /// spool.c
 int_t         spool_check(stringer_t *path);

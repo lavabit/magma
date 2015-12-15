@@ -166,7 +166,7 @@ int main(int argc, char *argv[]) {
 	int_t failed = 0;
 	time_t prog_start, test_start, test_end;
 
-	if (process_kill(PLACER("magmad", 18), SIGTERM, 10) < 0) {
+	if (process_kill(PLACER("magmad", 6), SIGTERM, 10) < 0 || process_kill(PLACER("magmad.check", 12), SIGTERM, 10) < 0) {
 		log_unit("Another instance of the Magma Daemon is already running and refuses to die.");
 		exit(EXIT_FAILURE);
 	}
@@ -189,16 +189,13 @@ int main(int argc, char *argv[]) {
 		dspam_check_data_path = ns_dupe(DSPAM_CHECK_DATA_PATH);
 	}
 
-	/*if (do_virus_check) printf("doing virus check: [%s]\n", !virus_check_data_path ? "NONE" : virus_check_data_path); else printf ("skipping virus check\n");
-	if (do_tank_check) printf("doing tank check: [%s]\n", !tank_check_data_path ? "NONE" : tank_check_data_path); else printf ("skipping tank check\n");
-	if (do_dspam_check) printf("doing dspam check: [%s]\n", !dspam_check_data_path ? "NONE" : dspam_check_data_path); else printf ("skipping dspam check\n");
-	printf("config file: [%s]\n", magma.config.file);
-	exit(EXIT_SUCCESS);*/
-
 	if (!process_start()) {
 		log_unit("Initialization error. Exiting.\n");
 		status_set(-1);
 		process_stop();
+		ns_cleanup(virus_check_data_path);
+		ns_cleanup(tank_check_data_path);
+		ns_cleanup(dspam_check_data_path);
 		exit(EXIT_FAILURE);
 	}
 
@@ -254,13 +251,14 @@ int main(int argc, char *argv[]) {
 	status_set(-1);
 	srunner_free(sr);
 
-	ns_cleanup(virus_check_data_path);
-	ns_cleanup(tank_check_data_path);
-	ns_cleanup(dspam_check_data_path);
-
 	// Cleanup and free the resources allocated by the magma code.
 	process_stop();
 	system_init_umask();
 
+	ns_cleanup(virus_check_data_path);
+	ns_cleanup(tank_check_data_path);
+	ns_cleanup(dspam_check_data_path);
+
 	exit((failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE);
+
 }

@@ -13,13 +13,50 @@
 #include "magma.h"
 
 /**
+ * @brief	Find the PID for a named process and return it.
+ * @note	Only returns the first match, and will never return the ID for the currently running process.
+ * @param	name	the name of the process to find.
+ * @return 0 if process not found, otherwise the PID is returned.
+ */
+pid_t	process_pid(stringer_t *name) {
+
+	DIR *dir;
+	struct dirent *entry;
+	pid_t pid = 0, ret = 0;
+	chr_t cmd[MAGMA_FILEPATH_MAX + 1];
+	stringer_t *compare = MANAGEDBUF(1024);
+
+	if (!(dir = opendir(MAGMA_PROC_PATH))) {
+		log_pedantic("The system path could not be opened. { path = %s / %s }",
+				MAGMA_PROC_PATH, strerror_r(errno, MEMORYBUF(1024), 1024));
+		return 0;
+	}
+
+	while ((entry = readdir(dir)) && !ret) {
+		if (entry->d_type == DT_DIR && chr_numeric((uchr_t)*(entry->d_name)) && int32_conv_ns(entry->d_name, &pid) && pid != getpid()) {
+			if (snprintf(cmd, MAGMA_FILEPATH_MAX + 1, "%s/%i/comm", MAGMA_PROC_PATH, pid) && file_read(cmd, compare) > 0) {
+				st_trim(compare);
+				if (!st_cmp_cs_eq(compare, name)) {
+					ret = pid;
+				}
+			}
+
+		}
+	}
+
+	closedir(dir);
+
+	return ret;
+}
+
+/**
  * @brief	Kill a named process with the specified signal, and retry if necessary.
  * @param	name	the name of the process to kill (matches any process that starts with the specified name).
- * @param	signal	the signal number to be sent to the matching process.
+ * @param	signum	the signal number to be sent to the matching process.
  * @param	wait	the number of times to re-send the signal, with one second rest intervals in between.
  * @return -2 for a generic failure, -1 on timeout, 0 if process not found, and 1 if the process was successfully killed.
  */
-int_t process_kill(stringer_t *name, int_t signal, int_t wait) {
+int_t process_kill(stringer_t *name, int_t signum, int_t wait) {
 
 	DIR *dir;
 	int_t ret;
@@ -30,24 +67,28 @@ int_t process_kill(stringer_t *name, int_t signal, int_t wait) {
 	stringer_t *compare = MANAGEDBUF(1024);
 
 	if (!(dir = opendir(MAGMA_PROC_PATH))) {
-		log_pedantic("The system path could not be opened. "
-			"{ path = %s / %s }", MAGMA_PROC_PATH, strerror_r(errno, MEMORYBUF(1024), 1024));
+		log_pedantic("The system path could not be opened. { path = %s / %s }",
+				MAGMA_PROC_PATH, strerror_r(errno, MEMORYBUF(1024), 1024));
 		return -2;
 	}
 
 	while ((entry = readdir(dir)) && (matches < (sizeof (killed) / sizeof (pid_t)))) {
 
 		if (entry->d_type == DT_DIR && chr_numeric((uchr_t)*(entry->d_name)) && int32_conv_ns(entry->d_name, &pid) && pid != getpid()) {
-			// Since the cmdline file could contain the command arguments as a NULL separated array we have to wrap compare with NULLER to exclude those arguments.
+
+			// Since the cmdline file could contain the command arguments as a NULL separated array we have to wrap compare with a NULLER
+			// to exclude those arguments.
 			if (snprintf(cmd, MAGMA_FILEPATH_MAX + 1, "%s/%i/cmdline", MAGMA_PROC_PATH, pid) && file_read(cmd, compare) > 0 &&
-				!st_cmp_ci_starts(st_swap(compare, '\0', ' '), name)) {
-				if ((ret = kill(pid, signal))) {
-					log_pedantic("The process could not be signaled. { signal = %i / %s }", signal, strerror_r(errno, MEMORYBUF(1024), 1024));
+				!st_cmp_cs_starts(st_swap(compare, '\0', ' '), name)) {
+
+				if ((ret = kill(pid, signum))) {
+					log_pedantic("The process could not be signaled. { signum = %i / %s }", signum, strerror_r(errno, MEMORYBUF(1024), 1024));
 					return -2;
 				}
 				else {
 					killed[matches++] = pid;
 				}
+
 			}
 		}
 	}

@@ -34,6 +34,5 @@ valgrind --tool=memcheck \
 --leak-resolution=high \
 --workaround-gcc296-bugs=no \
 --partial-loads-ok=yes \
---suppressions=/usr/lib64/valgrind/default.supp \
---suppressions=$MAGMA_DIST/sandbox/etc/magma.supp \
+--suppressions=$MAGMA_DIST/sandbox/etc/magma.suppressions \
 $MAGMA_DIST/magmad.check $MAGMA_DIST/sandbox/etc/magma.sandbox.config

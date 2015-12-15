@@ -1,6 +1,9 @@
-#!/bin/bash
+#/bin/bash
 
-# Magma Daemon Memory 
+# Name: magma.mem.sh
+# Author: Ladar Levison
+#
+# Description: Used for printing memory statistics on the magma and memcache daemons.
 
 LINK=`readlink -f $0`
 BASE=`dirname $LINK`
@@ -12,8 +15,10 @@ MAGMA_DIST=`pwd`
 
 HIT="no"
 
-VMEM=`ps kstart_time auxw | egrep "$MAGMA_DIST/src/.debug/magmad" | grep -v grep | grep -v tail | grep -v dispatchd | grep -v scp | awk -F' ' '{print $5}' | tail -1`
-RMEM=`ps kstart_time auxw | egrep "$MAGMA_DIST/src/.debug/magmad" | grep -v grep | grep -v tail | grep -v dispatchd | grep -v scp | awk -F' ' '{print $6}' | tail -1`
+# Magma Daemon Memory Usage
+
+VMEM=`ps kstart_time auxw | egrep "$MAGMA_DIST/magmad" | grep -v grep | grep -v tail | grep -v dispatchd | grep -v scp | awk -F' ' '{print $5}' | tail -1`
+RMEM=`ps kstart_time auxw | egrep "$MAGMA_DIST/magmad" | grep -v grep | grep -v tail | grep -v dispatchd | grep -v scp | awk -F' ' '{print $6}' | tail -1`
  
 if [ "$VMEM" != '' ] || [ "$RMEM" != '' ]; then
 	HIT="yes"
@@ -24,10 +29,10 @@ fi
  
 unset VMEM RMEM vmem rmem
 
-# Magma Check Memory 
+# Magma Check Unit Tests Memory Usage 
 
-VMEM=`ps kstart_time auxw | egrep "$MAGMA_DIST/check/.check/magmad.check" | grep -v grep | grep -v tail | grep -v dispatchd | grep -v scp | awk -F' ' '{print $5}' | tail -1`
-RMEM=`ps kstart_time auxw | egrep "$MAGMA_DIST/check/.check/magmad.check" | grep -v grep | grep -v tail | grep -v dispatchd | grep -v scp | awk -F' ' '{print $6}' | tail -1`
+VMEM=`ps kstart_time auxw | egrep "$MAGMA_DIST/magmad.check" | grep -v grep | grep -v tail | grep -v dispatchd | grep -v scp | awk -F' ' '{print $5}' | tail -1`
+RMEM=`ps kstart_time auxw | egrep "$MAGMA_DIST/magmad.check" | grep -v grep | grep -v tail | grep -v dispatchd | grep -v scp | awk -F' ' '{print $6}' | tail -1`
  
 if [ "$VMEM" != '' ] || [ "$RMEM" != '' ]; then
 	HIT="yes"

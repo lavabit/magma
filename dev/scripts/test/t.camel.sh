@@ -10,11 +10,13 @@ export SQLHOST="localhost"
 export CAMELHOST="http://localhost:10000"
 export CAMELPATH="$CAMELHOST/portal/camel"
 
-PID=`ps -ef | egrep "src/.debug/magmad|check/.check/magmad.check|tools/mason/.debug/mason" | grep -v grep | awk -F' ' '{ print $2}'`
-if [ "$PID" = '' ]; then
-	tput setaf 1; tput bold; echo "the magma daemon isn't running"; tput sgr0
-	exit
-fi	
+# Check and make sure magmad is running before attempting a connection.
+PID=`pidof magmad magmad.check`       
+
+if [ -z "$PID" ]; then
+	tput setaf 1; tput bold; echo "Magma process isn't running."; tput sgr0
+	exit 2
+fi
 
 wget --quiet --retry-connrefused --connect-timeout=1 --waitretry=1 --tries=0 --output-document=/dev/null "$CAMELHOST"
 if [ $? != 0 ]; then
@@ -29,12 +31,13 @@ submit() {
 	
 	# Submit using cURL
 	# To print the server supplied HTTP headers add --include
-	export OUTPUT=`curl --silent --cookie "$COOKIES" --cookie-jar "$COOKIES" --data "$1" "$CAMELPATH"`
-	#export OUTPUT=`curl --verbose --cookie "$COOKIES" --cookie-jar "$COOKIES" --data "$1" "$CAMELPATH"`
+
+	# export OUTPUT=`curl --silent --cookie "$COOKIES" --cookie-jar "$COOKIES" --data "$1" "$CAMELPATH"`
 	
-	# Alternatively to use wget
+	# Submit using wget
 	# To print the server supplied HTTP headers add --server-response
-	# export OUTPUT=`wget --load-cookies="$COOKIES" --save-cookies="$COOKIES" --quiet --output-document=- --post-data="$1" "$CAMELPATH"`
+
+	export OUTPUT=`wget --load-cookies="$COOKIES" --save-cookies="$COOKIES" --quiet --output-document=- --post-data="$1" "$CAMELPATH"`
 	
 	if [[ "$OUTPUT" =~ "\"result\":" ]] && [[ ! "$OUTPUT" =~ "\"failed\"" ]]; then
 		tput setaf 2; tput bold; echo $OUTPUT	
@@ -65,7 +68,7 @@ contactnums() {
 
 
 echo ""
-tput setaf 6; echo "Camelface requests:"; tput sgr0
+tput setaf 6; echo "Camel requests:"; tput sgr0
 echo ""
 
 submit "{\"id\":$IDNUM,\"method\":\"auth\",\"params\":{\"username\":\"$USERID\",\"password\":\"test\"}}"

@@ -3,7 +3,7 @@
 # Name: check.cachegrind.sh
 # Author: Ladar Levison
 #
-# Description: Used for launching the magmad unit tests. The tests are executed atop the Valgrind helgrind utility.
+# Description: Used for launching the magmad unit tests. The tests are executed atop the Valgrind/Cachegrind utility.
 
 LINK=`readlink -f $0`
 BASE=`dirname $LINK`

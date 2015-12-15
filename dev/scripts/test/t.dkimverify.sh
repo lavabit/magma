@@ -1,11 +1,16 @@
-#!/bin/bash
+#/bin/bash
+
+# Name: t.dkimverify.sh
+# Author: Ladar Levison
+#
+# Description: Used for verifying DKIM is properly implemented.
 
 echo ""
 tput setaf 6; echo "DKIM Signature Verification:"; tput sgr0
 echo ""
 printf "EHLO localhost
 MAIL FROM: <ladar.levison@gmail.com>
-RCPT TO: <ladar@lavabit.com>
+RCPT TO: <magma@lavabit.com>
 DATA
 Return-Path: <ladar.levison@gmail.com>
 Received: from mail-pv0-f171.google.com (74.125.83.171)

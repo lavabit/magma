@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Name: linkup.sh
+# Author: Ladar Levison
+#
+# Description: Used for creating shortcuts in a user's bin directory and the magma development scripts.
+
 LINK=`readlink -f $0`
 BASE=`dirname $LINK`
 
@@ -42,15 +47,16 @@ process "tmap.sh" "tmap"
 process "tpop.sh" "tpop"
 process "tnet.sh" "tnet"
 process "tweb.sh" "tweb"
+process "tmolt.sh" "tmolt"
 process "tlsmap.sh" "tlsmap"
 process "tlspop.sh" "tlspop"
 process "tlsnet.sh" "tlsnet"
-process "tlsweb.sh" "tlsweb"
 process "sslpop.sh" "sslpop"
 process "sslmap.sh" "sslmap"
 process "sslnet.sh" "sslnet"
 process "sslweb.sh" "sslweb"
 
+process "mycon.sh" "mycon"
 process "schema.dump.sh" "schema.dump"
 process "schema.reset.sh" "schema.reset"
 process "schema.init.sh" "schema.init"
@@ -72,10 +78,10 @@ process "t.inbound.attachment.1.sh" "t.inbound.attachment.1"
 process "t.inbound.attachment.2.sh" "t.inbound.attachment.2"
 process "t.colors.sh" "t.colors"
 
-process "mycon.sh" "mycon"
 process "freshen.clamav.sh" "freshen.clamav"
 process "runner.sh" "runner"
 process "testde.sh" "testde"
+
 process "linkup.sh" "linkup"
 
 

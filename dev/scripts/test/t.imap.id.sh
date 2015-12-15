@@ -1,4 +1,9 @@
-#!/bin/bash
+#/bin/bash
+
+# Name: t.imap.id.sh
+# Author: Ladar Levison
+#
+# Description: Used for testing IMAP ID command.
 
 echo ""
 tput setaf 6; echo "IMAP ID Command:"; tput sgr0

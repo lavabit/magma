@@ -1,4 +1,9 @@
-#!/bin/bash
+#/bin/bash
+
+# Name: t.inbound.attachment.1.sh
+# Author: Ladar Levison
+#
+# Description: Used for testing the SMTP DATA command using a message with an attachment.
 
 DATE=`date`
 

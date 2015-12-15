@@ -1,4 +1,9 @@
-#!/bin/bash
+#/bin/bash
+
+# Name: check.vg.sh
+# Author: Ladar Levison
+#
+# Description: Used for launching the magmad unit tests. The tests are executed atop the Valgrind/Memcheck utility.
 
 LINK=`readlink -f $0`
 BASE=`dirname $LINK`
@@ -11,8 +16,7 @@ MAGMA_DIST=`pwd`
 # self modifying code --smc-check=[none,stack,all]
 #
 
-valgrind \
---tool=memcheck \
+valgrind --tool=memcheck \
 --trace-children=yes \
 --child-silent-after-fork=yes \
 --run-libc-freeres=yes \

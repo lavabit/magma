@@ -1,4 +1,9 @@
-#!/bin/bash
+#/bin/bash
+
+# Name: t.outbound.sh
+# Author: Ladar Levison
+#
+# Description: Used for testing the SMTP outbound message handler.
 
 DATE=`date`
 

@@ -3,7 +3,7 @@
 # Name: check.callgrind.sh
 # Author: Ladar Levison
 #
-# Description: Used for launching the magmad unit tests. The tests are executed atop the Valgrind callgrind utility.
+# Description: Used for launching the magmad unit tests. The tests are executed atop the Valgrind/Callgrind utility.
 
 LINK=`readlink -f $0`
 BASE=`dirname $LINK`

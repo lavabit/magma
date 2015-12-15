@@ -1,4 +1,10 @@
-#!/bin/bash
+#/bin/bash
+
+# Name: location.sh
+# Author: Ladar Levison
+#
+# Description: Used to quickly update the file location inside the doxygen header.
+
 
 # Build file location
 PWD=`pwd`

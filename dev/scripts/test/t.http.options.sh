@@ -1,5 +1,9 @@
+#/bin/bash
 
-#!/bin/bash
+# Name: t.http.options.sh
+# Author: Ladar Levison
+#
+# Description: Used for testing HTTP OPTIONS method.
 
 echo ""
 tput setaf 6; echo "HTTP OPTIONS Method:"; tput sgr0

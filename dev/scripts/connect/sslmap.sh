@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: sslmap.sh
 # Author: Ladar Levison

@@ -1,4 +1,9 @@
-#!/bin/bash
+#/bin/bash
+
+# Name: t.imap.purge.sh
+# Author: Ladar Levison
+#
+# Description: Used for testing the IMAP EXPUNGE command.
 
 echo ""
 tput setaf 6; echo "IMAP Purge Inbox Folder:"; tput sgr0

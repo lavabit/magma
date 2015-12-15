@@ -1,4 +1,9 @@
-#!/bin/bash
+#/bin/bash
+
+# Name: t.camel.login.sh
+# Author: Ladar Levison
+#
+# Description: Used for testing the camelface login user method.
 
 API_PATH="http://localhost:10000/json"
 read -d '' JSON <<EOF

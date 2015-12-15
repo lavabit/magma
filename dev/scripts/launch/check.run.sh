@@ -1,4 +1,10 @@
-#!/bin/bash
+#/bin/bash
+
+# Name: check.run.sh
+# Author: Ladar Levison
+#
+# Description: Used for launching the magmad unit tests.
+
 
 LINK=`readlink -f $0`
 BASE=`dirname $LINK`

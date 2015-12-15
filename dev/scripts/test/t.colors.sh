@@ -1,5 +1,9 @@
-#!/bin/bash
-# t.colors.sh
+#/bin/bash
+
+# Name: t.colors.sh
+# Author: Ladar Levison
+#
+# Description: Used for testing the supported colors and printing the associated tput options.
 
 # Text color variables
 txtund=$(tput sgr 0 1)          # Underline

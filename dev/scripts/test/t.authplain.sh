@@ -1,4 +1,9 @@
-#!/bin/bash
+#/bin/bash
+
+# Name: t.authplain.sh
+# Author: Ladar Levison
+#
+# Description: Used for testing the AUTH PLAIN method.
 
 echo ""
 

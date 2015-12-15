@@ -3,7 +3,8 @@
 # Name: check.helgrind.sh
 # Author: Ladar Levison
 #
-# Description: Used for launching the magmad unit tests. The tests are executed atop the Valgrind massif utility.
+# Description: Used for launching the magmad unit tests. The tests are executed atop the Valgrind/Massif utility.
+
 LINK=`readlink -f $0`
 BASE=`dirname $LINK`
 

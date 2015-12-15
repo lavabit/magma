@@ -1,4 +1,9 @@
-#!/bin/bash
+#/bin/bash
+
+# Name: t.authlogin.sh
+# Author: Ladar Levison
+#
+# Description: Used for testing the AUTH LOGIN method.
 
 echo ""
 

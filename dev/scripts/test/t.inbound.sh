@@ -1,4 +1,9 @@
-#!/bin/bash
+#/bin/bash
+
+# Name: t.inbound.sh
+# Author: Ladar Levison
+#
+# Description: Used for testing the SMTP inbound message handler.
 
 DATE=`date`
 

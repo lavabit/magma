@@ -1,5 +1,38 @@
 #/bin/bash
 
+# Name: ctags.sh
+# Author: Ladar Levison
+#
+# Description: Used to quickly produce a header file for the functions in the current directory.
+
+# Check and make sure the ctags command line utility has been installed.
+which ctags &>/dev/null
+if [ $? -ne 0 ]; then
+	tput setaf 1; tput bold; echo "The ctags utility isn't available. It needs to be installed for this script to work."; tput sgr0
+	exit 1
+fi
+
+# Check and make sure the clipit command line utility has been installed.
+which clipit &>/dev/null
+if [ $? -ne 0 ]; then
+	tput setaf 1; tput bold; echo "The clipit utility isn't available. It needs to be installed for this script to work."; tput sgr0
+	exit 1
+fi
+
+# Check and make sure the sed command line utility has been installed.
+which sed &>/dev/null
+if [ $? -ne 0 ]; then
+	tput setaf 1; tput bold; echo "The sed utility isn't available. It needs to be installed for this script to work."; tput sgr0
+	exit 1
+fi
+
+# Check and make sure the awk command line utility has been installed.
+which awk &>/dev/null
+if [ $? -ne 0 ]; then
+	tput setaf 1; tput bold; echo "The awk utility isn't available. It needs to be installed for this script to work."; tput sgr0
+	exit 1
+fi
+
 # Detect a directory and output definitions for any c files it contains.
 if [ -d "$1" ]; then
 	export CTAGSMODE="DIRECTORY"
@@ -48,12 +81,12 @@ export COLS=1024
 # Generate the Tags
 # Detect files that should get special treatment.
 if [[ "$FILE" == "print.c" ]]; then
-	TAGS=`/usr/bin/ctags --c-kinds=f -x "$FILE" | grep -v -E "^START\_TEST" | grep -v "va\_list" | sed -e "s/^.*print\.c\s*\\(.*\\) {/\\1 __attribute__((format (printf, 2, 3)))\\;/g"`
-	VTAGS=`/usr/bin/ctags --c-kinds=f -x "$FILE" | grep -v -E "^START\_TEST" | grep "va\_list" | sed -e "s/^.*print\.c\s*\\(.*\\) {/\\1;/g"`
+	TAGS=`ctags --c-kinds=f -x "$FILE" | grep -v -E "^START\_TEST" | grep -v "va\_list" | sed -e "s/^.*print\.c\s*\\(.*\\) {/\\1 __attribute__((format (printf, 2, 3)))\\;/g"`
+	VTAGS=`ctags --c-kinds=f -x "$FILE" | grep -v -E "^START\_TEST" | grep "va\_list" | sed -e "s/^.*print\.c\s*\\(.*\\) {/\\1;/g"`
 	TAGS=`printf "$TAGS\n$VTAGS"`
 else
 	SPLIT=`echo "$FILE" | /bin/sed -e "s/\\([\.\_]\\)/\/\/\\1/g" | tr '/' '\\\\'`
-	TAGS=`/usr/bin/ctags --c-kinds=fp -x "$FILE" | grep -v -E "^START\_TEST" | /bin/awk -F"$SPLIT" '{print $2}' | /bin/sed -e "s/ {/;/g" | /bin/sed -e "s/^[ ]\+//g" | sed -e "s/^[A-Za-z0-9\_]\+[ ]\+\*\?/&	/g" | sed -e "s/\t/|/g" | sed -e "s/| /|/g" | column -s '|' -t`
+	TAGS=`ctags --c-kinds=fp -x "$FILE" | grep -v -E "^START\_TEST" | awk -F"$SPLIT" '{print $2}' | sed -e "s/ {/;/g" | sed -e "s/^[ ]\+//g" | sed -e "s/^[A-Za-z0-9\_]\+[ ]\+\*\?/&	/g" | sed -e "s/\t/|/g" | sed -e "s/| /|/g" | column -s '|' -t`
 	TAGS+=`echo ""`
 fi
 

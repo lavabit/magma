@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: t.colors.sh
 # Author: Ladar Levison

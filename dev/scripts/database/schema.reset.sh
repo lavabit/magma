@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: schema.reset.sh
 # Author: Ladar Levison

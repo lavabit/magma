@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: schema.dump.sh
 # Author: Ladar Levison

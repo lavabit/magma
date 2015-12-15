@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: check.helgrind.sh
 # Author: Ladar Levison

@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: tlspop.sh
 # Author: Ladar Levison

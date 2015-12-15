@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: t.authplain.sh
 # Author: Ladar Levison

@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: tmolt.sh
 # Author: Ladar Levison

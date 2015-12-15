@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: schema.init.sh
 # Author: Ladar Levison

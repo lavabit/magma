@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: magma.mem.sh
 # Author: Ladar Levison

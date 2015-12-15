@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: tmap.sh
 # Author: Ladar Levison

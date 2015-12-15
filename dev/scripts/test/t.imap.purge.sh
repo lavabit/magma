@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: t.imap.purge.sh
 # Author: Ladar Levison

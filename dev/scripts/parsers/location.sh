@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: location.sh
 # Author: Ladar Levison

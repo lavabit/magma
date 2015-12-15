@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: freshen.clamav.sh
 # Author: Ladar Levison

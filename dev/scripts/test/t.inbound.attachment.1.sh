@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: t.inbound.attachment.1.sh
 # Author: Ladar Levison

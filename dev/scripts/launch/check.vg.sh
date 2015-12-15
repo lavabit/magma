@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: check.vg.sh
 # Author: Ladar Levison

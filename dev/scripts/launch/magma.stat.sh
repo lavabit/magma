@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: magma.stat.sh
 # Author: Ladar Levison

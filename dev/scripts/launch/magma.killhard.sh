@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: magma.killhard.sh
 # Author: Ladar Levison

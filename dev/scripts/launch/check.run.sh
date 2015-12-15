@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: check.run.sh
 # Author: Ladar Levison

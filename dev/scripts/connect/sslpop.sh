@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: sslpop.sh
 # Author: Ladar Levison

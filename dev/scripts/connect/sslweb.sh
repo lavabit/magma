@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: sslweb.sh
 # Author: Ladar Levison

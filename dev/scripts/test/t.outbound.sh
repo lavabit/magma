@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: t.outbound.sh
 # Author: Ladar Levison

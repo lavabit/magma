@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: check.callgrind.sh
 # Author: Ladar Levison

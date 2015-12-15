@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: t.inbound.sh
 # Author: Ladar Levison

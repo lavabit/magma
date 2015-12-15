@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: tpop.sh
 # Author: Ladar Levison

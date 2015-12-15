@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: t.camel.login.sh
 # Author: Ladar Levison

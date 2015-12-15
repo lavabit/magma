@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: queries.sh
 # Author: Ladar Levison

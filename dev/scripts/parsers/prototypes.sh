@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: prototypes.sh
 # Author: Ladar Levison

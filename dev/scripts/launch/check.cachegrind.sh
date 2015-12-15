@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: check.cachegrind.sh
 # Author: Ladar Levison

@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: magma.watcher.sh
 # Author: Ladar Levison

@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: magma.num.sh
 # Author: Ladar Levison

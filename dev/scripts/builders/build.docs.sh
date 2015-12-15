@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 LINK=`readlink -f $0`
 BASE=`dirname $LINK`

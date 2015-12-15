@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: tlsmap.sh
 # Author: Ladar Levison

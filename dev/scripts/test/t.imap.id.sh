@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: t.imap.id.sh
 # Author: Ladar Levison

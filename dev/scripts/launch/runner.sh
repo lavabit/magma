@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: runner.sh
 # Author: Ladar Levison

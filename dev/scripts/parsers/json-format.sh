@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: json-format.sh
 # Author: Ladar Levison

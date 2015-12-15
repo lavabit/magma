@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: tweb.sh
 # Author: Ladar Levison

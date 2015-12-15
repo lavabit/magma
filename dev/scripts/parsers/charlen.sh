@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: charlen.sh
 # Author: Ladar Levison

@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: mycon.sh
 # Author: Ladar Levison

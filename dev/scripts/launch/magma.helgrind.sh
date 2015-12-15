@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: magma.helgrind.sh
 # Author: Ladar Levison

@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: tlsnet.sh
 # Author: Ladar Levison

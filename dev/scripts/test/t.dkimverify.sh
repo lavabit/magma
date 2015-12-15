@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: t.dkimverify.sh
 # Author: Ladar Levison

@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: testde.sh
 # Author: Ladar Levison

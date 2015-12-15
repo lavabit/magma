@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Name: t.ciphers.sh
 # Author: Ladar Levison

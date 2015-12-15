@@ -1,16 +1,16 @@
-
 {
-   lib_load dlopen
+   <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:calloc
    fun:_dlerror_run
-   fun:dlopen
+   fun:dlopen@@GLIBC_2.2.5
    fun:lib_load
    fun:process_start
    fun:main
 }
+
 {
-   lib_load dlopen strdup 
+   <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:malloc
    fun:strdup
@@ -25,13 +25,14 @@
    fun:dlopen_doit
    fun:_dl_catch_error
    fun:_dlerror_run
-   fun:dlopen
+   fun:dlopen@@GLIBC_2.2.5
    fun:lib_load
    fun:process_start
    fun:main
 }
+
 {
-   lib_load dlopen malloc
+   <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:malloc
    fun:_dl_new_object
@@ -46,13 +47,89 @@
    fun:dlopen_doit
    fun:_dl_catch_error
    fun:_dlerror_run
-   fun:dlopen
+   fun:dlopen@@GLIBC_2.2.5
    fun:lib_load
    fun:process_start
    fun:main
 }
+
 {
-   lib_unload dlclose
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:add_to_global
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   fun:lib_load
+   fun:process_start
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:calloc
+   fun:_dl_check_map_versions
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   fun:lib_load
+   fun:process_start
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:calloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_error
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   fun:lib_load
+   fun:process_start
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:calloc
+   fun:do_lookup_x
+   fun:_dl_lookup_symbol_x
+   fun:_dl_relocate_object
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   fun:lib_load
+   fun:process_start
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:malloc
    fun:_dl_close_worker
@@ -64,24 +141,9 @@
    fun:process_stop
    fun:main
 }
+
 {
-   lib_load dlopen add_to_global malloc
-   Memcheck:Leak
-   fun:malloc
-   fun:add_to_global
-   fun:dl_open_worker
-   fun:_dl_catch_error
-   fun:_dl_open
-   fun:dlopen_doit
-   fun:_dl_catch_error
-   fun:_dlerror_run
-   fun:dlopen
-   fun:lib_load
-   fun:process_start
-   fun:main
-}
-{
-   dlopen scope free
+   <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:malloc
    fun:_dl_scope_free
@@ -100,58 +162,5 @@
    fun:start_thread
    fun:clone
 }
-{
-   lib_load dlopen calloc
-   Memcheck:Leak
-   fun:calloc
-   fun:_dl_check_map_versions
-   fun:dl_open_worker
-   fun:_dl_catch_error
-   fun:_dl_open
-   fun:dlopen_doit
-   fun:_dl_catch_error
-   fun:_dlerror_run
-   fun:dlopen
-   fun:lib_load
-   fun:process_start
-   fun:main
-}
-{
-   lib_load dlopen error calloc
-   Memcheck:Leak
-   fun:calloc
-   fun:_dl_new_object
-   fun:_dl_map_object_from_fd
-   fun:_dl_map_object
-   fun:openaux
-   fun:_dl_catch_error
-   fun:_dl_map_object_deps
-   fun:dl_open_worker
-   fun:_dl_catch_error
-   fun:_dl_open
-   fun:dlopen_doit
-   fun:_dl_catch_error
-   fun:_dlerror_run
-   fun:dlopen
-   fun:lib_load
-   fun:process_start
-   fun:main
-}
-{
-   lib_load relocate calloc
-   Memcheck:Leak
-   fun:calloc
-   fun:do_lookup_x
-   fun:_dl_lookup_symbol_x
-   fun:_dl_relocate_object
-   fun:dl_open_worker
-   fun:_dl_catch_error
-   fun:_dl_open
-   fun:dlopen_doit
-   fun:_dl_catch_error
-   fun:_dlerror_run
-   fun:dlopen
-   fun:lib_load
-   fun:process_start
-   fun:main
-}
+
+

@@ -3,8 +3,8 @@
 LINK=`readlink -f $0`
 BASE=`dirname $LINK`
 
-cd $BASE/../..
+cd $BASE/../../../
 
 MAGMA_DIST=`pwd`
 
-$MAGMA_DIST/check/.check/magmad.check $MAGMA_DIST/res/config/magma.sandbox.config
+$MAGMA_DIST/magmad.check $MAGMA_DIST/sandbox/etc/magma.sandbox.config

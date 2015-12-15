@@ -1,5 +1,9 @@
-#!/bin/bash
+#/bin/bash
 
+# Name: check.helgrind.sh
+# Author: Ladar Levison
+#
+# Description: Used for launching the magmad unit tests. The tests are executed atop the Valgrind massif utility.
 LINK=`readlink -f $0`
 BASE=`dirname $LINK`
 
@@ -11,9 +15,28 @@ MAGMA_DIST=`pwd`
 # self modifying code --smc-check=[none,stack,all]
 #
 
-valgrind --tool=massif --trace-children=yes --child-silent-after-fork=yes --run-libc-freeres=yes --demangle=yes --num-callers=50 \
---error-limit=no --show-below-main=no --max-stackframe=20000000 --dsymutil=yes --fullpath-after= --read-var-info=yes \
---heap=yes --heap-admin=8 --stacks=no --depth=30 --threshold=1.0 --peak-inaccuracy=1.0 --time-unit=i --detailed-freq=10 --max-snapshots=100 \
---suppressions=$MAGMA_DIST/res/config/magma.supp --suppressions=/usr/lib64/valgrind/default.supp \
+valgrind --tool=massif \
+--trace-children=yes \
+--child-silent-after-fork=yes \
+--run-libc-freeres=yes \
+--demangle=yes \
+--num-callers=50 \
+--error-limit=no \
+--show-below-main=no \
+--max-stackframe=20000000 \
+--dsymutil=yes \
+--fullpath-after= \
+--read-var-info=yes \
+--heap=yes \
+--heap-admin=8 \
+--stacks=no \
+--depth=30 \
+--threshold=1.0 \
+--peak-inaccuracy=1.0 \
+--time-unit=i \
+--detailed-freq=10 \
+--max-snapshots=100 \
 --massif-out-file=$HOME/massif.out.%p \
-$MAGMA_DIST/check/.check/magmad.check $MAGMA_DIST/res/config/magma.sandbox.config
+--suppressions=/usr/lib64/valgrind/default.supp \
+--suppressions=$MAGMA_DIST/sandbox/etc/magma.suppressions \
+$MAGMA_DIST/magmad.check $MAGMA_DIST/sandbox/etc/magma.sandbox.config

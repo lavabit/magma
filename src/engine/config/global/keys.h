@@ -28,18 +28,7 @@
 		.validator = "MIN:MAX"
 		.validator = "OPT1|OPT2|OPT3"
 	}, */
-/*	{
-		.store = (void *)&(magma.storage.tank),
-		.norm.type = M_TYPE_NULLER,
-		.norm.val.st = NULL,
-		.name = "magma.storage.tank",
-		.description = "The location used by the storage tanks.",
-		.file = true,
-		.database = true,
-		.overwrite = true,
-		.set = false,
-		.required = false
-	}, */
+
 
 magma_keys_t magma_keys[] = {
 	{
@@ -72,6 +61,19 @@ magma_keys_t magma_keys[] = {
 		.norm.val.st = NULL,
 		.name = "magma.storage.default",
 		.description = "The default server used by the legacy mail code base for storing new messages.",
+		.file = true,
+		.database = true,
+		.overwrite = true,
+		.set = false,
+		.required = true
+	},
+
+	{
+		.store = (void *)&(magma.storage.tank),
+		.norm.type = M_TYPE_NULLER,
+		.norm.val.st = NULL,
+		.name = "magma.storage.tank",
+		.description = "The location used by the storage tanks.",
 		.file = true,
 		.database = true,
 		.overwrite = true,

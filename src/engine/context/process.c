@@ -105,7 +105,7 @@ void process_stop(void) {
 		dkim_stop,
 		dspam_stop,
 		cache_stop,
-//		tank_stop, /* Shutdown the storage system. This should flush any pending write operations and cleanly close the tank data files. */
+		tank_stop, /* Shutdown the storage system. This should flush any pending write operations and cleanly close the tank data files. */
 
 		obj_cache_stop,
 		mail_cache_stop,
@@ -201,7 +201,7 @@ bool_t process_start(void) {
 		(void *)&dkim_start,
 		(void *)&dspam_start,
 		(void *)&cache_start,
-//		(void *)&tank_start,
+		(void *)&tank_start,
 
 		(void *)&obj_cache_start,
 		(void *)&mail_cache_start,
@@ -247,7 +247,7 @@ bool_t process_start(void) {
 		"Unable to initialize the DKIM engine. Exiting.",
 		"Unable to initialize the DSPAM engine. Exiting.",
 		"Unable to initialize the distributed cache system. Exiting.",
-//		"Unable to initialize the storage system. Exiting.",
+		"Unable to initialize the storage system. Exiting.",
 
 		"Unable to initialize the local object cache. Exiting.",
 		"Unable to initialize the thread local mail cache. Exiting.",

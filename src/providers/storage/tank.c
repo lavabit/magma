@@ -14,8 +14,7 @@
 
 uint64_t tanks_num = 4;
 uint64_t tanks_next = 0;
-pthread_mutex_t tanks_lock =
-		PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t tanks_lock = PTHREAD_MUTEX_INITIALIZER;
 
 struct {
 	uint8_t tuner;
@@ -504,9 +503,6 @@ bool_t tank_start(void) {
 
 	size_t expected;
 	char location[MAGMA_FILEPATH_MAX + 1];
-
-	// TODO: This is really no more than a stub... for now.
-	return true;
 
 	// Calculate out how long the path should be.
 	expected = ns_length_get(magma.storage.tank) + 11 + (*(magma.storage.tank + ns_length_get(magma.storage.tank)) == '/' ? 0 : 1);

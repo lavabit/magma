@@ -13,7 +13,7 @@
 #include "magma_check.h"
 
 /*
- * @briefCheck that all calculation results match up accurately with results from python reference.
+ * @brief Check that all calculation results match up accurately with results from Python reference.
  * @return True if passes, false if fails.
  * @note 	There are some memory leaks in this function if it doesn't succeed.
 */
@@ -151,7 +151,6 @@ bool_t check_stacie_simple(void) {
 
 	return true;
 }
-
 
 /*
  * @brief	Check that rounds are calculated accurately using some simple examples.
@@ -367,7 +366,7 @@ bool_t check_stacie_determinism(void) {
 //	stacie_realm_cipher_key_derive
 
 	key = PLACER("KEY12345KEY67890KEY12345KEY67890KEY12345KEY67890KEY12345KEY67890", 64);
-	
+
 	if(!(res1 = stacie_realm_cipher_key_derive(key)) || !(res2 = stacie_realm_cipher_key_derive(key))) {
 		return false;
 	}
@@ -379,7 +378,7 @@ bool_t check_stacie_determinism(void) {
 	if(outcome) {
 		return false;
 	}
-	
+
 	if(!(res1 = stacie_realm_init_vector_derive(key)) || !(res2 = stacie_realm_init_vector_derive(key))) {
 		return false;
 	}
@@ -391,8 +390,8 @@ bool_t check_stacie_determinism(void) {
 	if(outcome) {
 		return false;
 	}
-	
-	return true;	
+
+	return true;
 }
 
 /*

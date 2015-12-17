@@ -8,6 +8,7 @@ res/sql/Start.sql
 res/sql/Hostname.sql
 tools/pwtool/pwtool
 sandbox/virus/
+sandbox/storage/*
 lib/logs/
 lib/objects/
 lib/sources/

@@ -496,7 +496,7 @@ bool_t lib_symbols(size_t count, symbol_t symbols[]) {
 }
 
 /**
- * @brief	Unload libmagma from memory.
+ * @brief	Unload magmad.so from memory.
  * @return	This function returns no value.
  */
 void lib_unload(void) {
@@ -509,7 +509,7 @@ void lib_unload(void) {
 }
 
 /**
- * @brief	Load libmagma dynamically and resolve all external dependencies from 3rd party providers.
+ * @brief	Load magmad.so dynamically and resolve all external dependencies from 3rd party providers.
  * @return	false on failure or true on success.
  */
 bool_t lib_load(void) {
@@ -527,8 +527,10 @@ bool_t lib_load(void) {
 		lib_magma = dlopen(magma.library.file, RTLD_NOW | RTLD_GLOBAL);
 	}
 
-	if ((lib_error = dlerror()) || !lib_magma) {
-		log_critical("%s", lib_error);
+	if (!lib_magma || (lib_error = dlerror())) {
+		if (lib_error) {
+			log_critical("The dlerror() function returned: %s", lib_error);
+		}
 		return false;
 	}
 

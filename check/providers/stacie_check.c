@@ -224,12 +224,15 @@ bool_t check_stacie_determinism(void) {
 	res1 = res2 = NULL;
 
 	// Run deterministic tests on the hash derivation stage.
-	base = stacie_seed_extract(MIN_HASH_NUM, username, password, NULL);
+	if (!(base = stacie_seed_extract(MIN_HASH_NUM, username, password, NULL))) {
+		st_cleanup(base);
+		return false;
+	}
 
 	if(!(res1 = stacie_hashed_key_derive(base, MIN_HASH_NUM, username, password, salt)) ||
 		!(res2 = stacie_hashed_key_derive(base, MIN_HASH_NUM, username, password, salt)) ||
 		st_cmp_cs_eq(res1, res2)) {
-		st_cleanup(res1, res2);
+		st_cleanup(res1, res2, base);
 		return false;
 	}
 
@@ -239,7 +242,7 @@ bool_t check_stacie_determinism(void) {
 	if(!(res1 = stacie_hashed_key_derive(base, MIN_HASH_NUM, username, password, NULL)) ||
 		!(res2 = stacie_hashed_key_derive(base, MIN_HASH_NUM, username, password, NULL)) ||
 		st_cmp_cs_eq(res1, res2)) {
-		st_cleanup(res1, res2);
+		st_cleanup(res1, res2, base);
 		return false;
 	}
 
@@ -250,7 +253,7 @@ bool_t check_stacie_determinism(void) {
 	if(!(res1 = stacie_hashed_token_derive(base, username, salt, nonce)) ||
 		!(res2 = stacie_hashed_token_derive(base, username, salt, nonce)) ||
 		st_cmp_cs_eq(res1, res2)) {
-		st_cleanup(res1, res2);
+		st_cleanup(res1, res2, base);
 		return false;
 	}
 

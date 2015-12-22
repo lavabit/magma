@@ -80,34 +80,7 @@
 	</natures>
 	<filteredResources>
 		<filter>
-			<id>1450782073277</id>
-			<name></name>
-			<type>30</type>
-			<matcher>
-				<id>org.eclipse.ui.ide.multiFilter</id>
-				<arguments>1.0-projectRelativePath-matches-false-false-sandbox</arguments>
-			</matcher>
-		</filter>
-		<filter>
-			<id>1450782073278</id>
-			<name></name>
-			<type>30</type>
-			<matcher>
-				<id>org.eclipse.ui.ide.multiFilter</id>
-				<arguments>1.0-projectRelativePath-matches-false-false-web</arguments>
-			</matcher>
-		</filter>
-		<filter>
-			<id>1450782073279</id>
-			<name></name>
-			<type>30</type>
-			<matcher>
-				<id>org.eclipse.ui.ide.multiFilter</id>
-				<arguments>1.0-projectRelativePath-matches-false-false-res</arguments>
-			</matcher>
-		</filter>
-		<filter>
-			<id>1450782073280</id>
+			<id>1450791431868</id>
 			<name></name>
 			<type>30</type>
 			<matcher>
@@ -116,7 +89,7 @@
 			</matcher>
 		</filter>
 		<filter>
-			<id>1450782073281</id>
+			<id>1450791431874</id>
 			<name></name>
 			<type>30</type>
 			<matcher>

@@ -40,7 +40,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding=".deps/|.objs/|.settings/|dev/|res/|sandbox/|web/|.cproject|.gitattributes|.gitignore|.project|COPYRIGHT|INSTALL|LICENSE|README" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

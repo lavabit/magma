@@ -1239,7 +1239,7 @@ openssl() {
 			make &>> "$M_LOGS/openssl.txt"; error
 			make install_docs &>> "$M_LOGS/openssl.txt"; error
 
-			# Fool autotools checks into thinking this is a normal openssl install (e.g., clamav)
+			# Fool autotools checks into thinking this is a normal OpenSSL install (e.g., ClamAV)
 			ln -s `pwd` lib
 		;;
 		openssl-check)
@@ -1759,10 +1759,6 @@ load() {
 	# Copy the current symbols file over.
 	cat $M_SYM_FILE | egrep -v $M_SYM_SKIP > magma.open.symbols.h; error
 
-	# Copy the source files for this test
-	cp "$M_CHECK_SO_SOURCES/magma.open.check.h" .; error
-	cp "$M_CHECK_SO_SOURCES/magma.open.check.c" .; error
-
 	# Create a file with a function that assigns the original symbols to the dynamic version.
 	echo "#include \"magma.open.check.h\"" > magma.open.symbols.c; error
 	echo "#include \"magma.open.symbols.h\"" >> magma.open.symbols.c; error
@@ -1785,43 +1781,44 @@ load() {
 	## Because GeoIPDBDescription is an array of pointers it doesn't need the leading ampersand.
 	#sed -i -e "s/GeoIPDBDescription_d = &GeoIPDBDescription;/GeoIPDBDescription_d = GeoIPDBDescription;/g" magma.open.symbols.c; error
 
-	## This function prototype is prefixed with macro in paraentheses which fools the default parsing rules.
+	## This function prototype is prefixed with a macro in parentheses which fools the default parsing rules.
 	#sed -i -e "s/SSL_COMP)/SSL_COMP_get_compression_methods/g" magma.open.symbols.c; error
 
 	# The name dkim_getsighdr_d is taken by the OpenDKIM library, so we had to break convention and use dkim_getsighdrx_d.
 	sed -i -e "s/\"dkim_getsighdrx\"/\"dkim_getsighdr\"/g" magma.open.symbols.c; error
 
 	# Compile the source files. If an error occurs at compile time it is probably because we have a mismatch somewhere.
-	gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_DIRS $M_SO -g3 -rdynamic -Wall -Wextra -Werror \
-		-o magma.open.check magma.open.check.c magma.open.symbols.c -ldl
+	gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_DIRS $M_SO \
+		-g3 -rdynamic -Wall -Wextra -Werror -o magma.open.check \
+		magma.open.check.c magma.open.symbols.c -ldl
 
-	## If errors are generated from invalid symbols, this should print out the specific lines that are invalid.
-	#if [ $? -ne 0 ]; then
+	# If errors are generated from invalid symbols, this should print out the specific lines that are invalid.
+	if [ $? -ne 0 ]; then 
 
-	#	LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_DIRS $M_SO -g3 -rdynamic -Wall -Wextra -Werror \
-	#		-o magma.open.check magma.open.check.c magma.open.symbols.c -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
-	#		grep "[0-9*]" | awk '{print $1 ", " }' | sort -gu | uniq | tr -d "\n" | sed "s/, $//g"`
-
-	#	# Only output the symbol info we found lines to print.
-	#	if [ "$LNS" != "" ]; then
-
-	#	echo ""
-	#	echo "printing invalid symbols..."
-	#	echo "lines = " $LNS
-	#	echo ""
-
-	#	LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_DIRS $M_SO -g3 -rdynamic -Wall -Wextra -Werror \
-	#		-o magma.open.check magma.open.check.c magma.open.symbols.c -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
-	#		grep "[0-9*]" | awk '{print $1 "p;" }' | sort -gu | uniq | tr -d "\n"`
-
-	#	cat magma.open.symbols.c | sed -n "$LNS"; error
-
-	#	fi
-
-	#	echo ""
-	#	exit 1
-	#fi
-
+		LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_DIRS $M_SO -g3 -rdynamic -Wall -Wextra -Werror \
+			-o magma.open.check magma.open.check.c magma.open.symbols.c -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
+			grep "[0-9*]" | awk '{print $1 ", " }' | sort -gu | uniq | tr -d "\n" | sed "s/, $//g"` 
+		
+		# Only output the symbol info we found lines to print.
+		if [ "$LNS" != "" ]; then 
+			
+			echo ""
+			echo "printing invalid symbols..."
+			echo "lines = " $LNS
+			echo ""
+			
+			LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_DIRS $M_SO -g3 -rdynamic -Wall -Wextra -Werror \
+				-o magma.open.check magma.open.check.c magma.open.symbols.c -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
+				grep "[0-9*]" | awk '{print $1 "p;" }' | sort -gu | uniq | tr -d "\n"`
+			
+			cat magma.open.symbols.c | sed -n "$LNS"; error
+		
+		fi
+		
+		echo ""
+		exit 1
+	fi
+	
 	# Execute the program to see if the library can be loaded successfully at run time.
 	./magma.open.check "$M_SO"; error
 }
@@ -1830,6 +1827,72 @@ combo() {
 
 	date +"%nStarting $1 at %r on %x%n" &>> "$M_LOGS/build.txt"
 
+#	# The ClamAV unit test fail when run in parallel, so they are excuted first. And the MySQL/cURL unit tests take the longest so they get a priority bump.
+#	if [[ $1 == "check" ]] || [[ $1 == "check-full" ]]; then
+#		
+#		# In the past the libmemcached checks would timeout if the system was under heavy load, so we pause here and wait for them to finish.
+#		($0 "memcached-$1") & MEMCACHED_PID=$!
+#		wait $MEMCACHED_PID; error
+#		
+#		($0 "mysql-$1") & MYSQL_PID=$!
+#		#renice -n -10 -p $MYSQL_PID &>> "$M_LOGS/build.txt"
+#		#ionice -n 0 -c 2 -p $MYSQL_PID &>> "$M_LOGS/build.txt"
+#
+#		($0 "curl-$1") & CURL_PID=$!
+#		#renice -n -4 -p $CURL_PID &>> "$M_LOGS/build.txt"
+#		#ionice -n 1 -c 2 -p $CURL_PID &>> "$M_LOGS/build.txt"
+#		
+#		# The ClamAV checks will timeout if the system is under heavy load.
+#		($0 "clamav-$1") & CLAMAV_PID=$!
+#		wait $CLAMAV_PID; error
+#		
+#		echo "" &>> "$M_LOGS/build.txt"
+#	else
+#		($0 "curl-$1") & CURL_PID=$!
+#		($0 "mysql-$1") & MYSQL_PID=$!
+#		($0 "clamav-$1") & CLAMAV_PID=$!
+#		($0 "memcached-$1") & MEMCACHED_PID=$!
+#	fi
+#
+#	($0 "png-$1") & PNG_PID=$!
+#	($0 "lzo-$1") & LZO_PID=$!
+#	($0 "jpeg-$1") & JPEG_PID=$!
+#	($0 "spf2-$1") & SPF2_PID=$!
+#	($0 "xml2-$1") & XML2_PID=$!
+#	($0 "dkim-$1") & DKIM_PID=$!
+#	($0 "zlib-$1") & ZLIB_PID=$!
+#	($0 "bzip2-$1") & BZIP2_PID=$!
+#	($0 "dspam-$1") & DSPAM_PID=$!
+#	($0 "geoip-$1") & GEOIP_PID=$!
+#	($0 "openssl-$1") & OPENSSL_PID=$!
+#	($0 "jansson-$1") & JANSSON_PID=$!
+#	($0 "freetype-$1") & FREETYPE_PID=$!
+#	($0 "tokyocabinet-$1") & TOKYOCABINET_PID=$! 
+#	($0 "gd-$1") & GD_PID=$!
+#	
+#	wait $GD_PID; error
+#	wait $PNG_PID; error
+#	wait $LZO_PID; error
+#	wait $JPEG_PID; error
+#	wait $CURL_PID; error
+#	wait $SPF2_PID; error
+#	wait $XML2_PID; error
+#	wait $DKIM_PID; error
+#	wait $ZLIB_PID; error
+#	wait $BZIP2_PID; error
+#	wait $DSPAM_PID; error
+#	wait $MYSQL_PID; error
+#	wait $GEOIP_PID; error
+#	wait $OPENSSL_PID; error
+#	wait $JANSSON_PID; error
+#	wait $FREETYPE_PID; error
+#	wait $TOKYOCABINET_PID; error
+#	
+#	if [[ $1 != "check" ]] && [[ $1 != "check-full" ]]; then 
+#		wait $MEMCACHED_PID; error
+#		wait $CLAMAV_PID; error
+#	fi
+	
 	($M_BUILD "zlib-$1") & ZLIB_PID=$!
 	wait $ZLIB_PID; error
 	($M_BUILD "openssl-$1") & OPENSSL_PID=$!

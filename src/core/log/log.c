@@ -104,20 +104,23 @@ int_t print_backtrace() {
 }
 
 /**
- * Logs the message provided by @a format. The global configuration dictates whether the @a file, @a function and
- * @a line are also logged. The global configuration can be overridden on a per call basis using the @a options
- * parameter.
+ *
+ * @brief	Logs the message described by format, and provided as a variadic argument list.
+ * @param	file	The log macros set this to the caller's filename.
+ * @param	function	The log macros set this to the caller's function.
+ * @param	line	The log macros set this to the line number where the log function was called.
+ * @param	options	Global configuration options can be overridden on a per call basis using the options variable.
+ * @param 	format	The printf style format for the log message.
+ * @param	va_list	A variadic list of data items to be used by the format string.
+ * @result	This function returns no value.
  */
 void log_internal(const char *file, const char *function, const int line, M_LOG_OPTIONS options, const char *format, ...) {
 
 	time_t now;
-//	size_t size;
 	va_list args;
 	struct tm local;
-//	void *array[1024];
 	bool_t output = false;
 	char buffer[128];
-	//char strings = NULL, *errmsg;
 
 	va_start(args, format);
 

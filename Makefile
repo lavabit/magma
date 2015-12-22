@@ -6,15 +6,15 @@
 
 TOPDIR					= $(realpath .)
 MFLAGS					=
-MAKEFLAGS				= --output-sync=target
+MAKEFLAGS				=# --output-sync=target
 
 # Identity of this package.
-PACKAGE_NAME			= "Magma Daemon"
-PACKAGE_TARNAME			= "magma"
-PACKAGE_VERSION			= "6.0.2"
-PACKAGE_STRING			= "$(PACKAGE_NAME) $(PACKAGE_VERSION)"
-PACKAGE_BUGREPORT		= "support@lavabit.com"
-PACKAGE_URL				= "https://lavabit.com"
+PACKAGE_NAME			= Magma Daemon
+PACKAGE_TARNAME			= magma
+PACKAGE_VERSION			= 6.2
+PACKAGE_STRING			= $(PACKAGE_NAME) $(PACKAGE_VERSION)
+PACKAGE_BUGREPORT		= support@lavabit.com
+PACKAGE_URL				= https://lavabit.com
 
 ifeq ($(OS),Windows_NT)
     HOSTTYPE 			:= "Windows"
@@ -34,7 +34,7 @@ endif
 MAGMA_PROGRAM			= $(addsuffix $(EXEEXT), magmad)
 CHECK_PROGRAM			= $(addsuffix $(EXEEXT), magmad.check)
 
-MAGMA_VERSION			= "$(PACKAGE_VERSION)"
+MAGMA_VERSION			= $(PACKAGE_VERSION).$(shell git log --format='%H' | wc -l)
 MAGMA_COMMIT			= $(shell git log --format="%H" -n 1 | cut -c33-40)
 MAGMA_TIMESTAMP			= $(shell date +'%Y%m%d.%H%M')
 
@@ -62,9 +62,9 @@ CHECK_CINCLUDES			= -Icheck $(MAGMA_CINCLUDES)
 
 CDEFINES				= -D_REENTRANT -D_GNU_SOURCE -D_LARGEFILE64_SOURCE -DHAVE_NS_TYPE -DFORTIFY_SOURCE=2 -DMAGMA_PEDANTIC 
 CDEFINES.build.c 		= \
-		-DMAGMA_VERSION="\"$(MAGMA_VERSION)\"" \
-		-DMAGMA_COMMIT="\"$(MAGMA_COMMIT)\"" \
-		-DMAGMA_TIMESTAMP="\"$(MAGMA_TIMESTAMP)\""
+		-DMAGMA_VERSION=\"$(MAGMA_VERSION)\" \
+		-DMAGMA_COMMIT=\"$(MAGMA_COMMIT)\" \
+		-DMAGMA_TIMESTAMP=\"$(MAGMA_TIMESTAMP)\"
 
 # Linker Parameters
 LD						= gcc

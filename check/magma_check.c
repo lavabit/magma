@@ -231,6 +231,7 @@ int main(int argc, char *argv[]) {
 	log_unit("--------------------------------------------------------------------------\n");
 
 	test_start = time(NULL);
+
 	srunner_run_all(sr, CK_SILENT);
 	test_end = time(NULL);
 

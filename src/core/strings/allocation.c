@@ -90,16 +90,23 @@ void st_free(stringer_t *s) {
 }
 
 /**
- * @brief	A checked managed string free front-end function.
+ * @brief	A checked cleanup function used to free a variable number managed strings.
  * @see		st_free()
- * @param	s	the managed string to be freed.
+ * @param	va_list	a list of managed strings to be freed.
  * @result	This function returns no value.
  */
-void st_cleanup(stringer_t *s) {
+void st_cleanup_variadic(ssize_t len, ...) {
 
-	if (s) {
-		st_free(s);
+	va_list list;
+	stringer_t *s = NULL;
+
+	va_start(list, len);
+
+	for (ssize_t i = 0; i < len; i++) {
+		s = va_arg(list, stringer_t *);
+		if (s) st_free(s);
 	}
+	va_end(list);
 
 	return;
 }

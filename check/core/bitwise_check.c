@@ -27,26 +27,35 @@ bool_t check_bitwise_simple(void) {
 	check = PLACER(xor_buf, 5);
 
 	if(!(outcome = st_xor(a, b, NULL)) || st_cmp_cs_eq(outcome, check)) {
+		st_cleanup(outcome);
 		return false;
 	}
 
 	check = PLACER(and_buf, 5);
+	st_free(outcome);
 
 	if(!(outcome = st_and(a, b, NULL)) || st_cmp_cs_eq(outcome, check)) {
+		st_cleanup(outcome);
 		return false;
 	}
 
 	check = PLACER(or_buf, 5);
+	st_free(outcome);
 
 	if(!(outcome = st_or(a, b, NULL)) || st_cmp_cs_eq(outcome, check)) {
+		st_cleanup(outcome);
 		return false;
 	}
 
 	check = PLACER(nota_buf, 5);
+	st_free(outcome);
 
 	if(!(outcome = st_not(a, NULL)) || st_cmp_cs_eq(outcome,check)) {
+		st_cleanup(outcome);
 		return false;
 	}
+
+	st_free(outcome);
 
 	return true;
 }
@@ -62,9 +71,13 @@ bool_t check_bitwise_determinism(void) {
 	b = PLACER(b_buf, 5);
 
 	if(!(res1 = st_xor(a, b, NULL)) || !(res2 = st_xor(a, b, NULL))) {
+		st_free(res1);
+		st_free(res2);
 		return false;
 	}
 	else if(st_cmp_cs_eq(res1, res2)) {
+		st_free(res1);
+		st_free(res2);
 		return false;
 	}
 
@@ -72,25 +85,46 @@ bool_t check_bitwise_determinism(void) {
 	st_free(res2);
 
 	if(!(res1 = st_and(a, b, NULL)) || !(res2 = st_and(a, b, NULL))) {
+		st_free(res1);
+		st_free(res2);
 		return false;
 	}
 	else if(st_cmp_cs_eq(res1, res2)) {
+		st_free(res1);
+		st_free(res2);
 		return false;
 	}
+
+	st_free(res1);
+	st_free(res2);
 
 	if(!(res1 = st_or(a, b, NULL)) || !(res2 = st_or(a, b, NULL))) {
+		st_free(res1);
+		st_free(res2);
 		return false;
 	}
 	else if(st_cmp_cs_eq(res1, res2)) {
+		st_free(res1);
+		st_free(res2);
 		return false;
 	}
 
+	st_free(res1);
+	st_free(res2);
+
 	if(!(res1 = st_not(a, NULL)) || !(res2 = st_not(a, NULL))) {
+		st_free(res1);
+		st_free(res2);
 		return false;
 	}
 	else if(st_cmp_cs_eq(res1, res2)) {
+		st_free(res1);
+		st_free(res2);
 		return false;
 	}
+
+	st_free(res1);
+	st_free(res2);
 
 	return true;
 }
@@ -198,5 +232,6 @@ bool_t check_bitwise_parameters(void) {
 		return false;
 	}
 
+	st_free(outcome);
 	return true;
 }

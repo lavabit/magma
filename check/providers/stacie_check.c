@@ -15,139 +15,170 @@
 /*
  * @brief Check that all calculation results match up accurately with results from Python reference.
  * @return True if passes, false if fails.
- * @note 	There are some memory leaks in this function if it doesn't succeed.
 */
 bool_t check_stacie_simple(void) {
 
-	int cmp;
-	unsigned int bonus = 0, rounds = 196608, res1 = 0;
+	uint_t rounds = 0;
 
 	stringer_t *password = PLACER("password", 8),
 		   *username = PLACER("user@example.tld", 16),
-		   *salt_b64 = NULLER("HQpHA0L4Izkpy1lVY8Cnp03-D67E2bk04WDqNOiSzIMNnbmCjGlMRKxBh9UV5IgXggpRDYTYSRlTWNsohwvLwA"),
-		   *nonce_b64 = NULLER("sJWAhD5Okulpjpa63FE4dGI-W3PDACaQtA49vQBOG9_UYhgNMzmLuSeRBEQy15Lv2Wn_lvSmzRkWfky51Fpp7Q"),
-		   *seed_b64 = NULLER("6xuALdCjmjaBlMSn8KkM9sSwO-DGM2V7J5r_K6g6Ocgg1VgnKTSsH4nsKokP597Wsdc9modu_ArofThTNIHcpw"),
-		   *master_key_b64 = NULLER("SXn5XauE903R7ir03ZS5oE5PwJ2UhxtFS-8LygUUSNQLAabDUDUu805EpVxxuQX-Smvc0NV-q6RdzyQ8M3eysg"),
-		   *password_key_b64 = NULLER("SskpKhi42KmNHIpO7v9NdATRDFY5oAl9gu03rGrUzowwLnXAkAxr1h1b5lajgNnWfH2WlE6I6vbXqgjgh4ExMA"),
-		   *verification_token_b64 = NULLER("Xe9Xj70O2M2ctVCclrgO6FaJLiVmKPhMZZKMGVHeTetnxWglvgeu21T7Ms0pCKXiAUG2NuSO2cF5MUAuV1qCgg"),
-		   *ephemeral_login_token_b64 = NULLER("IVl9I1cEPWP3wd_XNYng8qSyzaic4Z_gCVaJcIZTE7rlGkwwh3oF63X8K4T0AvsEJOGOCnWQMirIyKiBpDD59Q"),
-		   *realm = NULLER("mail"),
-		   *shard_b64 = NULLER("gD65Kdeda1hB2Q6gdZl0fetGg2viLXWG0vmKN4HxE3Jp3Z0Gkt5prqSmcuY2o8t24iGSCOnFDpP71c3xl9SX9Q"),
-		   *realm_vector_key_b64 = NULLER("EBThm16sL5xQciv2BgPD2w"),
-		   *realm_cipher_key_b64 = NULLER("E5-hWK1n7StXpyqLlrR7aEEJaWGIMC3Ml4hlSHhb4xI"),
-		   *realm_key, *res2, *salt, *nonce, *seed, *master_key, *password_key, *verification_token,
-		   *ephemeral_login_token, *shard, *realm_cipher_key, *realm_vector_key;
+		   *combined_key = NULL, *cipher_key = NULL, *vector_key = NULL, *extracted = NULL,
+			 *salt = NULL, *nonce = NULL, *seed = NULL, *master_key = NULL, *password_key = NULL, *verification_token = NULL,
+		   *ephemeral_login_token = NULL, *shard = NULL, *realm_cipher_key = NULL, *realm_vector_key = NULL;
 
-	if(!(salt = base64_decode_mod(salt_b64, NULL)) || !(nonce = base64_decode_mod(nonce_b64, NULL)) || !(seed = base64_decode_mod(seed_b64, NULL))) {
-		return false;
-	} else if(!(master_key = base64_decode_mod(master_key_b64, NULL)) || !(password_key = base64_decode_mod(password_key_b64, NULL))) {
-		return false;
-	} else if(!(verification_token = base64_decode_mod(verification_token_b64, NULL)) || !(ephemeral_login_token = base64_decode_mod(ephemeral_login_token_b64, NULL))) {
-		return false;
-	} else if(!(shard = base64_decode_mod(shard_b64, NULL)) || !(realm_cipher_key = base64_decode_mod(realm_cipher_key_b64, NULL))) {
-		return false;
-	} else if(!(realm_vector_key = base64_decode_mod(realm_vector_key_b64, NULL))) {
+	// An 8 character password must resolve to 65,536 base rounds plus 131,072 (aka 2^17) bonus rounds, or 196,608 total rounds.
+	if((rounds = stacie_rounds_calculate(password, 131072)) != 196608) {
 		return false;
 	}
 
-	bonus = (((unsigned int) 2) << 16);
-
-	if((res1 = stacie_rounds_calculate(password, bonus)) != rounds) {
+	// Decode the binary input values, and comparison values from the hard coded versions provided in modified base64.
+	if (!(ephemeral_login_token = base64_decode_mod(NULLER("IVl9I1cEPWP3wd_XNYng8qSyzaic4Z_gCVaJcIZTE7rlGkwwh3oF63X8K4T0AvsEJOGOCnWQMirIyKiBpDD59Q"), NULL)) ||
+			!(verification_token = base64_decode_mod(NULLER("Xe9Xj70O2M2ctVCclrgO6FaJLiVmKPhMZZKMGVHeTetnxWglvgeu21T7Ms0pCKXiAUG2NuSO2cF5MUAuV1qCgg"), NULL)) ||
+			!(password_key = base64_decode_mod(NULLER("SskpKhi42KmNHIpO7v9NdATRDFY5oAl9gu03rGrUzowwLnXAkAxr1h1b5lajgNnWfH2WlE6I6vbXqgjgh4ExMA"), NULL)) ||
+			!(master_key = base64_decode_mod(NULLER("SXn5XauE903R7ir03ZS5oE5PwJ2UhxtFS-8LygUUSNQLAabDUDUu805EpVxxuQX-Smvc0NV-q6RdzyQ8M3eysg"), NULL)) ||
+			!(shard = base64_decode_mod(NULLER("gD65Kdeda1hB2Q6gdZl0fetGg2viLXWG0vmKN4HxE3Jp3Z0Gkt5prqSmcuY2o8t24iGSCOnFDpP71c3xl9SX9Q"), NULL)) ||
+			!(nonce = base64_decode_mod(NULLER("sJWAhD5Okulpjpa63FE4dGI-W3PDACaQtA49vQBOG9_UYhgNMzmLuSeRBEQy15Lv2Wn_lvSmzRkWfky51Fpp7Q"), NULL)) ||
+			!(seed = base64_decode_mod(NULLER("6xuALdCjmjaBlMSn8KkM9sSwO-DGM2V7J5r_K6g6Ocgg1VgnKTSsH4nsKokP597Wsdc9modu_ArofThTNIHcpw"), NULL)) ||
+			!(salt = base64_decode_mod(NULLER("HQpHA0L4Izkpy1lVY8Cnp03-D67E2bk04WDqNOiSzIMNnbmCjGlMRKxBh9UV5IgXggpRDYTYSRlTWNsohwvLwA"), NULL)) ||
+			!(realm_cipher_key = base64_decode_mod(NULLER("E5-hWK1n7StXpyqLlrR7aEEJaWGIMC3Ml4hlSHhb4xI"), NULL)) ||
+			!(realm_vector_key = base64_decode_mod(NULLER("EBThm16sL5xQciv2BgPD2w"), NULL))) {
+		st_cleanup(ephemeral_login_token);
+		st_cleanup(verification_token);
+		st_cleanup(realm_vector_key);
+		st_cleanup(realm_cipher_key);
+		st_cleanup(password_key);
+		st_cleanup(master_key);
+		st_cleanup(shard);
+		st_cleanup(nonce);
+		st_cleanup(seed);
+		st_cleanup(salt);
 		return false;
 	}
 
-	if(!(res2 = stacie_seed_extract(rounds, username, password, salt))) {
+	// Extract the seed.
+	if(!(extracted = stacie_seed_extract(rounds, username, password, salt)) || st_cmp_cs_eq(extracted, seed)) {
+		st_cleanup(ephemeral_login_token);
+		st_cleanup(verification_token);
+		st_cleanup(realm_vector_key);
+		st_cleanup(realm_cipher_key);
+		st_cleanup(password_key);
+		st_cleanup(master_key);
+		st_cleanup(extracted);
+		st_cleanup(shard);
+		st_cleanup(nonce);
+		st_cleanup(seed);
+		st_cleanup(salt);
 		return false;
 	}
 
+	st_free(extracted);
 
-	cmp = st_cmp_cs_eq(res2, seed);
-	st_free(res2);
-
-	if(cmp) {
+	// Extract the master key.
+	if(!(extracted = stacie_hashed_key_derive(seed, rounds, username, password, salt)) || st_cmp_cs_eq(master_key, extracted)) {
+		st_cleanup(ephemeral_login_token);
+		st_cleanup(verification_token);
+		st_cleanup(realm_vector_key);
+		st_cleanup(realm_cipher_key);
+		st_cleanup(password_key);
+		st_cleanup(master_key);
+		st_cleanup(extracted);
+		st_cleanup(shard);
+		st_cleanup(nonce);
+		st_cleanup(seed);
+		st_cleanup(salt);
 		return false;
 	}
 
-	if(!(res2 = stacie_hashed_key_derive(seed, rounds, username, password, salt))) {
+	st_free(extracted);
+
+	// Calculate the password key.
+	if(!(extracted = stacie_hashed_key_derive(master_key, rounds, username, password, salt)) || st_cmp_cs_eq(password_key, extracted)) {
+		st_cleanup(ephemeral_login_token);
+		st_cleanup(verification_token);
+		st_cleanup(realm_vector_key);
+		st_cleanup(realm_cipher_key);
+		st_cleanup(password_key);
+		st_cleanup(master_key);
+		st_cleanup(extracted);
+		st_cleanup(shard);
+		st_cleanup(nonce);
+		st_cleanup(seed);
+		st_cleanup(salt);
 		return false;
 	}
 
-	cmp = st_cmp_cs_eq(master_key, res2);
-	st_free(res2);
+	st_free(extracted);
 
-	if(cmp) {
+	// Calculate the verification token.
+	if(!(extracted = stacie_hashed_token_derive(password_key, username, salt, NULL)) || st_cmp_cs_eq(verification_token, extracted)) {
+		st_cleanup(ephemeral_login_token);
+		st_cleanup(verification_token);
+		st_cleanup(realm_vector_key);
+		st_cleanup(realm_cipher_key);
+		st_cleanup(password_key);
+		st_cleanup(master_key);
+		st_cleanup(extracted);
+		st_cleanup(shard);
+		st_cleanup(nonce);
+		st_cleanup(seed);
+		st_cleanup(salt);
 		return false;
 	}
 
-	if(!(res2 = stacie_hashed_key_derive(master_key, rounds, username, password, salt))) {
+	st_free(extracted);
+
+
+	// Calculate the ephemeral login token.
+	if(!(extracted = stacie_hashed_token_derive(verification_token, username, salt, nonce)) || st_cmp_cs_eq(extracted, ephemeral_login_token)) {
+		st_cleanup(ephemeral_login_token);
+		st_cleanup(verification_token);
+		st_cleanup(realm_vector_key);
+		st_cleanup(realm_cipher_key);
+		st_cleanup(password_key);
+		st_cleanup(master_key);
+		st_cleanup(extracted);
+		st_cleanup(shard);
+		st_cleanup(nonce);
+		st_cleanup(seed);
+		st_cleanup(salt);
 		return false;
 	}
 
-	cmp = st_cmp_cs_eq(password_key, res2);
-	st_free(res2);
+	st_free(extracted);
 
-	if(cmp) {
+	// Calculate the symmetric key for the "mail" realm and check extracted cipher and vector key values.
+	if(!(combined_key = stacie_realm_key_derive(master_key, NULLER("mail"), shard)) ||
+			!(vector_key = stacie_realm_init_vector_derive(combined_key)) || st_cmp_cs_eq(vector_key, realm_vector_key) ||
+			!(cipher_key = stacie_realm_cipher_key_derive(combined_key)) || st_cmp_cs_eq(cipher_key, realm_cipher_key)) {
+		st_cleanup(ephemeral_login_token);
+		st_cleanup(verification_token);
+		st_cleanup(realm_vector_key);
+		st_cleanup(realm_cipher_key);
+		st_cleanup(password_key);
+		st_cleanup(combined_key);
+		st_cleanup(master_key);
+		st_cleanup(vector_key);
+		st_cleanup(cipher_key);
+		st_cleanup(shard);
+		st_cleanup(nonce);
+		st_cleanup(seed);
+		st_cleanup(salt);
 		return false;
 	}
 
-	if(!(res2 = stacie_hashed_token_derive(password_key, username, salt, NULL))) {
-		return false;
-	}
-
-	cmp = st_cmp_cs_eq(verification_token, res2);
-	st_free(res2);
-
-	if(cmp) {
-		return false;
-	}
-
-	if(!(res2 = stacie_hashed_token_derive(verification_token, username, salt, nonce))) {
-		return false;
-	}
-
-	cmp = st_cmp_cs_eq(ephemeral_login_token, res2);
-	st_free(res2);
-
-	if(cmp) {
-		return false;
-	}
-
-	if(!(realm_key = stacie_realm_key_derive(master_key, realm, shard))) {
-		return false;
-	}
-
-	if(!(res2 = stacie_realm_init_vector_derive(realm_key))) {
-		return false;
-	}
-
-	cmp = st_cmp_cs_eq(res2, realm_vector_key);
-	st_free(res2);
-
-	if(cmp) {
-		return false;
-	}
-
-	if(!(res2 = stacie_realm_cipher_key_derive(realm_key))) {
-		return false;
-	}
-
-	cmp = st_cmp_cs_eq(res2, realm_cipher_key);
-	st_free(res2);
-	st_free(realm_key);
-
-	if(cmp) {
-		return false;
-	}
-
-	st_free(salt);
+	st_free(ephemeral_login_token);
+	st_free(verification_token);
+	st_free(realm_vector_key);
+	st_free(realm_cipher_key);
+	st_free(password_key);
+	st_free(combined_key);
+	st_free(master_key);
+	st_free(vector_key);
+	st_free(cipher_key);
+	st_free(shard);
 	st_free(nonce);
 	st_free(seed);
-	st_free(master_key);
-	st_free(password_key);
-	st_free(ephemeral_login_token);
-	st_free(shard);
-	st_free(realm_cipher_key);
-	st_free(realm_vector_key);
+	st_free(salt);
 
 	return true;
 }
@@ -158,21 +189,18 @@ bool_t check_stacie_simple(void) {
 */
 bool_t check_stacie_rounds(void) {
 
-	stringer_t *temp_pw;
-
-	temp_pw = PLACER("THIS_IS_A_VERY_LONG_PASSWORD_MORE_THAN_24", 41);
-
-	if(stacie_rounds_calculate(temp_pw, 0) != 8) {
+	// Ensure a minimum of 8 rounds is returned even if the password is sufficiently long.
+	if(stacie_rounds_calculate(PLACER("3.14159265358979323846264338327950288419716939937510582097494459", 64), 0) != 8) {
 		return false;
 	}
 
-	if(stacie_rounds_calculate(temp_pw, 0xFFFFFFFF) != 0x00FFFFFF) {
+	// Ensure the number of rounds is truncated to the maximum for a 24 bit value, or 16,777,215.
+	if(stacie_rounds_calculate(PLACER("password", 8), UINT_MAX) != 16777215) {
 		return false;
 	}
 
-	temp_pw = PLACER("A", 1);
-
-	if(stacie_rounds_calculate(temp_pw, 0) != 0x00800000) {
+	// Ensure a single character password is handled correctly and results in 2^23 or 8,388,608
+	if(stacie_rounds_calculate(PLACER("A", 1), 0) != 8388608) {
 		return false;
 	}
 

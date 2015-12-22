@@ -166,6 +166,9 @@ START_TEST (check_users_credentials_invalid_s) {
 		errmsg = st_merge("n", "Credential allocation failed. { user = magma }");
 		goto error;
 	}
+	else {
+		credential_free(user_check_cred);
+	}
 
 	for(uint_t i = 0; i < sizeof(tests)/sizeof(tests[0]); ++i) {
 

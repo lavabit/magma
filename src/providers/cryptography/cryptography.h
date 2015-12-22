@@ -26,7 +26,7 @@
 #define ECIES_CIPHER NID_aes_256_cbc
 #define ECIES_ENVELOPE NID_sha512
 
-// STACIE round number constants
+// STACIE number constants for clamping hash rounds between 8 and 16777215.
 #define MAX_HASH_NUM	0x00FFFFFF
 #define MIN_HASH_NUM	8
 

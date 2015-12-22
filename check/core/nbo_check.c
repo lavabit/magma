@@ -55,28 +55,35 @@ bool_t check_nbo_parameters(void) {
 	small_st = st_alloc(1);
 
 	if(uint32_get_no(small_st)) {
+		st_free(small_st);
 		return false;
 	}
 
 	if(uint32_get_no(null_st)) {
+		st_free(small_st);
 		return false;
 	}
 
 	if(uint24_get_no(small_st)) {
+		st_free(small_st);
 		return false;
 	}
 
 	if(uint24_get_no(null_st)) {
+		st_free(small_st);
 		return false;
 	}
 
 	if(uint16_get_no(small_st)) {
+		st_free(small_st);
 		return false;
 	}
 
 	if(uint16_get_no(null_st)) {
+		st_free(small_st);
 		return false;
 	}
 
+	st_free(small_st);
 	return true;
 }

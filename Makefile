@@ -6,7 +6,7 @@
 
 TOPDIR					= $(realpath .)
 MFLAGS					=
-MAKEFLAGS				= --output-sync=target
+MAKEFLAGS				= --output-sync=target --jobs=6
 
 # Identity of this package.
 PACKAGE_NAME			= Magma Daemon
@@ -157,9 +157,6 @@ config:
 	@echo 'COMMIT '$(MAGMA_COMMIT)
 	@echo 'DATE ' $(MAGMA_TIMESTAMP)
 	@echo 'HOST ' $(HOSTTYPE)
-	@echo 'TESTVAR ' $(TESTVAR)
-	@echo 'TESTVAR2 ' $(MODIFIED_OBJFILES)
-	@echo 'ECLIPSE ' $(build_files)
 
 finished:
 ifeq ($(VERBOSE),no)

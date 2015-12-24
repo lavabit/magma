@@ -25,7 +25,6 @@ digest_t * hash_name(stringer_t *name) {
 digest_t * hash_id(int_t id) {
 
 	const EVP_MD *result = NULL;
-
 	if (!(result = EVP_get_digestbyname_d(OBJ_nid2sn_d(id)))) {
 		log_pedantic("The id provided did not match any of the available digest methods. {id = %i / name = %s}", id, OBJ_nid2sn_d(id));
 	}

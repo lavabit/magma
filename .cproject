@@ -39,6 +39,11 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.toolchain.gnu.base.1042491499.34433653" name="specialized.c " rcbsApplicability="disable" resourcePath="src/providers/cryptography/specialized.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.base.404305589.706446594">
+						<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.404305589.706446594" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base.404305589">
+							<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1766841553" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+						</tool>
+					</fileInfo>
 					<sourceEntries>
 						<entry excluding=".deps/|.objs/|.settings/|dev/|res/|sandbox/|web/|.cproject|.gitattributes|.gitignore|.project|COPYRIGHT|INSTALL|LICENSE|README" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
 					</sourceEntries>

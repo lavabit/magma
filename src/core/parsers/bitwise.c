@@ -67,6 +67,53 @@ stringer_t * st_bitwise(stringer_t *a, stringer_t *b, stringer_t *output, uchr_t
 }
 
 /**
+ * @brief	Perform bitwise NOT operation on a managed string.
+ * @param	s		Stringer input.
+ * @param	output	Stringer in which the result is stored, if no stringer is provided
+ * 					(output = NULL) then a new stringer will be allocated for the result.
+ * @return	Pointer to output if a valid output stringer was provided, or a pointer to a newly allocated
+ * 			stringer if no stringer was specified for the output, NULL on error.
+ */
+stringer_t * st_not(stringer_t *s, stringer_t *output) {
+
+	size_t olen;
+	uint32_t opts;
+	uchr_t *data, *in_s;
+	stringer_t *result = NULL;
+
+	if(st_empty(s) || (!(olen = st_length_get(s)))) {
+		log_pedantic("Input stringer is empty or NULL was passed in.");
+		return NULL;
+	}
+	else if(output && !st_valid_destination((opts = *((uint32_t *) output)))) {
+		log_pedantic("An output string was supplied but it does not represent a buffer capable of holding a result.");
+		return NULL;
+	}
+	else if ((result = output) && ((st_valid_avail(opts) && st_avail_get(output) < olen) || (!st_valid_avail(opts) && st_length_get(output) < olen))) {
+		log_pedantic("The output buffer supplied is not large enough to hold the result. {avail = %zu / required = %zu}",
+			st_valid_avail(opts) ? st_avail_get(output) : st_length_get(output), olen);
+		return NULL;
+	}
+	else if (!output && !(result = st_alloc(olen))) {
+		log_pedantic("The output buffer allocation failed. {requested = %zu}", olen);
+		return NULL;
+	}
+
+	if(!(data = st_data_get(result)) || !(in_s = st_data_get(s))) {
+		log_pedantic("Could not retrieve a pointer to the stringer data.");
+		if (!output) st_free(result);
+		return NULL;
+	}
+
+	for(uint_t i = 0; i < olen; ++i) {
+		data[i] = ~in_s[i];
+	}
+
+	st_length_set(result, olen);
+	return result;
+}
+
+/**
  * @brief	Perform bitwise OR operation between two input strings.
  * @param	a		First stringer input.
  * @param	b		Second stringer input.
@@ -105,50 +152,3 @@ stringer_t * st_and(stringer_t *a, stringer_t *b, stringer_t *output) {
 	return st_bitwise(a, b, output, &bitwise_and);
 }
 
-/**
- * @brief	Perform bitwise NOT operation on an input string.
- * @param	s		Stringer input.
- * @param	output	Stringer in which the result is stored, if no stringer is provided
- * 					(output = NULL) then a new stringer will be allocated for the result.
- * @return	Pointer to output if a valid output stringer was provided, Pointer to a newly allocated
- * 			stringer if no stringer was specified for the output, NULL on error.
- */
-stringer_t * st_not(stringer_t *s, stringer_t *output) {
-
-	unsigned char *data, *in_s;
-	uint_t olen;
-	uint32_t opts;
-	stringer_t *result = NULL;
-
-	if(st_empty(s) || (!(olen = st_length_get(s)))) {
-		log_pedantic("Input stringer is empty or NULL was passed in.");
-		return NULL;
-	}
-	else if(output && !st_valid_destination((opts = *((uint32_t *) output)))) {
-		log_pedantic("An output string was supplied but it does not represent a buffer capable of holding a result.");
-		return NULL;
-	}
-	else if ((result = output) && ((st_valid_avail(opts) && st_avail_get(output) < olen) || (!st_valid_avail(opts) && st_length_get(output) < olen))) {
-		log_pedantic("The output buffer supplied is not large enough to hold the result. {avail = %zu / required = %i}",
-				st_valid_avail(opts) ? st_avail_get(output) : st_length_get(output), olen);
-		return NULL;
-	}
-	else if (!output && !(result = st_alloc(olen))) {
-		log_pedantic("The output buffer memory allocation request failed. {requested = %i}", olen);
-		return NULL;
-	}
-
-	if(!(data = st_data_get(result)) || !(in_s = st_data_get(s))) {
-		log_pedantic("Could not retrieve pointer to stringer data.");
-		st_free(result);
-		return NULL;
-	}
-
-	for(uint_t i = 0; i < olen; ++i) {
-		data[i] = ~in_s[i];
-	}
-
-	st_length_set(result, olen);
-
-	return result;
-}

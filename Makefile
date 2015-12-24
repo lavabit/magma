@@ -30,7 +30,6 @@ else
     EXEEXT				:= 
 endif
 
-
 MAGMA_PROGRAM			= $(addsuffix $(EXEEXT), magmad)
 CHECK_PROGRAM			= $(addsuffix $(EXEEXT), magmad.check)
 
@@ -91,6 +90,11 @@ OBJDIR					= .objs
 MAGMA_OBJFILES			= $(patsubst %.c,$(OBJDIR)/%.o,$(MAGMA_SRCFILES))
 CHECK_OBJFILES			= $(patsubst %.c,$(OBJDIR)/%.o,$(CHECK_SRCFILES))
 
+# Modified Object Files
+#MODIFIED_SRCFILES		= $(shell git ls-files --modified --others src)
+MODIFIED_SRCFILES		= $(shell find src -mmin -1)
+MODIFIED_OBJFILES		= $(patsubst %.c,$(OBJDIR)/%.o,$(MODIFIED_SRCFILES))
+
 # Resolve the External Include Directory Paths
 INCLUDE_DIR_VPATH		= $(INCDIR) /usr/include /usr/local/include
 INCLUDE_DIR_SEARCH 		= $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(INCLUDE_DIR_VPATH)))))
@@ -123,7 +127,7 @@ endif
 
 # So we can tell the user what happened
 ifdef MAKECMDGOALS
-TARGETGOAL				= $(MAKECMDGOALS)
+TARGETGOAL				+= $(MAKECMDGOALS)
 else
 TARGETGOAL				= $(.DEFAULT_GOAL)
 endif
@@ -131,7 +135,7 @@ endif
 # Special Make Directives
 #.NOTPARALLEL: warning conifg
 
-.PHONY: warning config finished all check 
+.PHONY: warning config finished all check incremental
 all: config warning $(MAGMA_PROGRAM) $(CHECK_PROGRAM) finished
 
 check: config warning $(CHECK_PROGRAM)
@@ -153,6 +157,9 @@ config:
 	@echo 'COMMIT '$(MAGMA_COMMIT)
 	@echo 'DATE ' $(MAGMA_TIMESTAMP)
 	@echo 'HOST ' $(HOSTTYPE)
+	@echo 'TESTVAR ' $(TESTVAR)
+	@echo 'TESTVAR2 ' $(MODIFIED_OBJFILES)
+	@echo 'ECLIPSE ' $(build_files)
 
 finished:
 ifeq ($(VERBOSE),no)
@@ -176,6 +183,8 @@ clean:
 	@for d in $(sort $(dir $(MAGMA_OBJFILES)) $(dir $(CHECK_OBJFILES))); do if test -d "$$d"; then $(RMDIR) "$$d"; fi; done
 	@for d in $(sort $(dir $(MAGMA_DEPFILES)) $(dir $(CHECK_DEPFILES))); do if test -d "$$d"; then $(RMDIR) "$$d"; fi; done
 	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
+
+incremental: $(MODIFIED_OBJFILES)
 
 # Construct the magma daemon executable file
 $(MAGMA_PROGRAM): $(MAGMA_OBJFILES)

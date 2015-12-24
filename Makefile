@@ -6,7 +6,7 @@
 
 TOPDIR					= $(realpath .)
 MFLAGS					=
-MAKEFLAGS				=# --output-sync=target
+MAKEFLAGS				= --output-sync=target
 
 # Identity of this package.
 PACKAGE_NAME			= Magma Daemon
@@ -27,7 +27,7 @@ else
     LIBPREFIX			:= "lib"
     DYNLIBEXT			:= ".so"
     STATLIBEXT			:= ".a"
-    EXEEXT 				:= 
+    EXEEXT				:= 
 endif
 
 
@@ -53,7 +53,8 @@ INCDIRS					= spf2/src/include clamav/libclamav mysql/include openssl/include lz
 # Compiler Parameters
 CC						= gcc
 
-CFLAGS					= -std=gnu99 -O0 -fPIC -fmessage-length=0 -ggdb3 -rdynamic -c -Wall -Werror -MMD 
+CFLAGS					= -std=gnu99 -O0 -fPIC -fmessage-length=0 -ggdb3 -rdynamic -c $(CFLAGS_WARNINGS) -MMD 
+CFLAGS_WARNINGS			= -Wall -Werror -Winline
 CFLAGS_PEDANTIC			= -Wextra -Wpacked -Wunreachable-code -Wformat=2
 
 CINCLUDES				= $(addprefix -I,$(INCLUDE_DIR_ABSPATHS))
@@ -93,7 +94,7 @@ CHECK_OBJFILES			= $(patsubst %.c,$(OBJDIR)/%.o,$(CHECK_SRCFILES))
 # Resolve the External Include Directory Paths
 INCLUDE_DIR_VPATH		= $(INCDIR) /usr/include /usr/local/include
 INCLUDE_DIR_SEARCH 		= $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(INCLUDE_DIR_VPATH)))))
-INCLUDE_DIR_ABSPATHS 	+= $(foreach target,$(INCDIRS), $(call INCLUDE_DIR_SEARCH,$(target)))
+INCLUDE_DIR_ABSPATHS	+= $(foreach target,$(INCDIRS), $(call INCLUDE_DIR_SEARCH,$(target)))
 
 # Other External programs
 MV						= mv --force
@@ -115,11 +116,9 @@ NORMAL					= $$(tput sgr0)
 
 ifeq ($(VERBOSE),yes)
 RUN						=
-BLANKER					= @echo ''
 else
 RUN						= @
 VERBOSE					= no
-BLANKER					=
 endif
 
 # So we can tell the user what happened
@@ -130,18 +129,20 @@ TARGETGOAL				= $(.DEFAULT_GOAL)
 endif
 
 # Special Make Directives
-.NOTPARALLEL: warning conifg
+#.NOTPARALLEL: warning conifg
 
-.PHONY: warning config all check 
-all: config warning $(MAGMA_PROGRAM) $(CHECK_PROGRAM)
+.PHONY: warning config finished all check 
+all: config warning $(MAGMA_PROGRAM) $(CHECK_PROGRAM) finished
 
 check: config warning $(CHECK_PROGRAM)
 
 warning:
+ifeq ($(VERBOSE),no)
 	@echo 
-	@echo 'For verbose output' 
-	@echo '  ' $(BLUE)make $(GREEN)VERBOSE=yes $(BLUE)all$(NORMAL)
+	@echo 'For a more verbose output' 
+	@echo '  make '$(GREEN)'VERBOSE=yes' $(NORMAL)$(TARGETGOAL)
 	@echo 
+endif
 
 config:
 	@echo 
@@ -152,11 +153,16 @@ config:
 	@echo 'COMMIT '$(MAGMA_COMMIT)
 	@echo 'DATE ' $(MAGMA_TIMESTAMP)
 	@echo 'HOST ' $(HOSTTYPE)
+
+finished:
+ifeq ($(VERBOSE),no)
+	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
+endif
 	
 # Alias the target names on Windows to the equivalent without the exe extension.
 ifeq ($(HOSTTYPE),Windows)
 
-.PHONY: $(basename $(MAGMA_PROGRA$(OBJDIR)/src/%.o: src/%.cM))
+.PHONY: $(basename $(MAGMA_PROGRAM(OBJDIR)/src/%.o: src/%.cM))
 $(basename $(MAGMA_PROGRAM)): $(MAGMA_PROGRAM)
 
 .PHONY: $(basename $(CHECK_PROGRAM))
@@ -173,33 +179,41 @@ clean:
 
 # Construct the magma daemon executable file
 $(MAGMA_PROGRAM): $(MAGMA_OBJFILES)
-	$(BLANKER)
+ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
+else
+	@echo 
+endif
 	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_OBJFILES) -Wl,--start-group $(MAGMA_STATIC) -Wl,--end-group $(MAGMA_DYNAMIC)
-	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
 
 # Construct the magma unit test executable
 $(CHECK_PROGRAM): $(CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES))
-	$(BLANKER)
+ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
+else
+	@echo 
+endif
 	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) -Wl,--start-group $(CHECK_STATIC) -Wl,--end-group $(CHECK_DYNAMIC)
-	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
 
-# Magma Object files
+# The Magma Daemon Object files
 $(OBJDIR)/src/%.o: src/%.c
-	$(BLANKER)
+ifeq ($(VERBOSE),no)
 	@echo 'Building' $(YELLOW)$<$(NORMAL)
+endif
 	@test -d $(DEPDIR)/$(dir $<) || $(MKDIR) $(DEPDIR)/$(dir $<)
 	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
 	$(RUN)$(CC) $(CFLAGS) $(CFLAGS.$(<F)) $(CDEFINES) $(CDEFINES.$(<F)) $(MAGMA_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" -o"$@" "$<"
 
-# Magma Object files
+# The Magma Unit Test Object files
 $(OBJDIR)/check/%.o: check/%.c
-	$(BLANKER)
+ifeq ($(VERBOSE),no)
 	@echo 'Building' $(YELLOW)$<$(NORMAL)
+endif
 	@test -d $(DEPDIR)/$(dir $<) || $(MKDIR) $(DEPDIR)/$(dir $<)
 	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
 	$(RUN)$(CC) $(CFLAGS) $(CFLAGS.$(<F)) $(CDEFINES) $(CDEFINES.$(<F)) $(CHECK_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" -o"$@" "$<"
 
 # If we've already generated dependency files, use them to see if a rebuild is required
 -include $(MAGMA_DEPFILES) $(CHECK_DEPFILES)
+
+# vim:set softtabstop=4 shiftwidth=4 tabstop=4:

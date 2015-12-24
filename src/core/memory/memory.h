@@ -16,8 +16,11 @@
 /// align.c
 size_t align(size_t alignment, size_t len);
 
-// Bit Manipulation
-uint_t bits_count(uint64_t value);
+/// bitwise.c
+uint_t bitwise_count(uint64_t value);
+uchr_t bitwise_or(uchr_t a, uchr_t b);
+uchr_t bitwise_xor(uchr_t a, uchr_t b);
+uchr_t bitwise_and(uchr_t a, uchr_t b);
 
 // Secure Memory Blocks
 void mm_sec_stop(void);

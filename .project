@@ -3,6 +3,7 @@
 	<name>magma.distribution</name>
 	<comment></comment>
 	<projects>
+		<project>magma.so</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

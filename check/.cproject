@@ -21,7 +21,7 @@
 					<folderInfo id="cdt.managedbuild.config.gnu.exe.debug.1006571712.309384821.800411248." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.1009869349" name="Linux GCC" nonInternalBuilderId="cdt.managedbuild.target.gnu.builder.exe.debug" resourceTypeBasedDiscovery="false" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
 							<targetPlatform id="cdt.managedbuild.target.gnu.platform.exe.debug.442622881" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.debug"/>
-							<builder arguments="VERBOSE=yes" autoBuildTarget="check" buildPath="${ProjDirPath}/../" command="make" enableAutoBuild="true" id="cdt.managedbuild.target.gnu.builder.exe.debug.1995221669" incrementalBuildTarget="check" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="8" stopOnErr="false" superClass="cdt.managedbuild.target.gnu.builder.exe.debug"/>
+							<builder arguments="VERBOSE=yes" autoBuildTarget="magmad.check" buildPath="${ProjDirPath}/../" command="make" enableAutoBuild="true" id="cdt.managedbuild.target.gnu.builder.exe.debug.1995221669" incrementalBuildTarget="magmad.check" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="8" stopOnErr="false" superClass="cdt.managedbuild.target.gnu.builder.exe.debug"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.721077432" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.81031828" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug">
 								<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.312809262" name="Optimization Level" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
@@ -117,6 +117,10 @@
 	</storageModule>
 	<storageModule moduleId="refreshScope" versionNumber="2">
 		<configuration configurationName=".check">
+			<resource resourceType="PROJECT" workspacePath="/magma.check"/>
+			<resource resourceType="PROJECT" workspacePath="/magma"/>
+		</configuration>
+		<configuration configurationName="Default">
 			<resource resourceType="PROJECT" workspacePath="/magma.check"/>
 			<resource resourceType="PROJECT" workspacePath="/magma"/>
 		</configuration>

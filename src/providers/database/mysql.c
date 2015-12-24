@@ -10,8 +10,8 @@
  *
  */
 
-/***
- * @brief The list of MySQL collations and character sets. The longest current charset is 8, and the longest collation is 20.
+/*
+ * The list of MySQL collations and character sets. The longest current charset is 8, and the longest collation is 20.
  *
  * Id      Charset          Collation
  * 1       big5             big5_chinese_ci
@@ -277,11 +277,13 @@ MYSQL * sql_open(bool_t silent) {
 }
 
 /**
- * Ping the MySQL server via the provided connection. If the underlying TCP/IP socket has timed out, the ping function will will cause the MySQL client library
+ * @brief	Ping the MySQL server via the provided connection. If the underlying TCP/IP socket has timed out, the ping function will will cause the MySQL client library
  * to reestablish the connection. Because a new connection is created the collection of prepared statements will need to be reinitialized.
  *
  * @warning If the connection timed out, the ping will trigger a reconnect, which invalidates the prepared statement references.
- * @example if (sql_ping(connection) < 0 || !stmt_rebuild(connection)) { log_error("Invalid database connection."; return; }
+ * @code{.c}
+ * if (sql_ping(connection) < 0 || !stmt_rebuild(connection)) { log_error("Invalid database connection."; return; }
+ * @endcode
  *
  * @param connection The specific connection inside the pool that should be used for the ping.
  * @return Returns 1 if the library performed an automatic reconnect, 0 if the connection is active, and -1 if the reconnect failed.
@@ -482,7 +484,7 @@ const char * lib_version_mysql(void) {
 
 /**
  * @brief	Initialize the libmysql and bind dynamically to the exported functions that are required.
- * @result	true on success or false on failure.
+ * @return	true on success or false on failure.
  */
 bool_t lib_load_mysql(void) {
 

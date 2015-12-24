@@ -248,7 +248,6 @@ stringer_t * hex_encode_st_debug(stringer_t *input, size_t maxlen) {
 	return result;
 }
 
-
 /**
  * @brief	Decode a hex character pair as a single byte (usually for URL decoding).
  * @param	a	the higher order 4-bit hexadecimal character of the byte to be encoded.

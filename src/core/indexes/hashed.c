@@ -50,9 +50,9 @@ uint32_t hashed_bucket(uint32_t buckets, multi_t key) {
 		if ((result = mt_get_number(key)) < buckets) {
 
 			// If my math is right, the bit count should never exceed the value of result. That also means the expression should never return a negative number.
-			log_check((count = bits_count(result)) > result);
+			log_check((count = bitwise_count(result)) > result);
 
-			result = (((count = bits_count(result)) % 2) ? result + count : result - count);
+			result = (((count = bitwise_count(result)) % 2) ? result + count : result - count);
 			result = (buckets <= result ? (buckets - 1) : result);
 		}
 		else {

@@ -294,6 +294,7 @@ bool_t servers_validate(void) {
 				case (M_TYPE_BOOLEAN):
 					if (*((bool_t *)(((char *)magma.servers[i]) + server_keys[j].offset)) != true && *((bool_t *)(((char *)magma.servers[i]) + server_keys[j].offset)) != false) {
 						log_critical("magma.servers[%u]%s requires a valid boolean.", i, server_keys[j].name);
+
 						result = false;
 					}
 					break;

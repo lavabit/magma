@@ -32,16 +32,10 @@ int main(int argc, char *argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
-#ifdef MAGMA_PEDANTIC
-	// Only during development...
-	cache_flush();
-#endif
-
 	// Do something for awhile.
 	net_listen();
 
 	process_stop();
 	exit(EXIT_SUCCESS);
-	return EXIT_SUCCESS;
 }
 

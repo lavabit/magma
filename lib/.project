@@ -76,7 +76,7 @@
 	</natures>
 	<filteredResources>
 		<filter>
-			<id>1450780301538</id>
+			<id>1450921591828</id>
 			<name></name>
 			<type>30</type>
 			<matcher>
@@ -85,12 +85,21 @@
 			</matcher>
 		</filter>
 		<filter>
-			<id>1450780301539</id>
+			<id>1450921591832</id>
 			<name></name>
 			<type>30</type>
 			<matcher>
 				<id>org.eclipse.ui.ide.multiFilter</id>
 				<arguments>1.0-projectRelativePath-matches-true-true-sources/.*/.*\.o$</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1450921591849</id>
+			<name></name>
+			<type>30</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-projectRelativePath-matches-false-true-sources/.*/.*\.xml$</arguments>
 			</matcher>
 		</filter>
 	</filteredResources>

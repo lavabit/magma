@@ -151,15 +151,15 @@ bool_t st_valid_opts(uint32_t opts) {
 	bool_t result = true;
 
 	// Type
-	if (bits_count(opts & (CONSTANT_T | NULLER_T | BLOCK_T | PLACER_T | MANAGED_T | MAPPED_T)) != 1) {
+	if (bitwise_count(opts & (CONSTANT_T | NULLER_T | BLOCK_T | PLACER_T | MANAGED_T | MAPPED_T)) != 1) {
 		result = false;
 	}
 	// Layout
-	else if (bits_count(opts & (JOINTED | CONTIGUOUS)) != 1) {
+	else if (bitwise_count(opts & (JOINTED | CONTIGUOUS)) != 1) {
 		result = false;
 	}
 	// Allocation
-	else if (bits_count(opts & (STACK | HEAP | SECURE)) != 1) {
+	else if (bitwise_count(opts & (STACK | HEAP | SECURE)) != 1) {
 		result = false;
 	}
 

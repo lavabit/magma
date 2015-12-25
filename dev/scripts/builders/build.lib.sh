@@ -1750,8 +1750,7 @@ combine() {
 load() {
 
 	echo ""
-	echo "Checking shared object..."
-	echo ""
+	printf "Checking shared object... "
 
 	mkdir -p "$M_CHECK"; error
 	cd "$M_CHECK"; error
@@ -1802,8 +1801,7 @@ load() {
 		# Only output the symbol info we found lines to print.
 		if [ "$LNS" != "" ]; then 
 			
-			echo ""
-			echo "printing invalid symbols..."
+			printf "printing invalid symbols...\n"
 			echo "lines = " $LNS
 			echo ""
 			

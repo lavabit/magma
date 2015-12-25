@@ -6,7 +6,7 @@ void symbols_check(void *);
 int main(int argc, char **argv) {
 
 	void *handle;
-	char libpath[1024];
+	char libpath[1024], *basepath, *copypath = NULL;
 
 	if (argc >= 2)
 			snprintf(libpath, 1024, "%s", argv[1]);
@@ -18,7 +18,14 @@ int main(int argc, char **argv) {
 		exit(EXIT_FAILURE);
 	}
 
-	printf("%s loaded...\n\n", libpath);
+	if ((copypath = strdup(libpath)) && (basepath = basename(libpath))) {
+		printf("%s loaded...\n\n", basepath);
+	}
+	else {
+		printf("%s loaded...\n\n", libpath);
+	}
+
+	if (copypath) free(copypath);
 
 	// Check and see if any of our symbols trigger an error.
 	symbols_check(handle);

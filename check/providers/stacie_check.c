@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/providers/stacie_check.c
+ * @file /check/providers/stacie_check.c
  *
  * @brief Checks the code used to generate STACIE-specified keys and tokens.
  *

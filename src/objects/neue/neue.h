@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/objects/users/neue.h
+ * @file /magma/objects/neue/neue.h
  *
  * @brief	Neue user objects.
  *

@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/providers/symmetric_check.c
+ * @file /check/providers/symmetric_check.c
  *
  * @brief The logic used to test the symmetric cipher functions.
  *

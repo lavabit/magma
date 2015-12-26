@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/core/qp_check.c
+ * @file /check/core/qp_check.c
  *
  * @brief Quoted printable encoder unit tests.
  *

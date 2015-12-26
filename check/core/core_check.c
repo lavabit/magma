@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/core/core_check.c
+ * @file /check/core/core_check.c
  *
  * @brief The heart of the suite of unit tests for the Magma core module.
  *

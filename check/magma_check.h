@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/magma_check.h
+ * @file /check/magma_check.h
  *
  * @brief The entry point for accessing the modules involved with executing unit tests.
  *

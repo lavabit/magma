@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/core/core_data.h
+ * @file /check/core/core_data.h
  *
  * @brief Data structures used by the core module unit tests.
  *

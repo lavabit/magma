@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/core/hashed_check.c
+ * @file /check/core/hashed_check.c
  *
  * @brief Unit tests for hashed indexes.
  *

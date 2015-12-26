@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/core/system_check.c
+ * @file /check/core/system_check.c
  *
  * @brief System helper function checks.
  *

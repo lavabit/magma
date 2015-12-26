@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/providers/cryptography/digest.c
+ * @file /magma/providers/cryptography/hash.c
  *
  * @brief Functions used to create a secure one-way hash of an arbitrary input buffer.
  *

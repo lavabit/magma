@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/core/url_check.c
+ * @file /check/core/url_check.c
  *
  * @brief URL encoder unit tests.
  *

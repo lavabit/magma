@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/objects/objects_check.c
+ * @file /check/objects/objects_check.c
  *
  * @brief Low level object utility tests.
  *

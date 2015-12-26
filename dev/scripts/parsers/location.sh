@@ -18,24 +18,21 @@ if [ "$SUFFIX" != "c" ] && [ "$SUFFIX" != "h" ]; then
 	 exit 1
 fi
 
-# We purposefully skip these files because they don't have a doxy description.
-if [ $1 == "/magma/engine/status/build.h" ]; then
-	echo "$1 skipped..."
-	exit 0
-fi
-
 # Ensure the heading has a leading space.
-/bin/sed -i -e "1 s/\/\*\*/\n&/g" $FILE
+sed -i -e "1 s/\/\*\*/\n&/g" $FILE
+
+# Tweak the actual file path so "/magma/check/" is simply "check" and "/magma/src" is simply "/magma/" inside the doxygen comment headers.
+PRETTY=`echo $1 | sed "s/\/magma\/check\//\/check\//g" | sed "s/\/magma\/src\//\/magma\//g"`
 
 # See if we even need to update the file
-grep "^ \* @file $1$" $FILE &> /dev/null
+grep "^ \* @file $PRETTY$" $FILE &> /dev/null
 if [ "$?" == "0" ]; then
 	echo "$1 is already correct..."
 	exit 1
 fi
 
 # String replacement
-cat $FILE | sed "s|^.*@file.*$| * @file $1|g" > $FILE.X
+cat $FILE | sed "s|^.*@file.*$| * @file $PRETTY|g" > $FILE.X
 
 # Check for an output file 
 if [ ! -f "$FILE.X" ]; then
@@ -44,7 +41,7 @@ if [ ! -f "$FILE.X" ]; then
 fi 
 
 # Check for the updated line 
-grep "^ \* @file $1$" $FILE.X &> /dev/null
+grep "^ \* @file $PRETTY$" $FILE.X &> /dev/null
 if [ "$?" == "0" ]; then
 	mv -f "$FILE.X" $FILE
 	tput setaf 2; echo "$1 updated..."; tput sgr0

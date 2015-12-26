@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/providers/digest_check.c
+ * @file /check/providers/hash_check.c
  *
  * @brief The logic used to test the digest ciphers.
  *

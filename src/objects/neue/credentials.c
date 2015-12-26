@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/objects/users/credentials.c
+ * @file /magma/objects/neue/credentials.c
  *
  * @brief Functions used for track and update the object checkpoints.
  *

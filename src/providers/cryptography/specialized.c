@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/providers/specialized.c
+ * @file /magma/providers/cryptography/specialized.c
  *
  * @brief The logic used to test the digest ciphers.
  *

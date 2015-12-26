@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/core/linked_check.c
+ * @file /check/core/linked_check.c
  *
  * @brief Unit tests for linked lists.
  *

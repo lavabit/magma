@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/core/tree_check.c
+ * @file /check/core/tree_check.c
  *
  * @brief Unit tests for tree based indexes.
  *

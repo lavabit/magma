@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/objects/objects_check.h
+ * @file /check/objects/objects_check.h
  *
  * @brief Object interface test functions.
  *

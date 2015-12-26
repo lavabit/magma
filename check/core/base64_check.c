@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/core/base64_check.c
+ * @file /check/core/base64_check.c
  *
  * @brief Base64 encoder unit tests.
  *

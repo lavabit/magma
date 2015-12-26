@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/providers/dspam_check.c
+ * @file /check/providers/dspam_check.c
  *
  * @brief DSPAM unit tests.
  *

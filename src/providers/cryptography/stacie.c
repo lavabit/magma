@@ -1,5 +1,6 @@
+
 /**
- * @file /magma/objects/users/stacie.c
+ * @file /magma/providers/cryptography/stacie.c
  *
  * @brief Functions used to generate STACIE-specified tokens and keys.
  * @Author Ivan. Kent implemented coding standards and restructured code.

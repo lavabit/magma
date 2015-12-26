@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/core/zbase32_check.c
+ * @file /check/core/zbase32_check.c
  *
  * @brief Zbase32 encoder unit tests.
  *

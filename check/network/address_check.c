@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/network/address_check.c
+ * @file /check/network/address_check.c
  *
  * @brief Address unit tests.
  *

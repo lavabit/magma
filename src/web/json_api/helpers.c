@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/web/json_api/helpers.c
+ * @file /magma/web/json_api/helpers.c
  *
  * @brief The the JSON API interface functions.
  *

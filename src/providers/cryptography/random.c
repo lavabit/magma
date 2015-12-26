@@ -107,7 +107,10 @@ uint64_t rand_get_uint64(void) {
 	uint64_t result;
 
 	if (!RAND_bytes_d || RAND_bytes_d((unsigned char *)&result, sizeof(uint64_t)) != 1) {
-		log_pedantic("SSL accept error. {error = %s}", ssl_error_string(bufptr, buflen));
+
+		log_pedantic("Entropy failure, falling back to backup entropy source. {error = %s}",
+			RAND_bytes_d ? ssl_error_string(bufptr, buflen) : "RAND_bytes() isn't available");
+
 		// Use system supplied pseudo random number generator if an error occurs.
 		result = rand_r(&rand_ctx);
 		result = result << 32;
@@ -127,14 +130,18 @@ uint32_t rand_get_uint32(void) {
 
 	uint32_t result;
 
-	if (RAND_bytes_d((unsigned char *)&result, sizeof(uint32_t)) != 1) {
-		log_pedantic("SSL accept error. {error = %s}", ssl_error_string(bufptr, buflen));
+	if (!RAND_bytes_d || RAND_bytes_d((unsigned char *)&result, sizeof(uint32_t)) != 1) {
+
+		log_pedantic("Entropy failure, falling back to backup entropy source. {error = %s}",
+			RAND_bytes_d ? ssl_error_string(bufptr, buflen) : "RAND_bytes() isn't available");
+
 		// Use system supplied pseudo random number generator if an error occurs.
 		result = rand_r(&rand_ctx);
 	}
 
 	return result;
 }
+
 /**
  * @brief	Generate a random unsigned 16 bit number.
  * @note	This function attempts to generate random data securely, but falls back on the pseudo-random number generator.
@@ -145,8 +152,11 @@ uint16_t rand_get_uint16(void) {
 
 	uint16_t result;
 
-	if (RAND_bytes_d((unsigned char *)&result, sizeof(uint16_t)) != 1) {
-		log_pedantic("SSL accept error. {error = %s}", ssl_error_string(bufptr, buflen));
+	if (!RAND_bytes_d || RAND_bytes_d((unsigned char *)&result, sizeof(uint16_t)) != 1) {
+
+		log_pedantic("Entropy failure, falling back to backup entropy source. {error = %s}",
+			RAND_bytes_d ? ssl_error_string(bufptr, buflen) : "RAND_bytes() isn't available");
+
 		// Use system supplied pseudo random number generator if an error occurs.
 		result = rand_r(&rand_ctx) % UINT16_MAX;
 	}
@@ -164,8 +174,11 @@ uint8_t rand_get_uint8(void) {
 
 	uint8_t result;
 
-	if (RAND_bytes_d((unsigned char *)&result, sizeof(uint8_t)) != 1) {
-		log_pedantic("SSL accept error. {error = %s}", ssl_error_string(bufptr, buflen));
+	if (!RAND_bytes_d || RAND_bytes_d((unsigned char *)&result, sizeof(uint8_t)) != 1) {
+
+		log_pedantic("Entropy failure, falling back to backup entropy source. {error = %s}",
+			RAND_bytes_d ? ssl_error_string(bufptr, buflen) : "RAND_bytes() isn't available");
+
 		// Use system supplied pseudo random number generator if an error occurs.
 		result = rand_r(&rand_ctx) % UINT8_MAX;
 	}
@@ -184,8 +197,11 @@ int64_t rand_get_int64(void) {
 
 	int64_t result;
 
-	if (RAND_bytes_d((unsigned char *)&result, sizeof(int64_t)) != 1) {
-		log_pedantic("SSL accept error. {error = %s}", ssl_error_string(bufptr, buflen));
+	if (!RAND_bytes_d || RAND_bytes_d((unsigned char *)&result, sizeof(int64_t)) != 1) {
+
+		log_pedantic("Entropy failure, falling back to backup entropy source. {error = %s}",
+			RAND_bytes_d ? ssl_error_string(bufptr, buflen) : "RAND_bytes() isn't available");
+
 		// Use system supplied pseudo random number generator if an error occurs.
 		result = rand_r(&rand_ctx);
 		result = result << 32;
@@ -204,8 +220,11 @@ int32_t rand_get_int32(void) {
 
 	int32_t result;
 
-	if (RAND_bytes_d((unsigned char *)&result, sizeof(int32_t)) != 1) {
-		log_pedantic("SSL accept error. {error = %s}", ssl_error_string(bufptr, buflen));
+	if (!RAND_bytes_d || RAND_bytes_d((unsigned char *)&result, sizeof(int32_t)) != 1) {
+
+		log_pedantic("Entropy failure, falling back to backup entropy source. {error = %s}",
+			RAND_bytes_d ? ssl_error_string(bufptr, buflen) : "RAND_bytes() isn't available");
+
 		// Use system supplied pseudo random number generator if an error occurs.
 		result = rand_r(&rand_ctx) % INT32_MAX;
 
@@ -222,8 +241,10 @@ int16_t rand_get_int16(void) {
 
 	int16_t result;
 
-	if (RAND_bytes_d((unsigned char *)&result, sizeof(int16_t)) != 1) {
-		log_pedantic("SSL accept error. {error = %s}", ssl_error_string(bufptr, buflen));
+	if (!RAND_bytes_d || RAND_bytes_d((unsigned char *)&result, sizeof(int16_t)) != 1) {
+
+		log_pedantic("Entropy failure, falling back to backup entropy source. {error = %s}",
+			RAND_bytes_d ? ssl_error_string(bufptr, buflen) : "RAND_bytes() isn't available");
 
 		// Use system supplied pseudo random number generator if an error occurs.
 		result = rand_r(&rand_ctx) % INT16_MAX;
@@ -241,8 +262,11 @@ int8_t rand_get_int8(void) {
 
 	int8_t result;
 
-	if (RAND_bytes_d((unsigned char *)&result, sizeof(int8_t)) != 1) {
-		log_pedantic("SSL accept error. {error = %s}", ssl_error_string(bufptr, buflen));
+	if (!RAND_bytes_d || RAND_bytes_d((unsigned char *)&result, sizeof(int8_t)) != 1) {
+
+		log_pedantic("Entropy failure, falling back to backup entropy source. {error = %s}",
+			RAND_bytes_d ? ssl_error_string(bufptr, buflen) : "RAND_bytes() isn't available");
+
 		// Use system supplied pseudo random number generator if an error occurs.
 		result = rand_r(&rand_ctx) % INT8_MAX;
 

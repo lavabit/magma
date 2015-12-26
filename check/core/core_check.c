@@ -459,7 +459,8 @@ START_TEST (check_merge)
 		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
 		fail_unless(outcome, errmsg);
 
-	}END_TEST
+	}
+END_TEST
 
 START_TEST (check_print)
 	{
@@ -474,7 +475,8 @@ START_TEST (check_print)
 		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
 		fail_unless(outcome, errmsg);
 
-	}END_TEST
+	}
+END_TEST
 
 START_TEST (check_digits)
 	{
@@ -530,6 +532,38 @@ START_TEST (check_digits)
 		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
 		fail_unless(outcome, errmsg);
 
+	}
+END_TEST
+
+START_TEST (check_clamp)
+	{
+
+		chr_t *errmsg = NULL;
+		bool_t outcome = true;
+
+		log_unit("%-64.64s", "CORE / PARSERS / CLAMP / SINGLE THREADED:");
+
+		// If any of the test cases return an error message, the unit test is considered a failure.
+		if ((errmsg = check_clamp_min()) ||
+			(errmsg = check_clamp_max()) ||
+			(errmsg = check_clamp_min_max_equal())) {
+			outcome = false;
+		}
+		else {
+
+			// This test case is intentionally using invalid values, so to avoid logging all the meaningless errors, we have to
+			// disable logging while the test case is running.
+			log_disable();
+			if ((errmsg = check_clamp_min_max_invalid())) {
+				outcome = false;
+			}
+			log_enable();
+
+		}
+
+		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
+		fail_unless(outcome, errmsg);
+		ns_cleanup(errmsg);
 	}
 END_TEST
 
@@ -603,7 +637,6 @@ START_TEST (check_classify)
 		outcome = errmsg ? false : true;
 		log_unit("%10.10s\n", (outcome ? "PASSED" : status() ? "FAILED" : "SKIPPED"));
 		fail_unless(outcome, errmsg);
-
 }
 END_TEST
 
@@ -867,6 +900,7 @@ Suite * suite_check_core(void) {
 	Suite *s = suite_create("\tCore");
 
 	testcase(s, tc, "Parsers / Digits", check_digits);
+	testcase(s, tc, "Parsers / Clamp", check_clamp);
 	testcase(s, tc, "Parsers / Capitalization", check_capitalization);
 	testcase(s, tc, "Classify / ASCII", check_classify);
 	testcase(s, tc, "Strings / Constants", check_constants);

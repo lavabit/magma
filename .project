@@ -4,6 +4,7 @@
 	<comment></comment>
 	<projects>
 		<project>magma.so</project>
+		<project>magma.check</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -23,7 +24,7 @@
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.autoBuildTarget</key>
-					<value>magmad</value>
+					<value>magmad.check</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.buildArguments</key>
@@ -55,7 +56,7 @@
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.fullBuildTarget</key>
-					<value>magmad</value>
+					<value>magmad.check</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.stopOnError</key>

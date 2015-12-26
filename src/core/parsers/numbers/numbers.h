@@ -23,6 +23,16 @@ size_t uint32_digits(uint32_t number);
 size_t uint64_digits(uint64_t number);
 size_t uint8_digits(uint8_t number);
 
+/// clamp.c
+int16_t    int16_clamp(int16_t min, int16_t max, int16_t number);
+int32_t    int32_clamp(int32_t min, int32_t max, int32_t number);
+int64_t    int64_clamp(int64_t min, int64_t max, int64_t number);
+int8_t     int8_clamp(int8_t min, int8_t max, int8_t number);
+uint16_t   uint16_clamp(uint16_t min, uint16_t max, uint16_t number);
+uint32_t   uint32_clamp(uint32_t min, uint32_t max, uint32_t number);
+uint64_t   uint64_clamp(uint64_t min, uint64_t max, uint64_t number);
+uint8_t    uint8_clamp(uint8_t min, uint8_t max, uint8_t number);
+
 /// numbers.c
 bool_t double_conv(stringer_t *s, double_t *number);
 bool_t float_conv(stringer_t *s, float_t *number);

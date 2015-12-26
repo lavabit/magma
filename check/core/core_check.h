@@ -25,6 +25,12 @@ struct check_mi_t {
 
 extern stringer_t *string_check_constant;
 
+/// clamp_check.c
+chr_t * check_clamp_max(void);
+chr_t * check_clamp_min(void);
+chr_t * check_clamp_min_max_equal(void);
+chr_t * check_clamp_min_max_invalid(void);
+
 /// string_check.c
 bool_t   check_string_alloc(uint32_t check);
 bool_t   check_string_dupe(uint32_t check);

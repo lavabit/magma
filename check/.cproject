@@ -106,30 +106,22 @@
 					</sourceEntries>
 				</configuration>
 			</storageModule>
-			<storageModule moduleId="org.eclipse.cdt.core.externalSettings">
-				<externalSettings containerId="magma;cdt.managedbuild.toolchain.gnu.base.1042491499" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
-				<externalSettings containerId="magma.so;cdt.managedbuild.toolchain.gnu.base.501067626" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
-			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="magma.check.cdt.managedbuild.target.gnu.lib.227877978" name="Static Library" projectType="cdt.managedbuild.target.gnu.lib"/>
 	</storageModule>
-	<storageModule moduleId="refreshScope" versionNumber="2">
-		<configuration configurationName=".check">
-			<resource resourceType="PROJECT" workspacePath="/magma.check"/>
-			<resource resourceType="PROJECT" workspacePath="/magma"/>
-		</configuration>
-		<configuration configurationName="Default">
-			<resource resourceType="PROJECT" workspacePath="/magma.check"/>
-			<resource resourceType="PROJECT" workspacePath="/magma"/>
-		</configuration>
+	<storageModule moduleId="refreshScope" versionNumber="1">
+		<resource resourceType="PROJECT" workspacePath="/magma.check"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.1006571712.309384821.800411248">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
+			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 			<profile id="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC">
 				<buildOutputProvider>
 					<openAction enabled="true" filePath="/home/magma/Lavabit/.metadata/.plugins/org.eclipse.cdt.ui/magma.check.build.log"/>
@@ -141,10 +133,10 @@
 				</scannerInfoProvider>
 			</profile>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.lib.release.842295764;cdt.managedbuild.config.gnu.lib.release.842295764.;cdt.managedbuild.tool.gnu.c.compiler.lib.release.188388691;cdt.managedbuild.tool.gnu.c.compiler.input.34493260">
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.lib.debug.600132102;cdt.managedbuild.config.gnu.lib.debug.600132102.;cdt.managedbuild.tool.gnu.c.compiler.lib.debug.1215261151;cdt.managedbuild.tool.gnu.c.compiler.input.954271163">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.lib.debug.600132102;cdt.managedbuild.config.gnu.lib.debug.600132102.;cdt.managedbuild.tool.gnu.c.compiler.lib.debug.1215261151;cdt.managedbuild.tool.gnu.c.compiler.input.954271163">
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.lib.release.842295764;cdt.managedbuild.config.gnu.lib.release.842295764.;cdt.managedbuild.tool.gnu.c.compiler.lib.release.188388691;cdt.managedbuild.tool.gnu.c.compiler.input.34493260">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.lib.debug.600132102.586086166;cdt.managedbuild.config.gnu.lib.debug.600132102.586086166.;cdt.managedbuild.tool.gnu.c.compiler.lib.debug.1256098224;cdt.managedbuild.tool.gnu.c.compiler.input.1937221409">
@@ -153,13 +145,11 @@
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.1006571712.309384821.800411248;cdt.managedbuild.config.gnu.exe.debug.1006571712.309384821.800411248.provide;cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1201007542;cdt.managedbuild.tool.gnu.c.compiler.input.1570615174">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.lib.debug.600132102">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerFileProfile"/>
-		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.1006571712.309384821.800411248;cdt.managedbuild.config.gnu.exe.debug.1006571712.309384821.800411248.;cdt.managedbuild.tool.gnu.c.compiler.exe.debug.24680995;cdt.managedbuild.tool.gnu.c.compiler.input.726444380">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.lib.debug.600132102">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerFileProfile"/>
+		</scannerConfigBuildInfo>
 	</storageModule>
-	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
-	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cproject>

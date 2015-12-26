@@ -3,7 +3,7 @@
  * @file /magma/providers/cryptography/stacie.c
  *
  * @brief Functions used to generate STACIE-specified tokens and keys.
- * @Author Ivan. Kent implemented coding standards and restructured code.
+ *
  * $Date$
  * $Revision$
  *
@@ -17,20 +17,6 @@
 #include "magma.h"
 
 /**
- * @brief   clamp: range limit the input param 'x' between the values min
- *          and max.
- * @Author  Kent.
- * @param   x    number to be clamped
- * @param   min  minimum value for the clamp
- * @param   max  maximum value for the clamp
- */
-static
-uint_t
-uint_clamp (uint_t x, uint_t min, uint_t max) {
-	return x > max? max : x < min? min: x;
-}   // uint_clamp()
-
-/**
  * @brief   Calculate total number of hash rounds for key derivation.
  * @author  Ivan.  Kent - refactored
  * @param   password    User password.
@@ -39,8 +25,7 @@ uint_clamp (uint_t x, uint_t min, uint_t max) {
  */
 uint_t
 stacie_rounds_calculate (stringer_t *password, uint_t bonus) {
-	uint_t pass_len;
-	uint_t hash_rounds = 0;
+	uint32_t pass_len = 0, hash_rounds = 0;
 
 	// Between this call to st_empty() and the following call to
 	// utf_length_get() st_empty() is called 3 times.
@@ -73,7 +58,7 @@ stacie_rounds_calculate (stringer_t *password, uint_t bonus) {
 	hash_rounds += bonus;
 
 	// clamp the return hash_rounds between MIN and MAX
-	hash_rounds = uint_clamp(hash_rounds, MIN_HASH_NUM, MAX_HASH_NUM);
+	hash_rounds = uint32_clamp(MIN_HASH_NUM, MAX_HASH_NUM, hash_rounds);
 
 out:
 	return hash_rounds;

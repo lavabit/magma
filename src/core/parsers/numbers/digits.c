@@ -46,7 +46,6 @@ size_t uint32_digits(uint32_t number) {
  * @brief	Count the number of digits needed to represent a base-10 16-bit unsigned integer.
  * @return	the number of digits needed to represent the specified integer.
  */
-
 size_t uint16_digits(uint16_t number) {
 
 	size_t length = 1;

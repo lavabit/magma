@@ -30,6 +30,10 @@
 					<value>ls</value>
 				</dictionary>
 				<dictionary>
+					<key>org.eclipse.cdt.make.core.buildLocation</key>
+					<value>${ProjDirPath}/../</value>
+				</dictionary>
+				<dictionary>
 					<key>org.eclipse.cdt.make.core.cleanBuildTarget</key>
 					<value></value>
 				</dictionary>

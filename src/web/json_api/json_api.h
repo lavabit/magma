@@ -1,18 +1,26 @@
+
+/**
+ * @file /magma/src/web/json_api/json_api.h
+ *
+ * @brief The the JSON API interface functions.
+ *
+ * $Author$
+ * $Date$
+ * $Revision$
+ *
+ */
+
 #ifndef MAGMA_WEB_JSON_API_H
 #define MAGMA_WEB_JSON_API_H
 
-/**
- * @brief
- *  The entry point for json api requests
- * @param con
- *  The connection object corresponding to the web client making the request.
- * @return
- *  This function returns no value.
- */
 void json_api_dispatch(connection_t *con);
 
-// NOTE - this is TEMPORARY until the magma header dependencies can be sorted!
-#include "endpoints.h"
-#include "helpers.h"
+void api_endpoint_auth(connection_t *con);
+void api_endpoint_register(connection_t *con);
+void api_endpoint_delete_user(connection_t *con);
+void api_endpoint_change_password(connection_t *con);
+
+void api_error(connection_t *con, int_t http_code, int_t error_code, chr_t *message);
+void api_response(connection_t *con, int_t http_code, chr_t *format, ...);
 
 #endif

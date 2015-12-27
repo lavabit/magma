@@ -28,6 +28,7 @@ extern stringer_t *string_check_constant;
 /// clamp_check.c
 chr_t * check_clamp_max(void);
 chr_t * check_clamp_min(void);
+chr_t * check_clamp_randomizer(void);
 chr_t * check_clamp_min_max_equal(void);
 chr_t * check_clamp_min_max_invalid(void);
 

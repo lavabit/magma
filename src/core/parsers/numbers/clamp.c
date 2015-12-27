@@ -95,7 +95,6 @@ uint64_t uint64_clamp(uint64_t min, uint64_t max, uint64_t number) {
 	return number > max ? max : (number < min ? min : number);
 }
 
-
 /**
  * @brief	Ensure a number is between the min and max values, otherwise return the boundary value.
  *

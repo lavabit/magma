@@ -546,7 +546,8 @@ START_TEST (check_clamp)
 		// If any of the test cases return an error message, the unit test is considered a failure.
 		if ((errmsg = check_clamp_min()) ||
 			(errmsg = check_clamp_max()) ||
-			(errmsg = check_clamp_min_max_equal())) {
+			(errmsg = check_clamp_min_max_equal()) ||
+			(errmsg = check_clamp_randomizer())) {
 			outcome = false;
 		}
 		else {

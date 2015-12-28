@@ -13,13 +13,46 @@
 #include "magma_check.h"
 
 bool_t do_virus_check = true, do_tank_check = true, do_dspam_check = true, do_spf_check = true;
-chr_t *virus_check_data_path = NULL, *tank_check_data_path = NULL, *dspam_check_data_path = NULL;
+chr_t *virus_check_data_path = NULL, *tank_check_data_path = NULL, *dspam_check_data_path = NULL, *barrister_unit_test = NULL;
 
 int_t case_timeout = RUN_TEST_CASE_TIMEOUT;
 
 Suite * suite_check_magma(void) {
   Suite *s = suite_create("\n\tMagma");
   return s;
+}
+
+/**
+ * @brief This function will construct a special suite with only a single unit test that is extracted from the running executable based on it's name.
+ * @note	This function will allow us to create a special test suite with any single test case available in the global symbols table. This same functionality
+ * 		is available using the CK_RUN_CASE environment variable in the current version of libcheck, but wasn't available in the version currently available on our
+ * 		target platform, which is why this method of achieving the same end was created.
+ * @param testname The name of the unit test we want our barrister to run.
+ * @return The initialized suite, assuming we found the requested unit test, otherwise NULL is returned.
+ */
+Suite * suite_check_barrister(chr_t *testname) {
+
+	TCase *tc;
+	void *handle;
+	void (*unittest)(int);
+	Suite *s = suite_create("\tBarrister");;
+
+	// By calling dlopen() with NULL for the filename, we are attempting to establish a handle for the currently running executable image.
+	if (!(handle = dlopen(NULL, RTLD_LOCAL | RTLD_NOW))) {
+		log_error("Unable to open a dynamic symbol handle for the currently running program.");
+		return NULL;
+	}
+
+	// Check the currently running program for the requested function name.
+	if (!(*(void **)(&unittest) = dlsym(handle, testname))) {
+		log_info("%s", dlerror());
+	}
+	else {
+		testcase(s, tc, testname, unittest);
+	}
+
+	dlclose(handle);
+	return s;
 }
 
 /***
@@ -60,17 +93,22 @@ int_t running_on_debugger(void) {
 }
 
 /* modeled closely after display_usage() */
-void check_display_usage(char *progname) {
+void check_display_help (chr_t *invalid_option) {
 
-	log_info("\n"
-			"\t%s [options] [config_file]\n\n"
-			"\t%-25.25s\t\t%s\n\t%-25.25s\t\t%s\n\t%-25.25s\t\t%s\n\t%-25.25s\t\t%s\n\n",
-			progname,
-			"-v [virus_check_path]", "set the virus checker path, or disable the check if none is specified.",
-			"-t [tank_check_path]",  "set the tank checker path, or disable the check if none is specified.",
-			"-d [dspam_check_path]", "set the DSPAM checker path, or disable the check if none is specified.",
-			"-s", "disable the SPF checker.");
-	exit(EXIT_FAILURE);
+	log_info("%s%s%s" \
+			"\tmagmad.check [options] [config_file]\n\n" \
+			"\t%-25.25s\t\t%s\n\n\t%-25.25s\t\t%s\n\t%-25.25s\t\t%s\n\t%-25.25s\t\t%s\n\t%-25.25s\t\t%s\n\n\t%-25.25s\t\t%s\n\t%-25.25s\t\t%s\n\n",
+			(invalid_option ? "The command line option \"" : ""), (invalid_option ? invalid_option : ""),
+			(invalid_option ? "\" is invalid. Please consult the text below and try again.\n\n" : "\n"),
+			"-c, --check NAME", "run a single unit test",
+			"    --dspam-path PATH", "set the DSPAM checker path, or disable the check if none is specified.",
+			"    --tank-path PATH",  "set the tank checker path, or disable the check if none is specified.",
+			"    --virus-path PATH", "set the virus checker path, or disable the check if none is specified.",
+			"    --disable-spf", "disable the SPF checker.",
+			"-h, --help", "display the magma unit tester command line options and exit",
+			"-v, --version", "display the magma unit tester version information and exit");
+
+	return;
 }
 
 /**
@@ -87,87 +125,106 @@ chr_t * check_next_opt(char *xargv[], int *iptr, int xargc) {
 
 	// If this is an optional parameter then there still must be a config file specified after it.
 	if (*iptr == (xargc-1)) {
-		check_display_usage(xargv[0]);
-	}
-	// If the next argument begins with '-' then our option has a null parameter.
-	else if (!mm_cmp_cs_eq(xargv[*iptr+1], "-", 1)) {
-		(*iptr)++;
 		return NULL;
 	}
-
-	// If the following parameter is the last one, it must be the config file and this is a null option.
-	if (*iptr+1 == (xargc-1)) {
+	// If the next argument begins with '-' then our option has a null parameter.
+	else if (!mm_cmp_cs_eq(xargv[*iptr + 1], "-", 1)) {
 		(*iptr)++;
 		return NULL;
 	}
 
 	(*iptr) += 2;
 
-	if (!(result = ns_dupe(xargv[*iptr-1]))) {
-		log_unit("Memory allocation encountered while preparing checks. Exiting.\n");
+	if (!(result = ns_dupe(xargv[*iptr - 1]))) {
+		log_error("Memory allocation failure encountered while parsing the command line options.");
 	}
 
 	return result;
 }
 
-/* modeled closely after args_parse() */
-void check_args_parse(int argc, char *argv[]) {
+/**
+ * @brief	Process any command line arguments supplied to magma unit tester.
+ * @note	A few command line options are supported: -c (--check), -h (--help), -v (--version), and along with options for overriding
+ * 			the hard coded file system paths, and the disabling the spf check. If the final option doesn't start with "-" then it's assumed
+ * 			to be the config file path.
+ * @return	Returns -1 if the program should exit with a failure code, returns 0 if the program should simply exit and returns 1 if the program should continue.
+ */
+int_t check_args_parse(int argc, char *argv[]) {
 
 	int_t i = 1;
 
 	while (i < argc) {
 
-		if (!st_cmp_cs_eq(NULLER(argv[i]), PLACER("-v", 2))) {
+		if (!st_cmp_cs_eq(NULLER(argv[i]), PLACER("-c", 2)) || !st_cmp_cs_eq(NULLER(argv[i]), PLACER("--check", 7))) {
+
+			if (barrister_unit_test) {
+				log_error("The \"--check\" parameter may only be used once. Exiting.\n");
+				return -1;
+			}
+			else if (!(barrister_unit_test = check_next_opt(argv, &i, argc))) {
+				log_error("The individual unit test name is missing. Exiting.\n");
+				return -1;
+			}
+
+		}
+		else if (!st_cmp_cs_eq(NULLER(argv[i]), PLACER("--virus-path", 12))) {
 
 			if (!(virus_check_data_path = check_next_opt(argv, &i, argc))) {
 				do_virus_check = false;
 			}
 
 		}
-		else if (!st_cmp_cs_eq(NULLER(argv[i]), PLACER("-t", 2))) {
+		else if (!st_cmp_cs_eq(NULLER(argv[i]), PLACER("--tank-path", 11))) {
 
 			if (!(tank_check_data_path = check_next_opt(argv, &i, argc))) {
 				do_tank_check = false;
 			}
 
 		}
-		else if (!st_cmp_cs_eq(NULLER(argv[i]), PLACER("-d", 2))) {
+		else if (!st_cmp_cs_eq(NULLER(argv[i]), PLACER("--dspam-path", 12))) {
 
 			if (!(dspam_check_data_path = check_next_opt(argv, &i, argc))) {
 				do_dspam_check = false;
 			}
 
 		}
-		else if (!st_cmp_cs_eq(NULLER(argv[i]), PLACER("-s", 2))) {
+		else if (!st_cmp_cs_eq(NULLER(argv[i]), PLACER("--disable-spf", 13))) {
 			do_spf_check = false;
 			i++;
 		}
-		// See if it's an illegal parameter beginning with "-"
-		else if (!mm_cmp_cs_eq(argv[i], "-", 1)) {
-			check_display_usage(argv[0]);
+		else if (!st_cmp_cs_eq(NULLER(argv[i]), PLACER("-v", 2)) || !st_cmp_cs_eq(NULLER(argv[i]), PLACER("--version", 9))) {
+			log_info("\n\t%s\n\n\t%-20.20s %14.14s\n\t%-20.20s %14.14s\n\t%-20.20s %14.14s\n\n", "magmad.check",
+				"version", build_version(), "commit", build_commit(), "build", build_stamp());
+			return 0;
+		}
+		// Display the help if it's explicitly requested, or if we encounter an option we don't recognize.
+		else if (!st_cmp_cs_eq(NULLER(argv[i]), PLACER("-h", 2)) || !st_cmp_cs_eq(NULLER(argv[i]), PLACER("--help", 6))) {
+			check_display_help(NULL);
+			return 0;
 		}
 		// Otherwise it's the config file
-		else if (i == (argc-1)) {
+		else if (i == (argc - 1) && mm_cmp_cs_eq(argv[i], "-", 1)) {
 			snprintf(magma.config.file, MAGMA_FILEPATH_MAX, "%s", argv[i]);
 			i++;
 		}
 		else {
-			check_display_usage(argv[0]);
+			check_display_help(argv[i]);
+			return -1;
 		}
 
 	}
 
-	return;
+	return 1;
 }
 
 int main(int argc, char *argv[]) {
 
 	SRunner *sr;
-	int_t failed = 0;
+	int_t failed = 0, result;
 	time_t prog_start, test_start, test_end;
 
 	if (process_kill(PLACER("magmad", 6), SIGTERM, 10) < 0 || process_kill(PLACER("magmad.check", 12), SIGTERM, 10) < 0) {
-		log_unit("Another instance of the Magma Daemon is already running and refuses to die.");
+		log_error("Another instance of the Magma Daemon is already running and refuses to die.");
 		exit(EXIT_FAILURE);
 	}
 
@@ -175,7 +232,9 @@ int main(int argc, char *argv[]) {
 	prog_start = time(NULL);
 
 	// Updates the location of the config file if it was specified on the command line.
-	check_args_parse(argc, argv);
+	if ((result = check_args_parse(argc, argv)) != 1) {
+		exit(result ? EXIT_FAILURE : EXIT_SUCCESS);
+	}
 
 	if (do_virus_check && !virus_check_data_path) {
 		virus_check_data_path = ns_dupe(VIRUS_CHECK_DATA_PATH);
@@ -190,7 +249,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (!process_start()) {
-		log_unit("Initialization error. Exiting.\n");
+		log_error("Initialization error. Exiting.\n");
 		status_set(-1);
 		process_stop();
 		ns_cleanup(virus_check_data_path);
@@ -205,12 +264,19 @@ int main(int argc, char *argv[]) {
 	// Unit Test Config
 	sr = srunner_create(suite_check_magma());
 
-	// Add the suites.
-	srunner_add_suite(sr, suite_check_core());
-	srunner_add_suite(sr, suite_check_provide());
-	srunner_add_suite(sr, suite_check_network());
-	srunner_add_suite(sr, suite_check_objects());
-	srunner_add_suite(sr, suite_check_users());
+	// If the command line told us to run a specific test only add that individual test using the special barrister suite.
+	if (barrister_unit_test) {
+		srunner_add_suite(sr, suite_check_barrister(barrister_unit_test));
+
+	}
+	// Otherwise add all of the unit tests to the suite runner.
+	else {
+		srunner_add_suite(sr, suite_check_core());
+		srunner_add_suite(sr, suite_check_provide());
+		srunner_add_suite(sr, suite_check_network());
+		srunner_add_suite(sr, suite_check_objects());
+		srunner_add_suite(sr, suite_check_users());
+	}
 
 	// If were being run under Valgrind, we need to disable forking and increase the default timeout.
 	// Under Valgrind, forked checks appear to improperly timeout.
@@ -221,7 +287,7 @@ int main(int argc, char *argv[]) {
 	}
 	else {
 		// Trace detection attempted was thwarted.
-		if (failed == -1)	log_unit("Trace detection was thwarted.\n");
+		if (failed == -1) log_unit("Trace detection was thwarted.\n");
 		else log_unit("Tracing or debugging is active...\n");
 		srunner_set_fork_status (sr, CK_NOFORK);
 		case_timeout = PROFILE_TEST_CASE_TIMEOUT;

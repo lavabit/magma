@@ -9,6 +9,10 @@
 			<name>org.eclipse.cdt.managedbuilder.core.genmakebuilder</name>
 			<arguments>
 				<dictionary>
+					<key>?children?</key>
+					<value>?children?=?name?=entry\\\\\\\|\\\|\|?name?=outputEntries\||</value>
+				</dictionary>
+				<dictionary>
 					<key>?name?</key>
 					<value></value>
 				</dictionary>

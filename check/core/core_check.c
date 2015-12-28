@@ -537,7 +537,6 @@ END_TEST
 
 START_TEST (check_clamp)
 	{
-
 		chr_t *errmsg = NULL;
 		bool_t outcome = true;
 

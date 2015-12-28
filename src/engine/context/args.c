@@ -25,11 +25,11 @@ void display_usage(void) {
 
 	log_info("\n"
 			"\tmagmad [options] [config_file]\n\n"
-			"\t%-25.25s\t\t%s\n\t%-25.25s\t\t%s\n\t%-25.25s\t\t%s\n\t%-25.25s\t\t%s",
-			"-h, --help", "display config help with default values and exit",
+			"\t%-25.25s\t\t%s\n\t%-25.25s\t\t%s\n\n\t%-25.25s\t\t%s\n\t%-25.25s\t\t%s\n\n",
 			"-d, --dump", "dump active magma config and exit before running daemon",
-			"-c, --config <confstring>", "specify a config file entry to be processed at the command line",
-			"-v, --version", "display magma version information and exit\n\n");
+			"-c, --config STRING", "specify an individual config parameter name and it's value using the command line",
+			"-h, --help", "display the magma command line help with default values and exit",
+			"-v, --version", "display the magma version information and exit");
 
 	return;
 }
@@ -58,7 +58,8 @@ bool_t args_parse(int argc, char *argv[]) {
 			exit_and_dump = true;
 		}
 		else if (!st_cmp_cs_eq(NULLER(argv[i]), PLACER("-v", 2)) || !st_cmp_cs_eq(NULLER(argv[i]), PLACER("--version", 9))) {
-			log_info("\n\n\t%-20.20s %14.14s\n\t%-20.20s %14.14s\n\n", "magmad version", build_version(),"magmad build", build_stamp());
+			log_info("\n\t%s\n\n\t%-20.20s %14.14s\n\t%-20.20s %14.14s\n\t%-20.20s %14.14s\n\n", "magmad",
+				"version", build_version(), "commit", build_commit(), "build", build_stamp());
 			result = false;
 			break;
 		}
@@ -79,7 +80,8 @@ bool_t args_parse(int argc, char *argv[]) {
 					break;
 				}
 
-			} else if (!(cmdline_config_data = st_append(cmdline_config_data, PLACER("\n",2))) ||
+			}
+			else if (!(cmdline_config_data = st_append(cmdline_config_data, PLACER("\n",2))) ||
 					!(cmdline_config_data = st_append(cmdline_config_data, NULLER(argv[i+1])))) {
 				log_critical("Failed to reallocate storage for command line option.");
 				result = false;

@@ -45,7 +45,6 @@ bool_t chr_printable(uchr_t c) {
  * @param	c	the character to be verified.
  * @return	true if the character passed the test, or false otherwise.
  */
-
 bool_t chr_alphanumeric(uchr_t c) {
 
 	if ((c >= 'A' && c <= 'Z') ||	(c >= 'a' && c <= 'z') ||	(c >= '0' && c <= '9')) {
@@ -54,6 +53,7 @@ bool_t chr_alphanumeric(uchr_t c) {
 
 	return false;
 }
+
 /**
  * @brief	Determine whether a specified character is a lowercase character.
  * @param	c	the character to be verified.

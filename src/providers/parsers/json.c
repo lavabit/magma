@@ -13,7 +13,7 @@
 #include "magma.h"
 
 /**
- * @brief	Return the version string of libjansson.
+ * @brief	Return the version string for libjansson.
  * @return	a pointer to a character string containing the libjansson version information.
  */
 chr_t * lib_version_jansson(void) {
@@ -21,7 +21,7 @@ chr_t * lib_version_jansson(void) {
 }
 
 /**
- * @brief	Initialize the Jansson library and bind dynamically to the exported functions that are required.
+ * @brief	Initialize the Jansson library and dynamically bind to the required symbols.
  * @result	true on success or false on failure.
  */
 bool_t lib_load_jansson(void) {

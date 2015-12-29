@@ -14,6 +14,30 @@
 #include "magma.h"
 
 /**
+ * @brief	Return the shared library version string for libutf8proc.
+ * @return	a pointer to a character string containing the libutf8proc version information.
+ */
+chr_t * lib_version_utf8proc(void) {
+	return (chr_t *)utf8proc_release_d();
+}
+
+/**
+ * @brief	Initialize the UTF8 library and dynamically bind to the required symbols.
+ * @result	true on success or false on failure.
+ */
+bool_t lib_load_utf8proc(void) {
+
+	symbol_t utf8proc[] = {
+		M_BIND(utf8proc_release)
+	};
+
+	if (lib_symbols(sizeof(utf8proc) / sizeof(symbol_t), utf8proc) != 1) {
+		return false;
+	}
+
+	return true;
+}
+/**
  * @brief	Check that data is a valid UTF string.
  * @param	utf_string		Data stringer to be checked.
  * @return	true if good, false if not.
@@ -42,7 +66,7 @@ bool_t utf_is_good(stringer_t *utf_string) {
 		if(!chr_ascii(((chr_t *)data)[i])) {
 			return false;
 		}
-		
+
 	}
 
 	return true;

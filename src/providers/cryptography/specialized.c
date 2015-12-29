@@ -24,7 +24,7 @@ stringer_t * hmac_multi_sha512(uint_t rounds, stringer_t *s, stringer_t *key, st
 	return hmac_multi_digest(rounds, (digest_t *)EVP_sha512_d(), s, key, output);
 }
 
-static size_t buffer_size_get(stringer_t * buffer) {
+size_t buffer_size_get(stringer_t * buffer) {
 	uint32_t opts;
 
 	opts = *((uint32_t *)buffer);
@@ -36,7 +36,7 @@ static size_t buffer_size_get(stringer_t * buffer) {
 	}
 }   // buffer_size_get()
 
-static stringer_t * hmac_multi_digest_nonnull_output(uint_t rounds, digest_t *digest, stringer_t *s, stringer_t *key, stringer_t *output) {
+stringer_t * hmac_multi_digest_nonnull_output(uint_t rounds, digest_t *digest, stringer_t *s, stringer_t *key, stringer_t *output) {
 
 	HMAC_CTX ctx;
 	uint32_t opts;
@@ -125,7 +125,7 @@ static stringer_t * hmac_multi_digest_nonnull_output(uint_t rounds, digest_t *di
 	error: return NULL;
 }   // hmac_multi_digest_nonnull_output()
 
-static stringer_t * hmac_multi_digest_null_output(uint_t rounds, digest_t *digest, stringer_t *s, stringer_t *key) {
+stringer_t * hmac_multi_digest_null_output(uint_t rounds, digest_t *digest, stringer_t *s, stringer_t *key) {
 	int_t digest_output_size;
 	stringer_t * output;
 	stringer_t * alloced_output;

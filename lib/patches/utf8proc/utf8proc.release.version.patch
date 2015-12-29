@@ -1,0 +1,90 @@
+diff -r 33bd26f49d8c Makefile
+--- a/Makefile	Tue Dec 29 06:32:44 2015 +0100
++++ b/Makefile	Tue Dec 29 07:09:25 2015 +0100
+@@ -1,5 +1,19 @@
+ # libutf8proc Makefile
+ 
++# shared-library version MAJOR.MINOR.PATCH ... this may be *different*
++# from the utf8proc version number because it indicates ABI compatibility,
++# not API compatibility: MAJOR should be incremented whenever *binary*
++# compatibility is broken, even if the API is backward-compatible
++# Be sure to also update these in MANIFEST and CMakeLists.txt!
++MAJOR=1
++MINOR=3
++PATCH=1
++
++# If the library is compiled from a tarball, then the the release suffix should be empty
++# otherwise if this is a developmental build and the shared library release string represents
++# the target for the next tarball release, then append the "-pre" suffix.
++SUFFIX=
++
+ # programs
+ MAKE=make
+ AR?=ar
+@@ -12,16 +26,8 @@ CFLAGS ?= -O2
+ PICFLAG = -fPIC
+ C99FLAG = -std=c99
+ WCFLAGS = -Wall -Wmissing-prototypes -pedantic
+-UCFLAGS = $(CFLAGS) $(PICFLAG) $(C99FLAG) $(WCFLAGS) -DUTF8PROC_EXPORTS
+-
+-# shared-library version MAJOR.MINOR.PATCH ... this may be *different*
+-# from the utf8proc version number because it indicates ABI compatibility,
+-# not API compatibility: MAJOR should be incremented whenever *binary*
+-# compatibility is broken, even if the API is backward-compatible
+-# Be sure to also update these in MANIFEST and CMakeLists.txt!
+-MAJOR=1
+-MINOR=3
+-PATCH=1
++RELFLAGS += -DUTF8PROC_RELEASE_MAJOR=$(MAJOR) -DUTF8PROC_RELEASE_MINOR=$(MINOR) -DUTF8PROC_RELEASE_PATCH=$(PATCH) -DUTF8PROC_RELEASE_SUFFIX=$(SUFFIX)
++UCFLAGS = $(CFLAGS) $(PICFLAG) $(C99FLAG) $(WCFLAGS) $(RELFLAGS) -DUTF8PROC_EXPORTS
+ 
+ OS := $(shell uname)
+ ifeq ($(OS),Darwin) # MacOS X
+diff -r 33bd26f49d8c utf8proc.c
+--- a/utf8proc.c	Tue Dec 29 06:32:44 2015 +0100
++++ b/utf8proc.c	Tue Dec 29 07:09:25 2015 +0100
+@@ -91,6 +91,26 @@ UTF8PROC_DLLEXPORT const char *utf8proc_
+   return STRINGIZE(UTF8PROC_VERSION_MAJOR) "." STRINGIZE(UTF8PROC_VERSION_MINOR) "." STRINGIZE(UTF8PROC_VERSION_PATCH) "";
+ }
+ 
++#ifndef UTF8PROC_RELEASE_MAJOR
++#error The libutf8proc major release number is missing.
++#endif
++
++#ifndef UTF8PROC_RELEASE_MINOR
++#error The libutf8proc minor release number is missing.
++#endif
++
++#ifndef UTF8PROC_RELEASE_PATCH
++#error The libutf8proc patch release number is missing.
++#endif
++
++#ifndef UTF8PROC_RELEASE_SUFFIX
++#error The libutf8proc release suffix is missing.
++#endif
++
++UTF8PROC_DLLEXPORT const char *utf8proc_release(void) {
++  return STRINGIZE(UTF8PROC_RELEASE_MAJOR) "." STRINGIZE(UTF8PROC_RELEASE_MINOR) "." STRINGIZE(UTF8PROC_RELEASE_PATCH) UTF8PROC_RELEASE_SUFFIX;
++}
++
+ UTF8PROC_DLLEXPORT const char *utf8proc_errmsg(utf8proc_ssize_t errcode) {
+   switch (errcode) {
+     case UTF8PROC_ERROR_NOMEM:
+diff -r 33bd26f49d8c utf8proc.h
+--- a/utf8proc.h	Tue Dec 29 06:32:44 2015 +0100
++++ b/utf8proc.h	Tue Dec 29 07:09:25 2015 +0100
+@@ -375,6 +375,14 @@ UTF8PROC_DLLEXPORT extern const utf8proc
+ UTF8PROC_DLLEXPORT const char *utf8proc_version(void);
+ 
+ /**
++ * Returns the utf8proc RELEASE version, as a string in the form MAJOR.MINOR.PATCH
++ * and is based on the shared library version. When fetching the code directly from
++ * the project's source control repositories, the string may contain a "-pre" suffix
++ * to indicate the code hasn't been officially released yet.
++ */
++UTF8PROC_DLLEXPORT const char *utf8proc_release(void);
++
++/**
+  * Returns an informative error string for the given utf8proc error code
+  * (e.g. the error codes returned by @ref utf8proc_map).
+  */

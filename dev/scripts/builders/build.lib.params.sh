@@ -16,12 +16,14 @@ GEOIP="GeoIP-1.4.8"
 CLAMAV="clamav-0.98.4"
 OPENSSL="openssl-1.0.2e"
 JANSSON="jansson-2.2.1"
+UTF8PROC="utf8proc-1.3.1"
 FREETYPE="freetype-2.5.3"
 MEMCACHED="libmemcached-1.0.18"
 TOKYOCABINET="tokyocabinet-1.4.48"
 
 XMLTS="xmlts20130923"
 XML2TEST="libxml2-tests-2.9.0"
+UTF8PROCTEST="utf8proc-data-1.3.1"
 
 M_SO="$M_PROJECT_ROOT/magmad.so"
 M_LOGS="$M_ROOT/logs"
@@ -42,7 +44,7 @@ M_SYM_DIRS="-I$M_SOURCES/clamav/libclamav -I$M_SOURCES/mysql/include -I$M_SOURCE
 -I$M_SOURCES/spf2/src/include -I$M_SOURCES/xml2/include/libxml -I$M_SOURCES/xml2/include -I$M_SOURCES/lzo/include/lzo -I$M_SOURCES/lzo/include \
 -I$M_SOURCES/bzip2 -I$M_SOURCES/zlib -I$M_SOURCES/curl/include/curl -I$M_SOURCES/curl/include -I$M_SOURCES/memcached -I$M_SOURCES/geoip/libGeoIP \
 -I$M_SOURCES/dkim/libopendkim -I$M_SOURCES/dspam/src/ -I$M_SOURCES/jansson/src/ -I$M_SOURCES/gd -I$M_SOURCES/png -I$M_SOURCES/jpeg \
--I$M_SOURCES/freetype/include/freetype -I$M_SOURCES/freetype/include"
+-I$M_SOURCES/freetype/include/freetype -I$M_SOURCES/utf8proc -I$M_SOURCES/freetype/include"
 
 M_LDPATH="\
 	$M_SOURCES/curl/lib/.libs/:\
@@ -60,6 +62,7 @@ M_LDPATH="\
 	$M_SOURCES/dkim/libopendkim/.libs/:\
 	$M_SOURCES/dspam/src/.libs/:\
 	$M_SOURCES/jansson/src/.libs/:\
+	$M_SOURCES/utf8proc/:\
 	$M_SOURCES/gd/.libs/:\
 	$M_SOURCES/png/.libs/:\
 	$M_SOURCES/jpeg/.libs/:\

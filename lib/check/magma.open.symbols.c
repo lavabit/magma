@@ -374,6 +374,7 @@ int (*json_unpack_d)(json_t *root, const char *fmt, ...) = NULL;
 int (*json_unpack_ex_d)(json_t *root, json_error_t *error, size_t flags, const char *fmt, ...) = NULL;
 json_t * (*json_vpack_ex_d)(json_error_t *error, size_t flags, const char *fmt, va_list ap) = NULL;
 int (*json_vunpack_ex_d)(json_t *root, json_error_t *error, size_t flags, const char *fmt, va_list ap) = NULL;
+const char * (*utf8proc_release_d)(void) = NULL;
 char **xmlParserVersion_d = NULL;
 void (*xmlInitParser_d)(void) = NULL;
 void (*xmlMemoryDump_d)(void) = NULL;
@@ -776,6 +777,7 @@ void symbols_check(void *magma) {
 *(void **)&(json_unpack_ex_d) = dlsym(magma, "json_unpack_ex");
 *(void **)&(json_vpack_ex_d) = dlsym(magma, "json_vpack_ex");
 *(void **)&(json_vunpack_ex_d) = dlsym(magma, "json_vunpack_ex");
+*(void **)&(utf8proc_release_d) = dlsym(magma, "utf8proc_release");
 *(void **)&(xmlInitParser_d) = dlsym(magma, "xmlInitParser");
 *(void **)&(xmlMemoryDump_d) = dlsym(magma, "xmlMemoryDump");
 *(void **)&(xmlCleanupParser_d) = dlsym(magma, "xmlCleanupParser");

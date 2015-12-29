@@ -1,4 +1,3 @@
-
 /**
  * @file /magma/providers/cryptography/stacie.c
  *
@@ -18,13 +17,15 @@
 
 /**
  * @brief   Calculate total number of hash rounds for key derivation.
- * @author  Ivan.  Kent - refactored
- * @param   password    User password.
- * @param   bonus       Number of bonus hash rounds.
- * @return  Total number of hash rounds, 0 on failure.
+ *
+ * @param   password	A password which may contain any valid Unicode character (presumably encoded using UTF-8).
+ * @param   bonus	The number of additional rounds which should be added beyond the number of base rounds calculated
+ * 		using the password length.
+ * @return  Valid passwords will return a value between 8 (the prescribed minimum) and 16,777,215 (the maximum possible
+ * 		value of an unsigned 24 bit integer). If an error occurs then 0 is returned.
  */
-uint_t
-stacie_rounds_calculate (stringer_t *password, uint_t bonus) {
+uint32_t stacie_rounds_calculate(stringer_t *password, uint32_t bonus) {
+
 	uint32_t pass_len = 0, hash_rounds = 0;
 
 	// Between this call to st_empty() and the following call to
@@ -48,11 +49,12 @@ stacie_rounds_calculate (stringer_t *password, uint_t bonus) {
 
 	if (pass_len >= 24) {
 		hash_rounds = 2;
-	} else {
+	}
+	else {
 		// There must be a clearer way to describe the following.
 		// As it's written, I couldn't tell whether it's right or
 		// not.
-		hash_rounds = ((uint_t) 2) << (23 - pass_len);
+		hash_rounds = ((uint_t)2) << (23 - pass_len);
 	}
 
 	hash_rounds += bonus;
@@ -60,14 +62,12 @@ stacie_rounds_calculate (stringer_t *password, uint_t bonus) {
 	// clamp the return hash_rounds between MIN and MAX
 	hash_rounds = uint32_clamp(MIN_HASH_NUM, MAX_HASH_NUM, hash_rounds);
 
-out:
-	return hash_rounds;
+	out: return hash_rounds;
 
-error:
-	return 0;
-}   // stacie_rounds_calculate()
+	error: return 0;
+} // stacie_rounds_calculate()
 
-/*
+/**
  * @brief   Computer the key used to extract the entropy seed.
  * @author  Ivan.  Kent - refactored
  * @param   salt  User specific salt.
@@ -77,7 +77,7 @@ error:
  * the responsibility of the caller to free.
  */
 stringer_t *
-stacie_seed_key_derive (stringer_t *salt) {
+stacie_seed_key_derive(stringer_t *salt) {
 	size_t salt_len;
 	stringer_t *seed_key;
 	stringer_t *temp1;
@@ -104,14 +104,14 @@ stacie_seed_key_derive (stringer_t *salt) {
 		if (seed_key == NULL) {
 			log_error("st_alloc_opts() failed");
 			goto error;
-		}   // seed_key is allocated
+		} // seed_key is allocated
 
 		// TODO: Add constant and a comment for that nekid '3'
 		piece = mm_alloc(salt_len + 3);
 		if (piece == NULL) {
 			log_error("mm_alloc() failed");
 			goto cleanup_seed_key;
-		}   // piece is allocated
+		} // piece is allocated
 
 		mm_copy(piece, st_data_get(salt), salt_len);
 
@@ -122,7 +122,7 @@ stacie_seed_key_derive (stringer_t *salt) {
 		if (temp2 == NULL) {
 			log_error("hash_sha512() failed to hash salt string");
 			goto cleanup_piece;
-		}   // temp2 is allocated
+		} // temp2 is allocated
 
 		if (st_append(seed_key, temp2) == NULL) {
 			log_error("st_append() failed");
@@ -132,20 +132,21 @@ stacie_seed_key_derive (stringer_t *salt) {
 		st_free(temp2);
 
 		// Why an assignment of the +2?
-		piece[salt_len + 2] = (unsigned char) 1;
+		piece[salt_len + 2] = (unsigned char)1;
 
 		temp2 = hash_sha512(temp1, NULL);
 		if (temp2 == NULL) {
 			log_error("hash_sha512() failed to hash salt string");
 			goto cleanup_piece;
-		}   // temp2 is allocated
+		} // temp2 is allocated
 
 		// '64' snd '128' hould be a properly named constants
 		mm_copy(st_data_get(seed_key) + 64, st_data_get(temp2), 64);
 		st_length_set(seed_key, 128);
 		st_free(temp2);
 		mm_free(piece);
-	} else {
+	}
+	else {
 		// salt_len == 128
 		seed_key = st_dupe_opts((MANAGED_T | JOINTED | SECURE), salt);
 		if (seed_key == NULL) {
@@ -156,17 +157,13 @@ stacie_seed_key_derive (stringer_t *salt) {
 
 	return seed_key;
 
-cleanup_temp2:
-	st_free(temp2);
-cleanup_piece:
-	mm_free(piece);
-cleanup_seed_key:
-	st_free(seed_key);
-error:
-	return NULL;
-}   // stacie_seed_key_derive()
+	cleanup_temp2: st_free(temp2);
+	cleanup_piece: mm_free(piece);
+	cleanup_seed_key: st_free(seed_key);
+	error: return NULL;
+} // stacie_seed_key_derive()
 
-/*
+/**
  * @brief   Extract the seed from user password.
  * @author  Ivan.  Kent - refactored
  * @param   rounds      Number of hashing rounds.
@@ -176,12 +173,7 @@ error:
  * @return  Stringer with user's entropy seed.
  */
 stringer_t *
-stacie_seed_extract (
-	uint_t rounds,
-	stringer_t *username,
-	stringer_t *password,
-	stringer_t *salt)
-{
+stacie_seed_extract(uint_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt) {
 	stringer_t *seed = NULL;
 	stringer_t *key;
 	size_t salt_len;
@@ -196,13 +188,13 @@ stacie_seed_extract (
 		goto error;
 	}
 
-	if (salt == NULL)  {
+	if (salt == NULL) {
 		// Validate this form of the call returns new salt
 		salt = hash_sha512(username, NULL);
 		if (salt == NULL) {
 			log_error("hash_sha512() failed");
 			goto error;
-		}   // salt is allocated
+		} // salt is allocated
 
 		// recurse, free the temp salt stringer and return
 		seed = stacie_seed_extract(rounds, username, password, salt);
@@ -220,13 +212,13 @@ stacie_seed_extract (
 	if (key == NULL) {
 		log_error("stacie_seed_key_derive() failed");
 		goto error;
-	}   // key is allocated
+	} // key is allocated
 
 	seed = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64);
 	if (seed == NULL) {
 		log_error("st_alloc_opts() failed");
 		goto cleanup_key;
-	}   // seed is allocated
+	} // seed is allocated
 
 	seed = hmac_multi_sha512(rounds, password, key, seed);
 	if (seed == NULL) {
@@ -236,18 +228,14 @@ stacie_seed_extract (
 
 	st_free(key);
 
-out:
-	return seed;
+	out: return seed;
 
-cleanup_seed:
-	st_free(seed);
-cleanup_key:
-	st_free(key);
-error:
-	return NULL;
-}   // stacie_seed_extract()
+	cleanup_seed: st_free(seed);
+	cleanup_key: st_free(key);
+	error: return NULL;
+} // stacie_seed_extract()
 
-/*
+/**
  * @brief   Derive the hashed key from a seed and user credentials.
  * @author  Ivan.  Kent - refactored
  * @param   base       Entropy seed for master key derivation, master key
@@ -260,15 +248,9 @@ error:
  * Note: when there's a cascade of st_append calls on the same stringer it
  * is only necessary to check the error of the last call in the cascade.
  * Reference the notes below for the explanation of this structure.
-*/
+ */
 stringer_t *
-stacie_hashed_key_derive (
-	stringer_t *base,
-	uint_t rounds,
-	stringer_t *username,
-	stringer_t *password,
-	stringer_t *salt)
-{
+stacie_hashed_key_derive(stringer_t *base, uint_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt) {
 	void *opt1;
 	void *opt2;
 	stringer_t *hashed_key;
@@ -301,7 +283,8 @@ stacie_hashed_key_derive (
 
 	if (st_empty(salt)) { // salt is NULL or empty
 		salt_len = 0;
-	} else {              // if salt is non-mull salt len must be >= 64 bytes
+	}
+	else { // if salt is non-mull salt len must be >= 64 bytes
 		salt_len = st_length_get(salt);
 
 		if (salt_len < 64) {
@@ -314,21 +297,21 @@ stacie_hashed_key_derive (
 	if (hashed_key == NULL) {
 		log_error("st_alloc_opts() failed");
 		goto error;
-	}   // hashed_key is allocated
+	} // hashed_key is allocated
 
 	size_t input_len;
 	input_len = 64;
 	input_len += st_length_get(base);
 	input_len += st_length_get(username);
 	input_len += salt_len;
-	input_len +=  st_length_get(password);
-	input_len += 3;     // Replace this with a named constant
+	input_len += st_length_get(password);
+	input_len += 3; // Replace this with a named constant
 
 	hash_input = st_alloc_opts((MANAGED_T | JOINTED | SECURE), input_len);
 	if (hash_input == NULL) {
 		log_error("st_alloc_opts() failed");
 		goto cleanup_hashed_key;
-	}   // hash_input is allocated
+	} // hash_input is allocated
 
 	// Do not add checks for each call to the st_append cascade.
 	st_append(hash_input, base);
@@ -345,7 +328,7 @@ stacie_hashed_key_derive (
 	if (count == NULL) {
 		log_error("uint23_put_no() failed");
 		goto cleanup_hash_input;
-	}   // count is allocated
+	} // count is allocated
 
 	/*
 	 * NOTE: it is sufficient to check for an error condition at the
@@ -387,7 +370,7 @@ stacie_hashed_key_derive (
 	if (count == NULL) {
 		log_error("uint23_put_no() failed");
 		goto cleanup_hash_input;
-	}   // count is allocated
+	} // count is allocated
 
 	// last st_append in this cascade
 	if (st_append(hash_input, count) == NULL) {
@@ -411,7 +394,7 @@ stacie_hashed_key_derive (
 
 	// initialization for this for loop is confusing.  why
 	// start at 2?
-	for(uint_t i = 2; i < rounds; i++) {
+	for (uint_t i = 2; i < rounds; i++) {
 		mm_copy(opt2, opt1, 64);
 		if (st_length_set(hash_input, input_len - 3) == 0) {
 			log_error("st_length_set() failed");
@@ -438,17 +421,13 @@ stacie_hashed_key_derive (
 
 	return hashed_key;
 
-cleanup_count:
-	st_free(count);
-cleanup_hash_input:
-	st_free(hash_input);
-cleanup_hashed_key:
-	st_free(hashed_key);
-error:
-	return NULL;
-}   // stacie_hashed_key_derive()
+	cleanup_count: st_free(count);
+	cleanup_hash_input: st_free(hash_input);
+	cleanup_hashed_key: st_free(hashed_key);
+	error: return NULL;
+} // stacie_hashed_key_derive()
 
-/*
+/**
  * @brief   Derive hashed token as per STACIE authentication protocol.
  * @author  Ivan.  Kent - refactored
  * @param   base        The base input that will be hashed into the token,
@@ -461,14 +440,9 @@ error:
  * Note: both the salt and nonce parameters are allowed to be NULL or
  * zero length stringers here.  Test coverage exists for these cases
  * in the check tests. KDH
-*/
+ */
 stringer_t *
-stacie_hashed_token_derive (
-	stringer_t *base,
-	stringer_t *username,
-	stringer_t *salt,
-	stringer_t *nonce)
-{
+stacie_hashed_token_derive(stringer_t *base, stringer_t *username, stringer_t *salt, stringer_t *nonce) {
 	stringer_t *hashed_token;
 	stringer_t *hash_input;
 	stringer_t *count;
@@ -484,7 +458,7 @@ stacie_hashed_token_derive (
 	}
 
 	size_t salt_len = 0;
-	if (!st_empty(salt)) {   // if non-null, salt len must be >= 64
+	if (!st_empty(salt)) { // if non-null, salt len must be >= 64
 		if ((salt_len = st_length_get(salt)) < 64) {
 			log_pedantic("salt is NULL, empty or length != 64");
 			goto error;
@@ -492,7 +466,7 @@ stacie_hashed_token_derive (
 	}
 
 	size_t nonce_len = 0;
-	if (!st_empty(nonce)) {  // same with nonce
+	if (!st_empty(nonce)) { // same with nonce
 		if ((nonce_len = st_length_get(nonce)) < 64) {
 			log_pedantic("nonce is NULL, empty or length != 64");
 			goto error;
@@ -503,7 +477,7 @@ stacie_hashed_token_derive (
 	if (hashed_token == NULL) {
 		log_error("st_alloc_opts() failed");
 		goto error;
-	}   // hashed_token is allocated
+	} // hashed_token is allocated
 
 	size_t input_len;
 	input_len = 64;
@@ -511,20 +485,20 @@ stacie_hashed_token_derive (
 	input_len += st_length_get(username);
 	input_len += salt_len;
 	input_len += nonce_len;
-	input_len += 3;     // Replace this with a named constant
+	input_len += 3; // Replace this with a named constant
 
 	hash_input = st_alloc_opts((MANAGED_T | JOINTED | SECURE), input_len);
 	if (hash_input == NULL) {
 		log_error("st_alloc_opts() failed");
 		goto cleanup_hashed_token;
-	}   // hash_input is allocated
+	} // hash_input is allocated
 
-	for(uint_t i = 0; i < MIN_HASH_NUM; i++) {
-		st_wipe(hash_input);                   // reset the temp hash_input
+	for (uint_t i = 0; i < MIN_HASH_NUM; i++) {
+		st_wipe(hash_input); // reset the temp hash_input
 
 		// Build hash_input by starting with the value for hashed_token
 		st_append(hash_input, hashed_token);
-		st_wipe(hashed_token);                 // why?
+		st_wipe(hashed_token); // why?
 
 		st_append(hash_input, base);
 		st_append(hash_input, username);
@@ -541,7 +515,7 @@ stacie_hashed_token_derive (
 		if (count == NULL) {
 			log_error("uint24_put_no() failed");
 			goto cleanup_hash_input;
-		}   // count is allocated
+		} // count is allocated
 
 		if (st_append(hash_input, count) == NULL) {
 			log_error("st_append() failed");
@@ -560,33 +534,25 @@ stacie_hashed_token_derive (
 
 	return hashed_token;
 
-cleanup_count:
-	st_free(count);
-cleanup_hash_input:
-	st_free(hash_input);
-cleanup_hashed_token:
-	st_free(hashed_token);
-error:
-	return NULL;
-}   // stacie_hashed_token_derive()
+	cleanup_count: st_free(count);
+	cleanup_hash_input: st_free(hash_input);
+	cleanup_hashed_token: st_free(hashed_token);
+	error: return NULL;
+} // stacie_hashed_token_derive()
 
-/*
+/**
  * @brief   Derive the realm key used to decrypt keys for realm-specific user information.
  * @author  Ivan.  Kent - refactored
  * @param   master_key  Stringer containing master key derived from user password.
  * @param   realm       Realm name.
  * @param   shard       Shard serves as a realm-specific salt.
  * @return  Stringer containing the realm key.
-*/
+ */
 stringer_t *
-stacie_realm_key_derive (
-	stringer_t *master_key,
-	stringer_t *realm,
-	stringer_t *shard)
-{
+stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, stringer_t *shard) {
 	stringer_t *hash_input = NULL;
 	stringer_t *hash_output = NULL;
-	stringer_t *realm_key= NULL;
+	stringer_t *realm_key = NULL;
 
 	if (st_empty(master_key) || (st_length_get(master_key) != 64)) {
 		log_pedantic("An empty or invalid master key was passed in.");
@@ -612,19 +578,19 @@ stacie_realm_key_derive (
 	if (hash_input == NULL) {
 		log_error("st_alloc_opts() failed");
 		goto error;
-	}   // hash_input is allocated
+	} // hash_input is allocated
 
 	hash_output = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64);
 	if (hash_output == NULL) {
 		log_error("st_alloc_opts() failed");
 		goto cleanup_hash_input;
-	}   // hash_output is allocated
+	} // hash_output is allocated
 
 	realm_key = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 64);
 	if (realm_key == NULL) {
 		log_error("st_alloc_opts() failed");
 		goto cleanup_hash_output;
-	}   // realm_key is allocated
+	} // realm_key is allocated
 
 	st_append(hash_input, master_key);
 	st_append(hash_input, realm);
@@ -650,24 +616,20 @@ stacie_realm_key_derive (
 
 	return realm_key;
 
-cleanup_realm_key:
-	st_free(realm_key);
-cleanup_hash_output:
-	st_free(hash_output);
-cleanup_hash_input:
-	st_free(hash_input);
-error:
-	return NULL;
-}   // stacie_realm_key_derive()
+	cleanup_realm_key: st_free(realm_key);
+	cleanup_hash_output: st_free(hash_output);
+	cleanup_hash_input: st_free(hash_input);
+	error: return NULL;
+} // stacie_realm_key_derive()
 
-/*
+/**
  * @brief   Derive the encryption key used to decrypt realm-specific key.
  * @author  Ivan.  Kent - refactored
  * @param   realm_key  Stringer containing the realm key.
  * @return  Encryption key.
-*/
+ */
 stringer_t *
-stacie_realm_cipher_key_derive (stringer_t *realm_key) {
+stacie_realm_cipher_key_derive(stringer_t *realm_key) {
 	stringer_t *pl;
 	stringer_t *realm_cipher_key;
 
@@ -690,18 +652,17 @@ stacie_realm_cipher_key_derive (stringer_t *realm_key) {
 
 	return realm_cipher_key;
 
-error:
-	return NULL;
-}   // stacie_realm_cipher_key_derive()
+	error: return NULL;
+} // stacie_realm_cipher_key_derive()
 
-/*
+/**
  * @brief   Derive the initialization vector used to decrypt realm-specific key.
  * @author  Ivan.  Kent - refactored
  * @param   realm_key  Stringer containing the realm key.
  * @return  Initialization vector.
-*/
+ */
 stringer_t *
-stacie_realm_init_vector_derive (stringer_t *realm_key) {
+stacie_realm_init_vector_derive(stringer_t *realm_key) {
 	stringer_t *pl1;
 	stringer_t *pl2;
 	stringer_t *init_vector;
@@ -722,7 +683,7 @@ stacie_realm_init_vector_derive (stringer_t *realm_key) {
 	if (init_vector == NULL) {
 		log_error("st_alloc_opts() failed");
 		goto error;
-	}   // init_vector is allocated
+	} // init_vector is allocated
 
 	if (st_xor(pl1, pl2, init_vector) == NULL) {
 		log_error("st_xor() failed");
@@ -731,8 +692,6 @@ stacie_realm_init_vector_derive (stringer_t *realm_key) {
 
 	return init_vector;
 
-cleanup_init_vector:
-	st_free(init_vector);
-error:
-	return NULL;
-}   // stacie_realm_init_vector_derive()
+	cleanup_init_vector: st_free(init_vector);
+	error: return NULL;
+} // stacie_realm_init_vector_derive()

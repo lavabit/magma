@@ -423,6 +423,9 @@ extern int (*json_unpack_ex_d)(json_t *root, json_error_t *error, size_t flags, 
 extern json_t * (*json_vpack_ex_d)(json_error_t *error, size_t flags, const char *fmt, va_list ap);
 extern int (*json_vunpack_ex_d)(json_t *root, json_error_t *error, size_t flags, const char *fmt, va_list ap);
 
+//! UTF8
+extern const char * (*utf8proc_release_d)(void);
+
 //! XML
 extern char **xmlParserVersion_d;
 extern void (*xmlInitParser_d)(void);

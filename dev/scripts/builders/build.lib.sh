@@ -1425,6 +1425,68 @@ freetype() {
 
 }
 
+utf8proc() {
+
+	if [[ $1 == "utf8proc-extract" ]]; then
+		rm -f "$M_LOGS/utf8proc.txt"; error
+	elif [[ $1 != "utf8proc-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/utf8proc.txt"
+	fi
+
+	case "$1" in
+		utf8proc-extract)
+			extract $UTF8PROC "utf8proc" &>> "$M_LOGS/utf8proc.txt"
+			tar xzvf "$M_ARCHIVES/$UTF8PROCTEST.tar.gz" --directory="$M_SOURCES/utf8proc/data" &>> "$M_LOGS/utf8proc.txt"; error
+		;;
+		utf8proc-prep)
+			cd "$M_SOURCES/utf8proc"; error
+			cat "$M_PATCHES/utf8proc/"utf8proc.release.version.patch | patch -p1 --verbose &>> "$M_LOGS/utf8proc.txt"; error
+		;;
+		utf8proc-build)
+			cd "$M_SOURCES/utf8proc"; error
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
+			make &>> "$M_LOGS/utf8proc.txt"; error	
+			unset CFLAGS;
+		;;
+		utf8proc-check)
+			cd "$M_SOURCES/utf8proc"; error
+			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			make check &>> "$M_LOGS/utf8proc.txt"; error
+		;;
+		utf8proc-check-full)
+			cd "$M_SOURCES/utf8proc"; error
+			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			make check &>> "$M_LOGS/utf8proc.txt"; error
+		;;
+		utf8proc-clean)
+			cd "$M_SOURCES/utf8proc"; error
+			make clean &>> "$M_LOGS/utf8proc.txt"; error
+		;;
+		utf8proc-tail)
+			tail --lines=30 --follow=name --retry "$M_LOGS/utf8proc.txt"; error
+		;;
+		utf8proc-log)
+			cat "$M_LOGS/utf8proc.txt"; error
+		;;
+		utf8proc)
+			utf8proc "utf8proc-extract"
+			utf8proc "utf8proc-prep"
+			utf8proc "utf8proc-build"
+			utf8proc "utf8proc-check"
+		;;
+		*)
+			printf "\nUnrecognized request.\n"
+			exit 2
+		;;
+	esac
+
+	date +"Finished $1 at %r on %x"
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/spf2.txt"
+
+	return $?
+
+}
+
 memcached() {
 
 	if [[ $1 == "memcached-extract" ]]; then
@@ -1675,7 +1737,6 @@ combine() {
 	mkdir "$M_OBJECTS/dspam" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/dspam" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/dspam/src/.libs/libdspam.a" &>> "$M_LOGS/combine.txt"; error
-	#ar xv "$M_SOURCES/dspam/src/.libs/libmysql_drv.a" &>> "$M_LOGS/combine.txt"; error
 
 	rm -rf "$M_OBJECTS/mysql" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/mysql" &>> "$M_LOGS/combine.txt"; error
@@ -1716,6 +1777,11 @@ combine() {
 	mkdir "$M_OBJECTS/freetype" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/freetype" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/freetype/objs/.libs/libfreetype.a" &>> "$M_LOGS/combine.txt"; error
+	
+	rm -rf "$M_OBJECTS/utf8proc" &>> "$M_LOGS/combine.txt"; error
+	mkdir "$M_OBJECTS/utf8proc" &>> "$M_LOGS/combine.txt"; error
+	cd "$M_OBJECTS/utf8proc" &>> "$M_LOGS/combine.txt"; error
+	ar xv "$M_SOURCES/utf8proc/libutf8proc.a" &>> "$M_LOGS/combine.txt"; error
 
 	rm -rf "$M_OBJECTS/memcached" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/memcached" &>> "$M_LOGS/combine.txt"; error
@@ -1734,7 +1800,7 @@ combine() {
 		"$M_OBJECTS"/geoip/*.o "$M_OBJECTS"/clamav/*.o "$M_OBJECTS"/tokyocabinet/*.o "$M_OBJECTS"/crypto/*.o "$M_OBJECTS"/ssl/*.o \
 		"$M_OBJECTS"/mysql/*.o "$M_OBJECTS"/xml2/*.o "$M_OBJECTS"/spf2/*.o "$M_OBJECTS"/curl/*.o "$M_OBJECTS"/memcached/*.o \
 		"$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o "$M_OBJECTS"/png/*.o "$M_OBJECTS"/jpeg/*.o "$M_OBJECTS"/freetype/*.o \
-		"$M_OBJECTS"/gd/*.o \
+		"$M_OBJECTS"/utf8proc/*.o "$M_OBJECTS"/gd/*.o \
 		-lm -lrt -ldl -lnsl -lresolv -lpthread -lstdc++ &>> "$M_LOGS/combine.txt"; error
 
 	# Commands for creating a static version of the library.
@@ -1742,7 +1808,8 @@ combine() {
 	# ar -r "$M_ROOT/libmagmad.a" "$M_OBJECTS"/lzo/*.o "$M_OBJECTS"/zlib/*.o "$M_OBJECTS"/bzip2/*.o \
 	#	"$M_OBJECTS"/clamav/*.o "$M_OBJECTS"/tokyocabinet/*.o "$M_OBJECTS"/crypto/*.o "$M_OBJECTS"/ssl/*.o \
 	#	"$M_OBJECTS"/mysql/*.o "$M_OBJECTS"/xml2/*.o "$M_OBJECTS"/spf2/*.o "$M_OBJECTS"/curl/*.o \
-	#	"$M_OBJECTS"/memcached/*.o "$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o &>> "$M_LOGS/combine.txt"; error
+	#	"$M_OBJECTS"/memcached/*.o "$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o
+	#	"$M_OBJECTS"/utf8proc/*.o &>> "$M_LOGS/combine.txt"; error
 
 	date +"%nFinished creating the shared object at %r on %x%n"
 }
@@ -1864,6 +1931,7 @@ combo() {
 #	($0 "geoip-$1") & GEOIP_PID=$!
 #	($0 "openssl-$1") & OPENSSL_PID=$!
 #	($0 "jansson-$1") & JANSSON_PID=$!
+#	($0 "utf8proc-$1") & UTF8PROC_PID=$!
 #	($0 "freetype-$1") & FREETYPE_PID=$!
 #	($0 "tokyocabinet-$1") & TOKYOCABINET_PID=$! 
 #	($0 "gd-$1") & GD_PID=$!
@@ -1883,6 +1951,7 @@ combo() {
 #	wait $GEOIP_PID; error
 #	wait $OPENSSL_PID; error
 #	wait $JANSSON_PID; error
+#	wait $UTF8PROC_PID; error
 #	wait $FREETYPE_PID; error
 #	wait $TOKYOCABINET_PID; error
 #	
@@ -1923,6 +1992,8 @@ combo() {
 	wait $GEOIP_PID; error
 	($M_BUILD "jansson-$1") & JANSSON_PID=$!
 	wait $JANSSON_PID; error
+	($M_BUILD "utf8proc-$1") & UTF8PROC_PID=$!
+	wait $UTF8PROC_PID; error
 	($M_BUILD "freetype-$1") & FREETYPE_PID=$!
 	wait $FREETYPE_PID; error
 	($M_BUILD "memcached-$1") & MEMCACHED_PID=$!
@@ -1935,15 +2006,19 @@ combo() {
 }
 
 follow() {
+	# Note that the build.txt and combo.txt log files are intentionally excluded from this list because they don't belong to a bundled package file.
 	tail -n 0 -F "$M_LOGS/clamav.txt" "$M_LOGS/curl.txt" "$M_LOGS/dspam.txt" "$M_LOGS/jansson.txt" "$M_LOGS/memcached.txt" "$M_LOGS/openssl.txt" \
 		"$M_LOGS/tokyocabinet.txt" "$M_LOGS/zlib.txt" "$M_LOGS/bzip2.txt" "$M_LOGS/dkim.txt" "$M_LOGS/geoip.txt" "$M_LOGS/lzo.txt" \
-		"$M_LOGS/mysql.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt"
+		"$M_LOGS/mysql.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt" \
+		"$M_LOGS/utf8proc.txt"
 }
 
 log() {
+	# Note that the build.txt and combo.txt log files are intentionally excluded from this list because they don't belong to a bundled package file.
 	cat "$M_LOGS/clamav.txt" "$M_LOGS/curl.txt" "$M_LOGS/dspam.txt" "$M_LOGS/jansson.txt" "$M_LOGS/memcached.txt" "$M_LOGS/openssl.txt" \
 		"$M_LOGS/tokyocabinet.txt" "$M_LOGS/zlib.txt" "$M_LOGS/bzip2.txt" "$M_LOGS/dkim.txt" "$M_LOGS/geoip.txt" "$M_LOGS/lzo.txt" \
-		"$M_LOGS/mysql.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt"
+		"$M_LOGS/mysql.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt" \
+		"$M_LOGS/utf8proc.txt"
 }
 
 advance() {
@@ -2037,6 +2112,7 @@ elif [[ $1 =~ "clamav" ]]; then (clamav "$1") & CLAMAV_PID=$!; wait $CLAMAV_PID
 elif [[ $1 =~ "openssl" ]]; then (openssl "$1") & OPENSSL_PID=$!; wait $OPENSSL_PID
 elif [[ $1 =~ "jansson" ]]; then (jansson "$1") & JANSSON_PID=$!; wait $JANSSON_PID
 elif [[ $1 =~ "freetype" ]]; then (freetype "$1") & FREETYPE_PID=$!; wait $FREETYPE_PID
+elif [[ $1 =~ "utf8proc" ]]; then (utf8proc "$1") & UTF8PROC_PID=$!; wait $UTF8PROC_PID	
 elif [[ $1 =~ "memcached" ]]; then (memcached "$1") & MEMCACHED_PID=$!; wait $MEMCACHED_PID
 elif [[ $1 =~ "tokyocabinet" ]]; then (tokyocabinet "$1") & TOKYOCABINET_PID=$!; wait $TOKYOCABINET_PID
 
@@ -2054,7 +2130,7 @@ elif [[ $1 == "tail" ]]; then follow
 # Catchall
 else
 	echo ""
-	echo $"  `basename $0` {gd|png|lzo|jpeg|curl|spf2|xml2|dkim|zlib|bzip2|dspam|mysql|geoip|clamav|openssl|freetype|memcached|tokyocabinet} and/or "
+	echo $"  `basename $0` {gd|png|lzo|jpeg|curl|spf2|xml2|dkim|zlib|bzip2|dspam|mysql|geoip|clamav|openssl|freetype|utf8proc|memcached|tokyocabinet} and/or "
 	echo $"  `basename $0` {extract|prep|build|check|check-full|clean|tail|log} or "
 	echo $"  `basename $0` {combine|load|follow|log|status|all}"
 	echo ""

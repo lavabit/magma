@@ -419,6 +419,9 @@ int (*json_unpack_ex_d)(json_t *root, json_error_t *error, size_t flags, const c
 json_t * (*json_vpack_ex_d)(json_error_t *error, size_t flags, const char *fmt, va_list ap) = NULL;
 int (*json_vunpack_ex_d)(json_t *root, json_error_t *error, size_t flags, const char *fmt, va_list ap) = NULL;
 
+//! UTF8
+const char * (*utf8proc_release_d)(void) = NULL;
+
 //! XML
 char **xmlParserVersion_d = NULL;
 void (*xmlInitParser_d)(void) = NULL;
@@ -535,7 +538,7 @@ bool_t lib_load(void) {
 	}
 
 	else if (!lib_load_bzip() || !lib_load_cache() || !lib_load_clamav() || !lib_load_dkim() || !lib_load_dspam() ||
-		!lib_load_freetype() || !lib_load_gd() || !lib_load_jansson() || !lib_load_jpeg() || !lib_load_lzo() ||
+		!lib_load_freetype() || !lib_load_gd() || !lib_load_jansson() || !lib_load_jpeg() || !lib_load_lzo() || !lib_load_utf8proc() ||
 		!lib_load_mysql() || !lib_load_openssl() || !lib_load_png() || !lib_load_spf() || !lib_load_tokyo() || !lib_load_xml() ||
 		!lib_load_zlib()) {
 		return false;
@@ -548,7 +551,7 @@ bool_t lib_load(void) {
 		"%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n" \
 		"%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n" \
 		"%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n" \
-		"%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n",
+		"%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n",
 			"MAGMA:", build_version(),
 			"COMMIT:", build_commit(),
 			"TIMESTAMP:", build_stamp(),
@@ -574,6 +577,7 @@ bool_t lib_load(void) {
 			"PNG", lib_version_png(),
 			"SPF:", lib_version_spf(),
 			"TOKYO:", lib_version_tokyo(),
+			"UTF8:", lib_version_utf8proc(),
 			"XML:",	lib_version_xml(),
 			"ZLIB:", lib_version_zlib());
 	return true;

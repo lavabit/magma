@@ -47,7 +47,7 @@ CHECK_SRCFILES			= $(foreach dir,$(CHECK_SRCDIRS), $(wildcard $(dir)/*.c))
 # Bundled Dependency Include Paths
 INCDIR					= $(TOPDIR)/lib/sources
 INCDIRS					= spf2/src/include clamav/libclamav mysql/include openssl/include lzo/include xml2/include \
-		zlib bzip2 tokyocabinet memcached dkim/libopendkim dspam/src jansson/src gd png jpeg freetype/include
+		zlib bzip2 tokyocabinet memcached dkim/libopendkim dspam/src jansson/src gd png jpeg freetype/include utf8proc
 
 # Compiler Parameters
 CC						= gcc

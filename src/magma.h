@@ -133,6 +133,9 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+// UTF8
+#include <utf8proc.h>
+
 #include "core/core.h"
 #include "providers/providers.h"
 #include "engine/engine.h"

@@ -354,12 +354,11 @@ START_TEST (check_stacie_s) {
 
 	log_unit("%-64.64s", "CRYPTOGRAPHY / STACIE / SINGLE THREADED:");
 
+	log_disable();
 	for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof((checks)[0]); ++i) {
-		log_disable();
 		if(!(outcome = checks[i]())) {
 			err = errors[i];
 		}
-		log_enable();
 	}
 
 	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));

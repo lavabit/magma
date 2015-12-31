@@ -428,6 +428,7 @@ extern int (*json_vunpack_ex_d)(json_t *root, json_error_t *error, size_t flags,
 
 //! UTF8
 extern const char * (*utf8proc_release_d)(void);
+extern const char * (*utf8proc_errmsg_d)(utf8proc_ssize_t errcode);
 extern utf8proc_ssize_t (*utf8proc_iterate_d)(const utf8proc_uint8_t *str, utf8proc_ssize_t strlen, utf8proc_int32_t *codepoint_ref);
 
 //! XML

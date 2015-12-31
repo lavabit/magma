@@ -70,11 +70,6 @@ bool_t check_hash_sthread(chr_t *name) {
 			return false;
 		}
 
-		//stringer_t *hex[2] = { NULL, hex_encode_st(hash, NULL) };
-		//log_pedantic("%-15.15s = %.*s", "plain", st_length_int(hex[0]), st_char_get(hex[0]));
-		//log_pedantic("%-15.15s = %s / %.*s", "hash", name, st_length_int(hex[1]), st_char_get(hex[1]));
-		//st_free(hex[0]); st_free(hex[1]);
-
 		st_free(hash);
 	}
 

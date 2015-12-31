@@ -112,6 +112,7 @@ START_TEST (check_users_credentials_valid_s) {
 
 	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
 	fail_unless(!errmsg, st_char_get(errmsg));
+	st_cleanup(errmsg);
 	return;
 
 cleanup_cred:
@@ -119,6 +120,7 @@ cleanup_cred:
 error:
 	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
 	fail_unless(!errmsg, st_char_get(errmsg));
+	st_cleanup(errmsg);
 
 } END_TEST
 

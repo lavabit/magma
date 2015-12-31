@@ -543,10 +543,10 @@ START_TEST (check_clamp)
 		log_unit("%-64.64s", "CORE / PARSERS / CLAMP / SINGLE THREADED:");
 
 		// If any of the test cases return an error message, the unit test is considered a failure.
-		if ((errmsg = check_clamp_min()) ||
+		if (status() && ((errmsg = check_clamp_min()) ||
 			(errmsg = check_clamp_max()) ||
 			(errmsg = check_clamp_min_max_equal()) ||
-			(errmsg = check_clamp_randomizer())) {
+			(errmsg = check_clamp_randomizer()))) {
 			outcome = false;
 		}
 		else {
@@ -554,7 +554,7 @@ START_TEST (check_clamp)
 			// This test case is intentionally using invalid values, so to avoid logging all the meaningless errors, we have to
 			// disable logging while the test case is running.
 			log_disable();
-			if ((errmsg = check_clamp_min_max_invalid())) {
+			if (status() && (errmsg = check_clamp_min_max_invalid())) {
 				outcome = false;
 			}
 			log_enable();

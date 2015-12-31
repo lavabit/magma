@@ -78,5 +78,9 @@ bool_t   check_stacie_parameters(void);
 bool_t   check_stacie_rounds(void);
 bool_t   check_stacie_determinism(void);
 
+/// unicode_check.c
+chr_t *  check_unicode_valid(void);
+chr_t * check_unicode_invalid(void);
+chr_t * check_unicode_length(void);
 
 #endif

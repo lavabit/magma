@@ -36,7 +36,7 @@ uint32_t stacie_rounds_calculate(stringer_t *password, uint32_t bonus) {
 	}
 
 	// the utf_ code is clearly wip, Fix it.
-	pass_len = utf_length_get(password);
+	pass_len = utf8_length_st(password);
 	if (pass_len == 0) {
 		log_pedantic("password length is 0");
 		goto error;

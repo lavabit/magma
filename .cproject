@@ -40,7 +40,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding=".deps/|.objs/|.settings/|dev/|res/|sandbox/|web/|.cproject|.gitattributes|.gitignore|.project|COPYRIGHT|INSTALL|LICENSE|README|lib/|check/" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
+						<entry excluding=".deps/|.objs/|.settings/|dev/|res/|sandbox/|web/|.cproject|.gitattributes|.gitignore|.project|COPYRIGHT|INSTALL|LICENSE|README|lib/" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -86,14 +86,12 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding=".deps/|.objs/|.settings/|dev/|res/|sandbox/|web/|.cproject|.gitattributes|.gitignore|.project|COPYRIGHT|INSTALL|LICENSE|README|lib/|check/" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
+						<entry excluding=".deps/|.objs/|.settings/|dev/|res/|sandbox/|web/|.cproject|.gitattributes|.gitignore|.project|COPYRIGHT|INSTALL|LICENSE|README|lib/" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings">
-				<externalSettings containerId="magma.check;cdt.managedbuild.config.gnu.exe.debug.1006571712.309384821.800411248" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier">
-					<externalSetting/>
-				</externalSettings>
+				<externalSettings containerId="magma.so;cdt.managedbuild.toolchain.gnu.base.501067626" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
 			</storageModule>
 		</cconfiguration>
 	</storageModule>

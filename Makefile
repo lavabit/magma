@@ -38,8 +38,10 @@ MAGMA_COMMIT			= $(shell git log --format="%H" -n 1 | cut -c33-40)
 MAGMA_TIMESTAMP			= $(shell date +'%Y%m%d.%H%M')
 
 # Source Files
+BUILD_SRCFILES			= src/engine/status/build.c
+
 MAGMA_SRCDIRS			= $(shell find src -type d -print)
-MAGMA_SRCFILES			= $(foreach dir,$(MAGMA_SRCDIRS), $(wildcard $(dir)/*.c))
+MAGMA_SRCFILES			= $(filter-out src/engine/status/build.c, $(foreach dir,$(MAGMA_SRCDIRS), $(wildcard $(dir)/*.c)))
 
 CHECK_SRCDIRS			= $(shell find check -type d -print)
 CHECK_SRCFILES			= $(foreach dir,$(CHECK_SRCDIRS), $(wildcard $(dir)/*.c))
@@ -53,7 +55,7 @@ INCDIRS					= spf2/src/include clamav/libclamav mysql/include openssl/include lz
 CC						= gcc
 
 CFLAGS					= -std=gnu99 -O0 -fPIC -fmessage-length=0 -ggdb3 -rdynamic -c $(CFLAGS_WARNINGS) -MMD 
-CFLAGS_WARNINGS			= -Wall -Werror -Winline
+CFLAGS_WARNINGS			= -Wall -Werror -Winline -Wformat-security -Warray-bounds
 CFLAGS_PEDANTIC			= -Wextra -Wpacked -Wunreachable-code -Wformat=2
 
 CINCLUDES				= $(addprefix -I,$(INCLUDE_DIR_ABSPATHS))
@@ -82,18 +84,20 @@ ARFLAGS					= rcs
 
 # Hidden Directory for Dependency Files
 DEPDIR					= .deps
+BUILD_DEPFILES			= $(patsubst %.c,$(OBJDIR)/%.d,$(BUILD_SRCFILES))
 MAGMA_DEPFILES			= $(patsubst %.c,$(DEPDIR)/%.d,$(MAGMA_SRCFILES))
 CHECK_DEPFILES			= $(patsubst %.c,$(DEPDIR)/%.d,$(CHECK_SRCFILES))
 
 # Hidden Directory for Object Files
 OBJDIR					= .objs
+BUILD_OBJFILES			= $(patsubst %.c,$(OBJDIR)/%.o,$(BUILD_SRCFILES))
 MAGMA_OBJFILES			= $(patsubst %.c,$(OBJDIR)/%.o,$(MAGMA_SRCFILES))
 CHECK_OBJFILES			= $(patsubst %.c,$(OBJDIR)/%.o,$(CHECK_SRCFILES))
 
 # Modified Object Files
 #MODIFIED_SRCFILES		= $(shell git ls-files --modified --others src)
-MODIFIED_SRCFILES		= $(shell find src -mmin -1)
-MODIFIED_OBJFILES		= $(patsubst %.c,$(OBJDIR)/%.o,$(MODIFIED_SRCFILES))
+#MODIFIED_SRCFILES		= $(shell find src -mmin -1)
+#MODIFIED_OBJFILES		= $(patsubst %.c,$(OBJDIR)/%.o,$(MODIFIED_SRCFILES))
 
 # Resolve the External Include Directory Paths
 INCLUDE_DIR_VPATH		= $(INCDIR) /usr/include /usr/local/include
@@ -183,23 +187,26 @@ clean:
 
 incremental: $(MODIFIED_OBJFILES)
 
+# The Build Information
+$(BUILD_OBJFILES): $(BUILD_SRCFILES) $(MAGMA_SRCFILES) $(CHECK_SRCFILES)
+
 # Construct the magma daemon executable file
-$(MAGMA_PROGRAM): $(MAGMA_OBJFILES)
+$(MAGMA_PROGRAM): $(MAGMA_OBJFILES) $(BUILD_OBJFILES)
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 else
 	@echo 
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_OBJFILES) -Wl,--start-group $(MAGMA_STATIC) -Wl,--end-group $(MAGMA_DYNAMIC)
+	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_OBJFILES) $(BUILD_OBJFILES) -Wl,--start-group $(MAGMA_STATIC) -Wl,--end-group $(MAGMA_DYNAMIC)
 
 # Construct the magma unit test executable
-$(CHECK_PROGRAM): $(CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES))
+$(CHECK_PROGRAM): $(CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) $(BUILD_OBJFILES)
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 else
 	@echo 
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) -Wl,--start-group $(CHECK_STATIC) -Wl,--end-group $(CHECK_DYNAMIC)
+	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) $(BUILD_OBJFILES) -Wl,--start-group $(CHECK_STATIC) -Wl,--end-group $(CHECK_DYNAMIC)
 
 # The Magma Daemon Object files
 $(OBJDIR)/src/%.o: src/%.c
@@ -220,6 +227,6 @@ endif
 	$(RUN)$(CC) $(CFLAGS) $(CFLAGS.$(<F)) $(CDEFINES) $(CDEFINES.$(<F)) $(CHECK_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" -o"$@" "$<"
 
 # If we've already generated dependency files, use them to see if a rebuild is required
--include $(MAGMA_DEPFILES) $(CHECK_DEPFILES)
+-include $(MAGMA_DEPFILES) $(CHECK_DEPFILES) $(BUILD_DEPFILES)
 
 # vim:set softtabstop=4 shiftwidth=4 tabstop=4:

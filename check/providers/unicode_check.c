@@ -29,18 +29,21 @@ chr_t * check_unicode_valid(void) {
 	return NULL;
 }
 
+/**
+ * @brief Checks whether an invalid UTF8 string results in anything but false from the validity function, or zero
+ * 		from the length function.
+ * @return Returns an error message in an allocated buffer.
+ */
 chr_t * check_unicode_invalid(void) {
 
 	stringer_t *utf8 = MANAGEDBUF(128);
 
-	log_disable();
-
-	if (!(utf8 = hex_decode_st(NULLER("C380C3"), utf8)) || utf8_valid_st(utf8)) {
-		log_enable();
+	if (!(utf8 = hex_decode_st(NULLER("C380C3"), utf8)) ||
+		(utf8_valid_st(utf8) != false) ||
+		(utf8_length_st(utf8) != 0)) {
 		return ns_dupe("The Unicode invalidity test failed.");
 	}
 
-	log_enable();
 	return NULL;
 }
 

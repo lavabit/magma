@@ -13,7 +13,7 @@
 #include "magma_check.h"
 
 
-/*
+/**
  * @brief Check that all calculation results match up accurately with results from Python reference.
  * @return True if passes, false if fails.
 */
@@ -115,7 +115,7 @@ bool_t check_stacie_simple(void) {
 	return true;
 }
 
-/*
+/**
  * @brief	Check that rounds are calculated accurately using some simple examples.
  * @return	True if passes, false if fails.
 */
@@ -125,9 +125,26 @@ bool_t check_stacie_rounds(void) {
 	if(stacie_rounds_calculate(PLACER("3.14159265358979323846264338327950288419716939937510582097494459", 64), 0) != 8) {
 		return false;
 	}
+	// Even with 4 bonus rounds, long passwords yield the minimum value of 8.
+	else if (stacie_rounds_calculate(PLACER("3.14159265358979323846264338327950288419716939937510582097494459", 64), 4) != 8) {
+		return false;
+	}
+	// With a long password and 8 bonus rounds, the total should be 10.
+	else if (stacie_rounds_calculate(PLACER("3.14159265358979323846264338327950288419716939937510582097494459", 64), 8) != 10) {
+		return false;
+	}
 
+
+	// Check the number of rounds for an 8 character password.
+	if (stacie_rounds_calculate(PLACER("password", 8), 0) != 65536) {
+		return false;
+	}
+	// And with 128 bonus rounds.
+	else if (stacie_rounds_calculate(PLACER("password", 8), 128) != 65664) {
+		return false;
+	}
 	// Ensure the number of rounds is truncated to the maximum for a 24 bit value, or 16,777,215.
-	if(stacie_rounds_calculate(PLACER("password", 8), UINT_MAX) != 16777215) {
+	else if(stacie_rounds_calculate(PLACER("password", 8), UINT_MAX) != 16777215) {
 		return false;
 	}
 
@@ -135,11 +152,21 @@ bool_t check_stacie_rounds(void) {
 	if(stacie_rounds_calculate(PLACER("A", 1), 0) != 8388608) {
 		return false;
 	}
+	// Then try the same password with bonus rounds and ensure we can grow the number until we hit the max.
+	else if (stacie_rounds_calculate(PLACER("A", 1), 8388606) != 16777214) {
+		return false;
+	}
+	else if (stacie_rounds_calculate(PLACER("A", 1), 8388607) != 16777215) {
+		return false;
+	}
+	else if (stacie_rounds_calculate(PLACER("A", 1), 8388608) != 16777215) {
+		return false;
+	}
 
 	return true;
 }
 
-/*
+/**
  * @brief	Check that calculations are deterministic.
  * @return	True if passes, false if fails.
 */
@@ -193,8 +220,8 @@ bool_t check_stacie_determinism(void) {
 	st_cleanup(res1, res2);
 	res1 = res2 = NULL;
 
-	if(!(res1 = stacie_seed_extract(MIN_HASH_NUM, username, password, salt)) ||
-		!(res2 = stacie_seed_extract(MIN_HASH_NUM, username, password, salt)) ||
+	if(!(res1 = stacie_seed_extract(STACIE_ROUNDS_MIN, username, password, salt)) ||
+		!(res2 = stacie_seed_extract(STACIE_ROUNDS_MIN, username, password, salt)) ||
 		st_cmp_cs_eq(res1, res2)) {
 		st_cleanup(res1, res2);
 		return false;
@@ -203,8 +230,8 @@ bool_t check_stacie_determinism(void) {
 	st_cleanup(res1, res2);
 	res1 = res2 = NULL;
 
-	if(!(res1 = stacie_seed_extract(MIN_HASH_NUM, username, password, NULL)) ||
-		!(res2 = stacie_seed_extract(MIN_HASH_NUM, username, password, NULL)) ||
+	if(!(res1 = stacie_seed_extract(STACIE_ROUNDS_MIN, username, password, NULL)) ||
+		!(res2 = stacie_seed_extract(STACIE_ROUNDS_MIN, username, password, NULL)) ||
 		st_cmp_cs_eq(res1, res2)) {
 		st_cleanup(res1, res2);
 		return false;
@@ -213,8 +240,8 @@ bool_t check_stacie_determinism(void) {
 	st_cleanup(res1, res2);
 	res1 = res2 = NULL;
 
-	if(!(res1 = stacie_seed_extract(MAX_HASH_NUM, username, password, salt)) ||
-		!(res2 = stacie_seed_extract(MAX_HASH_NUM, username, password, salt)) ||
+	if(!(res1 = stacie_seed_extract(STACIE_ROUNDS_MAX, username, password, salt)) ||
+		!(res2 = stacie_seed_extract(STACIE_ROUNDS_MAX, username, password, salt)) ||
 		st_cmp_cs_eq(res1, res2)) {
 		st_cleanup(res1, res2);
 		return false;
@@ -224,13 +251,13 @@ bool_t check_stacie_determinism(void) {
 	res1 = res2 = NULL;
 
 	// Run deterministic tests on the hash derivation stage.
-	if (!(base = stacie_seed_extract(MIN_HASH_NUM, username, password, NULL))) {
+	if (!(base = stacie_seed_extract(STACIE_ROUNDS_MIN, username, password, NULL))) {
 		st_cleanup(base);
 		return false;
 	}
 
-	if(!(res1 = stacie_hashed_key_derive(base, MIN_HASH_NUM, username, password, salt)) ||
-		!(res2 = stacie_hashed_key_derive(base, MIN_HASH_NUM, username, password, salt)) ||
+	if(!(res1 = stacie_hashed_key_derive(base, STACIE_ROUNDS_MIN, username, password, salt)) ||
+		!(res2 = stacie_hashed_key_derive(base, STACIE_ROUNDS_MIN, username, password, salt)) ||
 		st_cmp_cs_eq(res1, res2)) {
 		st_cleanup(res1, res2, base);
 		return false;
@@ -239,8 +266,8 @@ bool_t check_stacie_determinism(void) {
 	st_cleanup(res1, res2);
 	res1 = res2 = NULL;
 
-	if(!(res1 = stacie_hashed_key_derive(base, MIN_HASH_NUM, username, password, NULL)) ||
-		!(res2 = stacie_hashed_key_derive(base, MIN_HASH_NUM, username, password, NULL)) ||
+	if(!(res1 = stacie_hashed_key_derive(base, STACIE_ROUNDS_MIN, username, password, NULL)) ||
+		!(res2 = stacie_hashed_key_derive(base, STACIE_ROUNDS_MIN, username, password, NULL)) ||
 		st_cmp_cs_eq(res1, res2)) {
 		st_cleanup(res1, res2, base);
 		return false;
@@ -284,7 +311,7 @@ bool_t check_stacie_determinism(void) {
 	return true;
 }
 
-/*
+/**
  * @brief	Check that STACIE functions fail when provided with illegal parameters.
  * @return	True if unit test passes, false if it fails.
 */
@@ -329,37 +356,37 @@ bool_t check_stacie_parameters(void) {
 		return false;
 	}
 
-	if((res = stacie_seed_extract(MIN_HASH_NUM, NULL, temp_st, NULL))) {
+	if((res = stacie_seed_extract(STACIE_ROUNDS_MIN, NULL, temp_st, NULL))) {
 		st_free(res);
 		return false;
 	}
 
-	if((res = stacie_seed_extract(MIN_HASH_NUM, NULL, temp_st, temp_st64))) {
+	if((res = stacie_seed_extract(STACIE_ROUNDS_MIN, NULL, temp_st, temp_st64))) {
 		st_free(res);
 		return false;
 	}
 
-	if((res = stacie_seed_extract(MAX_HASH_NUM, temp_st, NULL, NULL))) {
+	if((res = stacie_seed_extract(STACIE_ROUNDS_MIN, temp_st, NULL, NULL))) {
 		st_free(res);
 		return false;
 	}
 
-	if((res = stacie_seed_extract(MAX_HASH_NUM, temp_st, NULL, temp_st64))) {
+	if((res = stacie_seed_extract(STACIE_ROUNDS_MIN, temp_st, NULL, temp_st64))) {
 		st_free(res);
 		return false;
 	}
 
-	if((res = stacie_seed_extract(MIN_HASH_NUM, temp_st, temp_st, temp_st))) {
+	if((res = stacie_seed_extract(STACIE_ROUNDS_MIN, temp_st, temp_st, temp_st))) {
 		st_free(res);
 		return false;
 	}
 
-	if((res = stacie_hashed_key_derive(NULL, MIN_HASH_NUM, temp_st, temp_st, NULL))) {
+	if((res = stacie_hashed_key_derive(NULL, STACIE_ROUNDS_MIN, temp_st, temp_st, NULL))) {
 		st_free(res);
 		return false;
 	}
 
-	if((res = stacie_hashed_key_derive(temp_st, MIN_HASH_NUM, temp_st, temp_st, NULL))) {
+	if((res = stacie_hashed_key_derive(temp_st, STACIE_ROUNDS_MIN, temp_st, temp_st, NULL))) {
 		st_free(res);
 		return false;
 	}
@@ -374,12 +401,12 @@ bool_t check_stacie_parameters(void) {
 		return false;
 	}
 
-	if((res = stacie_hashed_key_derive(temp_st64, MIN_HASH_NUM, NULL, temp_st, NULL))) {
+	if((res = stacie_hashed_key_derive(temp_st64, STACIE_ROUNDS_MIN, NULL, temp_st, NULL))) {
 		st_free(res);
 		return false;
 	}
 
-	if((res = stacie_hashed_key_derive(temp_st64, MIN_HASH_NUM, temp_st, NULL, NULL))) {
+	if((res = stacie_hashed_key_derive(temp_st64, STACIE_ROUNDS_MIN, temp_st, NULL, NULL))) {
 		st_free(res);
 		return false;
 	}

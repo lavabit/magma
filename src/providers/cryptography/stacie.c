@@ -3,14 +3,10 @@
  *
  * @brief Functions used to generate STACIE-specified tokens and keys.
  *
+ * $Author$
  * $Date$
  * $Revision$
  *
- * TODO Kent. Where does this clamp() helper function belong?
- * TODO Kent. Which if any of these routines are private?  Mark the private routines
- *          as constant and can only be calls from this scope.
- * TODO Kent. scan entire code base for uses of st_append() of the form:
- *          a = st_append(a, b) and fix or leak memory on failure.
  */
 
 #include "magma.h"
@@ -26,46 +22,27 @@
  */
 uint32_t stacie_rounds_calculate(stringer_t *password, uint32_t bonus) {
 
-	uint32_t pass_len = 0, hash_rounds = 0;
+	ssize_t len = 0;
+	uint64_t base = 0;
+	uint32_t rounds = 0, exponent = 0;
 
-	// Between this call to st_empty() and the following call to
-	// utf_length_get() st_empty() is called 3 times.
-	if (st_empty(password)) {
-		log_pedantic("password is empty.");
-		goto error;
+	if (!(len = utf8_length_st(password))) {
+		log_pedantic("The password appears to be empty, or is an invalid UTF8 string.");
+		return 0;
 	}
 
-	// the utf_ code is clearly wip, Fix it.
-	pass_len = utf8_length_st(password);
-	if (pass_len == 0) {
-		log_pedantic("password length is 0");
-		goto error;
-	}
+	// Calculate the number of base rounds based on length. Add 2^X rounds, where X equals the number
+	// of characters fewer than 24. For passwords of 24 characters and higher, use an exponent value of 1.
+	exponent = (24 - uint64_clamp(1, 23, len));
 
-	if (bonus >= (MAX_HASH_NUM - 2)) {
-		hash_rounds = MAX_HASH_NUM;
-		goto out;
-	}
+	// With an exponent value of 1, we get a base value of 2.
+	base = (0x00000001 << exponent);
 
-	if (pass_len >= 24) {
-		hash_rounds = 2;
-	}
-	else {
-		// There must be a clearer way to describe the following.
-		// As it's written, I couldn't tell whether it's right or
-		// not.
-		hash_rounds = ((uint_t)2) << (23 - pass_len);
-	}
-
-	hash_rounds += bonus;
-
-	// clamp the return hash_rounds between MIN and MAX
-	hash_rounds = uint32_clamp(MIN_HASH_NUM, MAX_HASH_NUM, hash_rounds);
-
-	out: return hash_rounds;
-
-	error: return 0;
-} // stacie_rounds_calculate()
+	// Add the bonus rounds to our base rounds. If the value is below 8 this will raise the total to the minimum. If the
+	// value is over the max, it will be reduced. The result is clamped to a value between 8 and 16,777,215.
+	rounds = uint64_clamp(STACIE_ROUNDS_MIN, STACIE_ROUNDS_MAX, (base + bonus));
+	return rounds;
+}
 
 /**
  * @brief   Computer the key used to extract the entropy seed.
@@ -178,7 +155,7 @@ stacie_seed_extract(uint_t rounds, stringer_t *username, stringer_t *password, s
 	stringer_t *key;
 	size_t salt_len;
 
-	if (rounds < MIN_HASH_NUM || rounds > MAX_HASH_NUM) {
+	if (rounds < STACIE_ROUNDS_MIN || rounds > STACIE_ROUNDS_MAX) {
 		log_pedantic("hash rounds invalid");
 		goto error;
 	}
@@ -267,7 +244,7 @@ stacie_hashed_key_derive(stringer_t *base, uint_t rounds, stringer_t *username, 
 		goto error;
 	}
 
-	if (rounds < MIN_HASH_NUM || rounds > MAX_HASH_NUM) {
+	if (rounds < STACIE_ROUNDS_MIN || rounds > STACIE_ROUNDS_MAX) {
 		log_pedantic("hash rounds invalid");
 		goto error;
 	}
@@ -493,7 +470,7 @@ stacie_hashed_token_derive(stringer_t *base, stringer_t *username, stringer_t *s
 		goto cleanup_hashed_token;
 	} // hash_input is allocated
 
-	for (uint_t i = 0; i < MIN_HASH_NUM; i++) {
+	for (uint_t i = 0; i < STACIE_ROUNDS_MIN; i++) {
 		st_wipe(hash_input); // reset the temp hash_input
 
 		// Build hash_input by starting with the value for hashed_token

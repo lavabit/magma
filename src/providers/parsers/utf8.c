@@ -67,7 +67,7 @@ size_t utf8_length_st(stringer_t *s) {
 	while (len) {
 		if ((bytes = utf8proc_iterate_d(ptr, len, &codepoint)) < 0) {
 			log_pedantic("Invalid UTF8 byte sequence encountered. { hex = %08X, error = %s }",
-				((int32_t *)&codepoint), utf8_error_string(bytes));
+				((uint8_t *)&codepoint)[0], utf8_error_string(bytes));
 			return 0;
 		}
 

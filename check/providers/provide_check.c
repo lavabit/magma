@@ -360,6 +360,7 @@ START_TEST (check_stacie_s) {
 			err = errors[i];
 		}
 	}
+	log_enable();
 
 	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
 	fail_unless(outcome, st_data_get(err));
@@ -488,11 +489,15 @@ START_TEST (check_unicode_s) {
 
 	log_unit("%-64.64s", "PARSERS / UNICODE / SINGLE THREADED:");
 
+	log_disable();
+
 	if (status()) {
 		errmsg = check_unicode_valid();
-		if (!errmsg) errmsg = check_unicode_invalid();
-		if (!errmsg) errmsg = check_unicode_length();
+		if (status() && !errmsg) errmsg = check_unicode_invalid();
+		if (status() && !errmsg) errmsg = check_unicode_length();
 	}
+
+	log_enable();
 
 	log_unit("%10.10s\n", (errmsg ? "FAILED" : (status() ? "PASSED" : "SKIPPED")));
 

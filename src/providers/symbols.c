@@ -422,6 +422,9 @@ int (*json_vunpack_ex_d)(json_t *root, json_error_t *error, size_t flags, const 
 //! UTF8
 const char * (*utf8proc_release_d)(void) = NULL;
 const char * (*utf8proc_errmsg_d)(utf8proc_ssize_t errcode) = NULL;
+const char * (*utf8proc_category_string_d)(utf8proc_int32_t c) = NULL;
+utf8proc_category_t (*utf8proc_category_d)(utf8proc_int32_t c) = NULL;
+const utf8proc_property_t * (*utf8proc_get_property_d)(utf8proc_int32_t uc) = NULL;
 utf8proc_ssize_t (*utf8proc_iterate_d)(const utf8proc_uint8_t *str, utf8proc_ssize_t strlen, utf8proc_int32_t *codepoint_ref) = NULL;
 
 //! XML

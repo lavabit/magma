@@ -163,6 +163,33 @@ bool_t check_stacie_rounds(void) {
 		return false;
 	}
 
+	// Ensure an invalid UTF8 string returns 0.
+	if (stacie_rounds_calculate(hex_decode_st(NULLER("C380C3"), MANAGEDBUF(64)), 0) != 0) {
+		return false;
+	}
+
+	// Try using the string password, only with an accented alpha character.
+	if (stacie_rounds_calculate(hex_decode_st(NULLER("70C3A17373776F7264"), MANAGEDBUF(64)), 0) != 65536) {
+		return false;
+	}
+	// Try the same word, but with the UTF8 byte order mark at the beginning, which should not be included in the length.
+	else if (stacie_rounds_calculate(hex_decode_st(NULLER("EFBBBF70C3A17373776F7264"), MANAGEDBUF(64)), 0) != 65536) {
+		return false;
+	}
+
+	// Try two different Spanish words which are the same length in bytes, but different in character length.
+	if (stacie_rounds_calculate(hex_decode_st(NULLER("7465616D6F6D61E1B8BF61"), MANAGEDBUF(64)), 0) != 32768 ||
+		stacie_rounds_calculate(hex_decode_st(NULLER("636F6E7472617365C3B161"), MANAGEDBUF(64)), 0) != 16384) {
+		return false;
+	}
+
+	// Try three different Chinese words of different lengths.
+	if (stacie_rounds_calculate(hex_decode_st(NULLER("E68891E788B1E4BDA0"), MANAGEDBUF(64)), 0) != 2097152 ||
+		stacie_rounds_calculate(hex_decode_st(NULLER("E5B890E58FB7E5AF86E7A081"), MANAGEDBUF(64)), 0) != 1048576 ||
+		stacie_rounds_calculate(hex_decode_st(NULLER("E68891E79A84E4B8ADE69687E5BE97E5BE88E5A5BD"), MANAGEDBUF(64)), 0) != 131072) {
+		return false;
+	}
+
 	return true;
 }
 

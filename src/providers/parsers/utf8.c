@@ -28,7 +28,8 @@ chr_t * lib_version_utf8proc(void) {
 bool_t lib_load_utf8proc(void) {
 
 	symbol_t utf8proc[] = {
-		M_BIND(utf8proc_release), M_BIND(utf8proc_iterate), M_BIND(utf8proc_errmsg)
+		M_BIND(utf8proc_release), M_BIND(utf8proc_iterate), M_BIND(utf8proc_errmsg), M_BIND(utf8proc_category),
+		M_BIND(utf8proc_category_string), M_BIND(utf8proc_get_property)
 	};
 
 	if (lib_symbols(sizeof(utf8proc) / sizeof(symbol_t), utf8proc) != 1) {
@@ -58,6 +59,7 @@ size_t utf8_length_st(stringer_t *s) {
 	ssize_t bytes;
 	int32_t codepoint;
 	size_t len, result = 0;
+	const utf8proc_property_t *properties;
 
 	if (st_empty_out(s, &ptr, &len)) {
 		log_pedantic("Passed in a NULL pointer or zero length string.");
@@ -65,15 +67,21 @@ size_t utf8_length_st(stringer_t *s) {
 	}
 
 	while (len) {
-		if ((bytes = utf8proc_iterate_d(ptr, len, &codepoint)) < 0) {
+
+		// Iterate through the buffer and decompose each character.
+		if ((bytes = utf8proc_iterate_d(ptr, len, &codepoint)) <= 0) {
 			log_pedantic("Invalid UTF8 byte sequence encountered. { hex = %08X, error = %s }",
 				((uint8_t *)&codepoint)[0], utf8_error_string(bytes));
 			return 0;
 		}
 
+		// We only increment the length counter if the codepoint isn't marked as ignorable.
+		if (!((properties = utf8proc_get_property_d(codepoint))->ignorable)) {
+			result++;
+		}
+
 		len -= bytes;
 		ptr += bytes;
-		result++;
 	}
 
 	return result;

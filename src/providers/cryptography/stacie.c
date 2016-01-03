@@ -46,15 +46,14 @@ uint32_t stacie_rounds_calculate(stringer_t *password, uint32_t bonus) {
 
 /**
  * @brief   Computer the key used to extract the entropy seed.
- * @author  Ivan.  Kent - refactored
  * @param   salt  User specific salt.
  * @return  Key   used by the hmac function to extract seed.
  *
  * Note: the returned 'seed_key' is malloced from the heap and is
  * the responsibility of the caller to free.
  */
-stringer_t *
-stacie_seed_key_derive(stringer_t *salt) {
+stringer_t * stacie_seed_key_derive(stringer_t *salt) {
+
 	size_t salt_len;
 	stringer_t *seed_key;
 	stringer_t *temp1;

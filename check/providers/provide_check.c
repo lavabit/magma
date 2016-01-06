@@ -337,8 +337,8 @@ START_TEST (check_stacie_s) {
 	bool_t outcome = true;
 
 	bool_t (*checks[])(void) = {
-		&check_stacie_rounds, //check_stacie_parameters,
-		&check_stacie_rounds, //check_stacie_determinism,
+		&check_stacie_parameters, //check_stacie_parameters,
+		&check_stacie_determinism, //check_stacie_determinism,
 		&check_stacie_rounds,
 		&check_stacie_simple
 	};

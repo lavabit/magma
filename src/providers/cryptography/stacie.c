@@ -246,7 +246,7 @@ stringer_t * stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringe
 }
 
 /**
- * @brief   Derive hashed token as per STACIE authentication protocol.
+ * @brief   Derive the hashed token using derived values.
  *
  * @param   base        The base input that will be hashed into the token, either a password_key or verification token.
  * @param   username    Username stringer.
@@ -256,7 +256,7 @@ stringer_t * stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringe
  *
  * Note: both the salt and nonce parameters are allowed to be NULL or
  * zero length stringers here.  Test coverage exists for these cases
- * in the check tests. KDH
+ * in the check tests.
  */
 stringer_t * stacie_hashed_token_derive(stringer_t *base, stringer_t *username, stringer_t *salt, stringer_t *nonce) {
 
@@ -363,7 +363,7 @@ stringer_t * stacie_hashed_token_derive(stringer_t *base, stringer_t *username, 
  *
  * @param   master_key  Stringer containing master key derived from user password.
  * @param   realm       Realm name.
- * @param   shard       Shard serves as a realm-specific salt.
+ * @param   shard       the shard serves as a realm-specific salt.
  * @return  Stringer containing the realm key.
  */
 stringer_t * stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, stringer_t *shard) {
@@ -461,7 +461,7 @@ stringer_t * stacie_realm_cipher_key_derive(stringer_t *realm_key) {
 		goto error;
 	}
 
-	realm_cipher_key = st_dupe_opts((MANAGED_T | JOINTED | SECURE), pl);
+	realm_cipher_key = st_dupe_opts((MANAGED_T | CONTIGUOUS | SECURE), pl);
 	if (realm_cipher_key == NULL) {
 		log_error("st_dupe_opts() failed");
 		goto error;
@@ -496,7 +496,7 @@ stringer_t * stacie_realm_init_vector_derive(stringer_t *realm_key) {
 		goto error;
 	}
 
-	init_vector = st_alloc_opts((MANAGED_T | JOINTED | SECURE), 16);
+	init_vector = st_alloc_opts((MANAGED_T | CONTIGUOUS | SECURE), 16);
 	if (init_vector == NULL) {
 		log_error("st_alloc_opts() failed");
 		goto error;

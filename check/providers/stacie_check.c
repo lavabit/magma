@@ -203,8 +203,9 @@ bool_t check_stacie_rounds(void) {
 bool_t check_stacie_determinism(void) {
 
 	uint_t rounds1, rounds2;
-	stringer_t *username = PLACER("this_user", 9), *password = NULL,
-		*salt = PLACER("SALT1234SALT5678SALT9012SALT3456SALT7890SALT1234SALT5678SALT9012", 64),
+	stringer_t *username = PLACER("DongleDonkey", 12), *password = NULL,
+		*salt = PLACER("3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342" \
+			"117067982148086513282306647093844", 128),
 		*nonce = PLACER("NONCE123NONCE456NONCE789NONCE012NONCE345NONCE678NONCE901NONCE234", 64),
 		*key = PLACER("KEY12345KEY67890KEY12345KEY67890KEY12345KEY67890KEY12345KEY67890", 64),
 		*res1 = NULL, *res2 = NULL, *base = NULL;
@@ -239,7 +240,17 @@ bool_t check_stacie_determinism(void) {
 		return false;
 	}
 
-	res1 = res2 = NULL;
+
+	/*if(!(res1 = stacie_entropy_seed_derive(STACIE_ROUNDS_MAX, password, salt)) ||
+		!(res2 = stacie_entropy_seed_derive(STACIE_ROUNDS_MAX, password, salt)) ||
+		st_cmp_cs_eq(res1, res2)) {
+		st_cleanup(res1, res2);
+		return false;
+	}
+
+	st_cleanup(res1, res2);
+	res1 = res2 = NULL;*/
+
 
 	if(!(res1 = stacie_entropy_seed_derive(STACIE_ROUNDS_MIN, password, salt)) ||
 		!(res2 = stacie_entropy_seed_derive(STACIE_ROUNDS_MIN, password, salt)) ||
@@ -248,35 +259,11 @@ bool_t check_stacie_determinism(void) {
 		return false;
 	}
 
-	st_cleanup(res1, res2);
-	res1 = res2 = NULL;
-
-	if(!(res1 = stacie_entropy_seed_derive(STACIE_ROUNDS_MIN, password, NULL)) ||
-		!(res2 = stacie_entropy_seed_derive(STACIE_ROUNDS_MIN, password, NULL)) ||
-		st_cmp_cs_eq(res1, res2)) {
-		st_cleanup(res1, res2);
-		return false;
-	}
-
-	st_cleanup(res1, res2);
-	res1 = res2 = NULL;
-
-	if(!(res1 = stacie_entropy_seed_derive(STACIE_ROUNDS_MAX, password, salt)) ||
-		!(res2 = stacie_entropy_seed_derive(STACIE_ROUNDS_MAX, password, salt)) ||
-		st_cmp_cs_eq(res1, res2)) {
-		st_cleanup(res1, res2);
-		return false;
-	}
-
-	st_cleanup(res1, res2);
+	base = res2;
+	st_cleanup(res1);
 	res1 = res2 = NULL;
 
 	// Run deterministic tests on the hash derivation stage.
-	if (!(base = stacie_entropy_seed_derive(STACIE_ROUNDS_MIN, password, NULL))) {
-		st_cleanup(base);
-		return false;
-	}
-
 	if(!(res1 = stacie_hashed_key_derive(base, STACIE_ROUNDS_MIN, username, password, salt)) ||
 		!(res2 = stacie_hashed_key_derive(base, STACIE_ROUNDS_MIN, username, password, salt)) ||
 		st_cmp_cs_eq(res1, res2)) {
@@ -287,8 +274,8 @@ bool_t check_stacie_determinism(void) {
 	st_cleanup(res1, res2);
 	res1 = res2 = NULL;
 
-	if(!(res1 = stacie_hashed_key_derive(base, STACIE_ROUNDS_MIN, username, password, NULL)) ||
-		!(res2 = stacie_hashed_key_derive(base, STACIE_ROUNDS_MIN, username, password, NULL)) ||
+	if(!(res1 = stacie_hashed_key_derive(base, STACIE_ROUNDS_MIN, username, password, salt)) ||
+		!(res2 = stacie_hashed_key_derive(base, STACIE_ROUNDS_MIN, username, password, salt)) ||
 		st_cmp_cs_eq(res1, res2)) {
 		st_cleanup(res1, res2, base);
 		return false;

@@ -183,7 +183,6 @@ credential_t * credential_alloc_mail(stringer_t *address) {
 
 	// Boil the address
 	if ((result->type = CREDENTIAL_MAIL) != CREDENTIAL_MAIL || !(result->mail.address = credential_address(address)) ||
-		// QUESTION: What is mail.domain being used for?
 		!(result->mail.domain = st_alloc_opts(PLACER_T | JOINTED | SECURE | FOREIGNDATA, 0))) {
 		credential_free(result);
 		return NULL;
@@ -242,7 +241,7 @@ credential_t * credential_alloc_auth(stringer_t *username) {
 
 	if(st_search_cs(cred->auth.username, PLACER("@", 1), &at_offset) && (st_length_get(cred->auth.username) - at_offset) > 1) {
 
-		if(!(cred->auth.domain = st_alloc_opts((MANAGED_T | JOINTED | SECURE), st_length_get(cred->auth.username) - (at_offset + 1)))) {
+		if(!(cred->auth.domain = st_alloc_opts((MANAGED_T | CONTIGUOUS | SECURE), st_length_get(cred->auth.username) - (at_offset + 1)))) {
 			log_error("Failed to allocate email domain stringer.");
 			goto cleanup_cred;
 		}
@@ -250,7 +249,7 @@ credential_t * credential_alloc_auth(stringer_t *username) {
 		st_copy_in(cred->auth.domain, st_data_get(cred->auth.username) + at_offset + 1, st_length_get(cred->auth.username) - (at_offset + 1));
 	}
 
-	if (!(cred->auth.domain = st_merge_opts((MANAGED_T | JOINTED | SECURE), "s", magma.system.domain))) {
+	if (!(cred->auth.domain = st_merge_opts((MANAGED_T | CONTIGUOUS | SECURE), "s", magma.system.domain))) {
 		log_error("Failed to create default magma domain stringer.");
 		goto cleanup_cred;
 	}

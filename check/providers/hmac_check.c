@@ -21,7 +21,7 @@ bool_t check_hmac_simple(void) {
 	digest_t *digest;
 	stringer_t *hash, *hex,
 	*digest_list[] = {
-		PLACER("MD4", 3), 
+		PLACER("MD4", 3),
 		PLACER("MD5", 3),
 		PLACER("SHA", 3),
 		PLACER("SHA1", 4),
@@ -74,7 +74,7 @@ bool_t check_hmac_parameters(void) {
 
 	temp_dig = hash_name("SHA512");
 	temp_st = NULLER("temp_string");
-	
+
 	if((res = hmac_digest(NULL, temp_st, temp_st, NULL))) {
 		st_free(res);
 		return false;
@@ -84,30 +84,6 @@ bool_t check_hmac_parameters(void) {
 		return false;
 	}
 	else if((res = hmac_digest(temp_dig, temp_st, NULL, NULL))) {
-		st_free(res);
-		return false;
-	}
-	else if((res = hmac_multi_digest(0, NULL, temp_st, temp_st, NULL))) {
-		st_free(res);
-		return false;
-	}
-	else if((res = hmac_multi_digest(111, NULL, temp_st, temp_st, NULL))) {
-		st_free(res);
-		return false;
-	}
-	else if((res = hmac_multi_digest(0, temp_dig, NULL, temp_st, NULL))) {
-		st_free(res);
-		return false;
-	}
-	else if((res = hmac_multi_digest(111, temp_dig, NULL, temp_st, NULL))) {
-		st_free(res);
-		return false;
-	}
-	else if((res = hmac_multi_digest(0, temp_dig, temp_st, NULL, NULL))) {
-		st_free(res);
-		return false;
-	}
-	else if((res = hmac_multi_digest(111, temp_dig, temp_st, NULL, NULL))) {
 		st_free(res);
 		return false;
 	}
@@ -180,22 +156,6 @@ bool_t check_hmac_parameters(void) {
 		return false;
 	}
 	else if((res = hmac_ripemd160(temp_st, NULL, NULL))) {
-		st_free(res);
-		return false;
-	}
-	else if((res = hmac_multi_sha512(0, NULL, temp_st, NULL))) {
-		st_free(res);
-		return false;
-	}
-	else if((res = hmac_multi_sha512(0, NULL, temp_st, NULL))) {
-		st_free(res);
-		return false;
-	}
-	else if((res = hmac_multi_sha512(0, temp_st, NULL, NULL))) {
-		st_free(res);
-		return false;
-	}
-	else if((res = hmac_multi_sha512(0, temp_st, NULL, NULL))) {
 		st_free(res);
 		return false;
 	}

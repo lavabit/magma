@@ -441,7 +441,7 @@ static int_t credential_calc_stacie(credential_t *cred, stringer_t *password, st
 		goto error;
 	}
 
-	if(!(seed = stacie_seed_extract(rounds, cred->auth.username, password, salt))) {
+	if(!(seed = stacie_entropy_seed_derive(rounds, password, salt))) {
 		log_error("Failed STACIE entropy seed extraction.");
 		goto error;
 	}

@@ -14,12 +14,12 @@
 
 /**
  * @brief   Multi-concatenated HMAC-SHA512
- * @param   rounds  Number of times input is self-concantenated.
+ * @param   rounds  Number of times input is self-concatenated.
  * @param   s       Input.
  * @param   key     HMAC key.
  * @param   output  Stringer with HMAC.
  * @return  Pointer to stringer with buffer containing HMAC, NULL on failure.
- */
+
 stringer_t * hmac_multi_sha512(uint_t rounds, stringer_t *s, stringer_t *key, stringer_t *output) {
 	return hmac_multi_digest(rounds, (digest_t *)EVP_sha512_d(), s, key, output);
 }
@@ -148,7 +148,7 @@ stringer_t * hmac_multi_digest_null_output(uint_t rounds, digest_t *digest, stri
 	cleanup_alloced_output: st_free(alloced_output);
 	error: return NULL;
 }   // hmac_multi_digest_null_output()
-
+*/
 /**
  * @brief   hmac_multi_digest: perform an HMAC on a multi-concatenated input
  *          using the specified digest and key.
@@ -159,7 +159,7 @@ stringer_t * hmac_multi_digest_null_output(uint_t rounds, digest_t *digest, stri
  * @param   key     Key used in HMAC.
  * @param   output  Stringer containing buffer for output.
  * @return  Pointer to stringer with buffer containing HMAC. NULL on failure.
- */
+
 stringer_t * hmac_multi_digest(uint_t rounds, digest_t *digest, stringer_t *s, stringer_t *key, stringer_t *output) {
 	if (output == NULL) {
 		output = hmac_multi_digest_null_output(rounds, digest, s, key);
@@ -170,3 +170,4 @@ stringer_t * hmac_multi_digest(uint_t rounds, digest_t *digest, stringer_t *s, s
 
 	return output;
 }   // hmac_multi_digest()
+ */

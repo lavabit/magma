@@ -20,35 +20,35 @@
 bool_t check_stacie_simple(void) {
 
 	uint_t rounds = 0;
-	stringer_t *password = PLACER("password", 8), *username = PLACER("user@example.tld", 16),
+	stringer_t *password = PLACER("SiliconSally", 12), *username = PLACER("user@example.tld", 16),
 		*combined_key = NULL, *cipher_key = NULL, *vector_key = NULL, *extracted = NULL,
 		*salt = NULL, *nonce = NULL, *seed = NULL, *master_key = NULL, *password_key = NULL,
 		*verification_token = NULL,	*ephemeral_login_token = NULL, *shard = NULL, *realm_cipher_key = NULL,
 		*realm_vector_key = NULL;
 
-	// An 8 character password must resolve to 65,536 base rounds plus 131,072 (aka 2^17) bonus rounds, or 196,608 total rounds.
-	if((rounds = stacie_rounds_calculate(password, 131072)) != 196608) {
+	// A 12 character password must resolve to 4,096 base rounds plus 128 bonus rounds, or 4,224 total rounds.
+	if((rounds = stacie_rounds_calculate(password, 128)) != 4224) {
 		return false;
 	}
 
 	// Decode the binary input values, and comparison values from the hard coded versions provided in modified base64.
-	if (!(ephemeral_login_token = base64_decode_mod(NULLER("IVl9I1cEPWP3wd_XNYng8qSyzaic4Z_gCVaJcIZTE7rlGkwwh3oF63X8K4T0AvsEJOGOCnWQMirIyKiBpDD59Q"), NULL)) ||
-			!(verification_token = base64_decode_mod(NULLER("Xe9Xj70O2M2ctVCclrgO6FaJLiVmKPhMZZKMGVHeTetnxWglvgeu21T7Ms0pCKXiAUG2NuSO2cF5MUAuV1qCgg"), NULL)) ||
-			!(password_key = base64_decode_mod(NULLER("SskpKhi42KmNHIpO7v9NdATRDFY5oAl9gu03rGrUzowwLnXAkAxr1h1b5lajgNnWfH2WlE6I6vbXqgjgh4ExMA"), NULL)) ||
-			!(master_key = base64_decode_mod(NULLER("SXn5XauE903R7ir03ZS5oE5PwJ2UhxtFS-8LygUUSNQLAabDUDUu805EpVxxuQX-Smvc0NV-q6RdzyQ8M3eysg"), NULL)) ||
-			!(shard = base64_decode_mod(NULLER("gD65Kdeda1hB2Q6gdZl0fetGg2viLXWG0vmKN4HxE3Jp3Z0Gkt5prqSmcuY2o8t24iGSCOnFDpP71c3xl9SX9Q"), NULL)) ||
-			!(nonce = base64_decode_mod(NULLER("sJWAhD5Okulpjpa63FE4dGI-W3PDACaQtA49vQBOG9_UYhgNMzmLuSeRBEQy15Lv2Wn_lvSmzRkWfky51Fpp7Q"), NULL)) ||
-			!(seed = base64_decode_mod(NULLER("6xuALdCjmjaBlMSn8KkM9sSwO-DGM2V7J5r_K6g6Ocgg1VgnKTSsH4nsKokP597Wsdc9modu_ArofThTNIHcpw"), NULL)) ||
-			!(salt = base64_decode_mod(NULLER("HQpHA0L4Izkpy1lVY8Cnp03-D67E2bk04WDqNOiSzIMNnbmCjGlMRKxBh9UV5IgXggpRDYTYSRlTWNsohwvLwA"), NULL)) ||
-			!(realm_cipher_key = base64_decode_mod(NULLER("E5-hWK1n7StXpyqLlrR7aEEJaWGIMC3Ml4hlSHhb4xI"), NULL)) ||
-			!(realm_vector_key = base64_decode_mod(NULLER("EBThm16sL5xQciv2BgPD2w"), NULL))) {
+	if (!(salt = base64_decode_mod(NULLER("lyrtpzN8cBRZvsiHX6y4j-pJOjIyJeuw5aVXzrItw1G4EOa-6CA4R9BhVpinkeH0UeXyOeTisHR3Ik3yuOhxbWPyesMJvfp0IBtx0f0uorb8wPnhw5BxDJVCb1TOSE50PFKGBFMkc63Koa7vMDj-WEoDj2X0kkTtlW6cUvF8i-M"), NULL)) ||
+		!(ephemeral_login_token = base64_decode_mod(NULLER("S7GHxBFmLNg7cZ1cTHgD3mR2Ca0RhnOXif1UXNqGGvM9tgVsMm038Rd0Mj8Zc6-2NK3Nfjcleq0nWVsQwRB-8Q"), NULL)) ||
+		!(verification_token = base64_decode_mod(NULLER("4smP8S5oGOR_OUp_T4M1RgOnOeChgme5Xv-ZX8_kt8lYKdPTUlc4oPFgg-5rAyhiqQOfxNa5HyYaefcb_haQ9Q"), NULL)) ||
+		!(password_key = base64_decode_mod(NULLER("SeoGINQ3MXFo_xPt_uxYIgOzpU1BjDj9BfNlzbvlA2vOswkAC0sDnViURlhSRa8i91z6B-pQ8etRSaBkyDG_NA"), NULL)) ||
+		!(master_key = base64_decode_mod(NULLER("u-pbHPk-YbEY76DFA-X55HOS8BLxPGMY6oViDUed4fXrmlV1pRIpDem26P_1RBeCaWc09btoSP3E_fEF0ffxZA"), NULL)) ||
+		!(shard = base64_decode_mod(NULLER("gD65Kdeda1hB2Q6gdZl0fetGg2viLXWG0vmKN4HxE3Jp3Z0Gkt5prqSmcuY2o8t24iGSCOnFDpP71c3xl9SX9Q"), NULL)) ||
+		!(nonce = base64_decode_mod(NULLER("sJWAhD5Okulpjpa63FE4dGI-W3PDACaQtA49vQBOG9_UYhgNMzmLuSeRBEQy15Lv2Wn_lvSmzRkWfky51Fpp7Q"), NULL)) ||
+		!(seed = base64_decode_mod(NULLER("J7MWPKEl1fVJxa0SDreYIE-lcv6uK9BXIaRYFG6GcHxUo5pmme7i9JcYRvd_yCzg59A7gZAZmbCJ-1uRKOm7Kw"), NULL)) ||
+		!(realm_cipher_key = base64_decode_mod(NULLER("QLkIIqMf2eLUxcobqwrjCfCXRcCHL5ZCeHq5Guh-9q4"), NULL)) ||
+		!(realm_vector_key = base64_decode_mod(NULLER("f5YGmmqvTOsFLyWtIXjPZw"), NULL))) {
 		st_cleanup(ephemeral_login_token, verification_token, realm_vector_key, realm_cipher_key, password_key);
 		st_cleanup(master_key, shard, nonce, seed, salt);
 		return false;
 	}
 
 	// Extract the seed.
-	if(!(extracted = stacie_seed_extract(rounds, username, password, salt)) || st_cmp_cs_eq(extracted, seed)) {
+	if(!(extracted = stacie_entropy_seed_derive(rounds, password, salt)) || st_cmp_cs_eq(extracted, seed)) {
 		st_cleanup(ephemeral_login_token, verification_token, realm_vector_key, realm_cipher_key, password_key);
 		st_cleanup(master_key, shard, nonce, seed, salt);
 		st_cleanup(extracted);
@@ -143,8 +143,8 @@ bool_t check_stacie_rounds(void) {
 	else if (stacie_rounds_calculate(PLACER("password", 8), 128) != 65664) {
 		return false;
 	}
-	// Ensure the number of rounds is truncated to the maximum for a 24 bit value, or 16,777,215.
-	else if(stacie_rounds_calculate(PLACER("password", 8), UINT_MAX) != 16777215) {
+	// Ensure the number of rounds is truncated to the maximum for a 24 bit value, or 16,777,216.
+	else if(stacie_rounds_calculate(PLACER("password", 8), UINT_MAX) != 16777216) {
 		return false;
 	}
 
@@ -159,7 +159,10 @@ bool_t check_stacie_rounds(void) {
 	else if (stacie_rounds_calculate(PLACER("A", 1), 8388607) != 16777215) {
 		return false;
 	}
-	else if (stacie_rounds_calculate(PLACER("A", 1), 8388608) != 16777215) {
+	else if (stacie_rounds_calculate(PLACER("A", 1), 8388608) != 16777216) {
+		return false;
+	}
+	else if (stacie_rounds_calculate(PLACER("A", 1), 8388609) != 16777216) {
 		return false;
 	}
 
@@ -236,9 +239,10 @@ bool_t check_stacie_determinism(void) {
 		return false;
 	}
 
-	// Run deterministic tests on the seed derivation stage.
-	if(!(res1 = stacie_seed_key_derive(salt)) ||
-		!(res2 = stacie_seed_key_derive(salt)) ||
+	res1 = res2 = NULL;
+
+	if(!(res1 = stacie_entropy_seed_derive(STACIE_ROUNDS_MIN, password, salt)) ||
+		!(res2 = stacie_entropy_seed_derive(STACIE_ROUNDS_MIN, password, salt)) ||
 		st_cmp_cs_eq(res1, res2)) {
 		st_cleanup(res1, res2);
 		return false;
@@ -247,8 +251,8 @@ bool_t check_stacie_determinism(void) {
 	st_cleanup(res1, res2);
 	res1 = res2 = NULL;
 
-	if(!(res1 = stacie_seed_extract(STACIE_ROUNDS_MIN, username, password, salt)) ||
-		!(res2 = stacie_seed_extract(STACIE_ROUNDS_MIN, username, password, salt)) ||
+	if(!(res1 = stacie_entropy_seed_derive(STACIE_ROUNDS_MIN, password, NULL)) ||
+		!(res2 = stacie_entropy_seed_derive(STACIE_ROUNDS_MIN, password, NULL)) ||
 		st_cmp_cs_eq(res1, res2)) {
 		st_cleanup(res1, res2);
 		return false;
@@ -257,18 +261,8 @@ bool_t check_stacie_determinism(void) {
 	st_cleanup(res1, res2);
 	res1 = res2 = NULL;
 
-	if(!(res1 = stacie_seed_extract(STACIE_ROUNDS_MIN, username, password, NULL)) ||
-		!(res2 = stacie_seed_extract(STACIE_ROUNDS_MIN, username, password, NULL)) ||
-		st_cmp_cs_eq(res1, res2)) {
-		st_cleanup(res1, res2);
-		return false;
-	}
-
-	st_cleanup(res1, res2);
-	res1 = res2 = NULL;
-
-	if(!(res1 = stacie_seed_extract(STACIE_ROUNDS_MAX, username, password, salt)) ||
-		!(res2 = stacie_seed_extract(STACIE_ROUNDS_MAX, username, password, salt)) ||
+	if(!(res1 = stacie_entropy_seed_derive(STACIE_ROUNDS_MAX, password, salt)) ||
+		!(res2 = stacie_entropy_seed_derive(STACIE_ROUNDS_MAX, password, salt)) ||
 		st_cmp_cs_eq(res1, res2)) {
 		st_cleanup(res1, res2);
 		return false;
@@ -278,7 +272,7 @@ bool_t check_stacie_determinism(void) {
 	res1 = res2 = NULL;
 
 	// Run deterministic tests on the hash derivation stage.
-	if (!(base = stacie_seed_extract(STACIE_ROUNDS_MIN, username, password, NULL))) {
+	if (!(base = stacie_entropy_seed_derive(STACIE_ROUNDS_MIN, password, NULL))) {
 		st_cleanup(base);
 		return false;
 	}
@@ -353,57 +347,37 @@ bool_t check_stacie_parameters(void) {
 		return false;
 	}
 
-	if((res = stacie_seed_key_derive(NULL))) {
+	if((res = stacie_entropy_seed_derive(0, temp_st, NULL))) {
 		st_free(res);
 		return false;
 	}
 
-	if((res = stacie_seed_key_derive(temp_empty))) {
+	if((res = stacie_entropy_seed_derive(0, temp_st, temp_st64))) {
 		st_free(res);
 		return false;
 	}
 
-	if((res = stacie_seed_extract(0, temp_st, temp_st, NULL))) {
+	if((res = stacie_entropy_seed_derive(0xFFFFFFFF, temp_st, NULL))) {
 		st_free(res);
 		return false;
 	}
 
-	if((res = stacie_seed_extract(0, temp_st, temp_st, temp_st64))) {
+	if((res = stacie_entropy_seed_derive(0xFFFFFFFF, temp_st, temp_st64))) {
 		st_free(res);
 		return false;
 	}
 
-	if((res = stacie_seed_extract(0xFFFFFFFF, temp_st, temp_st, NULL))) {
+	if((res = stacie_entropy_seed_derive(STACIE_ROUNDS_MIN, temp_st, NULL))) {
 		st_free(res);
 		return false;
 	}
 
-	if((res = stacie_seed_extract(0xFFFFFFFF, temp_st, temp_st, temp_st64))) {
+	if((res = stacie_entropy_seed_derive(STACIE_ROUNDS_MIN, temp_st, temp_st64))) {
 		st_free(res);
 		return false;
 	}
 
-	if((res = stacie_seed_extract(STACIE_ROUNDS_MIN, NULL, temp_st, NULL))) {
-		st_free(res);
-		return false;
-	}
-
-	if((res = stacie_seed_extract(STACIE_ROUNDS_MIN, NULL, temp_st, temp_st64))) {
-		st_free(res);
-		return false;
-	}
-
-	if((res = stacie_seed_extract(STACIE_ROUNDS_MIN, temp_st, NULL, NULL))) {
-		st_free(res);
-		return false;
-	}
-
-	if((res = stacie_seed_extract(STACIE_ROUNDS_MIN, temp_st, NULL, temp_st64))) {
-		st_free(res);
-		return false;
-	}
-
-	if((res = stacie_seed_extract(STACIE_ROUNDS_MIN, temp_st, temp_st, temp_st))) {
+	if((res = stacie_entropy_seed_derive(STACIE_ROUNDS_MIN, temp_st, temp_st))) {
 		st_free(res);
 		return false;
 	}

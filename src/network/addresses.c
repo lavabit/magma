@@ -175,7 +175,7 @@ stringer_t * ip_subnet(ip_t *address, stringer_t *output) {
 	return result;
 }
 
-/*
+/**
  * @brief	Convert an IP address structure into a readable string.
  * @param	address		a pointer to the IP address to be displayed.
  * @param	output		a managed string to store the output, which will be allocated for the caller if output is NULL.

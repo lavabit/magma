@@ -26,9 +26,10 @@
 #define ECIES_CIPHER NID_aes_256_cbc
 #define ECIES_ENVELOPE NID_sha512
 
-// STACIE number constants for clamping hash rounds between 8 and 16,777,215.
-#define STACIE_ROUNDS_MAX	0x00FFFFFF
-#define STACIE_ROUNDS_MIN	0x00000008
+// STACIE number constants for clamping hash rounds between 8 and 16,777,216, which represents the number of possible
+// values for an unsigned 24 bit integer, if you include 0. In other words 0 to 16,777,215 equals 16,777,216.
+#define STACIE_ROUNDS_MIN	8
+#define STACIE_ROUNDS_MAX	16777216
 
 typedef enum {
 	ECIES_PRIVATE_HEX = 1,
@@ -106,7 +107,7 @@ void *          ecies_envelope_derivation(const void *input, size_t ilen, void *
 void            ecies_key_free(EC_KEY *key);
 void            ecies_stop(void);
 
-/// digest.c
+/// hash.c
 digest_t *    hash_id(int_t id);
 digest_t *    hash_name(stringer_t *name);
 stringer_t *  hash_digest(digest_t *digest, stringer_t *s, stringer_t *output);
@@ -122,7 +123,6 @@ stringer_t *  hash_sha512(stringer_t *s, stringer_t *output);
 
 /// hmac.c
 stringer_t *  hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, stringer_t *output);
-stringer_t *  hmac_multi_digest(uint_t rounds, digest_t *digest, stringer_t *s, stringer_t *key, stringer_t *output);
 stringer_t *  hmac_md4(stringer_t *s, stringer_t *key, stringer_t *output);
 stringer_t *  hmac_md5(stringer_t *s, stringer_t *key, stringer_t *output);
 stringer_t *  hmac_ripemd160(stringer_t *s, stringer_t *key, stringer_t *output);
@@ -132,9 +132,6 @@ stringer_t *  hmac_sha224(stringer_t *s, stringer_t *key, stringer_t *output);
 stringer_t *  hmac_sha256(stringer_t *s, stringer_t *key, stringer_t *output);
 stringer_t *  hmac_sha384(stringer_t *s, stringer_t *key, stringer_t *output);
 stringer_t *  hmac_sha512(stringer_t *s, stringer_t *key, stringer_t *output);
-stringer_t *  hmac_multi_sha512(uint_t rounds, stringer_t *s, stringer_t *key, stringer_t *output);
-
-
 
 /// openssl.c
 bool_t   lib_load_openssl(void);
@@ -192,8 +189,8 @@ uint64_t      scramble_vector_length(scramble_t *buffer);
 /// stacie.c
 uint32_t stacie_rounds_calculate(stringer_t *password, uint32_t bonus);
 stringer_t * stacie_seed_key_derive(stringer_t *salt);
-stringer_t * stacie_seed_extract(uint_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt);
-stringer_t * stacie_hashed_key_derive(stringer_t *base, uint_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt);
+stringer_t * stacie_entropy_seed_derive(uint32_t rounds, stringer_t *password, stringer_t *salt);
+stringer_t * stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt);
 stringer_t * stacie_hashed_token_derive(stringer_t *base, stringer_t *username, stringer_t *salt, stringer_t *nonce);
 stringer_t * stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, stringer_t *shard);
 stringer_t * stacie_realm_cipher_key_derive(stringer_t *realm_key);

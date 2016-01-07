@@ -1,7 +1,10 @@
 /**
  * @file /magma/providers/cryptography/stacie.c
  *
- * @brief Functions used to generate STACIE-specified tokens and keys.
+ * @brief These functions implement the Safely Turning Authentication Credentials Into Entropy (STACIE)
+ * 		specification. These functions implement the individual steps required for key and token derivation.
+ * 		The inputs for these functions should already processed and normalized for a deterministic
+ * 		output.
  *
  * $Author$
  * $Date$
@@ -12,11 +15,12 @@
 #include "magma.h"
 
 /**
- * @brief   Calculate total number of hash rounds for key derivation.
+ * @brief   Calculate the number of hash rounds needed for the seed and key derivation stages.
  *
  * @param   password	A password which may contain any valid Unicode character (presumably encoded using UTF-8).
  * @param   bonus	The number of additional rounds which should be added beyond the number of base rounds calculated
  * 		using the password length.
+ *
  * @return  Valid passwords will return a value between 8 (the prescribed minimum) and 16,777,216 (the maximum possible
  * 		values for an unsigned 24 bit integer, if you include 0). If an error occurs then 0 is returned.
  */

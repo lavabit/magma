@@ -13,7 +13,7 @@
 #ifndef MAGMA_PROVIDERS_CRYPTOGRAPHY_H
 #define MAGMA_PROVIDERS_CRYPTOGRAPHY_H
 
-// Some OpenSSL macros also need to be re-defined
+// These OpenSSL macros need to be redefined here to avoid compilation problems.
 #define BN_num_bytes_d(a)		((BN_num_bits_d(a)+7)/8)
 #define OPENSSL_free_d(addr)	CRYPTO_free_d(addr)
 

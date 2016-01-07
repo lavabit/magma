@@ -33,7 +33,7 @@ bool_t check_hash_simple(void) {
 	// Loop through and hash a single space using each digest method. Then check whether we got what we expected.
 	for (uint64_t i = 0; status() && i < (sizeof(digest_list) / sizeof(chr_t *)); i++) {
 
-		if (!(digest = hash_name(NULLER(digest_list[i]))) || !(hash = hash_digest(digest, PLACER(" ", 1), NULL))) {
+		if (!(digest = digest_name(NULLER(digest_list[i]))) || !(hash = hash_digest(digest, PLACER(" ", 1), NULL))) {
 			return false;
 		}
 		else if (!(hex = hex_encode_st(hash, NULL))) {
@@ -66,7 +66,7 @@ bool_t check_hash_sthread(chr_t *name) {
 			return false;
 		}
 		//else if (!(digest = digest_name(NULLER(name))) || !(hash = hash_digest(digest, PLACER(buffer, DIGEST_CHECK_SIZE), NULL))) {
-		else if (!(digest = hash_name(NULLER(name))) || !(hash = hash_digest(digest, PLACER(" ", 1), NULL))) {
+		else if (!(digest = digest_name(NULLER(name))) || !(hash = hash_digest(digest, PLACER(" ", 1), NULL))) {
 			return false;
 		}
 

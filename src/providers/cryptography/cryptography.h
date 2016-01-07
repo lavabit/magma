@@ -90,6 +90,10 @@ void *    cryptex_envelope_data(cryptex_t *cryptex);
 void *    cryptex_mac_data(cryptex_t *cryptex);
 void      cryptex_free(cryptex_t *cryptex);
 
+/// digest.c
+digest_t *    digest_id(int_t id);
+digest_t *    digest_name(stringer_t *name);
+
 /// ecies.c
 EC_GROUP *      ecies_group(uint64_t curve, bool_t precompute);
 EC_KEY *        ecies_key_alloc(void);
@@ -108,8 +112,6 @@ void            ecies_key_free(EC_KEY *key);
 void            ecies_stop(void);
 
 /// hash.c
-digest_t *    hash_id(int_t id);
-digest_t *    hash_name(stringer_t *name);
 stringer_t *  hash_digest(digest_t *digest, stringer_t *s, stringer_t *output);
 stringer_t *  hash_md4(stringer_t *s, stringer_t *output);
 stringer_t *  hash_md5(stringer_t *s, stringer_t *output);
@@ -154,7 +156,6 @@ bool_t   ssl_verify_privkey(const char *keyfile);
 DH *     ssl_dh_exchange_callback(SSL *ssl, int is_export, int keylength);
 int      ssl_dh_generate_callback(int p, int n, BN_GENCB *cb);
 EC_KEY * ssl_ecdh_exchange_callback(SSL *ssl, int is_export, int keylength);
-
 
 /// random.c
 bool_t        rand_start(void);

@@ -2,35 +2,25 @@
 /**
  * @file /magma/providers/cryptography/hmac.c
  *
- * @brief   Functions used to create hmac's using specified digest functions.
+ * @brief   Functions used to create a Hashed Message Authentication Code (HMAC).
  *
- * @Author  Ivan
+ * $Author$
  * $Date$
  * $Revision$
- * 7/2/2015: Zach refactored Kent's code to remove the recursive call in the
- *          case of the 'output' param being null with 2 static calls to wrap
- *          the 'output' param states. I liked the recursive call because that
- *          approach works well if you have n params that are optionally null.
- *          Regardless, until the day that there are more than one param that c
- *          an be optionally null, this approach that removes the recursion is
- *          probably easier for most to follow.  Kent.
- * 7/1/2015: Refactored hmac_digest to have a single routine that does
- *          most of the work: hmac_multi_digest().  If called with a null
- *          output param, the output param is allocated and a recursive call
- *          back to hmac_multi_digest() is made.  The simpler routine:
- *          hmac_digest() is replaced with a call to hmac_multi_digest() with
- *          a rounds count of 1. Kent.
+ *
  */
 
 #include "magma.h"
 
 /**
- * @brief  hmac_digest: perform an HMAC using the specified digest and key.
+ * @brief  Performs an HMAC using the specified digest and key.
+ *
  * @param  digest   Digest to be used with the HMAC.
  * @param  s        Input data.
  * @param  key      Key used in HMAC.
  * @param  output   Stringer containing buffer for output.
- * @return Pointer to stringer with buffer containing HMAC. NULL on failure.
+ *
+ * @return	The managed string containing the resulting HMAC or NULL if an error occurs.
  */
 stringer_t * hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, stringer_t *output) {
 
@@ -102,13 +92,6 @@ stringer_t * hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, strin
 	return result;
 }
 
-/**
- * @brief   Helper functions
- * @param   s       Input data.
- * @param   key     HMAC key.
- * @param   output  Stringer with HMAC
- * @return  Pointer to stringer with HMAC buffer. NULL on failure.
- */
 stringer_t * hmac_md4(stringer_t *s, stringer_t *key, stringer_t *output) {
 	return hmac_digest((digest_t *)EVP_md4_d(), s, key, output);
 }
@@ -139,7 +122,6 @@ stringer_t * hmac_sha384(stringer_t *s, stringer_t *key, stringer_t *output) {
 
 stringer_t * hmac_sha512(stringer_t *s, stringer_t *key, stringer_t *output) {
 	return hmac_digest((digest_t *)EVP_sha512_d(), s, key, output);
-	EVP_sha512();
 }
 
 stringer_t * hmac_ripemd160(stringer_t *s, stringer_t *key, stringer_t *output) {

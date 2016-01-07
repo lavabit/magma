@@ -46,7 +46,7 @@ bool_t check_hmac_simple(void) {
 
 	for (uint64_t i = 0; status() && i < (sizeof(digest_list) / sizeof(chr_t *)); ++i) {
 
-		if (!(digest = hash_name(digest_list[i])) || !(hash = hmac_digest(digest, digest_list[i], key, NULL))) {
+		if (!(digest = digest_name(digest_list[i])) || !(hash = hmac_digest(digest, digest_list[i], key, NULL))) {
 			return false;
 		}
 		else if (!(hex = hex_encode_st(hash, NULL))) {
@@ -72,7 +72,7 @@ bool_t check_hmac_parameters(void) {
 	digest_t *temp_dig;
 	stringer_t *temp_st, *res;
 
-	temp_dig = hash_name("SHA512");
+	temp_dig = digest_name("SHA512");
 	temp_st = NULLER("temp_string");
 
 	if((res = hmac_digest(NULL, temp_st, temp_st, NULL))) {

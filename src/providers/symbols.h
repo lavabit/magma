@@ -205,6 +205,7 @@ extern unsigned long (*ERR_get_error_d)(void);
 extern void (*CONF_modules_unload_d)(int all);
 extern void (*HMAC_CTX_init_d)(HMAC_CTX *ctx);
 extern void (*SSL_load_error_strings_d)(void);
+extern int (*EVP_MD_type_d)(const EVP_MD *md);
 extern const EVP_MD * (*EVP_ripemd160_d)(void);
 extern const char * (*SSLeay_version_d)(int t);
 extern BIO * (*SSL_get_wbio_d)(const SSL * ssl);

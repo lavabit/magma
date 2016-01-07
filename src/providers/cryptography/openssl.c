@@ -60,7 +60,7 @@ bool_t lib_load_openssl(void) {
 		M_BIND(SSL_get_shutdown), M_BIND(SSL_get_wbio), M_BIND(SSL_library_init), M_BIND(SSL_load_error_strings), M_BIND(SSL_new), M_BIND(SSL_peek),
 		M_BIND(SSL_read), M_BIND(SSL_set_bio), M_BIND(SSL_shutdown), M_BIND(SSLv23_client_method), M_BIND(SSLv23_server_method),
 		M_BIND(SSL_version_str), M_BIND(SSL_write), M_BIND(TLSv1_server_method), M_BIND(X509_get_ext), M_BIND(X509_get_ext_count),
-		M_BIND(X509_get_subject_name), M_BIND(X509_NAME_get_text_by_NID)
+		M_BIND(X509_get_subject_name), M_BIND(X509_NAME_get_text_by_NID), M_BIND(EVP_MD_type)
 	};
 
 	if (!lib_symbols(sizeof(openssl) / sizeof(symbol_t), openssl)) {

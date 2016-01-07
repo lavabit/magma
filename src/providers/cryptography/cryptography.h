@@ -26,10 +26,13 @@
 #define ECIES_CIPHER NID_aes_256_cbc
 #define ECIES_ENVELOPE NID_sha512
 
-// STACIE number constants for clamping hash rounds between 8 and 16,777,216, which represents the number of possible
+// The STACIE number constants for clamping hash rounds between 8 and 16,777,216, which represents the number of possible
 // values for an unsigned 24 bit integer, if you include 0. In other words 0 to 16,777,215 equals 16,777,216.
 #define STACIE_ROUNDS_MIN	8
 #define STACIE_ROUNDS_MAX	16777216
+
+// The STACIE token derivation stage uses a fixed number of hash rounds, and that number is dictated by this parameter.
+#define STACIE_ROUNDS_TOKENS	8
 
 typedef enum {
 	ECIES_PRIVATE_HEX = 1,

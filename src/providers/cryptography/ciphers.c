@@ -2,7 +2,7 @@
 /**
  * @file /magma/providers/cryptography/ciphers.c
  *
- * @brief Functions used to handle cryptographic ciphers.
+ * @brief Functions used to handle cryptographic cipher primitives.
  *
  * $Author$
  * $Date$
@@ -11,7 +11,6 @@
  */
 
 #include "magma.h"
-
 
 /**
  * @brief	Look up a cipher type by name.

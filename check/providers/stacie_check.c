@@ -33,12 +33,12 @@ bool_t check_stacie_simple(void) {
 
 	// Decode the binary input values, and comparison values from the hard coded versions provided in modified base64.
 	if (!(salt = base64_decode_mod(NULLER("lyrtpzN8cBRZvsiHX6y4j-pJOjIyJeuw5aVXzrItw1G4EOa-6CA4R9BhVpinkeH0UeXyOeTisHR3Ik3yuOhxbWPyesMJvfp0IBtx0f0uorb8wPnhw5BxDJVCb1TOSE50PFKGBFMkc63Koa7vMDj-WEoDj2X0kkTtlW6cUvF8i-M"), NULL)) ||
-		!(ephemeral_login_token = base64_decode_mod(NULLER("S7GHxBFmLNg7cZ1cTHgD3mR2Ca0RhnOXif1UXNqGGvM9tgVsMm038Rd0Mj8Zc6-2NK3Nfjcleq0nWVsQwRB-8Q"), NULL)) ||
+		!(nonce = base64_decode_mod(NULLER("oDdYAHOsiX7Nl2qTwT18onW0hZdeTO3ebxzZp6nXMTo__0_vr_AsmAm3vYRwWtSCPJz0sA2o66uhNm6YenOGz0NkHcSAVgQhKdEBf_BTYkyULDuw2fSkbO7mlnxEhxqrJEc27ZVam6ogYABfHZjgVUTAi_SICyKAN7KOMuImL2g"), NULL)) ||
+		!(ephemeral_login_token = base64_decode_mod(NULLER("_-MOUkFbJLAEFX8I4k9Bf-8VVk9DQlETAliooUH5unLUmgPkxc2peQaQUXvyoRrM87DF3kSfFhCh_uyv3BMb7Q"), NULL)) ||
 		!(verification_token = base64_decode_mod(NULLER("4smP8S5oGOR_OUp_T4M1RgOnOeChgme5Xv-ZX8_kt8lYKdPTUlc4oPFgg-5rAyhiqQOfxNa5HyYaefcb_haQ9Q"), NULL)) ||
 		!(password_key = base64_decode_mod(NULLER("SeoGINQ3MXFo_xPt_uxYIgOzpU1BjDj9BfNlzbvlA2vOswkAC0sDnViURlhSRa8i91z6B-pQ8etRSaBkyDG_NA"), NULL)) ||
 		!(master_key = base64_decode_mod(NULLER("u-pbHPk-YbEY76DFA-X55HOS8BLxPGMY6oViDUed4fXrmlV1pRIpDem26P_1RBeCaWc09btoSP3E_fEF0ffxZA"), NULL)) ||
 		!(shard = base64_decode_mod(NULLER("gD65Kdeda1hB2Q6gdZl0fetGg2viLXWG0vmKN4HxE3Jp3Z0Gkt5prqSmcuY2o8t24iGSCOnFDpP71c3xl9SX9Q"), NULL)) ||
-		!(nonce = base64_decode_mod(NULLER("sJWAhD5Okulpjpa63FE4dGI-W3PDACaQtA49vQBOG9_UYhgNMzmLuSeRBEQy15Lv2Wn_lvSmzRkWfky51Fpp7Q"), NULL)) ||
 		!(seed = base64_decode_mod(NULLER("J7MWPKEl1fVJxa0SDreYIE-lcv6uK9BXIaRYFG6GcHxUo5pmme7i9JcYRvd_yCzg59A7gZAZmbCJ-1uRKOm7Kw"), NULL)) ||
 		!(realm_cipher_key = base64_decode_mod(NULLER("QLkIIqMf2eLUxcobqwrjCfCXRcCHL5ZCeHq5Guh-9q4"), NULL)) ||
 		!(realm_vector_key = base64_decode_mod(NULLER("f5YGmmqvTOsFLyWtIXjPZw"), NULL))) {
@@ -206,7 +206,8 @@ bool_t check_stacie_determinism(void) {
 	stringer_t *username = PLACER("DongleDonkey", 12), *password = NULL,
 		*salt = PLACER("3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342" \
 			"117067982148086513282306647093844", 128),
-		*nonce = PLACER("NONCE123NONCE456NONCE789NONCE012NONCE345NONCE678NONCE901NONCE234", 64),
+		*nonce = PLACER("2.718281828459045235360287471352662497757247093699959574966967627724076630353547594571382178525" \
+			"166427427466391932003059921817413", 128),
 		*key = PLACER("KEY12345KEY67890KEY12345KEY67890KEY12345KEY67890KEY12345KEY67890", 64),
 		*res1 = NULL, *res2 = NULL, *base = NULL;
 
@@ -273,7 +274,7 @@ bool_t check_stacie_determinism(void) {
 
 	st_cleanup(res1, res2);
 	res1 = res2 = NULL;
-
+/*
 	if(!(res1 = stacie_hashed_key_derive(base, STACIE_ROUNDS_MIN, username, password, salt)) ||
 		!(res2 = stacie_hashed_key_derive(base, STACIE_ROUNDS_MIN, username, password, salt)) ||
 		st_cmp_cs_eq(res1, res2)) {
@@ -283,7 +284,7 @@ bool_t check_stacie_determinism(void) {
 
 	st_cleanup(res1, res2);
 	res1 = res2 = NULL;
-
+*/
 	// Run deterministic tests on the token derivation stages.
 	if(!(res1 = stacie_hashed_token_derive(base, username, salt, nonce)) ||
 		!(res2 = stacie_hashed_token_derive(base, username, salt, nonce)) ||

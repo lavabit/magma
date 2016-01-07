@@ -521,75 +521,49 @@ stringer_t * stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, 
 }
 
 /**
- * @brief   Derive the encryption key used to decrypt realm-specific key.
+ * @brief	Extract the symmetric encryption key from the combined realm key.
  *
- * @param   realm_key  Stringer containing the realm key.
- * @return  Encryption key.
+ * @param	realm_key	The complete realm key, which holds the initialization vector and the symmetric key.
+ *
+ * @return	provides a managed string with the symmetric encryption key stored in a secure memory buffer, or NULL if an error
+ * 		occurs.
  */
-stringer_t * stacie_realm_cipher_key_derive(stringer_t *realm_key) {
+stringer_t * stacie_realm_cipher_key(stringer_t *realm_key) {
 
-	stringer_t *pl;
-	stringer_t *realm_cipher_key;
+	stringer_t *cipher_key = NULL;
 
-	if (st_empty(realm_key) || (st_length_get(realm_key) != 64)) {
-		log_pedantic("Realm key is zero, NULL or length != 64");
-		goto error;
+	if (st_empty(realm_key) || st_length_get(realm_key) != 64) {
+		log_error("The realm cipher key extraction failed because the realm key passed in wasn't valid.");
+	}
+	else if (!(cipher_key = st_dupe_opts(MANAGED_T | CONTIGUOUS | SECURE, PLACER(st_data_get(realm_key) + 32, 32)))) {
+		log_error("The realm cipher key extraction failed because a secure memory buffer could not be allocated to hold the result.");
 	}
 
-	pl = PLACER(st_data_get(realm_key) + 32, 32);
-	if (pl == NULL) {
-		log_error("PLACER set in realm_key failed");
-		goto error;
-	}
-
-	realm_cipher_key = st_dupe_opts((MANAGED_T | CONTIGUOUS | SECURE), pl);
-	if (realm_cipher_key == NULL) {
-		log_error("st_dupe_opts() failed");
-		goto error;
-	}
-
-	return realm_cipher_key;
-
-	error: return NULL;
+	return cipher_key;
 }
 
 /**
- * @brief   Derive the initialization vector used to decrypt realm-specific key.
+ * @brief   Extract the static initialization vector from the combined realm key.
  *
- * @param   realm_key  Stringer containing the realm key.
- * @return  Initialization vector.
+ * @param	realm_key	The complete realm key, which holds the initialization vector and the symmetric key.
+ *
+ * @return  provides a managed string with the initialization vector stored in a secure memory buffer, or NULL if an error
+ * 		occurs.
  */
-stringer_t * stacie_realm_init_vector_derive(stringer_t *realm_key) {
+stringer_t * stacie_realm_init_vector(stringer_t *realm_key) {
 
-	stringer_t *pl1;
-	stringer_t *pl2;
-	stringer_t *init_vector;
+	stringer_t *vector = NULL;
 
-	if (st_empty(realm_key) || (st_length_get(realm_key) != 64)) {
-		log_pedantic("Realm key is zero, NULL or length != 64");
-		goto error;
+	if (st_empty(realm_key) || st_length_get(realm_key) != 64) {
+		log_error("The realm initialization vector extraction failed because the realm key passed in wasn't valid.");
 	}
-
-	pl1 = PLACER(st_data_get(realm_key), 16);
-	pl2 = PLACER(st_data_get(realm_key) + 16, 16);
-	if (pl1 == NULL || pl2 == NULL) {
-		log_error("PLACER sets in realm_key failed");
-		goto error;
+	else if (!(vector = st_alloc_opts((MANAGED_T | CONTIGUOUS | SECURE), 16))) {
+		log_error("The realm initialization vector extraction failed because a secure memory buffer could not be allocated to hold the result.");
 	}
-
-	init_vector = st_alloc_opts((MANAGED_T | CONTIGUOUS | SECURE), 16);
-	if (init_vector == NULL) {
-		log_error("st_alloc_opts() failed");
-		goto error;
+	else if (!st_xor(PLACER(st_data_get(realm_key), 16), PLACER(st_data_get(realm_key) + 16, 16), vector)) {
+		log_error("The realm initialization vector extraction failed because an error occurred while trying to perform the XOR operation.");
+		st_free(vector);
+		return NULL;
 	}
-
-	if (st_xor(pl1, pl2, init_vector) == NULL) {
-		log_error("st_xor() failed");
-		goto cleanup_init_vector;
-	}
-
-	return init_vector;
-
-	cleanup_init_vector: st_free(init_vector);
-	error: return NULL;
+	return vector;
 }

@@ -197,8 +197,8 @@ stringer_t * stacie_entropy_seed_derive(uint32_t rounds, stringer_t *password, s
 stringer_t * stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt);
 stringer_t * stacie_hashed_token_derive(stringer_t *base, stringer_t *username, stringer_t *salt, stringer_t *nonce);
 stringer_t * stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, stringer_t *shard);
-stringer_t * stacie_realm_cipher_key_derive(stringer_t *realm_key);
-stringer_t * stacie_realm_init_vector_derive(stringer_t *realm_key);
+stringer_t * stacie_realm_cipher_key(stringer_t *realm_key);
+stringer_t * stacie_realm_init_vector(stringer_t *realm_key);
 
 /// symmetric.c
 stringer_t *  symmetric_decrypt(cipher_t *cipher, stringer_t *vector, stringer_t *key, stringer_t *input);

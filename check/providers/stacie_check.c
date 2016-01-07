@@ -100,8 +100,8 @@ bool_t check_stacie_simple(void) {
 
 	// Calculate the symmetric key for the "mail" realm and check extracted cipher and vector key values.
 	if(!(combined_key = stacie_realm_key_derive(master_key, NULLER("mail"), shard)) ||
-			!(vector_key = stacie_realm_init_vector_derive(combined_key)) || st_cmp_cs_eq(vector_key, realm_vector_key) ||
-			!(cipher_key = stacie_realm_cipher_key_derive(combined_key)) || st_cmp_cs_eq(cipher_key, realm_cipher_key)) {
+			!(vector_key = stacie_realm_init_vector(combined_key)) || st_cmp_cs_eq(vector_key, realm_vector_key) ||
+			!(cipher_key = stacie_realm_cipher_key(combined_key)) || st_cmp_cs_eq(cipher_key, realm_cipher_key)) {
 		st_cleanup(ephemeral_login_token, verification_token, realm_vector_key, realm_cipher_key, password_key);
 		st_cleanup(master_key, shard, nonce, seed, salt);
 		st_cleanup(combined_key, vector_key, cipher_key);
@@ -297,8 +297,8 @@ bool_t check_stacie_determinism(void) {
 	res1 = res2 = NULL;
 
 	// Run deterministic tests on the key derivation stages.
-	if(!(res1 = stacie_realm_cipher_key_derive(key)) ||
-		!(res2 = stacie_realm_cipher_key_derive(key)) ||
+	if(!(res1 = stacie_realm_cipher_key(key)) ||
+		!(res2 = stacie_realm_cipher_key(key)) ||
 		st_cmp_cs_eq(res1, res2)) {
 		st_cleanup(res1, res2);
 		return false;
@@ -307,8 +307,8 @@ bool_t check_stacie_determinism(void) {
 	st_cleanup(res1, res2);
 	res1 = res2 = NULL;
 
-	if(!(res1 = stacie_realm_init_vector_derive(key)) ||
-		!(res2 = stacie_realm_init_vector_derive(key)) ||
+	if(!(res1 = stacie_realm_init_vector(key)) ||
+		!(res2 = stacie_realm_init_vector(key)) ||
 		st_cmp_cs_eq(res1, res2)) {
 		st_cleanup(res1, res2);
 		return false;
@@ -450,22 +450,22 @@ bool_t check_stacie_parameters(void) {
 		return false;
 	}
 
-	if((res = stacie_realm_cipher_key_derive(NULL))) {
+	if((res = stacie_realm_cipher_key(NULL))) {
 		st_free(res);
 		return false;
 	}
 
-	if((res = stacie_realm_cipher_key_derive(temp_st))) {
+	if((res = stacie_realm_cipher_key(temp_st))) {
 		st_free(res);
 		return false;
 	}
 
-	if((res = stacie_realm_init_vector_derive(NULL))) {
+	if((res = stacie_realm_init_vector(NULL))) {
 		st_free(res);
 		return false;
 	}
 
-	if((res = stacie_realm_init_vector_derive(temp_st))) {
+	if((res = stacie_realm_init_vector(temp_st))) {
 		st_free(res);
 		return false;
 	}

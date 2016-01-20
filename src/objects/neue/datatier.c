@@ -38,7 +38,7 @@ salt_state_t credential_salt_fetch(stringer_t *username, stringer_t **salt) {
 	parameters[0].buffer_length = st_length_get(username);
 	parameters[0].buffer = st_char_get(username);
 
-	if(!(query = stmt_get_result(stmts.select_user_stacie_salt, parameters))) {
+	if(!(query = stmt_get_result(stmts.select_user_salt, parameters))) {
 		log_error("Failure to query user salt.");
 		result = ERROR;
 		goto error;

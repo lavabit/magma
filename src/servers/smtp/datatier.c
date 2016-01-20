@@ -596,7 +596,7 @@ int_t smtp_fetch_authorization(credential_t *cred, smtp_outbound_prefs_t **outpu
 		auth_stmt = stmts.select_users_auth;
 		break;
 	case STACIE:
-		auth_stmt = stmts.smtp_select_user_stacie_auth;
+		auth_stmt = stmts.smtp_select_user_auth;
 		break;
 	default:
 		log_error("Invalid authentication type specified in credentials object.");

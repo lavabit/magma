@@ -445,8 +445,8 @@ DROP TABLE IF EXISTS `Users`;
 CREATE TABLE `Users` (
   `usernum` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `userid` varchar(255) NOT NULL DEFAULT '',
-  `stacie_salt` varchar(2048),
-  `stacie_auth_token` varchar(128),
+  `salt` varchar(256),
+  `auth` varchar(128),
   `password` varchar(130) NOT NULL DEFAULT '',
   `ssl` tinyint(1) NOT NULL DEFAULT '0',
   `plan` varchar(25) NOT NULL DEFAULT 'FREE',

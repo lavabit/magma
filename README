@@ -1,4 +1,4 @@
-vim: set filetype=markdown:
+vim: set syntax=markdown:
 
 # Description
 

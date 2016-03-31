@@ -203,6 +203,7 @@ extern unsigned long (*ERR_get_error_d)(void);
 extern void (*CONF_modules_unload_d)(int all);
 extern void (*HMAC_CTX_init_d)(HMAC_CTX *ctx);
 extern void (*SSL_load_error_strings_d)(void);
+extern int (*EVP_MD_type_d)(const EVP_MD *md);
 extern const EVP_MD * (*EVP_ripemd160_d)(void);
 extern const char * (*SSLeay_version_d)(int t);
 extern BIO * (*SSL_get_wbio_d)(const SSL * ssl);
@@ -425,6 +426,11 @@ extern int (*json_vunpack_ex_d)(json_t *root, json_error_t *error, size_t flags,
 
 //! UTF8
 extern const char * (*utf8proc_release_d)(void);
+extern const char * (*utf8proc_errmsg_d)(utf8proc_ssize_t errcode);
+extern const char * (*utf8proc_category_string_d)(utf8proc_int32_t c);
+extern utf8proc_category_t (*utf8proc_category_d)(utf8proc_int32_t c);
+extern const utf8proc_property_t * (*utf8proc_get_property_d)(utf8proc_int32_t uc);
+extern utf8proc_ssize_t (*utf8proc_iterate_d)(const utf8proc_uint8_t *str, utf8proc_ssize_t strlen, utf8proc_int32_t *codepoint_ref);
 
 //! XML
 extern char **xmlParserVersion_d;

@@ -447,7 +447,7 @@ CREATE TABLE `Users` (
   `userid` varchar(255) NOT NULL DEFAULT '',
   `salt` varchar(256),
   `auth` varchar(128),
-  `password` varchar(130) NOT NULL DEFAULT '',
+  `legacy` varchar(130),
   `ssl` tinyint(1) NOT NULL DEFAULT '0',
   `plan` varchar(25) NOT NULL DEFAULT 'FREE',
   `locked` tinyint(1) NOT NULL DEFAULT '0',
@@ -463,7 +463,7 @@ CREATE TABLE `Users` (
   `lock_expiration` date DEFAULT '0000-00-00',
   PRIMARY KEY (`usernum`),
   UNIQUE KEY `UNIQ_USERNAME` (`userid`),
-  KEY `DEX_MAILSHACK` (`userid`,`password`)
+  KEY `DEX_LEGACY` (`userid`,`legacy`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 MAX_ROWS=4294967295 AVG_ROW_LENGTH=1000 COMMENT='Basic user account information and settings.';
 
 CREATE TABLE `User_Config` (

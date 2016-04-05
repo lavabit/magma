@@ -1,1 +1,1 @@
-UPDATE Hosts SET hostname = 'magma.lavabit.com' WHERE hostnum = 1;
+UPDATE Hosts SET hostname = 'dark.lavabit.com' WHERE hostnum = 1;

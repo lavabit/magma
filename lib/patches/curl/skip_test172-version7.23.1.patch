@@ -1,10 +1,11 @@
 diff -r d8d7c2e15c3e tests/data/DISABLED
 --- a/tests/data/DISABLED	Fri Sep 19 19:29:16 2014 -0500
 +++ b/tests/data/DISABLED	Fri Sep 19 19:29:40 2014 -0500
-@@ -2,6 +2,7 @@
+@@ -2,6 +2,8 @@
  # test cases are run by runtests.pl. Just add the plain test case numbers, one
  # per line.
  # Lines starting with '#' letters are treated as comments.
++46
 +172
  811
  591

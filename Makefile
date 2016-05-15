@@ -33,8 +33,14 @@ endif
 MAGMA_PROGRAM			= $(addsuffix $(EXEEXT), magmad)
 CHECK_PROGRAM			= $(addsuffix $(EXEEXT), magmad.check)
 
-MAGMA_VERSION			= $(PACKAGE_VERSION).$(shell git log --format='%H' | wc -l)
-MAGMA_COMMIT			= $(shell git log --format="%H" -n 1 | cut -c33-40)
+MAGMA_REPO				= $(shell which git &> /dev/null && git log &> /dev/null && echo 1) 
+ifneq ($(strip $(MAGMA_REPO)),1)
+	MAGMA_VERSION			:= $(PACKAGE_VERSION)
+	MAGMA_COMMIT			:= "NONE"
+else
+	MAGMA_VERSION			:= $(PACKAGE_VERSION).$(shell git log --format='%H' | wc -l)
+	MAGMA_COMMIT			:= $(shell git log --format="%H" -n 1 | cut -c33-40)
+endif
 MAGMA_TIMESTAMP			= $(shell date +'%Y%m%d.%H%M')
 
 # Source Files

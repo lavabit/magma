@@ -31,7 +31,7 @@
 #define SELECT_USERNUM_AUTH_LEGACY "SELECT usernum FROM Users WHERE userid = ? AND legacy = ? AND email = 1"
 #define SELECT_USERNUM_AUTH "SELECT usernum FROM Users WHERE userid = ? AND auth = ? AND email = 1"
 #define SELECT_USER_RECORD "SELECT legacy, Dispatch.secure, locked, `ssl`, overquota FROM Users INNER JOIN Dispatch ON Users.usernum = Dispatch.usernum WHERE Users.usernum = ? AND email = 1"
-#define SELECT_USER_SALT "SELECT salt FROM Users WHERE userid = ? LIMIT 1"
+#define SELECT_USER_SALT "SELECT salt FROM Users WHERE userid = ?"
 #define SELECT_USER_STORAGE_KEYS "SELECT storage_pub, storage_priv FROM `Keys` WHERE usernum = ?"
 #define UPDATE_USER_STORAGE_KEYS "INSERT INTO `Keys` (usernum, storage_pub, storage_priv) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE storage_pub = ?, storage_priv = ?"
 #define UPDATE_USER_LOCK "UPDATE Users SET locked = ? WHERE usernum = ?"
@@ -90,7 +90,7 @@
 #define SELECT_TRANSMITTING  "SELECT COUNT(*) FROM Transmitting WHERE usernum = ? AND timestamp >= DATE_SUB(NOW(), INTERVAL 1 DAY)"
 #define SELECT_RECEIVING "SELECT COUNT(*), SUM(subnet = ?) FROM Receiving WHERE usernum = ? AND timestamp >= DATE_SUB(NOW(), INTERVAL 1 DAY)"
 #define SELECT_USERS_AUTH "SELECT Users.usernum, Users.locked, Users.`ssl`, Users.domain, Dispatch.send_size_limit, Dispatch.daily_send_limit, Dispatch.class FROM Users LEFT JOIN Dispatch ON Users.usernum = Dispatch.usernum WHERE userid = ? AND legacy = ? AND email = 1"
-#define SMTP_SELECT_USER_AUTH "SELECT Users.usernum, Users.locked, Users.`ssl`, Users.domain, Dispatch.send_size_limit, Dispatch.daily_send_limit, Dispatch.class FROM Users LEFT JOIN Dispatch ON Users.usernum = Dispatch.usernum WHERE userid = ? AND auth = ? AND email = 1 LIMIT 1"
+#define SMTP_SELECT_USER_AUTH "SELECT Users.usernum, Users.locked, Users.`ssl`, Users.domain, Dispatch.send_size_limit, Dispatch.daily_send_limit, Dispatch.class FROM Users LEFT JOIN Dispatch ON Users.usernum = Dispatch.usernum WHERE userid = ? AND auth = ? AND email = 1"
 #define SELECT_PREFS_INBOUND "SELECT Mailboxes.usernum, Users.locked, Users.size, Users.quota, Users.overquota, " \
 		"Users.domain, Dispatch.secure, Dispatch.bounces, Dispatch.forwarded, Dispatch.rollout, " \
 		"Dispatch.spam, Dispatch.spamaction, Dispatch.virus, Dispatch.virusaction, Dispatch.phish, Dispatch.phishaction, " \

@@ -23,7 +23,6 @@ static int_t credential_calc_stacie(credential_t *cred, stringer_t *password, st
 
 /// LOW: Figure out how to result a credential_address into a credential_username using the Mailboxes table.
 
-
 /**
  * @brief	Process a user supplied credential address to ensures it only contains valid characters.
  * @param	s	a managed string containing the user's credential address to be processed, with an optional domain suffix.
@@ -262,7 +261,6 @@ error:
 	return NULL;
 }
 
-
 /**
  * @brief	Generates a new salt value.
  * @return	Stringer containing a newly generated salt.
@@ -293,7 +291,6 @@ cleanup_result:
 error:
 	return NULL;
 }
-
 
 /**
  * @brief	Initializes an already allocated credential objects with appropriate values for the specified inputs.
@@ -489,4 +486,6 @@ cleanup_temp:
 error:
 	return 0;
 }
+
+
 

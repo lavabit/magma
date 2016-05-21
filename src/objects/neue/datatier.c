@@ -20,16 +20,14 @@
  */
 salt_state_t credential_salt_fetch(stringer_t *username, stringer_t **salt) {
 
-	salt_state_t result;
-	MYSQL_BIND parameters[1];
 	row_t *row;
-	stringer_t *temp;
 	table_t *query;
+	MYSQL_BIND parameters[1];
 
-	if(st_empty(username)) {
-		log_pedantic("NULL username was passed in.");
-		result = ERROR;
-		goto error;
+	// The salt variable must be a valid pointer, but the value must currently be set to NULL to avoid overwriting an existing value.
+	if (st_empty(username) || !salt || *salt) {
+		log_pedantic("The input variables were invalid.");
+		return ERROR;
 	}
 
 	mm_wipe(parameters, sizeof(parameters));
@@ -38,55 +36,41 @@ salt_state_t credential_salt_fetch(stringer_t *username, stringer_t **salt) {
 	parameters[0].buffer_length = st_length_get(username);
 	parameters[0].buffer = st_char_get(username);
 
-	if(!(query = stmt_get_result(stmts.select_user_salt, parameters))) {
-		log_error("Failure to query user salt.");
-		result = ERROR;
-		goto error;
+	if (!(query = stmt_get_result(stmts.select_user_salt, parameters))) {
+		log_error("Unable to query the database for a user salt value.");
+		return ERROR;
 	}
 
-	if(!res_row_count(query)) {
+	if (!res_row_count(query)) {
 		log_pedantic("Specified user does not exist in the database.");
-		result = NO_USER;
-		goto cleanup_query;
+		res_table_free(query);
+		return NO_USER;
 	}
 
-	if(res_row_count(query) > 1) {
-		log_pedantic("Non-unique username.");
-		result = ERROR;
-		goto cleanup_query;
+	if (res_row_count(query) != 1) {
+		log_pedantic("More than one salt value was returned for a given username. { username = %.*s }", st_length_int(username), st_char_get(username));
+		res_table_free(query);
+		return ERROR;
 	}
 
-	if(!(row = res_row_next(query))) {
+	if (!(row = res_row_next(query))) {
 		log_error("Failed to retrieve row.");
-		result = ERROR;
-		goto cleanup_query;
+		return ERROR;
 	}
 
-	temp = res_field_string(row, 0);
+	// All user specific salt values must be 128 bytes in length. This rule is specific to this implementation, and not the
+	// larger authentication standard employed.
+	if (!(*salt = hex_decode_st(res_field_string(row, 0), NULL)) || st_length_get(salt) != 128) {
+		log_pedantic("An invalid salt value was found for the specified user account. { username = %.*s / length = %zu }", st_length_int(username),
+			st_char_get(username), st_length_get(*salt));
+		res_table_free(query);
+		st_cleanup(*salt);
+		*salt = NULL;
+		return ERROR;
+	}
+
 	res_table_free(query);
-
-	if(!temp) {
-		log_pedantic("No salt found for specified user.");
-		result = USER_NO_SALT;
-		goto error;
-	}
-
-	*salt = hex_decode_opts(temp, (MANAGED_T | CONTIGUOUS | SECURE));
-	st_free(temp);
-
-	if(!(*salt)) {
-		log_error("Failed to decode salt stringer.");
-		result = ERROR;
-		goto error;
-	}
-
 	return USER_SALT;
-
-cleanup_query:
-	res_table_free(query);
-error:
-	*salt = NULL;
-	return result;
 }
 
 /**
@@ -95,34 +79,33 @@ error:
  * @param	usernum		The place in memory where the fetched usernum will be stored.
  * @return	SUCCESS if usernum was successfully fetched, AUTHENTICATION_ERROR if user does not exist or did not authenticate, INTERNAL_ERROR if an internal error occurred.
 */
-user_state_t    credential_usernum_fetch(credential_t *cred, uint64_t *usernum) {
+user_state_t credential_usernum_fetch(credential_t *cred, uint64_t *usernum) {
 
-	MYSQL_BIND parameters[2];
-	MYSQL_STMT **auth_stmt;
 	row_t *row;
 	table_t *query;
 	uint64_t row_count;
 	user_state_t state;
+	MYSQL_STMT **auth_stmt;
+	MYSQL_BIND parameters[2];
 
-	if(!cred) {
-		log_pedantic("NULL credentials object was passed in.");
-		state = INTERNAL_ERROR;
-		goto error;
+	if (!cred || !usernum) {
+		log_pedantic("Invalid variable pointers were passed in.");
+		return INTERNAL_ERROR;
 	}
 
-	if(cred->type != CREDENTIAL_AUTH) {
+	if (cred->type != CREDENTIAL_AUTH) {
 		log_error("Credentials passed are not of authentication type.");
 		state = INTERNAL_ERROR;
 		goto error;
 	}
 
-	if(st_empty(cred->auth.username)) {
+	if (st_empty(cred->auth.username)) {
 		log_error("Credentials have a NULL or empty username stringer.");
 		state = INTERNAL_ERROR;
 		goto error;
 	}
 
-	if(st_empty(cred->auth.password)) {
+	if (st_empty(cred->auth.password)) {
 		log_error("Credentials have a NULL or empty hashed password token stringer.");
 		state = INTERNAL_ERROR;
 		goto error;

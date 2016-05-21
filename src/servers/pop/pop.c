@@ -135,7 +135,7 @@ void pop_quit(connection_t *con) {
  */
 void pop_user(connection_t *con) {
 
-	stringer_t *username, *clean;
+	stringer_t *username = NULL, *clean = NULL;
 
 	if (con->pop.session_state != 0) {
 		pop_invalid(con);
@@ -176,7 +176,7 @@ void pop_pass(connection_t *con) {
 
 	salt_state_t salt_res;
 	int_t state, cred_res;
-	credential_t *cred;
+	credential_t *cred = NULL;
 	stringer_t *password = NULL, *username = NULL, *salt = NULL;
 
 	if (con->pop.session_state != 0) {

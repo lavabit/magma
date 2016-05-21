@@ -108,23 +108,16 @@ bool_t register_data_check_username(stringer_t *username) {
  * @param	outuser		a pointer to a numerical id to receive the newly generated and inserted user id.
  * @result	true if the new user account was successfully created, or false on failure.
  */
-bool_t register_data_insert_user(
-	connection_t *con,
-	uint16_t plan,
-	stringer_t *username,
-	stringer_t *password,
-	int_t transaction,
-	uint64_t *outuser)
-{
+bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *username, stringer_t *password, int64_t transaction, uint64_t *outuser) {
 
 	chr_t buffer[32];
+	uint32_t bonus = 0;
 	MYSQL_BIND parameters[8];
 	credential_t *credential;
-	stringer_t *privkey, *pubkey, *newaddr, *salt, *hex_salt;
 	size_t key_len = 512;
-	uint64_t name_len, plan_len, date_len = 10;
-	uint64_t quota = 0, usernum, inbox, size_limit, send_limit, recv_limit;
+	stringer_t *privkey, *pubkey, *newaddr, *salt, *hex_salt;
 	const chr_t *basic = "BASIC", *personal = "PERSONAL", *enhanced = "ENHANCED", *premium = "PREMIUM";
+	uint64_t name_len, plan_len, date_len = 10, quota = 0, usernum, inbox, size_limit, send_limit, recv_limit;
 
 	mm_wipe(parameters, sizeof(parameters));
 
@@ -137,27 +130,27 @@ bool_t register_data_insert_user(
 	// The plan.
 	if (plan == 1) {
 		plan_len = 5;
-		parameters[3].buffer_type = MYSQL_TYPE_STRING;
-		parameters[3].buffer = (chr_t *)basic;
-		parameters[3].length = &plan_len;
+		parameters[4].buffer_type = MYSQL_TYPE_STRING;
+		parameters[4].buffer = (chr_t *)basic;
+		parameters[4].length = &plan_len;
 	}
 	else if (plan == 2) {
 		plan_len = 8;
-		parameters[3].buffer_type = MYSQL_TYPE_STRING;
-		parameters[3].buffer = (chr_t *)personal;
-		parameters[3].length = &plan_len;
+		parameters[4].buffer_type = MYSQL_TYPE_STRING;
+		parameters[4].buffer = (chr_t *)personal;
+		parameters[4].length = &plan_len;
 	}
 	else if (plan == 3) {
 		plan_len = 8;
-		parameters[3].buffer_type = MYSQL_TYPE_STRING;
-		parameters[3].buffer = (chr_t *)enhanced;
-		parameters[3].length = &plan_len;
+		parameters[4].buffer_type = MYSQL_TYPE_STRING;
+		parameters[4].buffer = (chr_t *)enhanced;
+		parameters[4].length = &plan_len;
 	}
 	else if (plan == 4) {
 		plan_len = 7;
-		parameters[3].buffer_type = MYSQL_TYPE_STRING;
-		parameters[3].buffer = (chr_t *)premium;
-		parameters[3].length = &plan_len;
+		parameters[4].buffer_type = MYSQL_TYPE_STRING;
+		parameters[4].buffer = (chr_t *)premium;
+		parameters[4].length = &plan_len;
 	}
 	else {
 		log_pedantic("Invalid plan number specified.");
@@ -178,10 +171,10 @@ bool_t register_data_insert_user(
 		quota = 8589934592ll; // 8,192 MB
 	}
 
-	parameters[4].buffer_type = MYSQL_TYPE_LONGLONG;
-	parameters[4].buffer_length = sizeof(uint64_t);
-	parameters[4].buffer = &quota;
-	parameters[4].is_unsigned = true;
+	parameters[5].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[5].buffer_length = sizeof(uint64_t);
+	parameters[5].buffer = &quota;
+	parameters[5].is_unsigned = true;
 
 	// Calculate the date.
 	// Removed code for paid plan time calculation.
@@ -191,12 +184,11 @@ bool_t register_data_insert_user(
 		return false;
 	}
 
-	parameters[5].buffer_type = MYSQL_TYPE_STRING;
-	parameters[5].buffer = &buffer;
-	parameters[5].length = &date_len;
+	parameters[6].buffer_type = MYSQL_TYPE_STRING;
+	parameters[6].buffer = &buffer;
+	parameters[6].length = &date_len;
 
 	// Hash the password.
-
 	if(!(credential = credential_alloc_auth(username))) {
 		log_error("Failed to allocate credentials structure.");
 		return false;
@@ -207,7 +199,7 @@ bool_t register_data_insert_user(
 		credential_free(credential);
 		return false;
 	}
-	
+
 	if(!credential_calc_auth(credential, password, salt)) {
 		log_error("Failed to calculate user credentials.");
 		credential_free(credential);
@@ -215,7 +207,7 @@ bool_t register_data_insert_user(
 		return false;
 	}
 
-	hex_salt = hex_encode_opts(salt, (MANAGED_T | CONTIGUOUS | SECURE));
+	hex_salt = hex_encode_st(salt, NULL);
 	st_free(salt);
 
 	if(!hex_salt) {
@@ -223,16 +215,23 @@ bool_t register_data_insert_user(
 		credential_free(credential);
 		return false;
 	}
-	
+
+	// The user specific salt value.
 	parameters[1].buffer_type = MYSQL_TYPE_STRING;
 	parameters[1].buffer = st_data_get(hex_salt);
 	parameters[1].buffer_length = st_length_get(hex_salt);
 
 
-	// The stacie verification token.
+	// The authentication token derived from the password.
 	parameters[2].buffer_type = MYSQL_TYPE_STRING;
 	parameters[2].buffer = st_data_get(credential->auth.password);
 	parameters[2].buffer_length = st_length_get(credential->auth.password);
+
+	// The number of bonus hash rounds.
+	parameters[3].buffer_type = MYSQL_TYPE_LONG;
+	parameters[3].buffer_length = sizeof(uint32_t);
+	parameters[3].buffer = &bonus;
+	parameters[3].is_unsigned = true;
 
 	// Insert the user.
 	if ((usernum = stmt_insert_conn(stmts.register_insert_stacie_user, parameters, transaction)) == 0) {

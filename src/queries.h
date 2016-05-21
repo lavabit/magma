@@ -133,7 +133,7 @@
 // For the portal/user management.
 #define REGISTER_CHECK_USERNAME	"SELECT usernum FROM Users WHERE userid = ?"
 #define REGISTER_INSERT_USER "INSERT INTO Users (`userid`, `legacy`, `plan`, `quota`, `plan_expiration`) VALUES (?, ?, ?, ?, ?)"
-#define REGISTER_INSERT_STACIE_USER "INSERT INTO Users (`userid`, `salt`, `auth`, `plan`, `quota`, `plan_expiration`) VALUES (?, ?, ?, ?, ?, ?)"
+#define REGISTER_INSERT_STACIE_USER "INSERT INTO Users (`userid`, `salt`, `auth`, `bonus`, `plan`, `quota`, `plan_expiration`) VALUES (?, ?, ?, ?, ?, ?, ?)"
 #define REGISTER_INSERT_PROFILE "INSERT INTO Profile (`usernum`) VALUES (?)"
 #define REGISTER_INSERT_FOLDERS "INSERT INTO Folders (`usernum`) VALUES (?)"
 #define REGISTER_INSERT_FOLDER_NAME "INSERT INTO Folders (`usernum`, `foldername`) VALUES (?, ?)"

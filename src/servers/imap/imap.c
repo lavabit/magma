@@ -104,7 +104,7 @@ void imap_login(connection_t *con) {
 	int_t state = 1, cred_res;
 	credential_t *cred;
 	salt_state_t salt_res;
-	stringer_t *salt;
+	stringer_t *salt = NULL;
 
 	// The LOGIN command is only valid in the non-authenticated state.
 	if (con->imap.session_state != 0) {

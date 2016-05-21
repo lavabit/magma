@@ -263,33 +263,25 @@ error:
 
 /**
  * @brief	Generates a new salt value.
- * @return	Stringer containing a newly generated salt.
+ * @return	Stringer containing a newly generated salt in binary form.
  */
-stringer_t *    credential_salt_generate(void) {
+stringer_t * credential_salt_generate(void) {
 
-	size_t salt_len;
-	stringer_t *result;
+	size_t salt_len = 128;
+	stringer_t *result = NULL;
 
-/// FIXME TODO: We need a configuration line in our config file that specifies our server's salt length.
-
-	salt_len = 128;
-
-	if(!(result = st_alloc_opts((MANAGED_T | CONTIGUOUS | SECURE), salt_len))) {
-		log_error("Failed to allocate secure stringer for user salt.");
-		goto error;
+	if (!(result = st_alloc(salt_len))) {
+		log_error("Failed to allocate stringer for user salt.");
+		return NULL;
 	}
 
-	if(salt_len != rand_write(result)) {
+	if (salt_len != rand_write(result)) {
 		log_error("Failed to write random bytes into user salt stringer.");
-		goto cleanup_result;
+		st_free(result);
+		return NULL;
 	}
 
 	return result;
-
-cleanup_result:
-	st_free(result);
-error:
-	return NULL;
 }
 
 /**

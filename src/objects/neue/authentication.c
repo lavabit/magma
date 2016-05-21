@@ -86,7 +86,6 @@ error:
 	return state;
 }
 
-
 /**
  * @brief	Authenticates the specific username password combination.
  * @param	username	Stringer containing username.
@@ -160,10 +159,10 @@ out:
 static user_state_t credential_build_full(stringer_t *username, stringer_t *password, credential_t **credential) {
 
 	credential_t *cred;
-	int_t cred_res = 0;		// must initialize
-	salt_state_t salt_res;
-	stringer_t *salt;
+	int_t cred_res = 0;
 	user_state_t state;
+	salt_state_t salt_res;
+	stringer_t *salt = NULL;
 
 	if(!(cred = credential_alloc_auth(username))) {
 		log_error("Failed to allocate credentials.");

@@ -66,7 +66,7 @@ salt_state_t credential_salt_fetch(stringer_t *username, stringer_t **salt) {
 		res_table_free(query);
 		st_cleanup(*salt);
 		*salt = NULL;
-		return ERROR;
+		return USER_NO_SALT;
 	}
 
 	res_table_free(query);

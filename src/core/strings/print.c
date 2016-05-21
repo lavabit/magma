@@ -95,7 +95,6 @@ stringer_t * st_quick(stringer_t *s, chr_t *format, ...) {
 	return s;
 }
 
-
 /**
  * @brief	Return a managed string containing sprintf()-style formatted data.
  * @param	opts	an options value to be passed to the allocation of the resulting managed string.

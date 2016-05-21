@@ -12,6 +12,60 @@
 
 #include "magma_check.h"
 
+START_TEST (check_users_register_s) {
+
+	uint16_t plan;
+	connection_t con;
+	int64_t transaction;
+	uint64_t usernum = 0;
+	stringer_t *errmsg = NULL, *username = NULL, *password = NULL;
+
+	// Register new user account with a randomly generated userid.
+	log_unit("%-64.64s", "USERS / REGISTER / SINGLE THREADED:");
+
+	// Check to make sure the check process hasn't been aborted.
+	if (!status()) {
+		log_unit("%10.10s\n", "SKIPPED");
+		return;
+	}
+
+	// Pass in a blank connection structure. This will be used to store the registration IP address.
+	mm_wipe(&con, sizeof(connection_t));
+
+	// Randomly select one of the available plans. Valid values are 1 through 4.
+	plan = (rand_get_uint16() % 3) + 1;
+
+	// Generate a random string of numbers as the password and then append the string of numbers to the username
+	// pattern check_user_XYZ to create a username that should always be unique.
+	if ((password = rand_choices("0123456789", 20)) || (username = st_aprint("check_user_%.*s", st_length_int(password), st_char_get(password)))) {
+		errmsg = st_aprint("An internal error occurred. Unable to generate the random username and password.");
+	}
+
+	// Start the transaction.
+	else if ((transaction = tran_start()) == -1) {
+		errmsg = st_aprint("An internal error occurred. Unable to start the transaction.");
+	}
+
+	// Database insert.
+	else if (!register_data_insert_user(&con, plan, username, password, transaction, &usernum)) {
+		errmsg = st_aprint("User registration failed!.");
+		tran_rollback(transaction);
+	}
+
+	// Were finally done.
+	tran_commit(transaction);
+
+	st_cleanup(username);
+	st_cleanup(password);
+
+	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
+	fail_unless(!errmsg, st_char_get(errmsg));
+	st_cleanup(errmsg);
+	return;
+
+} END_TEST
+
+
 START_TEST (check_users_credentials_valid_s) {
 
 	int_t state, cred_res;
@@ -19,7 +73,6 @@ START_TEST (check_users_credentials_valid_s) {
 	stringer_t *errmsg = NULL, *salt = NULL;
 	meta_user_t *user_check_data = NULL;
 	credential_t *user_check_cred = NULL;
-
 
 	typedef struct {
 		stringer_t *username;
@@ -59,7 +112,7 @@ START_TEST (check_users_credentials_valid_s) {
 		},
 		{
 			CONSTANT("stacie"),
-			CONSTANT("magma")
+			CONSTANT("test")
 		}
 	};
 
@@ -172,7 +225,7 @@ START_TEST (check_users_credentials_invalid_s) {
 		credential_free(user_check_cred);
 	}
 
-	for(uint_t i = 0; i < sizeof(tests)/sizeof(tests[0]); ++i) {
+	for (uint_t i = 0; i < sizeof(tests)/sizeof(tests[0]); ++i) {
 
 		if (!(user_check_cred = credential_alloc_auth(tests[i].username))) {
 			errmsg = st_aprint("Credential creation failed. Authentication was not attempted. { user = %s }", st_char_get(tests[i].username));
@@ -323,6 +376,7 @@ Suite * suite_check_users(void) {
 	testcase(s, tc, "Auth Invalid/S", check_users_credentials_invalid_s);
 	testcase(s, tc, "Inbox/S", check_users_inbox_s);
 	testcase(s, tc, "Message/S", check_users_message_s);
+	testcase(s, tc, "Register/S", check_users_register_s);
 
 	return s;
 }

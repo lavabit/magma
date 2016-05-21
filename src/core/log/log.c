@@ -62,7 +62,7 @@ int_t print_backtrace() {
 
 	backtrace_symbols_fd(buffer,nbt,pipefds[1]);
 
-	if (write(STDOUT_FILENO, "   ", 3) != 0) {
+	if (write(STDOUT_FILENO, "   ", 3) != 3) {
 		return -1;
 	}
 
@@ -77,7 +77,7 @@ int_t print_backtrace() {
 		}
 
 		for (i = 0; i < nread; i++) {
-			if (!write (STDOUT_FILENO, &strbuf[i], 1)) {
+			if (write (STDOUT_FILENO, &strbuf[i], 1) != 1) {
 				return -1;
 			}
 
@@ -85,7 +85,7 @@ int_t print_backtrace() {
 				nfound++;
 
 				if (nfound != nbt) {
-					if (write(STDOUT_FILENO, "   ", 3) != 0) {
+					if (write(STDOUT_FILENO, "   ", 3) != 3) {
 						return -1;
 					}
 				}
@@ -171,7 +171,8 @@ void log_internal(const char *file, const char *function, const int line, M_LOG_
 			fprintf(stdout, "Error printing stack backtrace to stdout!\n");
 		}
 
-		/*size = backtrace(array, 1024);
+		/***
+		size = backtrace(array, 1024);
 		strings = backtrace_symbols(array, size);
 
 		for (uint64_t i = 0; i < size; i++) {
@@ -179,7 +180,9 @@ void log_internal(const char *file, const char *function, const int line, M_LOG_
 		}
 
 		if (strings)
-			free(strings); */
+			free(strings);
+
+		***/
 	}
 
 	fflush(stdout);

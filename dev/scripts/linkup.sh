@@ -63,6 +63,7 @@ process "schema.init.sh" "schema.init"
 
 process "t.authplain.sh" "t.authplain"
 process "t.authlogin.sh" "t.authlogin"
+process "t.authstacie.sh" "t.authstacie"
 process "t.outbound.sh" "t.outbound"
 process "t.inbound.sh" "t.inbound"
 process "t.dkimverify.sh" "t.dkimverify"

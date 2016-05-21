@@ -60,7 +60,7 @@ salt_state_t credential_salt_fetch(stringer_t *username, stringer_t **salt) {
 
 	// All user specific salt values must be 128 bytes in length. This rule is specific to this implementation, and not the
 	// larger authentication standard employed.
-	if (!(*salt = hex_decode_st(res_field_string(row, 0), NULL)) || st_length_get(salt) != 128) {
+	if (!(*salt = hex_decode_st(res_field_string(row, 0), NULL)) || st_length_get(*salt) != 128) {
 		log_pedantic("An invalid salt value was found for the specified user account. { username = %.*s / length = %zu }", st_length_int(username),
 			st_char_get(username), st_length_get(*salt));
 		res_table_free(query);

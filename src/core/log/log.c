@@ -43,10 +43,11 @@ void log_enable(void) {
  * @note	This function was created because backtrace_symbols() can fail due to heap corruption.
  * @return	-1 if the backtrace failed, or 0 on success.
  */
-int_t print_backtrace() {
-	void *buffer[1024];
-	char strbuf[1024];
+int_t print_backtrace(void) {
+
 	int_t pipefds[2];
+	char strbuf[1024];
+	void *buffer[1024];
 	int_t nbt, nread, nfound = 0, result = 0, i;
 
 	nbt = backtrace (buffer, (sizeof (buffer) / sizeof (void *)));
@@ -72,7 +73,8 @@ int_t print_backtrace() {
 		if (nread < 0) {
 			result = -1;
 			break;
-		} else if (!nread) {
+		}
+		else if (!nread) {
 			break;
 		}
 
@@ -89,11 +91,8 @@ int_t print_backtrace() {
 						return -1;
 					}
 				}
-
 			}
-
 		}
-
 	}
 
 	fsync(STDOUT_FILENO);

@@ -16,15 +16,17 @@ START_TEST (check_users_register_s) {
 
 	uint16_t plan;
 	connection_t con;
-	int64_t transaction;
 	uint64_t usernum = 0;
+	int64_t transaction = -1;
 	stringer_t *errmsg = NULL, *username = NULL, *password = NULL;
 
 	// Register new user account with a randomly generated userid.
 	log_unit("%-64.64s", "USERS / REGISTER / SINGLE THREADED:");
+	log_disable();
 
 	// Check to make sure the check process hasn't been aborted.
 	if (!status()) {
+		log_enable();
 		log_unit("%10.10s\n", "SKIPPED");
 		return;
 	}
@@ -37,8 +39,8 @@ START_TEST (check_users_register_s) {
 
 	// Generate a random string of numbers as the password and then append the string of numbers to the username
 	// pattern check_user_XYZ to create a username that should always be unique.
-	if ((password = rand_choices("0123456789", 20)) || (username = st_aprint("check_user_%.*s", st_length_int(password), st_char_get(password)))) {
-		errmsg = st_aprint("An internal error occurred. Unable to generate the random username and password.");
+	if (!(password = rand_choices("0123456789", 20)) || !(username = st_aprint("check_user_%.*s", st_length_int(password), st_char_get(password)))) {
+		errmsg = st_aprint("An internal error occurred. Unable to generate a random username and password for registration.");
 	}
 
 	// Start the transaction.
@@ -53,18 +55,20 @@ START_TEST (check_users_register_s) {
 	}
 
 	// Were finally done.
-	tran_commit(transaction);
+	else {
+		tran_commit(transaction);
+	}
 
 	st_cleanup(username);
 	st_cleanup(password);
 
+	log_enable();
 	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
 	fail_unless(!errmsg, st_char_get(errmsg));
 	st_cleanup(errmsg);
-	return;
+
 
 } END_TEST
-
 
 START_TEST (check_users_credentials_valid_s) {
 
@@ -78,6 +82,7 @@ START_TEST (check_users_credentials_valid_s) {
 		stringer_t *username;
 		stringer_t *password;
 	} name_pass;
+
 #if 0
 
 /** use this to generate new user info*/
@@ -118,6 +123,7 @@ START_TEST (check_users_credentials_valid_s) {
 
 	// Valid Login Attempts
 	log_unit("%-64.64s", "USERS / CREDENTIAL / VALID / SINGLE THREADED:");
+	log_disable();
 
 	for(uint_t i = 0; i < (sizeof(tests)/sizeof(tests[0])); ++i) {
 
@@ -163,9 +169,11 @@ START_TEST (check_users_credentials_valid_s) {
 		credential_free(user_check_cred);
 	}
 
+	log_enable();
 	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
 	fail_unless(!errmsg, st_char_get(errmsg));
 	st_cleanup(errmsg);
+	log_enable();
 	return;
 
 cleanup_cred:
@@ -210,6 +218,7 @@ START_TEST (check_users_credentials_invalid_s) {
 
 	// Invalid Login Attempts
 	log_unit("%-64.64s", "USERS / CREDENTIAL / INVALID / SINGLE THREADED:");
+	log_disable();
 
 	// Try passing in various combinations of NULL.
 	if ((user_check_cred = credential_alloc_auth(NULL))) {
@@ -246,6 +255,7 @@ START_TEST (check_users_credentials_invalid_s) {
 		credential_free(user_check_cred);
 	}
 
+	log_enable();
 	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
 	fail_unless(!errmsg, st_char_get(errmsg));
 	return;
@@ -255,6 +265,7 @@ cleanup_data:
 cleanup_cred:
 	credential_free(user_check_cred);
 error:
+	log_enable();
 	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
 	fail_unless(!errmsg, st_char_get(errmsg));
 

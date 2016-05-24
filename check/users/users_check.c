@@ -117,7 +117,7 @@ START_TEST (check_users_credentials_valid_s) {
 		},
 		{
 			CONSTANT("stacie"),
-			CONSTANT("test")
+			CONSTANT("StacieJohnson")
 		}
 	};
 

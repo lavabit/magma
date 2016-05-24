@@ -16,12 +16,9 @@ static int_t credential_calc_legacy(credential_t *cred, stringer_t *password);
 
 static int_t credential_calc_stacie(credential_t *cred, stringer_t *password, stringer_t *salt);
 
-
 /// LOW: Add a function for detecting potentially illegal username/address sequences. Valid usernames must start with an alpha character,
 /// end with an alphanumeric character and not user consecutive underscores. If present, the domain portion of the username must follow the
 /// applicable standard for the TLD being used.
-
-/// LOW: Figure out how to result a credential_address into a credential_username using the Mailboxes table.
 
 /**
  * @brief	Process a user supplied credential address to ensures it only contains valid characters.

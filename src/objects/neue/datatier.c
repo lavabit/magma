@@ -4,9 +4,9 @@
  *
  * @brief Functions used to interact with the database to the capacity needed by credentials authentication calculations.
  *
- * Author: Ivan
- * Date: 07/06/2015
- * Revision: Original
+ * $Author$
+ * $Date$
+ * $Revision$
  *
  */
 
@@ -24,13 +24,13 @@ salt_state_t credential_salt_fetch(stringer_t *username, stringer_t **salt) {
 	table_t *query;
 	MYSQL_BIND parameters[1];
 
+	mm_wipe(parameters, sizeof(parameters));
+
 	// The salt variable must be a valid pointer, but the value must currently be set to NULL to avoid overwriting an existing value.
 	if (st_empty(username) || !salt || *salt) {
 		log_pedantic("The input variables were invalid.");
 		return ERROR;
 	}
-
-	mm_wipe(parameters, sizeof(parameters));
 
 	parameters[0].buffer_type = MYSQL_TYPE_STRING;
 	parameters[0].buffer_length = st_length_get(username);
@@ -60,7 +60,7 @@ salt_state_t credential_salt_fetch(stringer_t *username, stringer_t **salt) {
 
 	// All user specific salt values must be 128 bytes in length. This rule is specific to this implementation, and not the
 	// larger authentication standard employed.
-	if (!(*salt = hex_decode_st(res_field_string(row, 0), NULL)) || st_length_get(*salt) != 128) {
+	if (!(*salt = hex_decode_st(PLACER(res_field_block(row, 0), res_field_length(row, 0)), NULL)) || st_length_get(*salt) != 128) {
 		log_pedantic("An invalid salt value was found for the specified user account. { username = %.*s / length = %zu }", st_length_int(username),
 			st_char_get(username), st_length_get(*salt));
 		res_table_free(query);

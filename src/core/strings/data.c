@@ -42,7 +42,6 @@ bool_t st_empty_out(stringer_t *s, uchr_t **ptr, size_t *len) {
 	return false;
 }
 
-
 /**
  *@brief	Set the underlying data of a jointed managed string.
  *@param	s		the managed string to be adjusted.

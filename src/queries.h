@@ -156,6 +156,10 @@
 #define STATISTICS_GET_USERS_REGISTERED_TODAY "SELECT COUNT(*) FROM Creation WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 1 DAY)"
 #define STATISTICS_GET_USERS_REGISTERED_WEEK "SELECT COUNT(*) FROM Creation WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
 
+// For handling usernames and authentication.
+#define AUTH_GET_BY_USERID "SELECT usernum, userid, salt, auth, bonus, legacy, `ssl`, locked FROM Users WHERE userid = ?"
+#define AUTH_GET_BY_ADDRESS "SELECT Users.usernum, userid, salt, auth, bonus, legacy, `ssl`, locked FROM Users LEFT JOIN Mailboxes ON (Users.usernum = Mailboxes.usernum) WHERE Mailboxes.address = ?"
+
 /*
 
  Queries + Stmts Init
@@ -262,7 +266,9 @@
 											STATISTICS_GET_EMAILS_SENT_TODAY, \
 											STATISTICS_GET_EMAILS_SENT_WEEK, \
 											STATISTICS_GET_USERS_REGISTERED_TODAY, \
-											STATISTICS_GET_USERS_REGISTERED_WEEK
+											STATISTICS_GET_USERS_REGISTERED_WEEK, \
+											AUTH_GET_BY_USERID, \
+											AUTH_GET_BY_ADDRESS
 
 #define STMTS_INIT		**select_domains, \
 											**select_config, \
@@ -359,7 +365,9 @@
 											**statistics_get_emails_sent_today, \
 											**statistics_get_emails_sent_week, \
 											**statistics_get_users_registered_today, \
-											**statistics_get_users_registered_week
+											**statistics_get_users_registered_week, \
+											**auth_get_by_userid, \
+											**auth_get_by_address
 
 extern chr_t *queries[];
 struct { MYSQL_STMT STMTS_INIT; } stmts __attribute__ ((common));

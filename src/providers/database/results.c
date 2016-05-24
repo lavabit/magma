@@ -12,8 +12,6 @@
 
 #include "magma.h"
 
-// QUESTION: The res_field_ family of functions should probably be able to communicate an error... right?
-
 row_t * res_field_generic(row_t *row, uint64_t field, size_t typesize) {
 
 	if (!row) {
@@ -251,8 +249,8 @@ size_t res_field_length(row_t *row, uint64_t field) {
 }
 
 /**
- * @brief	Free a mysql results table.
- * @param	table	the mysql results table to be freed.
+ * @brief	Free a MySQL results table.
+ * @param	table	the MySQL results table to be freed.
  * @return	This function does not return a value.
  */
 void res_table_free(table_t *table) {
@@ -289,8 +287,8 @@ void res_table_free(table_t *table) {
 }
 
 /**
- * @brief	Free a prepared mysql statement result set binding.
- * @param	stmt	the input prepared mysql statement.
+ * @brief	Free a prepared MySQL statement result set binding.
+ * @param	stmt	the input prepared MySQL statement.
  * @param	binding	the binding for the result set.
  * @param	number	the number of fields in the result set.
  * @return	This function does not return a value.
@@ -315,7 +313,7 @@ void res_bind_free(MYSQL_STMT *stmt, MYSQL_BIND *binding, uint64_t number) {
 }
 
 /*
- * @brief	Allocate a mysql result table.
+ * @brief	Allocate a MySQL result table.
  * @note	Rows are one-indexed.
  * @param	row	the number of result rows.
  * @param	row	the number of result fields.
@@ -432,9 +430,9 @@ uint64_t res_field_count(table_t *table) {
 }
 
 /**
- * @brief	Return the number of rows in the mysql results table.
+ * @brief	Return the number of rows in the MySQL results table.
  * @note	The row count is provided for a one-indexed table.
- * @param	table	the input mysql results table.
+ * @param	table	the input MySQL results table.
  * @return	0 on error, or the row count on success.
  */
 uint64_t res_row_count(table_t *table) {
@@ -490,13 +488,11 @@ row_t * res_row_get(table_t *table, uint64_t row) {
 	return (table + sizeof(uint64_t) + sizeof(uint64_t) + sizeof(uint64_t) + (row * (sizeof(chr_t *) + (fields * (sizeof(chr_t *) + sizeof(size_t))))));
 }
 
-
 /**
  * @brief	Return the next row in the database results table and advance the cursor.
  * @param	table	the input mysql results table.
  * @return	a pointer to the next result row in the table.
  */
-// QUESTION: cursor should be declared as a pointer and dereferenced, instead of re-doing pointer arithmetic 3 separate times.
 row_t * res_row_next(table_t *table) {
 
 	row_t *row = NULL;
@@ -582,8 +578,8 @@ bool_t res_row_store(uint64_t num, table_t *table, MYSQL_BIND *binding) {
 }
 
 /*
- * @brief	Store the result set of a prepared mysql statement in a results table.
- * @param	stmt	the prepared mysql statement which was executed.
+ * @brief	Store the result set of a prepared MySQL statement in a results table.
+ * @param	stmt	the prepared MySQL statement which was executed.
  * @return	NULL on failure, or a pointer to the results table.
  */
 table_t * res_stmt_store(MYSQL_STMT *stmt) {

@@ -46,5 +46,10 @@ typedef struct {
 void auth_free(auth_t *auth);
 auth_t * auth_alloc(stringer_t *username);
 
+stringer_t * auth_address(stringer_t *username);
+stringer_t * auth_username(stringer_t *username);
+
+int_t auth_data_fetch(auth_t *auth);
+
 #endif
 

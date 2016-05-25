@@ -28,8 +28,11 @@
 								<option id="gnu.c.compiler.option.include.files.205075807" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" valueType="includeFiles">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/magma.h}&quot;"/>
 								</option>
-								<option id="gnu.c.compiler.option.include.paths.490644488" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+								<option id="gnu.c.compiler.option.include.paths.490644488" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src}&quot;"/>
+								</option>
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1926738496" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="MAGMA_PEDANTIC"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.102438972" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -41,7 +44,7 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.845737311" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.base.999450839" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base">
-								<option id="gnu.both.asm.option.include.paths.2098444350" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+								<option id="gnu.both.asm.option.include.paths.2098444350" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1639098879" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
@@ -79,8 +82,11 @@
 								<option id="gnu.c.compiler.option.include.files.903229593" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" valueType="includeFiles">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/magma.h}&quot;"/>
 								</option>
-								<option id="gnu.c.compiler.option.include.paths.142183936" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+								<option id="gnu.c.compiler.option.include.paths.142183936" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src}&quot;"/>
+								</option>
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.2117180584" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="MAGMA_PEDANTIC"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.208862389" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -92,7 +98,7 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.888278271" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.base.399935483" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base">
-								<option id="gnu.both.asm.option.include.paths.1981211645" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+								<option id="gnu.both.asm.option.include.paths.1981211645" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.900848572" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>

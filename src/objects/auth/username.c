@@ -20,7 +20,7 @@
  * 			 address, all subsequent characters in that local part will be ignored, as they constitute a label.
  * @return	NULL on failure, or a managed string containing the sanitized address on success.
  */
-stringer_t * auth_username_sanitizer(stringer_t *username) {
+stringer_t * auth_address(stringer_t *username) {
 
 	size_t len;
 	chr_t *p, *w, *tip = NULL;
@@ -34,12 +34,12 @@ stringer_t * auth_username_sanitizer(stringer_t *username) {
 
 	for (size_t i = 0; i < len; i++) {
 
-		// If an @ symbol is encountered, record its position
+		// If an @ symbol is encountered, record its position.
 		if (!tip && *p == '@') {
 			tip = w;
 		}
 
-		// Non white space characters are copied in lower case form
+		// Non white space characters are copied in lower case form.
 		if (!chr_whitespace(*p)) {
 			*w++ = lower_chr(*p++);
 		}
@@ -110,7 +110,7 @@ stringer_t * auth_username(stringer_t *username) {
 	size_t at;
 	stringer_t *output, *domain = NULL;
 
-	if (!(output = auth_username_sanitizer(username))) {
+	if (!(output = auth_address(username))) {
 		return NULL;
 	}
 

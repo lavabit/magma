@@ -126,15 +126,13 @@ int_t auth_data_fetch(auth_t *auth) {
 
 	// If the legacy value is NULL then we must have valid STACIE values for authentication.
 	if (st_empty(auth->legacy.auth) && (st_empty(auth->seasoning.salt) || st_length_get(auth->seasoning.salt) != 128 ||
-			st_empty(auth->tokens.auth) || st_length_get(auth->tokens.auth) != 64 || auth->seasoning.bonus > 16777216)) {
-		log_error("The user should have valid STACIE credentials, but the retrieved values don't appear valid. { username = %.*s }",
-				st_length_int(auth->username), st_char_get(auth->username));
+		st_empty(auth->tokens.auth) || st_length_get(auth->tokens.auth) != 64 || auth->seasoning.bonus > 16777216)) {
+		log_error("The user should have valid STACIE credentials, but the retrieved values don't appear valid. { username = %.*s }", st_length_int(auth->username), st_char_get(auth->username));
 		return -1;
 	}
-	else if (st_empty(auth->legacy.auth) || st_length_get(auth->legacy.auth) != 128 || !st_empty(auth->seasoning.salt) ||
-			!st_empty(auth->tokens.auth) || auth->seasoning.bonus != 0) {
-		log_error("The user should only have valid legacy credentials, but the retrieved values don't appear valid. { username = %.*s }",
-						st_length_int(auth->username), st_char_get(auth->username));
+	else if (!st_empty(auth->legacy.auth) && ((st_length_get(auth->legacy.auth) != 64 || !st_empty(auth->seasoning.salt) ||
+		!st_empty(auth->tokens.auth) || auth->seasoning.bonus != 0))) {
+		log_error("The user should only have valid legacy credentials, but the retrieved values don't appear valid. { username = %.*s }", st_length_int(auth->username), st_char_get(auth->username));
 		return -1;
 	}
 

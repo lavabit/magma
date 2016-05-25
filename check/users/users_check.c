@@ -179,6 +179,7 @@ START_TEST (check_users_credentials_valid_s) {
 cleanup_cred:
 	credential_free(user_check_cred);
 error:
+	log_enable();
 	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
 	fail_unless(!errmsg, st_char_get(errmsg));
 	st_cleanup(errmsg);
@@ -378,16 +379,52 @@ START_TEST (check_users_message_s) {
 	//fail_unless(!errmsg, errmsg);
 } END_TEST
 
+START_TEST (check_users_auth_valid_s) {
+
+	auth_t *auth = NULL;
+	stringer_t *errmsg = NULL;
+
+	// Valid Login Attempts
+	log_unit("%-64.64s", "USERS / AUTH / VALID / SINGLE THREADED:");
+	//log_disable();
+
+	// Test a legacy account.
+	if (status() && !(auth = auth_alloc(NULLER("princess")))) {
+		 errmsg = st_aprint("Auth allocation failed.");
+	}
+	else if (status()) {
+		auth_free(auth);
+		auth = NULL;
+	}
+
+	// Test a STACIE enabled account.
+	if (status() && !(auth = auth_alloc(NULLER("stacie")))) {
+		 errmsg = st_aprint("Auth allocation failed.");
+	}
+	else if (status()) {
+		auth_free(auth);
+		auth = NULL;
+	}
+
+	log_enable();
+	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
+	fail_unless(!errmsg, st_char_get(errmsg));
+	st_cleanup(errmsg);
+
+} END_TEST
+
+
 Suite * suite_check_users(void) {
 
 	TCase *tc;
 	Suite *s = suite_create("\tUsers");
 
-	testcase(s, tc, "Auth Valid/S", check_users_credentials_valid_s);
-	testcase(s, tc, "Auth Invalid/S", check_users_credentials_invalid_s);
+	testcase(s, tc, "Cred Valid/S", check_users_credentials_valid_s);
+	testcase(s, tc, "Cred Invalid/S", check_users_credentials_invalid_s);
 	testcase(s, tc, "Inbox/S", check_users_inbox_s);
 	testcase(s, tc, "Message/S", check_users_message_s);
 	testcase(s, tc, "Register/S", check_users_register_s);
+	testcase(s, tc, "Auth Valid/S", check_users_auth_valid_s);
 
 	return s;
 }

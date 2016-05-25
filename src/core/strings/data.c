@@ -15,7 +15,7 @@
 /**
  * @brief	Determine whether the specified managed string is empty or not.
  * @param	s 	the input managed string.
- * @result	true if string is NULL or uninitialized or empty; false otherwise.
+ * @result	true if the string is NULL, uninitialized or empty; false if at least one byte is present.
  */
 bool_t st_empty(stringer_t *s) {
 
@@ -41,7 +41,6 @@ bool_t st_empty_out(stringer_t *s, uchr_t **ptr, size_t *len) {
 
 	return false;
 }
-
 
 /**
  *@brief	Set the underlying data of a jointed managed string.

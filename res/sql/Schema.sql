@@ -447,6 +447,7 @@ CREATE TABLE `Users` (
   `userid` varchar(255) NOT NULL DEFAULT '',
   `salt` varchar(256),
   `auth` varchar(128),
+  `bonus` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `legacy` varchar(130),
   `ssl` tinyint(1) NOT NULL DEFAULT '0',
   `plan` varchar(25) NOT NULL DEFAULT 'FREE',

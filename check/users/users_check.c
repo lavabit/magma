@@ -12,6 +12,64 @@
 
 #include "magma_check.h"
 
+START_TEST (check_users_register_s) {
+
+	uint16_t plan;
+	connection_t con;
+	uint64_t usernum = 0;
+	int64_t transaction = -1;
+	stringer_t *errmsg = NULL, *username = NULL, *password = NULL;
+
+	// Register new user account with a randomly generated userid.
+	log_unit("%-64.64s", "USERS / REGISTER / SINGLE THREADED:");
+	log_disable();
+
+	// Check to make sure the check process hasn't been aborted.
+	if (!status()) {
+		log_enable();
+		log_unit("%10.10s\n", "SKIPPED");
+		return;
+	}
+
+	// Pass in a blank connection structure. This will be used to store the registration IP address.
+	mm_wipe(&con, sizeof(connection_t));
+
+	// Randomly select one of the available plans. Valid values are 1 through 4.
+	plan = (rand_get_uint16() % 3) + 1;
+
+	// Generate a random string of numbers as the password and then append the string of numbers to the username
+	// pattern check_user_XYZ to create a username that should always be unique.
+	if (!(password = rand_choices("0123456789", 20)) || !(username = st_aprint("check_user_%.*s", st_length_int(password), st_char_get(password)))) {
+		errmsg = st_aprint("An internal error occurred. Unable to generate a random username and password for registration.");
+	}
+
+	// Start the transaction.
+	else if ((transaction = tran_start()) == -1) {
+		errmsg = st_aprint("An internal error occurred. Unable to start the transaction.");
+	}
+
+	// Database insert.
+	else if (!register_data_insert_user(&con, plan, username, password, transaction, &usernum)) {
+		errmsg = st_aprint("User registration failed!.");
+		tran_rollback(transaction);
+	}
+
+	// Were finally done.
+	else {
+		tran_commit(transaction);
+	}
+
+	st_cleanup(username);
+	st_cleanup(password);
+
+	log_enable();
+	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
+	fail_unless(!errmsg, st_char_get(errmsg));
+	st_cleanup(errmsg);
+
+
+} END_TEST
+
 START_TEST (check_users_credentials_valid_s) {
 
 	int_t state, cred_res;
@@ -20,11 +78,11 @@ START_TEST (check_users_credentials_valid_s) {
 	meta_user_t *user_check_data = NULL;
 	credential_t *user_check_cred = NULL;
 
-
 	typedef struct {
 		stringer_t *username;
 		stringer_t *password;
 	} name_pass;
+
 #if 0
 
 /** use this to generate new user info*/
@@ -59,12 +117,13 @@ START_TEST (check_users_credentials_valid_s) {
 		},
 		{
 			CONSTANT("stacie"),
-			CONSTANT("magma")
+			CONSTANT("StacieJohnson")
 		}
 	};
 
 	// Valid Login Attempts
 	log_unit("%-64.64s", "USERS / CREDENTIAL / VALID / SINGLE THREADED:");
+	log_disable();
 
 	for(uint_t i = 0; i < (sizeof(tests)/sizeof(tests[0])); ++i) {
 
@@ -110,14 +169,17 @@ START_TEST (check_users_credentials_valid_s) {
 		credential_free(user_check_cred);
 	}
 
+	log_enable();
 	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
 	fail_unless(!errmsg, st_char_get(errmsg));
 	st_cleanup(errmsg);
+	log_enable();
 	return;
 
 cleanup_cred:
 	credential_free(user_check_cred);
 error:
+	log_enable();
 	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
 	fail_unless(!errmsg, st_char_get(errmsg));
 	st_cleanup(errmsg);
@@ -157,6 +219,7 @@ START_TEST (check_users_credentials_invalid_s) {
 
 	// Invalid Login Attempts
 	log_unit("%-64.64s", "USERS / CREDENTIAL / INVALID / SINGLE THREADED:");
+	log_disable();
 
 	// Try passing in various combinations of NULL.
 	if ((user_check_cred = credential_alloc_auth(NULL))) {
@@ -172,7 +235,7 @@ START_TEST (check_users_credentials_invalid_s) {
 		credential_free(user_check_cred);
 	}
 
-	for(uint_t i = 0; i < sizeof(tests)/sizeof(tests[0]); ++i) {
+	for (uint_t i = 0; i < sizeof(tests)/sizeof(tests[0]); ++i) {
 
 		if (!(user_check_cred = credential_alloc_auth(tests[i].username))) {
 			errmsg = st_aprint("Credential creation failed. Authentication was not attempted. { user = %s }", st_char_get(tests[i].username));
@@ -193,6 +256,7 @@ START_TEST (check_users_credentials_invalid_s) {
 		credential_free(user_check_cred);
 	}
 
+	log_enable();
 	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
 	fail_unless(!errmsg, st_char_get(errmsg));
 	return;
@@ -202,6 +266,7 @@ cleanup_data:
 cleanup_cred:
 	credential_free(user_check_cred);
 error:
+	log_enable();
 	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
 	fail_unless(!errmsg, st_char_get(errmsg));
 
@@ -314,15 +379,52 @@ START_TEST (check_users_message_s) {
 	//fail_unless(!errmsg, errmsg);
 } END_TEST
 
+START_TEST (check_users_auth_valid_s) {
+
+	auth_t *auth = NULL;
+	stringer_t *errmsg = NULL;
+
+	// Valid Login Attempts
+	log_unit("%-64.64s", "USERS / AUTH / VALID / SINGLE THREADED:");
+	//log_disable();
+
+	// Test a legacy account.
+	if (status() && !(auth = auth_alloc(NULLER("princess")))) {
+		 errmsg = st_aprint("Auth allocation failed.");
+	}
+	else if (status()) {
+		auth_free(auth);
+		auth = NULL;
+	}
+
+	// Test a STACIE enabled account.
+	if (status() && !(auth = auth_alloc(NULLER("stacie")))) {
+		 errmsg = st_aprint("Auth allocation failed.");
+	}
+	else if (status()) {
+		auth_free(auth);
+		auth = NULL;
+	}
+
+	log_enable();
+	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
+	fail_unless(!errmsg, st_char_get(errmsg));
+	st_cleanup(errmsg);
+
+} END_TEST
+
+
 Suite * suite_check_users(void) {
 
 	TCase *tc;
 	Suite *s = suite_create("\tUsers");
 
-	testcase(s, tc, "Auth Valid/S", check_users_credentials_valid_s);
-	testcase(s, tc, "Auth Invalid/S", check_users_credentials_invalid_s);
+	testcase(s, tc, "Cred Valid/S", check_users_credentials_valid_s);
+	testcase(s, tc, "Cred Invalid/S", check_users_credentials_invalid_s);
 	testcase(s, tc, "Inbox/S", check_users_inbox_s);
 	testcase(s, tc, "Message/S", check_users_message_s);
+	testcase(s, tc, "Register/S", check_users_register_s);
+	testcase(s, tc, "Auth Valid/S", check_users_auth_valid_s);
 
 	return s;
 }

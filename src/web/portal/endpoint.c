@@ -203,9 +203,9 @@ void portal_endpoint_auth(connection_t *con) {
 	json_error_t err;
 	meta_user_t *user;
 	credential_t *cred;
-	chr_t *username, *password;
+	chr_t *username = NULL, *password = NULL;
 	salt_state_t salt_res;
-	stringer_t *salt;
+	stringer_t *salt = NULL;
 
 	// Check the session state.
 	if (!con->http.session || con->http.session->state != SESSION_STATE_NEUTRAL) {

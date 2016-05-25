@@ -28,13 +28,7 @@ typedef struct {
 /// datatier.c
 bool_t   register_data_check_username(stringer_t *username);
 inx_t *  register_data_fetch_blocklist(void);
-bool_t register_data_insert_user(
-	connection_t *con,
-	uint16_t plan,
-	stringer_t *username,
-	stringer_t *password,
-	int_t transaction,
-	uint64_t *outuser);
+bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *username, stringer_t *password, int64_t transaction, uint64_t *outuser);
 
 /// abuse.c
 bool_t  register_abuse_check_blocklist(connection_t *con);

@@ -1284,7 +1284,6 @@ int_t meta_data_user_build(meta_user_t *user, credential_t *cred) {
 	default:
 		log_error("Invalid authentication type.");
 		break;
-
 	}
 
 	// Clear it out, just in case we don't have a valid password hash and then overwrite the buffer with a new passhash.
@@ -1314,7 +1313,7 @@ int_t meta_data_user_build(meta_user_t *user, credential_t *cred) {
 	// Reset the flags.
 	user->flags = 0;
 
-	// Update the secure flag
+	// Update the secure flag.
 	if (res_field_int8(row, 0) == 1) {
 		user->flags = (user->flags | META_USER_ENCRYPT_DATA);
 	}
@@ -1431,12 +1430,10 @@ int_t meta_data_user_build_storage_keys(uint64_t usernum, stringer_t *passkey, s
 	if (row) {
 		// Our keypair comes base-64 encoded, but the private key is also encrypted with our passkey
 		if (res_field_length(row, 0)) {
-			//spub_b64 = st_dupe(res_field_block(row, 0), res_field_length(row, 0));
 			spub_b64 = st_import(res_field_block(row, 0), res_field_length(row, 0));
 		}
 
 		if (res_field_length(row, 1)) {
-			//spriv_b64 = st_dupe(res_field_block(row, 1), res_field_length(row, 1));
 			spriv_b64 = st_import(res_field_block(row, 1), res_field_length(row, 1));
 		}
 
@@ -1446,6 +1443,7 @@ int_t meta_data_user_build_storage_keys(uint64_t usernum, stringer_t *passkey, s
 
 	// Did we get the pub and priv key from the database? If not, generate them and store them.
 	if (!dont_create && (st_empty(spub_b64) || st_empty(spriv_b64))) {
+
 		EC_KEY *new_ecies_key;
 		unsigned char *pubkeybuf;
 		char *privkeybuf;

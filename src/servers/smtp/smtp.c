@@ -249,7 +249,7 @@ void smtp_auth_plain(connection_t *con) {
 	int_t state, cred_res;
 	salt_state_t salt_res;
 	smtp_outbound_prefs_t *outbound;
-	stringer_t *decoded, *argument = NULL, *salt;
+	stringer_t *decoded = NULL, *argument = NULL, *salt = NULL;
 	placer_t username = { .opts = PLACER_T | JOINTED | STACK | FOREIGNDATA}, password = { .opts = PLACER_T | JOINTED | STACK | FOREIGNDATA},
 		authorize_id = { .opts = PLACER_T | JOINTED | STACK | FOREIGNDATA };
 
@@ -384,7 +384,7 @@ void smtp_auth_login(connection_t *con) {
 	int_t state, cred_res;
 	salt_state_t salt_res;
 	smtp_outbound_prefs_t *outbound;
-	stringer_t *username = NULL, *password = NULL, *argument = NULL, *salt;
+	stringer_t *username = NULL, *password = NULL, *argument = NULL, *salt = NULL;
 
 	// If the user is already authenticated.
 	if (con->smtp.authenticated == true) {

@@ -12,8 +12,8 @@ if [ $? -ne 0 ]; then
 	exit 1
 fi
 
-# Check and make sure the clipit command line utility has been installed.
-which parcellite &>/dev/null
+# Ensure the clipit command line utility has been installed.
+which clipit &>/dev/null
 if [ $? -ne 0 ]; then
 	tput setaf 1; tput bold; echo "The clipit utility isn't available. It needs to be installed for this script to work."; tput sgr0
 	exit 1
@@ -38,7 +38,7 @@ if [ -d "$1" ]; then
 	export CTAGSMODE="DIRECTORY"
 	echo "" | clipit
 	tput setaf 2; tput bold; printf "\nThe following output has already been copied to the clipboard. So go paste it already.\n"; tput sgr0
-	find "$1" -type f -name "*.c" -exec $0 {} \; | parcellite
+	find "$1" -type f -name "*.c" -exec $0 {} \; | clipit
 	exit 0
 fi
 
@@ -69,7 +69,7 @@ cd $DIR
 #	t  typedefs
 #	u  union names
 #	v  variable definitions
-#	x  external and forward variable declarations [off] 
+#	x  external and forward variable declarations [off]
 
 # Check the build logs for the compiler parameters to pass into protoize
 #OPTS=`cat /home/ladar/Lavabit/.metadata/.plugins/org.eclipse.cdt.ui/*.build.log | grep $FILE | grep -v "Building file:" | grep -v "Finished building:" | \
@@ -94,7 +94,7 @@ fi
 if [[ $CTAGSMODE == "DIRECTORY" ]]; then
 	printf "\\n/// $FILE\\n$TAGS\\n"
 else
-	printf "/// $FILE\n$TAGS\n" | parcellite	
+	printf "/// $FILE\n$TAGS\n" | clipit
 	printf "\n"
 	tput setaf 2; tput bold; echo "The following output has already been copied to the clipboard. So go paste it already."; tput sgr0
 	printf "\n/// $FILE\n$TAGS\n\n"

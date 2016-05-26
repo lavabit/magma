@@ -116,7 +116,7 @@ int_t auth_data_fetch(auth_t *auth) {
 
 	// Only save the legacy hash if the field value isn't NULL.
 	if (res_field_length(row, 5)) {
-		auth->legacy.auth = hex_decode_st(PLACER(res_field_block(row, 5), res_field_length(row, 5)), NULL);
+		auth->legacy.token = hex_decode_st(PLACER(res_field_block(row, 5), res_field_length(row, 5)), NULL);
 	}
 
 	auth->status.tls = res_field_int8(row, 6);
@@ -125,12 +125,13 @@ int_t auth_data_fetch(auth_t *auth) {
 	res_table_free(query);
 
 	// If the legacy value is NULL then we must have valid STACIE values for authentication.
-	if (st_empty(auth->legacy.auth) && (st_empty(auth->seasoning.salt) || st_length_get(auth->seasoning.salt) != 128 ||
-		st_empty(auth->tokens.auth) || st_length_get(auth->tokens.auth) != 64 || auth->seasoning.bonus > 16777216)) {
-		log_error("The user should have valid STACIE credentials, but the retrieved values don't appear valid. { username = %.*s }", st_length_int(auth->username), st_char_get(auth->username));
+	if (st_empty(auth->legacy.token) && (st_empty(auth->seasoning.salt) || st_length_get(auth->seasoning.salt) != STACIE_SALT_LENGTH ||
+		st_empty(auth->tokens.auth) || st_length_get(auth->tokens.auth) != STACIE_TOKEN_LENGTH || auth->seasoning.bonus > STACIE_ROUNDS_MAX)) {
+		log_error("The user should have valid STACIE credentials, but the retrieved values don't appear valid. { username = %.*s }",
+			st_length_int(auth->username), st_char_get(auth->username));
 		return -1;
 	}
-	else if (!st_empty(auth->legacy.auth) && ((st_length_get(auth->legacy.auth) != 64 || !st_empty(auth->seasoning.salt) ||
+	else if (!st_empty(auth->legacy.token) && ((st_length_get(auth->legacy.token) != 64 || !st_empty(auth->seasoning.salt) ||
 		!st_empty(auth->tokens.auth) || auth->seasoning.bonus != 0))) {
 		log_error("The user should only have valid legacy credentials, but the retrieved values don't appear valid. { username = %.*s }", st_length_int(auth->username), st_char_get(auth->username));
 		return -1;

@@ -389,7 +389,7 @@ START_TEST (check_users_auth_valid_s) {
 	//log_disable();
 
 	// Test a legacy account.
-	if (status() && !(auth = auth_alloc(NULLER("princess")))) {
+	if (status() && !(auth = auth_challenge(NULLER("princess")))) {
 		 errmsg = st_aprint("Auth allocation failed.");
 	}
 	else if (status()) {
@@ -398,7 +398,7 @@ START_TEST (check_users_auth_valid_s) {
 	}
 
 	// Test a STACIE enabled account.
-	if (status() && !(auth = auth_alloc(NULLER("stacie")))) {
+	if (status() && !(auth = auth_challenge(NULLER("stacie")))) {
 		 errmsg = st_aprint("Auth allocation failed.");
 	}
 	else if (status()) {

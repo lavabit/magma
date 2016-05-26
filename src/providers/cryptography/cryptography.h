@@ -38,6 +38,10 @@
 #define STACIE_SALT_LENGTH		128
 #define STACIE_NONCE_LENGTH		128
 
+// This STACIE implementation uses SHA-2/512 resulting in keys and tokens of 64 bytes in length.
+#define STACIE_KEY_LENGTH		64
+#define STACIE_TOKEN_LENGTH		64
+
 typedef enum {
 	ECIES_PRIVATE_HEX = 1,
 	ECIES_PRIVATE_BINARY = 2,

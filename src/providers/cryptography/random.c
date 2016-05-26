@@ -60,7 +60,7 @@ stringer_t * rand_choices(chr_t *choices, size_t len) {
 
 /**
  * @brief	Fill a managed string with random data.
- * @note	This function generates random data using the cryptographically strong Openssl function RAND_bytes().
+ * @note	This function generates random data using the cryptographically strong OpenSSL function RAND_bytes().
  * @param	s	the input managed string.
  * @return	0 on failure, or the total number of bytes written to the managed string.
  * @see		RAND_bytes()

@@ -28,11 +28,15 @@
 
 // The STACIE number constants for clamping hash rounds between 8 and 16,777,216, which represents the number of possible
 // values for an unsigned 24 bit integer, if you include 0. In other words 0 to 16,777,215 equals 16,777,216.
-#define STACIE_ROUNDS_MIN	8
-#define STACIE_ROUNDS_MAX	16777216
+#define STACIE_ROUNDS_MIN		8
+#define STACIE_ROUNDS_MAX		16777216
 
 // The STACIE token derivation stage uses a fixed number of hash rounds, and that number is dictated by this parameter.
 #define STACIE_ROUNDS_TOKENS	8
+
+// This STACIE implementation will always use salt and nonce values which are 128 bytes in length.
+#define STACIE_SALT_LENGTH		128
+#define STACIE_NONCE_LENGTH		128
 
 typedef enum {
 	ECIES_PRIVATE_HEX = 1,
@@ -191,14 +195,15 @@ void *        scramble_vector_data(scramble_t *buffer);
 uint64_t      scramble_vector_length(scramble_t *buffer);
 
 /// stacie.c
-uint32_t stacie_rounds_calculate(stringer_t *password, uint32_t bonus);
-stringer_t * stacie_seed_key_derive(stringer_t *salt);
-stringer_t * stacie_entropy_seed_derive(uint32_t rounds, stringer_t *password, stringer_t *salt);
-stringer_t * stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt);
-stringer_t * stacie_hashed_token_derive(stringer_t *base, stringer_t *username, stringer_t *salt, stringer_t *nonce);
-stringer_t * stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, stringer_t *shard);
-stringer_t * stacie_realm_cipher_key(stringer_t *realm_key);
-stringer_t * stacie_realm_init_vector(stringer_t *realm_key);
+stringer_t *  stacie_entropy_seed_derive(uint32_t rounds, stringer_t *password, stringer_t *salt);
+stringer_t *  stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt);
+stringer_t *  stacie_hashed_token_derive(stringer_t *base, stringer_t *username, stringer_t *salt, stringer_t *nonce);
+stringer_t *  stacie_realm_cipher_key(stringer_t *realm_key);
+stringer_t *  stacie_realm_init_vector(stringer_t *realm_key);
+stringer_t *  stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, stringer_t *shard);
+uint32_t      stacie_rounds_calculate(stringer_t *password, uint32_t bonus);
+stringer_t *  stacie_salt_create(void);
+stringer_t *  stacie_nonce_create(void);
 
 /// symmetric.c
 stringer_t *  symmetric_decrypt(cipher_t *cipher, stringer_t *vector, stringer_t *key, stringer_t *input);

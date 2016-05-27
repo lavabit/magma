@@ -259,29 +259,6 @@ error:
 }
 
 /**
- * @brief	Generates a new salt value.
- * @return	Stringer containing a newly generated salt in binary form.
- */
-stringer_t * credential_salt_generate(void) {
-
-	size_t salt_len = 128;
-	stringer_t *result = NULL;
-
-	if (!(result = st_alloc(salt_len))) {
-		log_error("Failed to allocate stringer for user salt.");
-		return NULL;
-	}
-
-	if (salt_len != rand_write(result)) {
-		log_error("Failed to write random bytes into user salt stringer.");
-		st_free(result);
-		return NULL;
-	}
-
-	return result;
-}
-
-/**
  * @brief	Initializes an already allocated credential objects with appropriate values for the specified inputs.
  * @param	cred		Newly allocated credential_t object to be initialized.
  * @param	password	Stringer containing password.

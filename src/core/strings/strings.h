@@ -242,7 +242,7 @@ multi_t    mt_set_type(multi_t multi, M_TYPE target);
 // Macro for counting the number of arguments in a variadic list function call.
 #define va_narg(...) (__VA_NARG__(_0, ## __VA_ARGS__, __VA_NARG_SEQ_N()) - 1)
 
-// There are internal macros used by va_narg(), which is defined above.
+// These are internal macros used by the va_narg macro above.
 #define __VA_NARG__(...) __VA_NARG_N(__VA_ARGS__)
 #define __VA_NARG_N(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16,_17,_18,_19,_20, \
         _21,_22,_23,_24,_25,_26,_27,_28,_29,_30,_31,_32,_33,_34,_35,_36,_37,_38,_39,_40, \

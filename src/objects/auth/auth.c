@@ -24,13 +24,7 @@ void auth_free(auth_t *auth) {
 		return;
 	}
 
-	st_cleanup(auth->username);
-	st_cleanup(auth->seasoning.salt);
-	st_cleanup(auth->keys.master);
-	st_cleanup(auth->tokens.auth);
-	st_cleanup(auth->legacy.key);
-	st_cleanup(auth->legacy.token);
-
+	st_cleanup(auth->username, auth->seasoning.salt, auth->keys.master, auth->tokens.verification, auth->legacy.key, auth->legacy.token);
 	mm_free(auth);
 	return;
 }

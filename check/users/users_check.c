@@ -413,7 +413,6 @@ START_TEST (check_users_auth_valid_s) {
 
 } END_TEST
 
-
 Suite * suite_check_users(void) {
 
 	TCase *tc;
@@ -424,6 +423,8 @@ Suite * suite_check_users(void) {
 	testcase(s, tc, "Inbox/S", check_users_inbox_s);
 	testcase(s, tc, "Message/S", check_users_message_s);
 	testcase(s, tc, "Register/S", check_users_register_s);
+	testcase(s, tc, "Auth Legacy/S", check_users_auth_legacy_s);
+	testcase(s, tc, "Auth Stacie/S", check_users_auth_stacie_s);
 	testcase(s, tc, "Auth Valid/S", check_users_auth_valid_s);
 
 	return s;

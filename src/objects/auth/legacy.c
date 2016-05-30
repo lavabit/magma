@@ -67,7 +67,6 @@ auth_legacy_t * auth_legacy(stringer_t *username, stringer_t *password) {
 	auth_legacy_t *legacy = NULL;
 	stringer_t *input = NULL, *intermediate = MANAGEDBUF(64);
 
-
 	// Make sure all three required inputs are valid pointers and hold at least one character.
 	if (st_empty(username) || st_empty(password) || st_empty(magma.secure.salt)) {
 		log_error("A variable needed to calculate the legacy authentication and encryption values was invalid.");
@@ -134,5 +133,5 @@ auth_legacy_t * auth_legacy(stringer_t *username, stringer_t *password) {
 	st_free(input);
 
 	// And return success.
-	return NULL;
+	return legacy;
 }

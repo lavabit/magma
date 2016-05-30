@@ -418,14 +418,14 @@ Suite * suite_check_users(void) {
 	TCase *tc;
 	Suite *s = suite_create("\tUsers");
 
+	testcase(s, tc, "Auth Legacy/S", check_users_auth_legacy_s);
+	testcase(s, tc, "Auth Stacie/S", check_users_auth_stacie_s);
+	testcase(s, tc, "Auth Valid/S", check_users_auth_valid_s);
 	testcase(s, tc, "Cred Valid/S", check_users_credentials_valid_s);
 	testcase(s, tc, "Cred Invalid/S", check_users_credentials_invalid_s);
 	testcase(s, tc, "Inbox/S", check_users_inbox_s);
 	testcase(s, tc, "Message/S", check_users_message_s);
 	testcase(s, tc, "Register/S", check_users_register_s);
-	testcase(s, tc, "Auth Legacy/S", check_users_auth_legacy_s);
-	testcase(s, tc, "Auth Stacie/S", check_users_auth_stacie_s);
-	testcase(s, tc, "Auth Valid/S", check_users_auth_valid_s);
 
 	return s;
 }

@@ -83,6 +83,9 @@ process "freshen.clamav.sh" "freshen.clamav"
 process "runner.sh" "runner"
 process "testde.sh" "testde"
 
+process "stacie.py" "stacie"
+process "legacy.pl" "legacy"
+
 process "linkup.sh" "linkup"
 
 

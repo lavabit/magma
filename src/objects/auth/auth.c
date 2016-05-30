@@ -76,7 +76,6 @@ auth_t * auth_challenge(stringer_t *username) {
 	return auth;
 }
 
-
 /**
  * @brief Loads a user's authentication information and calculates the tokens for comparison.
  * @note If the username and password combination is valid, but involves an account with legacy authentication
@@ -93,7 +92,9 @@ auth_t * auth_challenge(stringer_t *username) {
 int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 
 	auth_t *auth = NULL;
+	auth_stacie_t *stacie = NULL;
 	auth_legacy_t *legacy = NULL;
+	stringer_t *legacy_hex = NULL, *salt_hex = NULL, *verification_hex = NULL;
 
 	if (st_empty(username) || st_empty(password)) {
 		log_pedantic("An invalid username or password was provided.");
@@ -124,11 +125,48 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 		auth_free(auth);
 		return 1;
 	}
-	// We have a valid user login for a legacy account. Convert the tokens before proceeding.
+	// We have a valid user login for an account with legacy credentials.
 	else if (auth->legacy.token && !st_cmp_cs_eq(auth->legacy.token, legacy->token)) {
-		auth->seasoning.salt = stacie_salt_create();
 
-	 //	stacie_
+		// Use the plain text password to convert the tokens before proceeding.
+		if (!(auth->seasoning.salt = stacie_salt_create()) ||
+			!(stacie = auth_stacie(0, auth->username, password, auth->seasoning.salt, NULL, NULL))) {
+			log_pedantic("Unable to calculate the STACIE credentials.");
+			auth_legacy_free(legacy);
+			auth_free(auth);
+			return -1;
+		}
+
+		// Duplicate the necessary values and then free the internal legacy and stacie structures.
+		auth->legacy.key = st_dupe(legacy->key);
+		auth->legacy.token = st_dupe(legacy->token);
+		auth->keys.master = st_dupe(stacie->keys.master);
+		auth->tokens.verification = st_dupe(stacie->tokens.verification);
+
+		auth_legacy_free(legacy);
+		auth_stacie_free(stacie);
+
+		legacy_hex = hex_encode_st(auth->legacy.token, NULL);
+		salt_hex = hex_encode_st(auth->seasoning.salt, NULL);
+		verification_hex = hex_encode_st(auth->tokens.verification, NULL);
+
+		// Ensure all of the needed values were duplicated.
+		if (st_empty(auth->legacy.key) || st_empty(auth->legacy.token) || st_empty(auth->keys.master) || st_empty(auth->tokens.verification) ||
+			st_empty(legacy_hex) || st_empty(salt_hex) || st_empty(verification_hex)) {
+			log_pedantic("Unable to duplicate the credentials.");
+			st_cleanup(legacy_hex, salt_hex, verification_hex);
+			auth_free(auth);
+			return -1;
+		}
+		// Update the database with the replacement STACIE values.
+		else if (auth_data_update_legacy(auth->usernum, legacy_hex, salt_hex, verification_hex, auth->seasoning.bonus)) {
+			log_pedantic("Unable to update the legacy credentials with the STACIE compatible equivalents.");
+			st_cleanup(legacy_hex, salt_hex, verification_hex);
+			auth_free(auth);
+			return -1;
+		}
+
+		st_cleanup(legacy_hex, salt_hex, verification_hex);
 
 	}
 

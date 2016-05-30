@@ -12,6 +12,63 @@
 
 #include "magma.h"
 
+
+/*
+ * @brief	Replaces legacy auth tokens with STACIE compatible tokens.
+ * @param	usernum	The user account number.
+ * @param	legacy The legacy auth token, encoded as a hexadecimal string.
+ * @param	salt The user specific salt value, encoded as a hexadecimal string.
+ * @param	verification The STACIE verification token, encoded as a hexadecimal string.
+ * @param	bonus	The number of bonus hash rounds.
+ * @return	0 if the user information was updated correctly, or -1 if an error occurs.
+ */
+int_t auth_data_update_legacy(uint64_t usernum, stringer_t *legacy, stringer_t *salt, stringer_t *verification, uint32_t bonus) {
+
+	MYSQL_BIND parameters[5];
+
+	mm_wipe(parameters, sizeof(parameters));
+
+	// Ensure a valid auth pointer was passed in and the required STACIE and legacy values are all present in the structure.
+	if (st_empty(salt) || st_empty(verification) || bonus > STACIE_ROUNDS_MAX || usernum == 0 || st_empty(legacy)) {
+		log_pedantic("The input variables were invalid.");
+		return -1;
+	}
+
+	// The user specific salt value.
+	parameters[0].buffer_type = MYSQL_TYPE_STRING;
+	parameters[0].buffer_length = st_length_get(salt);
+	parameters[0].buffer = st_char_get(salt);
+
+	// The STACIE compatible password verification token.
+	parameters[1].buffer_type = MYSQL_TYPE_STRING;
+	parameters[1].buffer_length = st_length_get(verification);
+	parameters[1].buffer = st_char_get(verification);
+
+	// The number of bonus rounds to apply during the token derivation process.
+	parameters[2].buffer_type = MYSQL_TYPE_LONG;
+	parameters[2].buffer_length = sizeof(uint32_t);
+	parameters[2].buffer = &(bonus);
+	parameters[2].is_unsigned = true;
+
+	// The user number.
+	parameters[3].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[3].buffer_length = sizeof(uint64_t);
+	parameters[3].buffer = &(usernum);
+	parameters[3].is_unsigned = true;
+
+	// The legacy account token.
+	parameters[4].buffer_type = MYSQL_TYPE_STRING;
+	parameters[4].buffer_length = st_length_get(legacy);
+	parameters[4].buffer = st_char_get(legacy);
+
+	if (stmt_exec_affected(stmts.auth_update_legacy_to_stacie, parameters) != 1) {
+		log_error("Unable to replace the legacy authentication credentials with the STACIE compatible equivalents.");
+		return -1;
+	}
+
+	return 0;
+}
+
 /*
  * @brief	Fetches the authentication information based on the provided username.
  * @note This function searches the Users table first, and the Mailboxes table second. This way if someone sneaks a username
@@ -26,13 +83,13 @@ int_t auth_data_fetch(auth_t *auth) {
 	MYSQL_BIND parameters[1];
 	stringer_t *userid = NULL;
 
-	// The ensure a valid auth pointer was passed in and the username is at least one character long.
-	if (!auth && st_empty(auth->username)) {
+	mm_wipe(parameters, sizeof(parameters));
+
+	// Ensure a valid auth pointer was passed in and the username is at least one character long.
+	if (!auth || st_empty(auth->username)) {
 		log_pedantic("The input variables were invalid.");
 		return -1;
 	}
-
-	mm_wipe(parameters, sizeof(parameters));
 
 	// Get the user information.
 	parameters[0].buffer_type = MYSQL_TYPE_STRING;
@@ -102,7 +159,7 @@ int_t auth_data_fetch(auth_t *auth) {
 		return -1;
 	}
 
-	// Only save the STACIE salt value isn't NULL.
+	// Only save the STACIE salt value if it isn't NULL.
 	if (res_field_length(row, 2)) {
 		auth->seasoning.salt = hex_decode_st(PLACER(res_field_block(row, 2), res_field_length(row, 2)), NULL);
 	}

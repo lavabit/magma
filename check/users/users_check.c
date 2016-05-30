@@ -389,7 +389,7 @@ START_TEST (check_users_auth_valid_s) {
 	//log_disable();
 
 	// Test a legacy account.
-	if (status() && !(auth = auth_alloc(NULLER("princess")))) {
+	if (status() && !(auth = auth_challenge(NULLER("princess")))) {
 		 errmsg = st_aprint("Auth allocation failed.");
 	}
 	else if (status()) {
@@ -398,7 +398,7 @@ START_TEST (check_users_auth_valid_s) {
 	}
 
 	// Test a STACIE enabled account.
-	if (status() && !(auth = auth_alloc(NULLER("stacie")))) {
+	if (status() && !(auth = auth_challenge(NULLER("stacie")))) {
 		 errmsg = st_aprint("Auth allocation failed.");
 	}
 	else if (status()) {
@@ -413,18 +413,19 @@ START_TEST (check_users_auth_valid_s) {
 
 } END_TEST
 
-
 Suite * suite_check_users(void) {
 
 	TCase *tc;
 	Suite *s = suite_create("\tUsers");
 
+	testcase(s, tc, "Auth Legacy/S", check_users_auth_legacy_s);
+	testcase(s, tc, "Auth Stacie/S", check_users_auth_stacie_s);
+	testcase(s, tc, "Auth Valid/S", check_users_auth_valid_s);
 	testcase(s, tc, "Cred Valid/S", check_users_credentials_valid_s);
 	testcase(s, tc, "Cred Invalid/S", check_users_credentials_invalid_s);
 	testcase(s, tc, "Inbox/S", check_users_inbox_s);
 	testcase(s, tc, "Message/S", check_users_message_s);
 	testcase(s, tc, "Register/S", check_users_register_s);
-	testcase(s, tc, "Auth Valid/S", check_users_auth_valid_s);
 
 	return s;
 }

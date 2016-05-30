@@ -194,7 +194,7 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 		return false;
 	}
 
-	if(!(salt = credential_salt_generate())) {
+	if(!(salt = stacie_salt_create())) {
 		log_error("Failed to generate a new user salt.");
 		credential_free(credential);
 		return false;

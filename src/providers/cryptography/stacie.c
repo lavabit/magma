@@ -15,6 +15,52 @@
 #include "magma.h"
 
 /**
+ * @brief	Generates a random salt of precisely 128 bytes, suitable for use with STACIE authentication scheme.
+ *
+ * @note	While the salt and nonce creation functions are nearly identical, they remain seperated so they can use distinct
+ * 			preprocessor definitions for the result length.
+ *
+ * @return	A managed string holding the freshly generated salt in binary form. The result must be freed by the caller.
+ *
+ */
+stringer_t * stacie_salt_create(void) {
+
+	stringer_t *result = NULL;
+
+	// We call cleanup on the result pointer just in case the allocation succeeds but the random write operation fails.
+	if (!(result = st_alloc(STACIE_SALT_LENGTH)) || rand_write(result) != STACIE_SALT_LENGTH) {
+		log_pedantic("Failed to create a random salt value.");
+		st_cleanup(result);
+		return NULL;
+	}
+
+	return result;
+}
+
+/**
+ * @brief	Generates a random nonce of precisely 128 bytes, suitable for use with the STACIE authentication scheme.
+ *
+ * @note	While the salt and nonce creation functions are nearly identical, they remain seperated so they can use distinct
+ * 			preprocessor definitions for the result length.
+ *
+ * @return	A managed string holding the freshly generated nonce in binary form. The result must be freed by the caller.
+ *
+ */
+stringer_t * stacie_nonce_create(void) {
+
+	stringer_t *result = NULL;
+
+	// We call cleanup on the result pointer just in case the allocation succeeds but the random write operation fails.
+	if (!(result = st_alloc(STACIE_NONCE_LENGTH)) || rand_write(result) != STACIE_NONCE_LENGTH) {
+		log_pedantic("Failed to create a random nonce value.");
+		st_cleanup(result);
+		return NULL;
+	}
+
+	return result;
+}
+
+/**
  * @brief   Calculate the number of hash rounds needed for the seed and key derivation stages.
  *
  * @note	This function has an effective maximum of 16,777,216 because STACIE requires the current round be appended
@@ -23,7 +69,7 @@
  *		This includes 0, since the values being appended by the derivation functions start at 0.
  *
  * @remarks	While on the subject of a maximum value, if 16,777,216 hash rounds doesn't provide sufficient protection then the
- *		the problem is likely the password, or the hash function.
+ *		the problem is likely the password, or the hash function, and not the number of rounds.
  *
  * @param   password	A password which may contain any valid Unicode character (presumably encoded using UTF-8).
  * @param   bonus	The number of additional rounds which should be added beyond the number of dynamic rounds calculated
@@ -112,8 +158,8 @@ stringer_t * stacie_entropy_seed_derive(uint32_t rounds, stringer_t *password, s
 		log_pedantic("The STACIE seed derivation failed because the password was empty.");
 		return NULL;
 	}
-	// This implementation requires the salt value to be 128 bytes in length.
-	else if (st_empty_out(salt, &salt_data, &salt_len) || salt_len != 128) {
+	// This implementation requires the salt value to be  bytes in length.
+	else if (st_empty_out(salt, &salt_data, &salt_len) || salt_len != STACIE_SALT_LENGTH) {
 		log_pedantic("The STACIE seed derivation failed because the salt wasn't 128 bytes in length.");
 		return NULL;
 	}
@@ -224,7 +270,7 @@ stringer_t * stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringe
 		return NULL;
 	}
 	// And the salt value must be 128 bytes in length.
-	else if (st_empty_out(salt, &salt_data, &salt_len) || salt_len != 128) {
+	else if (st_empty_out(salt, &salt_data, &salt_len) || salt_len != STACIE_SALT_LENGTH) {
 		log_error("The STACIE key derivation failed because the salt value wasn't 128 bytes in length. { username = %.*s }",
 			st_length_int(username), st_char_get(username));
 		return NULL;
@@ -348,14 +394,14 @@ stringer_t * stacie_hashed_token_derive(stringer_t *base, stringer_t *username, 
 		return NULL;
 	}
 	// And the salt value must be 128 bytes in length.
-	else if (st_empty_out(salt, &salt_data, &salt_len) || salt_len != 128) {
+	else if (st_empty_out(salt, &salt_data, &salt_len) || salt_len != STACIE_SALT_LENGTH) {
 		log_error("The STACIE token derivation failed because the salt value wasn't 128 bytes in length. { username = %.*s }",
 			st_length_int(username), st_char_get(username));
 		return NULL;
 	}
 	// Finally, we retrieve the length of the nonce value. The nonce value is allowed to be NULL, but if a value is supplied,
 	// it must be 128 bytes in length.
-	else if (!st_empty_out(nonce, &nonce_data, &nonce_len) && nonce_len != 128) {
+	else if (!st_empty_out(nonce, &nonce_data, &nonce_len) && nonce_len != STACIE_NONCE_LENGTH) {
 		log_error("The STACIE token derivation failed because a nonce value was provided that wasn't 128 bytes in length. { username = %.*s }",
 			st_length_int(username), st_char_get(username));
 		return NULL;

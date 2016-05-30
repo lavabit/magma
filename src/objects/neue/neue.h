@@ -83,7 +83,6 @@ int_t           credential_calc_auth(credential_t *cred, stringer_t *password, s
 credential_t *  credential_alloc_mail(stringer_t *address);
 void            credential_free(credential_t *cred);
 stringer_t *    credential_username(stringer_t *s);
-stringer_t *    credential_salt_generate(void);
 
 /// datatier.c
 

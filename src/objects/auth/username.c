@@ -20,7 +20,7 @@
  * 			 address, all subsequent characters in that local part will be ignored, as they constitute a label.
  * @return	NULL on failure, or a managed string containing the sanitized address on success.
  */
-stringer_t * auth_address(stringer_t *username) {
+stringer_t * auth_sanitize_address(stringer_t *username) {
 
 	size_t len;
 	chr_t *p, *w, *tip = NULL;
@@ -105,12 +105,12 @@ stringer_t * auth_address(stringer_t *username) {
  * @param	username	a managed string containing the username to be processed, with an optional domain suffix.
  * @return	NULL on failure, or a managed string containing the credential username portion of the supplied address.
  */
-stringer_t * auth_username(stringer_t *username) {
+stringer_t * auth_sanitize_username(stringer_t *username) {
 
 	size_t at;
 	stringer_t *output, *domain = NULL;
 
-	if (!(output = auth_address(username))) {
+	if (!(output = auth_sanitize_address(username))) {
 		return NULL;
 	}
 

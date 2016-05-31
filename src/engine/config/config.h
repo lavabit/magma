@@ -88,16 +88,22 @@
 #define MAGMA_SMTP_MAX_MESSAGE_SIZE 1073741824
 
 // Macros because we have a lot of these checks
-#define CONFIG_CHECK_EXISTS(option,ptype)	if (option && !file_accessible(option)) { \
+#define CONFIG_CHECK_EXISTS(option,ptype) \
+	do { \
+		if (option && !file_accessible(option)) { \
 		log_critical(#ptype " specified in " #option " is not accessible: { path = %s, error = %s }", option, strerror_r(errno, bufptr, buflen)); \
 		result = false; \
-	}
+		} \
+	} while (0)
 #define CONFIG_CHECK_FILE_READABLE(x)	CONFIG_CHECK_EXISTS(x,"Filename")
 #define CONFIG_CHECK_DIR_READABLE(x)	CONFIG_CHECK_EXISTS(x,"Directory")
-#define CONFIG_CHECK_READWRITE(option,ptype)	if (option && !file_readwritable(option)) { \
+#define CONFIG_CHECK_READWRITE(option,ptype) \
+	do { \
+		if (option && !file_readwritable(option)) { \
 		log_critical(#ptype " specified in " #option " is not accessible for reading and writing: { path = %s, error = %s }", option, strerror_r(errno, bufptr, buflen)); \
 		result = false; \
-	}
+		} \
+	} while (0)
 #define CONFIG_CHECK_FILE_READWRITE(x)	CONFIG_CHECK_READWRITE(x,"Filename")
 #define CONFIG_CHECK_DIR_READWRITE(x)	CONFIG_CHECK_READWRITE(x,"Directory")
 

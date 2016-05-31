@@ -168,7 +168,7 @@ magma_keys_t magma_keys[] = {
 	{
 		.store = (void *)&(magma.system.core_dump_size_limit),
 		.norm.type = M_TYPE_UINT64,
-		.norm.val.u64 = 68719476736ll,
+		.norm.val.u64 = 64ULL << 30,
 		.name = "magma.log.core_dump_size_limit",
 		.description = "Use this setting to adjust the core dump size limit from the default value of 64GB.",
 		.file = true,

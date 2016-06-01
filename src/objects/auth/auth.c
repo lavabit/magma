@@ -77,16 +77,19 @@ auth_t * auth_challenge(stringer_t *username) {
 
 /**
  * @brief Loads a user's authentication information and calculates the tokens for comparison.
+ *
  * @note If the username and password combination is valid, but involves an account with legacy authentication
- * , tokens, the plain text password is used to replace the legacy tokens with STACIE compliant values.
+ * 			tokens, the plain text password is used to replace the legacy tokens with STACIE compliant values.
+ *
  * @param username	the unsanitized username, provided with the login attempt.
  * @param password	the plain text password.
- * @param output	pointer location which will hold the resulting auth_t structure; and must always
- * 					be pointing to NULL when passed in to avoid creating a memory leak.
- * @return if a technical error occurs unrelated to the provided credentials, -1 will be returned, and the
- * 			output be used to store an auth_t structure with the master	symmetric encryption key for the user
- * 			account, finally, if request is processed successfully, but the username and password combination
- * 			is invalid, 1 will be returned, and output will be emptied.
+ * @param output	pointer location which will hold the resulting auth_t structure, but only if the inputs authenticate
+ * 					successfully, and 0 is returned; also note that output must be pointing at NULL when its passed in
+ * 					to avoid creating a memory leak.
+ *
+ * @return 			if a technical error occurs unrelated to the provided credentials, -1 will be returned, if the username
+ * 					and password combination are invalid, 1 will be returned. The output parameter
+ * 					is invalid, 1 will be returned, and the output will be emptied.
  */
 int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 
@@ -113,21 +116,21 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 	// If the account uses legacy hash values for authentication the legacy token will be populated.
 	if (auth->legacy.token && !(legacy = auth_legacy(auth->username, password))) {
 		log_pedantic("Unable to calculate the legacy hash tokens for comparison.");
+		auth_free(auth);
 		return -1;
 	}
 	// The comparison will return 0 if the two tokens are identical, so this boolean will only activate if
 	// the username/password combination is incorrect.
 	else if (auth->legacy.token && st_cmp_cs_eq(auth->legacy.token, legacy->token)) {
-		log_info("The user provided incorecct login credentials for a legacy account. { username = %.*s }",
-			st_length_int(username), st_char_get(username));
+		log_info("The user provided incorecct login credentials for a legacy account. { username = %.*s }", st_length_int(username), st_char_get(username));
 		auth_legacy_free(legacy);
 		auth_free(auth);
 		return 1;
 	}
-	// We have a valid user login for an account with legacy credentials.
+	// We have a valid user login for an account with legacy credentials. Handle the upgrade before returning.
 	else if (auth->legacy.token && !st_cmp_cs_eq(auth->legacy.token, legacy->token)) {
 
-		// Use the plain text password to convert the tokens before proceeding.
+		// Assign a random salt to the user account, and use the plain text password to generate STACIE tokens before proceeding.
 		if (!(auth->seasoning.salt = stacie_salt_create()) ||
 			!(stacie = auth_stacie(0, auth->username, password, auth->seasoning.salt, NULL, NULL))) {
 			log_pedantic("Unable to calculate the STACIE credentials.");
@@ -136,28 +139,28 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 			return -1;
 		}
 
-		// Duplicate the necessary values and then free the internal legacy and stacie structures.
+		// Store the values we need, and then free the legacy and STACIE structures.
 		auth->legacy.key = st_dupe(legacy->key);
 		auth->legacy.token = st_dupe(legacy->token);
 		auth->keys.master = st_dupe(stacie->keys.master);
 		auth->tokens.verification = st_dupe(stacie->tokens.verification);
 
-		auth_legacy_free(legacy);
-		auth_stacie_free(stacie);
-
+		// Convert the verification token, salt, and legacy values into hex so they can be safely stored in the database.
 		legacy_hex = hex_encode_st(auth->legacy.token, NULL);
 		salt_hex = hex_encode_st(auth->seasoning.salt, NULL);
 		verification_hex = hex_encode_st(auth->tokens.verification, NULL);
 
+		auth_legacy_free(legacy);
+		auth_stacie_free(stacie);
+
 		// Ensure all of the needed values were duplicated.
-		if (st_empty(auth->legacy.key) || st_empty(auth->legacy.token) || st_empty(auth->keys.master) || st_empty(auth->tokens.verification) ||
-			st_empty(legacy_hex) || st_empty(salt_hex) || st_empty(verification_hex)) {
-			log_pedantic("Unable to duplicate the credentials.");
+		if (st_empty(auth->legacy.key, auth->legacy.token, auth->keys.master, auth->tokens.verification, legacy_hex, salt_hex, verification_hex)) {
+			log_pedantic("Unable to store the credentials in the auth structure.");
 			st_cleanup(legacy_hex, salt_hex, verification_hex);
 			auth_free(auth);
 			return -1;
 		}
-		// Update the database with the replacement STACIE values.
+		// Replace the legacy credentials in the database with STACIE values.
 		else if (auth_data_update_legacy(auth->usernum, legacy_hex, salt_hex, verification_hex, auth->seasoning.bonus)) {
 			log_pedantic("Unable to update the legacy credentials with the STACIE compatible equivalents.");
 			st_cleanup(legacy_hex, salt_hex, verification_hex);
@@ -165,13 +168,48 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 			return -1;
 		}
 
+		// Cleanup the hex equivalents and then return success.
 		st_cleanup(legacy_hex, salt_hex, verification_hex);
 
+		// Valid legacy login!
+		*output = auth;
+		return 0;
+	}
+	// Generate the STACIE tokens based on the provided inputs.
+	else if (!auth->legacy.token && !(stacie = auth_stacie(0, auth->username, password, auth->seasoning.salt, NULL, NULL))) {
+		log_pedantic("Unable to calculate the STACIE verification tokens for comparison.");
+		auth_free(auth);
+		return -1;
+	}
+	// The comparison will return 0 if the two tokens are identical, so this boolean will only activate if
+	// the username/password combination is incorrect.
+	else if (!auth->legacy.token && st_cmp_cs_eq(auth->tokens.verification, stacie->tokens.verification)) {
+		log_info("The user provided incorecct login credentials for a STACIE account. { username = %.*s }", st_length_int(username), st_char_get(username));
+		auth_stacie_free(stacie);
+		auth_free(auth);
+		return 1;
+	}
+	// We have a valid user login for an account with STACIE credentials. Store required values and free the STACIE structure.
+	else if (!auth->legacy.token && !st_cmp_cs_eq(auth->tokens.verification, stacie->tokens.verification)) {
+
+		auth->keys.master = st_dupe(stacie->keys.master);
+		auth->tokens.verification = st_dupe(stacie->tokens.verification);
+		auth_stacie_free(stacie);
+
+		if (st_empty(auth->keys.master, auth->tokens.verification)) {
+			log_pedantic("Unable to store the credentials in the auth structure.");
+			auth_free(auth);
+			return -1;
+		}
+
+		// Valid STACIE login!
+		*output = auth;
+		return 0;
 	}
 
-
-
-	// It worked. The user keys and tokens are ready for abusage.
-	*output = auth;
-	return 0;
+	// We only end up here if cosmic rays cause auth_challenge to return an auth structure that lacks a STACIE
+	// verification token, and a legacy token. In other words, we should never reach this point.
+	log_error("The authentication challenge returned a result without a token for comparison. { username = %.*s }", st_length_int(username), st_char_get(username));
+	auth_free(auth);
+	return -1;
 }

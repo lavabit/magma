@@ -13,17 +13,32 @@
 #include "magma.h"
 
 /**
- * @brief	Determine whether the specified managed string is empty or not.
- * @param	s 	the input managed string.
- * @result	true if the string is NULL, uninitialized or empty; false if at least one byte is present.
+ * @brief	A simple method for checking multiple managed strings to see if any are empty.
+ *
+ * @param	len		the number of strings being passed in.
+ * @param	va_list	a list of managed strings to be freed.
+ *
+ * @return	true if any of the strings are NULL, uninitialized or empty; false if every string has at least one byte of data.
  */
-bool_t st_empty(stringer_t *s) {
+bool_t st_empty_variadic(ssize_t len, ...) {
 
-	if (!s || !*((uint32_t *)s) || !st_data_get(s) || !st_length_get(s)) {
-		return true;
+	va_list list;
+	stringer_t *s = NULL;
+
+	va_start(list, len);
+
+	// Loop through the inputs, and immediately return true if any of the inputs is empty.
+	for (ssize_t i = 0; i < len; i++) {
+		if (!(s = va_arg(list, stringer_t *)) || !*((uint32_t *)s) || !st_data_get(s) || !st_length_get(s)) {
+			va_end(list);
+			return true;
+		}
 	}
 
-	return false;
+	va_end(list);
+
+	// Return true if 0 strings are passed in; which should never actually happen (on purpose).
+	return (len ? false : true);
 }
 
 /**

@@ -324,17 +324,17 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 		recv_limit = 1024;
 		send_limit = 256;
 	}
-	else if (reg->plan == 2) {
+	else if (plan) {
 		size_limit = 64LL << 20;
 		recv_limit = 1024;
 		send_limit = 256;
 	}
-	else if (reg->plan == 3) {
+	else if (plan == 3) {
 		size_limit = 64LL << 20;
 		recv_limit = 1024;
 		send_limit = 512;
 	}
-	else if (reg->plan == 4) {
+	else if (plan == 4) {
 		size_limit = 128LL << 20;
 		recv_limit = 8192;
 		send_limit = 768;

@@ -29,7 +29,6 @@ void auth_free(auth_t *auth) {
 	return;
 }
 
-
 /**
  * @brief	Allocate an empty authentication object.
  * @return	an empty authentication object allocated off the stack.

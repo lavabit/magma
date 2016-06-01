@@ -17,6 +17,19 @@ chr_t *virus_check_data_path = NULL, *tank_check_data_path = NULL, *dspam_check_
 
 int_t case_timeout = RUN_TEST_CASE_TIMEOUT;
 
+/**
+ * @brief Enable the log so we can print status information. We're only concerned with whether the
+		test passed or failed. The actual error message will be recorded by the check library, and
+		then printed en masse when all the test cases have concluded.
+ * @param test	The NULL terminated string showing the suite, test, and threading information.
+ * @param error	The error string, which should be NULL if the test was skipped, or if the test passed.
+ */
+void log_test(chr_t *test, stringer_t *error) {
+	log_enable();
+	log_unit("%-64.64s%10.10s\n", test, (!status() ? "SKIPPED" : !error ? "PASSED" : "FAILED"));
+	return;
+}
+
 Suite * suite_check_magma(void) {
   Suite *s = suite_create("\n\tMagma");
   return s;

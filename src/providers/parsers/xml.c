@@ -46,7 +46,7 @@ bool_t lib_load_xml(void) {
 	}
 
 	if (uint64_conv_ns(*xmlParserVersion_d, &xml_ver_num)) {
-		snprintf(xml_version_string, sizeof(xml_version_string), "%u.%u.%u", (xml_ver_num / 100 / 100) % 100, (xml_ver_num / 100) % 100, xml_ver_num % 100);
+		snprintf(xml_version_string, sizeof(xml_version_string), "%hhu.%hhu.%hhu", (char)((xml_ver_num / 100 / 100) % 100), (char)((xml_ver_num / 100) % 100), (char)(xml_ver_num % 100));
 	} else {
 		snprintf(xml_version_string, sizeof(xml_version_string), "unknown");
 	}

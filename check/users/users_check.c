@@ -143,7 +143,7 @@ START_TEST (check_users_credentials_valid_s) {
 		}
 		else {
 			errmsg = st_aprint("Error looking for user salt. { user = %s }", st_char_get(tests[i].username));
-			goto error;
+			goto cleanup_cred;
 		}
 
 		if(!cred_res) {

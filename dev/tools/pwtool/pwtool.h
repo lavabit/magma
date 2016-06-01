@@ -53,15 +53,15 @@ extern int case_timeout;
 #define BASE64_CHECK_ITERATIONS 16
 #define ZBASE32_CHECK_ITERATIONS 16
 
-#define TANK_CHECK_DATA_HNUM 1l
-#define TANK_CHECK_DATA_UNUM 1l
+#define TANK_CHECK_DATA_HNUM 1L
+#define TANK_CHECK_DATA_UNUM 1L
 #define TANK_CHECK_DATA_MTHREADS 2 // Disabled
 #define TANK_CHECK_DATA_CLEANUP true
 #define TANK_CHECK_DATA_PATH "/home/ladar/Lavabit/magma.universe/data/messages/subset/"
 
 #define DSPAM_CHECK_SIZE_MIN 1024
 #define DSPAM_CHECK_SIZE_MAX (2 * 1024)
-#define DSPAM_CHECK_DATA_UNUM 1l
+#define DSPAM_CHECK_DATA_UNUM 1L
 #define DSPAM_CHECK_ITERATIONS 128
 #define DSPAM_CHECK_DATA_PATH "/home/ladar/Lavabit/magma.universe/data/messages/subset/"
 
@@ -125,13 +125,13 @@ extern int case_timeout;
 #define BASE64_CHECK_ITERATIONS 8192
 #define ZBASE32_CHECK_ITERATIONS 8192
 
-#define TANK_CHECK_DATA_HNUM 1l
-#define TANK_CHECK_DATA_UNUM 1l
+#define TANK_CHECK_DATA_HNUM 1L
+#define TANK_CHECK_DATA_UNUM 1L
 #define TANK_CHECK_DATA_MTHREADS 8
 #define TANK_CHECK_DATA_CLEANUP true
 #define TANK_CHECK_DATA_PATH "/home/ladar/Lavabit/magma.universe/data/messages/corpus/"
 
-#define DSPAM_CHECK_DATA_UNUM 1l
+#define DSPAM_CHECK_DATA_UNUM 1L
 #define DSPAM_CHECK_ITERATIONS 8192
 #define DSPAM_CHECK_SIZE_MIN 1024
 #define DSPAM_CHECK_SIZE_MAX (16 * 1024)

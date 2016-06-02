@@ -58,7 +58,6 @@ typedef struct {
 	M_PROTOCOL protocol;
 } server_t;
 
-
 // A linked list of servers.
 typedef struct {
 	SSL_CTX *ssl_ctx;

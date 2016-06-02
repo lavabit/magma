@@ -67,7 +67,7 @@ int (*dspam_process_d)(DSPAM_CTX * CTX, const char *message) = NULL;
 DSPAM_CTX * (*dspam_create_d)(const char *username, const char *group, const char *home, int operating_mode, u_int32_t flags) = NULL;
 
 //! DKIM
-// Note that dkim_getsighdr_d is used by the library, so were using dkim_getsighdrx_d.
+/// @note that dkim_getsighdr_d is used by the library, so were using dkim_getsighdrx_d.
 DKIM_STAT (*dkim_eoh_d)(DKIM *dkim) = NULL;
 void (*dkim_close_d)(DKIM_LIB *lib) = NULL;
 DKIM_STAT (*dkim_free_d)(DKIM *dkim) = NULL;
@@ -212,7 +212,6 @@ void (*CRYPTO_cleanup_all_ex_data_d)(void) = NULL;
 void (*EVP_MD_CTX_init_d)(EVP_MD_CTX *ctx) = NULL;
 int (*EC_KEY_check_key_d)(const EC_KEY *key) = NULL;
 int (*EVP_MD_CTX_cleanup_d)(EVP_MD_CTX *ctx) = NULL;
-void (*ERR_remove_state_d)(unsigned long pid) = NULL;
 int (*SSL_peek_d)(SSL *ssl,void *buf,int num) = NULL;
 X509_NAME *	(*X509_get_subject_name_d)(X509 *a) = NULL;
 EC_KEY * (*EC_KEY_new_by_curve_name_d)(int nid) = NULL;
@@ -249,6 +248,7 @@ int (*EC_KEY_set_group_d)(EC_KEY *key, const EC_GROUP *group) = NULL;
 int (*EVP_CIPHER_CTX_block_size_d)(const EVP_CIPHER_CTX *ctx) = NULL;
 int (*EVP_CIPHER_CTX_key_length_d)(const EVP_CIPHER_CTX *ctx) = NULL;
 int (*RAND_load_file_d)(const char *filename, long max_bytes) = NULL;
+void (*ERR_remove_thread_state_d)(const CRYPTO_THREADID *tid) = NULL;
 const BIGNUM * (*EC_KEY_get0_private_key_d)(const EC_KEY *key) = NULL;
 const EVP_CIPHER * (*EVP_get_cipherbyname_d)(const char *name) = NULL;
 const EC_POINT * (*EC_KEY_get0_public_key_d)(const EC_KEY *key) = NULL;

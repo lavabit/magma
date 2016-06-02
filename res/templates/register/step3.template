@@ -2,10 +2,10 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 	<head>
-		<title>Lavabit ..::.. Sign Up - Complete</title>
+		<title>$Provider ..::.. Sign Up - Complete</title>
 		<meta name="author" content="Ladar Levison" />
 		<meta name="keywords" lang="en" content="email free pop imap webmail spam secure private privacy" />
-		<meta name="description" lang="en" content="Lavabit is a premier POP3 e-mail provider with free and premium accounts. This page is step three of three in the Lavabit registration process. This page indicates that your registration is complete." />
+		<meta name="description" lang="en" content="$Provider is a premier POP3 e-mail provider with free and premium accounts. This page is step three of three in the $Provider registration process. This page indicates that your registration is complete." />
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<meta http-equiv="Pragma" content="no-cache" />
 		<meta http-equiv="Cache-Control" content="no-store" />
@@ -15,7 +15,7 @@
 	<body>
 		<div id="page">
 			<div id="header">
-				<h1>Lavabit</h1>
+				<h1>$Provider</h1>
 				<div>
 					<ul id="nav_col_1">
 						<li class="skip"><a href="#index">Skip Primary Navigation</a></li>
@@ -31,19 +31,19 @@
 						<li><a id="nav_help" href="/help.html">Help</a></li>
 					</ul>
 					<ul id="nav_col_3">
-						<li><a id="nav_contact" href="https://lavabit.com/contact">Contact Information</a></li>
-						<li><a id="nav_preferences" href="https://lavabit.com/apps/preferences">Preferences</a></li>
-						<li><a id="nav_webmail" href="https://lavabit.com/portal">Webmail</a></li>
-						<li><a id="nav_register" class="active" href="https://lavabit.com/register">Sign&nbsp;Up</a></li>
+						<li><a id="nav_contact" href="https://$Provider.com/contact">Contact Information</a></li>
+						<li><a id="nav_preferences" href="https://$Provider.com/apps/preferences">Preferences</a></li>
+						<li><a id="nav_webmail" href="https://$Provider.com/portal">Webmail</a></li>
+						<li><a id="nav_register" class="active" href="https://$Provider.com/register">Sign&nbsp;Up</a></li>
 					</ul>
 				</div>
 			</div>
 			<div id="reg_step3" class="content">
 				<p>Your account has been created successfully! You can access your account using any standards-compliant <acronym title="Post Office Protocol Version 3">POP3</acronym> e-mail client. We recommend Mozilla Thunderbird as a free alternative. Other options include Microsoft&rsquo;s Outlook Express and Outlook.</p>
-				<p>Configure your e-mail client to use <q><strong>lavabit.com</strong></q> as both your incoming and outgoing e-mail server. Don&rsquo;t forget to <strong>enable authentication</strong> for both incoming and outgoing messages. Our servers don&rsquo;t allow unauthenticated relaying.  We accept <acronym title="Simple Mail Transfer Protocol">SMTP</acronym> connections on ports 25, 2525 and 3535. We support <acronym title="Post Office Protocol Version 3">POP3</acronym> connections on port 110. We also support <acronym title="Simple Mail Transfer Protocol">SMTP</acronym> over <acronym title="Secure Sockets Layer">SSL</acronym> on port 465 and <acronym title="Post Office Protocol Version 3">POP3</acronym> over <acronym title="Secure Sockets Layer">SSL</acronym> using port 995.</p>
-				<p>If you have difficulty configuring your e-mail client please consult the <a href="/help.html">help</a> section of our website. If you&rsquo;re still having difficulty, please use our <a href="https://lavabit.com/contact">contact page</a> for assistance.</p>
+				<p>Configure your e-mail client to use <q><strong>$Provider.com</strong></q> as both your incoming and outgoing e-mail server. Don&rsquo;t forget to <strong>enable authentication</strong> for both incoming and outgoing messages. Our servers don&rsquo;t allow unauthenticated relaying.  We accept <acronym title="Simple Mail Transfer Protocol">SMTP</acronym> connections on ports 25, 2525 and 3535. We support <acronym title="Post Office Protocol Version 3">POP3</acronym> connections on port 110. We also support <acronym title="Simple Mail Transfer Protocol">SMTP</acronym> over <acronym title="Secure Sockets Layer">SSL</acronym> on port 465 and <acronym title="Post Office Protocol Version 3">POP3</acronym> over <acronym title="Secure Sockets Layer">SSL</acronym> using port 995.</p>
+				<p>If you have difficulty configuring your e-mail client please consult the <a href="/help.html">help</a> section of our website. If you&rsquo;re still having difficulty, please use our <a href="https://$Provider.com/contact">contact page</a> for assistance.</p>
 				<p>Please be sure to remember your password. <strong>If you forget your password, we can&rsquo;t change it for you.</strong> Also be sure to check your e-mail every 120 days, or your account may be locked and eventually deleted.</p>
-				<p>Welcome to Lavabit! Please use our services responsibly.</p>
+				<p>Welcome to $Provider! Please use our services responsibly.</p>
 			</div>
 			<div id="footer">
 				<ul>
@@ -52,7 +52,7 @@
 					<li><a href="/privacy_policy.html">Privacy Policy</a></li>
 					<li><a href="/advertising_policy.html">Advertising Policy</a></li>
 					<li><a href="/abuse_policy.html">Abuse Policy</a></li>
-					<li><a href="https://lavabit.com/report_abuse.html">Report Abuse</a></li>
+					<li><a href="https://$Provider.com/report_abuse.html">Report Abuse</a></li>
 					<li id="last"><a href="/site_map.html">Site Map</a></li>
 					<li><a href="/credits.html">Credits</a></li>
 				</ul>

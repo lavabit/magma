@@ -2,10 +2,10 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 	<head>
-		<title>Lavabit ..::.. Statistics</title>
+		<title>$Provider ..::.. Statistics</title>
 		<meta name="author" content="Ladar Levison"/>
 		<meta name="keywords" lang="en" content="email free pop imap webmail spam secure private privacy" />
-		<meta name="description" lang="en" content="Lavabit is a premier POP3 e-mail provider with free and premium accounts. This page provides details about Lavabit’s size and how fast were growing." />
+		<meta name="description" lang="en" content="$Provider is a premier POP3 e-mail provider with free and premium accounts. This page provides details about $Provider’s size and how fast were growing." />
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<meta http-equiv="Pragma" content="no-cache" />
 		<meta http-equiv="Cache-Control" content="no-store" />
@@ -18,7 +18,7 @@
 	<body>
 		<div id="page">
 			<div id="header">
-				<h1>Lavabit</h1>
+				<h1>$Provider</h1>
 				<div>
 					<ul id="nav_col_1">
 						<li class="skip"><a href="#statistics">Skip Primary Navigation</a></li>
@@ -34,9 +34,9 @@
 						<li><a id="nav_help" href="/help.html">Help</a></li>
 					</ul>
 					<ul id="nav_col_3">
-						<li><a id="nav_contact" href="https://lavabit.com/contact">Contact Information</a></li>
-						<li><a id="nav_preferences" href="https://lavabit.com/apps/preferences">Preferences</a></li>
-						<li><a id="nav_register" href="https://lavabit.com/register">Sign&nbsp;Up</a></li>
+						<li><a id="nav_contact" href="https://$Provider.com/contact">Contact Information</a></li>
+						<li><a id="nav_preferences" href="https://$Provider.com/apps/preferences">Preferences</a></li>
+						<li><a id="nav_register" href="https://$Provider.com/register">Sign&nbsp;Up</a></li>
 					</ul>
 				</div>
 			</div>
@@ -51,9 +51,9 @@
 					</ul>
 				</div>
 				<h2 id="start">Statistics</h2>
-				<p>We're big and we're growing. This page shows how many people rely on Lavabit and how much e-mail we process. We update this page every few minutes with the latest statistics, so check back to follow our progress.</p>
+				<p>We're big and we're growing. This page shows how many people rely on $Provider and how much e-mail we process. We update this page every few minutes with the latest statistics, so check back to follow our progress.</p>
 				<table class="standard">
-					<caption>This table contains statistics about the Lavabit service.</caption>
+					<caption>This table contains statistics about the $Provider service.</caption>
 					<tbody>
 						<tr>
 							<th>How many total users:</th>
@@ -61,43 +61,43 @@
 						</tr>
 						<tr>
 							<th>How many users have checked their e-mail today:</th>
-							<td id="checked_email_today">0</td>
+							<td>0</td>
 						</tr>
 						<tr>
 							<th>How many users have checked their e-mail this week:</th>
-							<td id="checked_email_week">0</td>
+							<td>0</td>
 						</tr>
 						<tr>
 							<th>How many users have sent e-mail today:</th>
-							<td id="sent_email_today">0</td>
+							<td>0</td>
 						</tr>
 						<tr>
 							<th>How many users sent e-mail this week:</th>
-							<td id="sent_email_week">0</td>
+							<td>0</td>
 						</tr>
 						<tr>
 							<th>How many e-mail messages were received today:</th>
-							<td id="emails_received_today">0</td>
+							<td>0</td>
 						</tr>
 						<tr>
 							<th>How many e-mail messages were received this week:</th>
-							<td id="emails_received_week">0</td>
+							<td>0</td>
 						</tr>
 						<tr>
 							<th>How many e-mail messages were sent today:</th>
-							<td id="emails_sent_today">0</td>
+							<td>0</td>
 						</tr>
 						<tr>
 							<th>How many e-mail messages were sent this week:</th>
-							<td id="emails_sent_week">0</td>
+							<td>0</td>
 						</tr>
 						<tr>
 							<th>How many users have registered today:</th>
-							<td id="users_registered_today">0</td>
+							<td>0</td>
 						</tr>
 						<tr>
 							<th>How many users have registered this week:</th>
-							<td id="users_registered_week">0</td>
+							<td>0</td>
 						</tr>
 					</tbody>
 				</table>
@@ -110,7 +110,7 @@
 					<li><a href="/privacy_policy.html">Privacy Policy</a></li>
 					<li><a href="/advertising_policy.html">Advertising Policy</a></li>
 					<li><a href="/abuse_policy.html">Abuse Policy</a></li>
-					<li><a href="https://lavabit.com/report_abuse.html">Report Abuse</a></li>
+					<li><a href="https://$Provider.com/report_abuse.html">Report Abuse</a></li>
 					<li id="last"><a href="/site_map.html">Site Map</a></li>
 					<li><a href="/credits.html">Credits</a></li>
 				</ul>

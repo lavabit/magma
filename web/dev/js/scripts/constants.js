@@ -9,7 +9,7 @@
 var magma = magma || {};
 
 magma.animationSpeed = "fast";
-magma.portalUrl = false ? 'http://washington.phantom.lavabit.com:10000/portal/camel' : '/portal/mockiface';
+magma.portalUrl = false ? '/portal/camel' : '/portal/mockiface';
 
 // TODO: better way to get table header height
 // 27px + 1px border

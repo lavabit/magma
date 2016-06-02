@@ -1,0 +1,267 @@
+/* Global section. */
+body { background: url(../images/bg_tile.gif) repeat-x #FFFFFF; color: #000000; text-align: center; }
+div#page { overflow: hidden; text-align: left; font-family: "helvetica", sans-serif; margin: 30px auto auto auto; font-size: 12px; width: 895px; background: url(../images/diecut.gif) no-repeat top right; }
+li.skip { position: absolute; margin-left: -9999px; }
+caption { position: absolute; text-indent: -9999px; }
+div.skip { position: absolute; margin-left: -9999px; }
+acronym { text-decoration: none; border-bottom: none; font-style: normal; }
+input { border: solid 1px #000000; }
+select { border: solid 1px #000000; }
+textarea { border: solid 1px #000000; }
+input.gray { color: #000000; background-color: #F0F0F0; border: solid 1px #000000; }
+input.white { color: #000000; background-color: #FFFFFF; border: solid 1px #000000; }
+input.red { color: #000000; background-color: #FFFFFF; border: solid 1px #FF0000; }
+textarea.gray { color: #000000; background-color: #F0F0F0; border: solid 1px #000000; }
+textarea.white { color: #000000; background-color: #FFFFFF; border: solid 1px #000000; }
+textarea.red { color: #000000; background-color: #FFFFFF; border: solid 1px #FF0000; }
+table { font-size: 12px; }
+table.standard { border-collapse: collapse; width: 605px; font-weight: bold; background-color: #000000; color: #FFFFFF; }
+table.standard thead tr { text-align: center; background: url(../images/bg_table_head_tile.gif) repeat-x top transparent; }
+table.standard tbody tr { background: url(../images/bg_table_row_tile.gif) repeat; border-bottom: 1px solid #333333; }
+table.standard tbody th { padding-left: 10px; text-align: left; }
+table.standard tbody td { text-align: center; }
+table.standard tbody td span { font-size: 10px; }
+
+/* Header section. */
+div#header { overflow: hidden; background: #FFFFFF; color: #000000; margin: 0px 195px 0px 0px; border-top: #000000 solid 39px; border-left: #000000 solid 39px; padding: 39px 173px 0px 38px; }
+h1 { text-indent: -9999px; height: 112px; width: 69px; background: url(../images/logo.gif) no-repeat; margin: 0px; padding: 0px; }
+div#header div { overflow: hidden; float: right; margin-top: -103px; height: 90px; width: 234px; }
+div#header ul#nav_col_1 { margin: 0px 0px 0px 0px; list-style: none; width: 78px; height: 80px; padding: 0px; }
+div#header ul#nav_col_2 { margin: -80px 0px 0px 78px; list-style: none; width: 78px; height: 80px; padding: 0px; }
+div#header ul#nav_col_3 { margin: -80px 0px 0px 156px; list-style: none; width: 78px; height: 80px; padding: 0px; }
+div#header ul li a#nav_home { background: url(../images/nav_home.gif) no-repeat; }
+div#header ul li a#nav_home:hover { background: url(../images/nav_home_over.gif) no-repeat; }
+div#header ul li a#nav_home.active { background: url(../images/nav_home_active.gif) no-repeat; }
+div#header ul li a#nav_home.active:hover { background: url(../images/nav_home_active_over.gif) no-repeat; }
+div#header ul li a#nav_about { background: url(../images/nav_about.gif) no-repeat; }
+div#header ul li a#nav_about:hover { background: url(../images/nav_about_over.gif) no-repeat; }
+div#header ul li a#nav_about.active { background: url(../images/nav_about_active.gif) no-repeat; }
+div#header ul li a#nav_about.active:hover { background: url(../images/nav_about_active_over.gif) no-repeat; }
+div#header ul li a#nav_features { background: url(../images/nav_features.gif) no-repeat; }
+div#header ul li a#nav_features:hover { background: url(../images/nav_features_over.gif) no-repeat; }
+div#header ul li a#nav_features.active { background: url(../images/nav_features_active.gif) no-repeat; }
+div#header ul li a#nav_features.active:hover { background: url(../images/nav_features_active_over.gif) no-repeat; }
+div#header ul li a#nav_services { background: url(../images/nav_services.gif) no-repeat; }
+div#header ul li a#nav_services:hover { background: url(../images/nav_services_over.gif) no-repeat; }
+div#header ul li a#nav_services.active { background: url(../images/nav_services_active.gif) no-repeat; }
+div#header ul li a#nav_services.active:hover { background: url(../images/nav_services_active_over.gif) no-repeat; }
+div#header ul li a#nav_philosophy { background: url(../images/nav_philosophy.gif) no-repeat; }
+div#header ul li a#nav_philosophy:hover { background: url(../images/nav_philosophy_over.gif) no-repeat; }
+div#header ul li a#nav_philosophy.active { background: url(../images/nav_philosophy_active.gif) no-repeat; }
+div#header ul li a#nav_philosophy.active:hover { background: url(../images/nav_philosophy_active_over.gif) no-repeat; }
+div#header ul li a#nav_testimonials { background: url(../images/nav_testimonials.gif) no-repeat; }
+div#header ul li a#nav_testimonials:hover { background: url(../images/nav_testimonials_over.gif) no-repeat; }
+div#header ul li a#nav_testimonials.active { background: url(../images/nav_testimonials_active.gif) no-repeat; }
+div#header ul li a#nav_testimonials.active:hover { background: url(../images/nav_testimonials_active_over.gif) no-repeat; }
+div#header ul li a#nav_network { background: url(../images/nav_network.gif) no-repeat; }
+div#header ul li a#nav_network:hover { background: url(../images/nav_network_over.gif) no-repeat; }
+div#header ul li a#nav_network.active { background: url(../images/nav_network_active.gif) no-repeat; }
+div#header ul li a#nav_network.active:hover { background: url(../images/nav_network_active_over.gif) no-repeat; }
+div#header ul li a#nav_help { background: url(../images/nav_help.gif) no-repeat; }
+div#header ul li a#nav_help:hover { background: url(../images/nav_help_over.gif) no-repeat; }
+div#header ul li a#nav_help.active { background: url(../images/nav_help_active.gif) no-repeat; }
+div#header ul li a#nav_help.active:hover { background: url(../images/nav_help_active_over.gif) no-repeat; }
+div#header ul li a#nav_contact { background: url(../images/nav_contact.gif) no-repeat; }
+div#header ul li a#nav_contact:hover { background: url(../images/nav_contact_over.gif) no-repeat; }
+div#header ul li a#nav_contact.active { background: url(../images/nav_contact_active.gif) no-repeat; }
+div#header ul li a#nav_contact.active:hover { background: url(../images/nav_contact_active_over.gif) no-repeat; }
+div#header ul li a#nav_register { background: url(../images/nav_register.gif) no-repeat; }
+div#header ul li a#nav_register:hover { background: url(../images/nav_register_over.gif) no-repeat; }
+div#header ul li a#nav_register.active { background: url(../images/nav_register_active.gif) no-repeat; }
+div#header ul li a#nav_register.active:hover { background: url(../images/nav_register_active_over.gif) no-repeat; }
+div#header ul li a#nav_preferences { background: url(../images/nav_preferences.gif) no-repeat; }
+div#header ul li a#nav_preferences:hover { background: url(../images/nav_preferences_over.gif) no-repeat; }
+div#header ul li a#nav_preferences.active { background: url(../images/nav_preferences_active.gif) no-repeat; }
+div#header ul li a#nav_preferences.active:hover { background: url(../images/nav_preferences_active_over.gif) no-repeat; }
+div#header ul li a#nav_webmail { background: url(../images/nav_webmail.gif) no-repeat; }
+div#header ul li a#nav_webmail:hover { background: url(../images/nav_webmail_over.gif) no-repeat; }
+div#header ul li a#nav_webmail.active { background: url(../images/nav_webmail_active.gif) no-repeat; }
+div#header ul li a#nav_webmail.active:hover { background: url(../images/nav_webmail_active_over.gif) no-repeat; }
+div#header ul li a { width: 76px; height: 18px; text-indent: -9999px; display: block; margin-bottom: 2px; }
+
+/* Footer section. */
+div#footer { margin: 5px 0px 0px 0px; font-size: 10px; height: 8em; width: 895px; }
+div#footer a { color: #666666; background-color: inherit; text-decoration: underline; }
+div#footer ul a:hover { color: #FFFFFF; background-color: #666666; text-decoration: underline; }
+div#footer a img { border: none; color: #666666; background-color: inherit; }
+div#footer ul { width: 610px; list-style: none; padding: 0px; margin: 0px; }
+div#footer ul li { display: inline; }
+div#footer p#copyright { float: left; color: #666666; background-color: inherit; width: 610px; margin-top: 3px; }
+div#footer p#badges { float: left; width: 285px; text-align: right; margin-top: -1.3em; }
+
+/* The generic content container. */
+div.content { overflow: hidden; background: #FFFFFF; color: #333333; padding: 25px 16px 40px 40px; margin: 0px 0px 0px 0px; border-right: #000000 solid 39px; border-left: #000000 solid 39px; border-bottom: #000000 solid 39px;}
+div.content p { width: 605px; margin: 0px 0px 20px 0px; font-size: 12px; }
+div.content ul { width: 605px; }
+div.content img { width: 605px; }
+div.content h2 { width: 605px; font-size: 14px; }
+div.content h3 { width: 605px; font-size: 14px; margin-bottom: 0px; }
+div.content h4 { width: 605px; font-size: 14px; margin-bottom: 0px; }
+div.content a { color: #FF0000; background-color: inherit; text-decoration: underline; }
+div.content a:hover { color: #FFFFFF; background-color: #FF0000; text-decoration: underline; }
+
+/* The secondary nav column. */
+div.content div#secondary { float: right;  width: 127px; overflow: hidden; margin: -6px 0px 0px 0px;}
+div.content div#secondary ul { width: 127px; padding: 0px; margin: 0px; list-style: none; }
+div.content div#secondary ul li a.active { color: #000000; background-color: inherit; }
+div.content div#secondary ul li a.active:hover { color: #FFFFFF; background-color: #000000; }
+div.content div#secondary h3 { font-size: 12px; width: 127px; margin: 0px; }
+
+/* The splash /images. */
+div#index h2 { overflow: hidden; text-indent: -9999px; width: 605px; height: 143px; background: url(../images/splash_index.gif) no-repeat; display: block; margin: 0px 0px 15px 0px; }
+div#about h2 { overflow: hidden; text-indent: -9999px; width: 605px; height: 143px; background: url(../images/splash_about.gif) no-repeat; display: block; margin: 0px 0px 15px 0px; }
+div#features h2 { overflow: hidden; text-indent: -9999px; width: 605px; height: 143px; background: url(../images/splash_features.gif) no-repeat; display: block; margin: 0px 0px 15px 0px; }
+div#services h2 { overflow: hidden; text-indent: -9999px; width: 605px; height: 143px; background: url(../images/splash_services.gif) no-repeat; display: block; margin: 0px 0px 15px 0px; }
+div#philosophy h2 { overflow: hidden; text-indent: -9999px; width: 605px; height: 143px; background: url(../images/splash_philosophy.gif) no-repeat; display: block; margin: 0px 0px 15px 0px; }
+div#testimonials h2 { overflow: hidden; text-indent: -9999px; width: 605px; height: 143px; background: url(../images/splash_testimonials.gif) no-repeat; display: block; margin: 0px 0px 15px 0px; }
+div#network h2 { overflow: hidden; text-indent: -9999px; width: 605px; height: 143px; background: url(../images/splash_network.gif) no-repeat; display: block; margin: 0px 0px 15px 0px; }
+div#help h2 { overflow: hidden; text-indent: -9999px; width: 605px; height: 143px; background: url(../images/splash_help.gif) no-repeat; display: block; margin: 0px 0px 15px 0px; }
+div#contact h2, div#report_abuse h2 { overflow: hidden; text-indent: -9999px; width: 605px; height: 143px; background: url(../images/splash_contact.gif) no-repeat; display: block; margin: 0px 0px 15px 0px; }
+
+/* The home page. */
+div#index div#sign_up_link { float: right; width: 127px; }
+div#index div#sign_up_link a { overflow: hidden; display: block; text-indent: -9999px; height: 25px; width: 109px; background: url(../images/btn_sign_up.gif) no-repeat; padding: 0px; }
+div#index div#news { overflow: hidden; margin: -2px 0px 0px 0px; float: right; width: 127px; padding: 0px; }
+div#index div#news p.news_date { margin-top: 10px; color: #000000; background-color: inherit; }
+div#index div#news p { color: #FF0000; background-color: inherit; margin: 0px; font-size: 12px; width: 127px; }
+div#index div#news h3 { font-size: 14px; width: 127px; margin: 0px; padding: 0px; line-height: 14px; }
+div#index table tbody th { width: 24%; } 
+
+/* The full width white papers. */
+div#features p { width: 737px; }
+div#secure p { width: 737px; }
+div#philosophy p { width: 737px; }
+div#testimonials p { width: 737px; margin-bottom: 10px; }
+
+/* The corporate e-mail page. */
+div#corporate_e_mail table#users { width: 300px; }
+div#corporate_e_mail table#plan { width: 400px; }
+div#corporate_e_mail table#plan th { width: 250px; }
+div#corporate_e_mail p#middleblock { margin-top: 20px; }
+
+/* The graphs page. */
+div#graphs img { width: 691px; margin-bottom: 8px; }
+
+/* The health page. */
+div#health td.center, div#health th.center  { text-align: center; }
+div#health td.left, div#health th.left  { text-align: left; padding-left: 10px; }
+div#health td.green { background: #008800; color: #FFFFFF; }
+div#health td.red { background: #FF0000; color: #FFFFFF; }
+div#health p#time { margin-top: 10px; }
+
+/* The statistics page. */
+div#statistics table { width: 420px; }
+div#statistics table td { text-align: right; padding-right: 10px; }
+div#statistics p#time { margin-top: 10px; }
+
+/* The personal e-mail page. */
+div#personal_e_mail table { width: 737px; }
+div#personal_e_mail table tbody th { width: 245px; }
+div#personal_e_mail p#discount { width: 737px; }
+
+/* The advertising page. */
+div#advertising table#impressions { width: 250px; }
+div#advertising form { width: 605px; margin-top: 25px; }
+div#advertising form table { background: #FFFFFF; color: #000000; margin-bottom: 10px; }
+div#advertising form table tr { background: none; border: none; }
+div#advertising form table th { width: 52%; text-align: right; }
+div#advertising form table td { padding-left: 10px; text-align: left; }
+div#advertising form table td label { display: none; }
+div#advertising form table input { width: 190px; margin-right: 10px; }
+div#advertising form table select { width: 190px; margin-right: 10px; }
+div#advertising form table select#ccexp_mon, div#advertising form table select#ccexp_year { width: 90px; margin-right: 10px; }
+div#advertising form table input#line_one, div#advertising form table input#line_two, div#advertising form table input#link { width: 100%; margin: 0px; }
+div#advertising form div { text-align: right; }
+div#advertising button { overflow: hidden; text-indent: -9999px; border: 0px; margin: 10px 0px 0px 0px; padding: 0px; width: 72px; height: 25px; background: transparent url(../images/btn_submit.gif) no-repeat center top; cursor: pointer; }
+
+/* Tutorial pages. */
+div#outlook p { width: 737px; }
+div#outlook img { width: 730px; }
+div#thunderbird p { width: 737px; }
+div#thunderbird img { width: 730px; }
+div#windows_live_mail p { width: 737px; }
+div#windows_live_mail img { width: 730px; }
+div#pidgin p { width: 737px; }
+div#pidgin img { width: auto; }
+div#trillian p { width: 737px; }
+div#trillian img { width: auto; }
+
+/* The contact and report abuse pages. */
+div#contact form, div#report_abuse form { width: 605px; }
+div#contact th, div#report_abuse th { text-align: right; width: 100px; }
+div#contact td, div#report_abuse td { padding-left: 10px; }
+div#contact select { width: 100px; }
+div#contact form div, div#report_abuse form div { height: 25px; margin: 10px 5px 0px 0px; text-align: right; }
+div#contact tbody input, div#report_abuse tbody input { width: 190px; margin-right: 10px; }
+div#contact textarea, div#report_abuse textarea { width: 480px; height: 190px; }
+div#contact tr#message th, div#report_abuse tr#message th { vertical-align: top; }
+div#contact form table span, div#report_abuse form table span { background-color: #FFFFFF; color: #FF0000; font-weight: bold; }
+div#contact span#your_message_msg, div#report_abuse span#your_message_msg { display: block; text-align: right; width: 480px; background-color: #FFFFFF; color: #FF0000; font-weight: bold; }
+div#contact button#contact_sub, div#report_abuse button#abuse_sub { overflow: hidden; text-indent: -9999px; border: 0px; margin: 0px; padding: 0px; width: 72px; height: 25px; background: transparent url(../images/btn_submit.gif) no-repeat center top; cursor: pointer; }
+
+/* The credits page. */
+div#credits h2 { display: none; }
+div#credits h4 { display: none; }
+div#credits h3 { text-decoration: underline; }
+div#credits h5 { font-size: 14px; width: 737px; line-height: 12px; margin-bottom: 0px; }
+div#credits h5 a { font-size: 12px; float: right; margin-top: -12px; color: #FF0000; background-color: inherit; text-decoration: underline; }
+div#credits h5 a:hover { font-size: 12px; float: right; margin-top: -12px; color: #FF0000; background-color: inherit; text-decoration: underline; }
+div#credits p { width: 545px; }
+
+/* The settings page. */
+div#settings table { margin-bottom: 10px; width: 440px; }
+div#settings table th { display: inline; }
+div#settings table td { display: inline; text-align: left; }
+
+/* Terms and Policies pages */
+p#timestamp { float: right; width: 165px; margin-bottom: -15px; color: #666666; }
+
+/* The sitemap page. */
+div#site_map th { text-align: left; }
+div#site_map table { width: 605px; }
+
+/* The XHTML page. */
+div#xhtml_valid th { text-align: left; }
+div#xhtml_valid table { width: 605px; }
+
+/* The CSS Valid page. */
+div#css_valid th { text-align: left; }
+div#css_valid table { width: 605px; }
+
+/* Registration webapp. */
+div#reg_step1 div#floater { clear: left; }
+div#reg_step1 h2 { overflow: hidden; text-indent: -9999px; width: 214px; height: 143px; background: url(../images/splash_signup.gif) no-repeat; display: block; margin: 0px;}
+div#reg_step1 div#reg_col_1 { float: left; width: 215px; margin: 0px; }
+div#reg_step1 div#reg_col_1 p { width: 215px; margin: 10px 0px 0px 0px; }
+div#reg_step1 p#error { color: #FF0000; background-color: inherit; }
+div#reg_step1 form { float: left; }
+div#reg_step1 table { width: 525px; margin: 0px; }
+div#reg_step1 form p { width: 377px; margin-left: 142px; }
+div#reg_step1 form div#button { width: 377px; margin-left: 142px; text-align: right; }
+div#reg_step1 img { margin: 8px 0px 0px 131px; width: 371px; height: 47px; border: 3px solid #000000; }
+div#reg_step1 table th { text-align: right; vertical-align: top; width: 25%; }
+div#reg_step1 table td { text-align: left; padding-left: 10px; width: 75%; }
+div#reg_step1 table input { width: 190px; margin-right: 10px; }
+div#reg_step1 form table td div { background-color: #FFFFFF; color: #FF0000; font-weight: bold; }
+div#reg_step1 button#next1 { overflow: hidden; text-indent: -9999px; border: 0px; margin: 0px; padding: 0px; width: 55px; height: 25px; background: url(../images/btn_next.gif) no-repeat center top; cursor: pointer; }
+
+div#reg_step2 p, div#reg_step2 table, div#reg_step2 div#buttons { width: 737px; }
+div#reg_step2 p#error { color: #FF0000; background-color: inherit; }
+div#reg_step2 table#payment { margin: 20px 0px 0px 0px; }
+div#reg_step2 table#payment td { padding-left: 10px; text-align: left; }
+div#reg_step2 table#payment td label { display: none; }
+div#reg_step2 table#payment input { width: 190px; margin-right: 10px; }
+div#reg_step2 table#payment select { width: 190px; margin-right: 10px; }
+div#reg_step2 table#payment input#ccsc { width: 50px; }
+div#reg_step2 table#payment th { text-align: right; vertical-align: top; width: 155px; }
+div#reg_step2 div#buttons { margin: 10px 0px 10px 0px; }
+div#reg_step2 table#payment td div { background-color: #FFFFFF; color: #FF0000; font-weight: bold; }
+div#reg_step2 table#payment select#ccexp_mon, div#reg_step2 table#payment select#ccexp_year { width: 90px; margin-right: 10px; }
+div#reg_step2 button#next2 { float: right; overflow: hidden; text-indent: -9999px; border: 0px; margin: 0px; padding: 0px; width: 72px; height: 25px; background: transparent url(../images/btn_finish.gif) no-repeat center top; cursor: pointer; }
+div#reg_step2 button#prev2 { float: left; overflow: hidden; text-indent: -9999px; border: 0px; margin: 0px; padding: 0px; width: 55px; height: 25px; background: transparent url(../images/btn_back.gif) no-repeat center top; cursor: pointer; }
+div#reg_step2 div#plans_msg { background-color: #FFFFFF; color: #FF0000; font-weight: bold; text-align: right; margin: 0px; width: 737px; }
+div#reg_step2 table#plans label { display: none; }
+div#reg_step2 table#plans tbody th { width: 42%; }
+div#reg_step2 #tooltip_ccsc { display: none; line-height: 20px; background-color: #FFFFFF; color: #FF0000; font-weight: bold; }
+
+div#reg_step3 p { width: 737px; }

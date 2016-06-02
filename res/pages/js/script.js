@@ -551,7 +551,6 @@ magma.ckeditor = function(textareaID) {
 var magma = magma || {};
 
 magma.animationSpeed = "fast";
-
 magma.portalUrl = true ? '/portal/camel' : '/portal/mockiface';
 
 // TODO: better way to get table header height

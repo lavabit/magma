@@ -2,10 +2,10 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 	<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<title>Lavabit ..::.. Report Abuse</title>
-		<meta name="author" content="Ladar Levison"/>
+		<title>provider ..::.. Report Abuse</title>
+		<meta name="author" content="Author_name"/>
 		<meta name="keywords" content="email free pop imap webmail spam secure private privacy" />
-		<meta name="description" content="Lavabit is a premier POP3 e-mail provider with free and premium accounts. This page lets members of the Internet easily report abuse by our users." />
+		<meta name="description" content="provider is a premier POP3 e-mail provider with free and premium accounts. This page lets members of the Internet easily report abuse by our users." />
 		<link rel="stylesheet" type="text/css" href="/css/site.css" />
 		<script type="text/javascript" src="/js/site.js"></script>
 		<script type="text/javascript" src="/js/jquery.js"></script>
@@ -14,7 +14,7 @@
 	<body>
 		<div id="page">
 			<div id="header">
-				<h1>Lavabit</h1>
+				<h1>$Provider</h1>
 				<div>
 					<ul id="nav_col_1">
 						<li class="skip"><a href="#report_abuse">Skip Primary Navigation</a></li>
@@ -30,9 +30,9 @@
 						<li><a id="nav_help" href="/help.html">Help</a></li>
 					</ul>
 					<ul id="nav_col_3">
-						<li><a id="nav_contact" href="https://lavabit.com/contact">Contact Information</a></li>
-						<li><a id="nav_preferences" href="https://lavabit.com/apps/preferences">Preferences</a></li>
-						<li><a id="nav_register" href="https://lavabit.com/register">Sign&nbsp;Up</a></li>
+						<li><a id="nav_contact" href="/contact">Contact Information</a></li>
+						<li><a id="nav_preferences" href="/apps/preferences">Preferences</a></li>
+						<li><a id="nav$Provider" href="/register">Sign&nbsp;Up</a></li>
 					</ul>
 				</div>
 			</div>
@@ -40,15 +40,15 @@
 				<div id="secondary">
 					<ul>
 						<li class="skip"><a href="#start">Skip Secondary Navigation</a></li>
-						<li><a href="https://lavabit.com/contact">Contact Lavabit</a></li>
-						<li><a href="https://lavabit.com/report_abuse.html" class="active">Report Abuse</a></li>
+						<li><a href="/contact">Contact $Provider</a></li>
+						<li><a href="/report_abuse.html" class="active">Report Abuse</a></li>
 					</ul>
 				</div>
 				<h2 id="start">Report Abuse</h2>
-				<p>We don’t like people abusing our system. If you see a Lavabit account used for spam, or some other violation of our <a href="/abuse_policy.html">abuse policy</a>, please let us know. If reporting e-mail abuse, please be sure to send us the message, including the header information so we can trace the message back to its source. We’ll do our best to investigate and respond to any abuse.</p>
+				<p>We don’t like people abusing our system. If you see a $Provider account used for spam, or some other violation of our <a href="/abuse_policy.html">abuse policy</a>, please let us know. If reporting e-mail abuse, please be sure to send us the message, including the header information so we can trace the message back to its source. We’ll do our best to investigate and respond to any abuse.</p>
 				<form id="frm_contact" method="post" action="/report_abuse">
 					<table>
-						<caption>Contact the Lavabit team through this form.</caption>
+						<caption>Contact the $Provider team through this form.</caption>
 						<tbody>
 							<tr>
 								<th><label for="your_name">Your Name:</label></th>
@@ -72,7 +72,7 @@
 			<div id="footer">
 				<ul>
 					<li class="skip"><a href="#copyright">Skip Footer Navigation</a></li>
-					<li><a href="https://lavabit.com/report_abuse.html">Report Abuse</a></li>
+					<li><a href="/report_abuse.html">Report Abuse</a></li>
 					<li id="last"><a href="/site_map.html">Site Map</a></li>
 					<li><a href="/credits.html">Credits</a></li>
 				</ul>

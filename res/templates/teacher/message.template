@@ -2,10 +2,10 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 	<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<title>Lavabit ..::.. Spam Trainer</title>
+		<title>$Provider ..::.. Spam Trainer</title>
 		<meta name="Author" content="Ladar Levison" />
 		<meta name="Keywords" content="email free pop imap webmail spam secure private privacy" />
-		<meta name="Description" content="Lavabit is a premier POP3 e-mail provider with free and premium accounts. This page is used to train the personalized statistical spam filter." />
+		<meta name="Description" content="$Provider is a premier POP3 e-mail provider with free and premium accounts. This page is used to train the personalized statistical spam filter." />
 		<meta http-equiv="Pragma" content="no-cache" />
 		<meta http-equiv="Cache-Control" content="no-store" />
 		<link rel="stylesheet" type="text/css" href="/css/site.css" />
@@ -14,7 +14,7 @@
 	<body>
 		<div id="page">
 			<div id="header">
-				<h1>Lavabit</h1>
+				<h1>$Provider</h1>
 			</div>
 			<div id="teacher" class="content">
 				<p id="message">&nbsp;</p>

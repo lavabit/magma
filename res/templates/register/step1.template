@@ -2,10 +2,10 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 	<head>
-		<title>Lavabit ..::.. Sign Up - Step One</title>
+		<title>$Provider ..::.. Sign Up - Step One</title>
 		<meta name="Author" content="Ladar Levison" />
 		<meta name="Keywords" lang="en" content="email free pop imap webmail spam secure private privacy" />
-		<meta name="Description" lang="en" content="Lavabit is a premier POP3 e-mail provider with free and premium accounts. This page is step one of three in the Lavabit registration process. Use this page to select basic account information such as your username and password." />
+		<meta name="Description" lang="en" content="$Provider is a premier POP3 e-mail provider with free and premium accounts. This page is step one of three in the $Provider registration process. Use this page to select basic account information such as your username and password." />
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<meta http-equiv="Pragma" content="no-cache" />
 		<meta http-equiv="Cache-Control" content="no-store" />
@@ -17,7 +17,7 @@
 	<body>
 		<div id="page">
 			<div id="header">
-				<h1>Lavabit</h1>
+				<h1>$Provider</h1>
 				<div>
 					<ul id="nav_col_1">
 						<li class="skip"><a href="#index">Skip Primary Navigation</a></li>
@@ -33,21 +33,21 @@
 						<li><a id="nav_help" href="/help.html">Help</a></li>
 					</ul>
 					<ul id="nav_col_3">
-						<li><a id="nav_contact" href="https://lavabit.com/contact">Contact Information</a></li>
-						<li><a id="nav_preferences" href="https://lavabit.com/apps/preferences">Preferences</a></li>
-						<li><a id="nav_webmail" href="https://lavabit.com/portal">Webmail</a></li>
-						<li><a id="nav_register" class="active" href="https://lavabit.com/register">Sign&nbsp;Up</a></li>
+						<li><a id="nav_contact" href="https://$Provider.com/contact">Contact Information</a></li>
+						<li><a id="nav_preferences" href="https://$Provider.com/apps/preferences">Preferences</a></li>
+						<li><a id="nav_webmail" href="https://$Provider.com/portal">Webmail</a></li>
+						<li><a id="nav_register" class="active" href="https://$Provider.com/register">Sign&nbsp;Up</a></li>
 					</ul>
 				</div>
 			</div>
 			<div id="reg_step1" class="content">
 				<div id="reg_col_1">
 					<h2>Sign Up</h2>
-					<p>Welcome to the Lavabit sign up page. With a few mouse clicks, you&rsquo;ll be enjoying your new Lavabit e-mail account. Please start by filling out the form and pressing the <q>Next</q> button.</p>$ERROR$
+					<p>Welcome to the $Provider sign up page. With a few mouse clicks, you&rsquo;ll be enjoying your new $Provider e-mail account. Please start by filling out the form and pressing the <q>Next</q> button.</p>$ERROR$
 				</div>
 				<form id="step1" method="post" action="/register">
 					<table>
-						<caption>Step one of three in the Lavabit registration process.</caption>
+						<caption>Step one of three in the $Provider registration process.</caption>
 						<tbody>
 							<tr>
 								<th><label for="username">Username:</label></th>
@@ -70,7 +70,7 @@
 							</tr>
 						</tbody>
 					</table>		
-					<p>By submitting this form you acknowledge that you have read and agree to the Lavabit <a href="/terms_of_use.html">Terms of Use</a>, <a href="/privacy_policy.html">Privacy Policy</a> and <a href="/abuse_policy.html">Abuse Policy</a>.</p>
+					<p>By submitting this form you acknowledge that you have read and agree to the $Provider <a href="/terms_of_use.html">Terms of Use</a>, <a href="/privacy_policy.html">Privacy Policy</a> and <a href="/abuse_policy.html">Abuse Policy</a>.</p>
 					<div id="button">
 						<input id="session" name="session" type="hidden" value="$SESSION$" />
 						<button id="next1" name="next1" type="submit" title="Use this button to submit the form."><strong>Next &gt;&gt;</strong></button>
@@ -85,7 +85,7 @@
 					<li><a href="/privacy_policy.html">Privacy Policy</a></li>
 					<li><a href="/advertising_policy.html">Advertising Policy</a></li>
 					<li><a href="/abuse_policy.html">Abuse Policy</a></li>
-					<li><a href="https://lavabit.com/report_abuse.html">Report Abuse</a></li>
+					<li><a href="https://$Provider.com/report_abuse.html">Report Abuse</a></li>
 					<li id="last"><a href="/site_map.html">Site Map</a></li>
 					<li><a href="/credits.html">Credits</a></li>
 				</ul>

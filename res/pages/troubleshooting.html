@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+	<head>
+		<title>$Provider ..::.. Troubleshooting</title>
+		<meta name="author" content="Ladar Levison"/>
+		<meta name="keywords" lang="en" content="email free pop imap webmail spam secure private privacy" />
+		<meta name="description" lang="en" content="$Provider is a premier POP3 e-mail provider with free and premium accounts. This page provides troubleshooting tips for people having problems connecting to our server." />
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<link rel="stylesheet" type="text/css" href="css/site.css" />
+		<script type="text/javascript" src="/js/site.js"></script>
+	</head>
+	<body>
+		<div id="page">
+			<div id="header">
+				<h1>$Provider</h1>
+				<div>
+					<ul id="nav_col_1">
+						<li class="skip"><a href="#troubleshooting">Skip Primary Navigation</a></li>
+						<li><a id="nav_home" href="index.html">Home</a></li>
+						<li><a id="nav_about" href="about.html">About</a></li>
+						<li><a id="nav_features" href="features.html">Features</a></li>
+					</ul>
+					<ul id="nav_col_2">
+						<li><a id="nav_help" href="help.html">Help</a></li>
+					</ul>
+					<ul id="nav_col_3">
+						<li><a id="nav_contact" href="contact">Contact Information</a></li>
+						<li><a id="nav_preferences" href="apps/preferences">Preferences</a></li>
+						<li><a id="nav_webmail" href="portal">Webmail</a></li>
+						<li><a id="nav_register" href="register">Sign&nbsp;Up</a></li>
+					</ul>
+				</div>
+			</div>
+			<div id="troubleshooting" class="content">
+				<div id="secondary">
+					<ul>
+						<li class="skip"><a href="#start">Skip Secondary Navigation</a></li>
+						<li><a href="settings.html">Configuration Settings</a></li>
+						<li><a href="questions.html">Common Questions</a></li>
+						<li><a href="troubleshooting.html" class="active">Troubleshooting</a></li>
+						<li><a href="tutorials.html">Tutorials</a></li>
+					</ul>
+				</div>
+				<h2 id="start">Troubleshooting</h2>
+				<h3>Generic Errors</h3>
+				<h4><a href="#t1">Could not connect to $Provider.com.</a></h4>
+				<h3>Webmail Errors</h3>
+				<h4><a href="#t2">Cannot login with the correct name and password.</a></h4>
+				<h3>Outlook Errors</h3>
+				<h4><a href="#t3">Could not connect to $Provider.com.</a></h4>
+				<h3>Windows Live Mail Errors</h3>
+				<h4><a href="#t4">General authentication failed.</a></h4>
+				<h4 id="t1">Could not connect to $Provider.com.</h4>
+				<p>Many ISPs have chosen to block SMTP port 25 to prevent their customers from sending spam. To work around this problem, please configure your e-mail client to use port 587 for SMTP. You can also configure your client to use SMTP over SSL on port 465.</p>
+				<h4 id="t2">Cannot login with the correct username and password.</h4>
+        <p>In order to login into the webmail system you must have cookies enabled. With cookies disabled the server will refuse your username and password even if they are correct.</p>
+				<h4 id="t3">Could not connect to $Provider.com.</h4>
+				<p>Make sure you have Secure Password Authentication (<acronym>SPA</acronym>) disabled. <acronym>SPA</acronym> is a Microsoft security implementation that only works with Microsoft related e-mail accounts. To disable <acronym>SPA</acronym>, open the 'Tools' menu then choose 'Account Settings'. Select your $Provider account from the list then click the 'Change' button above. Uncheck the secure password authentication box then click 'Next' to continue. Click 'Finish' to apply your settings.</p>
+				<h4 id="t4">General Authentication Failed.</h4>
+				<p>Make sure you have Secure Password Authentication (<acronym>SPA</acronym>) disabled. <acronym>SPA</acronym> is a Microsoft security implementation that only works with Microsoft related e-mail accounts. To disable <acronym>SPA</acronym>, select your $Provider account in the left frame of the main window then click the 'Properties' button in the upper left. Select the 'Servers' tab and choose to 'Log on using clear text authentication'. If you followed the <a href="windows_live_mail.html">Windows Live Mail Tutorial</a> or you created your account with SSL required, clear text authentication is not a security lapse since you are sending your Information over a secure connection.</p>
+			</div>
+			<div id="footer">
+				<ul>
+					<li class="skip"><a href="#copyright">Skip Footer Navigation</a></li>
+					<li><a href="report_abuse.html">Report Abuse</a></li>
+					<li id="last"><a href="site_map.html">Site Map</a></li>
+					<li><a href="credits.html">Credits</a></li>
+				</ul>
+				<p id="copyright">&copy; 2014 Lavabit LLC. All rights reserved.</p>
+				<p id="badges"><a href="xhtml_valid.html"><img src="/images/xhtml_strict_grey.gif" onmouseover="ChangeImage(this, '/images/xhtml_strict_red.gif')" onmouseout="ChangeImage(this, '/images/xhtml_strict_grey.gif')" alt="XHTML Strict" /></a> <a href="css_valid.html"><img src="/images/css_valid_grey.gif" onmouseover="ChangeImage(this, '/images/css_valid_red.gif')" onmouseout="ChangeImage(this, '/images/css_valid_grey.gif')" alt="CSS Valid" /></a> <a href="wai_aaa.html"><img src="/images/wai_aaa_grey.gif" onmouseover="ChangeImage(this, '/images/wai_aaa_red.gif')" onmouseout="ChangeImage(this, '/images/wai_aaa_grey.gif')" alt="WAI AAA Conformance" /></a></p>
+			</div>
+		</div>
+	</body>
+</html>

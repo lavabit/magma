@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+	<head>
+		<title>$Provider ..::.. Features</title>
+		<meta name="author" content="Ladar Levison"/>
+		<meta name="keywords" lang="en" content="email free pop imap webmail spam secure private privacy" />
+		<meta name="description" lang="en" content="$Provider is a premier POP3 e-mail provider with free and premium accounts. This page provides detailed descriptions of the features offered by $Provider’s e-mail services." />
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<link rel="stylesheet" type="text/css" href="css/site.css" />
+		<script type="text/javascript" src="/js/site.js"></script>
+	</head>
+	<body>
+		<div id="page">
+			<div id="header">
+				<h1>$Provider</h1>
+				<div>
+					<ul id="nav_col_1">
+						<li class="skip"><a href="#features">Skip Primary Navigation</a></li>
+						<li><a id="nav_home" href="index.html">Home</a></li>
+						<li><a id="nav_about" href="about.html">About</a></li>
+						<li><a id="nav_features" class="active" href="features.html">Features</a></li>
+					</ul>
+					<ul id="nav_col_2">
+						<li><a id="nav_help" href="help.html">Help</a></li>
+					</ul>
+					<ul id="nav_col_3">
+						<li><a id="nav_contact" href="contact">Contact Information</a></li>
+						<li><a id="nav_preferences" href="apps/preferences">Preferences</a></li>
+						<li><a id="nav_webmail" href="portal">Webmail</a></li>
+						<li><a id="nav_register" href="register">Sign&nbsp;Up</a></li>
+					</ul>
+				</div>
+			</div>
+			<div id="features" class="content">
+				<h2>Features</h2>
+				<p>We’ve built the $Provider e-mail server from the ground up with the most desirable combination of features, performance and flexibility. Read on for detailed descriptions of the key features of the $Provider e-mail platform—one of the most advanced in existence. Our goal is to one day give back to the community by releasing this software to the public.</p>
+				<h3>Antispam</h3>
+				<h4>Spam Filter</h4>
+				<p>$Provider uses the <a href="http://dspam.nuclearelephant.com">DSPAM</a> library to accurately filter spam. <a href="http://dspam.nuclearelephant.com">DSPAM</a> is an adaptive filter that uses complex statistical algorithms to analyze your messages. At $Provider, we use personalized training data that causes DSPAM to learn over time what you consider to be spam. This personalized approach means that many of our users typically see between 99.5% and 99.95% accuracy.</p>
+				<h4>Realtime Time Blacklists (RBL)</h4>
+				<p>These blacklists are maintained by organizations with an interest in combating the spam problem. The $Provider e-mail server is capable of checking these lists as messages arrive and blocking those that appear to come from IP addresses on the list. You can configure the $Provider e-mail server to mark messages that come from blacklisted servers as 'SPAM' or simply accept the default setting, which automatically rejects messages from blacklisted IP addresses.</p>
+				<h4>Scatter Back Blocking</h4>
+				<p>Welcome to the world of e-mail identity theft. Everyday spammers launch new e-mail campaigns using the addresses of unwitting users. The problem arises whenever a spammer’s e-mail campaign tries to send a message to an address that is invalid. A bounce message is generated and sent to the address in the from header. If that address happens to be yours, a virtual avalanche could end up in your inbox. If that ever happens to you while your using $Provider, rest comfortably knowing that you can temporarily block bounce messages using our <a href="apps/preferences">preferences portal</a>.</p> 
+				<h4>Sender Policy Framework (SPF)</h4>
+				<p>SPF is a technique for verifying that a message claiming to originate from a specific domain is actually being received from a server authorized to relay messages for that domain. As an example, SPF can be used to verify that a message claiming to be from 'whitehouse.gov' is actually being transmitted by a server authorized to represent 'whitehouse.gov'. Current estimates indicate that 50 percent of all domain names publish SPF information, while 30 percent check SPF information on inbound e-mail. $Provider users have the option to disable this check, have messages that fail this check marked 'SPAM' or reject these messages during the <acronym title="Simple Mail Transfer Protocol">SMTP</acronym> session.</p>
+				<h3>Antivirus</h3>
+				<h4>ClamAV</h4>
+				<p>The $Provider e-mail server has been tightly integrated with the Clam antivirus engine. This integration allows us to protect our users from a variety of malware threats. Using a sophisticated engine and a worldwide network of e-mail administrators, ClamAV provides the best possible protection against new virus threats.</p> 
+				<h3>Privacy</h3>
+				<h4>Transport Layer Encryption</h4>
+				<p>Here at $Provider we take privacy and security seriously. To ensure that no one intercepts your e-mail while it is being downloaded or sent to our servers, we support and encourage the use of Secure Sockets Layer (SSL) encryption. SSL was created specifically to eliminate eavesdropping and ensure that information could be transported securely over an untrusted network.</p>  
+				<h4>Secure Mail Storage</h4>
+				<p>The secure mail storage process uses asymmetric encryption to ensure the privacy of messages while being stored on the $Provider servers. Asymmetric encryption is a process that uses public key and private key encryption to make messages unreadable without knowing a user's plaintext password. Presently we use Elliptical Curve Cryptography (ECC) with 512 bits of security to encrypt messages. The private, or decryption, key is then encrypted with a user’s password using the Advanced Encryption Standard (AES) and 256 bits of security. The result is that once a message is stored on our servers in this fashion, it can’t be recovered without knowing a user's password. This provides a priceless level of security, particularly for customers that use e-mail to exchange sensitive information. You can learn more about our asymmetric encryption technology by reading our <a href="secure.html">white paper</a> on the subject.</p>
+				<h3>Basic</h3>
+				<h4>Authentication Support</h4>
+				<p>Our SMTP server supports authentication using the PLAIN and LOGIN methods. By requiring SMTP authentication we guarantee that we only relay e-mail for $Provider users.</p>
+				<h4>Message Forwarding</h4>
+				<p>Our e-mail server supports message forwarding. Because forwarding is controlled from a centralized database, it’s easy for you to set up using our custom preferences portal.</p>
+				<h4>Automatic Replies</h4>
+				<p>Occasionally—but probably not often enough—you go on vacation. When you do, the $Provider e-mail server is ready to let your contacts know using an automatic reply.</p>
+				<h4>Catchall Address</h4>
+				<p>For those of you who choose our services for your personal or corporate domain names, the $Provider e-mail server supports catchall addresses. This feature allows us to redirect all of the e-mail for a domain that isn’t addressed to a valid user into a specific catchall account.</p> 
+				<h4>Multiple E-mail Addresses Per Account</h4>
+				<p>If you own multiple domain names, but want them all pointing to a single e-mail account, our server can come to the rescue. Our server supports tying multiple e-mail addresses to a single account.</p>
+				<h4>Server Side Sorting</h4>
+				<p>The $Provider e-mail server allows you to automatically sort your e-mail using a powerful regular expression engine. Imagine having your e-mail pre-sorted on the server into specific folders. For those of you who access your e-mail from multiple computers, this technology means you’ll now see a consistent view of your e-mail.</p>
+				<h4>Archiving</h4>
+				<p>The $Provider e-mail server supports archiving and retention policies. This technology allows our users with special requirements (like Sarbanes-Oxley) to set up rules that guarantee that their e-mail is retained securely.</p> 
+				<h3>Server</h3>
+				<h4>Message Limits</h4>
+				<p>The ability to place sending and receiving limits on users is a requirement for a free e-mail service. These limits deter spammers from using our system while protecting your inbox from e-mail bombs.</p>
+				<h4>Storage Quotas</h4>
+				<p>Another important feature of our e-mail server is its ability to internally manage storage quotas. Because all quotas are managed using a database, making updates or changes is very easy.</p>
+				<h4>Message Rollout</h4>
+				<p>A unique feature offered by our service is called message rollout. This feature, if enabled, allows a user to continually store e-mail on our servers. When their quota is reached, the server will automatically delete the oldest messages to make room for incoming e-mail. This feature allows you to retain your e-mail securely on the server without fear that doing so could cause you to lose an incoming message by exceeding your quota.</p> 
+				<h4>Compression</h4>
+				<p>Developing a platform to efficiently offer free e-mail services required our programmers to develop innovative solutions that make the most of our hardware resources. One of those solutions is a compression algorithm that allows our servers to efficiently store e-mail on disk. Like many of the technologies we’ve developed at $Provider, compression algorithms are not a novel idea. But the ability of our engineers to take advantage of compression without sacrificing performance gives our software a significant competitive advantage.</p>
+				<h4>Database Driven</h4>
+				<p>Controlling an e-mail service with such a large user base required us to develop a platform that’s centrally controlled, yet flexible. To meet that need we’ve developed our platform around a SQL-based database. This allows our team of engineers to easily administer our services while offering you the ability to customize your e-mail preferences. Gone are the days where a single antispam solution is effective for everyone. Instead, it’s necessary to customize a package of protections that satisfy each user’s willingness to balance spam protection with the risk of losing an important e-mail. Driving our e-mail server with a database gives us that control.</p>
+				<h4>Distributed Caching</h4>
+				<p>Database control isn’t a new concept. A number of people have tried to build large, scalable service-based platforms around databases. The problem is that such architectures are usually hindered by their reliance on a database server that can easily become bottlenecked and expensive to scale. We’ve decided to meet this challenge by using a distributed caching model. Using software based on <a href="http://memcached.org/">memcached</a> we’ve developed a distributed caching model that allows us to offload non-critical tasks from the database. Though difficult to develop, this technology implemented properly enables us to offer incredibly fast performance with incredible efficiency.</p> 
+				<h4>Clustering</h4>
+				<p>Keeping our per-user cost structure low enables us to provide more services for less cash. A key aspect of that strategy is engineering systems that can scale to serve millions of users without increasing $Provider’s cost per user. With the $Provider e-mail server we’ve developed proprietary clustering technology that lets us accomplish that goal. As our services continue to grow, we’ll be adding commodity servers to our clusters to meet the demand. Without this technology, growth would require purchasing increasingly powerful servers. Because of the economics in the computer industry, it is far cheaper to buy eight different computers than it is to buy a single computer with eight processors.</p>  
+				<h3>Spam Signatures and Advertising</h3>
+				<h4>Intelligent Signatures</h4>
+				<p>The most accurate spam filter is worthless if nobody uses it. As a result we’ve decided to make extra efforts at making things easier to use. Part of that effort involves creating software that allows you to train your personal spam filter whether you’re accessing e-mail using a POP client or webmail. The $Provider e-mail server can dynamically insert spam signatures into the bottom of your messages as they are downloaded. These signatures contain links that can be used to conveniently train your personalized server-based statistical spam filter.</p> 
+			</div>
+			<div id="footer">
+				<ul>
+					<li class="skip"><a href="#copyright">Skip Footer Navigation</a></li>
+					<li><a href="report_abuse.html">Report Abuse</a></li>
+					<li id="last"><a href="site_map.html">Site Map</a></li>
+					<li><a href="credits.html">Credits</a></li>
+				</ul>
+				<p id="copyright">&copy; 2014 Lavabit LLC. All rights reserved.</p>
+				<p id="badges"><a href="xhtml_valid.html"><img src="/images/xhtml_strict_grey.gif" onmouseover="ChangeImage(this, '/images/xhtml_strict_red.gif')" onmouseout="ChangeImage(this, '/images/xhtml_strict_grey.gif')" alt="XHTML Strict" /></a> <a href="css_valid.html"><img src="/images/css_valid_grey.gif" onmouseover="ChangeImage(this, '/images/css_valid_red.gif')" onmouseout="ChangeImage(this, '/images/css_valid_grey.gif')" alt="CSS Valid" /></a> <a href="wai_aaa.html"><img src="/images/wai_aaa_grey.gif" onmouseover="ChangeImage(this, '/images/wai_aaa_red.gif')" onmouseout="ChangeImage(this, '/images/wai_aaa_grey.gif')" alt="WAI AAA Conformance" /></a></p>
+			</div>
+		</div>
+	</body>
+</html>

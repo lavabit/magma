@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+	<head>
+		<title>$Provider ..::.. Secure</title>
+		<meta name="author" content="Ladar Levison"/>
+		<meta name="keywords" lang="en" content="email free pop imap webmail spam secure private privacy" />
+		<meta name="description" lang="en" content="$Provider is a premier POP3 e-mail provider with free and premium accounts. This page contains a detailed description of the asymmetric encryption used by $Provider’s e-mail service." />
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<link rel="stylesheet" type="text/css" href="css/site.css" />
+		<script type="text/javascript" src="/js/site.js"></script>
+	</head>
+	<body>
+		<div id="page">
+			<div id="header">
+				<h1>$Provider</h1>
+				<div>
+					<ul id="nav_col_1">
+						<li class="skip"><a href="#secure">Skip Primary Navigation</a></li>
+						<li><a id="nav_home" href="index.html">Home</a></li>
+						<li><a id="nav_about" href="about.html">About</a></li>
+						<li><a id="nav_features" href="features.html">Features</a></li>
+					</ul>
+					<ul id="nav_col_2">
+						<li><a id="nav_help" href="/help.html">Help</a></li>
+					</ul>
+					<ul id="nav_col_3">
+						<li><a id="nav_contact" href="contact">Contact Information</a></li>
+						<li><a id="nav_preferences" href="apps/preferences">Preferences</a></li>
+						<li><a id="nav_webmail" href="portal">Webmail</a></li>
+						<li><a id="nav_register" href="register">Sign&nbsp;Up</a></li>
+					</ul>
+				</div>
+			</div>
+			<div id="secure" class="content">
+				<h2>Security Through Asymmetric Encryption</h2>
+				<h3>Why is secure mail storage important?</h3>
+				<p>In an era where Microsoft and Yahoo’s e-mail services sell access past their spam filters, Google profiles user’s inboxes for targeted advertising, and <acronym title="American Telephone and Telegraph">AT&amp;T</acronym> allows the government to tap phone calls without a court warrant; we decided to take a stand.</p> 
+				<p>$Provider has developed a system so secure that it prevents everyone, including us, from reading the e-mail of the people that use it.</p>
+				<phIn safer times, a strict Privacy Policy would have been enough to protect the rights of honest Internet citizens. But everything changed when the United States Congress passed the Providing Appropriate Tools Required to Intercept and Obstruct Terrorism (<acronym title="Providing Appropriate Tools Required to Intercept and Obstruct Terrorism">PATRIOT</acronym>) Act in 2001. If you’re currently unaware of the PATRIOT Act, we highly recommend you visit the <a href="http://www.eff.org/">Electronic Frontier Foundation (EFF)</a> website.</p> 
+				<p>The key element of the <acronym title="Providing Appropriate Tools Required to Intercept and Obstruct Terrorism">PATRIOT</acronym> Act is that it allows the FBI to issue National Security Letters (NSLs). NSLs are used to force an Internet Service Provider, like $Provider, to surrender all private information related to a particular user. The problem is that NSLs come without the oversight of a court and can be issued in secret. Issuing an NSL in secret effectively denies the accused an opportunity to defend himself in court. Fortunately, the courts ruled NSLs unconstitutional in 2005; but not before illustrating the need for a technological guarantee of privacy.</p>
+				<p>$Provider believes that a civil society depends on the open, free and private flow of ideas. The type of monitoring promoted by the <acronym title="Providing Appropriate Tools Required to Intercept and Obstruct Terrorism">PATRIOT</acronym> Act restricts that flow of ideas because it intimidates those afraid of retaliation. To counteract this chilling effect, $Provider developed its secure e-mail platform. We feel e-mail has evolved into a critical channel for the communication of ideas in a healthy democracy. It’s precisely because of e-mail’s importance that we strive so hard to protect private e-mails from eavesdropping.</p>
+				<h3>How does it work?</h3>
+				<p>How does asymmetric encryption protect your privacy? The short description is that for users of this feature, incoming e-mail messages are encrypted before they’re saved onto our servers. Once a message has been encrypted, only someone who has the account password can decrypt the message. Like all safety measures, encryption is only effective if it’s used. To ensure privacy, $Provider has developed a complex system that makes the entire encryption and decryption process transparent to the end user.</p>
+ 				<p>This process works by combining three different encryption schemes with Elliptical Curve Cryptography (ECC) as the cornerstone. When a user activates the asymmetric encryption feature, two ECC keys are generated with 521 bits of strength. The first key, or the <q>public</q> key, is stored in plain text on the server. This public key is used to encrypt incoming messages. Because of how ECC works, only someone with the second “private” key can decipher messages encrypted with the public key. To protect the private key from attackers, it is encrypted using the Advanced Encryption Standard (AES) (hover:AES Hover) with a 256 bit key. AES is a synchronous encryption scheme that uses a secret passphrase to encrypt/decrypt a ciphered message. In the case of $Provider’s secure e-mail system, the ciphered message is a user’s private key and the secret passphrase is a hashed version of the user’s password.</p>
+				<p>To ensure maximum security, passwords are hashed using the Secure Hash Algorithm (SHA). SHA takes the plaintext password as its input and produces a random 512 bit string as the output. With only the SHA output, it is cryptographically impossible to determine the original input. Effectively, hashing is a repeatable one-way process.</p>
+				<p>To increase the randomness of our hash outputs and the difficulty of reversing the process, $Provider.combines the password with the account name and a cryptographic salt (hover:Salt Hover). This combined string is then hashed three consecutive times, with the former iteration’s output being used as the input value of the next iteration. The output of the first hash iteration is used as the secret passphrase for AES mentioned above. The third iteration is stored in our password database and is used to verify that users entered their password correctly.</p>
+				<p>The product of this encryption process is a message that is cryptographically impossible to read without the password. We say <q>cryptographically impossible</q> because, in theory, an attacker with unlimited computing resources could use brute force to decipher the original message. However in practice, the key lengths $Provider has chosen equal enough possible inputs that a brute-force attack shouldn’t be feasible for a long time to come.</p> 
+				<p>We should note that this encryption process is only secure if you select a strong password. If your password is weak, an attacker would only need to brute force the password to crack our encryption. We should also note that this feature only protects messages on the $Provider servers. Messages can always be intercepted before they reach $Provider or between $Provider’s servers and your personal computer, if SSL is not used. Finally, messages can be retrieved from your local hard drive if encryption software isn’t used on your computer to protect the files. These vulnerabilities are intentional. Our goal was to make invading a user’s privacy difficult, by protecting messages at their most vulnerable point. That doesn’t mean a dedicated attacker, like the United States government, couldn’t intercept the message in transit or once it reaches your computer.</p> 
+				<p>Our hope is the difficulty associated with those strategies means they will only be used by governments on terrorists and scammers, not on honest citizens. If you’re intent on hiding your communications from the government, we recommend you investigate systems that secure messages throughout the entire e-mail system and not just at one particular point along that journey.</p>
+				<h3>How do you take advantage of this feature?</h3>
+				<p>We’ve chosen to offer this feature only to our paid users. We made this decision for two reasons. The first is a belief that with paying customers, there is a money trail. If the account is used for illegal purposes that money trail can be used to track down the account owner. The second reason is that the broader encryption process requires a significant amount of computing power. We can only justify the added expense for premium accounts.</p> 
+				<p>Like insurance, we hope our secure e-mail platform is something you’ll never need. However, should the issue ever arise, like insurance, you’ll be glad you have it.</p>
+				<p>If you’re a paid account holder, you can activate this feature by logging into the <a href="apps/preferences">preferences portal</a> and setting the feature <q>Secure</q> to <q>Enabled.</q></p>
+			</div>
+			<div id="footer">
+				<ul>
+					<li class="skip"><a href="#copyright">Skip Footer Navigation</a></li>
+					<li><a href="report_abuse.html">Report Abuse</a></li>
+					<li id="last"><a href="/site_map.html">Site Map</a></li>
+					<li><a href="/credits.html">Credits</a></li>
+				</ul>
+				<p id="copyright">&copy; 2014 Lavabit LLC. All rights reserved.</p>
+				<p id="badges"><a href="xhtml_valid.html"><img src="/images/xhtml_strict_grey.gif" onmouseover="ChangeImage(this, '/images/xhtml_strict_red.gif')" onmouseout="ChangeImage(this, '/images/xhtml_strict_grey.gif')" alt="XHTML Strict" /></a> <a href="/css_valid.html"><img src="/images/css_valid_grey.gif" onmouseover="ChangeImage(this, '/images/css_valid_red.gif')" onmouseout="ChangeImage(this, '/images/css_valid_grey.gif')" alt="CSS Valid" /></a> <a href="/wai_aaa.html"><img src="/images/wai_aaa_grey.gif" onmouseover="ChangeImage(this, '/images/wai_aaa_red.gif')" onmouseout="ChangeImage(this, '/images/wai_aaa_grey.gif')" alt="WAI AAA Conformance" /></a></p>
+			</div>
+		</div>
+	</body>
+</html>

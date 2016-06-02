@@ -1,0 +1,38 @@
+/*
+ * Created for Nerdshack LLC by Idleswell Software Creations, 2005
+ *
+ * 0.00 01Aug2005 AI Initial version
+ * 0.01 21Oct2005 AI .disabled
+ * 0.02 27Oct2005 AI .Idleswell
+ *
+ */
+
+body {
+	COLOR: #000000; Background-color: #FFFFFF; FONT-FAMILY: Arial,Helvetica,geneva,sans-serif; TEXT-DECORATION:none;
+}
+div#footer a { text-decoration: underline; }
+a:LINK {
+	COLOR: #0000FF; TEXT-DECORATION:none;
+}
+a:HOVER {
+	COLOR: #AA0000; TEXT-DECORATION:underline;
+}
+a:ACTIVE {
+	COLOR: #000000; TEXT-DECORATION:underline;
+}
+a:VISITED {
+	COLOR: #0000FF; TEXT-DECORATION:none;
+}
+a:VISITED:HOVER {
+        COLOR: #AA0000; TEXT-DECORATION:underline;
+}
+.text_description {
+	FONT-SIZE: 12px;
+}
+
+.textbox_outline{
+	BORDER: 1px solid #660000;WIDTH:150px;
+}
+.errmsg { color: red; }
+.ok { background: white; }
+.err { background: #ff9999; }

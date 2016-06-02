@@ -5,7 +5,7 @@
 		<title>&nbsp;</title>
 		<meta name="Author" content="Ladar Levison" />
 		<meta name="Keywords" content="email free pop imap webmail spam secure private privacy" />
-		<meta name="Description" content="Lavabit is a premier POP3 e-mail provider with free and premium accounts. This page is step one of three in the Lavabit registration process. Use this page to select basic account information such as your username and password." />
+		<meta name="Description" content="$Provider is a premier POP3 e-mail provider with free and premium accounts. This page is step one of three in the $Provider registration process. Use this page to select basic account information such as your username and password." />
 		<meta http-equiv="Pragma" content="no-cache" />
 		<meta http-equiv="Cache-Control" content="no-store" />
 		<link rel="stylesheet" type="text/css" href="/css/site.css" />
@@ -14,7 +14,7 @@
 	<body>
 		<div id="page">
 			<div id="header">
-				<h1>Lavabit</h1>
+				<h1>$Provider</h1>
 				<div>
 					<ul id="nav_col_1">
 						<li class="skip"><a href="#reg_step1">Skip Primary Navigation</a></li>
@@ -30,9 +30,9 @@
 						<li><a id="nav_help" href="/help.html">Help</a></li>
 					</ul>
 					<ul id="nav_col_3">
-						<li><a id="nav_contact" href="https://lavabit.com/contact">Contact Information</a></li>
-						<li><a id="nav_preferences" href="https://lavabit.com/apps/preferences">Preferences</a></li>
-						<li><a id="nav_register" href="https://lavabit.com/register">Sign&nbsp;Up</a></li>
+						<li><a id="nav_contact" href="https://provider.com/contact">Contact Information</a></li>
+						<li><a id="nav_preferences" href="https://provider.com/apps/preferences">Preferences</a></li>
+						<li><a id="nav_register" href="https://provider.com/register">Sign&nbsp;Up</a></li>
 					</ul>
 				</div>
 			</div>
@@ -40,8 +40,8 @@
 				<div id="secondary">
 					<ul>
 						<li class="skip"><a href="#start">Skip Secondary Navigation</a></li>
-						<li><a href="https://lavabit.com/contact">Contact Lavabit</a></li>
-						<li><a href="https://lavabit.com/report_abuse">Report Abuse</a></li>
+						<li><a href="https://provider.com/contact">Contact $Provider</a></li>
+						<li><a href="https://provider.com/report_abuse">Report Abuse</a></li>
 					</ul>
 				</div>
 				<p id="message">&nbsp;</p>

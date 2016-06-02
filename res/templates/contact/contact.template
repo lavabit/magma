@@ -2,10 +2,10 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 	<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<title>Lavabit ..::.. Contact</title>
+		<title>$Provider ..::.. Contact</title>
 		<meta name="author" content="Ladar Levison"/>
 		<meta name="keywords" content="email free pop imap webmail spam secure private privacy" />
-		<meta name="description" content="Lavabit is a premier POP3 e-mail provider with free and premium accounts. This page lets our users and the community at large contact the Lavabit Team." />
+		<meta name="description" content="$Provider is a premier POP3 e-mail provider with free and premium accounts. This page lets our users and the community at large contact the $Provider Team." />
 		<meta http-equiv="Pragma" content="no-cache" />
 		<meta http-equiv="Cache-Control" content="no-store" />
 		<link rel="stylesheet" type="text/css" href="/css/site.css" />
@@ -16,7 +16,7 @@
 	<body>
 		<div id="page">
 			<div id="header">
-				<h1>Lavabit</h1>
+				<h1>$Provider</h1>
 				<div>
 					<ul id="nav_col_1">
 						<li class="skip"><a href="#contact">Skip Primary Navigation</a></li>
@@ -32,9 +32,9 @@
 						<li><a id="nav_help" href="/help.html">Help</a></li>
 					</ul>
 					<ul id="nav_col_3">
-						<li><a id="nav_contact" class="active" href="https://lavabit.com/contact">Contact Information</a></li>
-						<li><a id="nav_preferences" href="https://lavabit.com/apps/preferences">Preferences</a></li>
-						<li><a id="nav_register" href="https://lavabit.com/register">Sign&nbsp;Up</a></li>
+						<li><a id="nav_contact" class="active" href="https://$Provider.com/contact">Contact Information</a></li>
+						<li><a id="nav_preferences" href="https://$Provider.com/apps/preferences">Preferences</a></li>
+						<li><a id="nav_register" href="https://$Provider.com/register">Sign&nbsp;Up</a></li>
 					</ul>
 				</div>
 			</div>
@@ -42,15 +42,15 @@
 				<div id="secondary">
 					<ul>
 						<li class="skip"><a href="#start">Skip Secondary Navigation</a></li>
-						<li><a href="https://lavabit.com/contact" class="active">Contact Lavabit</a></li>
-						<li><a href="https://lavabit.com/report_abuse">Report Abuse</a></li>
+						<li><a href="https://$Provider.com/contact" class="active">Contact $Provider</a></li>
+						<li><a href="https://$Provider.com/report_abuse">Report Abuse</a></li>
 					</ul>
 				</div>
-				<h2 id="start">Contact Lavabit</h2>
+				<h2 id="start">Contact $Provider</h2>
 				<p>We want to hear from you. Please use the form below to get in touch—we’re here to help.</p>
 				<form id="frm_contact" method="post" action="/contact">
 					<table>
-						<caption>Contact the Lavabit team through this form.</caption>
+						<caption>Contact the $Provider team through this form.</caption>
 						<tbody>
 							<tr>
 								<th><label for="your_name">Your Name:</label></th>

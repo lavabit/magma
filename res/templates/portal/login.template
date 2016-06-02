@@ -2,13 +2,13 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 	<head>
-		<title>Lavabit ..::.. Portal Login</title>
+		<title>$Provider ..::.. Portal Login</title>
 	</head>
 	<body>
 		<form id="login" method="post" action="/portal">
 			<p id="message">&nbsp;</p>
 			<table>
-				<caption>Lavabit portal login page.</caption>
+				<caption>$Provider portal login page.</caption>
 				<tbody>
 					<tr>
 						<th><label for="username">Username:</label></th>
@@ -20,7 +20,7 @@
 					</tr>
 					<tr>
 						<th>&nbsp;</th>
-						<td><button name="button" value="login" id="submit" type="submit" title="Use this button to log into the Lavabit portal."><strong>Login</strong></button></td>
+						<td><button name="button" value="login" id="submit" type="submit" title="Use this button to log into the $Provider portal."><strong>Login</strong></button></td>
 					</tr>
 				</tbody>
 			</table>

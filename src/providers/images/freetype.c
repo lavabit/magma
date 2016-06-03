@@ -15,9 +15,6 @@
 extern void *lib_magma;
 static chr_t freetype_version[16];
 
-FT_Error (*FT_Done_FreeType_d)(FT_Library library) = NULL;
-FT_Error (*FT_Init_FreeType_d)(FT_Library *alibrary) = NULL;
-
 /**
  * @brief	Return the version string of the font library.
  * @return	a pointer to a character string containing the font library version information.

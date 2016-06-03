@@ -106,7 +106,7 @@ bool_t register_data_check_username(stringer_t *username) {
  * @param	reg			the current registration session of the user to be added.
  * @param	transaction	a mysql transaction id for all database operations, since they all need to be committed atomically or rolled back.
  * @param	outuser		a pointer to a numerical id to receive the newly generated and inserted user id.
- * @result	true if the new user account was successfully created, or false on failure.
+ * @return	true if the new user account was successfully created, or false on failure.
  */
 bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *username, stringer_t *password, int64_t transaction, uint64_t *outuser) {
 

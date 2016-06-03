@@ -23,7 +23,7 @@ chr_t * lib_version_utf8proc(void) {
 
 /**
  * @brief	Initialize the UTF8 library and dynamically bind to the required symbols.
- * @result	true on success or false on failure.
+ * @return	true on success or false on failure.
  */
 bool_t lib_load_utf8proc(void) {
 

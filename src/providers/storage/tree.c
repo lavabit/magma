@@ -38,7 +38,7 @@ int tree_cmp(const char *aptr, int asiz, const char *bptr, int bsiz, void *op) {
  * @brief	Get the number of records in an in-memory tree.
  * @see		tcndbrnum()
  * @param	inx
- * @result	the record count.
+ * @return	the record count.
  *
  *
  *

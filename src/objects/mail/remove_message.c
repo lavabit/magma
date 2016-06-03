@@ -20,7 +20,7 @@
  * @param	messagenum	the target mail message id.
  * @param	size		the size of the message in bytes, to be assessed against the user quota.
  * @param	server		the name of the server on which the mail message resides.
- * @result	true if the message removal succeeds or false on failure.
+ * @return	true if the message removal succeeds or false on failure.
  */
 bool_t mail_remove_message(uint64_t usernum, uint64_t messagenum, uint32_t size, chr_t *server) {
 

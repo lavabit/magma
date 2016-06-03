@@ -251,7 +251,7 @@ MYSQL_STMT * stmt_reset(MYSQL_STMT **group, uint32_t connection) {
  * @brief	Bind parameters to a prepared mysql statement.
  * @param	group	the input prepared statement.
  * @param	bind	the parameters to be bound to "group."
- * @result	false on failure, or true on success
+ * @return	false on failure, or true on success
  */
 bool_t stmt_bind_param(MYSQL_STMT *group, MYSQL_BIND *bind) {
 

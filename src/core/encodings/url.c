@@ -15,7 +15,7 @@
 /**
  * @brief	Determine whether a given character is a valid character in a URL.
  * @param	c	the character to be examined.
- * @result	true if the character is valid in a URL or false if it must be escaped.
+ * @return	true if the character is valid in a URL or false if it must be escaped.
  */
 bool_t url_valid_chr(uchr_t c) {
 	if ((c >= 'A' && c <= 'Z') ||	(c >= 'a' && c <= 'z') ||	(c >= '0' && c <= '9') || c == '-' || c == '.' || c == '_' || c == '~') {

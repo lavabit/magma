@@ -17,7 +17,7 @@
 /**
  * @brief	Perform QP (quoted-printable) encoding of a string.
  * @param	s	a pointer to a managed string containing data to be encoded.
- * @result	a pointer to a managed string containing the QP encoded data, or NULL on failure.
+ * @return	a pointer to a managed string containing the QP encoded data, or NULL on failure.
  */
 stringer_t * qp_encode(stringer_t *s) {
 
@@ -99,7 +99,7 @@ stringer_t * qp_encode(stringer_t *s) {
 /**
  * @brief	Perform QP (quoted-printable) decoding of a string.
  * @param	s	the managed string containing data to be decoded.
- * @result	a pointer to a managed string containing the 8-bit decoded output, or NULL on failure.
+ * @return	a pointer to a managed string containing the 8-bit decoded output, or NULL on failure.
  */
 stringer_t * qp_decode(stringer_t *s) {
 

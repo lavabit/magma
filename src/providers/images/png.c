@@ -39,7 +39,7 @@ chr_t * lib_version_png(void) {
 
 /**
  * @brief	Initialize the png library and bind dynamically to the exported functions that are required.
- * @result	true on success or false on failure.
+ * @return	true on success or false on failure.
  */
 bool_t lib_load_png(void) {
 

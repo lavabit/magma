@@ -95,7 +95,7 @@ void net_listen(void) {
  * @brief	Initialize a server and listen for connections.
  * @note	Each server listens on either an ipv4 or ipv6 address in non-blocking mode, and will be bound and listen on the configured port.
  * @param	server	a pointer to the server object to be initialized.
- * @result	true on successful initialization of the server, or false on failure.
+ * @return	true on successful initialization of the server, or false on failure.
  */
 bool_t net_init(server_t *server) {
 

@@ -179,7 +179,7 @@ stringer_t * ip_subnet(ip_t *address, stringer_t *output) {
  * @brief	Convert an IP address structure into a readable string.
  * @param	address		a pointer to the IP address to be displayed.
  * @param	output		a managed string to store the output, which will be allocated for the caller if output is NULL.
- * @result	NULL on failure, or a pointer to the managed string containing the IP address as text on success.
+ * @return	NULL on failure, or a pointer to the managed string containing the IP address as text on success.
  */
 stringer_t * ip_presentation(ip_t *address, stringer_t *output) {
 

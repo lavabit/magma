@@ -111,7 +111,7 @@ void register_abuse_increment_history(connection_t *con) {
 /**
  * @brief	Check to see if a registration request is allowed by a remote host; if not, display a banner.
  * @param	con		the remote connection to be checked.
- * @result	false if registration is allowed or true if not (remote host is on blocklist or registration has beean throttled).
+ * @return	false if registration is allowed or true if not (remote host is on blocklist or registration has beean throttled).
  */
 // HIGH: This checking process is way too simplistic
 bool_t register_abuse_checks(connection_t *con) {

@@ -45,6 +45,7 @@ typedef struct {
 	struct {
 		uint64_t bonus;
 		stringer_t *salt;
+		stringer_t *nonce;
 	} seasoning;
 
 	struct {

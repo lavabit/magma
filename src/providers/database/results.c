@@ -450,7 +450,7 @@ uint64_t res_row_count(table_t *table) {
  * @brief	Set the buffer location for a database result row.
  * @param	row		the input database result row.
  * @param	buffer	the buffer to be assigned to the target row.
- * @result	This function returns no value.
+ * @return	This function returns no value.
  */
 void res_row_set(row_t *row, chr_t *buffer) {
 
@@ -470,7 +470,7 @@ void res_row_set(row_t *row, chr_t *buffer) {
  * @note	This function operates on a 0-indexed table.
  * @param	table	the input database  results table.
  * @row		row		the row # to be fetched.
- * @result	NULL on failure, or a pointer to a result row on success.
+ * @return	NULL on failure, or a pointer to a result row on success.
  */
 row_t * res_row_get(table_t *table, uint64_t row) {
 

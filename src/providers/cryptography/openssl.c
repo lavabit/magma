@@ -26,7 +26,7 @@ const char * lib_version_openssl(void) {
 
 /**
  * @brief	Initialize the OpenSSL library and bind dynamically to the exported functions that are required.
- * @result	true on success or false on failure.
+ * @return	true on success or false on failure.
  */
 bool_t lib_load_openssl(void) {
 

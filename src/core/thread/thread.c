@@ -83,7 +83,7 @@ pthread_t * thread_alloc(void *function, void *data) {
  * @brief	Block until a specified thread finishes execution.
  * @note	pthread_join()
  * @param	thread	the thread to wait upon.
- * @result	0 on success, or an error number on failure.
+ * @return	0 on success, or an error number on failure.
  */
 int_t thread_join(pthread_t thread) {
 
@@ -101,7 +101,7 @@ int_t thread_join(pthread_t thread) {
  * @note	pthread_join()
  * @param	thread	the thread to wait upon.
  * @param	result	a pointer to a block of memory to receive the target thread exit value.
- * @result	0 on success, or an error number on failure.
+ * @return	0 on success, or an error number on failure.
  */
 int_t thread_result(pthread_t thread, void **result) {
 
@@ -118,7 +118,7 @@ int_t thread_result(pthread_t thread, void **result) {
  * @brief	Send a specified signal to a thread.
  * @param	thread	the target thread id.
  * @param	signal	the number of the signal to be delivered.
- * @result	0 on success or an error number on failure.
+ * @return	0 on success or an error number on failure.
  */
 int_t thread_signal(pthread_t thread, int_t signal) {
 
@@ -128,7 +128,7 @@ int_t thread_signal(pthread_t thread, int_t signal) {
 /**
  * @brief	Send a cancellation request to a thread.
  * @param	thread	the pthread id of the thread to be cancele.d.
- * @result	0 on success or a non-zero error number on failure.
+ * @return	0 on success or a non-zero error number on failure.
  */
 int_t thread_cancel(pthread_t thread) {
 

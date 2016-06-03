@@ -34,7 +34,7 @@ void meta_message_free(meta_message_t *message) {
 /**
  * @brief	Duplicate a meta message object (along with a deep copy of its tags).
  * @param	message		the meta message object to be cloned.
- * @result	NULL on failure or a pointer to the duplicated meta message object on success.
+ * @return	NULL on failure or a pointer to the duplicated meta message object on success.
  */
 meta_message_t * meta_message_dupe(meta_message_t *message) {
 

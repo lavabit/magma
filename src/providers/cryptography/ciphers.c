@@ -15,7 +15,7 @@
 /**
  * @brief	Look up a cipher type by name.
  * @param	name	a descriptive name of the cipher to be looked up.
- * @result	NULL on failure, or the relevant cipher data structure on success.
+ * @return	NULL on failure, or the relevant cipher data structure on success.
  */
 cipher_t * cipher_name(stringer_t *name) {
 
@@ -30,7 +30,7 @@ cipher_t * cipher_name(stringer_t *name) {
 /**
  * @brief	Look up a cipher type by its nid.
  * @param	id	the numerical ID (nid) of the specified cipher.
- * @result	NULL on failure, or the relevant cipher data structure on success.
+ * @return	NULL on failure, or the relevant cipher data structure on success.
  */
 cipher_t * cipher_id(int_t id) {
 
@@ -46,7 +46,7 @@ cipher_t * cipher_id(int_t id) {
 /**
  * @brief	Return the numerical ID (nid) of a specified cipher.
  * @param	c	the input cipher type.
- * @result	NID_undef on failure, or the nid of the specified cipher.
+ * @return	NID_undef on failure, or the nid of the specified cipher.
  */
 int_t cipher_numeric_id(cipher_t *c) {
 
@@ -62,7 +62,7 @@ int_t cipher_numeric_id(cipher_t *c) {
 /**
  * @brief	Determine the key length of a specified cipher.
  * @param	c	the input cipher type.
- * @result	-1 on failure, or the cipher's key length in bytes.
+ * @return	-1 on failure, or the cipher's key length in bytes.
  */
 int_t cipher_key_length(cipher_t *c) {
 
@@ -78,7 +78,7 @@ int_t cipher_key_length(cipher_t *c) {
 /**
  * @brief	Determine the IV length of a specified cipher.
  * @param	c	the input cipher type.
- * @result	-1 on failure, or the cipher's IV length in bytes.
+ * @return	-1 on failure, or the cipher's IV length in bytes.
  */
 int_t cipher_vector_length(cipher_t *c) {
 
@@ -94,7 +94,7 @@ int_t cipher_vector_length(cipher_t *c) {
 /**
  * @brief	Determine the block length of a specified cipher.
  * @param	c	the input cipher type.
- * @result	-1 on failure, or the cipher's block length in bytes.
+ * @return	-1 on failure, or the cipher's block length in bytes.
  */
 int_t cipher_block_length(cipher_t *c) {
 

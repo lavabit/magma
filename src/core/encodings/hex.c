@@ -252,7 +252,7 @@ stringer_t * hex_encode_st_debug(stringer_t *input, size_t maxlen) {
  * @brief	Decode a hex character pair as a single byte (usually for URL decoding).
  * @param	a	the higher order 4-bit hexadecimal character of the byte to be encoded.
  * @param	b	the lower order 4-bit hexadecimal character of the byte to be decoded.
- * @result	a byte containing the value of the decoded hexadecimal character pair, or 0 on failure.
+ * @return	a byte containing the value of the decoded hexadecimal character pair, or 0 on failure.
  */
 byte_t hex_decode_chr(uchr_t a, uchr_t b) {
 

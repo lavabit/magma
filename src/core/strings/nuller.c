@@ -93,7 +93,7 @@ chr_t * ns_alloc(size_t len) {
 /**
  * @brief	Free a null-terminated string.
  * @param	s	the string to be freed.
- * @result	This function returns no value.
+ * @return	This function returns no value.
  */
 void ns_free(chr_t *s) {
 
@@ -110,7 +110,7 @@ void ns_free(chr_t *s) {
  * @brief	A checked null-terminated string free front-end function.
  * @see		ns_free()
  * @param	s	the null-terminated string to be freed.
- * @result	This function returns no value.
+ * @return	This function returns no value.
  */
 void ns_cleanup(chr_t *s) {
 
@@ -124,7 +124,7 @@ void ns_cleanup(chr_t *s) {
 /**
  * @brief	Duplicate a null-terminated string.
  * @param	s	the null-terminated string to be duplicated.
- * @result	NULL on failure, or a pointer to a copy of the input string.
+ * @return	NULL on failure, or a pointer to a copy of the input string.
  */
 chr_t * ns_dupe(chr_t *s) {
 

@@ -27,7 +27,7 @@ const chr_t * lib_version_spf(void) {
 
 /**
  * @brief	Initialize the spf library and bind dynamically to the exported functions that are required.
- * @result	false on failure or true on success.
+ * @return	false on failure or true on success.
  */
 bool_t lib_load_spf(void) {
 

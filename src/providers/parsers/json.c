@@ -22,7 +22,7 @@ chr_t * lib_version_jansson(void) {
 
 /**
  * @brief	Initialize the Jansson library and dynamically bind to the required symbols.
- * @result	true on success or false on failure.
+ * @return	true on success or false on failure.
  */
 bool_t lib_load_jansson(void) {
 

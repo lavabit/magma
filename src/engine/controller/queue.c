@@ -33,7 +33,7 @@ struct {
  * @param	function	a pointer to a function to be executed by the next available worker thread.
  * @param	requeue		an optional pointer to a requeue function to be called after function is executed.
  * @param	data		a pointer to an arbitrary block of data to be passed to function and/or requeue upon execution.
- * @result	This function returns no value.
+ * @return	This function returns no value.
  */
 void requeue(void *function, void *requeue, void *data) {
 
@@ -69,7 +69,7 @@ void requeue(void *function, void *requeue, void *data) {
  * @note	Warning: If this function fails to allocate a new queue_t object, the work unit is lost forever.
  * @param	function	a pointer to a function to be executed by the next available worker thread.
  * @param	data		a pointer to an arbitrary block of data to be passed to the specified function on execution.
- * @result	This function returns no value.
+ * @return	This function returns no value.
  */
 void enqueue(void *function, void *data) {
 	requeue(function, NULL, data);
@@ -144,7 +144,7 @@ void queue_signal(void) {
 /**
  * @brief	Create a queue of worker threads and set them into motion.
  * @note	Up to magma.system.worker_threads number of threads will be created.
- * @result	false on failure or true on success.
+ * @return	false on failure or true on success.
  */
 bool_t queue_init(void) {
 

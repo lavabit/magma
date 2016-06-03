@@ -27,7 +27,7 @@ const chr_t * lib_version_dkim(void) {
 
 /**
  * @brief	Initialize the dkim library and bind dynamically to the exported functions that are required.
- * @result	true on success or false on failure.
+ * @return	true on success or false on failure.
  */
 bool_t lib_load_dkim(void) {
 
@@ -79,7 +79,7 @@ void dkim_memory_free(void *closure, void *ptr) {
 
 /**
  * @brief	Start the dkim engine.
- * @result	false on failure or true on success.
+ * @return	false on failure or true on success.
  */
 bool_t dkim_start(void) {
 
@@ -93,7 +93,7 @@ bool_t dkim_start(void) {
 
 /**
  * @brief	Stop the dkim engine.
- * @result	This function returns no value.
+ * @return	This function returns no value.
  */
 void dkim_stop(void) {
 

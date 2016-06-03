@@ -24,7 +24,7 @@ void auth_free(auth_t *auth) {
 		return;
 	}
 
-	st_cleanup(auth->username, auth->seasoning.salt, auth->keys.master, auth->tokens.verification, auth->legacy.key, auth->legacy.token);
+	st_cleanup(auth->username, auth->seasoning.salt, auth->keys.master, auth->tokens.verification, auth->seasoning.nonce, auth->legacy.key, auth->legacy.token);
 	mm_free(auth);
 	return;
 }
@@ -46,6 +46,15 @@ auth_t * auth_alloc(void) {
 	return auth;
 }
 
+/**
+ * @brief	Used to sanitize and normalize a username, then retrieve the authentication information for that account. For STACIE
+ * 			authentications, this function creates a nonce value, which the user's client can combine with the verification token
+ * 			value to derive an ephemeral login token, which may only be used once.
+ *
+ * @param username	the unsanitized username, which may also be an email address.
+ *
+ * @return
+ */
 auth_t * auth_challenge(stringer_t *username) {
 
 	auth_t *auth = NULL;
@@ -72,7 +81,28 @@ auth_t * auth_challenge(stringer_t *username) {
 		return NULL;
 	}
 
+	// Setup the nonce value if we're dealing with a STACIE authentication challenge.
+	if (auth->tokens.verification && st_empty(auth->seasoning.nonce = stacie_nonce_create())) {
+		log_pedantic("Failed to generate a valid nonce value.");
+		auth_free(auth);
+		return NULL;
+	}
+
 	return auth;
+}
+
+/**
+ * @brief	Test an ephemeral token for validity. If the token is invalid, generate a different nonce for the next attempt.
+ *
+ * @param auth	the challenge values, including the verification token, and a nonce value.
+ * @param ephemeral	the ephemeral token value provided by the user for comparison.
+ *
+ * @return	return -1 if an error occurs, 0 if the response is validated, and 1 if the ephemeral token is invalid.
+ */
+int_t auth_response(auth_t auth, stringer_t *ephemeral) {
+
+	/// NEXT: EMPTY STUB!
+	return -1;
 }
 
 /**
@@ -193,7 +223,6 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 	else if (!auth->legacy.token && !st_cmp_cs_eq(auth->tokens.verification, stacie->tokens.verification)) {
 
 		auth->keys.master = st_dupe(stacie->keys.master);
-		auth->tokens.verification = st_dupe(stacie->tokens.verification);
 		auth_stacie_free(stacie);
 
 		if (st_empty(auth->keys.master, auth->tokens.verification)) {

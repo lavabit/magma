@@ -90,7 +90,7 @@ extern DKIM * (*dkim_sign_d)(DKIM_LIB *libhandle, const unsigned char *id, void 
 extern DKIM_STAT (*dkim_chunk_d)(DKIM *dkim, unsigned char *chunkp, size_t len);
 
 //! FreeType
-extern void (*FT_Library_Version_Static_d)(FT_Int *amajor, FT_Int *aminor, FT_Int *apatch);
+extern void (*FT_Library_Version_d)(FT_Library library, FT_Int *amajor, FT_Int *aminor, FT_Int *apatch);
 
 //! GD
 extern const char * (*gd_version_d)(void);

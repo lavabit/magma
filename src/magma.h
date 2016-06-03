@@ -131,7 +131,7 @@
 
 // FreeType
 #include <ft2build.h>
-#include <freetype.h>
+#include FT_FREETYPE_H
 
 // UTF8
 #include <utf8proc.h>

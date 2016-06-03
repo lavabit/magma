@@ -59,7 +59,7 @@ DKIM * (*dkim_verify_d)(DKIM_LIB *libhandle, const unsigned char *id, void *memc
 DKIM_LIB * (*dkim_init_d)(void *(*mallocf)(void *closure, size_t nbytes), void (*freef)(void *closure, void *p)) = NULL;
 DKIM * (*dkim_sign_d)(DKIM_LIB *libhandle, const unsigned char *id, void *memclosure, const dkim_sigkey_t secretkey, const unsigned char *selector, const unsigned char *domain, dkim_canon_t hdr_canon_alg, dkim_canon_t body_canon_alg, dkim_alg_t sign_alg,	off_t length, DKIM_STAT *statp) = NULL;
 DKIM_STAT (*dkim_chunk_d)(DKIM *dkim, unsigned char *chunkp, size_t len) = NULL;
-void (*FT_Library_Version_Static_d)(FT_Int *amajor, FT_Int *aminor, FT_Int *apatch) = NULL;
+void (*FT_Library_Version_d)(FT_Library library, FT_Int *amajor, FT_Int *aminor, FT_Int *apatch) = NULL;
 const char * (*gd_version_d)(void) = NULL;
 void (*gdFree_d)(void *m) = NULL;
 void * (*gdImageGifPtr_d)(gdImagePtr im, int *size) = NULL;
@@ -201,7 +201,6 @@ int (*SSL_CTX_check_private_key_d)(const SSL_CTX *ctx) = NULL;
 int (*SSL_write_d)(SSL *ssl, const void *buf, int num) = NULL;
 void (*sk_pop_free_d)(_STACK *st, void(*func)(void *)) = NULL;
 int (*EVP_CIPHER_iv_length_d)(const EVP_CIPHER *cipher) = NULL;
-int (*SSL_CTX_set_ecdh_auto_d)(SSL_CTX *ctx, int onoff) = NULL;
 char * (*ERR_error_string_d)(unsigned long e, char *buf) = NULL;
 int (*EVP_CIPHER_block_size_d)(const EVP_CIPHER *cipher) = NULL;
 int (*EVP_CIPHER_key_length_d)(const EVP_CIPHER *cipher) = NULL;
@@ -471,7 +470,7 @@ void symbols_check(void *magma) {
 *(void **)&(dkim_init_d) = dlsym(magma, "dkim_init");
 *(void **)&(dkim_sign_d) = dlsym(magma, "dkim_sign");
 *(void **)&(dkim_chunk_d) = dlsym(magma, "dkim_chunk");
-*(void **)&(FT_Library_Version_Static_d) = dlsym(magma, "FT_Library_Version_Static");
+*(void **)&(FT_Library_Version_d) = dlsym(magma, "FT_Library_Version");
 *(void **)&(gd_version_d) = dlsym(magma, "gd_version");
 *(void **)&(gdFree_d) = dlsym(magma, "gdFree");
 *(void **)&(gdImageGifPtr_d) = dlsym(magma, "gdImageGifPtr");
@@ -612,7 +611,6 @@ void symbols_check(void *magma) {
 *(void **)&(SSL_write_d) = dlsym(magma, "SSL_write");
 *(void **)&(sk_pop_free_d) = dlsym(magma, "sk_pop_free");
 *(void **)&(EVP_CIPHER_iv_length_d) = dlsym(magma, "EVP_CIPHER_iv_length");
-*(void **)&(SSL_CTX_set_ecdh_auto_d) = dlsym(magma, "SSL_CTX_set_ecdh_auto");
 *(void **)&(ERR_error_string_d) = dlsym(magma, "ERR_error_string");
 *(void **)&(EVP_CIPHER_block_size_d) = dlsym(magma, "EVP_CIPHER_block_size");
 *(void **)&(EVP_CIPHER_key_length_d) = dlsym(magma, "EVP_CIPHER_key_length");

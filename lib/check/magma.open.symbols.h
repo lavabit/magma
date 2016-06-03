@@ -89,7 +89,7 @@ extern DKIM * (*dkim_sign_d)(DKIM_LIB *libhandle, const unsigned char *id, void 
 extern DKIM_STAT (*dkim_chunk_d)(DKIM *dkim, unsigned char *chunkp, size_t len);
 
 //! FreeType
-extern void (*FT_Library_Version_Static_d)(FT_Int *amajor, FT_Int *aminor, FT_Int *apatch);
+extern void (*FT_Library_Version_d)(FT_Library library, FT_Int *amajor, FT_Int *aminor, FT_Int *apatch);
 
 //! GD
 extern const char * (*gd_version_d)(void);
@@ -241,7 +241,6 @@ extern int (*SSL_CTX_check_private_key_d)(const SSL_CTX *ctx);
 extern int (*SSL_write_d)(SSL *ssl, const void *buf, int num);
 extern void (*sk_pop_free_d)(_STACK *st, void(*func)(void *));
 extern int (*EVP_CIPHER_iv_length_d)(const EVP_CIPHER *cipher);
-extern int (*SSL_CTX_set_ecdh_auto_d)(SSL_CTX *ctx, int onoff);
 extern char * (*ERR_error_string_d)(unsigned long e, char *buf);
 extern int (*EVP_CIPHER_block_size_d)(const EVP_CIPHER *cipher);
 extern int (*EVP_CIPHER_key_length_d)(const EVP_CIPHER *cipher);

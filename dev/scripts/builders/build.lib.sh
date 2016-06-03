@@ -13,8 +13,6 @@
 # To generate a SLOC report for each project:
 # cd $M_SOURCES; find  -maxdepth 1 -type d -printf '\n\n%P\n' -exec sloc --quiet --progress-rate=0 {} \; | grep -v "http://cloc.sourceforge.net"
 
-
-
 LINK=`readlink -f $0`
 BASE=`dirname $LINK`
 
@@ -95,7 +93,9 @@ gd() {
 				-L$M_SOURCES/png/.libs -Wl,-rpath,$M_SOURCES/png/.libs \
 				-L$M_SOURCES/jpeg/.libs -Wl,-rpath,$M_SOURCES/jpeg/.libs \
 				-L$M_SOURCES/freetype/objs/.libs -Wl,-rpath,$M_SOURCES/freetype/objs/.libs"
-			./configure --without-xpm --without-fontconfig --without-x --with-png --with-jpeg --with-freetype &>> "$M_LOGS/gd.txt"; error
+			./configure --without-xpm --without-fontconfig --without-x \
+				--with-png="$M_SOURCES/png" --with-jpeg="$M_SOURCES/jpeg" --with-freetype="$M_SOURCES/freetype" \
+				&>> "$M_LOGS/gd.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make &>> "$M_LOGS/gd.txt"; error
@@ -420,7 +420,7 @@ curl() {
 		curl-build)
 			# Note that if we don't include the debug configure option we can't run a check-full.
 			cd "$M_SOURCES/curl"; error
-			
+
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
@@ -437,7 +437,7 @@ curl() {
 			--disable-tftp --disable-ldap --disable-ssh --disable-dict \
 			--build=x86_64-redhat-linux-gnu --target=x86_64-redhat-linux-gnu --with-pic \
 			--with-ssl=$M_SOURCES/openssl --with-zlib=$M_SOURCES/zlib &>> "$M_LOGS/curl.txt"; error
-			
+
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make --jobs=4 &>> "$M_LOGS/curl.txt"; error
@@ -1378,7 +1378,8 @@ freetype() {
 		;;
 		freetype-prep)
 			cd "$M_SOURCES/freetype"; error
-			cat "$M_PATCHES/freetype/"freetype-version.patch | patch -s -p1 -b --fuzz=0; error
+			# No longer needed. Patch incorporated upstream.
+			# cat "$M_PATCHES/freetype/"freetype-version.patch | patch -s -p1 -b --fuzz=0; error
 		;;
 		freetype-build)
 			cd "$M_SOURCES/freetype"; error
@@ -1451,7 +1452,7 @@ utf8proc() {
 		utf8proc-build)
 			cd "$M_SOURCES/utf8proc"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
-			make &>> "$M_LOGS/utf8proc.txt"; error	
+			make &>> "$M_LOGS/utf8proc.txt"; error
 			unset CFLAGS;
 		;;
 		utf8proc-check)
@@ -1783,7 +1784,7 @@ combine() {
 	mkdir "$M_OBJECTS/freetype" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/freetype" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/freetype/objs/.libs/libfreetype.a" &>> "$M_LOGS/combine.txt"; error
-	
+
 	rm -rf "$M_OBJECTS/utf8proc" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/utf8proc" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/utf8proc" &>> "$M_LOGS/combine.txt"; error
@@ -1865,31 +1866,31 @@ load() {
 		magma.open.check.c magma.open.symbols.c -ldl
 
 	# If errors are generated from invalid symbols, this should print out the specific lines that are invalid.
-	if [ $? -ne 0 ]; then 
+	if [ $? -ne 0 ]; then
 
 		LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_DIRS $M_SO -g3 -rdynamic -Wall -Wextra -Werror \
 			-o magma.open.check magma.open.check.c magma.open.symbols.c -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
-			grep "[0-9*]" | awk '{print $1 ", " }' | sort -gu | uniq | tr -d "\n" | sed "s/, $//g"` 
-		
+			grep "[0-9*]" | awk '{print $1 ", " }' | sort -gu | uniq | tr -d "\n" | sed "s/, $//g"`
+
 		# Only output the symbol info we found lines to print.
-		if [ "$LNS" != "" ]; then 
-			
+		if [ "$LNS" != "" ]; then
+
 			printf "printing invalid symbols...\n"
 			echo "lines = " $LNS
 			echo ""
-			
+
 			LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_DIRS $M_SO -g3 -rdynamic -Wall -Wextra -Werror \
 				-o magma.open.check magma.open.check.c magma.open.symbols.c -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
 				grep "[0-9*]" | awk '{print $1 "p;" }' | sort -gu | uniq | tr -d "\n"`
-			
+
 			cat magma.open.symbols.c | sed -n "$LNS"; error
-		
+
 		fi
-		
+
 		echo ""
 		exit 1
 	fi
-	
+
 	# Execute the program to see if the library can be loaded successfully at run time.
 	./magma.open.check "$M_SO"; error
 }
@@ -1900,11 +1901,11 @@ combo() {
 
 #	# The ClamAV unit test fail when run in parallel, so they are excuted first. And the MySQL/cURL unit tests take the longest so they get a priority bump.
 #	if [[ $1 == "check" ]] || [[ $1 == "check-full" ]]; then
-#		
+#
 #		# In the past the libmemcached checks would timeout if the system was under heavy load, so we pause here and wait for them to finish.
 #		($0 "memcached-$1") & MEMCACHED_PID=$!
 #		wait $MEMCACHED_PID; error
-#		
+#
 #		($0 "mysql-$1") & MYSQL_PID=$!
 #		#renice -n -10 -p $MYSQL_PID &>> "$M_LOGS/build.txt"
 #		#ionice -n 0 -c 2 -p $MYSQL_PID &>> "$M_LOGS/build.txt"
@@ -1912,11 +1913,11 @@ combo() {
 #		($0 "curl-$1") & CURL_PID=$!
 #		#renice -n -4 -p $CURL_PID &>> "$M_LOGS/build.txt"
 #		#ionice -n 1 -c 2 -p $CURL_PID &>> "$M_LOGS/build.txt"
-#		
+#
 #		# The ClamAV checks will timeout if the system is under heavy load.
 #		($0 "clamav-$1") & CLAMAV_PID=$!
 #		wait $CLAMAV_PID; error
-#		
+#
 #		echo "" &>> "$M_LOGS/build.txt"
 #	else
 #		($0 "curl-$1") & CURL_PID=$!
@@ -1939,9 +1940,9 @@ combo() {
 #	($0 "jansson-$1") & JANSSON_PID=$!
 #	($0 "utf8proc-$1") & UTF8PROC_PID=$!
 #	($0 "freetype-$1") & FREETYPE_PID=$!
-#	($0 "tokyocabinet-$1") & TOKYOCABINET_PID=$! 
+#	($0 "tokyocabinet-$1") & TOKYOCABINET_PID=$!
 #	($0 "gd-$1") & GD_PID=$!
-#	
+#
 #	wait $GD_PID; error
 #	wait $PNG_PID; error
 #	wait $LZO_PID; error
@@ -1960,12 +1961,12 @@ combo() {
 #	wait $UTF8PROC_PID; error
 #	wait $FREETYPE_PID; error
 #	wait $TOKYOCABINET_PID; error
-#	
-#	if [[ $1 != "check" ]] && [[ $1 != "check-full" ]]; then 
+#
+#	if [[ $1 != "check" ]] && [[ $1 != "check-full" ]]; then
 #		wait $MEMCACHED_PID; error
 #		wait $CLAMAV_PID; error
 #	fi
-	
+
 	($M_BUILD "zlib-$1") & ZLIB_PID=$!
 	wait $ZLIB_PID; error
 	($M_BUILD "openssl-$1") & OPENSSL_PID=$!
@@ -2118,7 +2119,7 @@ elif [[ $1 =~ "clamav" ]]; then (clamav "$1") & CLAMAV_PID=$!; wait $CLAMAV_PID
 elif [[ $1 =~ "openssl" ]]; then (openssl "$1") & OPENSSL_PID=$!; wait $OPENSSL_PID
 elif [[ $1 =~ "jansson" ]]; then (jansson "$1") & JANSSON_PID=$!; wait $JANSSON_PID
 elif [[ $1 =~ "freetype" ]]; then (freetype "$1") & FREETYPE_PID=$!; wait $FREETYPE_PID
-elif [[ $1 =~ "utf8proc" ]]; then (utf8proc "$1") & UTF8PROC_PID=$!; wait $UTF8PROC_PID	
+elif [[ $1 =~ "utf8proc" ]]; then (utf8proc "$1") & UTF8PROC_PID=$!; wait $UTF8PROC_PID
 elif [[ $1 =~ "memcached" ]]; then (memcached "$1") & MEMCACHED_PID=$!; wait $MEMCACHED_PID
 elif [[ $1 =~ "tokyocabinet" ]]; then (tokyocabinet "$1") & TOKYOCABINET_PID=$!; wait $TOKYOCABINET_PID
 

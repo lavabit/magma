@@ -2,7 +2,7 @@
 
 GD="gd-2.0.35"
 LZO="lzo-2.09"
-PNG="libpng-1.6.16"
+PNG="libpng-1.6.22"
 CURL="curl-7.23.1"
 SPF2="libspf2-1.2.10"
 XML2="libxml2-2.9.1"
@@ -17,7 +17,7 @@ CLAMAV="clamav-0.98.4"
 OPENSSL="openssl-1.0.2h"
 JANSSON="jansson-2.2.1"
 UTF8PROC="utf8proc-1.3.1"
-FREETYPE="freetype-2.5.3"
+FREETYPE="freetype-2.6.3"
 MEMCACHED="libmemcached-1.0.18"
 TOKYOCABINET="tokyocabinet-1.4.48"
 

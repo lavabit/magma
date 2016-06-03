@@ -83,7 +83,7 @@ DKIM * (*dkim_sign_d)(DKIM_LIB *libhandle, const unsigned char *id, void *memclo
 DKIM_STAT (*dkim_chunk_d)(DKIM *dkim, unsigned char *chunkp, size_t len) = NULL;
 
 //! FreeType
-void (*FT_Library_Version_Static_d)(FT_Int *amajor, FT_Int *aminor, FT_Int *apatch) = NULL;
+void (*FT_Library_Version_d)(FT_Library library, FT_Int *amajor, FT_Int *aminor, FT_Int *apatch) = NULL;
 
 //! GD
 const char * (*gd_version_d)(void) = NULL;

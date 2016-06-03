@@ -417,11 +417,11 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 		ciphers = MAGMA_CIPHERS_LOW;
 	}
 	else if (security_level == 2) {
-		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
+		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION);
 		ciphers = MAGMA_CIPHERS_MEDIUM;
 	}
 	else if (security_level >= 3) {
-		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1);
+		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1 | SSL_OP_NO_COMPRESSION);
 		ciphers = MAGMA_CIPHERS_HIGH;
 	}
 

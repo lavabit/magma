@@ -13,12 +13,6 @@
 #include "magma_check.h"
 #include "auth_check.h"
 
-void log_test(stringer_t *test, stringer_t *error) {
-	log_enable();
-	log_unit("%-64.64s%10.10s\n", st_char_get(test), (!status() ? "SKIPPED" : !error ? "PASSED" : "FAILED"));
-	return;
-}
-
 START_TEST (check_users_auth_legacy_s) {
 
 	auth_legacy_t *legacy = NULL;
@@ -44,7 +38,7 @@ START_TEST (check_users_auth_legacy_s) {
 	}
 
 	// Result output.
-	log_test(NULLER("USERS / AUTH / LEGACY / SINGLE THREADED:"), errmsg);
+	log_test("USERS / AUTH / LEGACY / SINGLE THREADED:", errmsg);
 	fail_unless(!errmsg, st_char_get(errmsg));
 	st_cleanup(errmsg);
 
@@ -76,7 +70,75 @@ START_TEST (check_users_auth_stacie_s) {
 	}
 
 	// Result output.
-	log_test(NULLER("USERS / AUTH / STACIE / SINGLE THREADED:"), errmsg);
+	log_test("USERS / AUTH / STACIE / SINGLE THREADED:", errmsg);
+	fail_unless(!errmsg, st_char_get(errmsg));
+	st_cleanup(errmsg);
+
+} END_TEST
+
+START_TEST (check_users_auth_challenge_s) {
+
+	auth_t *auth = NULL;
+	stringer_t *errmsg = NULL;
+
+	// Valid Login Attempts
+	log_disable();
+
+	// Test a legacy account.
+	if (status() && !(auth = auth_challenge(NULLER("princess")))) {
+		 errmsg = st_aprint("Auth allocation failed.");
+	}
+
+	if (auth) {
+		auth_free(auth);
+		auth = NULL;
+	}
+
+	// Test a STACIE enabled account.
+	if (status() && !(auth = auth_challenge(NULLER("stacie")))) {
+		 errmsg = st_aprint("Auth allocation failed.");
+	}
+
+	if (auth) {
+		auth_free(auth);
+		auth = NULL;
+	}
+
+	log_test("USERS / AUTH / CHALLENGE / SINGLE THREADED:", errmsg);
+	fail_unless(!errmsg, st_char_get(errmsg));
+	st_cleanup(errmsg);
+
+} END_TEST
+
+START_TEST (check_users_auth_login_s) {
+
+	auth_t *auth = NULL;
+	stringer_t *errmsg = NULL;
+
+	// Valid Login Attempts
+	log_disable();
+
+	// Test a legacy account.
+	if (status() && auth_login(NULLER("magma"), NULLER("test"), &auth)) {
+		 errmsg = st_aprint("Auth login failed.");
+	}
+
+	if (auth) {
+		auth_free(auth);
+		auth = NULL;
+	}
+
+	// Test a STACIE enabled account.
+	if (status() && auth_login(NULLER("stacie"), NULLER("StacieJohnson"), &auth)) {
+		 errmsg = st_aprint("Auth login failed.");
+	}
+
+	if (auth) {
+		auth_free(auth);
+		auth = NULL;
+	}
+
+	log_test("USERS / AUTH / LOGIN / SINGLE THREADED:", errmsg);
 	fail_unless(!errmsg, st_char_get(errmsg));
 	st_cleanup(errmsg);
 

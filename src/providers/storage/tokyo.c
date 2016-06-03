@@ -19,7 +19,7 @@ const char * lib_version_tokyo(void) {
 
 /**
  * @brief	Initialize the Tokyo Cabinet library and bind dynamically to the exported functions that are required.
- * @result	true on success or false on failure.
+ * @return	true on success or false on failure.
  */
 bool_t lib_load_tokyo(void) {
 

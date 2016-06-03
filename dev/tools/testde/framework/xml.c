@@ -841,9 +841,9 @@ int initialize_xml(void) {
 
 stringer_t * version_xml(void) {
 	
-	short version;
-	short release;
-	short major;
+	int version;
+	int release;
+	int major;
 	stringer_t *result;
 	unsigned long long holder;
 	
@@ -867,7 +867,7 @@ stringer_t * version_xml(void) {
 	holder /= 100;
 	major = holder % 100;
 	
-	sprintf_st(result, "%hi.%hi.%hi", major, release, version);
+	sprintf_st(result, "%i.%i.%i", major, release, version);
 	xml_version = result;
 	return result;
 }

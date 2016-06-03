@@ -59,7 +59,7 @@ register_session_t * register_session_generate(void) {
  * @note	The session is stored under the parent key "lavad.register.session."
  * @param	con		the client connection underlying the user request.
  * @param	name	a managed string containing the registration session identifier.
- * @result	NULL on failure, or a pointer to the user's registration session on success.
+ * @return	NULL on failure, or a pointer to the user's registration session on success.
  */
 register_session_t * register_session_get(connection_t *con, stringer_t *name) {
 

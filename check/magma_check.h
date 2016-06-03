@@ -38,8 +38,8 @@ void __testname (int _i CK_ATTRIBUTE_UNUSED)\
 
 extern int case_timeout;
 
+void     log_test(chr_t *test, stringer_t *error);
 #define log_unit(...) log_internal (__FILE__, __FUNCTION__, __LINE__, M_LOG_LINE_FEED_DISABLE | M_LOG_TIME_DISABLE | M_LOG_FILE_DISABLE | M_LOG_LINE_DISABLE | M_LOG_FUNCTION_DISABLE | M_LOG_STACK_TRACE_DISABLE, __VA_ARGS__)
-
 #define testcase(s, tc, name, func) tcase_add_test((tc = tcase_create(name)), func); tcase_set_timeout(tc, case_timeout); suite_add_tcase(s, tc)
 
 //! Quick Test
@@ -69,15 +69,15 @@ extern int case_timeout;
 #define BASE64_CHECK_ITERATIONS 16
 #define ZBASE32_CHECK_ITERATIONS 16
 
-#define TANK_CHECK_DATA_HNUM 1l
-#define TANK_CHECK_DATA_UNUM 1l
+#define TANK_CHECK_DATA_HNUM 1L
+#define TANK_CHECK_DATA_UNUM 1L
 #define TANK_CHECK_DATA_MTHREADS 2 // Disabled
 #define TANK_CHECK_DATA_CLEANUP true
 #define TANK_CHECK_DATA_PATH "dev/corpus/"
 
 #define DSPAM_CHECK_SIZE_MIN 1024
 #define DSPAM_CHECK_SIZE_MAX (2 * 1024)
-#define DSPAM_CHECK_DATA_UNUM 1l
+#define DSPAM_CHECK_DATA_UNUM 1L
 #define DSPAM_CHECK_ITERATIONS 128
 #define DSPAM_CHECK_DATA_PATH "dev/corpus/"
 
@@ -140,13 +140,13 @@ extern int case_timeout;
 #define BASE64_CHECK_ITERATIONS 8192
 #define ZBASE32_CHECK_ITERATIONS 8192
 
-#define TANK_CHECK_DATA_HNUM 1l
-#define TANK_CHECK_DATA_UNUM 1l
+#define TANK_CHECK_DATA_HNUM 1L
+#define TANK_CHECK_DATA_UNUM 1L
 #define TANK_CHECK_DATA_MTHREADS 8
 #define TANK_CHECK_DATA_CLEANUP true
 #define TANK_CHECK_DATA_PATH "dev/corpus"
 
-#define DSPAM_CHECK_DATA_UNUM 1l
+#define DSPAM_CHECK_DATA_UNUM 1L
 #define DSPAM_CHECK_ITERATIONS 8192
 #define DSPAM_CHECK_SIZE_MIN 1024
 #define DSPAM_CHECK_SIZE_MAX (16 * 1024)

@@ -34,7 +34,7 @@ void http_data_free(http_data_t *data) {
  * @param	con		the connection object to be queried.
  * @param	source	the source of the client supplied value pair: HTTP_DATA_GET, HTTP_DATA_POST or HTTP_DATA_ANY.
  * @param	name	the name associated with the name/value pair to be retrieved.
- * @result	NULL on failure, or a pointer to the http name/value data pair requested on success.
+ * @return	NULL on failure, or a pointer to the http name/value data pair requested on success.
  */
 http_data_t * http_data_get(connection_t *con, HTTP_DATA source, chr_t *name) {
 

@@ -111,7 +111,7 @@ int_t print_backtrace(void) {
  * @param	options	Global configuration options can be overridden on a per call basis using the options variable.
  * @param 	format	The printf style format for the log message.
  * @param	va_list	A variadic list of data items to be used by the format string.
- * @result	This function returns no value.
+ * @return	This function returns no value.
  */
 void log_internal(const char *file, const char *function, const int line, M_LOG_OPTIONS options, const char *format, ...) {
 

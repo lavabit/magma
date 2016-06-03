@@ -265,7 +265,7 @@ void http_parse_header(connection_t *con) {
  * @brief	Parse an http request and determine the request method and location.
  * @note	This function returns no value but sets the internal method, location, and state of the underlying connection object.
  * @param	con		the client connection making an http request.
- * @result	This function returns no value.
+ * @return	This function returns no value.
  */
 void http_parse_method(connection_t *con) {
 

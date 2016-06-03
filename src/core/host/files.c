@@ -100,7 +100,7 @@ stringer_t * file_load(char *name) {
  * @brief	Get a file handle to a temporary file created in a specified directory.
  * @param	pdir		the parent directory in which to create the temporary file, or NULL for the default spool dir.
  * @param	tmpname		an optional pointer to a managed string to receive the name of the created temp file.
- * @result	-1 on failure or the new temporary file's file descriptor on success.
+ * @return	-1 on failure or the new temporary file's file descriptor on success.
  */
 int_t get_temp_file_handle(chr_t *pdir, stringer_t **tmpname) {
 

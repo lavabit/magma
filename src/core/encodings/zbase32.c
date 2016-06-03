@@ -16,7 +16,7 @@
 /**
  * @brief	Encode data as a zbase32 string.
  * @param	s	a managed string containing the data to be encoded.
- * @result	NULL on failure, or a freshly allocated managed string containing the zbase32-encoded data on success.
+ * @return	NULL on failure, or a freshly allocated managed string containing the zbase32-encoded data on success.
  */
 stringer_t * zbase32_encode(stringer_t *s) {
 
@@ -63,7 +63,7 @@ stringer_t * zbase32_encode(stringer_t *s) {
 /**
  * @brief	Decode a zbase32 string.
  * @param	s	a managed string containing the data to be decoded.
- * @result	NULL on failure, or a freshly allocated managed string containing the zbase32-decoded data on success.
+ * @return	NULL on failure, or a freshly allocated managed string containing the zbase32-decoded data on success.
  */
 
 stringer_t * zbase32_decode(stringer_t *s) {

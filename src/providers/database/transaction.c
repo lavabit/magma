@@ -51,7 +51,7 @@ int64_t tran_start(void) {
 /**
  * @brief	Rollback a pending transaction in the mysql database.
  * @param	transaction		the mysql connection identifier.
- * @result	0 on success, or a non-zero number on error.
+ * @return	0 on success, or a non-zero number on error.
  */
 // QUESTION: Why is transaction passed as a 64bit and not 32bit id?
 int64_t tran_rollback(int64_t transaction)  {
@@ -71,7 +71,7 @@ int64_t tran_rollback(int64_t transaction)  {
 /**
  * @brief	Commit a transaction to the mysql database.
  * @param	transaction		the mysql connection identifier.
- * @result	0 on success, or a non-zero number on error.
+ * @return	0 on success, or a non-zero number on error.
  */
  // QUESTION: Why is the transaction 64 bit and not 32?
 int64_t tran_commit(int64_t transaction)  {

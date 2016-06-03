@@ -159,6 +159,7 @@
 // For handling usernames and authentication.
 #define AUTH_GET_BY_USERID "SELECT usernum, userid, salt, auth, bonus, legacy, `ssl`, locked FROM Users WHERE userid = ?"
 #define AUTH_GET_BY_ADDRESS "SELECT Users.usernum, userid, salt, auth, bonus, legacy, `ssl`, locked FROM Users LEFT JOIN Mailboxes ON (Users.usernum = Mailboxes.usernum) WHERE Mailboxes.address = ?"
+#define AUTH_UPDATE_LEGACY_TO_STACIE "UPDATE Users SET salt = ?, auth = ?, bonus = ?, legacy = NULL WHERE usernum = ? AND legacy = ?"
 
 /*
 
@@ -171,7 +172,7 @@
 /**
  * @note Be sure to add any new queries to this list.
  */
-#define QUERIES_INIT	SELECT_DOMAINS, \
+#define QUERIES_INIT						SELECT_DOMAINS, \
 											SELECT_CONFIG, \
 											SELECT_HOST_NUMBER, \
 											DELETE_OBJECT, \
@@ -268,9 +269,10 @@
 											STATISTICS_GET_USERS_REGISTERED_TODAY, \
 											STATISTICS_GET_USERS_REGISTERED_WEEK, \
 											AUTH_GET_BY_USERID, \
-											AUTH_GET_BY_ADDRESS
+											AUTH_GET_BY_ADDRESS, \
+											AUTH_UPDATE_LEGACY_TO_STACIE
 
-#define STMTS_INIT		**select_domains, \
+#define STMTS_INIT							**select_domains, \
 											**select_config, \
 											**select_host_number, \
 											**delete_object, \
@@ -278,7 +280,7 @@
 											**select_user, \
 											**select_user_auth, \
 											**select_usernum_auth_legacy, \
-											**select_usernum_auth_stacie, \
+											**select_usernum_auth, \
 											**select_user_record, \
 											**select_user_salt, \
 											**select_user_storage_keys, \
@@ -367,7 +369,8 @@
 											**statistics_get_users_registered_today, \
 											**statistics_get_users_registered_week, \
 											**auth_get_by_userid, \
-											**auth_get_by_address
+											**auth_get_by_address, \
+											**auth_update_legacy_to_stacie
 
 extern chr_t *queries[];
 struct { MYSQL_STMT STMTS_INIT; } stmts __attribute__ ((common));

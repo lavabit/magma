@@ -26,7 +26,7 @@ const char * lib_version_openssl(void) {
 
 /**
  * @brief	Initialize the OpenSSL library and bind dynamically to the exported functions that are required.
- * @result	true on success or false on failure.
+ * @return	true on success or false on failure.
  */
 bool_t lib_load_openssl(void) {
 
@@ -42,7 +42,7 @@ bool_t lib_load_openssl(void) {
 		M_BIND(EC_KEY_new_by_curve_name), M_BIND(EC_KEY_set_group), M_BIND(EC_KEY_set_private_key), M_BIND(EC_KEY_set_public_key),
 		M_BIND(EC_POINT_free), M_BIND(EC_POINT_hex2point), M_BIND(EC_POINT_new), M_BIND(EC_POINT_oct2point), M_BIND(EC_POINT_point2hex),
 		M_BIND(EC_POINT_point2oct),	M_BIND(ENGINE_cleanup),	M_BIND(ERR_error_string), M_BIND(ERR_error_string_n), M_BIND(ERR_free_strings),
-		M_BIND(ERR_get_error), M_BIND(ERR_remove_state), M_BIND(EVP_CIPHER_block_size),	M_BIND(EVP_CIPHER_CTX_block_size),
+		M_BIND(ERR_get_error), M_BIND(ERR_remove_thread_state), M_BIND(EVP_CIPHER_block_size),	M_BIND(EVP_CIPHER_CTX_block_size),
 		M_BIND(EVP_CIPHER_CTX_cleanup),	M_BIND(EVP_CIPHER_CTX_init), M_BIND(EVP_CIPHER_CTX_iv_length), M_BIND(EVP_CIPHER_CTX_key_length),
 		M_BIND(EVP_CIPHER_CTX_set_padding),	M_BIND(EVP_CIPHER_iv_length), M_BIND(EVP_CIPHER_key_length), M_BIND(EVP_CIPHER_nid),
 		M_BIND(EVP_cleanup), M_BIND(EVP_DecryptFinal_ex), M_BIND(EVP_DecryptInit_ex), M_BIND(EVP_DecryptUpdate), M_BIND(EVP_Digest),
@@ -67,7 +67,7 @@ bool_t lib_load_openssl(void) {
 		return false;
 	}
 
-	// Parse the version string. Expecting "OpenSSL VERSION date" or "OpenSSL 1.0.0-x 15 Jul 2009"
+	// Parse the version string. Expecting "OpenSSL VERSION date" or "OpenSSL 1.0.2-x 15 Jul 2016"
 	if (tok_get_ns(*SSL_version_str_d, ns_length_get(*SSL_version_str_d), ' ', 1, &parse) >= 0) {
 		snprintf(ssl_version, 16, "%.*s", pl_length_int(parse), pl_char_get(parse));
 	}
@@ -219,10 +219,8 @@ int ssl_print(SSL *ssl, const char *format, va_list args) {
  * @see		ssl_thread_stop()
  * @return	This function returns no value.
  */
-// QUESTION: Should be replaced by ERR_remove_thread_state() -> func below is deprecated?
 void ssl_thread_stop(void) {
-
-	ERR_remove_state_d(0);
+	ERR_remove_thread_state_d(NULL);
 	return;
 }
 
@@ -241,20 +239,13 @@ void ssl_free(SSL *ssl) {
 #endif
 
 	if (ssl) {
-		ERR_remove_state_d(0);
-		// TODO: Replace with this code?
-		/*if (SSL_get_shutdown_d(ssl) & SSL_RECEIVED_SHUTDOWN) {
-			SSL_shutdown_d(ssl);
-		} else {
-			SSL_free_d(ssl);
-		}*/
+		ERR_remove_thread_state_d(0);
 		SSL_shutdown_d(ssl);
 		SSL_free_d(ssl);
 	}
 
 	return;
 }
-
 
 /**
  * @brief	Checks whether an SSL tunnel has been shut down or not.
@@ -324,7 +315,6 @@ SSL * ssl_alloc(void *server, int sockd, int flags) {
  * @param	server	the server to be deactivated.
  * @return	This function returns no value.
  */
-// QUESTION: Why void * type?
 void ssl_server_destroy(void *server) {
 
 	server_t *local = server;
@@ -394,17 +384,50 @@ void * ssl_client_create(int_t sockd) {
 	return result;
 }
 
-// Setup an SSL CTX for a server.
-bool_t ssl_server_create(void *server) {
+/**
+ * @brief	Setup an SSL CTX for a server.
+ *
+ * @note	The server is passed as a void pointer because the provider layer doesn't comprehend protocol specific
+ * 			server instances.
+ *
+ * @param server_t	the SSL context will be assigned to the provided server context.
+ * @param security_level	an integer which will be used to control how the SSL context is configured:
+ * 							0 = accept any type of SSL or TLS protocol version, and offer broad cipher support.
+ * 							1 = require TLSv1 and above, refuse SSLv2 and SSLv3 connections, use any reasonably secure cipher.
+ * (reccomended)			2 = require TLSv1 and above, refuse SSLv2 and SSLv3 connections, only use ciphers which provide forward secrecy.
+ * 							3 = require TLSv1.2 and limit the cipher list to ECDHE-RSA-AES256-GCM-SHA384 or ECDHE-RSA-CHACHA20-POLY1305
+ * 								as required by the specifications.
+ *
+ */
+bool_t ssl_server_create(void *server, uint_t security_level) {
 
+	long options = 0;
+	char *ciphers = NULL;
 	server_t *local = server;
 
 	// TODO: Add SSL_OP_SINGLE_ECDH_USE | SSL_OP_SINGLE_DH_USE | SSL_OP_EPHEMERAL_RSA but that means adding callbacks, and possibly updating the certificate.
-	long options = (SSL_OP_ALL | SSL_MODE_AUTO_RETRY | SSL_OP_TLS_ROLLBACK_BUG | SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION |
-			SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1);
+	options = (SSL_OP_ALL | SSL_MODE_AUTO_RETRY | SSL_OP_TLS_ROLLBACK_BUG | SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION | SSL_OP_CIPHER_SERVER_PREFERENCE);
 
+	if (security_level == 0) {
+		options = (options);
+		ciphers = MAGMA_CIPHERS_GENERIC;
+	}
+	else if (security_level == 1) {
+		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
+		ciphers = MAGMA_CIPHERS_LOW;
+	}
+	else if (security_level == 2) {
+		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION);
+		ciphers = MAGMA_CIPHERS_MEDIUM;
+	}
+	else if (security_level >= 3) {
+		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1 | SSL_OP_NO_COMPRESSION);
+		ciphers = MAGMA_CIPHERS_HIGH;
+	}
+
+	// We use the generic SSLv23 method, which really means support SSLv2 and above, including TLSv1, TLSv1.1, etc, and then limit
+	// the actual protocols the SSL context will support using the options variable configured above, and the call to SSL_CTX_ctrl() below.
 	if (!(local->ssl.context = SSL_CTX_new_d(SSLv23_server_method_d()))) {
-	//if (!(local->ssl.context = SSL_CTX_new_d(TLSv1_server_method_d()))) {
 		log_critical("Could not create a valid SSL context.");
 		return false;
 	}
@@ -430,12 +453,18 @@ bool_t ssl_server_create(void *server) {
 		return false;
 	}
 	// We had some compatibility issues enabling PFS, so this needs to be resolved soon.
-	else if (SSL_CTX_set_cipher_list_d(local->ssl.context, MAGMA_CIPHER_LIST) != 1) {
+	else if (SSL_CTX_set_cipher_list_d(local->ssl.context, ciphers) != 1) {
 		log_critical("Could not load the default collection of ciphers.");
+		return false;
+	}
+	else if (SSL_CTX_ctrl_d(local->ssl.context, SSL_CTRL_SET_ECDH_AUTO, 1, NULL) != 1) {
+		log_critical("Could not enable the automatic, default selection of the strongest curve.");
 		return false;
 	}
 
 	SSL_CTX_set_tmp_dh_callback_d(local->ssl.context, ssl_dh_exchange_callback);
+
+	/// TODO: The SSL_CTX_set_tmp_ecdh_callback() may no longer be needed with SSL_CTX_set_ecdh_auto(). More research is needed.
 	SSL_CTX_set_tmp_ecdh_callback_d(local->ssl.context, ssl_ecdh_exchange_callback);
 
 	return true;
@@ -448,7 +477,7 @@ bool_t ssl_server_create(void *server) {
 void ssl_stop(void) {
 
 	if (ssl_locks) {
-		ERR_remove_state_d(0);
+		ERR_remove_thread_state_d(0);
 		COMP_zlib_cleanup_d();
 		CONF_modules_unload_d(1);
 		OBJ_cleanup_d();
@@ -480,7 +509,7 @@ void ssl_stop(void) {
 }
 
 /**
- * @brief	The locking function callback necessary for all multi-threaded applications using openssl.
+ * @brief	The locking function callback necessary for all multi-threaded applications using OpenSSL.
  * @see		CRYPTO_set_locking_callback()
  * @param	mode	a bitmask specifying the requested openssl locking operation (CRYPTO_LOCK, CRYPTO_WRITE, CRYPTO_READ, or CRYPTO_UNLOCK).
  * @param	n		the zero-based index of the lock that is the target of the requested operation.
@@ -506,7 +535,7 @@ void ssl_locking_callback(int mode, int n, const char *file, int line) {
 }
 
 /**
- * @brief	The thread id callback necessary for all multi-threaded applications using openssl.
+ * @brief	The thread id callback necessary for all multi-threaded applications using OpenSSL.
  * @see		CRYPTO_set_id_callback()
  * @return	the id of the calling thread.
  */
@@ -516,7 +545,7 @@ unsigned long ssl_thread_id_callback(void) {
 }
 
 /**
- * @brief	Initialize the openssl facility.
+ * @brief	Initialize the OpenSSL facility.
  * @note	First, this function initializes the mutexes necessary for the locking function callback that openssl uses
  * 			for shared data structures in multi-threaded applications.
  * 			Next, the DKIM key is retrieved if the magma.dkim.enabled configuration variable is set.
@@ -656,13 +685,13 @@ DH * ssl_dh_exchange_callback(SSL *ssl, int is_export, int keylength) {
 /**
  * @brief	Callback handler for the EC Diffie-Hellman parameter generation process necessary for PFS.
  * @param	ssl			the SSL session for which the callback was triggered.
- * @param	is_export	LOL. We're definitely ignoring this parameter.
+ * @param	is_export	around here all we export is freedom.
  * @param	keylength	the length, in bits, of the ECCH key to be generated.
  * @return	a pointer to a ECDH key of proper size with parameters generated, or NULL on failure.
  */
 EC_KEY * ssl_ecdh_exchange_callback(SSL *ssl, int is_export, int keylength) {
 
-	static EC_KEY *ecdh512 = NULL, *ecdh1024 = NULL, *this_ecdh;
+	static EC_KEY *ecdh512 = NULL, *ecdh1024 = NULL, *this_ecdh = NULL;
 
 	if (keylength != 512 && keylength != 1024) {
 		log_error("ECDH key generation failed; only 512/1024 bit keys are supported but %u were requested.", (unsigned int)keylength);
@@ -688,8 +717,6 @@ EC_KEY * ssl_ecdh_exchange_callback(SSL *ssl, int is_export, int keylength) {
 
 	return this_ecdh;
 }
-
-
 
 /**
  * @brief	The DH param generation callback.

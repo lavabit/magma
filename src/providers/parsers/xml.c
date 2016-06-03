@@ -12,7 +12,7 @@
 
 #include "magma.h"
 
-chr_t xml_version_string[8];
+chr_t xml_version_string[9];
 extern pthread_mutex_t log_mutex;
 
 /**
@@ -26,7 +26,7 @@ const chr_t * lib_version_xml(void) {
 
 /**
  * @brief	Initialize libxml and bind dynamically to the exported functions that are required.
- * @result	true on success or false on failure.
+ * @return	true on success or false on failure.
  */
 bool_t lib_load_xml(void) {
 
@@ -46,9 +46,9 @@ bool_t lib_load_xml(void) {
 	}
 
 	if (uint64_conv_ns(*xmlParserVersion_d, &xml_ver_num)) {
-		snprintf(xml_version_string, 8, "%hhu.%hhu.%hhu", (char)((xml_ver_num / 100 / 100) % 100), (char)((xml_ver_num / 100) % 100), (char)(xml_ver_num % 100));
+		snprintf(xml_version_string, sizeof(xml_version_string), "%hhu.%hhu.%hhu", (char)((xml_ver_num / 100 / 100) % 100), (char)((xml_ver_num / 100) % 100), (char)(xml_ver_num % 100));
 	} else {
-		snprintf(xml_version_string, 8, "unknown");
+		snprintf(xml_version_string, sizeof(xml_version_string), "unknown");
 	}
 
 	return true;

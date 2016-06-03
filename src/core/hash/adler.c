@@ -16,7 +16,7 @@
  * @brief	Return an Adler-32 hash of the specified data.
  * @param	buffer	a pointer to the data to be hashed.
  * @param	length	the length, in bytes, of the data to be hashed.
- * @result	a 32 bit number containing the Adler-32 hash of the data.
+ * @return	a 32 bit number containing the Adler-32 hash of the data.
  */
 uint32_t hash_adler32(void *buffer, size_t length) {
 

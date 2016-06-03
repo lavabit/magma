@@ -15,7 +15,7 @@
 /**
  * @brief	Get the length of a cryptex envelope.
  * @param	cryptex		a pointer to the head of the cryptex object to be examined.
- * @result	the length, in bytes, of the cryptex envelope.
+ * @return	the length, in bytes, of the cryptex envelope.
  */
 uint64_t cryptex_envelope_length(cryptex_t *cryptex) {
 
@@ -27,7 +27,7 @@ uint64_t cryptex_envelope_length(cryptex_t *cryptex) {
 /**
  * @brief	Get the length of a cryptex HMAC.
  * @param	cryptex		a pointer to the head of the cryptex object to be examined.
- * @result	the length, in bytes, of the cryptex HMAC.
+ * @return	the length, in bytes, of the cryptex HMAC.
  */
 uint64_t cryptex_hmac_length(cryptex_t *cryptex) {
 
@@ -39,7 +39,7 @@ uint64_t cryptex_hmac_length(cryptex_t *cryptex) {
 /**
  * @brief	Get the length of a cryptex object's encrypted data body.
  * @param	cryptex		a pointer to the head of the cryptex object to be examined.
- * @result	the length, in bytes, of the cryptex encrypted data body.
+ * @return	the length, in bytes, of the cryptex encrypted data body.
  */
 uint64_t cryptex_body_length(cryptex_t *cryptex) {
 
@@ -51,7 +51,7 @@ uint64_t cryptex_body_length(cryptex_t *cryptex) {
 /**
  * @brief	Get the original length of a cryptex object's data buffer.
  * @param	cryptex		a pointer to the head of the cryptex object to be examined.
- * @result	the length, in bytes, of the cryptex object's original data.
+ * @return	the length, in bytes, of the cryptex object's original data.
  */
 uint64_t cryptex_original_length(cryptex_t *cryptex) {
 

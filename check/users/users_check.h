@@ -17,6 +17,8 @@ Suite * suite_check_users(void);
 
 void check_users_auth_legacy_s(int);
 void check_users_auth_stacie_s(int);
+void check_users_auth_challenge_s(int);
+void check_users_auth_login_s(int);
 
 #endif
 

@@ -1039,7 +1039,7 @@ void decrypt_user_messages(meta_user_t *user) {
  * 			in place. If the secure flag has been disabled and there are still encrypted messages on disk, the messages
  * 			need to be reverted to plaintext form.
  * @param	user	the meta user object that owns the specified messages.
- * @result	-1 on failure, 0 if there were no messages to be sync'ed, or 1 if additional encryption processing is required.
+ * @return	-1 on failure, 0 if there were no messages to be sync'ed, or 1 if additional encryption processing is required.
  */
 int_t meta_check_message_encryption(meta_user_t *user) {
 

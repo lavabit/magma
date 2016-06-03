@@ -109,7 +109,7 @@ bool_t st_valid_jointed(uint32_t opts);
 bool_t st_valid_tracked(uint32_t opts);
 bool_t st_valid_destination(uint32_t opts);
 
-// Length
+/// Length
 int_t st_length_int(stringer_t *s);
 size_t st_avail_get(stringer_t *s);
 size_t st_length_get(stringer_t *s);
@@ -118,16 +118,16 @@ size_t st_length_set(stringer_t *s, size_t len);
 
 /// data.c
 chr_t *   st_char_get(stringer_t *s);
-uchr_t *  st_uchar_get(stringer_t *s);
 void *    st_data_get(stringer_t *s);
 void      st_data_set(stringer_t *s, void *data);
-bool_t    st_empty(stringer_t *s);
-bool_t    st_empty_out(stringer_t *s, uchr_t **ptr, size_t *len) __attribute__((nonnull (2, 3)));
+bool_t    st_empty_out(stringer_t *s, uchr_t **ptr, size_t *len);
+bool_t    st_empty_variadic(ssize_t len, ...);
+uchr_t *  st_uchar_get(stringer_t *s);
 void      st_wipe(stringer_t *s);
 
 // Creation/Destruction
 void st_free(stringer_t *s);
-void st_cleanup(stringer_t *s);
+//void st_cleanup(stringer_t *s);
 void st_cleanup_variadic(ssize_t len, ...);
 //stringer_t * st_alloc(size_t len);
 stringer_t * st_dupe(stringer_t *s);
@@ -236,8 +236,11 @@ multi_t    mt_set_type(multi_t multi, M_TYPE target);
 #define st_append(s, append) st_append_opts(1024, s, append)
 #define st_alloc(len) st_alloc_opts(MANAGED_T | CONTIGUOUS | HEAP, len)
 #define st_merge(...) st_merge_opts(MANAGED_T | CONTIGUOUS | HEAP, __VA_ARGS__)
-#define st_cleanup(...) st_cleanup_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
 #define st_vaprint(format, args) st_vaprint_opts(MANAGED_T | CONTIGUOUS | HEAP, format, args)
+
+// Macros are used to allow a variable number of strings to be tested for emptiness, or freed with a single call.
+#define st_empty(...) st_empty_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
+#define st_cleanup(...) st_cleanup_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
 
 // Macro for counting the number of arguments in a variadic list function call.
 #define va_narg(...) (__VA_NARG__(_0, ## __VA_ARGS__, __VA_NARG_SEQ_N()) - 1)

@@ -143,7 +143,7 @@ START_TEST (check_users_credentials_valid_s) {
 		}
 		else {
 			errmsg = st_aprint("Error looking for user salt. { user = %s }", st_char_get(tests[i].username));
-			goto error;
+			goto cleanup_cred;
 		}
 
 		if(!cred_res) {
@@ -379,40 +379,6 @@ START_TEST (check_users_message_s) {
 	//fail_unless(!errmsg, errmsg);
 } END_TEST
 
-START_TEST (check_users_auth_valid_s) {
-
-	auth_t *auth = NULL;
-	stringer_t *errmsg = NULL;
-
-	// Valid Login Attempts
-	log_unit("%-64.64s", "USERS / AUTH / VALID / SINGLE THREADED:");
-	//log_disable();
-
-	// Test a legacy account.
-	if (status() && !(auth = auth_challenge(NULLER("princess")))) {
-		 errmsg = st_aprint("Auth allocation failed.");
-	}
-	else if (status()) {
-		auth_free(auth);
-		auth = NULL;
-	}
-
-	// Test a STACIE enabled account.
-	if (status() && !(auth = auth_challenge(NULLER("stacie")))) {
-		 errmsg = st_aprint("Auth allocation failed.");
-	}
-	else if (status()) {
-		auth_free(auth);
-		auth = NULL;
-	}
-
-	log_enable();
-	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
-	fail_unless(!errmsg, st_char_get(errmsg));
-	st_cleanup(errmsg);
-
-} END_TEST
-
 Suite * suite_check_users(void) {
 
 	TCase *tc;
@@ -420,7 +386,9 @@ Suite * suite_check_users(void) {
 
 	testcase(s, tc, "Auth Legacy/S", check_users_auth_legacy_s);
 	testcase(s, tc, "Auth Stacie/S", check_users_auth_stacie_s);
-	testcase(s, tc, "Auth Valid/S", check_users_auth_valid_s);
+	testcase(s, tc, "Auth Challenge/S", check_users_auth_challenge_s);
+	testcase(s, tc, "Auth Login/S", check_users_auth_login_s);
+
 	testcase(s, tc, "Cred Valid/S", check_users_credentials_valid_s);
 	testcase(s, tc, "Cred Invalid/S", check_users_credentials_invalid_s);
 	testcase(s, tc, "Inbox/S", check_users_inbox_s);

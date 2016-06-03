@@ -146,7 +146,7 @@ size_t st_length_set(stringer_t *s, size_t len) {
 /**
  * @brief	Return the total data buffer size allocated for a managed string.
  * @param	s	the input managed string.
- * @result	0 on failure, or the total buffer size in bytes on success.
+ * @return	0 on failure, or the total buffer size in bytes on success.
  */
 size_t st_avail_get(stringer_t *s) {
 
@@ -183,7 +183,7 @@ size_t st_avail_get(stringer_t *s) {
  * @brief	Set the total data buffer size allocated for a managed string.
  * @param	s		the input managed string.
  * @param	avail	the new buffer size for the managed string.
- * @result	0 on failure, or the managed string's new buffer size in bytes on success.
+ * @return	0 on failure, or the managed string's new buffer size in bytes on success.
  */
 size_t st_avail_set(stringer_t *s, size_t avail) {
 

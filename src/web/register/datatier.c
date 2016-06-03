@@ -106,7 +106,7 @@ bool_t register_data_check_username(stringer_t *username) {
  * @param	reg			the current registration session of the user to be added.
  * @param	transaction	a mysql transaction id for all database operations, since they all need to be committed atomically or rolled back.
  * @param	outuser		a pointer to a numerical id to receive the newly generated and inserted user id.
- * @result	true if the new user account was successfully created, or false on failure.
+ * @return	true if the new user account was successfully created, or false on failure.
  */
 bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *username, stringer_t *password, int64_t transaction, uint64_t *outuser) {
 
@@ -324,18 +324,18 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 		recv_limit = 1024;
 		send_limit = 256;
 	}
-	else if (plan == 2) {
-		size_limit = 67108864ll;
+	else if (plan) {
+		size_limit = 64LL << 20;
 		recv_limit = 1024;
 		send_limit = 256;
 	}
 	else if (plan == 3) {
-		size_limit = 67108864ll;
+		size_limit = 64LL << 20;
 		recv_limit = 1024;
 		send_limit = 512;
 	}
 	else if (plan == 4) {
-		size_limit = 134217728ll;
+		size_limit = 128LL << 20;
 		recv_limit = 8192;
 		send_limit = 768;
 	}

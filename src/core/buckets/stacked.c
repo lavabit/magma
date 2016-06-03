@@ -75,7 +75,7 @@ stacker_t * stacker_alloc(void *free_function) {
 /**
  * @brief	Get the number of nodes in a stacked list.
  * @param	stack	a pointer to the stacked list to be queried.
- * @result	the number of nodes currently held by the specified stacked list.
+ * @return	the number of nodes currently held by the specified stacked list.
  */
 uint64_t stacker_nodes(stacker_t *stack) {
 

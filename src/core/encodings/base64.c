@@ -17,7 +17,7 @@
  * @param	s			the managed string to be base64 encoded.
  * @param	opts		the options value of the managed string which will be allocated and receive the encoded output.
  * @param	modified	if true, use modified base64 encoding; if false, use normal base64 encoding.
- * @result	NULL on failure, or a pointer to a newly allocated managed string containing the encoded result on success.
+ * @return	NULL on failure, or a pointer to a newly allocated managed string containing the encoded result on success.
  */
 stringer_t * base64_encode_opts(stringer_t *s, uint32_t opts, bool_t modified) {
 
@@ -56,7 +56,7 @@ stringer_t * base64_encode_opts(stringer_t *s, uint32_t opts, bool_t modified) {
  * @brief	Perform base64 encoding on a managed string with padding and line splitting at BASE64_LINE_WRAP_LENGTH characters.
  * @param	s		the managed string to be base64 encoded.
  * @param	output	a managed string to receive the encoded output; if passed as NULL, one will be allocated to the caller.
- * @result	NULL on failure, or a a pointer to the managed string containing the encoded result on success.
+ * @return	NULL on failure, or a a pointer to the managed string containing the encoded result on success.
  */
 stringer_t * base64_encode(stringer_t *s, stringer_t *output) {
 
@@ -167,7 +167,7 @@ stringer_t * base64_encode(stringer_t *s, stringer_t *output) {
  * 			making the output suitable for use in URL parameters without additional encoding.
  * @param	s		the managed string to be base64 modified-encoded.
  * @param	output	a managed string to receive the encoded output; if passed as NULL, one will be allocated to the caller.
- * @result	NULL 	on failure, or a newly allocated managed string containing the modified encoded result on success.
+ * @return	NULL 	on failure, or a newly allocated managed string containing the modified encoded result on success.
  */
 stringer_t * base64_encode_mod(stringer_t *s, stringer_t *output) {
 
@@ -251,7 +251,7 @@ stringer_t * base64_encode_mod(stringer_t *s, stringer_t *output) {
  * @brief	Perform base64 decoding on a managed string.
  * @param	s		the managed string to be base64 decoded.
  * @param	output	a managed string to receive the encoded output; if passed as NULL, one will be allocated to the caller.
- * @result	NULL on failure, or a newly allocated managed string containing the decoded result on success.
+ * @return	NULL on failure, or a newly allocated managed string containing the decoded result on success.
  */
 stringer_t * base64_decode(stringer_t *s, stringer_t *output) {
 
@@ -350,7 +350,7 @@ stringer_t * base64_decode(stringer_t *s, stringer_t *output) {
  * @param	s			the managed string to be base64 decoded.
  * @param	opts		the options value of the managed string which will be allocated and receive the decoded output.
  * @param	modified	if true, use modified base64 encoding; if false, use normal base64 decoding.
- * @result	NULL on failure, or a pointer to a newly allocated managed string containing the decoded result on success.
+ * @return	NULL on failure, or a pointer to a newly allocated managed string containing the decoded result on success.
  */
 stringer_t * base64_decode_opts(stringer_t *s, uint32_t opts, bool_t modified) {
 
@@ -391,7 +391,7 @@ stringer_t * base64_decode_opts(stringer_t *s, uint32_t opts, bool_t modified) {
  * 			making the output suitable for use in URL parameters without additional encoding.
  * @param	s		the managed string to be base64 decoded.
  * @param	output	a managed string to receive the encoded output; if passed as NULL, one will be allocated to the caller.
- * @result	NULL on failure, or a newly allocated managed string containing the modified decoded result on success.
+ * @return	NULL on failure, or a newly allocated managed string containing the modified decoded result on success.
  */
 stringer_t * base64_decode_mod(stringer_t *s, stringer_t *output) {
 

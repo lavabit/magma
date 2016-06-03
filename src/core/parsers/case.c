@@ -15,7 +15,7 @@
 /**
  * @brief	Return the uppercase representation of a character.
  * @param	c	the character to be transformed.
- * @result	the input character, in uppercase.
+ * @return	the input character, in uppercase.
  */
 uchr_t upper_chr(uchr_t c) {
 	if (c >= 'a' && c <= 'z') c -= 32;
@@ -25,7 +25,7 @@ uchr_t upper_chr(uchr_t c) {
 /**
  * @brief	Return the lowercase representation of a character.
  * @param	c	the character to be transformed.
- * @result	the input character, in lowercase.
+ * @return	the input character, in lowercase.
  */
 uchr_t lower_chr(uchr_t c) {
 	if (c >= 'A' && c <= 'Z') c += 32;
@@ -35,7 +35,7 @@ uchr_t lower_chr(uchr_t c) {
 /**
  * @brief	Transform a managed string (in-place) into uppercase.
  * @param	s	the managed string to be modified.
- * @result	NULL on error, or a pointer to the input managed string, in uppercase.
+ * @return	NULL on error, or a pointer to the input managed string, in uppercase.
  */
 stringer_t * upper_st(stringer_t *s) {
 
@@ -58,7 +58,7 @@ stringer_t * upper_st(stringer_t *s) {
 /**
  * @brief	Transform a managed string (in-place) into lowercase.
  * @param	s	the managed string to be modified.
- * @result	NULL on error, or a pointer to the input managed string, in lowercase.
+ * @return	NULL on error, or a pointer to the input managed string, in lowercase.
  */
 stringer_t * lower_st(stringer_t *s) {
 

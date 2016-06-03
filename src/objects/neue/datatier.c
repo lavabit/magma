@@ -119,7 +119,7 @@ user_state_t credential_usernum_fetch(credential_t *cred, uint64_t *usernum) {
 		auth_stmt = stmts.select_usernum_auth_legacy;
 		break;
 	case STACIE:
-		auth_stmt = stmts.select_usernum_auth_stacie;
+		auth_stmt = stmts.select_user_auth;
 		break;
 	default:
 		log_error("Invalid authentication type.");

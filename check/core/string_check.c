@@ -241,15 +241,14 @@ bool_t check_string_merge(void) {
 			total += *(st_char_get(strings[15]) + i);
 		}
 
-		if (total != (5376lu * 16lu)) {
+		if (total != (5376UL * 16)) {
 			result = false;
 		}
 
 	}
 
 	for (int i = 0; i < 16; i++) {
-		if (strings[i])
-			st_free(strings[i]);
+		st_cleanup(strings[i]);
 	}
 
 	return result;

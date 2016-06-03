@@ -17,7 +17,7 @@
  * @see		pthread_mutex_init()
  * @param	lock	a pointer to a mutex that will be initialized.
  * @param	attr	a pointer to a mutex attributes holder, or NULL to use system default values.
- * @result	0 on success, or an error number on failure.
+ * @return	0 on success, or an error number on failure.
  */
 int mutex_init(pthread_mutex_t *lock, pthread_mutexattr_t *attr) {
 

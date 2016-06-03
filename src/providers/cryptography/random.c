@@ -99,7 +99,7 @@ size_t rand_write(stringer_t *s) {
 /**
  * @brief	Generate a random unsigned 64 bit number.
  * @note	This function attempts to generate random data securely, but falls back on the pseudo-random number generator.
- * @result	the newly generated unsigned 64 bit integer.
+ * @return	the newly generated unsigned 64 bit integer.
  * @see		RAND_bytes()
  */
 uint64_t rand_get_uint64(void) {
@@ -123,7 +123,7 @@ uint64_t rand_get_uint64(void) {
 /**
  * @brief	Generate a random unsigned 32 bit number.
  * @note	This function attempts to generate random data securely, but falls back on the pseudo-random number generator.
- * @result	the newly generated unsigned 32 bit integer.
+ * @return	the newly generated unsigned 32 bit integer.
  * @see		RAND_bytes()
  */
 uint32_t rand_get_uint32(void) {
@@ -145,7 +145,7 @@ uint32_t rand_get_uint32(void) {
 /**
  * @brief	Generate a random unsigned 16 bit number.
  * @note	This function attempts to generate random data securely, but falls back on the pseudo-random number generator.
- * @result	the newly generated unsigned 16 bit integer.
+ * @return	the newly generated unsigned 16 bit integer.
  * @see		RAND_bytes()
  */
 uint16_t rand_get_uint16(void) {
@@ -167,7 +167,7 @@ uint16_t rand_get_uint16(void) {
 /**
  * @brief	Generate a random unsigned 8 bit number.
  * @note	This function attempts to generate random data securely, but falls back on the pseudo-random number generator.
- * @result	the newly generated unsigned 8 bit integer.
+ * @return	the newly generated unsigned 8 bit integer.
  * @see		RAND_bytes()
  */
 uint8_t rand_get_uint8(void) {
@@ -189,7 +189,7 @@ uint8_t rand_get_uint8(void) {
 /**
  * @brief	Generate a random signed 64 bit number.
  * @note	This function attempts to generate random data securely, but falls back on the pseudo-random number generator.
- * @result	the newly generated signed 64 bit integer.
+ * @return	the newly generated signed 64 bit integer.
  * @see		RAND_bytes()
  */
 // QUESTION: Why aren't we just generating unsigned random numbers and casting them to signed values?
@@ -295,7 +295,7 @@ bool_t rand_thread_start(void) {
 /**
  * @brief	Initialize random number generation services and seed the generator.
  * @note	The default seed source for cryptographically secure generation routines is the system device /dev/random.
- * @result	false on failure, true on success.
+ * @return	false on failure, true on success.
  */
 bool_t rand_start(void) {
 

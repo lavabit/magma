@@ -43,7 +43,7 @@ uint64_t sess_key(void) {
 
 /**
  * @brief	Reserve a unique web session identifier.
- * @result	a number containing a unique web session identifier.
+ * @return	a number containing a unique web session identifier.
  */
 uint64_t sess_number(void) {
 

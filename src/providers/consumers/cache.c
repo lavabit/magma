@@ -17,7 +17,7 @@ pool_t *cache_pool = NULL;
 
 /**
  * @brief	Initialize the memcached library and bind dynamically to the exported functions that are required.
- * @result	true on success or false on failure.
+ * @return	true on success or false on failure.
  */
 bool_t lib_load_cache(void) {
 
@@ -354,7 +354,7 @@ int_t cache_append(stringer_t *key, stringer_t *object, time_t expiration) {
  * @brief	Delete a key from memcached immediately.
  * @note	memcached_delete()
  * @param	key		the name of the key to be deleted from the memcached server.
- * @result	0 on failure, or MEMCACHED_SUCCESS on success.
+ * @return	0 on failure, or MEMCACHED_SUCCESS on success.
  */
 int_t cache_delete(stringer_t *key) {
 
@@ -380,7 +380,7 @@ int_t cache_delete(stringer_t *key) {
  * @param	offset		the offset by which the specified key's value should be incremented.
  * @param	initial		the initial value to seed the key if it does not already exist.
  * @param	expiration	the time, in seconds, when the cached key will expire.
- * @result	0 on failure, or the new incremented value of the data associated with the key, on success.
+ * @return	0 on failure, or the new incremented value of the data associated with the key, on success.
  */
 uint64_t cache_increment(stringer_t *key, uint64_t offset, uint64_t initial, time_t expiration) {
 

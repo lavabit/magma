@@ -17,8 +17,11 @@
 #define BN_num_bytes_d(a)		((BN_num_bits_d(a)+7)/8)
 #define OPENSSL_free_d(addr)	CRYPTO_free_d(addr)
 
-// Our own home-rolled cipher suite to guarantee perfect forward secrecy
-#define MAGMA_CIPHER_LIST	"EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH+aRSA+RC4:EECDH:EDH+aRSA:RC4:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!SSLv2:!RC4-SHA:!SEED"
+// The list of ciphers support depending on the SSL security level required.
+#define MAGMA_CIPHERS_HIGH		"ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305"
+#define MAGMA_CIPHERS_MEDIUM	"EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH+aRSA+RC4:EECDH:EDH+aRSA:RC4:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!SSLv2:!RC4-SHA:!SEED"
+#define MAGMA_CIPHERS_LOW		"EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH+aRSA+RC4:EECDH:EDH+aRSA:!RC4:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!SSLv2:!RC4-SHA:!SEED"
+#define MAGMA_CIPHERS_GENERIC	"HIGH:MEDIUM"
 
 // The default algorithms used by ECIES interface.
 #define ECIES_HMAC NID_sha512
@@ -157,7 +160,7 @@ void     ssl_free(SSL *ssl);
 void     ssl_locking_callback(int mode, int n, const char *file, int line);
 int      ssl_print(SSL *ssl, const char *format, va_list args);
 int      ssl_read(SSL *ssl, void *buffer, int length, bool_t block);
-bool_t   ssl_server_create(void *server);
+bool_t   ssl_server_create(void *server, uint_t security_level);
 void     ssl_server_destroy(void *server);
 bool_t   ssl_start(void);
 void     ssl_stop(void);

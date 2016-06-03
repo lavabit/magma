@@ -81,7 +81,7 @@ uint64_t compress_body_length(compress_t *buffer) {
 /**
  * @brief	Return the compressed body of data associated with a compressed header.
  * @param	buffer	the input compressed header.
- * @result	a pointer to the body (start) of the compressed data.
+ * @return	a pointer to the body (start) of the compressed data.
  */
 void * compress_body_data(compress_t *buffer) {
 

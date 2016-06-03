@@ -15,7 +15,7 @@
 /**
  * @brief	Allocate an array of a specified number of elements.
  * @param	size	the number of elements the array is capable of holding.
- * @result	NULL on failure, or a pointer to the newly allocated array on success.
+ * @return	NULL on failure, or a pointer to the newly allocated array on success.
  */
 array_t * ar_alloc(size_t size) {
 
@@ -369,7 +369,7 @@ int_t ar_append(array_t **array, uint32_t type, void *item) {
 /**
  * @brief	Free an array object and all of its underlying elements.
  * @note	Array elements that are managed strings, and aren't empty or of ARRAY_TYPE_POINTER will be freed.
- * @result	This function returns no value.
+ * @return	This function returns no value.
  */
 void ar_free(array_t *array) {
 

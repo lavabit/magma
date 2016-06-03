@@ -82,7 +82,8 @@ auth_t * auth_challenge(stringer_t *username) {
 	}
 
 	// Setup the nonce value if we're dealing with a STACIE authentication challenge.
-	if (auth->tokens.verification && st_empty(auth->seasoning.nonce = stacie_nonce_create())) {
+	if (auth->tokens.verification && (st_empty(auth->seasoning.nonce = stacie_nonce_create()) ||
+		st_length_get(auth->seasoning.nonce) != STACIE_NONCE_LENGTH)) {
 		log_pedantic("Failed to generate a valid nonce value.");
 		auth_free(auth);
 		return NULL;

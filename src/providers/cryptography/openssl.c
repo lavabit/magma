@@ -406,7 +406,7 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 	server_t *local = server;
 
 	// TODO: Add SSL_OP_SINGLE_ECDH_USE | SSL_OP_SINGLE_DH_USE | SSL_OP_EPHEMERAL_RSA but that means adding callbacks, and possibly updating the certificate.
-	options = (SSL_OP_ALL | SSL_MODE_AUTO_RETRY | SSL_OP_TLS_ROLLBACK_BUG | SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
+	options = (SSL_OP_ALL | SSL_MODE_AUTO_RETRY | SSL_OP_TLS_ROLLBACK_BUG | SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION | SSL_OP_CIPHER_SERVER_PREFERENCE);
 
 	if (security_level == 0) {
 		options = (options);

@@ -23,7 +23,9 @@ M_BUILD=`readlink -f $0`
 
 # Set parent directory as project root by default (used to find scripts,
 # bundled tarballs, patches, etc.)
-if [ -z "$M_PROJECT_ROOT" ]; then M_PROJECT_ROOT=`readlink -f ..`; fi
+if [ -z "$M_PROJECT_ROOT" ]; then
+	M_PROJECT_ROOT=`readlink -f ..`
+fi
 
 # Read in the build parameters.
 . "$M_PROJECT_ROOT/dev/scripts/builders/build.lib.params.sh"
@@ -152,6 +154,7 @@ png() {
 		extract $PNG "png" &>> "$M_LOGS/png.txt"
 		;;
 		png-prep)
+		cd "$M_SOURCES/png"; error
 		;;
 		png-build)
 			cd "$M_SOURCES/png"; error
@@ -1378,8 +1381,6 @@ freetype() {
 		;;
 		freetype-prep)
 			cd "$M_SOURCES/freetype"; error
-			# No longer needed. Patch incorporated upstream.
-			# cat "$M_PATCHES/freetype/"freetype-version.patch | patch -s -p1 -b --fuzz=0; error
 		;;
 		freetype-build)
 			cd "$M_SOURCES/freetype"; error
@@ -1899,114 +1900,96 @@ combo() {
 
 	date +"%nStarting $1 at %r on %x%n" &>> "$M_LOGS/build.txt"
 
-#	# The ClamAV unit test fail when run in parallel, so they are excuted first. And the MySQL/cURL unit tests take the longest so they get a priority bump.
-#	if [[ $1 == "check" ]] || [[ $1 == "check-full" ]]; then
-#
-#		# In the past the libmemcached checks would timeout if the system was under heavy load, so we pause here and wait for them to finish.
-#		($0 "memcached-$1") & MEMCACHED_PID=$!
-#		wait $MEMCACHED_PID; error
-#
-#		($0 "mysql-$1") & MYSQL_PID=$!
-#		#renice -n -10 -p $MYSQL_PID &>> "$M_LOGS/build.txt"
-#		#ionice -n 0 -c 2 -p $MYSQL_PID &>> "$M_LOGS/build.txt"
-#
-#		($0 "curl-$1") & CURL_PID=$!
-#		#renice -n -4 -p $CURL_PID &>> "$M_LOGS/build.txt"
-#		#ionice -n 1 -c 2 -p $CURL_PID &>> "$M_LOGS/build.txt"
-#
-#		# The ClamAV checks will timeout if the system is under heavy load.
-#		($0 "clamav-$1") & CLAMAV_PID=$!
-#		wait $CLAMAV_PID; error
-#
-#		echo "" &>> "$M_LOGS/build.txt"
-#	else
-#		($0 "curl-$1") & CURL_PID=$!
-#		($0 "mysql-$1") & MYSQL_PID=$!
-#		($0 "clamav-$1") & CLAMAV_PID=$!
-#		($0 "memcached-$1") & MEMCACHED_PID=$!
-#	fi
-#
-#	($0 "png-$1") & PNG_PID=$!
-#	($0 "lzo-$1") & LZO_PID=$!
-#	($0 "jpeg-$1") & JPEG_PID=$!
-#	($0 "spf2-$1") & SPF2_PID=$!
-#	($0 "xml2-$1") & XML2_PID=$!
-#	($0 "dkim-$1") & DKIM_PID=$!
-#	($0 "zlib-$1") & ZLIB_PID=$!
-#	($0 "bzip2-$1") & BZIP2_PID=$!
-#	($0 "dspam-$1") & DSPAM_PID=$!
-#	($0 "geoip-$1") & GEOIP_PID=$!
-#	($0 "openssl-$1") & OPENSSL_PID=$!
-#	($0 "jansson-$1") & JANSSON_PID=$!
-#	($0 "utf8proc-$1") & UTF8PROC_PID=$!
-#	($0 "freetype-$1") & FREETYPE_PID=$!
-#	($0 "tokyocabinet-$1") & TOKYOCABINET_PID=$!
-#	($0 "gd-$1") & GD_PID=$!
-#
-#	wait $GD_PID; error
-#	wait $PNG_PID; error
-#	wait $LZO_PID; error
-#	wait $JPEG_PID; error
-#	wait $CURL_PID; error
-#	wait $SPF2_PID; error
-#	wait $XML2_PID; error
-#	wait $DKIM_PID; error
-#	wait $ZLIB_PID; error
-#	wait $BZIP2_PID; error
-#	wait $DSPAM_PID; error
-#	wait $MYSQL_PID; error
-#	wait $GEOIP_PID; error
-#	wait $OPENSSL_PID; error
-#	wait $JANSSON_PID; error
-#	wait $UTF8PROC_PID; error
-#	wait $FREETYPE_PID; error
-#	wait $TOKYOCABINET_PID; error
-#
-#	if [[ $1 != "check" ]] && [[ $1 != "check-full" ]]; then
-#		wait $MEMCACHED_PID; error
-#		wait $CLAMAV_PID; error
-#	fi
+	if [[ $1 != "check" ]] && [[ $1 != "check-full" ]]; then
 
-	($M_BUILD "zlib-$1") & ZLIB_PID=$!
-	wait $ZLIB_PID; error
-	($M_BUILD "openssl-$1") & OPENSSL_PID=$!
-	wait $OPENSSL_PID; error
-	($M_BUILD "mysql-$1") & MYSQL_PID=$!
-	wait $MYSQL_PID; error
-	($M_BUILD "dspam-$1") & DSPAM_PID=$!
-	wait $DSPAM_PID; error
-	($M_BUILD "curl-$1") & CURL_PID=$!
-	wait $CURL_PID; error
-	($M_BUILD "clamav-$1") & CLAMAV_PID=$!
-	wait $CLAMAV_PID; error
-	($M_BUILD "png-$1") & PNG_PID=$!
-	wait $PNG_PID; error
-	($M_BUILD "lzo-$1") & LZO_PID=$!
-	wait $LZO_PID; error
-	($M_BUILD "jpeg-$1") & JPEG_PID=$!
-	wait $JPEG_PID; error
-	($M_BUILD "spf2-$1") & SPF2_PID=$!
-	wait $SPF2_PID; error
-	($M_BUILD "xml2-$1") & XML2_PID=$!
-	wait $XML2_PID; error
-	($M_BUILD "gd-$1") & GD_PID=$!
-	wait $GD_PID; error
-	($M_BUILD "dkim-$1") & DKIM_PID=$!
-	wait $DKIM_PID; error
-	($M_BUILD "bzip2-$1") & BZIP2_PID=$!
-	wait $BZIP2_PID; error
-	($M_BUILD "geoip-$1") & GEOIP_PID=$!
-	wait $GEOIP_PID; error
-	($M_BUILD "jansson-$1") & JANSSON_PID=$!
-	wait $JANSSON_PID; error
-	($M_BUILD "utf8proc-$1") & UTF8PROC_PID=$!
-	wait $UTF8PROC_PID; error
-	($M_BUILD "freetype-$1") & FREETYPE_PID=$!
-	wait $FREETYPE_PID; error
-	($M_BUILD "memcached-$1") & MEMCACHED_PID=$!
-	wait $MEMCACHED_PID; error
-	($M_BUILD "tokyocabinet-$1") & TOKYOCABINET_PID=$!
-	wait $TOKYOCABINET_PID; error
+		($0 "zlib-$1") & ZLIB_PID=$!
+		wait $ZLIB_PID; error
+		($0 "openssl-$1") & OPENSSL_PID=$!
+		wait $OPENSSL_PID; error
+		($0 "mysql-$1") & MYSQL_PID=$!
+		wait $MYSQL_PID; error
+		($0 "dspam-$1") & DSPAM_PID=$!
+		wait $DSPAM_PID; error
+		($0 "curl-$1") & CURL_PID=$!
+		wait $CURL_PID; error
+		($0 "clamav-$1") & CLAMAV_PID=$!
+		wait $CLAMAV_PID; error
+		($0 "png-$1") & PNG_PID=$!
+		wait $PNG_PID; error
+		($0 "lzo-$1") & LZO_PID=$!
+		wait $LZO_PID; error
+		($0 "jpeg-$1") & JPEG_PID=$!
+		wait $JPEG_PID; error
+		($0 "spf2-$1") & SPF2_PID=$!
+		wait $SPF2_PID; error
+		($0 "xml2-$1") & XML2_PID=$!
+		wait $XML2_PID; error
+		($0 "gd-$1") & GD_PID=$!
+		wait $GD_PID; error
+		($0 "dkim-$1") & DKIM_PID=$!
+		wait $DKIM_PID; error
+		($0 "bzip2-$1") & BZIP2_PID=$!
+		wait $BZIP2_PID; error
+		($0 "geoip-$1") & GEOIP_PID=$!
+		wait $GEOIP_PID; error
+		($0 "jansson-$1") & JANSSON_PID=$!
+		wait $JANSSON_PID; error
+		($0 "utf8proc-$1") & UTF8PROC_PID=$!
+		wait $UTF8PROC_PID; error
+		($0 "freetype-$1") & FREETYPE_PID=$!
+		wait $FREETYPE_PID; error
+		($0 "memcached-$1") & MEMCACHED_PID=$!
+		wait $MEMCACHED_PID; error
+		($0 "tokyocabinet-$1") & TOKYOCABINET_PID=$!
+		wait $TOKYOCABINET_PID; error
+
+	else
+
+		# The ClamAV unit tests will timeout if the system is under heavy load so they run alone.
+		($0 "clamav-$1") & CLAMAV_PID=$!
+		wait $CLAMAV_PID; error
+
+		($0 "gd-$1") & GD_PID=$!
+		($0 "png-$1") & PNG_PID=$!
+		($0 "lzo-$1") & LZO_PID=$!
+		($0 "curl-$1") & CURL_PID=$!
+		($0 "jpeg-$1") & JPEG_PID=$!
+		($0 "spf2-$1") & SPF2_PID=$!
+		($0 "xml2-$1") & XML2_PID=$!
+		($0 "dkim-$1") & DKIM_PID=$!
+		($0 "zlib-$1") & ZLIB_PID=$!
+		($0 "mysql-$1") & MYSQL_PID=$!
+		($0 "bzip2-$1") & BZIP2_PID=$!
+		($0 "dspam-$1") & DSPAM_PID=$!
+		($0 "geoip-$1") & GEOIP_PID=$!
+		($0 "openssl-$1") & OPENSSL_PID=$!
+		($0 "jansson-$1") & JANSSON_PID=$!
+		($0 "freetype-$1") & FREETYPE_PID=$!
+		($0 "utf8proc-$1") & UTF8PROC_PID=$!
+		($0 "memcached-$1") & MEMCACHED_PID=$!
+		($0 "tokyocabinet-$1") & TOKYOCABINET_PID=$!
+
+		wait $GD_PID; error
+		wait $PNG_PID; error
+		wait $LZO_PID; error
+		wait $JPEG_PID; error
+		wait $CURL_PID; error
+		wait $SPF2_PID; error
+		wait $XML2_PID; error
+		wait $DKIM_PID; error
+		wait $ZLIB_PID; error
+		wait $BZIP2_PID; error
+		wait $DSPAM_PID; error
+		wait $MYSQL_PID; error
+		wait $GEOIP_PID; error
+		wait $OPENSSL_PID; error
+		wait $JANSSON_PID; error
+		wait $UTF8PROC_PID; error
+		wait $FREETYPE_PID; error
+		wait $MEMCACHED_PID; error
+		wait $TOKYOCABINET_PID; error
+
+	fi
 
 	date +"%nFinished $1 at %r on %x%n"
 	date +"%nFinished $1 at %r on %x%n" &>> "$M_LOGS/build.txt"

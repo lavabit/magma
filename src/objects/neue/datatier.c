@@ -42,7 +42,7 @@ salt_state_t credential_salt_fetch(stringer_t *username, stringer_t **salt) {
 	}
 
 	if (!res_row_count(query)) {
-		log_pedantic("Specified user does not exist in the database.");
+		log_pedantic("Specified user does not exist in the database. { username = %.*s }", st_length_int(username), st_char_get(username));
 		res_table_free(query);
 		return NO_USER;
 	}

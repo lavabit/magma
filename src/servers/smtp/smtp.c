@@ -61,6 +61,7 @@ void smtp_starttls(connection_t *con) {
  */
 void smtp_mail_from(connection_t *con) {
 
+	credential_t *cred;
 	// If they try to send this command without saying hello.
 	if (!con->smtp.helo && !con->smtp.authenticated) {
 		con_write_bl(con, "503 MAIL FROM REJECTED - PLEASE PROVIDE A HELO OR EHLO AND TRY AGAIN\r\n", 70);
@@ -86,6 +87,26 @@ void smtp_mail_from(connection_t *con) {
 		con_write_bl(con, "552 MAIL FROM ERROR - SIZE EXCEEDS SYSTEM LIMIT\r\n", 49);
 		return;
 	}
+
+	if (!(cred = credential_alloc_mail(con->smtp.mailfrom))) {
+		st_free(con->smtp.mailfrom);
+		con->smtp.mailfrom = NULL;
+		con->smtp.suggested_length = 0;
+		con_write_bl(con, "451 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
+		return;
+	}
+
+	// Require authentication if user is not authenticated and MAIL FROM domain is hosted on this server
+	if(!con->smtp.authenticated && domain_mailboxes(cred->auth.domain) >= 0) {
+		credential_free(cred);
+		st_free(con->smtp.mailfrom);
+		con->smtp.mailfrom = NULL;
+		con->smtp.suggested_length = 0;
+		con_write_bl(con, "530 AUTHENTICATION REQUIRED\r\n", 29);
+		return;
+	}
+
+	credential_free(cred);
 
 	// Spit back the all clear.
 	con_write_bl(con, "250 MAIL FROM COMPLETE\r\n", 24);

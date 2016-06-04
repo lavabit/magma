@@ -1924,8 +1924,6 @@ combo() {
 		wait $SPF2_PID; error
 		($0 "xml2-$1") & XML2_PID=$!
 		wait $XML2_PID; error
-		($0 "gd-$1") & GD_PID=$!
-		wait $GD_PID; error
 		($0 "dkim-$1") & DKIM_PID=$!
 		wait $DKIM_PID; error
 		($0 "bzip2-$1") & BZIP2_PID=$!
@@ -1942,6 +1940,8 @@ combo() {
 		wait $MEMCACHED_PID; error
 		($0 "tokyocabinet-$1") & TOKYOCABINET_PID=$!
 		wait $TOKYOCABINET_PID; error
+		($0 "gd-$1") & GD_PID=$!
+		wait $GD_PID; error
 
 	else
 

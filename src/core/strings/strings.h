@@ -160,7 +160,8 @@ bool_t     pl_starts_with_char(placer_t place, chr_t c);
 bool_t     pl_inc(placer_t *place, bool_t more);
 
 /// opts.c
-bool_t   st_opt_get(stringer_t *s, uint32_t opt);
+uint32_t st_opt_get(stringer_t *s);
+bool_t   st_opt_test(stringer_t *s, uint32_t opt);
 int_t    st_opt_set(stringer_t *s, uint32_t opt, bool_t enabled);
 
 /// print.c

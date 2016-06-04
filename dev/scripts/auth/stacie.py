@@ -257,7 +257,7 @@ if len(args) == 3:
 #print (os.linesep + "Inputs")
 print ("username: " + username)
 print ("password: " + password)
-print ("salt: " + (hex_encode(salt) if hex == 1 else base64url_encode(salt)) + os.linesep)
+print ("salt: " + (hex_encode(base64url_decode(salt)) if hex == 1 else salt) + os.linesep)
 
 #print ("Derived")
 rounds = CalculateHashRounds(password, bonus)
@@ -279,7 +279,7 @@ verification_token = HashedTokenDerivation(password_key, username, base64url_dec
 print ("verification-token: " + (hex_encode(verification_token) if hex == 1 else base64url_encode(verification_token)))
 
 ephemeral_login_token = HashedTokenDerivation(verification_token, username, base64url_decode(salt), base64url_decode(nonce))
-print ("nonce: " + (hex_encode(nonce) if hex == 1 else base64url_encode(nonce)))
+print ("nonce: " + (hex_encode(base64url_decode(nonce)) if hex == 1 else nonce) + os.linesep)
 print ("ephemeral-login-token: " + (hex_encode(ephemeral_login_token) if hex == 1 else base64url_encode(ephemeral_login_token)))
 
 #

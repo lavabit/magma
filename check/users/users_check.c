@@ -387,6 +387,7 @@ Suite * suite_check_users(void) {
 	testcase(s, tc, "Auth Legacy/S", check_users_auth_legacy_s);
 	testcase(s, tc, "Auth Stacie/S", check_users_auth_stacie_s);
 	testcase(s, tc, "Auth Challenge/S", check_users_auth_challenge_s);
+	testcase(s, tc, "Auth Response/S", check_users_auth_response_s);
 	testcase(s, tc, "Auth Login/S", check_users_auth_login_s);
 
 	testcase(s, tc, "Cred Valid/S", check_users_credentials_valid_s);

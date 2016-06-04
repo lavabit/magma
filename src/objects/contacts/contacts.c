@@ -23,7 +23,7 @@ void contact_free(contact_t *contact) {
 	if (contact) {
 		inx_cleanup(contact->details);
 
-		if (!st_opt_get(contact->name, FOREIGNDATA)) {
+		if (!st_opt_test(contact->name, FOREIGNDATA)) {
 			st_free(contact->name);
 		}
 
@@ -128,7 +128,7 @@ void contact_name(contact_t *contact, stringer_t *name) {
 	if (contact && !st_empty_out(name, &data, &len) && (data = mm_dupe(data, len + 1))) {
 
 		// If the name isn't foreign data, then we should free it first.
-		if (!st_opt_get(contact->name, FOREIGNDATA)) {
+		if (!st_opt_test(contact->name, FOREIGNDATA)) {
 			mm_free(st_data_get(contact->name));
 		}
 
@@ -136,7 +136,7 @@ void contact_name(contact_t *contact, stringer_t *name) {
 		st_length_set(contact->name, len);
 
 		// Check whether the existing name is using a foreign buffer that needs to be freed?
-		if (st_opt_get(contact->name, FOREIGNDATA)) {
+		if (st_opt_test(contact->name, FOREIGNDATA)) {
 			st_opt_set(contact->name, FOREIGNDATA, false);
 		}
 	}

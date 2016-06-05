@@ -1,4 +1,3 @@
-
 /**
  * @file /magma/providers/checkers/dkim.c
  *
@@ -36,7 +35,7 @@ bool_t lib_load_dkim(void) {
 	symbol_t dkim[] = {
 		M_BIND(dkim_body), M_BIND(dkim_chunk), M_BIND(dkim_close), M_BIND(dkim_eoh), M_BIND(dkim_eom), M_BIND(dkim_free),
 		M_BIND(dkim_getresultstr), M_BIND(dkim_header),	M_BIND(dkim_init),	M_BIND(dkim_libversion),
-		M_BIND(dkim_sign), M_BIND(dkim_verify), // yes there is one anomaly because of a name clash:
+		M_BIND(dkim_sign), M_BIND(dkim_verify), M_BIND(dkim_geterror), // yes there is one anomaly because of a name clash:
 		{ .name = "dkim_getsighdr", .pointer = (void *)&dkim_getsighdrx_d },
 	};
 
@@ -126,12 +125,14 @@ stringer_t * dkim_create(stringer_t *id, stringer_t *message) {
 		return NULL;
 	}
 
-	key = (uchr_t *)magma.dkim.privkey;
+	key = st_uchar_get(magma.dkim.privkey);
 
 	// Create a new handle to sign the message.
 	if (!(context = dkim_sign_d(dkim_engine, st_data_get(id), NULL, key, (uchr_t *)magma.dkim.selector, (uchr_t *)magma.dkim.domain, DKIM_CANON_RELAXED,
 			DKIM_CANON_RELAXED, DKIM_SIGN_RSASHA256, DKIM_PROCESS_ALL, &status)) ||	status != DKIM_STAT_OK) {
-		log_pedantic("Allocation of the DKIM signature context failed. {%sstatus = %s}", context ? "" : "dkim_sign = NULL / ", dkim_getresultstr_d(status));
+		log_pedantic("Allocation of the DKIM signature context failed. {%sstatus = %s, error: %s}",
+			     context ? "" : "dkim_sign = NULL / ", dkim_getresultstr_d(status),
+			     context ? dkim_geterror_d(context) : "context NULL");
 
 		if (context) {
 			dkim_free_d(context);
@@ -147,18 +148,16 @@ stringer_t * dkim_create(stringer_t *id, stringer_t *message) {
 		// Then store the signature into our buffer.
 		status = dkim_getsighdrx_d(context, st_data_get(signature), DKIM_MAXHEADER + 1, 0);
 	}
-
-	dkim_free_d(context);
-
 	if (status == DKIM_STAT_OK && signature) {
-		output = st_merge("nns", DKIM_SIGNHEADER, ": ", signature);
+		output = st_merge("nnsn", DKIM_SIGNHEADER, ": ", signature, "\n");
 		stats_adjust_by_name("provider.dkim.signed", 1);
 	}
 	else if (status != DKIM_STAT_OK) {
-		log_pedantic("An error occurred while trying to generate the DKIM signature. {result = %s}", dkim_getresultstr_d(status));
+		log_pedantic("An error occurred while trying to generate the DKIM signature. {result = %s, error = %s}", dkim_getresultstr_d(status), dkim_geterror_d(context));
 		/// LOW: Should we track signing errors too?
 	}
 
+	dkim_free_d(context);
 	st_cleanup(signature);
 
 	return output;

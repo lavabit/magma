@@ -314,9 +314,9 @@ void pop_pass(connection_t *con) {
 	return;
 }
 
-// TODO: This function isn't called from anywhere.
 /**
  * @brief	Display the POP3 server capabilities, in response to a POP3 CAPA command.
+ * @note	See RFC 2449 POP3 Extension Mechanism for details.
  * @param	con		the POP3 client connection issuing the command.
  * @return	This function returns no value.
  */

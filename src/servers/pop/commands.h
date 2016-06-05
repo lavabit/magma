@@ -64,6 +64,10 @@ command_t pop_commands[] = {
 		.length = 4,
 		.function = &pop_retr
 	}, {
+		.string = "CAPA",
+		.length = 4,
+		.function = &pop_capa
+	}, {
 		.string = "LAST",
 		.length = 4,
 		.function = &pop_last

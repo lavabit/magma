@@ -13,8 +13,8 @@
 #ifndef MAGMA_OBJECTS_MESSAGES_H
 #define MAGMA_OBJECTS_MESSAGES_H
 
-/// LOW: Update the Messages table columns so they match the tank mail message header fields. Store individual header/body lengths and the compressed/uncompressed hash values;
-/// then update the message type to store and use the new information.
+/// LOW: Update the Messages table columns so they match the tank mail message header fields. Store individual header/body lengths
+/// and the compressed/uncompressed hash values; then update the message type to store and use the new information.
 
 typedef struct __attribute__ ((__packed__)) {
 
@@ -55,7 +55,6 @@ typedef struct __attribute__ ((__packed__)) {
 
 #define FMESSAGE_OPT_COMPRESSED	0x1
 #define FMESSAGE_OPT_ENCRYPTED	0x2
-
 
 typedef struct __attribute__ ((packed)) {
 	uint8_t magic1;		// first magic byte: 0x17

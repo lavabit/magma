@@ -19,7 +19,7 @@
 #include "contacts/contacts.h"
 #include "messages/messages.h"
 #include "config/config.h"
-#include "neue/neue.h"
+#include "cred/neue.h"
 #include "users/users.h"
 #include "mail/mail.h"
 #include "sessions/sessions.h"

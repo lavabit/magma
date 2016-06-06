@@ -90,7 +90,7 @@ int_t      meta_data_delete_tag(meta_message_t *message, stringer_t *tag);
 inx_t *    meta_data_fetch_alerts(uint64_t usernum);
 bool_t     meta_data_fetch_folders(meta_user_t *user);
 bool_t     meta_data_fetch_mailbox_aliases(meta_user_t *user);
-bool_t     meta_data_check_mailbox(stringer_t *address);
+bool_t     meta_data_check_mailbox(stringer_t *address) __attribute__ ((deprecated));
 bool_t     meta_data_fetch_messages(meta_user_t *user);
 int_t      meta_check_message_encryption(meta_user_t *user);
 inx_t *    meta_data_fetch_all_tags(uint64_t usernum);
@@ -106,6 +106,7 @@ uint64_t   meta_data_update_folder_name(uint64_t usernum, uint64_t foldernum, st
 void       meta_data_update_lock(uint64_t usernum, uint8_t lock);
 void       meta_data_update_log(meta_user_t *user, META_PROT prot);
 int_t      meta_data_user_build(meta_user_t *user, credential_t *cred);
+int_t      new_meta_data_user_build(meta_user_t *user, stringer_t *master, stringer_t *verification);
 int_t      meta_data_user_build_storage_keys(uint64_t usernum, stringer_t *passkey, stringer_t **priv_out, stringer_t **pub_out, bool_t dont_create, bool_t do_trans, uint32_t tid);
 int_t      meta_data_user_save_storage_keys(uint64_t usernum, stringer_t *passkey, stringer_t *pubkey, stringer_t *privkey, bool_t do_trans, uint32_t tid);
 
@@ -120,7 +121,7 @@ int_t   meta_contacts_update(meta_user_t *user, META_LOCK_STATUS locked);
 
 /// users.c
 int_t          meta_get(credential_t *cred, META_PROT flags, META_GET get, meta_user_t **output);
-void           meta_remove(stringer_t *username, META_PROT flags);
+int_t          new_meta_get(auth_t *auth, META_PROT flags, META_GET get, meta_user_t **output);
 int_t          meta_user_build(meta_user_t *user, credential_t *cred, META_LOCK_STATUS locked);
 meta_user_t *  meta_user_create(void);
 void           meta_user_destroy(meta_user_t *user);
@@ -136,5 +137,10 @@ void           meta_user_serial_set(meta_user_t *user, uint64_t object, uint64_t
 void           meta_user_unlock(meta_user_t *user);
 int_t          meta_user_update(meta_user_t *user, META_LOCK_STATUS locked);
 void           meta_user_wlock(meta_user_t *user);
+
+/// indexes.c
+meta_user_t *  meta_inx_find(stringer_t *username, META_PROT flags);
+void           meta_inx_remove(stringer_t *username, META_PROT flags);
+
 
 #endif

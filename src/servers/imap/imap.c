@@ -193,7 +193,7 @@ void imap_login(connection_t *con) {
 		}
 
 		con->imap.user = NULL;
-		meta_remove(con->imap.username, META_PROT_IMAP);
+		meta_inx_remove(con->imap.username, META_PROT_IMAP);
 		return;
 	}
 
@@ -201,7 +201,7 @@ void imap_login(connection_t *con) {
 	/// LOW: con->imap.bypass == 0 used to be here.
 	else if ((con->imap.user->flags & META_USER_SSL) == META_USER_SSL && con_secure(con) != 1) {
 
-		meta_remove(con->imap.username, META_PROT_IMAP);
+		meta_inx_remove(con->imap.username, META_PROT_IMAP);
 		con->imap.user = NULL;
 
 		// The PRIVACYREQUIRED response code is provided by RFC 5530 which states: "The operation is not permitted due to a lack of privacy. If

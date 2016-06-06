@@ -159,7 +159,7 @@ START_TEST (check_users_credentials_valid_s) {
 			goto cleanup_cred;
 		}
 
-		meta_remove(user_check_cred->auth.username, META_PROT_GENERIC);
+		meta_inx_remove(user_check_cred->auth.username, META_PROT_GENERIC);
 
 		if(meta_user_prune(user_check_cred->auth.username) < 1) {
 			errmsg = st_aprint("An error occurred while trying to prune the user data from the object cache. { user = %s }", st_char_get(tests[i].username));
@@ -262,7 +262,7 @@ START_TEST (check_users_credentials_invalid_s) {
 	return;
 
 cleanup_data:
-	meta_remove(user_check_cred->auth.username, META_PROT_GENERIC);
+	meta_inx_remove(user_check_cred->auth.username, META_PROT_GENERIC);
 cleanup_cred:
 	credential_free(user_check_cred);
 error:
@@ -286,7 +286,7 @@ error:
 		}
 
 		if (user_check_data) {
-			meta_remove(user_check_cred->auth.username, META_PROT_GENERIC);
+			meta_inx_remove(user_check_cred->auth.username, META_PROT_GENERIC);
 			user_check_data = NULL;
 		}
 
@@ -312,7 +312,7 @@ error:
 		}
 
 		if (user_check_data) {
-			meta_remove(user_check_cred->auth.username, META_PROT_GENERIC);
+			meta_inx_remove(user_check_cred->auth.username, META_PROT_GENERIC);
 			user_check_data = NULL;
 		}
 
@@ -338,7 +338,7 @@ error:
 		}
 
 		if (user_check_data) {
-			meta_remove(user_check_cred->auth.username, META_PROT_GENERIC);
+			meta_inx_remove(user_check_cred->auth.username, META_PROT_GENERIC);
 			user_check_data = NULL;
 		}
 

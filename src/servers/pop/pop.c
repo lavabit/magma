@@ -219,18 +219,16 @@ void pop_pass(connection_t *con) {
 		return;
 	}
 
-	// Check whether this account requires transport layer security.
+	// Check whether this account requires transport layer security, and if so, ensure the transport layer is encrypted.
 	if (auth->status.tls && con_secure(con) != 1) {
 		con_write_bl(con, "-ERR [SYS/PERM] This user account is configured to require that all POP sessions be connected over SSL.\r\n", 105);
 		return;
 	}
 
 	// Pull the user info out.
-	state = meta_get(cred, META_PROT_POP, META_GET_MESSAGES, &(con->pop.user));
+	state = new_meta_get(auth, META_PROT_POP, META_GET_MESSAGES, &(con->pop.user));
 
 
-
-	meta_remove(con->pop.username, META_PROT_POP);
 
 
 
@@ -238,7 +236,7 @@ void pop_pass(connection_t *con) {
 	// Single session check.
 	if (con->pop.user->refs.pop != 1) {
 		con->pop.user = NULL;
-		meta_remove(con->pop.username, META_PROT_POP);
+		meta_inx_remove(con->pop.username, META_PROT_POP);
 		con_write_bl(con, "-ERR [IN-USE] This account is being used by another session. Please try again in a few minutes.\r\n", 97);
 		return;
 	}

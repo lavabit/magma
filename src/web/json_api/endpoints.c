@@ -85,7 +85,7 @@ void api_endpoint_auth(connection_t *con) {
 
 	api_response(con, HTTP_OK, "{s:s, s:I}", "jsonrpc", "2.0", "id", con->http.portal.id);
 
-	cleanup: meta_remove(user->username, META_PROT_JSON);
+	cleanup: meta_inx_remove(user->username, META_PROT_JSON);
 	out: return;
 }
 

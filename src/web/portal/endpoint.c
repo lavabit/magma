@@ -299,7 +299,7 @@ void portal_endpoint_auth(connection_t *con) {
 		con->http.session->user = user;
 	}
 
-	if (user && user->username) meta_remove(user->username, META_PROT_WEB);
+	if (user && user->username) meta_inx_remove(user->username, META_PROT_WEB);
 	return;
 }
 

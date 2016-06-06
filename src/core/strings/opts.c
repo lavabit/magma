@@ -13,6 +13,22 @@
 #include "magma.h"
 
 /**
+ * @brief	Returns the options variable from a string to the caller. Is intended for use by functions outside of string library.
+ * @param	s	the input string.
+ * @return	the options in use by the provided string.
+ */
+uint32_t st_opt_get(stringer_t *s) {
+
+	uint32_t opts = 0;
+
+	if (!s) {
+		opts = *((uint32_t *)s);
+	}
+
+	return opts;
+}
+
+/**
  * @brief	Enable or disable a set of option(s) for a managed string, with validity testing.
  * @param	s	the input managed string.
  * @param	opt	the bitmask of option(s) to be enabled or disabled for the managed string.
@@ -50,7 +66,7 @@ int_t st_opt_set(stringer_t *s, uint32_t opt, bool_t enabled) {
  * @opt		opt	a bitmask of the managed string options to be tested.
  * @return	-1 on error, 0 if opt is not set, and 1 if opt is set.
  */
-bool_t st_opt_get(stringer_t *s, uint32_t opt) {
+bool_t st_opt_test(stringer_t *s, uint32_t opt) {
 
 	uint32_t opts;
 

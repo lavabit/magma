@@ -57,18 +57,18 @@ auth_stacie_t * auth_stacie(uint32_t bonus, stringer_t *username, stringer_t *pa
 	auth_stacie_t *stacie = NULL;
 
 	// Make sure all three required inputs are valid pointers and hold at least one character.
-	if (bonus > STACIE_ROUNDS_MAX || st_empty(username) || st_empty(password) || st_empty(salt)) {
+	if (bonus > STACIE_ROUNDS_MAX || st_empty(username) || st_empty(salt)) {
 		log_pedantic("A required parameter, needed to calculate the STACIE values, is missing or invalid.");
 		return NULL;
 	}
-	// Ensure both of the optional variables aren't empty.
-	else if (st_empty(password) && st_empty(nonce)) {
-		log_pedantic("If the password and nonce values are both empty, there is nothing to derive.");
+	// Ensure the nonce and verification token are provided when the plain text password is unavailable.
+	else if (st_empty(password) && (st_empty(verification) || st_empty(nonce))) {
+		log_pedantic("The verification token should only be available if the password wasn't provided.");
 		return NULL;
 	}
-	// Ensure the verification token is only provided when the plain text password is unavailable.
-	else if ((st_empty(password) && st_empty(verification)) || (!st_empty(password) && !st_empty(verification))) {
-		log_pedantic("The verification token should only be available if the password wasn't provided.");
+	// Ensure the password is empty, and the nonce is provided when a verification token is passed in.
+	else if (!st_empty(verification) && (!st_empty(password) || st_empty(nonce))) {
+		log_pedantic("When a verification token is passed in, the password must be empty, and the nonce must be populated.");
 		return NULL;
 	}
 	// Allocate a structure for the output.

@@ -53,6 +53,7 @@ typedef struct {
 	} keys;
 
 	struct {
+		stringer_t *ephemeral;
 		stringer_t *verification;
 	} tokens;
 
@@ -72,6 +73,7 @@ auth_t *  auth_alloc(void);
 auth_t *  auth_challenge(stringer_t *username);
 void      auth_free(auth_t *auth);
 int_t     auth_login(stringer_t *username, stringer_t *password, auth_t **output);
+int_t     auth_response(auth_t *auth, stringer_t *ephemeral);
 
 /// datatier.c
 int_t   auth_data_fetch(auth_t *auth);

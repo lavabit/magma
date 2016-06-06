@@ -24,7 +24,8 @@ void auth_free(auth_t *auth) {
 		return;
 	}
 
-	st_cleanup(auth->username, auth->seasoning.salt, auth->keys.master, auth->tokens.verification, auth->seasoning.nonce, auth->legacy.key, auth->legacy.token);
+	st_cleanup(auth->username, auth->seasoning.salt, auth->seasoning.nonce, auth->keys.master, auth->tokens.verification,
+		auth->tokens.ephemeral, auth->legacy.key, auth->legacy.token);
 	mm_free(auth);
 	return;
 }
@@ -100,10 +101,63 @@ auth_t * auth_challenge(stringer_t *username) {
  *
  * @return	return -1 if an error occurs, 0 if the response is validated, and 1 if the ephemeral token is invalid.
  */
-int_t auth_response(auth_t auth, stringer_t *ephemeral) {
+int_t auth_response(auth_t *auth, stringer_t *ephemeral) {
 
-	/// NEXT: EMPTY STUB!
-	return -1;
+	stringer_t *nonce = NULL;
+	auth_stacie_t *stacie = NULL;
+
+	// The protocol handler should be making sure the inputs are legal, but just in case we check them here.
+	if (!auth || st_empty(auth->username, auth->seasoning.salt, auth->tokens.verification, auth->seasoning.nonce, ephemeral)) {
+		log_pedantic("One of the required variables is empty. Unable to authenticate the STACIE response.");
+		return -1;
+	}
+	// We already know the nonce value isn't NULL, but we need to copy it after we make sure auth itself isn't invalid, but
+	// before we replace it.
+	else if (st_length_get(auth->seasoning.nonce) != STACIE_NONCE_LENGTH) {
+		log_pedantic("The nonce isn't valid. The length is incorrect.");
+		return -1;
+	}
+	else if (st_length_get(ephemeral) != STACIE_TOKEN_LENGTH) {
+		log_pedantic("The ephemeral token isn't valid. The length is incorrect.");
+		return -1;
+	}
+	// If this fails, we return an error, but preserve the original nonce value. If it works we are guranteed to return a new nonce
+	// value regardless of what happens below. We just need to cleanup the original nonce value before returning.
+	else if (!(nonce = stacie_nonce_create())) {
+		log_pedantic("Failed to generate a valid replacement nonce.");
+		return -1;
+	}
+
+	// Technically speaking the bonus rounds value isn't required for this stage.
+	if (!(stacie = auth_stacie(auth->seasoning.bonus, auth->username, NULL, auth->seasoning.salt, auth->tokens.verification, auth->seasoning.nonce)) ||
+		st_empty(stacie->tokens.ephemeral) || st_length_get(stacie->tokens.ephemeral) != STACIE_TOKEN_LENGTH) {
+
+		log_pedantic("The ephemeral token generation failed.");
+		mm_move(st_data_get(auth->seasoning.nonce), st_data_get(nonce), STACIE_NONCE_LENGTH);
+		if (stacie) auth_stacie_free(stacie);
+		st_free(nonce);
+
+		return -1;
+	}
+	// If the tokens aren't equal then the attempt fails.
+	else if (st_cmp_cs_eq(stacie->tokens.ephemeral, ephemeral)) {
+		log_info("The user provided incorecct login credentials for a STACIE account. { username = %.*s }", st_length_int(auth->username),
+			st_char_get(auth->username));
+
+		mm_move(st_data_get(auth->seasoning.nonce), st_data_get(nonce), STACIE_NONCE_LENGTH);
+		auth_stacie_free(stacie);
+		st_free(nonce);
+
+		return 1;
+	}
+
+	// We preserve the ephemeral token, just in case the protocol layer is stateless (like HTTP), and wants to use it as a session identifier.
+	mm_move(st_data_get(auth->seasoning.nonce), st_data_get(nonce), STACIE_NONCE_LENGTH);
+	auth->tokens.ephemeral = st_dupe(stacie->tokens.ephemeral);
+	auth_stacie_free(stacie);
+	st_free(nonce);
+
+	return 0;
 }
 
 /**

@@ -61,7 +61,7 @@ bool_t statistics_refresh(void) {
 		return true;
 	}
 
-	mutex_get_lock (&portal_statistics_mutex);
+	mutex_lock (&portal_statistics_mutex);
 
 	// Check one more time, because maybe somebody just updated the statistics stamp for us.
 	if (statistics_last_updated && (time(NULL) - statistics_last_updated) < PORTAL_STATISTICS_TIMEOUT) {

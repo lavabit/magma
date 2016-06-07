@@ -68,7 +68,7 @@ bool_t servers_network_start(void) {
 }
 
 /**
- * @brief	Create an SSL context for each SSL-configured server instance.
+ * @brief	Create a TLS context for each TLS enabled server instance.
  * @return	true on success or false on failure.
  */
 bool_t servers_encryption_start(void) {
@@ -99,7 +99,7 @@ void servers_network_stop(void) {
 }
 
 /**
- * @brief	Destroy the contexts of all SSL-enabled servers.
+ * @brief	Destroy the transport security context for each TLS enabled servers.
  * @return	This function returns no value.
  */
 void servers_encryption_stop(void) {
@@ -112,7 +112,7 @@ void servers_encryption_stop(void) {
 }
 
 /**
- * @brief	Free magma's  server configuration options.
+ * @brief	Free magma's server configuration options.
  * @note	This function assumes all worker threads have finished, and should only be called during the normal shutdown process.
  * @param	This function returns no value.
  */
@@ -159,7 +159,7 @@ void servers_free(void) {
 }
 
 /**
- * @brief	Allocate a new magma server configuration entry and initialize it to its default values.
+ * @brief	Allocate a new magma server configuration entry and initialize it to the default values.
  * @param	number	the index of the magma server instance in the global magma server array.
  * @return	NULL on failure, or a pointer to the requested magma server configuration entry on success.
  */
@@ -172,7 +172,7 @@ server_t * servers_alloc(uint32_t number) {
 		return NULL;
 
 	// Loop through and set the default values.
-	for (uint64_t i = 0; i < sizeof(server_keys) / sizeof(server_keys_t); i++) {
+	for (uint64_t i = 0; i < (sizeof(server_keys) / sizeof(server_keys_t)); i++) {
 		if (!server_keys[i].required && !servers_set_value(&server_keys[i], magma.servers[number], NULL)) {
 			log_critical("magma.servers%s has an invalid default value.", server_keys[i].name);
 			return NULL;
@@ -186,7 +186,7 @@ server_t * servers_alloc(uint32_t number) {
 }
 
 /**
- * @brief	Validate all of the configured magma server instances.
+ * @brief	Validate all of the configured magmad server instances.
  * @note	This function also checks to see that no servers are binding to the same port.
  * @return	true if all servers have been validated, or false on failure.
  */
@@ -230,7 +230,8 @@ bool_t servers_validate(void) {
 					if (!st_cmp_ci_eq(NULLER(server_keys[j].name), CONSTANT(".protocol")) && (*((M_PROTOCOL *)(((char *)magma.servers[i]) + server_keys[j].offset))) == EMPTY) {
 						log_critical("magma.servers[%u]%s is required and has not been set.", i, server_keys[j].name);
 						result = false;
-					} else if (!st_cmp_ci_eq(NULLER(server_keys[j].name), CONSTANT(".network.type")) && (*((M_PORT *)(((char *)magma.servers[i]) + server_keys[j].offset))) == SSL_PORT &&
+					}
+					else if (!st_cmp_ci_eq(NULLER(server_keys[j].name), CONSTANT(".network.type")) && (*((M_PORT *)(((char *)magma.servers[i]) + server_keys[j].offset))) == SSL_PORT &&
 							ns_empty(magma.servers[i]->ssl.certificate)) {
 						log_critical("magma.servers[%u]%s has been configured to use SSL, but no certificate file has been provided.", i, server_keys[j].name);
 						result = false;
@@ -293,12 +294,11 @@ bool_t servers_validate(void) {
 					}
 					break;
 
-					// Booleans must always be valid, since they only have two possible states. But since implementations vary, we check to make sure the
-					// actual value matches what's been defined for true and false.
+				// Booleans must always be valid, since they only have two possible states. But since implementations vary, we check to make sure the
+				// actual value matches what's been defined for true and false.
 				case (M_TYPE_BOOLEAN):
 					if (*((bool_t *)(((char *)magma.servers[i]) + server_keys[j].offset)) != true && *((bool_t *)(((char *)magma.servers[i]) + server_keys[j].offset)) != false) {
 						log_critical("magma.servers[%u]%s requires a valid boolean.", i, server_keys[j].name);
-
 						result = false;
 					}
 					break;
@@ -339,16 +339,16 @@ void servers_output_settings(void) {
 			case (M_TYPE_NULLER):
 				if (ns_empty(*((char **)(((char *)magma.servers[i]) + server_keys[j].offset))))
 					log_info("magma.servers[%u]%s = NULL", i, server_keys[j].name);
-					else
+				else
 					log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, *((char **)(((char *)magma.servers[i]) + server_keys[j].offset)));
 				break;
 
 			case (M_TYPE_STRINGER):
 				if (st_empty(*((stringer_t **)(((char *)magma.servers[i]) + server_keys[j].offset))))
 					log_info("magma.servers[%u]%s = NULL", i, server_keys[j].name);
-					else
+				else
 					log_info("magma.servers[%u]%s = %.*s", i, server_keys[j].name, st_length_int(*((stringer_t **)(((char *)magma.servers[i]) + server_keys[j].offset))),
-								st_char_get(*((stringer_t **)(((char *)magma.servers[i]) + server_keys[j].offset))));
+						st_char_get(*((stringer_t **)(((char *)magma.servers[i]) + server_keys[j].offset))));
 				break;
 
 			case (M_TYPE_ENUM):
@@ -369,14 +369,15 @@ void servers_output_settings(void) {
 						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "SUBMISSION");
 					else if (*((M_PROTOCOL *)(((char *)magma.servers[i]) + server_keys[j].offset)) == EMPTY)
 						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "EMPTY");
-						else
+					else
 						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "UNKNOWN");
-				} else if (!st_cmp_cs_eq(NULLER(server_keys[j].name), CONSTANT(".network.type"))) {
+				}
+				else if (!st_cmp_cs_eq(NULLER(server_keys[j].name), CONSTANT(".network.type"))) {
 					if (*((M_PORT *)(((char *)magma.servers[i]) + server_keys[j].offset)) == TCP_PORT)
 						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "TCP");
 					else if (*((M_PORT *)(((char *)magma.servers[i]) + server_keys[j].offset)) == SSL_PORT)
 						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "SSL");
-						else
+					else
 						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "UNKNOWN");
 				}
 				break;
@@ -460,7 +461,7 @@ bool_t servers_set_value(server_keys_t *setting, server_t *server, stringer_t *v
 			*((stringer_t **)(((char *)server) + setting->offset)) = st_dupe_opts(MANAGED_T | CONTIGUOUS | HEAP, setting->norm.val.st);
 		break;
 
-		// Booleans
+	// Booleans
 	case (M_TYPE_BOOLEAN):
 		if (!st_empty(value)) {
 			if (!st_cmp_ci_eq(value, CONSTANT("true")))
@@ -471,7 +472,8 @@ bool_t servers_set_value(server_keys_t *setting, server_t *server, stringer_t *v
 				log_critical("Invalid value for %s.", setting->name);
 				result = false;
 			}
-		} else
+		}
+		else
 			*((bool_t *)(((char *)server) + setting->offset)) = setting->norm.val.binary;
 		break;
 
@@ -495,7 +497,8 @@ bool_t servers_set_value(server_keys_t *setting, server_t *server, stringer_t *v
 				log_critical("The %.*s is an invalid protocol.", st_length_int(value), st_char_get(value));
 				result = false;
 			}
-		} else if (!st_cmp_ci_eq(NULLER(setting->name), CONSTANT(".network.type"))) {
+		}
+		else if (!st_cmp_ci_eq(NULLER(setting->name), CONSTANT(".network.type"))) {
 			if (st_empty(value))
 				*((M_PORT *)(((char *)server) + setting->offset)) = setting->norm.val.u64;
 			else if (!st_cmp_ci_eq(value, CONSTANT("TCP")))
@@ -506,7 +509,8 @@ bool_t servers_set_value(server_keys_t *setting, server_t *server, stringer_t *v
 				log_critical("The value %.*s is an invalid port type. Use TCP or SSL as the port type.", st_length_int(value), st_char_get(value));
 				result = false;
 			}
-		} else {
+		}
+		else {
 			log_critical("The %s is an an unrecognized enumerated type.", setting->name);
 			result = false;
 		}
@@ -519,7 +523,8 @@ bool_t servers_set_value(server_keys_t *setting, server_t *server, stringer_t *v
 				log_critical("Invalid value for %s.", setting->name);
 				result = false;
 			}
-		} else
+		}
+		else
 			*((int8_t *)(((char *)server) + setting->offset)) = setting->norm.val.i8;
 		break;
 
@@ -539,7 +544,8 @@ bool_t servers_set_value(server_keys_t *setting, server_t *server, stringer_t *v
 				log_critical("Invalid value for %s.", setting->name);
 				result = false;
 			}
-		} else
+		}
+		else
 			*((int32_t *)(((char *)server) + setting->offset)) = setting->norm.val.i32;
 		break;
 
@@ -549,7 +555,8 @@ bool_t servers_set_value(server_keys_t *setting, server_t *server, stringer_t *v
 				log_critical("Invalid value for %s.", setting->name);
 				result = false;
 			}
-		} else
+		}
+		else
 			*((int64_t *)(((char *)server) + setting->offset)) = setting->norm.val.i64;
 		break;
 
@@ -560,7 +567,8 @@ bool_t servers_set_value(server_keys_t *setting, server_t *server, stringer_t *v
 				log_critical("Invalid value for %s.", setting->name);
 				result = false;
 			}
-		} else
+		}
+		else
 			*((uint8_t *)(((char *)server) + setting->offset)) = setting->norm.val.u8;
 		break;
 
@@ -570,7 +578,8 @@ bool_t servers_set_value(server_keys_t *setting, server_t *server, stringer_t *v
 				log_critical("Invalid value for %s.", setting->name);
 				result = false;
 			}
-		} else
+		}
+		else
 			*((uint16_t *)(((char *)server) + setting->offset)) = setting->norm.val.u16;
 		break;
 
@@ -580,7 +589,8 @@ bool_t servers_set_value(server_keys_t *setting, server_t *server, stringer_t *v
 				log_critical("Invalid value for %s.", setting->name);
 				result = false;
 			}
-		} else
+		}
+		else
 			*((uint32_t *)(((char *)server) + setting->offset)) = setting->norm.val.u32;
 		break;
 
@@ -590,12 +600,13 @@ bool_t servers_set_value(server_keys_t *setting, server_t *server, stringer_t *v
 				log_critical("Invalid value for %s.", setting->name);
 				result = false;
 			}
-		} else
+		}
+		else
 			*((uint64_t *)(((char *)server) + setting->offset)) = setting->norm.val.u64;
 		break;
 
 	default:
-		log_critical("Invalid type. {name = %s / type = %s = %u}", setting->name, type(setting->norm.type), setting->norm.type);
+		log_critical("Invalid type. { name = %s / type = %s = %u }", setting->name, type(setting->norm.type), setting->norm.type);
 		result = false;
 		break;
 	}
@@ -665,7 +676,7 @@ bool_t servers_config(stringer_t *name, stringer_t *value) {
 }
 
 /**
- * @brief	Log all server key information to be returned via "magma -h".
+ * @brief	Log all server key information to be returned via the "magmad -h|--help" command.
  * @return	This function returns no value.
  */
 void servers_output_help(void) {

@@ -1,0 +1,199 @@
+<h1>Workflow Examples</h1>
+
+<h2>Adding HTML Blocks</h2>
+
+<p>HTML blocks are located in <code>dev/blocks</code>. Block hierarchy is indicated by the filename. The hierarchy shows which files will be embedded into each other.</p>
+
+<p>Blocks can indicate where other blocks can be embedded with the <code>&lt;!-- [BLOCK] --&gt;</code> comment. Only one embed statement is allowed per block.</p>
+
+<h2>Compiling Blocks Into States</h2>
+
+<p>State files located in <code>static/states</code> and <code>js/states</code> are used to compile blocks into sets of HTML code. Embedding is indicated with white space (4 spaces, not tabs). For example, with the blocks named:</p>
+
+<pre><code>container
+container.list
+container.list.item
+</code></pre>
+
+<p>A state file that embeds the item into the list and list into the container would be:</p>
+
+<pre><code>container
+    list
+        item
+</code></pre>
+
+<p>Also, if you wanted a block with just the list and embedded item (usefull for javascript blocks which only need snippets of html, not complete html files), you would do the following:</p>
+
+<pre><code>container.list
+    item
+</code></pre>
+
+<p>Running <code>dev/build/build-html.php</code> compiles all the states into blocks. (You will need to run <code>dev/build/build-js.php</code> following compiling html to update the blocks stored in <code>dev/js/scripts/blocks.js</code> for javascript access).</p>
+
+<h2>Views</h2>
+
+<p>Views are responsible for creating html containers and managing user interactions. The <code>getBlock</code> method lets you grab an html block by name (the name of the state file). For example, if you create a state called list.state:</p>
+
+<pre><code>container.list
+    item
+</code></pre>
+
+<p>Then run <code>build-html.php</code> then <code>build-js.php</code> to complile the blocks into an html string and insert them <code>dev/js/scripts/blocks.js</code>, you can access the block with the following:</p>
+
+<pre><code>var list = getBlock('list');
+</code></pre>
+
+<p>Which returns the jQuery object of the list.html block.</p>
+
+<p>Views will also grab data from models and fill templates. Templates are located in <code>dev/js/templates/</code>. See <a href="http://api.jquery.com/category/plugins/templates/">jQuery templates API</a> for syntax details. Running <code>dev/build/build-js.php</code> inserts templates into <code>dev/js/scripts/tmpl.js</code>. Use the tmpl model to fill templates. </p>
+
+<p>Model data is accessed by observing the events that provide it. For example, with template named <code>listItems</code>, the following snippet fills the template on the <code>loaded</code> event:</p>
+
+<pre><code>listModel.addObserver('loaded', function(data) {
+    var tmplModel = magma.model.tmpl();
+
+    tmplModel.observeOnce('completed', function(list) {
+        // do stuff with list jquery object
+    });
+
+    tmplModel.fillTmpl('listItems', data);
+});
+</code></pre>
+
+<p>Views select specific elements to bind actions to or delegate events to handle the user interactions:</p>
+
+<pre><code>list.delegate('.item', 'click', function() {
+    alert($(this).text());
+});
+</code></pre>
+
+<p>Finally, the root element is returned to interface with the bootstrap explained below:</p>
+
+<pre><code>return {
+    root: list
+};
+</code></pre>
+
+<p>Putting it together:</p>
+
+<pre><code>magma.view = {
+    list: function(listModel) {
+        var list = getBlock('list');
+
+        list.delegate('.item', 'click', function() {
+            alert($(this).text());
+        });
+
+        listModel.addObserver('loaded', function(data) {
+            var tmplModel = magma.model.tmpl();
+
+            tmplModel.observeOnce('completed', function(items) {
+                list.append(items);
+            });
+
+            tmplModel.fillTmpl('listItems', data);
+        });
+
+        listModel.loadItems(10);
+
+        return {
+            root: list
+        };
+    }
+};
+</code></pre>
+
+<h2>Models</h2>
+
+<p>Models can communicate with views with events passed through the observable object. Events are typically listed when the observerable is created:</p>
+
+<pre><code>var observable = newObservable(['loaded']);
+</code></pre>
+
+<p>This creates an observable with two events that can be subscribed to. In some cases, the <code>listEvents</code> helper is used to create a set of events:</p>
+
+<pre><code>var observable = newObservable(listEvents(['loaded']));
+</code></pre>
+
+<p><code>listEvents</code> expands the array to <code>['loaded', 'loadedError', 'loadedFailed']</code> for convenience since server methods will either be successfull, return an error, or fail.</p>
+
+<p>Models also access server data via the JSON interface. <code>getData</code> is used to make an AJAX request to server:</p>
+
+<pre><code>var load = function(amount) {
+    getData('list.items', {items: amount}, {
+        success: function(data) {
+            observable.notifyObservers('loaded', data);
+        },
+        error: function(error) {
+            observable.notifyObservers('loadedError', error);
+        },
+        failure: function() {
+            observable.notifyObservers('loadedFailed');
+        }
+    });
+};
+</code></pre>
+
+<p>Any views that subscribe to the <code>loaded</code> event will be notified when the data is finished loading and have access to the data object.</p>
+
+<p>All models return on object containing interface methods and subscription methods:</p>
+
+<pre><code>return {
+    loadItems: load,
+    addObserver: observable.addObserver,
+    observeOnce: observable.observeOnce,
+    removeObserver: observable.removeObserver
+};
+</code></pre>
+
+<p>Putting things together:</p>
+
+<pre><code>magma.model = {
+    list: functions() {
+        var observable = newObservable(listEvents(['loaded']));
+
+        var load = function(amount) {
+            getData('list.items', {items: amount}, {
+                success: function(data) {
+                    observable.notifyObservers('loaded', data);
+                },
+                error: function(error) {
+                    observable.notifyObservers('loadedError', error);
+                },
+                failure: function() {
+                    observable.notifyObservers('loadedFailed');
+                }
+            });
+        };
+
+        return {
+            loadItems: load,
+            addObserver: observable.addObserver,
+            observeOnce: observable.observeOnce,
+            removeObserver: observable.removeObserver
+        };
+    }
+};
+</code></pre>
+
+<h2>Bootstrap</h2>
+
+<p>The bootstrap methods located in <code>dev/js/scripts/bootstrap.js</code> are used to launch tabs or workspaces. These functions glue together specific models and views and add the views to the page.</p>
+
+<p><code>login</code>, <code>locked</code>, <code>logout</code>, and the <code>loading</code> bootstraps are for startup</p>
+
+<p><code>main</code> sets up the chrome and workspace container</p>
+
+<p><code>inbox</code>, <code>read</code>, <code>compose</code>, <code>search</code>, and <code>scrape</code> are examples of creating a tabbed workspace</p>
+
+<p><code>mail</code>, <code>contacts</code>, <code>options</code>, and <code>help</code> are global navigation that hide or show the tabs.</p>
+
+<p>For example, a bootstrap method for the list view and model above would look like the following:</p>
+
+<pre><code>magma.bootstrap = {
+    list: function() {
+        var listModel = magma.model.list();
+        magma.view.list(listModel).root.appendTo(document.body);
+    }
+};
+</code></pre>

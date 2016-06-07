@@ -27,7 +27,7 @@
 
 // User table
 #define SELECT_USER "SELECT Dispatch.secure, locked, Users.usernum, `ssl`, overquota FROM Users INNER JOIN Dispatch ON Users.usernum = Dispatch.usernum WHERE userid = ? AND legacy = ? AND email = 1"
-#define SELECT_USER_AUTH "SELECT Dispatch.secure, locked, Users.usernum, `ssl`, overquota FROM Users INNER JOIN Dispatch ON Users.usernum = Dispatch.usernum WHERE userid = ? AND auth = ? AND email = 1	LIMIT 1"
+#define SELECT_USER_AUTH "SELECT Dispatch.secure, locked, Users.usernum, `ssl`, overquota FROM Users INNER JOIN Dispatch ON Users.usernum = Dispatch.usernum WHERE userid = ? AND auth = ? AND email = 1 LIMIT 1"
 #define SELECT_USERNUM_AUTH_LEGACY "SELECT usernum FROM Users WHERE userid = ? AND legacy = ? AND email = 1"
 #define SELECT_USERNUM_AUTH "SELECT usernum FROM Users WHERE userid = ? AND auth = ? AND email = 1"
 #define SELECT_USER_RECORD "SELECT legacy, Dispatch.secure, locked, `ssl`, overquota FROM Users INNER JOIN Dispatch ON Users.usernum = Dispatch.usernum WHERE Users.usernum = ? AND email = 1"

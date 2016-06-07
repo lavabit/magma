@@ -13,6 +13,7 @@
 #include "magma.h"
 
 object_cache_t objects = {
+	.meta = NULL,
 	.users = NULL,
 	.sessions = NULL
 };
@@ -22,6 +23,11 @@ object_cache_t objects = {
  * @return	true on success or false on failure.
  */
 bool_t obj_cache_start(void) {
+
+	if (!(objects.meta = inx_alloc(M_INX_HASHED | M_INX_LOCK_MANUAL, &new_meta_free))) {
+		log_critical("Unable to initialize the meta information cache.");
+		return false;
+	}
 
 	if (!(objects.users = inx_alloc(M_INX_HASHED | M_INX_LOCK_MANUAL, &meta_user_destroy))) {
 		log_critical("Unable to initialize the user information cache.");
@@ -53,6 +59,12 @@ void obj_cache_stop(void) {
 		objects.users = NULL;
 	}
 
+	if (objects.meta) {
+		inx_free(objects.meta);
+		objects.meta = NULL;
+	}
+
+
 	return;
 }
 
@@ -72,10 +84,53 @@ void obj_cache_prune(void) {
 	session_t *sess;
 	meta_user_t *user;
 	inx_cursor_t *cursor;
+	new_meta_user_t *meta;
 	uint64_t count, expired;
 
 	if ((now = time(NULL)) == (time_t)(-1)) {
 		return;
+	}
+
+	if (objects.meta && (cursor = inx_cursor_alloc(objects.meta))) {
+
+		expired = 0;
+
+		inx_lock_read(objects.meta);
+
+		// If were currently holding more than 4,096 meta objects, prune those older than 5 minutes.
+		if ((count = inx_count(objects.meta)) > 4096) {
+			gap = 300;
+		}
+		// If the count is above 2,048, prune entries older than 30 minutes.
+		else if (count > 2048) {
+			gap = 1800;
+		}
+		// Otherwise only prune those older than 1 hour.
+		else  {
+			gap = 3600;
+		}
+
+		inx_unlock(objects.meta);
+		inx_lock_write(objects.meta);
+
+		meta = inx_cursor_value_next(cursor);
+
+		while (meta) {
+			if (difftime(now, new_meta_user_ref_stamp(meta)) > gap && !new_meta_user_ref_total(meta)) {
+				inx_delete(objects.meta, inx_cursor_key_active(cursor));
+				inx_cursor_reset(cursor);
+				expired++;
+			}
+			meta = inx_cursor_value_next(cursor);
+		}
+
+		// Record the total so we can update the statistics variable.
+		count = inx_count(objects.meta);
+		inx_unlock(objects.meta);
+		inx_cursor_free(cursor);
+
+		stats_set_by_name("objects.meta.total", count);
+		stats_adjust_by_name("objects.meta.expired", expired);
 	}
 
 	if (objects.users && (cursor = inx_cursor_alloc(objects.users))) {
@@ -126,7 +181,7 @@ void obj_cache_prune(void) {
 
 		inx_lock_read(objects.sessions);
 
-		// If were currently holding more than 4,096 users, prune those older than 5 minutes.
+		// If were currently holding more than 4,096 sessions, prune those older than 5 minutes.
 		if ((count = inx_count(objects.sessions)) > 4096) {
 			gap = 300;
 		}

@@ -1,8 +1,0 @@
-{
-	"id":4,
-	"method":"config.edit",
-	"params":{
-		"phone": "2145551212",
-		"secure": "true"
-	}
-}

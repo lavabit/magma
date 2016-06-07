@@ -30,7 +30,7 @@ spool_check_lock = PTHREAD_MUTEX_INITIALIZER;
 // LOW: Add files created, and include files cleaned.
 uint64_t spool_error_stats(void) {
 	uint64_t result;
-	mutex_get_lock(&spool_error_lock);
+	mutex_lock(&spool_error_lock);
 	result = spool_errors;
 	mutex_unlock(&spool_error_lock);
 	return result;
@@ -79,7 +79,7 @@ int_t spool_check(stringer_t *path) {
 	time_t now;
 	int_t result = 0;
 
-	mutex_get_lock(&spool_check_lock);
+	mutex_lock(&spool_check_lock);
 	if (folder_exists(path, false) < 0) {
 
 		// We only record errors once per hour, otherwise we'd fill the log file up.
@@ -97,7 +97,7 @@ int_t spool_check(stringer_t *path) {
 
 	// Error tracking - this depends on the function having a single return point.
 	if (result) {
-		mutex_get_lock(&spool_error_lock);
+		mutex_lock(&spool_error_lock);
 		spool_errors++;
 		mutex_unlock(&spool_error_lock);
 	}
@@ -142,7 +142,7 @@ int_t spool_mktemp(int_t spool, chr_t *prefix) {
 				err_info = errno;
 
 				// If the path is valid, but were still failing, record an error message in the log file, but only once an hour.
-				mutex_get_lock(&spool_error_lock);
+				mutex_lock(&spool_error_lock);
 				if (((now = time(NULL)) - spool_creation_failure) > 3600) {
 					log_critical("Temporary file creation failed. {mkostemp = %i / errno = %i / strerror = %s / file = %.*s}", fd, err_info, strerror_r(err_info, MEMORYBUF(1024), 1024),
 						st_length_int(template), st_char_get(template));
@@ -169,7 +169,7 @@ int_t spool_mktemp(int_t spool, chr_t *prefix) {
 
 	// Error tracking - this depends on the function having a single return point.
 	if (fd < 0) {
-		mutex_get_lock(&spool_error_lock);
+		mutex_lock(&spool_error_lock);
 		spool_errors++;
 		mutex_unlock(&spool_error_lock);
 	}
@@ -196,7 +196,7 @@ int_t spool_check_file(const char *file, const struct stat *info, int type) {
 	if (type == FTW_F) {
 		if (unlink(file)) {
 			log_error("An error occurred while trying to unlink a temporary file inside the spool. {%s / %s}", strerror_r(errno, bufptr, buflen), file);
-			mutex_get_lock(&spool_error_lock);
+			mutex_lock(&spool_error_lock);
 			spool_errors++;
 			mutex_unlock(&spool_error_lock);
 		}
@@ -323,7 +323,7 @@ bool_t spool_start(void) {
 
 	// Error tracking - this depends on the function having a single return point.
 	if (!result) {
-		mutex_get_lock(&spool_error_lock);
+		mutex_lock(&spool_error_lock);
 		spool_errors++;
 		mutex_unlock(&spool_error_lock);
 	}

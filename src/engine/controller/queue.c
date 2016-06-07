@@ -48,7 +48,7 @@ void requeue(void *function, void *requeue, void *data) {
 	work->requeue = requeue;
 	work->data = data;
 
-	mutex_get_lock(&queue.lock);
+	mutex_lock(&queue.lock);
 
 	if ((local = queue.items)) {
 		while (local->next) local = (queue_t *)local->next;
@@ -93,7 +93,7 @@ void dequeue(void) {
 	do {
 		sem_wait(&queue.sema);
 
-		mutex_get_lock(&queue.lock);
+		mutex_lock(&queue.lock);
 		work = queue.items;
 
 		if (work) {

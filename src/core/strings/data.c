@@ -12,11 +12,41 @@
 
 #include "magma.h"
 
+
+/**
+ * @brief	A simple method for checking multiple managed strings to see if all of them contain data.
+ *
+ * @param	len		the number of strings being passed in.
+ * @param	va_list	a list of managed strings to be freed.
+ *
+ * @return	true if all of the strings are populated with at least one byte of data, otherwise false.
+ */
+bool_t st_populated_variadic(ssize_t len, ...) {
+
+	va_list list;
+	stringer_t *s = NULL;
+
+	va_start(list, len);
+
+	// Loop through the inputs, and immediately return true if any of the inputs is empty.
+	for (ssize_t i = 0; i < len; i++) {
+		if (!(s = va_arg(list, stringer_t *)) || !*((uint32_t *)s) || !st_data_get(s) || !st_length_get(s)) {
+			va_end(list);
+			return false;
+		}
+	}
+
+	va_end(list);
+
+	// Return true if we made it this far, unless the list of strings is empty, then return true; which should never actually happen (on purpose).
+	return (len ? true : false);
+}
+
 /**
  * @brief	A simple method for checking multiple managed strings to see if any are empty.
  *
  * @param	len		the number of strings being passed in.
- * @param	va_list	a list of managed strings to be freed.
+ * @param	va_list	a list of managed strings to check for emptiness
  *
  * @return	true if any of the strings are NULL, uninitialized or empty; false if every string has at least one byte of data.
  */
@@ -37,7 +67,7 @@ bool_t st_empty_variadic(ssize_t len, ...) {
 
 	va_end(list);
 
-	// Return true if 0 strings are passed in; which should never actually happen (on purpose).
+	// Return false if we made it this far, unless no strings were actually passed in; which should never actually happen (on purpose).
 	return (len ? false : true);
 }
 

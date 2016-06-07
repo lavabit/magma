@@ -121,7 +121,6 @@ int_t   meta_contacts_update(meta_user_t *user, META_LOCK_STATUS locked);
 
 /// users.c
 int_t          meta_get(credential_t *cred, META_PROT flags, META_GET get, meta_user_t **output);
-int_t          new_meta_get(auth_t *auth, META_PROT flags, META_GET get, meta_user_t **output);
 int_t          meta_user_build(meta_user_t *user, credential_t *cred, META_LOCK_STATUS locked);
 meta_user_t *  meta_user_create(void);
 void           meta_user_destroy(meta_user_t *user);

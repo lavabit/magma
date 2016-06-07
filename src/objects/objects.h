@@ -14,6 +14,7 @@
 #define MAGMA_OBJECTS_H
 
 #include "auth/auth.h"
+#include "meta/meta.h"
 #include "warehouse/warehouse.h"
 #include "folders/folders.h"
 #include "contacts/contacts.h"
@@ -33,7 +34,7 @@ enum {
 };
 
 typedef struct {
-	inx_t *users, *sessions;
+	inx_t *meta, *users, *sessions;
 } object_cache_t;
 
 extern object_cache_t objects;

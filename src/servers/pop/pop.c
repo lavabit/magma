@@ -12,7 +12,7 @@
 
 #include "magma.h"
 
-/// TODO: Review error messages and update them with the appropriate response code.
+/// TODO: Review error messages and update them with the appropriate response code, as per RFC 3206 regarding the response codes extension.
 
 /**
  * @brief	Initialize a TLS session for an unauthenticated POP3 session.
@@ -167,7 +167,7 @@ void pop_user(connection_t *con) {
  * @note	This command is only allowed for sessions which have not yet been authenticated, but which have already supplied a username.
  *			If the username/password combo was validated, the account information is retrieved and checked to see if it is locked.
  *			After successful authentication, this function will prohibit insecure connections for any user configured to use SSL only,
- *			and enforce the existence of only one POP3 session at a time. See RFC 3206 regarding the response code extension.
+ *			and enforce the existence of only one POP3 session at a time.
  *			Finally, the database Log table for this user's POP3 access is updated, and all the user's messages are retrieved.
  * @param	con		the POP3 client connection issuing the command.
  * @return	This function returns no value.
@@ -178,6 +178,7 @@ void pop_pass(connection_t *con) {
 	auth_t *auth = NULL;
 	stringer_t *password = NULL;
 
+	// The PASS command is only available in the pre-authentication state.
 	if (con->pop.session_state != 0) {
 		pop_invalid(con);
 		return;
@@ -197,23 +198,37 @@ void pop_pass(connection_t *con) {
 
 	// Authenticate the username and password.
 	if ((state = auth_login(con->pop.username, password, &auth))) {
-		if (state < 0) con_write_bl(con, "-ERR [SYS/TEMP] Internal server error. Please try again later.\r\n", 64);
-		else con_write_bl(con, "-ERR [AUTH] The username and password combination is invalid.\r\n", 63);
+		if (state < 0) {
+			con_write_bl(con, "-ERR [SYS/TEMP] Internal server error. Please try again later.\r\n", 64);
+		}
+		else {
+			con_write_bl(con, "-ERR [AUTH] The username and password combination is invalid.\r\n", 63);
+		}
 		st_free(password);
 		return;
 	}
 
-	// Free the plain text password. If secure memory was enabled, it will be wiped as well.
+	// Free the plain text password. If secure memory was enabled, the buffer will be wiped before the buffer is freed.
 	st_free(password);
 
 	// Check if the account is locked.
 	if (auth->status.locked) {
 
-		if (auth->status.locked == 1) con_write_bl(con, "-ERR [SYS/PERM] This account has been administratively locked.\r\n", 64);
-		else if (auth->status.locked == 2) con_write_bl(con, "-ERR [SYS/PERM] This account has been locked for inactivity.\r\n", 62);
-		else if (auth->status.locked == 3) con_write_bl(con, "-ERR [SYS/PERM] This account has been locked on suspicion of abuse.\r\n", 69);
-		else if (auth->status.locked == 4) con_write_bl(con, "-ERR [SYS/PERM] This account has been locked at the request of the user.\r\n", 74);
-		else if (auth->status.locked != 0) con_write_bl(con, "-ERR [SYS/PERM] This account has been locked.\r\n", 47);
+		if (auth->status.locked == 1) {
+			con_write_bl(con, "-ERR [SYS/PERM] This account has been administratively locked.\r\n", 64);
+		}
+		else if (auth->status.locked == 2) {
+			con_write_bl(con, "-ERR [SYS/PERM] This account has been locked for inactivity.\r\n", 62);
+		}
+		else if (auth->status.locked == 3) {
+			con_write_bl(con, "-ERR [SYS/PERM] This account has been locked on suspicion of abuse.\r\n", 69);
+		}
+		else if (auth->status.locked == 4) {
+			con_write_bl(con, "-ERR [SYS/PERM] This account has been locked at the request of the user.\r\n", 74);
+		}
+		else if (auth->status.locked != 0) {
+			con_write_bl(con, "-ERR [SYS/PERM] This account has been locked.\r\n", 47);
+		}
 
 		auth_free(auth);
 		return;
@@ -222,16 +237,21 @@ void pop_pass(connection_t *con) {
 	// Check whether this account requires transport layer security, and if so, ensure the transport layer is encrypted.
 	if (auth->status.tls && con_secure(con) != 1) {
 		con_write_bl(con, "-ERR [SYS/PERM] This user account is configured to require that all POP sessions be connected over SSL.\r\n", 105);
+		auth_free(auth);
 		return;
 	}
 
 	// Pull the user info out.
-	state = new_meta_get(auth, META_PROT_POP, META_GET_MESSAGES, &(con->pop.user));
-
-
-
-
-
+	if ((state = new_meta_get(auth, META_PROT_POP, META_GET_MESSAGES, &(con->pop.user)))) {
+		if (state < 0) {
+			con_write_bl(con, "-ERR [SYS/TEMP] Internal server error. Please try again later.\r\n", 64);
+		}
+		else {
+			con_write_bl(con, "-ERR [AUTH] The username and password combination is invalid.\r\n", 63);
+		}
+		auth_free(auth);
+		return;
+	}
 
 	// Single session check.
 	if (con->pop.user->refs.pop != 1) {

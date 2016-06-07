@@ -75,6 +75,8 @@ struct {
 
 
 			// Objects
+			"objects.meta.total",
+			"objects.meta.expired",
 			"objects.users.total",
 			"objects.users.expired",
 			"objects.sessions.total",
@@ -163,11 +165,11 @@ uint64_t stats_sum_errors(void) {
 	}
 
 	// Add the derived values to the sum.
-	for (uint64_t i = 0; i < derived_count(); i++) {
+	for (uint64_t i = 0; i < stats_derived_count(); i++) {
 
 		// Match any derived error names that are not "errors.total".
-		if ((!st_cmp_cs_starts(NULLER(derived_name(i)), CONSTANT("errors.")) || !st_cmp_cs_ends(NULLER(derived_name(i)), CONSTANT(".errors"))) &&
-				st_cmp_cs_eq(NULLER(derived_name(i)), CONSTANT("errors.total"))) {
+		if ((!st_cmp_cs_starts(NULLER(stats_derived_name(i)), CONSTANT("errors.")) || !st_cmp_cs_ends(NULLER(stats_derived_name(i)), CONSTANT(".errors"))) &&
+				st_cmp_cs_eq(NULLER(stats_derived_name(i)), CONSTANT("errors.total"))) {
 			match = true;
 		}
 		else {
@@ -175,7 +177,7 @@ uint64_t stats_sum_errors(void) {
 		}
 
 		// Add any matches to our result. If we ever accidently try to include the derived error total we'll trigger recursion death spiral.
-		if (match) result += derived_value(i);
+		if (match) result += stats_derived_value(i);
 	}
 
 	return result;
@@ -185,7 +187,7 @@ uint64_t stats_sum_errors(void) {
  * @brief	Get the number of derived statistics that are tracked.
  * @return	the number of derived statistics being maintained by magma.
  */
-uint64_t derived_count(void) {
+uint64_t stats_derived_count(void) {
 
 	return sizeof(derived) / sizeof(char *);
 }
@@ -195,9 +197,9 @@ uint64_t derived_count(void) {
  * @param	position	the zero-based index of the derived statistic to be queried.
  * @return	NULL on failure, or a pointer to a null-terminated string containing the name of the derived statistic on success.
  */
-char * derived_name(uint64_t position) {
+char * stats_derived_name(uint64_t position) {
 
-	if (position >= derived_count()) {
+	if (position >= stats_derived_count()) {
 		return NULL;
 	}
 
@@ -210,7 +212,7 @@ char * derived_name(uint64_t position) {
  * @param	position	the zero-based index of the derived statistic to be queried.
  * @return	0 on failure, or the value of the specified derived statistic on success.
  */
-uint64_t derived_value(uint64_t position) {
+uint64_t stats_derived_value(uint64_t position) {
 
 	uint64_t result = 0;
 	size_t total, bytes, items;
@@ -258,7 +260,7 @@ uint64_t stats_get_name_pos(char *name) {
 	bool_t match = false;
 
 	for (uint64_t i = 0; i < stats.count; i++) {
-		mutex_get_lock(&stats.locks[i][0]);
+		mutex_lock(&stats.locks[i][0]);
 		match = !st_cmp_cs_eq(NULLER(name), NULLER(stats.names[i]));
 		mutex_unlock(&stats.locks[i][0]);
 		if (match) return i;
@@ -278,7 +280,7 @@ char * stats_get_name(uint64_t position) {
 
 	char *name;
 
-	mutex_get_lock(&stats.locks[position][0]);
+	mutex_lock(&stats.locks[position][0]);
 	name = stats.names[position];
 	mutex_unlock(&stats.locks[position][0]);
 
@@ -299,7 +301,7 @@ void stats_set_by_name(char *name, uint64_t value) {
 		return;
 	}
 
-	mutex_get_lock(&stats.locks[position][1]);
+	mutex_lock(&stats.locks[position][1]);
 	stats.values[position] = value;
 	mutex_unlock(&stats.locks[position][1]);
 	return;
@@ -313,7 +315,7 @@ void stats_set_by_name(char *name, uint64_t value) {
  */
 void stats_set_by_num(uint64_t position, uint64_t value) {
 
-	mutex_get_lock(&stats.locks[position][1]);
+	mutex_lock(&stats.locks[position][1]);
 	stats.values[position] = value;
 	mutex_unlock(&stats.locks[position][1]);
 
@@ -333,7 +335,7 @@ uint64_t stats_get_value_by_name(char *name) {
 			return 0;
 	}
 
-	mutex_get_lock(&stats.locks[position][1]);
+	mutex_lock(&stats.locks[position][1]);
 	value = stats.values[position];
 	mutex_unlock(&stats.locks[position][1]);
 
@@ -349,7 +351,7 @@ uint64_t stats_get_value_by_num(uint64_t position) {
 
 	uint64_t value;
 
-	mutex_get_lock(&stats.locks[position][1]);
+	mutex_lock(&stats.locks[position][1]);
 	value = stats.values[position];
 	mutex_unlock(&stats.locks[position][1]);
 
@@ -370,7 +372,7 @@ void stats_adjust_by_name(char *name, int32_t value) {
 		return;
 	}
 
-	mutex_get_lock(&stats.locks[position][1]);
+	mutex_lock(&stats.locks[position][1]);
 	stats.values[position] += value;
 	mutex_unlock(&stats.locks[position][1]);
 
@@ -385,7 +387,7 @@ void stats_adjust_by_name(char *name, int32_t value) {
  */
 void stats_adjust_by_num(uint64_t position, int32_t value) {
 
-	mutex_get_lock(&stats.locks[position][1]);
+	mutex_lock(&stats.locks[position][1]);
 	stats.values[position] += value;
 	mutex_unlock(&stats.locks[position][1]);
 
@@ -405,7 +407,7 @@ void stats_increment_by_name(char *name) {
 		return;
 	}
 
-	mutex_get_lock(&stats.locks[position][1]);
+	mutex_lock(&stats.locks[position][1]);
 	stats.values[position]++;
 	mutex_unlock(&stats.locks[position][1]);
 
@@ -419,7 +421,7 @@ void stats_increment_by_name(char *name) {
  */
 void stats_increment_by_num(uint64_t position) {
 
-	mutex_get_lock(&stats.locks[position][1]);
+	mutex_lock(&stats.locks[position][1]);
 	stats.values[position]++;
 	mutex_unlock(&stats.locks[position][1]);
 
@@ -439,7 +441,7 @@ void stats_decrement_by_name(char *name) {
 		return;
 	}
 
-	mutex_get_lock(&stats.locks[position][1]);
+	mutex_lock(&stats.locks[position][1]);
 	stats.values[position]--;
 	mutex_unlock(&stats.locks[position][1]);
 
@@ -453,7 +455,7 @@ void stats_decrement_by_name(char *name) {
  */
 void stats_decrement_by_num(uint64_t position) {
 
-	mutex_get_lock(&stats.locks[position][1]);
+	mutex_lock(&stats.locks[position][1]);
 	stats.values[position]--;
 	mutex_unlock(&stats.locks[position][1]);
 

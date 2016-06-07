@@ -43,7 +43,7 @@ int     tkey_set(pthread_key_t key, void *value);
 /// mutex.c
 int   mutex_destroy(pthread_mutex_t *lock);
 int   mutex_init(pthread_mutex_t *lock, pthread_mutexattr_t *attr);
-int   mutex_get_lock(pthread_mutex_t *lock);
+int   mutex_lock(pthread_mutex_t *lock);
 int   mutex_unlock(pthread_mutex_t *lock);
 
 #endif

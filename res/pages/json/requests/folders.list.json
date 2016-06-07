@@ -1,7 +1,0 @@
-{
-    "id": 14,
-    "method": "folders.list",
-    "params": {
-        "context": "mail"
-    }
-}

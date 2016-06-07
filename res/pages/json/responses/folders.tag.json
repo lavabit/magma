@@ -1,9 +1,0 @@
-[{
-    "result": [{
-        "tag": "javascript",
-        "messageIDs": [1,2,3]
-    }, {
-       "tag": "victor",
-       "messageIDs": [128]
-    }]
-}

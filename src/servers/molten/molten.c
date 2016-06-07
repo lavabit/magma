@@ -27,11 +27,11 @@ void molten_stats(connection_t *con) {
 
 	}
 
-	length = derived_count();
+	length = stats_derived_count();
 
 	for(size_t i = 0; i < length; i++) {
 
-		if (con_print(con, "STAT %s %lu\r\n", derived_name(i), derived_value(i)) < 0) {
+		if (con_print(con, "STAT %s %lu\r\n", stats_derived_name(i), stats_derived_value(i)) < 0) {
 			enqueue(&molten_quit, con);
 			return;
 		}

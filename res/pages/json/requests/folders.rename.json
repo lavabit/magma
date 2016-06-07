@@ -1,8 +1,0 @@
-{
-    "id": 17,
-    "method": "folders.rename",
-    "params": {
-        "folderID": 30,
-        "name": "New Name"
-    }
-}

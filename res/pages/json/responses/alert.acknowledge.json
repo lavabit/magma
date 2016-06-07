@@ -1,7 +1,0 @@
-{
-    "jsonrpc": "2.0",
-    "result": {
-        "alert.acknowledge": "success"
-    },
-    "id": 3
-}

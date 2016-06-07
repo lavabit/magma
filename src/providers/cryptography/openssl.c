@@ -524,7 +524,7 @@ void ssl_locking_callback(int mode, int n, const char *file, int line) {
 
 	// Get a lock.
 	if (mode & CRYPTO_LOCK) {
-		mutex_get_lock(*(ssl_locks + n));
+		mutex_lock(*(ssl_locks + n));
 	}
 	// Release a lock.
 	else {

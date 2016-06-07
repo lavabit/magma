@@ -1,7 +1,0 @@
-{
-    "id": 2,
-    "method": "alert.acknowledge",
-    "params": {
-        "alertIDs": [1,2]
-    }
-}

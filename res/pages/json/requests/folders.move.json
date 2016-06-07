@@ -1,8 +1,0 @@
-{
-    "id": 15,
-    "method": "folders.move",
-    "params": {
-        "sourceFolderID": "5",
-        "targetFolderID": "12"
-    }
-}

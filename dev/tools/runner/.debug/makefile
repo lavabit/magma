@@ -28,13 +28,13 @@ all: runner
 runner: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc  -o"runner" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc  -o "runner" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(C_DEPS)$(EXECUTABLES)$(OBJS) runner
+	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) runner
 	-@echo ' '
 
 .PHONY: all clean dependents

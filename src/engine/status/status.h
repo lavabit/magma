@@ -32,9 +32,9 @@ void       status_set(int value);
 uint64_t   status_startup(void);
 
 /************  STATISTICS  ************/
-uint64_t derived_count (void);
-char *derived_name (uint64_t position);
-uint64_t derived_value (uint64_t position);
+uint64_t stats_derived_count (void);
+char *stats_derived_name (uint64_t position);
+uint64_t stats_derived_value (uint64_t position);
 
 bool_t stats_init(void);
 void stats_shutdown(void);

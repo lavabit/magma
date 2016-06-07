@@ -1,7 +1,0 @@
-{
-    "id": 9,
-    "method": "contacts.list",
-    "params": {
-        "folderID": 3
-    }
-}

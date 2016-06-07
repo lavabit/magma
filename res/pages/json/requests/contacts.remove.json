@@ -1,8 +1,0 @@
-{
-    "id": 12,
-    "method": "contacts.remove",
-    "params": {
-    	"folderID": 1
-        "contactID": 88
-    }
-}

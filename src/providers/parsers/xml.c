@@ -864,7 +864,7 @@ void xml_error(void *ctx, const chr_t *format, ...) {
 	if (ctx == NULL) { }
 
 	va_start(args, format);
-	mutex_get_lock(&log_mutex);
+	mutex_lock(&log_mutex);
 
 	printf("(%s - %s - %i) = XML Library Error: ", __FILE__, __FUNCTION__, __LINE__);
 	vprintf(format, args);

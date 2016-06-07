@@ -134,7 +134,7 @@ uint64_t con_increment_refs(connection_t *con) {
 
 	uint64_t refs;
 
-	mutex_get_lock(&(con->lock));
+	mutex_lock(&(con->lock));
 	refs = ++(con->refs);
 	mutex_unlock(&(con->lock));
 
@@ -150,7 +150,7 @@ uint64_t con_decrement_refs(connection_t *con) {
 
 	uint64_t refs;
 
-	mutex_get_lock(&(con->lock));
+	mutex_lock(&(con->lock));
 	refs = --(con->refs);
 	mutex_unlock(&(con->lock));
 

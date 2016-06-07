@@ -1,1 +1,1 @@
-runner.d runner.o: ../runner.c
+runner.o runner.o: ../runner.c

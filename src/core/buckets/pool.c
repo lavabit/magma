@@ -127,7 +127,7 @@ uint64_t pool_get_failures(pool_t *pool) {
 	if (!pool)
 		return 0;
 
-	mutex_get_lock(&(pool->lock));
+	mutex_lock(&(pool->lock));
 	result = pool->failures;
 	mutex_unlock(&(pool->lock));
 
@@ -196,7 +196,7 @@ status_t pool_pull(pool_t *pool, uint32_t *item) {
 		timeout.tv_sec += pool->timeout;
 
 		if (sem_timedwait(&(pool->available), &timeout)) {
-			mutex_get_lock(&(pool->lock));
+			mutex_lock(&(pool->lock));
 			pool->failures++;
 			mutex_unlock(&(pool->lock));
 			return PL_ERROR;
@@ -206,7 +206,7 @@ status_t pool_pull(pool_t *pool, uint32_t *item) {
 		sem_wait(&(pool->available));
 	}
 
-	mutex_get_lock(&(pool->lock));
+	mutex_lock(&(pool->lock));
 	for (uint32_t i = 0; result == PL_ERROR && i < pool->count; i++) {
 		if (pool_get_status(pool, i) == PL_AVAILABLE) {
 			result = pool_set_status(pool, i, PL_RESERVED);
@@ -231,7 +231,7 @@ status_t pool_pull(pool_t *pool, uint32_t *item) {
 void pool_release(pool_t *pool, uint32_t item) {
 	if (!pool)
 		return;
-	mutex_get_lock(&(pool->lock));
+	mutex_lock(&(pool->lock));
 	pool_set_status(pool, item, PL_AVAILABLE);
 	mutex_unlock(&(pool->lock));
 	sem_post(&(pool->available));
@@ -250,7 +250,7 @@ void * pool_get_obj(pool_t *pool, uint32_t item) {
 	}
 
 #ifdef MAGMA_PEDANTIC
-	mutex_get_lock(&(pool->lock));
+	mutex_lock(&(pool->lock));
 	if (item >= pool_get_count(pool)) {
 		mutex_unlock(&(pool->lock));
 		log_pedantic("The item number provided (%u) is outside the valid range.", item);
@@ -276,7 +276,7 @@ void * pool_set_obj(pool_t *pool, uint32_t item, void *object) {
 	}
 
 #ifdef MAGMA_PEDANTIC
-	mutex_get_lock(&(pool->lock));
+	mutex_lock(&(pool->lock));
 	if (item >= pool_get_count(pool)) {
 		mutex_unlock(&(pool->lock));
 		log_pedantic("The item number provided (%u) is outside the valid range.", item);
@@ -309,7 +309,7 @@ void * pool_swap_obj(pool_t *pool, uint32_t item, void *object) {
 	delay.tv_nsec = 10000000;
 
 	do {
-		mutex_get_lock(&(pool->lock));
+		mutex_lock(&(pool->lock));
 		if (pool_get_status(pool, item) == PL_AVAILABLE) {
 			current = pool_get_obj(pool, item);
 			pool_set_obj(pool, item, object);

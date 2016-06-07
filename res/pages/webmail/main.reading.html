@@ -1,0 +1,104 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lavabit ..::.. Webmail</title>
+    <link rel="stylesheet" href="css/jquery-ui-smoothness.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="js/jquery.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/script.js"></script>
+</head>
+<body>
+    <div id="main-wrapper">
+        <div id="chrome">
+            <h1 class="logo">Lavabit Webmail</h1>
+            <div id="account">
+                <h2 class="sr-hidden">Account</h2>
+                <a class="sr-hidden" href="#sr-global-nav">Skip to global navigation</a>
+                <!-- paragraph({text: "magma@lavabit.com"}) insertBefore:'#account-info ul' -->
+                <ul>
+                    <li><a class="meta" href="#info">Information</a></li>
+                    <li><a class="sign-out" href="#signout">Sign Out</a></li>
+                </ul>
+            </div>
+            <div id="global-nav">
+                <h2 class="sr-hidden" id="sr-global-nav">Global Navigation</h2>
+                <ul>
+                    <li><a class="mail" href="#mail">Mail</a></li>
+                    <li><a class="contacts" href="#contacts">Contacts</a></li>
+                    <li><a class="options" href="#options">Options</a></li>
+                    <li><a class="help" href="#help">Help</a></li>
+                </ul>
+            </div>
+        </div>
+        <div id="tabs">
+            <h2 class="sr-hidden" id="sr-tabs">Tabs</h2>
+            <li class="tab permatab active">
+                <h3>Inbox</h3>
+                <a class="sr-hidden" href="#sr-permatab">Skip to this tab's content</a>
+            </li>
+        </div>
+        <div id="workspaces-wrapper">
+            <div class="workspace-wrapper active">
+                <div class="toolbar">
+                    <h3 class="sr-hidden">Toolbar</h3>
+                    <div class="tools">
+                        <h4 class="sr-hidden" id="sr-tools">Tools</h4>
+                        <!-- skiplink -->
+                        <ul>
+                            <li><a href="#new" class="new">New</a></li>
+                            <li><a href="#print" class="print">Print</a></li>
+                            <li><a href="#reply" class="reply">Reply</a></li>
+                            <li><a href="#reply-all" class="reply-all">Reply All</a></li>
+                            <li><a href="#forward" class="forward">Forward</a></li>
+                            <li><a href="#delete" class="delete">Delete</a></li>
+                            <li><a href="#junk" class="junk">Junk</a></li>
+                            <li>
+                            	<input id="copy" class="dropdown" type="checkbox" />
+                            	<label for="copy">Copy</label>
+                            </li>
+                            <li>
+                            	<input id="move" class="dropdown" type="checkbox" />
+                            	<label for="move">Move</label>
+                            </li>
+                            <li>
+                            	<input id="mark" class="dropdown" type="checkbox" />
+                            	<label for="mark">Mark</label>
+                            </li>
+                            <li>
+                            	<input id="tags" class="dropdown" type="checkbox" />
+                            	<label for="tags">Tags</label>
+                            </li>
+                            <li>
+                            	<input id="display" class="toggle" type="checkbox" />
+                            	<label for="display">Display</label>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="workspace">
+                    <div class="message-header">
+                        <!-- messageHeader messages.load({messageID: 0, section: "header"}).header appendTo:'.message-header' -->
+                        <div class="extras">
+                            <ul>
+                                <li><a class="info" href="#info">Message Info</a></li>
+                                <li><a class="scrape" href="#scrape-contacts">Scrape Contacts</a></li>
+                                <li><a class="view-header" href="#view-source">View Full Header</a></li>
+                                <li><a class="attachments" href="#attachments">Attachments</a></li>
+                            </ul>
+                            <a href="#profile"><img src="#profile" alt="Profile" /></a>
+                        </div>
+                    </div>
+                    <div class="message-body">
+                        <!-- messageBody messages.load({messageID: 0, section: "body"}).body appendTo:'.message-body' -->
+                    </div>
+                    <div class="message-ad">
+                        <!-- ad ad().ad appendTo:'.message-ad' -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

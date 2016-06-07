@@ -34,7 +34,7 @@ uint64_t tank_cycle(void) {
 
 	uint64_t res = 0;
 
-	mutex_get_lock(&tanks_lock);
+	mutex_lock(&tanks_lock);
 	res = tanks_next++;
 	if (tanks_next >= tanks_num) {
 		tanks_next = 0;

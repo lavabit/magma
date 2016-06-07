@@ -1245,7 +1245,7 @@ bool_t meta_data_fetch_user(meta_user_t *user) {
 
 	// Inactive lock
 	/// LOW: This user fetch function was intended only to refresh existing user configurations/preferences. In theory
-	/// an inactivity lock would have been cleared when the session was created so we shouldn't need to even check that value at this stage.
+	/// an inactivity lock would have been cleared when the session was created so we shouldn't need to check this value.
 	if (user->lock_status == 2) {
 		meta_data_update_lock(user->usernum, 0);
 		user->lock_status = 0;
@@ -1374,122 +1374,6 @@ int_t meta_data_user_build(meta_user_t *user, credential_t *cred) {
 		return -1;
 	} else if (!(user->flags & META_USER_ENCRYPT_DATA) &&
 		(meta_data_user_build_storage_keys (user->usernum, cred->auth.key, &(user->storage_privkey), &(user->storage_pubkey), true, false, 0) < 0)) {
-		//log_pedantic("A user with the secure storage feature disabled does not have storage keys in the database.");
-	}
-
-	return 1;
-}
-
-
-/**
- * @brief	Build a meta user object by username, hashed password, and hashed key storage password.
- * @param	user		a user meta object with the username field populated.
- * @param	cred		Credential object containing user password, passkey and authentication type.
- * @return	-1 for unexpected program/system error, 0 for password auth failure, or 1 on success.
- */
-int_t new_meta_data_user_build(meta_user_t *user, stringer_t *master, stringer_t *verification) {
-
-	row_t *row;
-	table_t *result;
-	MYSQL_BIND parameters[2];
-
-	// Sanity check.
-	if (!user || st_empty(user->username, master, verification)) {
-		log_pedantic("Invalid data passed into the user data build function.");
-		return -1;
-	}
-
-	// This function is used to build an initial user structure. So it double checks the verification token, before
-	// adding it ot the user structure. Here check to make sure the verification token is empty, so we don't create a memory
-	// leak by overwriting it below.
-	if (user->verification) {
-		st_free(user->verification);
-		user->verification = NULL;
-	}
-
-	mm_wipe(parameters, sizeof(parameters));
-
-	// Get the user information.
-	parameters[0].buffer_type = MYSQL_TYPE_STRING;
-	parameters[0].buffer_length = st_length_get(user->username);
-	parameters[0].buffer = st_char_get(user->username);
-
-	parameters[1].buffer_type = MYSQL_TYPE_STRING;
-	parameters[1].buffer_length = st_length_get(verification);
-	parameters[1].buffer = st_char_get(verification);
-
-	if (!(result = stmt_get_result(stmts.select_user_auth, parameters))) {
-		return -1;
-	}
-	else if (!(row = res_row_next(result))) {
-		res_table_free(result);
-		return 0;
-	}
-
-	// Reset the flags.
-	user->flags = 0;
-
-	// Update the secure flag.
-	if (res_field_int8(row, 0) == 1) {
-		user->flags = (user->flags | META_USER_ENCRYPT_DATA);
-	}
-
-	// User number.
-	user->usernum = res_field_uint64(row, 2);
-
-	// Store the lock status.
-	user->lock_status = res_field_int8(row, 1);
-
-	// SSL
-	if (res_field_int8(row, 3) == 1) {
-		user->flags = (user->flags | META_USER_SSL);
-	} else {
-		user->flags = (user->flags | META_USER_SSL) ^ META_USER_SSL;
-	}
-
-	// Over Quota
-	if (res_field_int8(row, 4) == 1) {
-		user->flags = (user->flags | META_USER_OVERQUOTA);
-	} else {
-		user->flags = (user->flags | META_USER_OVERQUOTA) ^ META_USER_OVERQUOTA;
-	}
-
-	res_table_free(result);
-
-	if (!user->usernum) {
-		log_pedantic("Invalid user number found. { username = %.*s }", st_length_int(user->username), st_char_get(user->username));
-		return -1;
-	}
-
-	// Inactive lock
-	if (user->lock_status == 2) {
-		meta_data_update_lock(user->usernum, 0);
-		user->lock_status = 0;
-	}
-
-	if ((user->verification = st_dupe(verification)) == NULL) {
-		log_pedantic("Unable to copy password hash.");
-		return -1;
-	}
-
-	if (user->storage_privkey) {
-		st_free(user->storage_privkey);
-		user->storage_privkey = NULL;
-	}
-
-	if (user->storage_pubkey) {
-		st_free(user->storage_pubkey);
-		user->storage_pubkey = NULL;
-	}
-
-	// Finally, we make check if the user has generated a public and private key pair for encrypted storage. And generate new ones if encryption is enabled.
-	// But they still might need a storage key if the the secure flag is off and there is a batch of encrypted mail messages that needs to be decrypted.
-	if ((user->flags & META_USER_ENCRYPT_DATA) &&
-		(meta_data_user_build_storage_keys (user->usernum, master, &(user->storage_privkey), &(user->storage_pubkey), false, false, 0) < 0)) {
-		log_pedantic("A user with the secure storage feature enabled does not have storage keys and the creation attempt failed.");
-		return -1;
-	} else if (!(user->flags & META_USER_ENCRYPT_DATA) &&
-		(meta_data_user_build_storage_keys (user->usernum, master, &(user->storage_privkey), &(user->storage_pubkey), true, false, 0) < 0)) {
 		//log_pedantic("A user with the secure storage feature disabled does not have storage keys in the database.");
 	}
 

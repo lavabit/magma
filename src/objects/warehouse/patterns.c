@@ -30,7 +30,7 @@ int_t pattern_check(stringer_t *message) {
 
 	stats_adjust_by_name("objects.patterns.checked", 1);
 
-	mutex_get_lock(&patterns_mutex);
+	mutex_lock(&patterns_mutex);
 	cursor = inx_cursor_alloc(patterns_list);
 	mutex_unlock(&patterns_mutex);
 
@@ -81,7 +81,7 @@ void pattern_update(void) {
 	}
 
 	// Swap the old pointers for the new ones.
-	mutex_get_lock(&patterns_mutex);
+	mutex_lock(&patterns_mutex);
 	patterns_old = patterns_list;
 	patterns_list = patterns_new;
 	mutex_unlock(&patterns_mutex);
@@ -98,7 +98,7 @@ void pattern_update(void) {
  */
 void pattern_stop(void) {
 
-	mutex_get_lock(&patterns_mutex);
+	mutex_lock(&patterns_mutex);
 
 	inx_cleanup(patterns_list);
 	patterns_list = NULL;

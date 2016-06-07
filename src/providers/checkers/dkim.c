@@ -115,7 +115,6 @@ void dkim_stop(void) {
  */
 stringer_t * dkim_create(stringer_t *id, stringer_t *message) {
 
-	size_t len = 0;
 	DKIM *context;
 	DKIM_STAT status;
 	dkim_sigkey_t key;

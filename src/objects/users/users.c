@@ -19,7 +19,7 @@
  * @param	protocol	the protocol identifier for the session.
  * @return	This function returns no value.
  */
-void meta_user_ref_add(meta_user_t *user, META_PROT protocol) {
+void meta_user_ref_add(meta_user_t *user, META_PROTOCOL protocol) {
 
 	if (user) {
 
@@ -27,11 +27,11 @@ void meta_user_ref_add(meta_user_t *user, META_PROT protocol) {
 		mutex_lock(&(user->refs.lock));
 
 		// Increment the right counter.
-		if ((protocol & META_PROT_WEB) == META_PROT_WEB) user->refs.web++;
-		else if ((protocol & META_PROT_IMAP) == META_PROT_IMAP) user->refs.imap++;
-		else if ((protocol & META_PROT_POP) == META_PROT_POP) user->refs.pop++;
-		else if ((protocol & META_PROT_SMTP) == META_PROT_SMTP) user->refs.smtp++;
-		else if ((protocol & META_PROT_GENERIC) == META_PROT_GENERIC) user->refs.generic++;
+		if ((protocol & META_PROTOCOL_WEB) == META_PROTOCOL_WEB) user->refs.web++;
+		else if ((protocol & META_PROTOCOL_IMAP) == META_PROTOCOL_IMAP) user->refs.imap++;
+		else if ((protocol & META_PROTOCOL_POP) == META_PROTOCOL_POP) user->refs.pop++;
+		else if ((protocol & META_PROTOCOL_SMTP) == META_PROTOCOL_SMTP) user->refs.smtp++;
+		else if ((protocol & META_PROTOCOL_GENERIC) == META_PROTOCOL_GENERIC) user->refs.generic++;
 
 		// Update the activity time stamp.
 		 user->refs.stamp = time(NULL);
@@ -51,7 +51,7 @@ void meta_user_ref_add(meta_user_t *user, META_PROT protocol) {
  * @param	protocol	the protocol identifier for the session (META_PROT_WEB, META_PROT_IMAP, META_PROT_POP, META_PROT_SMTP, META_PROT_GENERIC).
  * @return	This function returns no value.
  */
-void meta_user_ref_dec(meta_user_t *user, META_PROT protocol) {
+void meta_user_ref_dec(meta_user_t *user, META_PROTOCOL protocol) {
 
 	if (user) {
 
@@ -59,11 +59,11 @@ void meta_user_ref_dec(meta_user_t *user, META_PROT protocol) {
 		mutex_lock(&(user->refs.lock));
 
 		// Decrement the right counter.
-		if ((protocol & META_PROT_WEB) == META_PROT_WEB) user->refs.web--;
-		else if ((protocol & META_PROT_IMAP) == META_PROT_IMAP) user->refs.imap--;
-		else if ((protocol & META_PROT_POP) == META_PROT_POP) user->refs.pop--;
-		else if ((protocol & META_PROT_SMTP) == META_PROT_SMTP) user->refs.smtp--;
-		else if ((protocol & META_PROT_GENERIC) == META_PROT_GENERIC) user->refs.generic--;
+		if ((protocol & META_PROTOCOL_WEB) == META_PROTOCOL_WEB) user->refs.web--;
+		else if ((protocol & META_PROTOCOL_IMAP) == META_PROTOCOL_IMAP) user->refs.imap--;
+		else if ((protocol & META_PROTOCOL_POP) == META_PROTOCOL_POP) user->refs.pop--;
+		else if ((protocol & META_PROTOCOL_SMTP) == META_PROTOCOL_SMTP) user->refs.smtp--;
+		else if ((protocol & META_PROTOCOL_GENERIC) == META_PROTOCOL_GENERIC) user->refs.generic--;
 
 		// Update the activity time stamp.
 		user->refs.stamp = time(NULL);
@@ -504,7 +504,7 @@ bool_t meta_user_serial_check(meta_user_t *user, uint64_t object) {
  * @param	output		the address of a meta user object that will store a pointer to the result of the lookup.
  * @return	-1 on error, 0 if the username information exists but there was an error, and 1 on success.
  */
-int_t meta_get(credential_t *cred, META_PROT flags, META_GET get, meta_user_t **output) {
+int_t meta_get(credential_t *cred, META_PROTOCOL flags, META_GET get, meta_user_t **output) {
 
 	int_t state;
 	meta_user_t *user = NULL;
@@ -569,7 +569,7 @@ int_t meta_get(credential_t *cred, META_PROT flags, META_GET get, meta_user_t **
 	}
 
 	// Are we supposed to get the messages.
-	if ((get & META_GET_MESSAGES) && meta_messages_update(user, META_LOCKED) < 0) {
+/*	if ((get & META_GET_MESSAGES) && meta_messages_update(user, META_LOCKED) < 0) {
 		meta_user_unlock(user);
 		meta_inx_remove(cred->auth.username, flags);
 		return -1;
@@ -594,7 +594,7 @@ int_t meta_get(credential_t *cred, META_PROT flags, META_GET get, meta_user_t **
 		meta_inx_remove(cred->auth.username, flags);
 		return -1;
 	}
-
+*/
 	*output = user;
 	meta_user_unlock(user);
 

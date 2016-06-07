@@ -38,7 +38,6 @@ typedef struct {
 	stringer_t *username;
 
 	struct {
-		uint8_t tls;
 		uint8_t locked;
 	} status;
 

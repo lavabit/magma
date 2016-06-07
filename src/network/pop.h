@@ -15,9 +15,10 @@
 
 typedef struct {
 	bool_t expunge;
-	meta_user_t *user;
+	new_meta_user_t *user;
 	int_t session_state;
 	stringer_t *username;
+	uint64_t usernum;
 } __attribute__ ((__packed__)) pop_session_t;
 
 #endif

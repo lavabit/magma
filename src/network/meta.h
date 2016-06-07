@@ -16,9 +16,10 @@
 
 typedef enum {
 	META_GET_NONE = 0,
-	META_GET_MESSAGES = 1,
-	META_GET_FOLDERS = 2,
-	META_GET_CONTACTS = 4
+	META_GET_ALIASES = 1,
+	META_GET_MESSAGES = 2,
+	META_GET_FOLDERS = 4,
+	META_GET_CONTACTS = 8
 } META_GET;
 
 typedef enum {
@@ -34,21 +35,32 @@ typedef enum {
 
 typedef enum {
 	META_USER_NONE = 0,
-	META_USER_SSL = 1,
+	META_USER_TLS = 1,
 	META_USER_ADVERTISING = 2,
 	META_USER_OVERQUOTA = 4,
 	META_USER_ENCRYPT_DATA = 8
 } META_USER_FLAGS;
 
 typedef enum {
-	META_PROT_NONE = 0,
-	META_PROT_SMTP = 1,
-	META_PROT_POP = 2,
-	META_PROT_IMAP = 4,
-	META_PROT_WEB = 8,
-	META_PROT_GENERIC = 16,
-	META_PROT_JSON = 32
-} META_PROT;
+	META_PROTOCOL_NONE = 0,
+
+	// The transfer protocols.
+	META_PROTOCOL_SMTP = 1,
+	META_PROTOCOL_DMTP = 2,
+
+	// The access protocols.
+	META_PROTOCOL_POP = 4,
+	META_PROTOCOL_IMAP = 8,
+	META_PROTOLCOL_DMAP = 16,
+
+	// The web protocols.
+	META_PROTOCOL_WEB = 32,
+	META_PROTOCOL_JSON = 64,
+
+	// The generic protocol, for any connections that don't fit into the above definitions. A gap in the numeric identifiers
+	// has been left for future use.
+	META_PROTOCOL_GENERIC = 128
+} META_PROTOCOL;
 
 enum {
 	CREDENTIAL_MAIL = 0,

@@ -86,9 +86,9 @@ void          mail_mod_subject(stringer_t **message, chr_t *label);
 placer_t      mail_store_header(chr_t *stream, size_t length);
 
 /// load_message.c
-mail_message_t * mail_load_message(meta_message_t *meta, meta_user_t *user, server_t *server, bool_t parse);
-mail_message_t * mail_load_message_top(meta_message_t *meta, meta_user_t *user, server_t *server, uint64_t lines, bool_t parse);
-stringer_t *     mail_load_header(meta_message_t *meta, meta_user_t *user);
+stringer_t *      mail_load_header(meta_message_t *meta, new_meta_user_t *user);
+mail_message_t *  mail_load_message(meta_message_t *meta, new_meta_user_t *user, server_t *server, bool_t parse);
+mail_message_t *  mail_load_message_top(meta_message_t *meta, new_meta_user_t *user, server_t *server, uint64_t lines, bool_t parse);
 
 /// mime.c
 stringer_t *   mail_mime_boundary(placer_t header);

@@ -169,6 +169,7 @@ int_t auth_data_fetch(auth_t *auth) {
 		auth->tokens.verification = hex_decode_st(PLACER(res_field_block(row, 3), res_field_length(row, 3)), NULL);
 	}
 
+	// The number of "bonus" hash rounds to apply when generating the STACIE encryption keys.
 	auth->seasoning.bonus = res_field_uint32(row, 4);
 
 	// Only save the legacy hash if the field value isn't NULL.
@@ -176,8 +177,8 @@ int_t auth_data_fetch(auth_t *auth) {
 		auth->legacy.token = hex_decode_st(PLACER(res_field_block(row, 5), res_field_length(row, 5)), NULL);
 	}
 
-	auth->status.tls = res_field_int8(row, 6);
-	auth->status.locked = res_field_int8(row, 7);
+	// Find out if the account is locked.
+	auth->status.locked = res_field_int8(row, 6);
 
 	res_table_free(query);
 

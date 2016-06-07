@@ -70,6 +70,8 @@ START_TEST (check_users_register_s) {
 
 } END_TEST
 
+/*
+
 START_TEST (check_users_credentials_valid_s) {
 
 	int_t state, cred_res;
@@ -85,7 +87,7 @@ START_TEST (check_users_credentials_valid_s) {
 
 #if 0
 
-/** use this to generate new user info*/
+* use this to generate new user info
 	stringer_t *temp_salt, *temp_hex;
 	credential_t *stacie;
 
@@ -271,7 +273,7 @@ error:
 	fail_unless(!errmsg, st_char_get(errmsg));
 
 	// Attempt a credentials creation using a series of randomly generated, but valid usernames.
-	/* In my opinion these tests are no good so I am commenting them out - IVAN */
+	 In my opinion these tests are no good so I am commenting them out - IVAN
 #if 0
 	stringer_t *username = NULL, *password = NULL;
 	for (uint_t i = 0; !errmsg && i < OBJECT_CHECK_ITERATIONS; i++) {
@@ -354,6 +356,7 @@ error:
 
 
 } END_TEST
+*/
 
 START_TEST (check_users_inbox_s) {
 
@@ -390,8 +393,8 @@ Suite * suite_check_users(void) {
 	testcase(s, tc, "Auth Response/S", check_users_auth_response_s);
 	testcase(s, tc, "Auth Login/S", check_users_auth_login_s);
 
-	testcase(s, tc, "Cred Valid/S", check_users_credentials_valid_s);
-	testcase(s, tc, "Cred Invalid/S", check_users_credentials_invalid_s);
+	/*testcase(s, tc, "Cred Valid/S", check_users_credentials_valid_s);
+	testcase(s, tc, "Cred Invalid/S", check_users_credentials_invalid_s);*/
 	testcase(s, tc, "Inbox/S", check_users_inbox_s);
 	testcase(s, tc, "Message/S", check_users_message_s);
 	testcase(s, tc, "Register/S", check_users_register_s);

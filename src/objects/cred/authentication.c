@@ -23,7 +23,7 @@ static user_state_t credential_build_full(stringer_t *username, stringer_t *pass
  * @param	user		Pointer to the value which stores the location of the meta_user_t object to be allocated and populated by the user data.
  * @return	SUCCESS on success, INTERNAL_ERROR on non-credential related error. AUTHENTICATION_ERROR on any authentication-related error (absence of specified user or incorrect password.)
 */
-user_state_t credential_login(stringer_t *username, stringer_t *password, META_PROT protocol, META_GET data, meta_user_t **user) {
+user_state_t credential_login(stringer_t *username, stringer_t *password, META_PROTOCOL protocol, META_GET data, meta_user_t **user) {
 
 	credential_t *cred;
 	int_t meta_res;

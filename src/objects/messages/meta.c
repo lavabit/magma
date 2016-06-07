@@ -128,7 +128,7 @@ void meta_messages_update_sequences(inx_t *folders, inx_t *messages) {
  * @param	locked	if set to META_NEED_LOCK, lock the specified meta user object for the duration of the request.
  * @return	true if no update was necessary or if the update was successful, or false otherwise.
  */
-bool_t meta_messages_login_update(meta_user_t *user, META_LOCK_STATUS locked) {
+bool_t meta_messages_login_update(new_meta_user_t *user, META_LOCK_STATUS locked) {
 
 	bool_t output = true;
 	uint64_t checkpoint;
@@ -139,7 +139,7 @@ bool_t meta_messages_login_update(meta_user_t *user, META_LOCK_STATUS locked) {
 
 	// Do we need a lock.
 	if (locked == META_NEED_LOCK) {
-		meta_user_wlock(user);
+		new_meta_user_wlock(user);
 	}
 
 	// This function will check if there is only one POP session.
@@ -168,7 +168,7 @@ bool_t meta_messages_login_update(meta_user_t *user, META_LOCK_STATUS locked) {
 
 	// Do we need to clear the lock.
 	if (locked == META_NEED_LOCK) {
-		meta_user_unlock(user);
+		new_meta_user_unlock(user);
 	}
 
 	return output;
@@ -182,7 +182,7 @@ bool_t meta_messages_login_update(meta_user_t *user, META_LOCK_STATUS locked) {
  * @param	locked	if set to META_NEED_LOCK, lock the specified meta user object for the duration of the request.
  * @return	-1 on failure, or 1 on success.
  */
-int_t meta_messages_update(meta_user_t *user, META_LOCK_STATUS locked) {
+int_t meta_messages_update(new_meta_user_t *user, META_LOCK_STATUS locked) {
 
 	short output = 0;
 	uint64_t checkpoint;
@@ -193,7 +193,7 @@ int_t meta_messages_update(meta_user_t *user, META_LOCK_STATUS locked) {
 
 	// Do we need a lock.
 	if (locked == META_NEED_LOCK) {
-		meta_user_wlock(user);
+		new_meta_user_wlock(user);
 	}
 
 	// If there are no POP sessions, the checkpoint is more than 60 seconds old, and the memcache checkpoint is newer, refresh.
@@ -223,7 +223,7 @@ int_t meta_messages_update(meta_user_t *user, META_LOCK_STATUS locked) {
 
 	// Do we need to clear the lock.
 	if (locked == META_NEED_LOCK) {
-		meta_user_unlock(user);
+		new_meta_user_unlock(user);
 	}
 
 	return output;
@@ -241,7 +241,7 @@ int_t meta_messages_update(meta_user_t *user, META_LOCK_STATUS locked) {
  * @param	locked		if set to META_NEED_LOCK, lock the specified meta user object for the duration of the request.
  * @return	true on success or false on failure.
  */
-bool_t meta_messages_copier(meta_user_t *user, meta_message_t *message, uint64_t target, uint64_t *outnum, bool_t sequences, META_LOCK_STATUS locked) {
+bool_t meta_messages_copier(new_meta_user_t *user, meta_message_t *message, uint64_t target, uint64_t *outnum, bool_t sequences, META_LOCK_STATUS locked) {
 
 	uint32_t status;
 	meta_message_t *new;
@@ -256,7 +256,7 @@ bool_t meta_messages_copier(meta_user_t *user, meta_message_t *message, uint64_t
 
 	// Do we need a lock.
 	if (locked == META_NEED_LOCK) {
-		meta_user_wlock(user);
+		new_meta_user_wlock(user);
 	}
 
 	if (!(key.val.u64 = mail_copy_message(user->usernum, message->messagenum, message->server, message->size, target, status, message->signum,
@@ -264,7 +264,7 @@ bool_t meta_messages_copier(meta_user_t *user, meta_message_t *message, uint64_t
 		log_pedantic("Unable to copy message number %lu.", message->messagenum);
 
 		if (locked == META_NEED_LOCK) {
-			meta_user_unlock(user);
+			new_meta_user_unlock(user);
 		}
 
 		return false;
@@ -274,7 +274,7 @@ bool_t meta_messages_copier(meta_user_t *user, meta_message_t *message, uint64_t
 		log_pedantic("Unable to duplicate the message structure.");
 
 		if (locked == META_NEED_LOCK) {
-			meta_user_unlock(user);
+			new_meta_user_unlock(user);
 		}
 
 		return false;
@@ -301,7 +301,7 @@ bool_t meta_messages_copier(meta_user_t *user, meta_message_t *message, uint64_t
 	}
 
 	if (locked == META_NEED_LOCK) {
-		meta_user_unlock(user);
+		new_meta_user_unlock(user);
 	}
 
 	return true;
@@ -319,7 +319,7 @@ bool_t meta_messages_copier(meta_user_t *user, meta_message_t *message, uint64_t
  * @param	locked		if set to META_NEED_LOCK, lock the specified meta user object for the duration of the request.
  * @return	true on success or false on failure.
  */
-int_t meta_messages_mover(meta_user_t *user, meta_message_t *message, uint64_t target, bool_t lookup, bool_t sequences, META_LOCK_STATUS locked) {
+int_t meta_messages_mover(new_meta_user_t *user, meta_message_t *message, uint64_t target, bool_t lookup, bool_t sequences, META_LOCK_STATUS locked) {
 
 	int_t result = -1;
 	multi_t key = { .type = M_TYPE_UINT64, .val.u64 = 0 };
@@ -330,7 +330,7 @@ int_t meta_messages_mover(meta_user_t *user, meta_message_t *message, uint64_t t
 
 	// Do we need a lock.
 	if (locked == META_NEED_LOCK) {
-		meta_user_wlock(user);
+		new_meta_user_wlock(user);
 	}
 
 	/// BUG: Currently we preserve the original message number which means when the target folder sequences are updated the moved message
@@ -341,7 +341,7 @@ int_t meta_messages_mover(meta_user_t *user, meta_message_t *message, uint64_t t
 		log_pedantic("Unable to move message number. { message = %lu }", key.val.u64);
 
 		if (locked == META_NEED_LOCK) {
-			meta_user_unlock(user);
+			new_meta_user_unlock(user);
 		}
 
 		return result;
@@ -351,7 +351,7 @@ int_t meta_messages_mover(meta_user_t *user, meta_message_t *message, uint64_t t
 		log_pedantic("Unable to lookup the master message meta context. { message = %lu }", key.val.u64);
 
 		if (locked == META_NEED_LOCK) {
-			meta_user_unlock(user);
+			new_meta_user_unlock(user);
 		}
 
 		return -1;
@@ -369,7 +369,7 @@ int_t meta_messages_mover(meta_user_t *user, meta_message_t *message, uint64_t t
 	}
 
 	if (locked == META_NEED_LOCK) {
-		meta_user_unlock(user);
+		new_meta_user_unlock(user);
 	}
 
 	return 1;

@@ -91,7 +91,7 @@ user_state_t    credential_usernum_fetch(credential_t *cred, uint64_t *usernum);
 
 /// authentication.c
 
-user_state_t    credential_login(stringer_t *username, stringer_t *password, META_PROT protocol, META_GET data, meta_user_t **user);
+user_state_t    credential_login(stringer_t *username, stringer_t *password, META_PROTOCOL protocol, META_GET data, meta_user_t **user);
 user_state_t    credential_authenticate(stringer_t *username, stringer_t *password);
 
 #endif

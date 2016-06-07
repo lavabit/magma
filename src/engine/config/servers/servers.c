@@ -36,7 +36,7 @@ uint64_t servers_get_count_using_port(uint32_t port) {
  * @param	sockd	the socket file descriptor to be looked up.
  * @return	NULL on failure, or a pointer to the server structure for the specified file descriptor on success.
  */
-inline server_t * servers_get_by_socket(int sockd) {
+server_t * servers_get_by_socket(int sockd) {
 
 	server_t *result = NULL;
 
@@ -54,11 +54,13 @@ inline server_t * servers_get_by_socket(int sockd) {
  */
 bool_t servers_network_start(void) {
 	for (uint32_t i = 0; i < MAGMA_SERVER_INSTANCES; i++) {
-		if (magma.servers[i]) {
+		if (magma.servers[i] && magma.servers[i]->enabled) {
+
 			// If the server name, or domain are NULL, use the hostname as the default value. Then initialize the socket.
 			if ((st_empty(magma.servers[i]->name) && !(magma.servers[i]->name = st_import(magma.host.name, ns_length_get(magma.host.name)))) ||
 					(st_empty(magma.servers[i]->domain) && !(magma.servers[i]->domain = st_import(magma.host.name, ns_length_get(magma.host.name)))) ||
 					!net_init(magma.servers[i])) {
+
 				servers_network_stop();
 				return false;
 			}
@@ -77,7 +79,7 @@ bool_t servers_encryption_start(void) {
 
 		// The trenary increases the security level for DMTP (and DMAP in the future) connections, which require TLSv1.2 and only allow
 		// two cipher suites. Otherwise we allow any version of TSLv1.0 and higher, and any ciphersuite with forward secrecy.
-		if (magma.servers[i] && magma.servers[i]->ssl.certificate &&
+		if (magma.servers[i] && magma.servers[i]->enabled && magma.servers[i]->ssl.certificate &&
 			!ssl_server_create(magma.servers[i], magma.servers[i]->protocol == DMTP ? 3 : 2)) {
 			return false;
 		}
@@ -91,8 +93,8 @@ bool_t servers_encryption_start(void) {
  */
 void servers_network_stop(void) {
 	for (uint32_t i = 0; i < MAGMA_SERVER_INSTANCES; i++) {
-		if (magma.servers[i] && magma.servers[i]->network.sockd != -1) {
-				net_shutdown(magma.servers[i]);
+		if (magma.servers[i] && magma.servers[i]->enabled && magma.servers[i]->network.sockd != -1) {
+			net_shutdown(magma.servers[i]);
 		}
 	}
 	return;
@@ -104,7 +106,7 @@ void servers_network_stop(void) {
  */
 void servers_encryption_stop(void) {
 	for (uint32_t i = 0; i < MAGMA_SERVER_INSTANCES; i++) {
-		if (magma.servers[i] && magma.servers[i]->ssl.context) {
+		if (magma.servers[i]  && magma.servers[i]->enabled && magma.servers[i]->ssl.context) {
 			ssl_server_destroy(magma.servers[i]);
 		}
 	}

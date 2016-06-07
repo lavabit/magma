@@ -123,7 +123,7 @@ void imap_session_destroy(connection_t *con) {
 	if (con->imap.user) {
 
 		if (con->imap.username) {
-			meta_remove(con->imap.username, META_PROT_IMAP);
+			meta_inx_remove(con->imap.username, META_PROT_IMAP);
 		}
 
 	}

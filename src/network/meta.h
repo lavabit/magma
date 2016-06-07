@@ -60,7 +60,6 @@ typedef struct {
 	stringer_t *type, *message;
 } __attribute__((__packed__)) meta_alert_t;
 
-
 /***
  * @struct meta_alias_t
  * @brief	Describes user mailboxes and provides the display name for each address, while also indicating which address is the preferred default.
@@ -88,11 +87,11 @@ typedef struct {
 // All of a user's information is stored using this structure.
 typedef struct {
 	META_USER_FLAGS flags;
-	// There is an undiscovered bug with read/write locks which can cause instability. To promote short term stability switch back
+	///NEXT: There is an undiscovered bug with read/write locks which can cause instability. To promote short term stability switch back
 	// to using a mutex. This will mean only one thread may read or write an individual user's mailbox at any given time.
 	// pthread_rwlock_t lock;
 	pthread_mutex_t lock;
-	stringer_t *username, *passhash, *storage_privkey, *storage_pubkey;
+	stringer_t *username, *passhash /* passhash is old */, *verification, *storage_privkey, *storage_pubkey;
 	inx_t *aliases, *messages, *folders, *message_folders, *ads, *contacts;
 	struct {
 		uint64_t user, messages, folders, contacts;

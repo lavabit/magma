@@ -211,35 +211,6 @@ void meta_user_destroy(meta_user_t *user) {
 }
 
 /**
- * @brief	Lock a user's object in the cache and decrement their reference counter.
- * @see		meta_user_ref_dec()
- * @param	username	a managed string containing the name of the user to be adjusted.
- * @param	flags		specifies the protocol bound to the reference counter to be decremented (META_PROT_WEB, META_PROT_IMAP, etc.)
- * @return	This function returns no value.
- */
-void meta_remove(stringer_t *username, META_PROT flags) {
-
-	meta_user_t *user;
-	multi_t key = { .type = M_TYPE_STRINGER, .val.st = username };
-
-	if (st_empty(username)) {
-		return;
-	}
-
-	// Cache lock.
-	inx_lock_read(objects.users);
-
-	if ((user = inx_find(objects.users, key))) {
-		meta_user_ref_dec(user, flags);
-	}
-
-	// Release the cache.
-	inx_unlock(objects.users);
-
-	return;
-}
-
-/**
  * @brief	Locate and remove a user's object from the cache if the reference counter is zero.
  * @param	username	a managed string containing the name of the user whose data should be removed from the object cache.
  * @return returns 1 if the user object was successfully pruned, 0 if the user isn't found, a non-zero reference count causes a return of -1,
@@ -381,7 +352,6 @@ int_t meta_user_update(meta_user_t *user, META_LOCK_STATUS locked) {
  * 						locked for the duration of the function.
  * @return	-1 on error, 1 on success.
  */
-// TODO: The return convention here is pretty weird. It should probably be cleaned up at some point.
 int_t meta_user_build(meta_user_t *user, credential_t *cred, META_LOCK_STATUS locked) {
 
 	uint64_t serial;
@@ -425,6 +395,70 @@ int_t meta_user_build(meta_user_t *user, credential_t *cred, META_LOCK_STATUS lo
 			result = -1;
 		}
 		else if ((result = meta_data_user_build(user, cred)) == 1 && (result = meta_data_fetch_mailbox_aliases(user)) &&
+			!(user->serials.user = serial_get(OBJECT_USER, user->usernum))) {
+			user->serials.user = serial_increment(OBJECT_USER, user->usernum);
+		}
+
+	}
+
+	// Do we need to clear the lock.
+	if (locked == META_NEED_LOCK) {
+		meta_user_unlock(user);
+	}
+
+	return result;
+}
+
+/**
+ * @brief	Build a user's meta information from specified data parameters.
+ *
+ * @note	The user object will be pulled from the cache, if possible, or it falls back to a database lookup using the user number and
+ * 			the verification token.
+ * .
+ * @param	user		a pointer to the meta user object that is to be populated.
+ * @param	cred		Credentials object containing user authentication.
+ * @param	locked		the meta lock status of the operation (if META_NEED_LOCK is supplied, the meta user object will be
+ * 						locked for the duration of the function.
+ * @return	-1 on error, 0 on success, 1 for an authentication issue.
+ */
+int_t new_meta_user_build(meta_user_t *user, stringer_t *username, stringer_t *master, stringer_t *verification, META_LOCK_STATUS locked) {
+
+	uint64_t serial;
+	int_t result = 0;
+
+	// Sanity.
+	if (!user || st_empty(username, master, verification)) {
+		return -1;
+	}
+
+	// Do we need a lock.
+	if (locked == META_NEED_LOCK) {
+		meta_user_wlock(user);
+	}
+
+	// Check for cached data.
+	if (user->username && user->passhash && user->usernum) {
+
+		// Check for a new checkpoint, otherwise assume the stored data is good.
+		if ((serial = serial_get(OBJECT_USER, user->usernum)) == user->serials.user) {
+			result = 1;
+		}
+		else if ((result = meta_data_fetch_user(user)) && (result = meta_data_fetch_mailbox_aliases(user))) {
+			user->serials.user = serial;
+		}
+
+	}
+
+	// We don't have a stored structure so check the database.
+	else {
+
+		// If were reusing a cache structure, we might need to destroy the old copy of the username.
+		st_cleanup(user->username);
+
+		if (!(user->username = st_dupe(username))) {
+			result = -1;
+		}
+		else if ((result = new_meta_data_user_build(user, master, verification)) == 1 && (result = meta_data_fetch_mailbox_aliases(user)) &&
 			!(user->serials.user = serial_get(OBJECT_USER, user->usernum))) {
 			user->serials.user = serial_increment(OBJECT_USER, user->usernum);
 		}
@@ -522,7 +556,9 @@ bool_t meta_user_serial_check(meta_user_t *user, uint64_t object) {
 
 /**
  * @brief	Lookup user by information and and return a meta user object.
- * @note	If the user is not found, one will be created.
+ *
+ * @note	If the user is not found in the local session cache, the session will be constructed using the database, and then cached.
+ *
  * @param	cred		Credentials object containing user log in information.
  * @param	flags		a set of flags specifying the protocol used by the calling function. Values can be META_PROT_NONE,
  * 						META_PROT_SMTP, META_PROT_POP, META_PROT_IMAP,  META_PROT_WEB, or META_PROT_GENERIC.
@@ -535,7 +571,6 @@ int_t meta_get(credential_t *cred, META_PROT flags, META_GET get, meta_user_t **
 
 	int_t state;
 	meta_user_t *user = NULL;
-	stringer_t *mailbox = NULL;
 	multi_t key = { .type = M_TYPE_STRINGER, .val.st = cred->auth.username };
 
 	if (st_empty(cred->auth.username)) {
@@ -548,7 +583,10 @@ int_t meta_get(credential_t *cred, META_PROT flags, META_GET get, meta_user_t **
 	}
 
 	// Fail if the specified mailbox does not even exist.
-	if (cred->auth.domain && !(mailbox = st_merge("sns", cred->auth.username, "@", cred->auth.domain))) {
+	/*
+	 * 	stringer_t *mailbox = NULL;
+	 *
+	 * if (cred->auth.domain && !(mailbox = st_merge("sns", cred->auth.username, "@", cred->auth.domain))) {
 		log_error("Unable to allocate space for user mailbox name.");
 		return -1;
 	} else if (cred->auth.domain && (!meta_data_check_mailbox(mailbox))) {
@@ -556,7 +594,7 @@ int_t meta_get(credential_t *cred, META_PROT flags, META_GET get, meta_user_t **
 		return 0;
 	}
 
-	st_cleanup(mailbox);
+	st_cleanup(mailbox);*/
 
 	// Pull the user from the cache, or add it.
 	inx_lock_write(objects.users);
@@ -583,41 +621,113 @@ int_t meta_get(credential_t *cred, META_PROT flags, META_GET get, meta_user_t **
 	// Pull the user information.
 	if ((state = meta_user_build(user, cred, META_LOCKED)) < 0) {
 		meta_user_unlock(user);
-		// QUESTION: Why not using meta_user_ref_dec() on these?
-		meta_remove(cred->auth.username, flags);
+		meta_inx_remove(cred->auth.username, flags);
 		return state;
 	}
 	// If we have the user information already.
 	else if (st_cmp_cs_eq(user->passhash, cred->auth.password)) {
 		meta_user_unlock(user);
-		meta_remove(cred->auth.username, flags);
+		meta_inx_remove(cred->auth.username, flags);
 		return 0;
 	}
 
 	// Are we supposed to get the messages.
 	if ((get & META_GET_MESSAGES) && meta_messages_update(user, META_LOCKED) < 0) {
 		meta_user_unlock(user);
-		meta_remove(cred->auth.username, flags);
+		meta_inx_remove(cred->auth.username, flags);
 		return -1;
 	}
 
 	if ((get & META_GET_FOLDERS) && meta_message_folders_update(user, META_LOCKED) < 0) {
 		meta_user_unlock(user);
-		meta_remove(cred->auth.username, flags);
+		meta_inx_remove(cred->auth.username, flags);
 		return -1;
 	}
 
 	// Are we supposed to update the folders.
 	if ((get & META_GET_FOLDERS) && meta_folders_update(user, META_LOCKED) < 0) {
 		meta_user_unlock(user);
-		meta_remove(cred->auth.username, flags);
+		meta_inx_remove(cred->auth.username, flags);
 		return -1;
 	}
 
 	// Are we supposed to update the folders.
 	if ((get & META_GET_CONTACTS) && meta_contacts_update(user, META_LOCKED) < 0) {
 		meta_user_unlock(user);
-		meta_remove(cred->auth.username, flags);
+		meta_inx_remove(cred->auth.username, flags);
+		return -1;
+	}
+
+	*output = user;
+	meta_user_unlock(user);
+
+	return 1;
+}
+
+/**
+ * @brief	Lookup user and return their meta user object.
+ *
+ * @note	If the user is not found in the local session cache, the session will be constructed using the database, and then cached.
+ *
+ * @param	auth		Authentications object generated during the user log in process.
+ * @param	flags		a set of flags specifying the protocol used by the calling function. Values can be META_PROT_NONE,
+ * 						META_PROT_SMTP, META_PROT_POP, META_PROT_IMAP, META_PROT_WEB, or META_PROT_GENERIC.
+ * @param	get			a set of flags specifying the data to be retrieved (META_GET_NONE, META_GET_MESSAGES,
+ * 						META_GET_FOLDERS, or META_GET_CONTACTS)
+ * @param	output		the address of a meta user object that will store a pointer to the result of the lookup.
+ *
+ * @return	-1 on error, 0 if the username information exists but there was an error, and 1 on success.
+ */
+int_t new_meta_get(auth_t *auth, META_PROT flags, META_GET get, meta_user_t **output) {
+
+	int_t state;
+	meta_user_t *user = NULL;
+
+	// If the auth structure is empty, or the usernum is invalid, return an error immediately.
+	if (!auth || !auth->usernum || st_empty(auth->username, auth->keys.master, auth->tokens.verification)) {
+		log_pedantic("Invalid parameters were provided to get the meta session.");
+		return -1;
+	}
+
+	// Pull the user from the cache, or add it.
+	if (!(user = meta_inx_find(auth->username, flags))) {
+		log_pedantic("Could not find an existing user object, nor could we create one.");
+		return -1;
+	}
+
+	meta_user_wlock(user);
+
+	// Pull the user information.
+	if ((state = new_meta_user_build(user, auth->username, auth->keys.master, auth->tokens.verification, META_LOCKED)) < 0) {
+		meta_user_unlock(user);
+		meta_inx_remove(auth->username, flags);
+		return state;
+	}
+
+	// Are we supposed to get the messages.
+	if ((get & META_GET_MESSAGES) && meta_messages_update(user, META_LOCKED) < 0) {
+		meta_user_unlock(user);
+		meta_inx_remove(auth->username, flags);
+		return -1;
+	}
+
+	if ((get & META_GET_FOLDERS) && meta_message_folders_update(user, META_LOCKED) < 0) {
+		meta_user_unlock(user);
+		meta_inx_remove(auth->username, flags);
+		return -1;
+	}
+
+	// Are we supposed to update the folders.
+	if ((get & META_GET_FOLDERS) && meta_folders_update(user, META_LOCKED) < 0) {
+		meta_user_unlock(user);
+		meta_inx_remove(auth->username, flags);
+		return -1;
+	}
+
+	// Are we supposed to update the folders.
+	if ((get & META_GET_CONTACTS) && meta_contacts_update(user, META_LOCKED) < 0) {
+		meta_user_unlock(user);
+		meta_inx_remove(auth->username, flags);
 		return -1;
 	}
 

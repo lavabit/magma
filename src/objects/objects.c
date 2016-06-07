@@ -56,6 +56,15 @@ void obj_cache_stop(void) {
 	return;
 }
 
+/**
+ * @brief	The prune function runs every few minutes and scans the object cache and removes any stale objects it finds.
+ *
+ * @note	If the number of entries is over 4,096, then the prune function will remove entries candidates which have been unused more
+ * 			then 5 minutes. If the index holds more than 2,048, entries older than 30 minutes are pruned, otherwise if the index holds
+ * 			fewer than 2,048 entries, only those objects older than 1 hour are removed. Also, note that the precise interval between
+ * 			scans is somewhat random, because the background thread responsible for running the prune function goes to sleep for a
+ * 			random number of seconds.
+ */
 void obj_cache_prune(void) {
 
 	time_t now;
@@ -71,13 +80,17 @@ void obj_cache_prune(void) {
 
 	if (objects.users && (cursor = inx_cursor_alloc(objects.users))) {
 
-		count = expired = 0;
+		expired = 0;
 
 		inx_lock_read(objects.users);
 
 		// If were currently holding more than 4,096 users, prune those older than 5 minutes.
-		if (inx_count(objects.users) > 4096) {
+		if ((count = inx_count(objects.users)) > 4096) {
 			gap = 300;
+		}
+		// If the count is above 2,048, prune entries older than 30 minutes.
+		else if (count > 2048) {
+			gap = 1800;
 		}
 		// Otherwise only prune those older than 1 hour.
 		else  {
@@ -109,12 +122,16 @@ void obj_cache_prune(void) {
 
 	if (objects.sessions && (cursor = inx_cursor_alloc(objects.sessions))) {
 
-		count = expired = 0;
+		expired = 0;
 
 		inx_lock_read(objects.sessions);
 
-		// If were currently holding more than 4,096 sessions, prune those older than 30 minutes.
-		if (inx_count(objects.sessions) > 4096) {
+		// If were currently holding more than 4,096 users, prune those older than 5 minutes.
+		if ((count = inx_count(objects.sessions)) > 4096) {
+			gap = 300;
+		}
+		// If the count is above 2,048, prune entries older than 30 minutes.
+		else if (count > 2048) {
 			gap = 1800;
 		}
 		// Otherwise only prune those older than 1 hour.

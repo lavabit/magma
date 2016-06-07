@@ -93,7 +93,7 @@ void pop_session_destroy(connection_t *con) {
 
 		// Check whether we're the last reference to this object.
 		if (con->pop.username) {
-			meta_remove(con->pop.username, META_PROT_POP);
+			meta_inx_remove(con->pop.username, META_PROT_POP);
 		}
 
 	}

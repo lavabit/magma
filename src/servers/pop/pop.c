@@ -167,24 +167,23 @@ void pop_user(connection_t *con) {
  * @note	This command is only allowed for sessions which have not yet been authenticated, but which have already supplied a username.
  *			If the username/password combo was validated, the account information is retrieved and checked to see if it is locked.
  *			After successful authentication, this function will prohibit insecure connections for any user configured to use SSL only,
- *			and enforce the existence of only one POP3 session at a time.
+ *			and enforce the existence of only one POP3 session at a time. See RFC 3206 regarding the response code extension.
  *			Finally, the database Log table for this user's POP3 access is updated, and all the user's messages are retrieved.
  * @param	con		the POP3 client connection issuing the command.
  * @return	This function returns no value.
  */
 void pop_pass(connection_t *con) {
 
-	salt_state_t salt_res;
-	int_t state, cred_res;
-	credential_t *cred = NULL;
-	stringer_t *password = NULL, *username = NULL, *salt = NULL;
+	int_t state;
+	auth_t *auth = NULL;
+	stringer_t *password = NULL;
 
 	if (con->pop.session_state != 0) {
 		pop_invalid(con);
 		return;
 	}
 
-	// The user must come before the PASS command.
+	// The user command must come before the PASS command.
 	if (st_empty(con->pop.username)) {
 		con_write_bl(con, "-ERR You must supply a username first.\r\n", 40);
 		return;
@@ -196,105 +195,54 @@ void pop_pass(connection_t *con) {
 		return;
 	}
 
-	// Hash the password.
-	// First we need to get the regular username from the fully qualified one.
-	if (!(username = credential_username(con->pop.username))) {
-		st_wipe(password);
+	// Authenticate the username and password.
+	if ((state = auth_login(con->pop.username, password, &auth))) {
+		if (state < 0) con_write_bl(con, "-ERR [SYS/TEMP] Internal server error. Please try again later.\r\n", 64);
+		else con_write_bl(con, "-ERR [AUTH] The username and password combination is invalid.\r\n", 63);
 		st_free(password);
-		con_write_bl(con, "-ERR Internal server error. Please try again later.\r\n", 53);
-	}
-
-	st_free(con->pop.username);
-	con->pop.username = username;
-
-	if(!(cred = credential_alloc_auth(con->pop.username))) {
-		st_wipe(password);
-		st_free(password);
-		con_write_bl(con, "-ERR Internal server error. Please try again later.\r\n", 53);
 		return;
 	}
 
-	salt_res = credential_salt_fetch(cred->auth.username, &salt);
-
-	if(salt_res == USER_SALT) {
-		cred_res = credential_calc_auth(cred, password, salt);
-		st_free(salt);
-	}
-	else if(salt_res == USER_NO_SALT) {
-		cred_res = credential_calc_auth(cred, password, NULL);
-	}
-	else {
-		cred_res = 0;
-	}
-
-	st_wipe(password);
+	// Free the plain text password. If secure memory was enabled, it will be wiped as well.
 	st_free(password);
 
-	if(!cred_res) {
-		credential_free(cred);
-		con_write_bl(con, "-ERR Internal server error. Please try again later.\r\n", 53);
+	// Check if the account is locked.
+	if (auth->status.locked) {
+
+		if (auth->status.locked == 1) con_write_bl(con, "-ERR [SYS/PERM] This account has been administratively locked.\r\n", 64);
+		else if (auth->status.locked == 2) con_write_bl(con, "-ERR [SYS/PERM] This account has been locked for inactivity.\r\n", 62);
+		else if (auth->status.locked == 3) con_write_bl(con, "-ERR [SYS/PERM] This account has been locked on suspicion of abuse.\r\n", 69);
+		else if (auth->status.locked == 4) con_write_bl(con, "-ERR [SYS/PERM] This account has been locked at the request of the user.\r\n", 74);
+		else if (auth->status.locked != 0) con_write_bl(con, "-ERR [SYS/PERM] This account has been locked.\r\n", 47);
+
+		auth_free(auth);
 		return;
 	}
 
-	// Pull the user info out.
-	state = meta_get(cred, META_PROT_POP, META_GET_MESSAGES, &(con->pop.user));
-
-	// Securely delete this information, as these are the keys to the castle.
-	credential_free(cred);
-
-	// Not found, or invalid password.
-	if (state == 0) {
-		con_write_bl(con,  "-ERR The username and password combination is invalid.\r\n", 56);
-		return;
-	}
-	// Internal error.
-	else if (state < 0 || !con->pop.user) {
-		con_write_bl(con, "-ERR [SYS/TEMP] Internal server error. Please try again later.\r\n", 64);
-		return;
-	}
-
-	// Locks
-	else if (con->pop.user->lock_status != 0) {
-		// What type of lock is it.
-		if (con->pop.user->lock_status == 1) {
-			con_write_bl(con, "-ERR [SYS/PERM] This account has been administratively locked.\r\n", 64);
-		}
-		else if (con->pop.user->lock_status == 2) {
-			con_write_bl(con, "-ERR [SYS/PERM] This account has been locked for inactivity.\r\n", 62);
-		}
-		else if (con->pop.user->lock_status == 3) {
-			con_write_bl(con, "-ERR [SYS/PERM] This account has been locked on suspicion of abuse.\r\n", 69);
-		}
-		else if (con->pop.user->lock_status == 4) {
-			con_write_bl(con, "-ERR [SYS/PERM] This account has been locked at the request of the user.\r\n", 74);
-		}
-		else {
-			con_write_bl(con, "-ERR [SYS/PERM] This account has been locked.\r\n", 47);
-		}
-
-		con->pop.user = NULL;
-		meta_remove(con->pop.username, META_PROT_POP);
-		return;
-	}
-
-	// SSL check.
-	else if ((con->pop.user->flags & META_USER_SSL) == META_USER_SSL && con_secure(con) != 1) {
-		con->pop.user = NULL;
-		meta_remove(con->pop.username, META_PROT_POP);
+	// Check whether this account requires transport layer security, and if so, ensure the transport layer is encrypted.
+	if (auth->status.tls && con_secure(con) != 1) {
 		con_write_bl(con, "-ERR [SYS/PERM] This user account is configured to require that all POP sessions be connected over SSL.\r\n", 105);
 		return;
 	}
 
+	// Pull the user info out.
+	state = new_meta_get(auth, META_PROT_POP, META_GET_MESSAGES, &(con->pop.user));
+
+
+
+
+
+
 	// Single session check.
-	else if (con->pop.user->refs.pop != 1) {
+	if (con->pop.user->refs.pop != 1) {
 		con->pop.user = NULL;
-		meta_remove(con->pop.username, META_PROT_POP);
+		meta_inx_remove(con->pop.username, META_PROT_POP);
 		con_write_bl(con, "-ERR [IN-USE] This account is being used by another session. Please try again in a few minutes.\r\n", 97);
 		return;
 	}
 
-	// Debug logging.
-	log_pedantic("User %.*s logged in from %s via POP. {poprefs = %lu, imaprefs = %lu, messages = %lu}",
+	// User logging.
+	log_info("User %.*s logged in from %s via POP. { poprefs = %lu, imaprefs = %lu, messages = %lu }",
 		st_length_int(con->pop.username), st_char_get(con->pop.username), st_char_get(con_addr_presentation(con, MANAGEDBUF(256))),
 		con->pop.user->refs.pop, con->pop.user->refs.imap, con->pop.user->messages ? inx_count(con->pop.user->messages) : 0);
 

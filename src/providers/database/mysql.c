@@ -227,7 +227,7 @@ MYSQL * sql_open(bool_t silent) {
 	// From the MySQL 5.1 documentation (section 20.9.3.1): "Because mysql_affected_rows() returns an unsigned value, you can check for -1 by comparing the
 	// return value to (my_ulonglong)-1 (or to (my_ulonglong)~0, which is equivalent)." To ensure that remains true, we explicitly test whether the two
 	// statements are true.
-	if ((my_ulonglong)-1 != (my_ulonglong)~0) {
+	if ((my_ulonglong)-1 != (my_ulonglong)~0 || (my_ulonglong)-1 != INT64_MAX) {
 		if (!silent) log_critical("The SQL ulonglong datatype did not pass the equivalency test needed by the SQL provider's error checking logic.");
 		return NULL;
 	}

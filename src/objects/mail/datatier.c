@@ -138,8 +138,8 @@ int_t mail_db_update_message_folder(uint64_t usernum, uint64_t messagenum, uint6
 	parameters[3].buffer = &source;
 	parameters[3].is_unsigned = true;
 
-	// Since the result is unsigned, an error is indicated by a return value of (my_ulonglong)-1.
-	if ((result = stmt_exec_affected_conn(stmts.update_message_folder, parameters, transaction)) != 1 && result == (my_ulonglong)-1) {
+	// Since the result is unsigned, an error is indicated by a return value of -1.
+	if ((result = stmt_exec_affected_conn(stmts.update_message_folder, parameters, transaction)) != 1 && result == -1) {
 		log_pedantic("An error occurred while trying to move a message into a different folder. { user = %lu / message = %lu / source = %lu / "
 			"target = %lu / query = -1 / error = %u = %s }", usernum, messagenum, source, target, mysql_stmt_errno_d(pool_get_obj(sql_pool, transaction)),
 			mysql_stmt_error_d(pool_get_obj(sql_pool, transaction)));

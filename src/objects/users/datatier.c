@@ -463,7 +463,7 @@ int_t meta_data_insert_tag(meta_message_t *message, stringer_t *tag) {
 
 	// If the message already has already been tagged the statement could indicate that no rows were updated. Since we don't consider that a true error condition we have to
 	// check for (my_ulonglong)-1 to indicate an error condition which should be passed along to the user.
-	if (stmt_exec_affected(stmts.insert_message_tag, parameters) == (my_ulonglong)-1) {
+	if (stmt_exec_affected(stmts.insert_message_tag, parameters) == -1) {
 		return -1;
 	}
 
@@ -489,7 +489,7 @@ int_t meta_data_truncate_tags(meta_message_t *message) {
 
 	// If the message doesn't have the tag in question, then no rows will be updated. Since we don't consider that a true error condition we have to
 	// check for (my_ulonglong)-1 so we know when to indicate a server error to the user.
-	if (stmt_exec_affected(stmts.delete_message_tags, parameters) == (my_ulonglong)-1) {
+	if (stmt_exec_affected(stmts.delete_message_tags, parameters) == -1) {
 		return -1;
 	}
 
@@ -521,7 +521,7 @@ int_t meta_data_delete_tag(meta_message_t *message, stringer_t *tag) {
 
 	// If the message doesn't have the tag in question, then no rows will be updated. Since we don't consider that a true error condition we have to
 	// check for (my_ulonglong)-1 so we know when to indicate a server error to the user.
-	if (stmt_exec_affected(stmts.delete_message_tag, parameters) == (my_ulonglong)-1) {
+	if (stmt_exec_affected(stmts.delete_message_tag, parameters) == -1) {
 		return -1;
 	}
 

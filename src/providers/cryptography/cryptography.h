@@ -101,7 +101,7 @@ uint64_t  cryptex_total_length(cryptex_t *cryptex);
 void *    cryptex_alloc(uint64_t envelope, uint64_t hmac, uint64_t original, uint64_t body);
 void *    cryptex_body_data(cryptex_t *cryptex);
 void *    cryptex_envelope_data(cryptex_t *cryptex);
-void *    cryptex_mac_data(cryptex_t *cryptex);
+void *    cryptex_hmac_data(cryptex_t *cryptex);
 void      cryptex_free(cryptex_t *cryptex);
 
 /// digest.c
@@ -109,21 +109,22 @@ digest_t *    digest_id(int_t id);
 digest_t *    digest_name(stringer_t *name);
 
 /// ecies.c
-EC_GROUP *      ecies_group(uint64_t curve, bool_t precompute);
-EC_KEY *        ecies_key_alloc(void);
-EC_KEY *        ecies_key_create(void);
-EC_KEY *        ecies_key_private(uint64_t format, placer_t data);
-EC_KEY *        ecies_key_public(uint64_t format, placer_t data);
-bool_t          ecies_start(void);
-stringer_t *    ecies_key_private_hex(EC_KEY *key);
-char *          ecies_key_private_bin(EC_KEY *key, size_t *olen);
-stringer_t *    ecies_key_public_hex(EC_KEY *key);
-unsigned char * ecies_key_public_bin(EC_KEY *key, size_t *olen);
-cryptex_t *     ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned char *data, size_t length);
-unsigned char * ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryptex_t *cryptex, size_t *length);
-void *          ecies_envelope_derivation(const void *input, size_t ilen, void *output, size_t *olen);
-void            ecies_key_free(EC_KEY *key);
-void            ecies_stop(void);
+uchr_t *      ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryptex_t *cryptex, size_t *length);
+cryptex_t *   ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned char *data, size_t length);
+void *        ecies_envelope_derivation(const void *input, size_t ilen, void *output, size_t *olen);
+EC_GROUP *    ecies_group(uint64_t curve, bool_t precompute);
+EC_KEY *      ecies_key_alloc(void);
+EC_KEY *      ecies_key_create(void);
+void          ecies_key_free(EC_KEY *key);
+EC_KEY *      ecies_key_private(uint64_t format, placer_t data);
+uchr_t *      ecies_key_private_bin(EC_KEY *key, size_t *olen);
+stringer_t *  ecies_key_private_hex(EC_KEY *key);
+EC_KEY *      ecies_key_public(uint64_t format, placer_t data);
+uchr_t *      ecies_key_public_bin(EC_KEY *key, size_t *olen);
+stringer_t *  ecies_key_public_hex(EC_KEY *key);
+bool_t        ecies_start(void);
+void          ecies_stop(void);
+
 
 /// hash.c
 stringer_t *  hash_digest(digest_t *digest, stringer_t *s, stringer_t *output);

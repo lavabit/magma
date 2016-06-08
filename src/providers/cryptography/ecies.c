@@ -200,9 +200,6 @@ EC_KEY * ecies_key_public(uint64_t format, placer_t data) {
 	return key;
 }
 
-/**
- *
- */
 EC_KEY * ecies_key_private(uint64_t format, placer_t data) {
 
 	EC_KEY *key = NULL;
@@ -261,11 +258,10 @@ EC_KEY * ecies_key_private(uint64_t format, placer_t data) {
  */
 stringer_t * ecies_key_public_hex(EC_KEY *key) {
 
-	stringer_t *result;
 	char *hex;
 	const EC_POINT *point;
 	const EC_GROUP *group;
-	size_t hexlen;
+	stringer_t *result = NULL;
 
 	if (!(point = EC_KEY_get0_public_key_d(key))) {
 		log_info("No public key available. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
@@ -273,14 +269,12 @@ stringer_t * ecies_key_public_hex(EC_KEY *key) {
 	} else if (!(group = EC_KEY_get0_group_d(key))) {
 		log_info("No group available. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
 		return NULL;
-	} else 	if (!(hex = EC_POINT_point2hex_d(group, point, POINT_CONVERSION_COMPRESSED, NULL))) {
+	} else if (!(hex = EC_POINT_point2hex_d(group, point, POINT_CONVERSION_COMPRESSED, NULL))) {
 		log_info("Unable to serialize the public key into hex. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
 		return NULL;
 	}
 
-	hexlen = ns_length_get(hex)+1;
-
-	if (!(result = st_import(hex,hexlen))) {
+	if (!(result = st_import(hex, ns_length_get(hex) + 1))) {
 		log_info("Unable to make copy of ECIES public key.");
 	}
 
@@ -295,9 +289,9 @@ stringer_t * ecies_key_public_hex(EC_KEY *key) {
  * @param	olen	a pointer to store the length of the returned key.
  * @return	NULL on failure, or a pointer to the raw public key.
  */
-unsigned char * ecies_key_public_bin(EC_KEY *key, size_t *olen) {
+uchr_t * ecies_key_public_bin(EC_KEY *key, size_t *olen) {
 
-	unsigned char *result;
+	uchr_t *result;
 	size_t rlen, blen = 512;
 	const EC_POINT *point;
 	const EC_GROUP *group;
@@ -327,7 +321,6 @@ unsigned char * ecies_key_public_bin(EC_KEY *key, size_t *olen) {
 	return result;
 }
 
-
 /**
  * @brief	Return an ECIES private key as a hex string.
  * @param	key	the input ECIES key pair.
@@ -335,34 +328,27 @@ unsigned char * ecies_key_public_bin(EC_KEY *key, size_t *olen) {
  */
 stringer_t *ecies_key_private_hex(EC_KEY *key) {
 
-	stringer_t *result;
-	char *hex;
+	chr_t *hex;
 	const BIGNUM *bn;
-	size_t hexlen;
+	stringer_t *result = NULL;
 
 	if (!(bn = EC_KEY_get0_private_key_d(key))) {
-		log_info("No private key available. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_pedantic("No private key available. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
 		return NULL;
-	} else if (!(hex = BN_bn2hex_d(bn))) {
-		log_info("Unable to serialize the private key into hex. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+	}
+	else if (!(hex = BN_bn2hex_d(bn))) {
+		log_pedantic("Unable to serialize the private key into hex. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
 		return NULL;
 	}
 
-	hexlen = ns_length_get(hex)+1;
-
-	if (!(result = st_alloc_opts(MANAGED_T | CONTIGUOUS | SECURE, hexlen))) {
-		log_info("Unable to allocate secure buffer for hex string.");
-		mm_wipe(hex,hexlen);
+	else if (!(result = st_import_opts(MANAGED_T | CONTIGUOUS | SECURE, hex, ns_length_get(hex) + 1))) {
+		log_pedantic("Unable to allocate secure buffer for hex string.");
+		ns_wipe(hex, ns_length_get(hex));
 		OPENSSL_free_d(hex);
 		return NULL;
 	}
-	else if (!st_copy_in(result,hex,hexlen)) {
-		log_info("Unable to copy hex key into buffer.");
-		st_free(result);
-		result = NULL;
-	}
 
-	mm_wipe(hex,hexlen);
+	ns_wipe(hex, ns_length_get(hex));
 	OPENSSL_free_d(hex);
 
 	return result;
@@ -374,11 +360,11 @@ stringer_t *ecies_key_private_hex(EC_KEY *key) {
  * @param	olen	a pointer to store the length of the returned key.
  * @return	NULL on failure, or a pointer to the raw private key.
  */
-char *ecies_key_private_bin(EC_KEY *key, size_t *olen) {
+uchr_t * ecies_key_private_bin(EC_KEY *key, size_t *olen) {
 
 	const BIGNUM *bn;
 	int bn_len;
-	char *result;
+	uchr_t *result;
 
 	if (!(bn = EC_KEY_get0_private_key_d(key))) {
 		log_info("No private key available. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
@@ -391,7 +377,8 @@ char *ecies_key_private_bin(EC_KEY *key, size_t *olen) {
 	if (!(result = mm_sec_alloc(bn_len))) {
 		log_info("Error allocating space for ECIES private key.");
 		return NULL;
-	} else if (!BN_bn2bin_d(bn, (unsigned char *)result)) {
+	}
+	else if (!BN_bn2bin_d(bn, (unsigned char *)result)) {
 		log_info("Error retrieving ECIES private key.");
 		mm_sec_free(result);
 		return NULL;
@@ -571,7 +558,7 @@ cryptex_t * ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned cha
 	mac_length = cryptex_hmac_length(cryptex);
 
 	// At the moment we are generating the hash using encrypted data. At some point we may want to validate the original text instead.
-	if (HMAC_Init_ex_d(&hmac, envelope_key + key_length, key_length, EVP_get_digestbyname_d(OBJ_nid2sn_d(ECIES_HMAC)), NULL) != 1 || HMAC_Update_d(&hmac, cryptex_body_data(cryptex), cryptex_body_length(cryptex)) != 1 || HMAC_Final_d(&hmac, cryptex_mac_data(
+	if (HMAC_Init_ex_d(&hmac, envelope_key + key_length, key_length, EVP_get_digestbyname_d(OBJ_nid2sn_d(ECIES_HMAC)), NULL) != 1 || HMAC_Update_d(&hmac, cryptex_body_data(cryptex), cryptex_body_length(cryptex)) != 1 || HMAC_Final_d(&hmac, cryptex_hmac_data(
 			cryptex), &mac_length) != 1) {
 		log_info("Unable to generate a data authentication code. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
 		HMAC_CTX_cleanup_d(&hmac);
@@ -592,7 +579,7 @@ cryptex_t * ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned cha
  * @param	length		a pointer to a size_t variable which will receive the final length of the unencrypted data.
  * @return	NULL on failure, or a pointer to a memory address containing the decrypted data on success..
  */
-unsigned char * ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryptex_t *cryptex, size_t *length) {
+uchr_t * ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryptex_t *cryptex, size_t *length) {
 
 	HMAC_CTX hmac;
 	size_t key_length;
@@ -659,7 +646,7 @@ unsigned char * ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryptex_
 	HMAC_CTX_cleanup_d(&hmac);
 
 	// We can use the generated hash to ensure the encrypted data was not altered after being encrypted.
-	if (mac_length != cryptex_hmac_length(cryptex) || memcmp(md, cryptex_mac_data(cryptex), mac_length)) {
+	if (mac_length != cryptex_hmac_length(cryptex) || memcmp(md, cryptex_hmac_data(cryptex), mac_length)) {
 		log_info("The authentication code was invalid! The ciphered data has been corrupted!");
 		return NULL;
 	}

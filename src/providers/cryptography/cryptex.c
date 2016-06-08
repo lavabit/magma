@@ -87,8 +87,7 @@ void * cryptex_envelope_data(cryptex_t *cryptex) {
  * @param	cryptex		the input cryptex object.
  * @return	a pointer to the cryptex object's hmac data.
  */
-// QUESTION: Rename mac -> hmac?
-void * cryptex_mac_data(cryptex_t *cryptex) {
+void * cryptex_hmac_data(cryptex_t *cryptex) {
 
 	cryptex_head_t *head = (cryptex_head_t *)cryptex;
 

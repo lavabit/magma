@@ -21,7 +21,7 @@
  */
 int_t contact_update_stamp(uint64_t contactnum, uint64_t usernum, uint64_t foldernum) {
 
-	uint64_t affected;
+	int64_t affected;
 	MYSQL_BIND parameters[3];
 
 	mm_wipe(parameters, sizeof(parameters));
@@ -65,7 +65,7 @@ int_t contact_update_stamp(uint64_t contactnum, uint64_t usernum, uint64_t folde
 // QUESTION: How many affected rows should there be? Couldn't it be much higher if there are several details deleted?
 int_t contact_delete(uint64_t contactnum, uint64_t usernum, uint64_t foldernum) {
 
-	uint64_t affected;
+	int64_t affected;
 	MYSQL_BIND parameters[3];
 
 	mm_wipe(parameters, sizeof(parameters));
@@ -110,7 +110,7 @@ int_t contact_delete(uint64_t contactnum, uint64_t usernum, uint64_t foldernum) 
  */
 int_t contact_update(uint64_t contactnum, uint64_t usernum, uint64_t cur_folder, uint64_t target_folder, stringer_t *name) {
 
-	uint64_t affected;
+	int64_t affected;
 	MYSQL_BIND parameters[5];
 
 	mm_wipe(parameters, sizeof(parameters));
@@ -208,7 +208,7 @@ uint64_t contact_insert(uint64_t usernum, uint64_t foldernum, stringer_t *name) 
  */
 int_t contact_detail_delete(uint64_t contactnum, stringer_t *key) {
 
-	uint64_t affected;
+	int64_t affected;
 	MYSQL_BIND parameters[4];
 
 	mm_wipe(parameters, sizeof(parameters));
@@ -245,7 +245,7 @@ int_t contact_detail_delete(uint64_t contactnum, stringer_t *key) {
  */
 int_t contact_detail_upsert(uint64_t contactnum, stringer_t *key, stringer_t *value, uint64_t flags) {
 
-	uint64_t affected;
+	int64_t affected;
 	MYSQL_BIND parameters[4];
 
 	mm_wipe(parameters, sizeof(parameters));

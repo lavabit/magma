@@ -46,7 +46,7 @@ void mail_db_hide_message(uint64_t messagenum) {
 bool_t mail_db_delete_message(uint64_t usernum, uint64_t messagenum, uint32_t size, int_t transaction) {
 
 	MYSQL_BIND parameters[2];
-	uint64_t affected;
+	int64_t affected;
 
 	mm_wipe(parameters, sizeof(parameters));
 

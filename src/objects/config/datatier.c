@@ -20,7 +20,7 @@
  */
 int_t user_config_delete(uint64_t usernum, stringer_t *key) {
 
-	uint64_t affected;
+	int64_t affected;
 	MYSQL_BIND parameters[4];
 
 	mm_wipe(parameters, sizeof(parameters));
@@ -56,7 +56,7 @@ int_t user_config_delete(uint64_t usernum, stringer_t *key) {
  */
 int_t user_config_upsert(uint64_t usernum, stringer_t *key, stringer_t *value, uint64_t flags) {
 
-	uint64_t affected;
+	int64_t affected;
 	MYSQL_BIND parameters[4];
 
 	mm_wipe(parameters, sizeof(parameters));

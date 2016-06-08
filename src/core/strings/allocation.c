@@ -216,15 +216,25 @@ stringer_t * st_merge_opts(uint32_t opts, chr_t *format, ...) {
 
 /**
  * @brief	Create a new (contiguous managed) managed string on the heap to hold a copy of the specified data buffer.
+
+ * @param	opts	the options value of the resulting managed string that will be allocated for the caller.
  * @param	s	the address of the buffer to be duplicated.
  * @param	len	the length, in bytes, of the copied buffer.
+ *
  * @return	NULL on failure, or a pointer to the newly allocated managed string on success.
  */
-stringer_t * st_import(const void *s, size_t len) {
+stringer_t * st_import_opts(uint32_t opts, const void *s, size_t len) {
 
 	stringer_t *result;
 
-	if (!(result = st_alloc_opts(MANAGED_T | CONTIGUOUS | HEAP, len))) {
+#ifdef MAGMA_PEDANTIC
+	if (!st_valid_destination(opts)) {
+		log_pedantic("Invalid string options. { opt = %u = %s }", opts, st_info_opts(opts, MEMORYBUF(128), 128));
+		return NULL;
+	}
+#endif
+
+	if (!(result = st_alloc_opts(opts, len))) {
 		return NULL;
 	}
 
@@ -232,6 +242,21 @@ stringer_t * st_import(const void *s, size_t len) {
 	st_length_set(result, len);
 
 	return result;
+}
+
+/**
+ * @brief	Create a new (contiguous managed) managed string on the heap to hold a copy of the specified data buffer.
+ *
+ * @see		st_import_opts()
+ *
+ * @param	s	the address of the buffer to be duplicated.
+ * @param	len	the length, in bytes, of the copied buffer.
+ *
+ * @return	NULL on failure, or a pointer to the newly allocated managed string on success.
+ */
+stringer_t * st_import(const void *s, size_t len) {
+
+	return st_import_opts(MANAGED_T | CONTIGUOUS | HEAP, s, len);
 }
 
 /**
@@ -538,6 +563,22 @@ stringer_t * st_alloc_opts(uint32_t opts, size_t len) {
 
 	return result;
 }
+
+/**
+ * @brief	Allocate a managed string with a specified options mask.
+ *
+ * @see		st_alloc_opts()
+ *
+ * @param	len		the length, in bytes, of the managed string to be allocated.
+ *
+ * @return	NULL on failure or a pointer to the newly allocated managed string on success.
+ */
+stringer_t * st_alloc(size_t len) {
+
+	return st_alloc_opts(MANAGED_T | CONTIGUOUS | HEAP, len);
+
+}
+
 
 /**
  * @brief	Reallocate a managed string to a specified size.

@@ -132,7 +132,7 @@ void      st_wipe(stringer_t *s);
 void st_free(stringer_t *s);
 //void st_cleanup(stringer_t *s);
 void st_cleanup_variadic(ssize_t len, ...);
-//stringer_t * st_alloc(size_t len);
+stringer_t * st_alloc(size_t len);
 stringer_t * st_dupe(stringer_t *s);
 //stringer_t * st_merge(chr_t *format, ...);
 //stringer_t * st_aprint(chr_t *format, va_list list);
@@ -141,6 +141,7 @@ stringer_t * st_copy_in(stringer_t *s, void *buf, size_t len);
 stringer_t * st_realloc(stringer_t *s, size_t len);
 stringer_t * st_output(stringer_t *output, size_t len);
 stringer_t * st_nullify(chr_t *input, size_t len);
+stringer_t * st_import_opts(uint32_t opts, const void *s, size_t len);
 
 // Allocation with Options
 stringer_t * st_alloc_opts(uint32_t opts, size_t len);
@@ -238,7 +239,6 @@ multi_t    mt_set_type(multi_t multi, M_TYPE target);
 
 // Shortcut Macros
 #define st_append(s, append) st_append_opts(1024, s, append)
-#define st_alloc(len) st_alloc_opts(MANAGED_T | CONTIGUOUS | HEAP, len)
 #define st_merge(...) st_merge_opts(MANAGED_T | CONTIGUOUS | HEAP, __VA_ARGS__)
 #define st_vaprint(format, args) st_vaprint_opts(MANAGED_T | CONTIGUOUS | HEAP, format, args)
 

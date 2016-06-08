@@ -429,58 +429,77 @@ uint64_t stmt_insert(MYSQL_STMT **group, MYSQL_BIND *parameters) {
 
 /**
  * @brief	Execute a statement on a specified mysql connection and return the number of affected rows.
- * @note	From the MySQL documentation (section 20.9.3.1): "Because mysql_affected_rows() returns an unsigned value, you can check for -1
- * 			by comparing the return value to (my_ulonglong)-1 (or to (my_ulonglong)~0, which is equivalent)."
+ *
+ * @note	Technically the number of affected rows is a my_ulonglong value, but since we retrun -1 when an error occurs, we are
+ * 			using the signed equivalent, int64_t. This means if more than INT64_MAX (or 9,223,372,036,854,775,807) rows are ever altered,
+ * 			the function will return INT64_MAX (or 9,223,372,036,854,775,807) instead.
+ *
  * @see		mysql_stmt_affected_rows()
+ *
  * @param	group		the prepared mysql statement to be executed.
  * @param	parameters	the parameters to be bound to the prepared statement.
  * @param	connection	the mysql connection id over which the specified statement will be executed.
- * @return	-1 on failure, 0 on failure or no rows affected, and a positive number on success.
+ *
+ * @return	-1 on failure, 0 if executed successfully, but no rows are affected, and a positive number with the number of altered
+ * 			rows upon success.
 */
-// QUESTION: These return types are totally messed up. All errors should return -1.
 int64_t stmt_exec_affected_conn(MYSQL_STMT **group, MYSQL_BIND *parameters, uint32_t connection) {
 
 	MYSQL_STMT *local;
+	my_ulonglong affected = 0;
 
 	if (!(local = stmt_reset(group, connection))) {
 		log_info("Unable to reset the prepared statement.");
-		return 0;
+		return -1;
 	}
 
 	if (stmt_bind_param(local, parameters) == false) {
 		log_info("Unable to bind the parameters to the prepared statement.");
-		return 0;
+		return -1;
 	}
 
 	if (mysql_stmt_execute_d(local)) {
 		log_info("An error occurred while executing a prepared statement. { error = %s }", stmt_error(local));
-		return 0;
+		return -1;
 	}
 
-	return mysql_stmt_affected_rows_d(local);
+	affected = mysql_stmt_affected_rows_d(local);
+
+	// Some compilers may not like this comparison, because an unsigned value can't equal a negative number. We may need to
+	// look for the value 18446744073709551615 (or UINT64_MAX) instead.
+	if (affected == (my_ulonglong)-1) {
+		return -1;
+	}
+
+	return (int64_t)uint64_clamp(0, INT64_MAX, affected);
 }
 
 /**
- * @brief	Execute a statement and return the number of affected rows.
- * @note	From the MySQL documentation (section 20.9.3.1): "Because mysql_affected_rows() returns an unsigned value, you can check for -1
- * 			by comparing the return value to (my_ulonglong)-1 (or to (my_ulonglong)~0, which is equivalent)."
+ * @brief	Execute a statement on a specified mysql connection and return the number of affected rows.
+ *
+ * @note	Technically the number of affected rows is a my_ulonglong value, but since we retrun -1 when an error occurs, we are
+ * 			using the signed equivalent, int64_t. This means if more than INT64_MAX (or 9,223,372,036,854,775,807) rows are ever altered,
+ * 			the function will return INT64_MAX (or 9,223,372,036,854,775,807) instead.
+ *
  * @see		mysql_stmt_affected_rows()
+ *
  * @param	group		the prepared mysql statement to be executed.
  * @param	parameters	the parameters to be bound to the prepared statement.
- * @return	-1 on failure, 0 on failure or no rows affected, and a positive number on success.
- */
-// QUESTION: These return types are totally messed up. All errors should return -1.
+ *
+ * @return	-1 on failure, 0 if executed successfully, but no rows are affected, and a positive number with the number of altered
+ * 			rows upon success.
+*/
 int64_t stmt_exec_affected(MYSQL_STMT **group, MYSQL_BIND *parameters) {
 
-	uint64_t result;
+	int64_t affected;
 	uint32_t connection;
 
 	if (pool_pull(sql_pool, &connection) != PL_RESERVED) {
-			log_info("Unable to get an available connection for the query.");
-			return 0;
-		}
+		log_info("Unable to get an available connection for the query.");
+		return -1;
+	}
 
-	result = stmt_exec_affected_conn(group, parameters, connection);
+	affected = stmt_exec_affected_conn(group, parameters, connection);
 	pool_release(sql_pool, connection);
-	return result;
+	return affected;
 }

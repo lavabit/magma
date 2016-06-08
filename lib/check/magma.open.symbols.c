@@ -59,6 +59,7 @@ DKIM * (*dkim_verify_d)(DKIM_LIB *libhandle, const unsigned char *id, void *memc
 DKIM_LIB * (*dkim_init_d)(void *(*mallocf)(void *closure, size_t nbytes), void (*freef)(void *closure, void *p)) = NULL;
 DKIM * (*dkim_sign_d)(DKIM_LIB *libhandle, const unsigned char *id, void *memclosure, const dkim_sigkey_t secretkey, const unsigned char *selector, const unsigned char *domain, dkim_canon_t hdr_canon_alg, dkim_canon_t body_canon_alg, dkim_alg_t sign_alg,	off_t length, DKIM_STAT *statp) = NULL;
 DKIM_STAT (*dkim_chunk_d)(DKIM *dkim, unsigned char *chunkp, size_t len) = NULL;
+char * (*dkim_geterror_d)(DKIM *dkim) = NULL;
 FT_Error (*FT_Done_FreeType_d)(FT_Library library) = NULL;
 FT_Error (*FT_Init_FreeType_d)(FT_Library *alibrary) = NULL;
 void (*FT_Library_Version_d)(FT_Library library, FT_Int *amajor, FT_Int *aminor, FT_Int *apatch) = NULL;
@@ -472,6 +473,7 @@ void symbols_check(void *magma) {
 *(void **)&(dkim_init_d) = dlsym(magma, "dkim_init");
 *(void **)&(dkim_sign_d) = dlsym(magma, "dkim_sign");
 *(void **)&(dkim_chunk_d) = dlsym(magma, "dkim_chunk");
+*(void **)&(dkim_geterror_d) = dlsym(magma, "dkim_geterror");
 *(void **)&(FT_Done_FreeType_d) = dlsym(magma, "FT_Done_FreeType");
 *(void **)&(FT_Init_FreeType_d) = dlsym(magma, "FT_Init_FreeType");
 *(void **)&(FT_Library_Version_d) = dlsym(magma, "FT_Library_Version");

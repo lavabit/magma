@@ -830,11 +830,10 @@ dspam() {
 			if [[ $DSPAM == "dspam-3.9.1-RC1" ]]; then
 				cat "$M_PATCHES/dspam/"dspam_status_rename_3.9.0.RC1.patch | patch -p1 --verbose &>> "$M_LOGS/dspam.txt"; error
 			else
-				cat "$M_PATCHES/dspam/"dspam_status_rename_3.10.0.patch | patch -p3 --verbose &>> "$M_LOGS/dspam.txt"; error
+				cat "$M_PATCHES/dspam/"dspam_status_rename_3.10.x.patch | patch -p3 --verbose &>> "$M_LOGS/dspam.txt"; error
 			fi
 
 			cat "$M_PATCHES/dspam/"dspam_version.patch | patch -p1 --verbose &>> "$M_LOGS/dspam.txt"; error
-			cat "$M_PATCHES/dspam/"dspam_bufixes_3.10.1.patch | patch -p3 --verbose &>> "$M_LOGS/dspam.txt"; error
 		;;
 		dspam-build)
 			cd "$M_SOURCES/dspam"; error
@@ -2143,5 +2142,3 @@ if [[ "$PARENT" == "$BASHPID" ]]; then
 fi
 
 exit 0
-
-

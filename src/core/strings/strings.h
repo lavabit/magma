@@ -87,7 +87,8 @@ chr_t *  ns_dupe(chr_t *s);
 bool_t   ns_empty(chr_t *s);
 bool_t   ns_empty_out(chr_t *s, chr_t **ptr, size_t *len);
 void     ns_free(chr_t *s);
-void     ns_cleanup(chr_t *s);
+//void     ns_cleanup(chr_t *s);
+void     ns_cleanup_variadic(ssize_t len, ...);
 chr_t *  ns_import(void *block, size_t len);
 size_t   ns_length_get(const chr_t *s);
 int      ns_length_int(chr_t *s);
@@ -122,6 +123,7 @@ void *    st_data_get(stringer_t *s);
 void      st_data_set(stringer_t *s, void *data);
 bool_t    st_empty_out(stringer_t *s, uchr_t **ptr, size_t *len);
 bool_t    st_empty_variadic(ssize_t len, ...);
+bool_t    st_populated_variadic(ssize_t len, ...);
 bool_t    st_used_variadic(ssize_t len, ...);
 uchr_t *  st_uchar_get(stringer_t *s);
 void      st_wipe(stringer_t *s);
@@ -218,7 +220,7 @@ typedef struct {
 		double dbl;
 	} val;
 } multi_t;
-/************ TYPES ************/
+/************ TYPES ******#define st_cleanup(...) st_cleanup_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)******/
 
 /// multi.c
 int32_t    cmp_mt_mt(multi_t one, multi_t two);
@@ -242,8 +244,9 @@ multi_t    mt_set_type(multi_t multi, M_TYPE target);
 
 // Macros are used to allow a variable number of strings to be tested for emptiness, or freed with a single call.
 #define st_empty(...) st_empty_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
-#define st_populated(...) st_empty_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
+#define st_populated(...) st_populated_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
 #define st_cleanup(...) st_cleanup_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
+#define ns_cleanup(...) ns_cleanup_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
 
 // Macro for counting the number of arguments in a variadic list function call.
 #define va_narg(...) (__VA_NARG__(_0, ## __VA_ARGS__, __VA_NARG_SEQ_N()) - 1)

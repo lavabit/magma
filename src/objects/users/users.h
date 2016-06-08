@@ -71,9 +71,6 @@ typedef struct {
 	stringer_t *tag;
 } meta_stats_tag_t;
 
-/// messages.c
-int_t   meta_message_folders_update(meta_user_t *user, META_LOCK_STATUS locked);
-
 /// folders.c
 meta_stats_tag_t *  meta_folder_stats_tag_alloc(stringer_t *tag);
 meta_folder_t *     meta_folders_by_name(inx_t *folders, stringer_t *name);
@@ -91,10 +88,8 @@ inx_t *    meta_data_fetch_alerts(uint64_t usernum);
 bool_t     meta_data_fetch_folders(meta_user_t *user);
 bool_t     meta_data_fetch_mailbox_aliases(meta_user_t *user);
 bool_t     meta_data_check_mailbox(stringer_t *address) __attribute__ ((deprecated));
-bool_t     meta_data_fetch_messages(meta_user_t *user);
 int_t      meta_check_message_encryption(meta_user_t *user);
 inx_t *    meta_data_fetch_all_tags(uint64_t usernum);
-void       meta_data_fetch_message_tags(meta_message_t *message);
 bool_t     meta_data_fetch_user(meta_user_t *user);
 bool_t     meta_data_flags_add(inx_t *messages, uint64_t usernum, uint64_t foldernum, uint32_t flags);
 bool_t     meta_data_flags_remove(inx_t *messages, uint64_t usernum, uint64_t foldernum, uint32_t flags);
@@ -104,7 +99,7 @@ int_t      meta_data_insert_tag(meta_message_t *message, stringer_t *tag);
 int_t      meta_data_truncate_tags(meta_message_t *message);
 uint64_t   meta_data_update_folder_name(uint64_t usernum, uint64_t foldernum, stringer_t *name, uint64_t parent, uint32_t order);
 void       meta_data_update_lock(uint64_t usernum, uint8_t lock);
-void       meta_data_update_log(meta_user_t *user, META_PROT prot);
+void       meta_data_update_log(meta_user_t *user, META_PROTOCOL prot);
 int_t      meta_data_user_build(meta_user_t *user, credential_t *cred);
 int_t      new_meta_data_user_build(meta_user_t *user, stringer_t *master, stringer_t *verification);
 int_t      meta_data_user_build_storage_keys(uint64_t usernum, stringer_t *passkey, stringer_t **priv_out, stringer_t **pub_out, bool_t dont_create, bool_t do_trans, uint32_t tid);
@@ -120,13 +115,13 @@ meta_alias_t *  alias_alloc(uint64_t aliasnum, stringer_t *address, stringer_t *
 int_t   meta_contacts_update(meta_user_t *user, META_LOCK_STATUS locked);
 
 /// users.c
-int_t          meta_get(credential_t *cred, META_PROT flags, META_GET get, meta_user_t **output);
+int_t          meta_get(credential_t *cred, META_PROTOCOL flags, META_GET get, meta_user_t **output);
 int_t          meta_user_build(meta_user_t *user, credential_t *cred, META_LOCK_STATUS locked);
 meta_user_t *  meta_user_create(void);
 void           meta_user_destroy(meta_user_t *user);
 int_t          meta_user_prune(stringer_t *username);
-void           meta_user_ref_add(meta_user_t *user, META_PROT protocol);
-void           meta_user_ref_dec(meta_user_t *user, META_PROT protocol);
+void           meta_user_ref_add(meta_user_t *user, META_PROTOCOL protocol);
+void           meta_user_ref_dec(meta_user_t *user, META_PROTOCOL protocol);
 time_t         meta_user_ref_stamp(meta_user_t *user);
 uint64_t       meta_user_ref_total(meta_user_t *user);
 void           meta_user_rlock(meta_user_t *user);
@@ -138,8 +133,8 @@ int_t          meta_user_update(meta_user_t *user, META_LOCK_STATUS locked);
 void           meta_user_wlock(meta_user_t *user);
 
 /// indexes.c
-meta_user_t *  meta_inx_find(stringer_t *username, META_PROT flags);
-void           meta_inx_remove(stringer_t *username, META_PROT flags);
+meta_user_t *  meta_inx_find(stringer_t *username, META_PROTOCOL flags);
+void           meta_inx_remove(stringer_t *username, META_PROTOCOL flags);
 
 
 #endif

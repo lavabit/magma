@@ -12,7 +12,6 @@
 
 #include "magma.h"
 
-
 /**
  * @brief	Return the length of a null-terminated string.
  * @param	s	the input as a null-terminatd string.
@@ -107,16 +106,25 @@ void ns_free(chr_t *s) {
 }
 
 /**
- * @brief	A checked null-terminated string free front-end function.
+ * @brief	A checked cleanup function which can be used free a variable number of null-terminated strings.
  * @see		ns_free()
- * @param	s	the null-terminated string to be freed.
+ *
+ * @param	va_list	a list of null-terminated strings to be freed.
+ *
  * @return	This function returns no value.
  */
-void ns_cleanup(chr_t *s) {
+void ns_cleanup_variadic(ssize_t len, ...) {
 
-	if (s) {
-		ns_free(s);
+	va_list list;
+	chr_t *s = NULL;
+
+	va_start(list, len);
+
+	for (ssize_t i = 0; i < len; i++) {
+		s = va_arg(list, chr_t *);
+		if (s) ns_free(s);
 	}
+	va_end(list);
 
 	return;
 }
@@ -205,7 +213,6 @@ chr_t * ns_append(chr_t *s, chr_t *append) {
  * @param	len	the number of bytes to be wiped at the start of the string.
  * @return	This function returns no parameters.
  */
-// QUESTION: Why are we not calculating the string length automatically?
 void ns_wipe(chr_t *s, size_t len) {
 
 #ifdef MAGMA_PEDANTIC

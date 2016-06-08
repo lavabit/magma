@@ -17,7 +17,8 @@ stringer_t *serial_prefix_strings[] = {
 	 CONSTANT("config"),
 	 CONSTANT("folders"),
 	 CONSTANT("messages"),
-	 CONSTANT("contacts")
+	 CONSTANT("contacts"),
+	 CONSTANT("aliases")
 };
 
 /**
@@ -45,6 +46,9 @@ stringer_t * serial_prefix(uint64_t type) {
 		case (OBJECT_CONTACTS):
 			prefix = serial_prefix_strings[4];
 			break;
+		case (OBJECT_ALIASES):
+			prefix = serial_prefix_strings[5];
+			break;
 		default:
 			log_pedantic("Unrecognized object type. { type = %lu }", type);
 			prefix = NULL;
@@ -66,7 +70,6 @@ uint64_t serial_get(uint64_t type, uint64_t num) {
 	stringer_t *key, *prefix;
 
 	// Build retrieval key.
-	// QUESTION: This is used a few times and definitely should be its own function.
 	if (!(prefix = serial_prefix(type)) || !(key = st_aprint("magma.%.*s.%lu", st_length_int(prefix), st_char_get(prefix), num))) {
 		log_pedantic("Unable to build %.*s serial key.", st_length_int(prefix), st_char_get(prefix));
 		return 0;

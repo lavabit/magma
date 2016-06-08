@@ -8,8 +8,4 @@
 LINK=`readlink -f $0`
 BASE=`dirname $LINK`
 
-cd $BASE/../../../
-
-MAGMA_DIST=`pwd`
-
-$MAGMA_DIST/dev/tools/runner/.debug/runner $1
+$BASE/../../../dev/tools/runner/runner $1

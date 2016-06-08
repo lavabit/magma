@@ -44,7 +44,8 @@ server_keys_t server_keys[] = {
 		.norm.val.binary = true,
 		.name = ".enabled",
 		.description = "A boolean which can be used to disable a server configuration without removing it from the configuration.",
-		.required = true
+		.required = false
+
 	},
 	{
 		.offset = offsetof (server_t, network.ipv6),
@@ -52,7 +53,7 @@ server_keys_t server_keys[] = {
 		.norm.val.binary = false,
 		.name = ".network.ipv6",
 		.description = "Whether to enable IPv6 for the server instance.",
-		.required = true
+		.required = false
 	},
 	{
 		.offset = offsetof (server_t, network.port),

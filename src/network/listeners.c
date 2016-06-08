@@ -35,7 +35,7 @@ void net_listen(void) {
 	// Loop through and add all of the server socket descriptors to our epoll structure.
 	for (uint64_t i = 0; i < MAGMA_SERVER_INSTANCES; i++) {
 
-		if ((server = magma.servers[i])) {
+		if ((server = magma.servers[i]) && server->enabled) {
 			epoll_context.events = EPOLLIN | EPOLLET;
 			epoll_context.data.fd = server->network.sockd;
 

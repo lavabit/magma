@@ -31,11 +31,11 @@ typedef struct {
 } imap_fetch_response_t;
 
 typedef struct {
-	meta_user_t *user;
+	new_meta_user_t *user;
 	imap_arguments_t *arguments;
 	stringer_t *tag, *command, *username;
 	int_t read_only, uid, session_state;
-	uint64_t selected, user_checkpoint, messages_checkpoint, folders_checkpoint, messages_recent, messages_total;
+	uint64_t usernum, selected, user_checkpoint, messages_checkpoint, folders_checkpoint, messages_recent, messages_total;
 } __attribute__((__packed__)) imap_session_t;
 
 #endif

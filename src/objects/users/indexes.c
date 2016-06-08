@@ -19,7 +19,7 @@
  * @param	flags		specifies the protocol bound to the reference counter to be decremented (META_PROT_WEB, META_PROT_IMAP, etc.)
  * @return	This function returns no value.
  */
-void meta_inx_remove(stringer_t *username, META_PROT flags) {
+void meta_inx_remove(stringer_t *username, META_PROTOCOL flags) {
 
 	meta_user_t *user = NULL;
 	multi_t key = { .type = M_TYPE_STRINGER, .val.st = username };
@@ -41,7 +41,7 @@ void meta_inx_remove(stringer_t *username, META_PROT flags) {
 	return;
 }
 
-meta_user_t * meta_inx_find(stringer_t *username, META_PROT flags) {
+meta_user_t * meta_inx_find(stringer_t *username, META_PROTOCOL flags) {
 
 	meta_user_t *user = NULL;
 	multi_t key = { .type = M_TYPE_STRINGER, .val.st = username };

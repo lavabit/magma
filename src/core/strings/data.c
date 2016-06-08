@@ -12,7 +12,6 @@
 
 #include "magma.h"
 
-
 /**
  * @brief	A simple method for checking multiple managed strings to see if all of them contain data.
  *

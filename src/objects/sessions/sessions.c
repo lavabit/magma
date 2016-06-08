@@ -66,7 +66,7 @@ void sess_destroy(session_t *sess) {
 	if (sess) {
 
 		if (sess->user) {
-			meta_inx_remove(sess->user->username, META_PROT_WEB);
+			meta_inx_remove(sess->user->username, META_PROTOCOL_WEB);
 		}
 
 		st_cleanup(sess->warden.token);
@@ -243,6 +243,7 @@ bool_t sess_refresh_check(session_t *sess) {
 
 	return result;
 }
+
 /**
  * @brief	Securely generate a unique zbase32-encoded token for a session.
  * @param	sess	a pointer to the input web session.
@@ -281,10 +282,11 @@ void sess_update(session_t *sess) {
 		// Flush the update trackers to discourage unnecessary refreshes.
 		sess_refresh_flush(sess);
 
-		meta_user_update(sess->user, META_NEED_LOCK);
-		meta_folders_update(sess->user, META_NEED_LOCK);
+		new_meta_user_update(sess->user, META_NEED_LOCK);
+		meta_aliases_update(sess->user, META_NEED_LOCK);
+		new_meta_folders_update(sess->user, META_NEED_LOCK);
 		meta_messages_update(sess->user, META_NEED_LOCK);
-		meta_contacts_update(sess->user, META_NEED_LOCK);
+		new_meta_contacts_update(sess->user, META_NEED_LOCK);
 	}
 
 	return;
@@ -364,7 +366,7 @@ void sess_release_composition(composition_t *comp) {
  */
 void sess_serial_check(session_t *sess, uint64_t object) {
 
-	if (sess && meta_user_serial_check(sess->user, object)) {
+	if (sess && new_meta_user_serial_check(sess->user, object)) {
 		sess_trigger(sess);
 	}
 

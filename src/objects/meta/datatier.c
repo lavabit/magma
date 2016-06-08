@@ -309,3 +309,132 @@ int_t new_meta_data_fetch_user(new_meta_user_t *user) {
 */
 
 }
+
+/**
+ * @brief	Retrieve the encryption keys for a user account.
+ *
+ * @param	user	a meta object with the user number field populated.
+ * @param	output	a key pair object to hold the results.
+ *
+ * @return	-1 for unexpected program/system error, 0 on success, 1 if no rows are found.
+ */
+int_t new_meta_data_fetch_keys(new_meta_user_t *user, key_pair_t *output) {
+
+	row_t *row;
+	table_t *result;
+	MYSQL_BIND parameters[1];
+	stringer_t *public = NULL, *private = NULL;
+
+	// Sanity check.
+	if (!user || !user->usernum || !output || !st_empty(output->public, output->private)) {
+		log_pedantic("Invalid parameters passed to the storage key fetch function.");
+		return -1;
+	}
+
+	// This function is used to update a user structure.
+	mm_wipe(parameters, sizeof(parameters));
+
+	// Usernum.
+	parameters[0].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[0].buffer_length = sizeof(uint64_t);
+	parameters[0].buffer = &(user->usernum);
+	parameters[0].is_unsigned = true;
+
+	if (!(result = stmt_get_result(stmts.meta_fetch_storage_keys, parameters))) {
+		return -1;
+	}
+	else if (!(row = res_row_next(result))) {
+		res_table_free(result);
+		return 1;
+	}
+
+	// Store the public key. Using a hard coded length. This will need to change if the key format/type ever changes.
+	if (res_field_length(row, 0) != 258 || !(public = base64_decode_mod(PLACER(res_field_block(row, 0), res_field_length(row, 0)), NULL))) {
+		log_pedantic("Unable to decode and store a public user key. { username = %.*s / length = %zu }", st_length_int(user->username),
+			st_char_get(user->username), res_field_length(row, 0));
+		res_table_free(result);
+		return -1;
+	}
+
+	// Store the private key. Using a hard coded length. This will need to change if the key format/type ever changes. Also note, we don't
+	// need secure memory at this stage because the private key is still encrypted.
+	if (res_field_length(row, 1) != 404 || !(private = base64_decode_mod(PLACER(res_field_block(row, 1), res_field_length(row, 1)), NULL))) {
+		log_pedantic("Unable to decode and store a private user key. { username = %.*s / length = %zu }", st_length_int(user->username),
+			st_char_get(user->username), res_field_length(row, 1));
+		res_table_free(result);
+		st_free(public);
+		return -1;
+	}
+
+	// Free the query results and return the decoded values.
+	res_table_free(result);
+	output->private = private;
+	output->public = public;
+	return 0;
+}
+
+/**
+ * @brief	Store the encryption keys for a user account.
+ *
+ * @param	user	a meta object with the user number field populated.
+ * @param	output	a key pair object to hold the results.
+ *
+ * @return	-1 for unexpected program/system error, 0 on success, 1 if the query executes, but no rows are affected.
+ */
+int_t new_meta_data_insert_keys(new_meta_user_t *user, key_pair_t *input) {
+
+	int64_t affected;
+	MYSQL_BIND parameters[3];
+	stringer_t *public = NULL, *private = NULL;
+
+	// Sanity check.
+	if (!user || !user->usernum || !input || !st_populated(input->public, input->private)) {
+		log_pedantic("Invalid parameters passed to the storage key insert function.");
+		return -1;
+	}
+
+	// Encode the key values using base64 modified. We are also checking to make sure the encoded values are the expected length. Also,
+	// note the key length is hard coded here but is dynamic below, on purpose, to make changes easier.
+	if (!(public = base64_encode_mod(input->public, NULL)) || !(private = base64_encode_mod(input->private, NULL)) ||
+		st_length_get(public) != 258 || st_length_get(private) != 404) {
+		log_pedantic("Unable to store a user key pair. { username = %.*s }", st_length_int(user->username),
+			st_char_get(user->username));
+		st_cleanup(public, private);
+		return -1;
+	}
+
+	// This function is used to update a user structure.
+	mm_wipe(parameters, sizeof(parameters));
+
+	// Usernum.
+	parameters[0].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[0].buffer_length = sizeof(uint64_t);
+	parameters[0].buffer = &(user->usernum);
+	parameters[0].is_unsigned = true;
+
+	// Public Key
+	parameters[1].buffer_type = MYSQL_TYPE_STRING;
+	parameters[1].buffer_length = st_length_get(public);
+	parameters[1].buffer = st_char_get(public);
+
+
+	parameters[2].buffer_type = MYSQL_TYPE_STRING;
+	parameters[2].buffer_length = st_length_get(private);
+	parameters[2].buffer = st_char_get(private);
+
+	if ((affected = stmt_exec_affected(stmts.meta_insert_storage_keys, parameters)) != 1 && affected == -1) {
+		log_pedantic("Unable to insert the user key pair. A database error occurred. { username = %.*s }",
+			st_length_int(user->username), st_char_get(user->username));
+		st_cleanup(public, private);
+		return -1;
+	}
+	else if (!affected) {
+		log_pedantic("Unable to insert the user key pair. It's possible the database already holds keys for this user. { username = %.*s }",
+			st_length_int(user->username), st_char_get(user->username));
+		st_cleanup(public, private);
+		return 1;
+	}
+
+	st_cleanup(public, private);
+	return 0;
+}

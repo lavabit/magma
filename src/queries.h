@@ -163,18 +163,17 @@
 
 // The meta data object.
 #define META_FETCH_USER "SELECT Users.auth, Users.`ssl`, Users.overquota, Dispatch.secure FROM Users INNER JOIN Dispatch ON Users.usernum = Dispatch.usernum WHERE userid = ? AND email = 1 LIMIT 1"
-
-/*
-
- Queries + Stmts Init
- cat queries.h | grep "\#define" | egrep -v "MAGMA_DATA_QUERIES_H|INIT" | grep -v "//" | awk -F' ' '{ print $2 }' | egrep "^[A-Z_]+$" | awk -F' ' '{ print "\t\t\t\t\t\t\t\t\t\t\t" $1 ", \\" }'; \
- cat queries.h | grep "\#define" | egrep -v "MAGMA_DATA_QUERIES_H|INIT" | grep -v "//" | awk -F' ' '{ print $2 }' | egrep "^[A-Z_]+$" | awk -F' ' '{ print "\t\t\t\t\t\t\t\t\t\t\t**" tolower($1) ", \\" }'
-
-*/
+#define META_FETCH_STORAGE_KEYS "SELECT storage_pub, storage_priv FROM `Keys` WHERE usernum = ?"
+#define META_INSERT_STORAGE_KEYS "INSERT INTO `Keys` (usernum, storage_pub, storage_priv) VALUES (?, ?, ?)"
 
 /**
- * @note Be sure to add any new queries to this list.
+ * @note Be sure to add any new queries to this list. Run the queries.sh script, or the commands below.
+ * @remark Queries + Stmts Init
+ *	 	 	 cat queries.h | grep "\#define" | egrep -v "MAGMA_DATA_QUERIES_H|INIT" | grep -v "//" | awk -F' ' '{ print $2 }' | egrep "^[A-Z_]+$" | awk -F' ' '{ print "\t\t\t\t\t\t\t\t\t\t\t" $1 ", \\" }'; \
+ *	 	 	 cat queries.h | grep "\#define" | egrep -v "MAGMA_DATA_QUERIES_H|INIT" | grep -v "//" | awk -F' ' '{ print $2 }' | egrep "^[A-Z_]+$" | awk -F' ' '{ print "\t\t\t\t\t\t\t\t\t\t\t**" tolower($1) ", \\" }'
+ *
  */
+
 #define QUERIES_INIT	SELECT_DOMAINS, \
 											SELECT_CONFIG, \
 											SELECT_HOST_NUMBER, \
@@ -274,7 +273,9 @@
 											AUTH_GET_BY_USERID, \
 											AUTH_GET_BY_ADDRESS, \
 											AUTH_UPDATE_LEGACY_TO_STACIE, \
-											META_FETCH_USER
+											META_FETCH_USER, \
+											META_FETCH_STORAGE_KEYS, \
+											META_INSERT_STORAGE_KEYS
 
 #define STMTS_INIT		**select_domains, \
 											**select_config, \
@@ -375,7 +376,10 @@
 											**auth_get_by_userid, \
 											**auth_get_by_address, \
 											**auth_update_legacy_to_stacie, \
-											**meta_fetch_user
+											**meta_fetch_user, \
+											**meta_fetch_storage_keys, \
+											**meta_insert_storage_keys
+
 
 extern chr_t *queries[];
 struct { MYSQL_STMT STMTS_INIT; } stmts __attribute__ ((common));

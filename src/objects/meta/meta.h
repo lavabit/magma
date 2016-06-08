@@ -13,6 +13,13 @@
 #ifndef MAGMA_OBJECTS_NEW_META_H
 #define MAGMA_OBJECTS_NEW_META_H
 
+typedef struct {
+
+	stringer_t *public;
+	stringer_t *private;
+
+} key_pair_t;
+
 /// serials.c
 bool_t     new_meta_user_serial_check(new_meta_user_t *user, uint64_t object);
 uint64_t   new_meta_user_serial_get(new_meta_user_t *user, uint64_t object);
@@ -39,8 +46,10 @@ int_t              new_meta_get(uint64_t usernum, stringer_t *username, stringer
 
 /// datatier.c
 bool_t   new_meta_data_fetch_folders(new_meta_user_t *user);
+int_t    new_meta_data_fetch_keys(new_meta_user_t *user, key_pair_t *output);
 int_t    new_meta_data_fetch_mailbox_aliases(new_meta_user_t *user);
 int_t    new_meta_data_fetch_user(new_meta_user_t *user);
+int_t    new_meta_data_insert_keys(new_meta_user_t *user, key_pair_t *input);
 void     new_meta_data_update_log(new_meta_user_t *user, META_PROTOCOL prot);
 
 /// locking.c

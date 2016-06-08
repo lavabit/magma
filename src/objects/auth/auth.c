@@ -165,6 +165,8 @@ int_t auth_response(auth_t *auth, stringer_t *ephemeral) {
  *
  * @note If the username and password combination is valid, but involves an account with legacy authentication
  * 			tokens, the plain text password is used to replace the legacy tokens with STACIE compliant values.
+ * 			Also note the complexity of this function. It will be far simpler once support for legacy login tokens
+ * 			is removed.
  *
  * @param username	the unsanitized username, provided with the login attempt.
  * @param password	the plain text password.
@@ -197,6 +199,8 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 		log_error("Failed to load the user challenge parameters.");
 		return -1;
 	}
+
+	/************************** BEGIN LEGACY AUTHENTICATION SUPPORT LOGIC **************************/
 
 	// If the account uses legacy hash values for authentication the legacy token will be populated.
 	if (auth->legacy.token && !(legacy = auth_legacy(auth->username, password))) {
@@ -260,6 +264,9 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 		*output = auth;
 		return 0;
 	}
+
+	/************************** END LEGACY AUTHENTICATION SUPPORT LOGIC **************************/
+
 	// Generate the STACIE tokens based on the provided inputs.
 	else if (!auth->legacy.token && !(stacie = auth_stacie(0, auth->username, password, auth->seasoning.salt, NULL, NULL))) {
 		log_pedantic("Unable to calculate the STACIE verification tokens for comparison.");

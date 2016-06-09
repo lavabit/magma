@@ -79,7 +79,6 @@ int_t meta_keys_update(new_meta_user_t *user, stringer_t *master, META_LOCK_STAT
 				return -1;
 			}
 
-
 			scramble_cleanup(scramble);
 			ecies_key_free(ecies_key);
 			mm_sec_cleanup(private);

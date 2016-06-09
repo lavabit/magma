@@ -24,6 +24,20 @@ typedef uint32_t uint_t;
 typedef unsigned char uchr_t;
 typedef unsigned char byte_t;
 
+/*
+
+Should we ever need to create a 128 bit integer on a 64 bit system, GCC 3.1 and higher will allow it. Note that
+this will not work on 32 bit systems, and don't forget to add the 128 bit type to the M_TYPE enumerator.
+
+# if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)) && (WORDSIZE == 64)
+typedef __uint128_t uint128_t;
+typedef __int128_t int128_t;
+# else
+#  error "A 64 bit system, and GCC 4.6.0 or later is required to define the 128 bit integer types."
+# endif
+
+*/
+
 /**
  * Different types used throughout.
  */

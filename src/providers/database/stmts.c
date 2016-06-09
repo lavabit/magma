@@ -471,6 +471,12 @@ int64_t stmt_exec_affected_conn(MYSQL_STMT **group, MYSQL_BIND *parameters, uint
 		return -1;
 	}
 
+	// Because this function is using a signed return type, we can only indicate that INT64_MAX (or 9,223,372,036,854,775,807) rows
+	// have been altered. If more rows are affected, we clamp the value to the maximum possible, unless UINT64_MAX
+	// (or 18,446,744,073,709,551,615) is encountered. If we see 18,446,744,073,709,551,615, we assume its an indication an error
+	// occurred and return -1. It's impossible to differentiate between the maximum unsigned value and errors. That being said,
+	// its possible the mysql_stmt_execute() function will report the error and we won't need to rely on the number of affected rows
+	// to let us know about the problem.
 	return (int64_t)uint64_clamp(0, INT64_MAX, affected);
 }
 

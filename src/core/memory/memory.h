@@ -26,6 +26,7 @@ uchr_t bitwise_and(uchr_t a, uchr_t b);
 void mm_sec_stop(void);
 bool_t mm_sec_start(void);
 void mm_sec_free(void *block);
+void mm_sec_cleanup(void *block);
 bool_t mm_sec_secured(void *block);
 void * mm_sec_alloc(size_t len);
 void * mm_sec_realloc(void *orig, size_t len);

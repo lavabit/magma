@@ -98,6 +98,7 @@ void * scramble_vector_data(scramble_t *buffer) {
 
 /**
  * @brief	Return a managed string as a scrambled buffer, after validation.
+ * @note	The returned pointer is inside the existing stringer, so it doesn't need be freed.
  * @param	s	a managed string containing the serialized scrambled data.
  * @return	NULL on failure, or a pointer to the scrambled data header on success.
  */
@@ -154,6 +155,21 @@ scramble_t * scramble_alloc(size_t length) {
 void scramble_free(scramble_t *buffer) {
 
 	mm_free(buffer);
+
+	return;
+}
+
+/**
+ * @brief	Performed a checked free of a scramble buffer.
+ * @see		scramble_free
+ * @param	block	the scramble buffer to be freed.
+ * @return	This function returns no value.
+ */
+void scramble_cleanup(scramble_t *buffer) {
+
+	if (buffer) {
+		mm_free(buffer);
+	}
 
 	return;
 }

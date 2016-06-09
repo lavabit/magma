@@ -195,6 +195,7 @@ uint64_t      scramble_body_length(scramble_t *buffer);
 stringer_t *  scramble_decrypt(stringer_t *key, scramble_t *input);
 scramble_t *  scramble_encrypt(stringer_t *key, stringer_t *input);
 void          scramble_free(scramble_t *buffer);
+void          scramble_cleanup(scramble_t *buffer);
 scramble_t *  scramble_import(stringer_t *s);
 //uint64_t      scramble_orig_hash(scramble_t *buffer);
 uint64_t      scramble_orig_length(scramble_t *buffer);

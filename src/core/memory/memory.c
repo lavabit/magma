@@ -14,7 +14,7 @@
 
 /**
  * @brief	Performed a checked memory free.
- * @see		mm_cleanup
+ * @see		mm_free
  * @param	block	the block of memory to be freed.
  * @return	This function returns no value.
  */
@@ -26,7 +26,6 @@ void mm_cleanup(void *block) {
 
 	return;
 }
-
 
 /**
  * @brief	Determine whether the memory buffer and/or its length encompass an empty block.
@@ -124,7 +123,6 @@ void * mm_wipe(void *block, size_t len) {
  * @param	block	a pointer to the block to be freed.
  * @return	This function does not return any value.
  */
-// QUESTION: the note of this function really makes no sense when compared to the pedantic block below.
 void mm_free(void *block) {
 
 #ifdef MAGMA_PEDANTIC

@@ -230,6 +230,21 @@ void mm_sec_free(void *block) {
 }
 
 /**
+ * @brief	Performed a checked memory free.
+ * @see		mm_sec_free
+ * @param	block	the block of memory to be freed.
+ * @return	This function returns no value.
+ */
+void mm_sec_cleanup(void *block) {
+
+	if (block) {
+		mm_sec_free(block);
+	}
+
+	return;
+}
+
+/**
  * @brief	Allocate a chunk of memory from the secure memory slab
  * @see		mm_sec_chunk_new()
  * @param	len		the length, in bytes, of the secure memory chunk to be allocated.

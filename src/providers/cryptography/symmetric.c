@@ -235,7 +235,7 @@ stringer_t * symmetric_key(cipher_t *cipher, stringer_t *key, stringer_t *output
 
 	size_t len;
 
-	// Find out how big a the initialization vector should be.
+	// Find out how big the initialization vector should be.
 	if (!cipher || !(len = cipher_key_length(cipher))) {
 		return output;
 	}

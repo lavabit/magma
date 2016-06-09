@@ -1294,7 +1294,7 @@ int_t meta_data_user_build_storage_keys(uint64_t usernum, stringer_t *passkey, s
 
 		EC_KEY *new_ecies_key;
 		unsigned char *pubkeybuf;
-		char *privkeybuf;
+		unsigned char *privkeybuf;
 		size_t priv_len, pub_len;
 
 		log_info("No storage keys found for user; generating a new set of keys.");

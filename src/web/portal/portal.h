@@ -171,7 +171,7 @@ void    portal_endpoint_messages_send(connection_t *con);
 void    portal_debug(connection_t *con);
 
 /// mail.c
-bool_t       portal_outbound_checks(credential_t *cred, uint64_t usernum, stringer_t *from, size_t num_recipients, stringer_t *body_plain, stringer_t *body_html, chr_t **errmsg);
+bool_t       portal_outbound_checks(uint64_t usernum, stringer_t *username, stringer_t *verification, stringer_t *from, size_t num_recipients, stringer_t *body_plain, stringer_t *body_html, chr_t **errmsg);
 bool_t       portal_smtp_relay_message(stringer_t *from, inx_t *to, stringer_t *data, size_t send_size, chr_t **errmsg);
 stringer_t * portal_smtp_create_data(inx_t *attachments, stringer_t *from, inx_t *to, inx_t *cc, inx_t *bcc, stringer_t *subject, stringer_t *body_plain, stringer_t *body_html);
 stringer_t * portal_smtp_merge_headers(inx_t *headers, stringer_t *leading, stringer_t *trailing);

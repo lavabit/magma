@@ -135,7 +135,7 @@ void pop_quit(connection_t *con) {
  */
 void pop_user(connection_t *con) {
 
-	stringer_t *username = NULL, *clean = NULL;
+	stringer_t *username = NULL;
 
 	if (con->pop.session_state != 0) {
 		pop_invalid(con);
@@ -143,18 +143,16 @@ void pop_user(connection_t *con) {
 	}
 
 	// If they didn't pass in a valid username.
-	if (!(username = pop_user_parse(con)) || !(clean = credential_address(username))) {
+	if (!(username = pop_user_parse(con))) {
 		con_write_bl(con, "-ERR Invalid USER command.\r\n", 28);
-		st_cleanup(username);
 		return;
 	}
 
 	// Check for a previously provided value and free it.
 	st_cleanup(con->pop.username);
-	st_free(username);
 
 	// Store the value we were given. Until authentication, this will be the fully qualified username.
-	con->pop.username = clean;
+	con->pop.username = username;
 
 	// Tell the client everything worked.
 	con_write_bl(con, "+OK Username accepted.\r\n", 24);

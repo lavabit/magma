@@ -113,7 +113,7 @@ stringer_t * smtp_fetch_autoreply(uint64_t autoreply, uint64_t usernum) {
  * Returns -1 for errors, -2 for an admin lock, -3 for an inactivity lock, -4 for a user lock, -5 for an abuse lock, -6 if the domain isn't local
  * and 0 if the domain is local but the address wasn't found. If everything works, return 1 to indicate success.
  */
-int_t smtp_fetch_inbound(credential_t *cred, stringer_t *address, smtp_inbound_prefs_t **output) {
+int_t smtp_fetch_inbound(stringer_t *address, smtp_inbound_prefs_t **output) {
 
 	row_t *row;
 	table_t *result;
@@ -125,27 +125,28 @@ int_t smtp_fetch_inbound(credential_t *cred, stringer_t *address, smtp_inbound_p
 		.type = M_TYPE_UINT64, .val.u64 = 0
 	};
 
-	if (!cred || cred->type != CREDENTIAL_MAIL || !output) {
+	if (!st_empty(address) || !output) {
 		return -1;
 	}
 
 	*output = NULL;
 	mm_wipe(parameters, sizeof(parameters));
 
-	// Address
-	parameters[0].buffer_type = MYSQL_TYPE_STRING;
-	parameters[0].buffer_length = st_length_get(cred->mail.address);
-	parameters[0].buffer = st_char_get(cred->mail.address);
+	// Usernum
+	parameters[0].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[0].buffer_length = st_length_get(address);
+	parameters[0].buffer = st_char_get(address);
+	parameters[0].is_unsigned = true;
 
 	// If the address isn't found locally, check whether the domain configuration indicates we should also perform a wildcard search.
-	if ((result = stmt_get_result(stmts.select_prefs_inbound, parameters)) && res_row_count(result) == 0 && (local = domain_wildcard(cred->mail.address)) == 1) {
+	if ((result = stmt_get_result(stmts.select_prefs_inbound, parameters)) && res_row_count(result) == 0 && (local = domain_wildcard(address)) == 1) {
 
 		res_table_free(result);
 		mm_wipe(parameters, sizeof(parameters));
 
 		parameters[0].buffer_type = MYSQL_TYPE_STRING;
-		parameters[0].buffer_length = st_length_get(cred->mail.address);
-		parameters[0].buffer = st_char_get(cred->mail.address);
+		parameters[0].buffer_length = st_length_get(address);
+		parameters[0].buffer = st_char_get(address);
 
 		result = stmt_get_result(stmts.select_prefs_inbound, parameters);
 	}
@@ -197,7 +198,7 @@ int_t smtp_fetch_inbound(credential_t *cred, stringer_t *address, smtp_inbound_p
 
 	// Store the result.
 	if (!(inbound->usernum = res_field_uint64(row, 0))) {
-		log_pedantic("Found a zero usernum for the address %.*s.", st_length_int(cred->mail.address), st_char_get(cred->mail.address));
+		log_pedantic("Found a zero usernum for the address %.*s.", st_length_int(address), st_char_get(address));
 		mm_free(inbound);
 		res_table_free(result);
 		return -1;
@@ -238,20 +239,20 @@ int_t smtp_fetch_inbound(credential_t *cred, stringer_t *address, smtp_inbound_p
 	// Error checking.
 	if (inbound->spamaction <= 0 || inbound->virusaction <= 0 || inbound->phishaction <= 0 || inbound->spfaction <= 0 || inbound->rblaction	<= 0 ||
 		inbound->dkimaction <= 0) {
-		log_pedantic("Found an invalid action field. {%.*s}", st_length_int(cred->mail.address), st_char_get(cred->mail.address));
+		log_pedantic("Found an invalid action field. {%.*s}", st_length_int(address), st_char_get(address));
 		smtp_free_inbound(inbound);
 		return -1;
 	}
 
 	// If there is no Inbox, then we better be forwarding this message.
 	if ((inbound->inbox == 0 || inbound->quota == 0) && inbound->forwarded == NULL) {
-		log_pedantic("Found an account with no Inbox and no forwarding address. {%.*s}", st_length_int(cred->mail.address), st_char_get(cred->mail.address));
+		log_pedantic("Found an account with no Inbox and no forwarding address. {%.*s}", st_length_int(address), st_char_get(address));
 		smtp_free_inbound(inbound);
 		return -1;
 	}
 
 	// Initialize recipient and address parameters.
-	if (!(inbound->rcptto = st_dupe(address)) || !(inbound->address = st_dupe_opts(MANAGED_T | CONTIGUOUS | HEAP, cred->mail.address))) {
+	if (!(inbound->rcptto = st_dupe(address)) || !(inbound->address = st_dupe_opts(MANAGED_T | CONTIGUOUS | HEAP, address))) {
 		log_pedantic("Could not duplicate the recipient and address.");
 		smtp_free_inbound(inbound);
 		return -1;
@@ -574,46 +575,31 @@ int_t smtp_check_transmit_quota(uint64_t usernum, size_t num_recipients, smtp_ou
  *		   -3: the account is locked due to suspicion of abuse violations.
  *		   -4: the account has been locked at the request of the user.
  */
-int_t smtp_fetch_authorization(credential_t *cred, smtp_outbound_prefs_t **output) {
+int_t smtp_fetch_authorization(stringer_t *username, stringer_t *verification, smtp_outbound_prefs_t **output) {
 
 	row_t *row;
 	int_t locked;
 	table_t *result;
 	MYSQL_BIND parameters[2];
-	MYSQL_STMT **auth_stmt;
 	smtp_outbound_prefs_t *outbound;
 
-	if (!cred || cred->type != CREDENTIAL_AUTH || !output) {
+	if (!st_populated(username, verification) || !output) {
 		return -1;
 	}
 
 	*output = NULL;
 	mm_wipe(parameters, sizeof(parameters));
 
-	switch(cred->authentication) {
-
-	case LEGACY:
-		auth_stmt = stmts.select_users_auth;
-		break;
-	case STACIE:
-		auth_stmt = stmts.smtp_select_user_auth;
-		break;
-	default:
-		log_error("Invalid authentication type specified in credentials object.");
-		break;
-
-	}
-
 	// Parameters
 	parameters[0].buffer_type = MYSQL_TYPE_STRING;
-	parameters[0].buffer_length = st_length_get(cred->auth.username);
-	parameters[0].buffer = st_char_get(cred->auth.username);
+	parameters[0].buffer_length = st_length_get(username);
+	parameters[0].buffer = st_char_get(username);
 
 	parameters[1].buffer_type = MYSQL_TYPE_STRING;
-	parameters[1].buffer_length = st_length_get(cred->auth.password);
-	parameters[1].buffer = st_char_get(cred->auth.password);
+	parameters[1].buffer_length = st_length_get(verification);
+	parameters[1].buffer = st_char_get(verification);
 
-	if (!(result = stmt_get_result(auth_stmt, parameters))) {
+	if (!(result = stmt_get_result(stmts.smtp_select_user_auth, parameters))) {
 		log_pedantic("Authentication attempt failed by database error.");
 		return -1;
 	}
@@ -649,7 +635,7 @@ int_t smtp_fetch_authorization(credential_t *cred, smtp_outbound_prefs_t **outpu
 
 	// Store the result.
 	if (!(outbound->usernum = res_field_uint64(row, 0))) {
-		log_error("Invalid user number. {userid = %.*s}", st_length_int(cred->auth.username), st_char_get(cred->auth.username));
+		log_error("Invalid user number. { username = %.*s }", st_length_int(username), st_char_get(username));
 		res_table_free(result);
 		mm_free(outbound);
 		return -1;

@@ -218,38 +218,6 @@ void portal_endpoint_auth(connection_t *con) {
 		return;
 	}
 
-	/*
-	int_t cred_res;
-	credential_t *cred;
-	salt_state_t salt_res;
-	stringer_t *salt = NULL;
-
-	// Convert the strings into a full fledged credential context.
-	if(!(cred = credential_alloc_auth(NULLER(username)))) {
-		portal_endpoint_error(con, 200, PORTAL_ENDPOINT_ERROR_AUTH, "Internal server error. Please try again in a few minutes.");
-		return;
-	}
-
-	salt_res = credential_salt_fetch(cred->auth.username, &salt);
-
-	if(salt_res == USER_SALT) {
-		cred_res = credential_calc_auth(cred, NULLER(password), salt);
-		st_free(salt);
-	}
-	else if(salt_res == USER_NO_SALT) {
-		cred_res = credential_calc_auth(cred, NULLER(password), NULL);
-	}
-	else {
-		cred_res = 0;
-	}
-
-	if(!cred_res) {
-		credential_free(cred);
-		portal_endpoint_error(con, 200, PORTAL_ENDPOINT_ERROR_AUTH, "Internal server error. Please try again in a few minutes.");
-		return;
-	}
-	*/
-
 /*
 
 
@@ -2152,7 +2120,7 @@ void portal_endpoint_messages_send(connection_t *con) {
 	nrecipients = nto + ncc + nbcc;
 
 	// Perform some basic security checks and validation on the email.
-	if (!portal_outbound_checks(con->http.session->warden.cred, con->http.session->user->usernum, NULLER(from), nrecipients, NULLER(body_plain), NULLER(body_html), &errmsg)) {
+	if (!portal_outbound_checks(con->http.session->user->usernum, con->http.session->user->username, con->http.session->user->verification, NULLER(from), nrecipients, NULLER(body_plain), NULLER(body_html), &errmsg)) {
 		log_pedantic("User failed outbound checks for sending mail through portal: {%s}", errmsg);
 		inx_free(tos);
 		inx_free(ccs);

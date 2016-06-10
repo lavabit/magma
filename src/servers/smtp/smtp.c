@@ -245,11 +245,10 @@ void smtp_rset(connection_t *con) {
 ///		back-and-forth traffic.
 void smtp_auth_plain(connection_t *con) {
 
-	credential_t *cred;
-	int_t state, cred_res;
-	salt_state_t salt_res;
+	int_t state = 0;
+	auth_t *auth = NULL;
 	smtp_outbound_prefs_t *outbound;
-	stringer_t *decoded = NULL, *argument = NULL, *salt = NULL;
+	stringer_t *decoded = NULL, *argument = NULL;
 	placer_t username = { .opts = PLACER_T | JOINTED | STACK | FOREIGNDATA}, password = { .opts = PLACER_T | JOINTED | STACK | FOREIGNDATA},
 		authorize_id = { .opts = PLACER_T | JOINTED | STACK | FOREIGNDATA };
 
@@ -308,83 +307,59 @@ void smtp_auth_plain(connection_t *con) {
 		return;
 	}
 
-	/// BUG: The code should be able to differentiate between invalid usernames which trigger a NULL return and allocation (or similar)
-	/// errors which are temporary. We approximate this functionality by not rejecting "@domain.com" as a username via the credentials
-	/// function, but instead check for leading at symbols explicitly below.
-	// Create the credential context.
-
-	cred = credential_alloc_auth(&username);
-	st_free(decoded);
-
-	if(!cred) {
-		con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
-		return;
-	}
-
-	salt_res = credential_salt_fetch(cred->auth.username, &salt);
-
-	if(salt_res == USER_SALT) {
-		cred_res = credential_calc_auth(cred, &password, salt);
-		st_free(salt);
-	}
-	else if(salt_res == USER_NO_SALT) {
-		cred_res = credential_calc_auth(cred, &password, NULL);
-	}
-	else {
-		cred_res = 0;
-	}
-
-	if(!cred_res) {
-		credential_free(cred);
-		con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
-		return;
-	}
-
-	// Check to make sure the username doesn't start with an at symbol.
-	if (!st_cmp_cs_starts(cred->auth.username, PLACER("@", 1))) {
-		credential_free(cred);
-		con_write_bl(con, "535 AUTHENTICATION FAILURE - INVALID USERNAME AND PASSWORD COMBINATION\r\n", 72);
+	// Create the authentication context.
+	if ((state = auth_login(&username, &password, &auth)) || !auth) {
+		if (state < 0) {
+			con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
+		}
+		else {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - INVALID USERNAME AND PASSWORD COMBINATION\r\n", 72);
+		}
 		return;
 	}
 
 	// Authorize the user, and securely delete the keys.
-	state = smtp_fetch_authorization(cred, &outbound);
-	credential_free(cred);
+	if ((state = smtp_fetch_authorization(auth->username, auth->tokens.verification, &outbound)) < 0) {
+		if (state == -4) {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN LOCKED AT THE REQUEST OF THE USER\r\n", 86);
+		}
+		else if (state == -3) {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN LOCKED ON SUSPICION OF ABUSE POLICY VIOLATIONS\r\n", 99);
+		}
+		else if (state == -2) {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN ADMINISTRATIVELY LOCKED\r\n", 76);
+		}
+		else if (state == -1) {
+			con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
+		}
+		else {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - INVALID USERNAME AND PASSWORD COMBINATION\r\n", 72);
+		}
 
-	// Tell the user what happened.
-	if (state == 1) {
-		smtp_add_outbound(con, outbound);
-		smtp_session_reset(con);
-		con->smtp.max_length = outbound->send_size_limit;
-		con->smtp.authenticated = true;
-		con_write_bl(con, "235 AUTH PLAIN SUCCESSFUL - AUTHENTICATED\r\n", 43);
-	}
-	else if (state == 0) {
-		con_write_bl(con, "535 AUTHENTICATION FAILURE - INVALID USERNAME AND PASSWORD COMBINATION\r\n", 72);
-	}
-	else if (state == -2) {
-		con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN ADMINISTRATIVELY LOCKED\r\n", 76);
-	}
-	else if (state == -3) {
-		con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN LOCKED ON SUSPICION OF ABUSE POLICY VIOLATIONS\r\n", 99);
-	}
-	else if (state == -4) {
-		con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN LOCKED AT THE REQUEST OF THE USER\r\n", 86);
-	}
-	else {
-		con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
+		auth_free(auth);
+		return;
 	}
 
+	// If we made it this far then the connection is authenticated.
+	smtp_add_outbound(con, outbound);
+	smtp_session_reset(con);
+	auth_free(auth);
+
+	// Adjust the connection object accordingly.
+	con->smtp.max_length = outbound->send_size_limit;
+	con->smtp.authenticated = true;
+
+	// Let the user know it's all good in cyberspace.
+	con_write_bl(con, "235 AUTH PLAIN SUCCESSFUL - AUTHENTICATED\r\n", 43);
 	return;
 }
 
 void smtp_auth_login(connection_t *con) {
 
-	credential_t *cred;
-	int_t state, cred_res;
-	salt_state_t salt_res;
+	int_t state = 0;
+	auth_t *auth = NULL;
 	smtp_outbound_prefs_t *outbound;
-	stringer_t *username = NULL, *password = NULL, *argument = NULL, *salt = NULL;
+	stringer_t *username = NULL, *password = NULL, *argument = NULL;
 
 	// If the user is already authenticated.
 	if (con->smtp.authenticated == true) {
@@ -406,9 +381,8 @@ void smtp_auth_login(connection_t *con) {
 
 	// Validate that an argument was extracted using the above logic.
 	if (!argument || !(username =	base64_decode(argument, NULL)) || st_empty(username)) {
-		st_cleanup(argument);
-		st_cleanup(username);
 		con_write_bl(con, "501 INVALID AUTH SYNTAX\r\n", 25);
+		st_cleanup(argument, username);
 		return;
 	}
 
@@ -422,91 +396,71 @@ void smtp_auth_login(connection_t *con) {
 
 	// Validate that an argument was extracted using the above logic.
 	if (!argument || !(password = base64_decode(argument, NULL)) || st_empty(password)) {
-		st_cleanup(argument);
-		st_cleanup(password);
-		st_free(username);
 		con_write_bl(con, "501 INVALID AUTH SYNTAX\r\n", 25);
+		st_cleanup(username, password, argument);
 		return;
 	}
 
 	st_free(argument);
 	argument = NULL;
 
-	/// BUG: The code should be able to differentiate between invalid usernames which trigger a NULL return and allocation (or similar)
-	/// errors which are temporary. We approximate this functionality by not rejecting "@domain.com" as a username via the credentials
-	/// function, but instead check for leading at symbols explicitly below.
-	// Create the credential context.
-	if(!(cred = credential_alloc_auth(username))) {
-		con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
+	// Create the authentication context.
+	if ((state = auth_login(&username, &password, &auth)) || !auth) {
+		if (state < 0) {
+			con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
+		}
+		else {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - INVALID USERNAME AND PASSWORD COMBINATION\r\n", 72);
+		}
+		st_cleanup(username, password);
 		return;
 	}
 
-	salt_res = credential_salt_fetch(cred->auth.username, &salt);
-
-	if(salt_res == USER_SALT) {
-		cred_res = credential_calc_auth(cred, password, salt);
-		st_free(salt);
-	}
-	else if(salt_res == USER_NO_SALT) {
-		cred_res = credential_calc_auth(cred, password, NULL);
-	}
-	else {
-		cred_res = 0;
-	}
-
-	st_free(username);
-	st_free(password);
-
-	if(!cred_res) {
-		credential_free(cred);
-		con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
-		return;
-	}
-
-	// Check to make sure the username doesn't start with an at symbol.
-	if (!st_cmp_cs_starts(cred->auth.username, PLACER("@", 1))) {
-		credential_free(cred);
-		con_write_bl(con, "535 AUTHENTICATION FAILURE - INVALID USERNAME AND PASSWORD COMBINATION\r\n", 72);
-		return;
-	}
+	// We won't need these again, now that we have the authentication context.
+	st_cleanup(username, password);
 
 	// Authorize the user, and securely delete the keys.
-	state = smtp_fetch_authorization(cred, &outbound);
-	credential_free(cred);
+	if ((state = smtp_fetch_authorization(auth->username, auth->tokens.verification, &outbound)) < 0) {
+		if (state == -4) {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN LOCKED AT THE REQUEST OF THE USER\r\n", 86);
+		}
+		else if (state == -3) {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN LOCKED ON SUSPICION OF ABUSE POLICY VIOLATIONS\r\n", 99);
+		}
+		else if (state == -2) {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN ADMINISTRATIVELY LOCKED\r\n", 76);
+		}
+		else if (state == -1) {
+			con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
+		}
+		else {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - INVALID USERNAME AND PASSWORD COMBINATION\r\n", 72);
+		}
 
-	// Tell the user what happened.
-	if (state == 1) {
-		smtp_add_outbound(con, outbound);
-		smtp_session_reset(con);
-		con->smtp.max_length = outbound->send_size_limit;
-		con->smtp.authenticated = true;
-		con_write_bl(con, "235 AUTH LOGIN SUCCESSFUL - AUTHENTICATED\r\n", 43);
-	}
-	else if (state == 0) {
-		con_write_bl(con, "535 AUTHENTICATION FAILURE - INVALID USERNAME AND PASSWORD COMBINATION\r\n", 72);
-	}
-	else if (state == -2) {
-		con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN ADMINISTRATIVELY LOCKED\r\n", 76);
-	}
-	else if (state == -3) {
-		con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN LOCKED ON SUSPICION OF ABUSE POLICY VIOLATIONS\r\n", 99);
-	}
-	else if (state == -4) {
-		con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN LOCKED AT THE REQUEST OF THE USER\r\n", 86);
-	}
-	else {
-		con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
+		auth_free(auth);
+		return;
 	}
 
+	// If we made it this far then the connection is authenticated.
+	smtp_add_outbound(con, outbound);
+	smtp_session_reset(con);
+	auth_free(auth);
+
+	// Adjust the connection object accordingly.
+	con->smtp.max_length = outbound->send_size_limit;
+	con->smtp.authenticated = true;
+
+	// Let the user know it's all good in cyberspace.
+	con_write_bl(con, "235 AUTH PLAIN SUCCESSFUL - AUTHENTICATED\r\n", 43);
 	return;
 }
 
 void smtp_rcpt_to(connection_t *con) {
 
 	int_t state;
-	credential_t *cred;
-	stringer_t *address;
+	placer_t domain;
 	smtp_inbound_prefs_t *result;
+	stringer_t *address = NULL, *sanitized = NULL;
 
 	// If they try to send this command without saying hello.
 	if (!(con->smtp.helo) && con->smtp.authenticated == false) {
@@ -569,22 +523,23 @@ void smtp_rcpt_to(connection_t *con) {
 		return;
 	}
 
-	/// BUG: The code should be able to differentiate between invalid addresses which trigger a NULL return and allocation (or similar)
-	/// errors which are temporary.
-	if (!(cred = credential_alloc_mail(address))) {
+	if (!(sanitized = auth_sanitize_address(address))) {
 		con_write_bl(con, "451 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
 		st_free(address);
 		return;
 	}
 
+	// Free the address and replace it with the sanitized version.
+	st_free(address);
+	address = sanitized;
+
 	// Hit the mailboxes table, and see if this is a legitimate address.
-	state = smtp_fetch_inbound(cred, address, &result);
+	state = smtp_fetch_inbound(address, &result);
 
 	// If the account is locked.
 	if (state == -2) {
 		con_print(con, "550 ACCOUNT LOCKED - THE ACCOUNT <%.*s> HAS BEEN ADMINISTRATIVELY LOCKED\r\n", st_length_int(address),
 			st_char_get(lower_st(address)));
-		credential_free(cred);
 		st_free(address);
 		return;
 	}
@@ -592,7 +547,6 @@ void smtp_rcpt_to(connection_t *con) {
 	else if (state == -3) {
 		con_print(con, "550 ACCOUNT LOCKED - THE ACCOUNT <%.*s> HAS BEEN LOCKED FOR INACTIVITY\r\n", st_length_int(address),
 			st_char_get(lower_st(address)));
-		credential_free(cred);
 		st_free(address);
 		return;
 	}
@@ -600,7 +554,6 @@ void smtp_rcpt_to(connection_t *con) {
 	else if (state == -4) {
 		con_print(con, "550 ACCOUNT LOCKED - THE ACCOUNT <%.*s> HAS BEEN LOCKED FOR ABUSE POLICY VIOLATIONS\r\n", st_length_int(address),
 			st_char_get(lower_st(address)));
-		credential_free(cred);
 		st_free(address);
 		return;
 	}
@@ -608,15 +561,16 @@ void smtp_rcpt_to(connection_t *con) {
 	else if (state == -5) {
 		con_print(con, "550 ACCOUNT LOCKED - THE ACCOUNT <%.*s> HAS BEEN LOCKED AT THE REQUEST OF THE OWNER\r\n", st_length_int(address),
 			st_char_get(lower_st(address)));
-		credential_free(cred);
 		st_free(address);
 		return;
 	}
 	// The user has locked the account.
 	else if (state == -6) {
+		if (!mail_domain_get(address, &domain)) {
+			domain = pl_null();
+		}
 		con_print(con, "551 RELAY ACCESS DENIED - THE DOMAIN <%.*s> IS NOT HOSTED LOCALLY AND RELAY ACCESS REQUIRES AUTHENTICATION\r\n",
-			st_length_int(cred->mail.domain), st_char_get(lower_st(cred->mail.domain)));
-		credential_free(cred);
+			st_length_int(&domain), st_char_get(lower_st(&domain)));
 		st_free(address);
 		return;
 	}
@@ -624,19 +578,16 @@ void smtp_rcpt_to(connection_t *con) {
 	else if (state == 0) {
 		con_print(con, "554 INVALID RECIPIENT - THE EMAIL ADDRESS <%.*s> DOES NOT MATCH AN ACCOUNT ON THIS SYSTEM\r\n",
 			st_length_int(address), st_char_get(lower_st(address)));
-		credential_free(cred);
 		st_free(address);
 		return;
 	}
 	// Catch database or any other error here.
 	else if (state < 0 || result == NULL) {
 		con_write_bl(con, "451 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
-		credential_free(cred);
 		st_free(address);
 		return;
 	}
 
-	credential_free(cred);
 	st_free(address);
 
 	// Check for duplicate user numbers.

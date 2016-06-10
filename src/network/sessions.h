@@ -55,7 +55,6 @@ typedef struct {
 		uint64_t number; /* The unique auto-incrementing number and the value used to locate a session in cache. */
 		stringer_t *agent; /* The owner's user-agent string. */
 		stringer_t *token; /* The encrypted token used to retrieve this session during future requests. */
-		void *cred; /* A login credential (credential_t *) that's stored for retrieving smtp outbound preferences */
 	} warden;
 
 	struct {

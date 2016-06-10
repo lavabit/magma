@@ -72,12 +72,6 @@ void sess_destroy(session_t *sess) {
 		st_cleanup(sess->warden.token);
 		st_cleanup(sess->warden.agent);
 
-		// Release the credential.
-		if (sess->warden.cred) {
-			credential_free(sess->warden.cred);
-			sess->warden.cred = NULL;
-		}
-
 		st_cleanup(sess->request.host);
 		st_cleanup(sess->request.path);
 		st_cleanup(sess->request.application);

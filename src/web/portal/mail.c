@@ -26,7 +26,7 @@
  * @param	errmsg	the address of a pointer to a null-terminated string that will be set to a descriptive error message on failure.
  * @return	true if all security checks were passed or false otherwise.
  */
-bool_t portal_outbound_checks(credential_t *cred, uint64_t usernum, stringer_t *from, size_t num_recipients, stringer_t *body_plain, stringer_t *body_html, chr_t **errmsg) {
+bool_t portal_outbound_checks(uint64_t usernum, stringer_t *username, stringer_t *verification, stringer_t *from, size_t num_recipients, stringer_t *body_plain, stringer_t *body_html, chr_t **errmsg) {
 
 	smtp_outbound_prefs_t *prefs;
 	int_t state, nstate;
@@ -43,7 +43,7 @@ bool_t portal_outbound_checks(credential_t *cred, uint64_t usernum, stringer_t *
 	}
 
 	// We need to grab the user's outbound credentials before we can check the transmit quota.
-	if (smtp_fetch_authorization(cred, &prefs) <= 0) {
+	if (smtp_fetch_authorization(username, verification, &prefs) <= 0) {
 		*errmsg = "User failed to meet authorization check.";
 		return false;
 	}

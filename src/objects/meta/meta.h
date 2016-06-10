@@ -50,7 +50,7 @@ bool_t   new_meta_data_fetch_folders(new_meta_user_t *user);
 int_t    new_meta_data_fetch_keys(new_meta_user_t *user, key_pair_t *output);
 int_t    new_meta_data_fetch_mailbox_aliases(new_meta_user_t *user);
 int_t    new_meta_data_fetch_user(new_meta_user_t *user);
-int_t    new_meta_data_insert_keys(new_meta_user_t *user, key_pair_t *input);
+int_t    new_meta_data_insert_keys(uint64_t usernum, stringer_t *username, key_pair_t *input);
 void     new_meta_data_update_log(new_meta_user_t *user, META_PROTOCOL protocol);
 
 /// locking.c
@@ -61,6 +61,9 @@ void   new_meta_user_wlock(new_meta_user_t *user);
 /// indexes.c
 new_meta_user_t *  new_meta_inx_find(uint64_t usernum, META_PROTOCOL protocol);
 void               new_meta_inx_remove(uint64_t usernum, META_PROTOCOL protocol);
+
+/// crypto.c
+int_t   meta_crypto_keys_create(uint64_t usernum, stringer_t *username, stringer_t *master);
 
 #endif
 

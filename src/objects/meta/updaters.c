@@ -23,10 +23,8 @@
 int_t meta_update_keys(new_meta_user_t *user, stringer_t *master, META_LOCK_STATUS locked) {
 
 	int_t result = 0;
-	size_t length = 0;
-	EC_KEY *ecies_key = NULL;
+	stringer_t *holder = NULL;
 	scramble_t *scramble = NULL;
-	uchr_t *public = NULL, *private = NULL;
 	key_pair_t pair = {
 		NULL, NULL
 	};
@@ -39,90 +37,30 @@ int_t meta_update_keys(new_meta_user_t *user, stringer_t *master, META_LOCK_STAT
 	// We only need to fetch and decrypt the user keys if they aren't already stored in the structure.
 	if (user->usernum && st_empty(user->keys.private, user->keys.public)) {
 
-		/// BUG: By returning here we avoid unlocking the user object. We should move the key creation to its own function.
-		/// 	Since the only consumer of this function right now is the meta_get() function, which handles locking on its own,
-		/// 	its not technically an issue, yet.
-
 		// Fetch the keys. If none are found, try to generate a new key pair for the user.
 		if (new_meta_data_fetch_keys(user, &pair) == 1) {
 
-			// Create the ECIES key pair first and extract the public and private keys, wrapping them in managed strings.
-			if (!(ecies_key = ecies_key_create())) {
-				log_pedantic("Unable to create a user key pair. { username = %.*s }",
-					st_length_int(user->username), st_char_get(user->username));
-				return -1;
-			}
-
-			// Extract the public portion in binary form.
-			else if (!(public = ecies_key_public_bin(ecies_key, &length)) || length <= 0 ||
-				!(pair.public = st_import(public, length))) {
-
-				log_pedantic("Unable to extract the ECIES public key from the user key pair. { username = %.*s }",
-					st_length_int(user->username), st_char_get(user->username));
-
-				ecies_key_free(ecies_key);
-				mm_cleanup(public);
-
-				return -1;
-			}
-
-			// Extract the private portion of the key pair in binary form.
-			else if (!(private = ecies_key_private_bin (ecies_key, &length)) || length <= 0 ||
-				!(scramble = scramble_encrypt(master, PLACER(private, length))) ||
-				!(pair.private = st_import(scramble, scramble_total_length(scramble)))) {
-
-				log_pedantic("Unable to extract and scamble the private portion of the user key pair. { username = %.*s }",
-					st_length_int(user->username), st_char_get(user->username));
-
-				scramble_cleanup(scramble);
-				ecies_key_free(ecies_key);
-				mm_sec_cleanup(private);
-				st_cleanup(pair.public);
-				mm_cleanup(public);
-
-				return -1;
-			}
-
-			scramble_cleanup(scramble);
-			ecies_key_free(ecies_key);
-			mm_sec_cleanup(private);
-			mm_cleanup(public);
-
-			// Try storing the keys in the database. If 0 is returned, the new pair was stored, otherwise if a 1 is returned
-			// its possible another process created the keys already, in which case they will be retrieved below.
-			if (new_meta_data_insert_keys(user, &pair) < 0) {
-				log_pedantic("Unable to store the user key pair. { username = %.*s }",
-					st_length_int(user->username), st_char_get(user->username));
-				st_cleanup(pair.private, pair.public);
-				return -1;
-			}
-
-			st_cleanup(pair.private, pair.public);
-			pair.private = pair.public = NULL;
-
 			// Make sure we can retrieve the keys from the database before we return them to the caller.
-			if (new_meta_data_fetch_keys(user, &pair)) {
-				log_pedantic("Unable to fetch the user key pair. { username = %.*s }",
-					st_length_int(user->username), st_char_get(user->username));
-				return -1;
+			if (meta_crypto_keys_create(user->usernum, user->username, master) < 0 || new_meta_data_fetch_keys(user, &pair)) {
+				log_pedantic("Unable to create and fetch a newly created user key pair. { username = %.*s }", st_length_int(user->username),
+					st_char_get(user->username));
+				result = -1;
 			}
 
-			log_info("Created user storage keys. { username = %.*s }", st_length_int(user->username), st_char_get(user->username));
-			result = 1;
 		}
 
 		// If we reach this point and the key pair is still empty, then a negative value was returned by the first
 		// fetch operation above.
 		if (!st_populated(pair.private, pair.public)) {
-				log_pedantic("Unable to fetch the user key pair. { username = %.*s }",
-					st_length_int(user->username), st_char_get(user->username));
-				result = -1;
+			log_pedantic("Unable to fetch the user key pair. { username = %.*s }", st_length_int(user->username),
+				st_char_get(user->username));
+			result = -1;
 		}
 
 		// Decrypt the buffer retrieved from the database. Return a different error code if there was a problem decrypting the key.
-		else if (!(scramble = scramble_import(pair.private)) || !(private = scramble_decrypt(master, scramble))) {
-			log_pedantic("Unable to decrypt the private user key. { username = %.*s }",
-					st_length_int(user->username), st_char_get(user->username));
+		else if (!(scramble = scramble_import(pair.private)) || !(holder = scramble_decrypt(master, scramble))) {
+			log_pedantic("Unable to decrypt the private user key. { username = %.*s }", st_length_int(user->username),
+				st_char_get(user->username));
 			st_cleanup(pair.private, pair.public);
 			result = -2;
 		}
@@ -130,18 +68,18 @@ int_t meta_update_keys(new_meta_user_t *user, stringer_t *master, META_LOCK_STAT
 		/// BUG: We shouldn't need to duplicate the private key. This is a short term solution because we can't store the decrypted data in
 		/// 		a secure buffer yet.
 		// Copy the private key into a secure buffer and assign the public key to the user object.
-		else if (!(user->keys.public = pair.public) || !(user->keys.private = st_dupe_opts(MANAGED_T | CONTIGUOUS | SECURE, private))) {
+		else if (!(user->keys.public = pair.public) || !(user->keys.private = st_dupe_opts(MANAGED_T | CONTIGUOUS | SECURE, holder))) {
 
-			log_pedantic("Unable to copy the key pair into the user object. { username = %.*s }",
-					st_length_int(user->username), st_char_get(user->username));
+			log_pedantic("Unable to copy the key pair into the user object. { username = %.*s }", st_length_int(user->username),
+				st_char_get(user->username));
 
-			st_cleanup(private, pair.private, pair.public);
+			st_cleanup(holder, pair.private, pair.public);
 			user->keys.public = user->keys.private = NULL;
 			result = -1;
 		}
 
 		else {
-			st_cleanup(private, pair.private);
+			st_cleanup(holder, pair.private);
 		}
 	}
 

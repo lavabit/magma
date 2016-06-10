@@ -363,14 +363,14 @@ int_t new_meta_data_fetch_keys(new_meta_user_t *user, key_pair_t *output) {
  *
  * @return	-1 for unexpected program/system error, 0 on success, 1 if the query executes, but no rows are affected.
  */
-int_t new_meta_data_insert_keys(new_meta_user_t *user, key_pair_t *input) {
+int_t new_meta_data_insert_keys(uint64_t usernum, stringer_t *username, key_pair_t *input) {
 
 	int64_t affected;
 	MYSQL_BIND parameters[3];
 	stringer_t *public = NULL, *private = NULL;
 
 	// Sanity check.
-	if (!user || !user->usernum || !input || !st_populated(input->public, input->private)) {
+	if (!usernum || !input || !st_populated(input->public, input->private)) {
 		log_pedantic("Invalid parameters passed to the storage key insert function.");
 		return -1;
 	}
@@ -379,8 +379,8 @@ int_t new_meta_data_insert_keys(new_meta_user_t *user, key_pair_t *input) {
 	// note the key length is hard coded here but is dynamic below, on purpose, to make changes easier.
 	if (!(public = base64_encode_mod(input->public, NULL)) || !(private = base64_encode_mod(input->private, NULL)) ||
 		st_length_get(public) != 258 || st_length_get(private) != 404) {
-		log_pedantic("Unable to store a user key pair. { username = %.*s }", st_length_int(user->username),
-			st_char_get(user->username));
+		log_pedantic("Unable to store a user key pair. { username = %.*s }", st_length_int(username),
+			st_char_get(username));
 		st_cleanup(public, private);
 		return -1;
 	}
@@ -391,7 +391,7 @@ int_t new_meta_data_insert_keys(new_meta_user_t *user, key_pair_t *input) {
 	// Usernum.
 	parameters[0].buffer_type = MYSQL_TYPE_LONGLONG;
 	parameters[0].buffer_length = sizeof(uint64_t);
-	parameters[0].buffer = &(user->usernum);
+	parameters[0].buffer = &(usernum);
 	parameters[0].is_unsigned = true;
 
 	// Public Key
@@ -406,13 +406,13 @@ int_t new_meta_data_insert_keys(new_meta_user_t *user, key_pair_t *input) {
 
 	if ((affected = stmt_exec_affected(stmts.meta_insert_storage_keys, parameters)) != 1 && affected == -1) {
 		log_pedantic("Unable to insert the user key pair. A database error occurred. { username = %.*s }",
-			st_length_int(user->username), st_char_get(user->username));
+			st_length_int(username), st_char_get(username));
 		st_cleanup(public, private);
 		return -1;
 	}
 	else if (!affected) {
 		log_pedantic("Unable to insert the user key pair. It's possible the database already holds keys for this user. { username = %.*s }",
-			st_length_int(user->username), st_char_get(user->username));
+			st_length_int(username), st_char_get(username));
 		st_cleanup(public, private);
 		return 1;
 	}

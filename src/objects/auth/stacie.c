@@ -12,13 +12,47 @@
 
 #include "magma.h"
 
+/**
+ * @brief	A checked cleanup function which can be used free a STACIE object.
+ * @note	Use this function when the STACIE object is guaranteed not to be NULL. Call the cleanup function directly if the STACIE object
+ * 			pointer could potentially be NULL.
+ * @see		auth_stacie_cleanup()
+ *
+ * @param stacie	the STACIE object which will be freed.
+ * @return	This function returns no value.
+ */
 void auth_stacie_free(auth_stacie_t *stacie) {
+
 	if (stacie) {
 		st_cleanup(stacie->keys.master);
 		st_cleanup(stacie->keys.password);
 		st_cleanup(stacie->tokens.verification);
 		st_cleanup(stacie->tokens.ephemeral);
 		mm_free(stacie);
+	}
+
+#ifdef MAGMA_PEDANTIC
+	else {
+		log_pedantic("Invalid call to auth_stacie_free(). The STACIE object was set to NULL.");
+	}
+#endif
+
+	return;
+}
+
+/**
+ * @brief	A checked cleanup function which can be used free a STACIE object.
+ * @note	Use this function when the STACIE object pointer could potentially be NULL. Call the free function directly if the STACIE object
+ * 			is guaranteed not to be NULL.
+ * @see		auth_stacie_free()
+ *
+ * @param	stacie	the STACIE object which will be freed.
+ *
+ * @return	This function returns no value.
+ */
+void auth_stacie_cleanup(auth_stacie_t *stacie) {
+	if (stacie) {
+		auth_stacie_free(stacie);
 	}
 	return;
 }

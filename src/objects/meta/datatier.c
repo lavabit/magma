@@ -47,6 +47,43 @@ void new_meta_data_update_log(new_meta_user_t *user, META_PROTOCOL prot) {
 }
 
 /**
+ * @brief	Update a user's lock in the database.
+ * @param	usernum		the numerical id of the user for whom the lock will be set.
+ * @param	lock		the new value to which the specified user's lock will be set.
+ * @return	This function returns no value.
+ */
+void meta_data_update_lock(uint64_t usernum, uint8_t lock) {
+
+	MYSQL_BIND parameters[2];
+
+	// We only want to allow the lock to be reset back to zero.
+	if (!usernum || lock) {
+		log_pedantic("Invalid lock update request. {lock = %i / usernum = %lu}", lock, usernum );
+		return;
+	}
+
+	mm_wipe(parameters, sizeof(parameters));
+
+	// Lock
+	parameters[0].buffer_type = MYSQL_TYPE_TINY;
+	parameters[0].buffer_length = sizeof(uint8_t);
+	parameters[0].buffer = &lock;
+	parameters[0].is_unsigned = true;
+
+	// Usernum
+	parameters[1].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[1].buffer_length = sizeof(uint64_t);
+	parameters[1].buffer = &usernum;
+	parameters[1].is_unsigned = true;
+
+	if (stmt_exec_affected(stmts.update_user_lock, parameters) != 1) {
+		log_pedantic("Unable to update the user lock. {usernum = %lu / lock = %hhu}", usernum, lock);
+	}
+
+	return;
+}
+
+/**
  * @brief	Retrieve all of a user's message folders from the database.
  * @note	If the user already had a working set of message folders they will be deleted first.
  * @param	user	a pointer to the meta user object of the user making the request, which will be updated on success.
@@ -300,7 +337,7 @@ int_t new_meta_data_fetch_user(new_meta_user_t *user) {
  *
  * @return	-1 for unexpected program/system error, 0 on success, 1 if no rows are found.
  */
-int_t new_meta_data_fetch_keys(new_meta_user_t *user, key_pair_t *output) {
+int_t new_meta_data_fetch_keys(new_meta_user_t *user, key_pair_t *output, int64_t transaction) {
 
 	row_t *row;
 	table_t *result;
@@ -322,7 +359,7 @@ int_t new_meta_data_fetch_keys(new_meta_user_t *user, key_pair_t *output) {
 	parameters[0].buffer = &(user->usernum);
 	parameters[0].is_unsigned = true;
 
-	if (!(result = stmt_get_result(stmts.meta_fetch_storage_keys, parameters))) {
+	if (!(result = stmt_get_result_conn(stmts.meta_fetch_storage_keys, parameters, transaction))) {
 		return -1;
 	}
 	else if (!(row = res_row_next(result))) {
@@ -363,7 +400,7 @@ int_t new_meta_data_fetch_keys(new_meta_user_t *user, key_pair_t *output) {
  *
  * @return	-1 for unexpected program/system error, 0 on success, 1 if the query executes, but no rows are affected.
  */
-int_t new_meta_data_insert_keys(uint64_t usernum, stringer_t *username, key_pair_t *input) {
+int_t new_meta_data_insert_keys(uint64_t usernum, stringer_t *username, key_pair_t *input, int64_t transaction) {
 
 	int64_t affected;
 	MYSQL_BIND parameters[3];
@@ -404,7 +441,7 @@ int_t new_meta_data_insert_keys(uint64_t usernum, stringer_t *username, key_pair
 	parameters[2].buffer_length = st_length_get(private);
 	parameters[2].buffer = st_char_get(private);
 
-	if ((affected = stmt_exec_affected(stmts.meta_insert_storage_keys, parameters)) != 1 && affected == -1) {
+	if ((affected = stmt_exec_affected_conn(stmts.meta_insert_storage_keys, parameters, transaction)) != 1 && affected == -1) {
 		log_pedantic("Unable to insert the user key pair. A database error occurred. { username = %.*s }",
 			st_length_int(username), st_char_get(username));
 		st_cleanup(public, private);
@@ -420,3 +457,626 @@ int_t new_meta_data_insert_keys(uint64_t usernum, stringer_t *username, key_pair
 	st_cleanup(public, private);
 	return 0;
 }
+
+/**
+ * @brief	Mark a user alert message as acknowledged in the database.
+ * @note	If the table is not updated immediately, another check is made to see if the alert is still pending. If so, false is returned.
+ * @param	alertnum	the numerical id of the alert message to be acknowledged.
+ * @param	usernum		the numerical id of the user to whom the alert message belongs.
+ * @param	transaction	the mysql transaction id of the acknowledgment operation, in cases batch changes need to be rolled back.
+ * @return	true if the alert was acknowledged successfully, or false on failure.
+ */
+bool_t meta_data_acknowledge_alert(uint64_t alertnum, uint64_t usernum, uint32_t transaction) {
+
+	row_t *row;
+	table_t *result;
+	bool_t pending = false;
+	MYSQL_BIND parameters[2];
+
+	// Sanity check.
+	if (!usernum || !alertnum) {
+		log_pedantic("Invalid data passed for structure build.");
+		return false;
+	}
+
+	mm_wipe(parameters, sizeof(parameters));
+
+	// Alertnum.
+	parameters[0].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[0].buffer_length = sizeof(uint64_t);
+	parameters[0].buffer = &alertnum;
+	parameters[0].is_unsigned = true;
+
+	// Usernum.
+	parameters[1].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[1].buffer_length = sizeof(uint64_t);
+	parameters[1].buffer = &usernum;
+	parameters[1].is_unsigned = true;
+
+	if (stmt_exec_affected_conn(stmts.update_alerts_acknowledge, parameters, transaction) == 1) {
+		return true;
+	}
+
+	// If none of the rows were updated we check to make sure the alert is still pending before returning false.
+	mm_wipe(parameters, sizeof(parameters));
+
+	// Usernum.
+	parameters[0].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[0].buffer_length = sizeof(uint64_t);
+	parameters[0].buffer = &usernum;
+	parameters[0].is_unsigned = true;
+
+	if (!(result = stmt_get_result_conn(stmts.select_alerts, parameters, transaction))) {
+		return false;
+	}
+
+	// If the alert is returned then its still pending and we should return false to indicate the error condition.
+	while (!pending && (row = res_row_next(result))) {
+
+		if (alertnum == res_field_uint64(row, 0)) {
+			pending = true;
+		}
+
+	}
+
+	res_table_free(result);
+
+	return pending ? false : true;
+}
+
+/**
+ * @brief	Get all unacknowledged alert messages for a user.
+ * @param	usernum		the numerical id of the user for whom the alert messages will be fetched.
+ * @return	NULL on failure, or a pointer to an inx holder containing all of the user's alert messages on success.
+ */
+inx_t * meta_data_fetch_alerts(uint64_t usernum) {
+
+	row_t *row;
+	table_t *result;
+	inx_t *alerts = NULL;
+	meta_alert_t *record;
+	MYSQL_BIND parameters[1];
+	multi_t key = { .type = M_TYPE_UINT64 };
+
+	// Sanity check.
+	if (!usernum) {
+		log_pedantic("Cannot fetch alerts for null user.");
+		return NULL;
+	}
+
+	mm_wipe(parameters, sizeof(parameters));
+
+	// Usernum.
+	parameters[0].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[0].buffer_length = sizeof(uint64_t);
+	parameters[0].buffer = &usernum;
+	parameters[0].is_unsigned = true;
+
+	if (!(result = stmt_get_result(stmts.select_alerts, parameters))) {
+		return NULL;
+	}
+
+	if (!(alerts = inx_alloc(M_INX_LINKED, &mm_free))) {
+		log_error("Could not create a linked list for the alert messages.");
+		res_table_free(result);
+		return NULL;
+	}
+
+	while ((row = res_row_next(result))) {
+
+		// Pass the alert data to the allocator and hope for the best.
+		if ((record = alert_alloc(res_field_uint64(row, 0), PLACER(res_field_block(row, 1), res_field_length(row, 1)),
+			PLACER(res_field_block(row, 2), res_field_length(row, 2)), res_field_uint64(row, 3))) &&
+			(!(key.val.u64 = record->alertnum) || !inx_insert(alerts, key, record))) {
+			log_info("Was not able to read user alert message. { no = %lu }", record->alertnum);
+			res_table_free(result);
+			mm_free(record);
+			inx_free(alerts);
+			return NULL;
+		}
+
+	}
+
+	res_table_free(result);
+	return alerts;
+}
+
+/**
+ * @brief	Remove all user (non-system) flags from a collection of mail messages, and set the specified flags mask for them.
+ * @note	The new mask can contain both user and system flags, but only user flags will be stripped from each message initially.
+ * @param	messages	an inx holder containing the collection of messages to have their flags updated.
+ * @param	usernum		the numerical of the user to whom the target messages belong, for validation purposes.
+ * @param	foldernum	the numerical id of the parent folder containing the messages to be updated, for validation purposes.
+ * @param	flags		a mask of all flags that are to be added to any matching messages in the collection.
+ * @return	true on success or false on failure.
+ */
+bool_t meta_data_flags_replace(inx_t *messages, uint64_t usernum, uint64_t foldernum, uint32_t flags) {
+
+	inx_cursor_t *cursor;
+	meta_message_t *active;
+	MYSQL_BIND parameters[6];
+	uint32_t complete = MAIL_STATUS_USER_FLAGS;
+	bool_t result = true;
+
+	// Sanity check.
+	if (!messages || !usernum || !foldernum) {
+		return false;
+	}
+
+	// Iterate through and see if any messages have the recent flag set. Store the range.
+	if ((cursor = inx_cursor_alloc(messages))) {
+
+		while ((active = inx_cursor_value_next(cursor))) {
+
+			if (active->foldernum == foldernum) {
+
+				mm_wipe(parameters, sizeof(parameters));
+
+				// Complete
+				parameters[0].buffer_type = MYSQL_TYPE_LONG;
+				parameters[0].buffer_length = sizeof(uint32_t);
+				parameters[0].buffer = &complete;
+				parameters[0].is_unsigned = true;
+
+				// Complete
+				parameters[1].buffer_type = MYSQL_TYPE_LONG;
+				parameters[1].buffer_length = sizeof(uint32_t);
+				parameters[1].buffer = &complete;
+				parameters[1].is_unsigned = true;
+
+				// Replacement Flags
+				parameters[2].buffer_type = MYSQL_TYPE_LONG;
+				parameters[2].buffer_length = sizeof(uint32_t);
+				parameters[2].buffer = &flags;
+				parameters[2].is_unsigned = true;
+
+				// Usernum
+				parameters[3].buffer_type = MYSQL_TYPE_LONGLONG;
+				parameters[3].buffer_length = sizeof(uint64_t);
+				parameters[3].buffer = &usernum;
+				parameters[3].is_unsigned = true;
+
+				// Foldernum
+				parameters[4].buffer_type = MYSQL_TYPE_LONGLONG;
+				parameters[4].buffer_length = sizeof(uint64_t);
+				parameters[4].buffer = &foldernum;
+				parameters[4].is_unsigned = true;
+
+				// Message Numbers
+				parameters[5].buffer_type = MYSQL_TYPE_LONGLONG;
+				parameters[5].buffer_length = sizeof(uint64_t);
+				parameters[5].buffer = &(active->messagenum);
+				parameters[5].is_unsigned = true;
+
+				if (!stmt_exec(stmts.update_message_flags_replace, parameters)) {
+					log_pedantic("Message flag replace failed. { user = %lu / message = %lu / flags = %u }", usernum, active->messagenum, flags);
+					result = false;
+				}
+
+			}
+		}
+
+		inx_cursor_free(cursor);
+	}
+
+	return result;
+}
+
+/**
+ * @brief	Remove the specified flags mask from a collection of mail messages.
+ * @param	messages	an inx holder containing the collection of messages to have their flags removed.
+ * @param	usernum		the numerical id of the user to whom the target messages belong, for validation purposes.
+ * @param	foldernum	the numerical id of the parent folder containing the messages to be updated, for validation purposes.
+ * @param	flags		a mask of all flags that are to be stripped from any matching messages in the collection.
+ * @return	true on success or false on failure.
+ */
+bool_t meta_data_flags_remove(inx_t *messages, uint64_t usernum, uint64_t foldernum, uint32_t flags) {
+
+	inx_cursor_t *cursor;
+	meta_message_t *active;
+	MYSQL_BIND parameters[5];
+	bool_t result = true;
+
+	// Sanity check.
+	if (!messages || !usernum || !foldernum) {
+		return false;
+	}
+
+	// Iterate through and see if any messages have the recent flag set. Store the range.
+	if ((cursor = inx_cursor_alloc(messages))) {
+
+		while ((active = inx_cursor_value_next(cursor))) {
+			if (active->foldernum == foldernum) {
+
+				mm_wipe(parameters, sizeof(parameters));
+
+				// Flag to Remove
+				parameters[0].buffer_type = MYSQL_TYPE_LONG;
+				parameters[0].buffer_length = sizeof(uint32_t);
+				parameters[0].buffer = &flags;
+				parameters[0].is_unsigned = true;
+
+				// Flag to Remove
+				parameters[1].buffer_type = MYSQL_TYPE_LONG;
+				parameters[1].buffer_length = sizeof(uint32_t);
+				parameters[1].buffer = &flags;
+				parameters[1].is_unsigned = true;
+
+				// Usernum
+				parameters[2].buffer_type = MYSQL_TYPE_LONGLONG;
+				parameters[2].buffer_length = sizeof(uint64_t);
+				parameters[2].buffer = &usernum;
+				parameters[2].is_unsigned = true;
+
+				// Foldernum
+				parameters[3].buffer_type = MYSQL_TYPE_LONGLONG;
+				parameters[3].buffer_length = sizeof(uint64_t);
+				parameters[3].buffer = &foldernum;
+				parameters[3].is_unsigned = true;
+
+				// Message Numbers
+				parameters[4].buffer_type = MYSQL_TYPE_LONGLONG;
+				parameters[4].buffer_length =  sizeof(uint64_t);
+				parameters[4].buffer = &(active->messagenum);
+				parameters[4].is_unsigned = true;
+
+				if (!stmt_exec(stmts.update_message_flags_remove, parameters)) {
+					log_pedantic("Message flag removal failed. { user = %lu / message = %lu / flags = %u }", usernum, active->messagenum, flags);
+					result = false;
+				}
+
+			}
+		}
+
+		inx_cursor_free(cursor);
+	}
+
+	return result;
+}
+
+/**
+ * @brief	Add the specified flags mask to a collection of mail messages.
+ * @param	messages	an inx holder containing the collection of messages to have their flags updated.
+ * @param	usernum		the numerical id of the user to whom the target messages belong, for validation purposes.
+ * @param	foldernum	the numerical id of the parent folder containing the messages to be updated, for validation purposes.
+ * @param	flags		a mask of all flags that are to be added to any matching messages in the collection.
+ * @return	true on success or false on failure.
+ */
+bool_t meta_data_flags_add(inx_t *messages, uint64_t usernum, uint64_t foldernum, uint32_t flags) {
+
+	inx_cursor_t *cursor;
+	meta_message_t *active;
+	MYSQL_BIND parameters[4];
+	bool_t result = true;
+
+	// Sanity check.
+	if (!messages || !usernum || !foldernum) {
+		return false;
+	}
+
+	// Iterate through and see if any messages have the recent flag set. Store the range.
+	if ((cursor = inx_cursor_alloc(messages))) {
+
+		while ((active = inx_cursor_value_next(cursor))) {
+				mm_wipe(parameters, sizeof(parameters));
+
+				// Flag to Add
+				parameters[0].buffer_type = MYSQL_TYPE_LONG;
+				parameters[0].buffer_length = sizeof(uint32_t);
+				parameters[0].buffer = &flags;
+				parameters[0].is_unsigned = true;
+
+				// Usernum
+				parameters[1].buffer_type = MYSQL_TYPE_LONGLONG;
+				parameters[1].buffer_length = sizeof(uint64_t);
+				parameters[1].buffer = &usernum;
+				parameters[1].is_unsigned = true;
+
+				// Foldernum
+				parameters[2].buffer_type = MYSQL_TYPE_LONGLONG;
+				parameters[2].buffer_length = sizeof(uint64_t);
+				parameters[2].buffer = &foldernum;
+				parameters[2].is_unsigned = true;
+
+				// Message Numbers
+				parameters[3].buffer_type = MYSQL_TYPE_LONGLONG;
+				parameters[3].buffer_length = sizeof(uint64_t);
+				parameters[3].buffer = &(active->messagenum);
+				parameters[3].is_unsigned = true;
+
+				if (!stmt_exec(stmts.update_message_flags_add, parameters)) {
+					log_pedantic("Message flag addition failed. { user = %lu / message = %lu / flags = %u }", usernum, active->messagenum, flags);
+					result = false;
+				}
+
+			}
+
+		inx_cursor_free(cursor);
+	}
+
+	return result;
+}
+
+/**
+ * @brief	Delete a message folder from the database.
+ * @param	usernum		the numerical id of the user that owns the folder to be deleted.
+ * @param	foldernum	the folder id of the message folder to be deleted.
+ * @return	1 if the message folder was successfully, or <= 0 if there was an error.
+ */
+uint64_t meta_data_delete_folder(uint64_t usernum, uint64_t foldernum) {
+
+	MYSQL_BIND parameters[3];
+	uint_t type = M_FOLDER_MESSAGES;
+
+	mm_wipe(parameters, sizeof(parameters));
+
+	// Foldernum
+	parameters[0].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[0].buffer_length = sizeof(uint64_t);
+	parameters[0].buffer = &foldernum;
+	parameters[0].is_unsigned = true;
+
+	// Usernum
+	parameters[1].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[1].buffer_length = sizeof(uint64_t);
+	parameters[1].buffer = &usernum;
+	parameters[1].is_unsigned = true;
+
+	// Folder Type
+	parameters[2].buffer_type = MYSQL_TYPE_LONG;
+	parameters[2].buffer_length = sizeof(uint_t);
+	parameters[2].buffer = &(type);
+	parameters[2].is_unsigned = true;
+
+	// Should only update one row.
+	return stmt_exec_affected(stmts.delete_folder, parameters);
+}
+
+/**
+ * @brief	Update the record for a message folder in the database.
+ * @param	usernum		the numerical id of the user that owns the specified folder.
+ * @param	foldernum	the id of the folder to have its properties adjusted.
+ * @param	name		a managed string containing the new name of the specified folder.
+ * @param	parent		the id of the new parent folder to be set for the specified message folder.
+ * @param	order		the value of the order for the specified folder.
+ * @return	1 on success, or <= 0 on failure.
+ */
+uint64_t meta_data_update_folder_name(uint64_t usernum, uint64_t foldernum, stringer_t *name, uint64_t parent, uint32_t order) {
+
+	MYSQL_BIND parameters[6];
+	uint_t type = M_FOLDER_MESSAGES;
+
+	mm_wipe(parameters, sizeof(parameters));
+
+	// Foldername
+	parameters[0].buffer_type = MYSQL_TYPE_STRING;
+	parameters[0].buffer_length = st_length_get(name);
+	parameters[0].buffer = st_char_get(name);
+
+	// Parent
+	parameters[1].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[1].buffer_length = sizeof(uint64_t);
+	parameters[1].buffer = &parent;
+	parameters[1].is_unsigned = true;
+
+	// Order
+	parameters[2].buffer_type = MYSQL_TYPE_LONG;
+	parameters[2].buffer_length = sizeof(uint32_t);
+	parameters[2].buffer = &order;
+	parameters[2].is_unsigned = true;
+
+	// Foldernum
+	parameters[3].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[3].buffer_length = sizeof(uint64_t);
+	parameters[3].buffer = &foldernum;
+	parameters[3].is_unsigned = true;
+
+	// Usernum
+	parameters[4].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[4].buffer_length = sizeof(uint64_t);
+	parameters[4].buffer = &usernum;
+	parameters[4].is_unsigned = true;
+
+	// Folder Type
+	parameters[5].buffer_type = MYSQL_TYPE_LONG;
+	parameters[5].buffer_length = sizeof(uint_t);
+	parameters[5].buffer = &(type);
+	parameters[5].is_unsigned = true;
+
+	// Should only update one row.
+	return stmt_exec_affected(stmts.update_folder, parameters);
+}
+
+/**
+ * @brief	Insert a new mail folder into the database.
+ * @param	usernum		the numerical id of the user to whom the new folder belongs.
+ * @param	name		a managed string containing the name of the new mail folder.
+ * @param	parent		the numerical id of the mail folder to be the parent of the new mail folder.
+ * @param	order		the order number of this folder in its parent folder.
+ * @return	0 on failure, or the numerical id of the newly inserted mail folder in the database on success.
+ */
+uint64_t meta_data_insert_folder(uint64_t usernum, stringer_t *name, uint64_t parent, uint32_t order) {
+
+	MYSQL_BIND parameters[5];
+	uint_t type = M_FOLDER_MESSAGES;
+
+	mm_wipe(parameters, sizeof(parameters));
+
+	// Usernum
+	parameters[0].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[0].buffer_length = sizeof(uint64_t);
+	parameters[0].buffer = &usernum;
+	parameters[0].is_unsigned = true;
+
+	// Foldername
+	parameters[1].buffer_type = MYSQL_TYPE_STRING;
+	parameters[1].buffer_length = st_length_get(name);
+	parameters[1].buffer = st_char_get(name);
+
+	// Order
+	parameters[2].buffer_type = MYSQL_TYPE_LONG;
+	parameters[2].buffer_length = sizeof(uint32_t);
+	parameters[2].buffer = &order;
+	parameters[2].is_unsigned = true;
+
+	// Parent.
+	parameters[3].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[3].buffer_length = sizeof(uint64_t);
+	parameters[3].buffer = &parent;
+	parameters[3].is_unsigned = true;
+
+	// Folder Type
+	parameters[4].buffer_type = MYSQL_TYPE_LONG;
+	parameters[4].buffer_length = sizeof(uint_t);
+	parameters[4].buffer = &(type);
+	parameters[4].is_unsigned = true;
+
+	return stmt_insert(stmts.insert_folder, parameters);
+}
+
+/**
+ * @brief	Insert a tag for a message into the database.
+ * @param	message		the meta message object of the message to be tagged.
+ * @param	tag			a managed string containing the name of the tag.
+ * @return	0 on success or -1 on failure.
+ */
+int_t meta_data_insert_tag(meta_message_t *message, stringer_t *tag) {
+
+	MYSQL_BIND parameters[2];
+
+	mm_wipe(parameters, sizeof(parameters));
+
+	// Messagenum
+	parameters[0].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[0].buffer_length = sizeof(uint64_t);
+	parameters[0].buffer = &(message->messagenum);
+	parameters[0].is_unsigned = true;
+
+	// Tag
+	parameters[1].buffer_type = MYSQL_TYPE_STRING;
+	parameters[1].buffer_length = st_length_get(tag);
+	parameters[1].buffer = st_char_get(tag);
+
+	// If the message already has already been tagged the statement could indicate that no rows were updated. Since we don't consider that a true error condition we have to
+	// check for (my_ulonglong)-1 to indicate an error condition which should be passed along to the user.
+	if (stmt_exec_affected(stmts.insert_message_tag, parameters) == -1) {
+		return -1;
+	}
+
+	return 0;
+}
+
+/**
+ * @brief	Remove all tags associated with a message in the database.
+ * @param	message		a pointer to the meta message object of the message to have all of its tags stripped.
+ * @return	0 on success or -1 on failure.
+ */
+int_t meta_data_truncate_tags(meta_message_t *message) {
+
+	MYSQL_BIND parameters[1];
+
+	mm_wipe(parameters, sizeof(parameters));
+
+	// Messagenum
+	parameters[0].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[0].buffer_length = sizeof(uint64_t);
+	parameters[0].buffer = &(message->messagenum);
+	parameters[0].is_unsigned = true;
+
+	// If the message doesn't have the tag in question, then no rows will be updated. Since we don't consider that a true error condition we have to
+	// check for (my_ulonglong)-1 so we know when to indicate a server error to the user.
+	if (stmt_exec_affected(stmts.delete_message_tags, parameters) == -1) {
+		return -1;
+	}
+
+	return 0;
+}
+
+/**
+ * @brief	Remove a tag from a message in the database..
+ * @param	message		a pointer to the meta message object of the message to have the tag stripped.
+ * @param	tag			a managed string containing the name of the tag to be deleted.
+ * @return	0 on success or -1 on failure.
+ */
+int_t meta_data_delete_tag(meta_message_t *message, stringer_t *tag) {
+
+	MYSQL_BIND parameters[2];
+
+	mm_wipe(parameters, sizeof(parameters));
+
+	// Messagenum
+	parameters[0].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[0].buffer_length = sizeof(uint64_t);
+	parameters[0].buffer = &(message->messagenum);
+	parameters[0].is_unsigned = true;
+
+	// Tag
+	parameters[1].buffer_type = MYSQL_TYPE_STRING;
+	parameters[1].buffer_length = st_length_get(tag);
+	parameters[1].buffer = st_char_get(tag);
+
+	// If the message doesn't have the tag in question, then no rows will be updated. Since we don't consider that a true error condition we have to
+	// check for (my_ulonglong)-1 so we know when to indicate a server error to the user.
+	if (stmt_exec_affected(stmts.delete_message_tag, parameters) == -1) {
+		return -1;
+	}
+
+	return 0;
+}
+
+/**
+ * @brief	Fetch all the tags attached to messages of a specified user from the database.
+ * @param	usernum		the numerical id of the user for whom the message tags will be fetched.
+ * @return	NULL on failure, or an inx holder containing a list of all the user's messages' tags as managed strings on success.
+ */
+inx_t * meta_data_fetch_all_tags(uint64_t usernum) {
+
+	row_t *row;
+	inx_t *list;
+	table_t *result;
+	stringer_t *tagname;
+	multi_t key;
+	uint64_t i = 1;
+
+	// Fetch the advertisements.
+	if (!(result = stmt_get_result(stmts.select_all_message_tags, NULL))) {
+		log_pedantic("Unable to retrieve user message tags.");
+		return NULL;
+	}
+
+	// Allocate a linked list to hold the tags.
+	if (!(list = inx_alloc(M_INX_LINKED, &st_free))) {
+		log_pedantic("Could not allocate a list to hold user message tags.");
+		res_table_free(result);
+		return NULL;
+	}
+
+	key.type = M_TYPE_UINT64;
+
+	while ((row = res_row_next(result))) {
+
+			key.val.u64 = i++;
+
+			if (!(tagname = res_field_string(row, 0))) {
+				log_error("Could not allocate buffer to hold user message tag name.");
+				res_table_free(result);
+				inx_free(list);
+				return NULL;
+			}
+
+			if (!inx_insert(list, key, tagname)) {
+				log_error("Could not process results of user message tag request.");
+				res_table_free(result);
+				inx_free(list);
+				st_free(tagname);
+				return NULL;
+			}
+
+	}
+
+	res_table_free(result);
+
+	return list;
+}
+
+

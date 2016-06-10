@@ -66,7 +66,7 @@ void sess_destroy(session_t *sess) {
 	if (sess) {
 
 		if (sess->user) {
-			meta_inx_remove(sess->user->username, META_PROTOCOL_WEB);
+			new_meta_inx_remove(sess->user->usernum, META_PROTOCOL_WEB);
 		}
 
 		st_cleanup(sess->warden.token);

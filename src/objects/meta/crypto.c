@@ -20,7 +20,7 @@
  *
  * @return -1 if an error occurs, 0 if successful, and 1 if the insertion fails because a key already exists.
  */
-int_t meta_crypto_keys_create(uint64_t usernum, stringer_t *username, stringer_t *master) {
+int_t meta_crypto_keys_create(uint64_t usernum, stringer_t *username, stringer_t *master, int64_t transaction) {
 
 	size_t length = 0;
 	EC_KEY *ecies_key = NULL;
@@ -73,7 +73,7 @@ int_t meta_crypto_keys_create(uint64_t usernum, stringer_t *username, stringer_t
 
 	// Try storing the keys in the database. If 0 is returned, the new pair was stored, otherwise if a 1 is returned
 	// its possible another process created the keys already, in which case they will be retrieved below.
-	if (new_meta_data_insert_keys(usernum, username, &pair) < 0) {
+	if (new_meta_data_insert_keys(usernum, username, &pair, transaction) < 0) {
 		log_pedantic("Unable to store the user key pair. { username = %.*s }", st_length_int(username), st_char_get(username));
 		st_cleanup(pair.private, pair.public);
 		return 1;

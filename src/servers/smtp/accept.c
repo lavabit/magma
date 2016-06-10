@@ -19,7 +19,6 @@
  */
 int_t smtp_store_message(smtp_inbound_prefs_t *prefs, stringer_t **local) {
 
-	stringer_t *pubkey = NULL;
 	uint32_t status = 0;
 	uint64_t messagenum;
 
@@ -58,17 +57,7 @@ int_t smtp_store_message(smtp_inbound_prefs_t *prefs, stringer_t **local) {
 		return -1;
 	}
 
-	if (prefs->secure) {
-
-		if (meta_data_user_build_storage_keys(prefs->usernum, NULL, NULL, &pubkey, true, false, 0) < 0) {
-			log_error("User had secure mode set, but no public key available.");
-			user_unlock(prefs->usernum);
-			return -1;
-		}
-
-	}
-
-	messagenum = mail_store_message(prefs->usernum, pubkey, prefs->foldernum, &status, prefs->signum, prefs->spamkey, *local);
+	messagenum = mail_store_message(prefs->usernum, prefs->pubkey, prefs->foldernum, &status, prefs->signum, prefs->spamkey, *local);
 	user_unlock(prefs->usernum);
 
 	// Error check.

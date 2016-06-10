@@ -14,7 +14,6 @@
 
 object_cache_t objects = {
 	.meta = NULL,
-	.users = NULL,
 	.sessions = NULL
 };
 
@@ -26,11 +25,6 @@ bool_t obj_cache_start(void) {
 
 	if (!(objects.meta = inx_alloc(M_INX_HASHED | M_INX_LOCK_MANUAL, &new_meta_free))) {
 		log_critical("Unable to initialize the meta information cache.");
-		return false;
-	}
-
-	if (!(objects.users = inx_alloc(M_INX_HASHED | M_INX_LOCK_MANUAL, &meta_user_destroy))) {
-		log_critical("Unable to initialize the user information cache.");
 		return false;
 	}
 
@@ -52,11 +46,6 @@ void obj_cache_stop(void) {
 	if (objects.sessions) {
 		inx_free(objects.sessions);
 		objects.sessions = NULL;
-	}
-
-	if (objects.users) {
-		inx_free(objects.users);
-		objects.users = NULL;
 	}
 
 	if (objects.meta) {
@@ -82,7 +71,6 @@ void obj_cache_prune(void) {
 	time_t now;
 	double_t gap;
 	session_t *sess;
-	meta_user_t *user;
 	inx_cursor_t *cursor;
 	new_meta_user_t *meta;
 	uint64_t count, expired;
@@ -131,48 +119,6 @@ void obj_cache_prune(void) {
 
 		stats_set_by_name("objects.meta.total", count);
 		stats_adjust_by_name("objects.meta.expired", expired);
-	}
-
-	if (objects.users && (cursor = inx_cursor_alloc(objects.users))) {
-
-		expired = 0;
-
-		inx_lock_read(objects.users);
-
-		// If were currently holding more than 4,096 users, prune those older than 5 minutes.
-		if ((count = inx_count(objects.users)) > 4096) {
-			gap = 300;
-		}
-		// If the count is above 2,048, prune entries older than 30 minutes.
-		else if (count > 2048) {
-			gap = 1800;
-		}
-		// Otherwise only prune those older than 1 hour.
-		else  {
-			gap = 3600;
-		}
-
-		inx_unlock(objects.users);
-		inx_lock_write(objects.users);
-
-		user = inx_cursor_value_next(cursor);
-
-		while (user) {
-			if (difftime(now, meta_user_ref_stamp(user)) > gap && !meta_user_ref_total(user)) {
-				inx_delete(objects.users, inx_cursor_key_active(cursor));
-				inx_cursor_reset(cursor);
-				expired++;
-			}
-			user = inx_cursor_value_next(cursor);
-		}
-
-		// Record the total so we can update the statistics variable.
-		count = inx_count(objects.users);
-		inx_unlock(objects.users);
-		inx_cursor_free(cursor);
-
-		stats_set_by_name("objects.users.total", count);
-		stats_adjust_by_name("objects.users.expired", expired);
 	}
 
 	if (objects.sessions && (cursor = inx_cursor_alloc(objects.sessions))) {

@@ -81,6 +81,7 @@ int_t   auth_data_update_legacy(uint64_t usernum, stringer_t *legacy, stringer_t
 /// stacie.c
 auth_stacie_t *  auth_stacie(uint32_t bonus, stringer_t *username, stringer_t *password, stringer_t *salt, stringer_t *verification, stringer_t *nonce);
 auth_stacie_t *  auth_stacie_alloc(void);
+void             auth_stacie_cleanup(auth_stacie_t *stacie);
 void             auth_stacie_free(auth_stacie_t *stacie);
 
 /// legacy.c

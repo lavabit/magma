@@ -224,7 +224,7 @@ void teacher_add_cookie(connection_t *con, teacher_data_t *teach) {
 void teacher_process(connection_t *con) {
 
 	teacher_data_t *teach;
-	credential_t *credential;
+	auth_t *auth = NULL;
 	stringer_t *cookie = NULL;
 	http_data_t *sig, *key, *pass;
 	uint64_t signum, keynum;
@@ -283,8 +283,8 @@ void teacher_process(connection_t *con) {
 
 	else if (http_data_get(con, HTTP_DATA_POST, "submit")) {
 /** TODO FIXME: Memory leaks here. This part isn't fixed to work with the new credentials functions, so be careful reusing this code.*/
-		if (!(pass = http_data_get(con, HTTP_DATA_POST, "password")) || !pass->value || !(credential = credential_alloc_auth(teach->username)) ||
-			st_cmp_cs_eq(teach->password, credential->auth.password)) {
+		if (!(pass = http_data_get(con, HTTP_DATA_POST, "password")) || !pass->value || !(auth = auth_challenge(teach->username)) ||
+			st_cmp_cs_eq(teach->password, auth->tokens.verification)) {
 			teacher_print_form(con, teacher_add_error("//xhtml:input[@id='password']", "password_msg", "An invalid password was provided. Please try again."), teach);
 		}
 		else {
@@ -306,7 +306,7 @@ void teacher_process(connection_t *con) {
 		}
 
 		// Securely delete the message.
-		credential_free(credential);
+		auth_free(auth);
 	}
 	else {
 		teacher_print_form(con, NULL, teach);

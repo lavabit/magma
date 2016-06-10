@@ -18,6 +18,11 @@ START_TEST (check_users_auth_legacy_s) {
 	auth_legacy_t *legacy = NULL;
 	stringer_t *errmsg = NULL, *buffer = MANAGEDBUF(64);
 
+	if (!status()) {
+		log_test("USERS / AUTH / LEGACY / SINGLE THREADED:", errmsg);
+		return;
+	}
+
 	// Status output.
 	log_disable();
 
@@ -48,6 +53,11 @@ START_TEST (check_users_auth_stacie_s) {
 
 	auth_stacie_t *stacie = NULL;
 	stringer_t *errmsg = NULL, *buffer = MANAGEDBUF(128);
+
+	if (!status()) {
+		log_test("USERS / AUTH / STACIE / SINGLE THREADED:", errmsg);
+		return;
+	}
 
 	// Status output.
 	log_disable();
@@ -80,6 +90,11 @@ START_TEST (check_users_auth_challenge_s) {
 
 	auth_t *auth = NULL;
 	stringer_t *errmsg = NULL;
+
+	if (!status()) {
+		log_test("USERS / AUTH / CHALLENGE / SINGLE THREADED:", errmsg);
+		return;
+	}
 
 	// Valid Login Attempts
 	log_disable();
@@ -129,6 +144,11 @@ START_TEST (check_users_auth_response_s) {
 	};
 	stringer_t *errmsg = NULL, *token = MANAGEDBUF(64);
 
+	if (!status()) {
+		log_test("USERS / AUTH / RESPONSE / SINGLE THREADED:", errmsg);
+		return;
+	}
+
 	// Valid Login Attempts
 	log_disable();
 
@@ -158,8 +178,13 @@ START_TEST (check_users_auth_login_s) {
 	// Valid Login Attempts
 	log_disable();
 
+	if (!status()) {
+		log_test("USERS / AUTH / LOGIN / SINGLE THREADED:", errmsg);
+		return;
+	}
+
 	// Test a legacy account.
-	if (status() && auth_login(NULLER("magma"), NULLER("test"), &auth)) {
+	if (auth_login(NULLER("magma"), NULLER("test"), &auth)) {
 		 errmsg = st_aprint("Auth login failed.");
 	}
 
@@ -169,7 +194,7 @@ START_TEST (check_users_auth_login_s) {
 	}
 
 	// Test a STACIE enabled account.
-	if (status() && auth_login(NULLER("stacie"), NULLER("StacieJohnson"), &auth)) {
+	if (auth_login(NULLER("stacie"), NULLER("StacieJohnson"), &auth)) {
 		 errmsg = st_aprint("Auth login failed.");
 	}
 
@@ -182,4 +207,158 @@ START_TEST (check_users_auth_login_s) {
 	fail_unless(!errmsg, st_char_get(errmsg));
 	st_cleanup(errmsg);
 
+} END_TEST
+
+START_TEST (check_users_auth_address_s) {
+
+	stringer_t *cred;
+	char *errmsg = NULL;
+
+	if (!status()) {
+		log_test("USERS / AUTH / ADDRESS / SINGLE THREADED:", errmsg);
+		return;
+	}
+
+	if (!errmsg && (!(cred = auth_sanitize_address(CONSTANT("TEST@DOMAIN.COM"))) || st_cmp_ci_eq(cred, CONSTANT("test@domain.com")))) {
+		errmsg = "Address boiler failed [1].";
+		//printf("r1 = %lx\n", (unsigned long) cred);	if (cred) printf("xxx: [%.*s] [%u]\n", (int)st_length_get(cred), st_char_get(cred), (int)st_length_get(cred));
+	}
+
+	st_cleanup(cred);
+	cred = NULL;
+
+	if (!errmsg && (!(cred = auth_sanitize_address(CONSTANT("  TEST  @  DOMAIN.COM  "))) || st_cmp_ci_eq(cred, CONSTANT("test@domain.com")))) {
+		errmsg = "Address boiler failed [2].";
+		//printf("r2 = %lx\n", (unsigned long) cred);	if (cred) printf("xxx: [%.*s] [%u]\n", (int)st_length_get(cred), st_char_get(cred), (int)st_length_get(cred));
+	}
+
+	st_cleanup(cred);
+	cred = NULL;
+
+	if (!errmsg && (!(cred = auth_sanitize_address(CONSTANT("test.case+tag@sub.domain.com"))) || st_cmp_ci_eq(cred, CONSTANT("test_case@sub.domain.com")))) {
+		errmsg = "Address boiler failed [5].";
+	}
+
+	st_cleanup(cred);
+	cred = NULL;
+
+	if (!errmsg && (!(cred = auth_sanitize_address(CONSTANT("TEST@DOMAIN.COM"))) || st_cmp_ci_eq(cred, CONSTANT("test@domain.com")))) {
+		errmsg = "Address boiler failed [2].";
+		//printf("rx2 = %lx\n", (unsigned long) cred);	if (cred) printf("xxx: [%.*s] [%u]\n", (int)st_length_get(cred), st_char_get(cred), (int)st_length_get(cred));
+	}
+
+	st_cleanup(cred);
+	cred = NULL;
+
+	if (!errmsg && (!(cred = auth_sanitize_address(CONSTANT("  TEST  @  DOMAIN.COM  "))) || st_cmp_ci_eq(cred, CONSTANT("test@domain.com")))) {
+		errmsg = "Address boiler failed [5].";
+	}
+
+	st_cleanup(cred);
+	cred = NULL;
+
+	if (!errmsg && (!(cred = auth_sanitize_address(CONSTANT("test.case+tag@sub.domain.com"))) || st_cmp_ci_eq(cred, CONSTANT("test_case@sub.domain.com")))) {
+		errmsg = "Address boiler failed [11].";
+	}
+
+	st_cleanup(cred);
+	cred = NULL;
+
+	log_test("USERS / AUTH / ADDRESS / SINGLE THREADED:", errmsg);
+	fail_unless(!errmsg, errmsg);
+} END_TEST
+
+START_TEST (check_users_auth_username_s) {
+
+	stringer_t *cred;
+	char *errmsg = NULL;
+
+	if (!status()) {
+		log_test("USERS / AUTH / USERNAME / SINGLE THREADED:", errmsg);
+		return;
+	}
+
+	if (!(cred = auth_sanitize_username(CONSTANT("TEST"))) || st_cmp_ci_eq(cred, CONSTANT("test"))) {
+		errmsg = "Username boiler failed [1].";
+		//printf("rx1 = %lx\n", (unsigned long) cred);	if (cred) printf("xxx: [%.*s] [%u]\n", (int)st_length_get(cred), st_char_get(cred), (int)st_length_get(cred));
+	}
+
+	st_cleanup(cred);
+	cred = NULL;
+
+	if (!errmsg && (!(cred = auth_sanitize_username(CONSTANT("TEST.CASE@LAVABIT.COM"))) || st_cmp_ci_eq(cred, CONSTANT("test_case")))) {
+		errmsg = "Username boiler failed [3].";
+	}
+
+	st_cleanup(cred);
+	cred = NULL;
+
+	if (!errmsg && (!(cred = auth_sanitize_username(CONSTANT("test+tag@nerdshack.com"))) || !st_cmp_ci_eq(cred, CONSTANT("test")) ||
+		st_cmp_ci_eq(cred, CONSTANT("test@nerdshack.com")))) {
+		errmsg = "Username boiler failed [4].";
+	}
+
+	st_cleanup(cred);
+	cred = NULL;
+
+	if (!errmsg && (!(cred = auth_sanitize_username(CONSTANT("test.case+tag@sub.domain.com"))) || !st_cmp_ci_eq(cred, CONSTANT("test_case")) ||
+		st_cmp_ci_eq(cred, CONSTANT("test_case@sub.domain.com")))) {
+		errmsg = "Username boiler failed [6].";
+	}
+
+	st_cleanup(cred);
+	cred = NULL;
+
+	if (!errmsg && (!(cred = auth_sanitize_username(CONSTANT("TEST@DOMAIN.COM"))) || !st_cmp_ci_eq(cred, CONSTANT("test")) || st_cmp_ci_eq(cred, CONSTANT("test@domain.com")))) {
+			errmsg = "Username boiler failed [3].";
+			//printf("rx2 = %lx\n", (unsigned long) cred);	if (cred) printf("xxx: [%.*s] [%u]\n", (int)st_length_get(cred), st_char_get(cred), (int)st_length_get(cred));
+		}
+
+		st_cleanup(cred);
+		cred = NULL;
+
+	if (!errmsg && (!(cred = auth_sanitize_username(CONSTANT("  TEST  "))) || st_cmp_ci_eq(cred, CONSTANT("test")))) {
+		errmsg = "Username boiler failed [4].";
+	}
+
+	st_cleanup(cred);
+	cred = NULL;
+
+	if (!errmsg && (!(cred = auth_sanitize_username(CONSTANT("  TEST  @  DOMAIN.COM  "))) || !st_cmp_ci_eq(cred, CONSTANT("test")) || st_cmp_ci_eq(cred, CONSTANT("test@domain.com")))) {
+			errmsg = "Username boiler failed [6].";
+		}
+
+		st_cleanup(cred);
+		cred = NULL;
+
+	if (!errmsg && (!(cred = auth_sanitize_username(CONSTANT("TEST.CASE"))) || st_cmp_ci_eq(cred, CONSTANT("test_case")))) {
+		errmsg = "Username boiler failed [7].";
+	}
+
+	st_cleanup(cred);
+	cred = NULL;
+
+	if (!errmsg && (!(cred = auth_sanitize_username(CONSTANT("TEST.CASE@LAVABIT.COM"))) || st_cmp_ci_eq(cred, CONSTANT("test_case")) || !st_cmp_ci_eq(cred, CONSTANT("test_case@lavabit.com")))) {
+		errmsg = "Username boiler failed [8].";
+	}
+
+	st_cleanup(cred);
+	cred = NULL;
+
+	if (!errmsg && (!(cred = auth_sanitize_username(CONSTANT("test+tag"))) || st_cmp_ci_eq(cred, CONSTANT("test")))) {
+		errmsg = "Username boiler failed [9].";
+	}
+
+	st_cleanup(cred);
+	cred = NULL;
+
+	if (!errmsg && (!(cred = auth_sanitize_username(CONSTANT("test+tag@nerdshack.com"))) || !st_cmp_ci_eq(cred, CONSTANT("test")) || st_cmp_ci_eq(cred, CONSTANT("test@nerdshack.com")))) {
+		errmsg = "Username boiler failed [10].";
+	}
+
+	st_cleanup(cred);
+	cred = NULL;
+
+	log_test("USERS / AUTH / USERNAME / SINGLE THREADED:", errmsg);
+	fail_unless(!errmsg, errmsg);
 } END_TEST

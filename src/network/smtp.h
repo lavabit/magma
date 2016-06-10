@@ -87,7 +87,7 @@ typedef struct {
 typedef struct {
 	int_t outcome;
 	size_t recv_size_limit;
-	stringer_t *rcptto, *address, *domain, *forwarded, *spamsig;
+	stringer_t *rcptto, *address, *domain, *forwarded, *spamsig, *pubkey;
 	uint32_t greytime, local_size, daily_recv_limit, daily_recv_limit_ip;
 	uint64_t usernum, signum, spamkey, quota, stor_size, inbox, autoreply, messagenum, foldernum;
 	int_t mark, secure, rollout, spam, virus, greylist, spf, dkim, rbl, phish, overquota, bounces, spfaction, dkimaction,

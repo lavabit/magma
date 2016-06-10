@@ -232,6 +232,7 @@ int_t smtp_fetch_inbound(stringer_t *address, smtp_inbound_prefs_t **output) {
 	inbound->rbl = res_field_int8(row, 27);
 	inbound->rblaction = smtp_get_action(res_field_block(row, 28), res_field_length(row, 28));
 	filters = res_field_int8(row, 29);
+	inbound->pubkey = res_field_string(row, 30);
 
 	// Free the memory.
 	res_table_free(result);

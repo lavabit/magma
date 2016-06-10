@@ -96,8 +96,8 @@
 		"Dispatch.spam, Dispatch.spamaction, Dispatch.virus, Dispatch.virusaction, Dispatch.phish, Dispatch.phishaction, " \
 		"Dispatch.autoreply, Dispatch.inbox, Dispatch.recv_size_limit, Dispatch.daily_recv_limit, Dispatch.daily_recv_limit_ip, " \
 		"Dispatch.greylist, Dispatch.greytime, Dispatch.spf, Dispatch.spfaction, Dispatch.dkim, Dispatch.dkimaction, Dispatch.rbl, " \
-		"Dispatch.rblaction, Dispatch.filters FROM Mailboxes LEFT JOIN Users ON Mailboxes.usernum = Users.usernum LEFT JOIN Dispatch ON " \
-		"Mailboxes.usernum = Dispatch.usernum WHERE Mailboxes.address = ?"
+		"Dispatch.rblaction, Dispatch.filters, `Keys`.storage_pub FROM Mailboxes LEFT JOIN Users ON Mailboxes.usernum = Users.usernum LEFT JOIN Dispatch ON " \
+		"Mailboxes.usernum = Dispatch.usernum LEFT JOIN `Keys` ON Mailboxes.usernum = `Keys`.usernum WHERE Mailboxes.address = ?"
 #define INSERT_TRANSMITTING "INSERT INTO Transmitting (usernum, timestamp) VALUES (?, NOW())"
 #define INSERT_SIGNATURE "INSERT INTO Signatures (usernum, cryptkey, junk, signature, created) VALUES (?, ?, ?, ?, NOW())"
 #define INSERT_RECEIVING "REPLACE INTO Receiving (usernum, subnet, timestamp) VALUES (?, ?, NOW())"

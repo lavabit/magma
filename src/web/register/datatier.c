@@ -110,15 +110,61 @@ bool_t register_data_check_username(stringer_t *username) {
  */
 bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *username, stringer_t *password, int64_t transaction, uint64_t *outuser) {
 
-	chr_t buffer[32];
 	uint32_t bonus = 0;
 	MYSQL_BIND parameters[8];
-	credential_t *credential;
-	size_t key_len = 512;
-	stringer_t *privkey, *pubkey, *newaddr, *salt, *hex_salt;
-	const chr_t *basic = "BASIC", *personal = "PERSONAL", *enhanced = "ENHANCED", *premium = "PREMIUM";
-	uint64_t name_len, plan_len, date_len = 10, quota = 0, usernum, inbox, size_limit, send_limit, recv_limit;
+	auth_stacie_t *stacie = NULL;
+	const chr_t *account_plans[] = { "BASIC", "PERSONAL", "ENHANCED", "PREMIUM" };
+	uint64_t name_len, quota = 0, usernum, inbox, size_limit, send_limit, recv_limit;
+	stringer_t *newaddr = NULL, *salt = NULL, *b64_salt = NULL, *b64_verification = NULL, *ip = NULL;
 
+	/// LOW: This function should be passed a number of days (or years) to use for any of the pre-paid account plans.
+	/// LOW: The IP address could be passed in as an ip_t or as a string to avoid the need for the entire connection object.
+
+	// Configure the limits for the plan. We are currently using hard coded values. In the future this may be
+	// setup dynamically by pull the default values out of the limits table.
+	if (plan == 1) {
+		quota = 134217728UL; // 128 MB
+		size_limit = 33554432;
+		recv_limit = 1024;
+		send_limit = 256;
+	}
+	else if (plan) {
+		quota = 1073741824UL; // 1,024 MB
+		size_limit = 64UL << 20;
+		recv_limit = 1024;
+		send_limit = 256;
+	}
+	else if (plan == 3) {
+		quota = 1073741824UL; // 1,024 MB
+		size_limit = 64UL << 20;
+		recv_limit = 1024;
+		send_limit = 512;
+	}
+	else if (plan == 4) {
+		quota = 8589934592UL; // 8,192 MB
+		size_limit = 128UL << 20;
+		recv_limit = 8192;
+		send_limit = 768;
+	}
+	else {
+		log_pedantic("Unrecognized account plan. Only values between 1 and 4 are supported. { plan = %hu }", plan);
+		return false;
+	}
+
+	// We start by generating all of the values we'll need to complete the registration process. The STACIE values are first.
+	if (!(salt = stacie_salt_create()) || !(b64_salt = base64_encode_mod(salt, NULL)) ||
+		!(stacie = auth_stacie(bonus,  username,  password,  salt,  NULL, NULL)) ||
+		!(b64_verification = base64_encode_mod(stacie->tokens.verification, NULL))) {
+
+		log_pedantic("Unable to generate the STACIE authentication values. { username = %.*s }",
+			st_length_int(username), st_char_get(username));
+
+		st_cleanup(salt, b64_salt, b64_verification);
+		auth_stacie_cleanup(stacie);
+		return false;
+	}
+
+	// Users Table
 	mm_wipe(parameters, sizeof(parameters));
 
 	// The username.
@@ -127,105 +173,15 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 	parameters[0].buffer = (chr_t *)st_char_get(username);
 	parameters[0].length = &name_len;
 
-	// The plan.
-	if (plan == 1) {
-		plan_len = 5;
-		parameters[4].buffer_type = MYSQL_TYPE_STRING;
-		parameters[4].buffer = (chr_t *)basic;
-		parameters[4].length = &plan_len;
-	}
-	else if (plan == 2) {
-		plan_len = 8;
-		parameters[4].buffer_type = MYSQL_TYPE_STRING;
-		parameters[4].buffer = (chr_t *)personal;
-		parameters[4].length = &plan_len;
-	}
-	else if (plan == 3) {
-		plan_len = 8;
-		parameters[4].buffer_type = MYSQL_TYPE_STRING;
-		parameters[4].buffer = (chr_t *)enhanced;
-		parameters[4].length = &plan_len;
-	}
-	else if (plan == 4) {
-		plan_len = 7;
-		parameters[4].buffer_type = MYSQL_TYPE_STRING;
-		parameters[4].buffer = (chr_t *)premium;
-		parameters[4].length = &plan_len;
-	}
-	else {
-		log_pedantic("Invalid plan number specified.");
-		return false;
-	}
-
-	// The quota.
-	if (plan == 1) {
-		quota = 134217728ll; // 128 MB
-	}
-	else if (plan == 2) {
-		quota = 1073741824ll; // 1,024 MB
-	}
-	else if (plan == 3) {
-		quota = 1073741824ll; // 1,024 MB
-	}
-	else if (plan == 4) {
-		quota = 8589934592ll; // 8,192 MB
-	}
-
-	parameters[5].buffer_type = MYSQL_TYPE_LONGLONG;
-	parameters[5].buffer_length = sizeof(uint64_t);
-	parameters[5].buffer = &quota;
-	parameters[5].is_unsigned = true;
-
-	// Calculate the date.
-	// Removed code for paid plan time calculation.
-	// The default string for non paid plans.
-	if (snprintf(buffer, 32, "0000-00-00") != 10) {
-		log_pedantic("Unable to build the date string.");
-		return false;
-	}
-
-	parameters[6].buffer_type = MYSQL_TYPE_STRING;
-	parameters[6].buffer = &buffer;
-	parameters[6].length = &date_len;
-
-	// Hash the password.
-	if(!(credential = credential_alloc_auth(username))) {
-		log_error("Failed to allocate credentials structure.");
-		return false;
-	}
-
-	if(!(salt = stacie_salt_create())) {
-		log_error("Failed to generate a new user salt.");
-		credential_free(credential);
-		return false;
-	}
-
-	if(!credential_calc_auth(credential, password, salt)) {
-		log_error("Failed to calculate user credentials.");
-		credential_free(credential);
-		st_free(salt);
-		return false;
-	}
-
-	hex_salt = hex_encode_st(salt, NULL);
-	st_free(salt);
-
-	if(!hex_salt) {
-		log_error("Failed to hex encode the user salt.");
-		credential_free(credential);
-		return false;
-	}
-
 	// The user specific salt value.
 	parameters[1].buffer_type = MYSQL_TYPE_STRING;
-	parameters[1].buffer = st_data_get(hex_salt);
-	parameters[1].buffer_length = st_length_get(hex_salt);
-
+	parameters[1].buffer = st_data_get(b64_salt);
+	parameters[1].buffer_length = st_length_get(b64_salt);
 
 	// The authentication token derived from the password.
 	parameters[2].buffer_type = MYSQL_TYPE_STRING;
-	parameters[2].buffer = st_data_get(credential->auth.password);
-	parameters[2].buffer_length = st_length_get(credential->auth.password);
+	parameters[2].buffer = st_data_get(stacie->tokens.verification);
+	parameters[2].buffer_length = st_length_get(stacie->tokens.verification);
 
 	// The number of bonus hash rounds.
 	parameters[3].buffer_type = MYSQL_TYPE_LONG;
@@ -233,34 +189,32 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 	parameters[3].buffer = &bonus;
 	parameters[3].is_unsigned = true;
 
+	// The name of the account plan.
+	parameters[4].buffer_type = MYSQL_TYPE_STRING;
+	parameters[4].buffer = &(account_plans[plan - 1]);
+	parameters[4].buffer_length = ns_length_get(account_plans[plan - 1]);
+
+	// The quota.
+	parameters[5].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[5].buffer_length = sizeof(uint64_t);
+	parameters[5].buffer = &quota;
+	parameters[5].is_unsigned = true;
+
+	// The expiration date for a pre-paid account plan. Set the all the date to all zeros for a free account plan.
+	parameters[6].buffer_type = MYSQL_TYPE_STRING;
+	parameters[6].buffer = "0000-00-00";
+	parameters[6].buffer_length = 10;
+
 	// Insert the user.
 	if ((usernum = stmt_insert_conn(stmts.register_insert_stacie_user, parameters, transaction)) == 0) {
 		log_pedantic("Unable to insert the user into the database. (Failed on User table.)");
-		credential_free(credential);
+		st_cleanup(salt, b64_salt, b64_verification);
+		auth_stacie_cleanup(stacie);
 		return false;
 	}
 
-	st_free(hex_salt);
-
-	// Create a pair of storage keys for the new user.
-	if ((!(privkey = st_alloc_opts(MANAGED_T | CONTIGUOUS | SECURE, key_len))) || (!(pubkey = st_alloc_opts(MANAGED_T | CONTIGUOUS | SECURE, key_len)))) {
-		log_pedantic("Unable to allocate storage for ECIES keys.");
-		credential_free(credential);
-		st_cleanup(privkey);
-		return false;
-	} else if (meta_data_user_build_storage_keys(usernum, credential->auth.key, &privkey, &pubkey, false, true, transaction) < 0) {
-		log_pedantic("Unable to generate storage keys for the new user.");
-		credential_free(credential);
-		st_free(pubkey);
-		st_free(privkey);
-		return false;
-	}
-
-	credential_free(credential);
-	st_free(pubkey);
-	st_free(privkey);
-
-	mm_wipe(parameters,sizeof(parameters));
+	// Folders Table
+	mm_wipe(parameters, sizeof(parameters));
 
 	// Usernum
 	parameters[0].buffer_type = MYSQL_TYPE_LONGLONG;
@@ -271,34 +225,25 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 	// Profile table.
 	if (!stmt_exec_conn(stmts.register_insert_profile, parameters, transaction)) {
 		log_pedantic("Unable to insert the user into the database. (Failed on Profile table.)");
+		st_cleanup(salt, b64_salt, b64_verification);
+		auth_stacie_cleanup(stacie);
 		return false;
 	}
 
-	// Folders table.
-
-	// Add the folder name.
+	// The folder where messages are delivered by default.
 	parameters[1].buffer_type = MYSQL_TYPE_STRING;
 	parameters[1].buffer = "Inbox";
-	name_len = ns_length_get(parameters[1].buffer);
-	parameters[1].length = &name_len;
+	parameters[1].buffer_length = 5;
 
+	// Insert the inbox into the folders table and record the folder number for later.
 	if ((inbox = stmt_insert_conn(stmts.register_insert_folder_name, parameters, transaction)) == 0) {
 		log_pedantic("Unable to insert the user into the database. (Failed on Folders table.)");
+		st_cleanup(salt, b64_salt, b64_verification);
+		auth_stacie_cleanup(stacie);
 		return false;
 	}
 
-	// IP
-	name_len = snprintf(buffer, 32, "%s", st_char_get(con_addr_presentation(con, MANAGEDBUF(64))));
-	parameters[1].buffer_type = MYSQL_TYPE_STRING;
-	parameters[1].buffer = &buffer;
-	parameters[1].length = &name_len;
-
-	// Log table.
-	if (!stmt_exec_conn(stmts.register_insert_log, parameters, transaction)) {
-		log_pedantic("Unable to insert the user into the database. (Failed on Log table.)");
-		return false;
-	}
-
+	// Log Table
 	mm_wipe(parameters, sizeof(parameters));
 
 	// Usernum
@@ -307,7 +252,37 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 	parameters[0].buffer = &usernum;
 	parameters[0].is_unsigned = true;
 
-	// Spam Folder.
+	// Generate a string representation of the IP address.
+	if (!(ip = con_addr_presentation(con, MANAGEDBUF(64)))) {
+		log_pedantic("The IP address was invalid. Using an empty address instead.");
+		parameters[1].buffer_type = MYSQL_TYPE_STRING;
+		parameters[1].buffer = "0.0.0.0";
+		parameters[1].buffer_length = 7;
+	}
+	else {
+		parameters[1].buffer_type = MYSQL_TYPE_STRING;
+		parameters[1].buffer = st_data_get(ip);
+		parameters[1].buffer_length = st_length_get(ip);
+	}
+
+	// Insert the data into the Log table.
+	if (!stmt_exec_conn(stmts.register_insert_log, parameters, transaction)) {
+		log_pedantic("Unable to insert the user into the database. (Failed on Log table.)");
+		st_cleanup(salt, b64_salt, b64_verification);
+		auth_stacie_cleanup(stacie);
+		return false;
+	}
+
+	// Dispatch Table
+	mm_wipe(parameters, sizeof(parameters));
+
+	// Usernum
+	parameters[0].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[0].buffer_length = sizeof(uint64_t);
+	parameters[0].buffer = &usernum;
+	parameters[0].is_unsigned = true;
+
+	// Spam Folder
 	parameters[1].buffer_type = MYSQL_TYPE_LONGLONG;
 	parameters[1].buffer_length = sizeof(uint64_t);
 	parameters[1].buffer = &inbox;
@@ -318,27 +293,6 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 	parameters[2].buffer_length = sizeof(uint64_t);
 	parameters[2].buffer = &inbox;
 	parameters[2].is_unsigned = true;
-
-	if (plan == 1) {
-		size_limit = 33554432;
-		recv_limit = 1024;
-		send_limit = 256;
-	}
-	else if (plan) {
-		size_limit = 64LL << 20;
-		recv_limit = 1024;
-		send_limit = 256;
-	}
-	else if (plan == 3) {
-		size_limit = 64LL << 20;
-		recv_limit = 1024;
-		send_limit = 512;
-	}
-	else if (plan == 4) {
-		size_limit = 128LL << 20;
-		recv_limit = 8192;
-		send_limit = 768;
-	}
 
 	// Send size limit.
 	parameters[3].buffer_type = MYSQL_TYPE_LONGLONG;
@@ -373,21 +327,26 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 	// Dispatch table.
 	if (!stmt_exec_conn(stmts.register_insert_dispatch, parameters, transaction)) {
 		log_pedantic("Unable to insert the user into the database. (Failed on Dispatch table.)");
+		st_cleanup(salt, b64_salt, b64_verification);
+		auth_stacie_cleanup(stacie);
 		return false;
 	}
 
-	if (!(newaddr = st_merge("sns", username, "@", magma.system.domain))) {
-		log_pedantic("Unable to generate an email address for the new user.");
-		return false;
-	}
-
+	// Mailboxes Table
 	mm_wipe(parameters, sizeof(parameters));
 
-	// The username.
-	name_len = st_length_get(newaddr);
+	// Merge the username with the default system domain name.
+	if (!(newaddr = st_merge("sns", username, "@", magma.system.domain))) {
+		log_pedantic("Unable to generate an email address for the new user.");
+		st_cleanup(salt, b64_salt, b64_verification);
+		auth_stacie_cleanup(stacie);
+		return false;
+	}
+
+	// Username
 	parameters[0].buffer_type = MYSQL_TYPE_STRING;
 	parameters[0].buffer = (chr_t *)st_char_get(newaddr);
-	parameters[0].length = &name_len;
+	parameters[0].buffer_length = st_length_get(newaddr);
 
 	// Usernum
 	parameters[1].buffer_type = MYSQL_TYPE_LONGLONG;
@@ -395,14 +354,25 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 	parameters[1].buffer = &usernum;
 	parameters[1].is_unsigned = true;
 
-	// The mailboxes table.
+	// Insert the email address into the mailboxes table.
 	if (!stmt_exec_conn(stmts.register_insert_mailboxes, parameters, transaction)) {
 		log_pedantic("Unable to insert the user into the database. (Failed on Mailboxes table.)");
-		st_free(newaddr);
+		st_cleanup(newaddr, salt, b64_salt, b64_verification);
+		auth_stacie_cleanup(stacie);
 		return false;
 	}
 
-	st_free(newaddr);
+	// Finally create the storage key pair.
+	if ((meta_crypto_keys_create(usernum, username, stacie->keys.master, transaction))) {
+		log_pedantic("Unable to insert the user into the database. (Failed on Keys table.)");
+		st_cleanup(newaddr, salt, b64_salt, b64_verification);
+		auth_stacie_cleanup(stacie);
+		return false;
+	}
+
+	// Cleanup and tell the caller everything worked.
+	st_cleanup(newaddr, salt, b64_salt, b64_verification);
+	auth_stacie_cleanup(stacie);
 	*outuser = usernum;
 
 	return true;

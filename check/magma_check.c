@@ -289,6 +289,7 @@ int main(int argc, char *argv[]) {
 		srunner_add_suite(sr, suite_check_network());
 		srunner_add_suite(sr, suite_check_objects());
 		srunner_add_suite(sr, suite_check_users());
+		srunner_add_suite(sr, suite_check_smtp());
 	}
 
 	// If were being run under Valgrind, we need to disable forking and increase the default timeout.

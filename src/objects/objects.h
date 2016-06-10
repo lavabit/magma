@@ -20,8 +20,6 @@
 #include "contacts/contacts.h"
 #include "messages/messages.h"
 #include "config/config.h"
-#include "cred/neue.h"
-#include "users/users.h"
 #include "mail/mail.h"
 #include "sessions/sessions.h"
 
@@ -35,7 +33,7 @@ enum {
 };
 
 typedef struct {
-	inx_t *meta, *users, *sessions;
+	inx_t *meta, *sessions;
 } object_cache_t;
 
 extern object_cache_t objects;

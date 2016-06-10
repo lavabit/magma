@@ -23,6 +23,7 @@
 int_t meta_update_keys(new_meta_user_t *user, stringer_t *master, META_LOCK_STATUS locked) {
 
 	int_t result = 0;
+	int64_t transaction = 0;
 	stringer_t *holder = NULL;
 	scramble_t *scramble = NULL;
 	key_pair_t pair = {
@@ -37,14 +38,40 @@ int_t meta_update_keys(new_meta_user_t *user, stringer_t *master, META_LOCK_STAT
 	// We only need to fetch and decrypt the user keys if they aren't already stored in the structure.
 	if (user->usernum && st_empty(user->keys.private, user->keys.public)) {
 
+		if ((transaction = tran_start()) < 0) {
+			log_pedantic("Unable to start storage key SQL transaction. { username = %.*s }", st_length_int(user->username),
+				st_char_get(user->username));
+			result = -1;
+		}
+
 		// Fetch the keys. If none are found, try to generate a new key pair for the user.
-		if (new_meta_data_fetch_keys(user, &pair) == 1) {
+		else if (new_meta_data_fetch_keys(user, &pair, transaction) == 1) {
 
 			// Make sure we can retrieve the keys from the database before we return them to the caller.
-			if (meta_crypto_keys_create(user->usernum, user->username, master) < 0 || new_meta_data_fetch_keys(user, &pair)) {
+			if (meta_crypto_keys_create(user->usernum, user->username, master, transaction) < 0) {
+				log_pedantic("Unable to create and fetch a newly created user key pair. { username = %.*s }", st_length_int(user->username),
+					st_char_get(user->username));
+				tran_rollback(transaction);
+				result = -1;
+			}
+			else if (tran_commit(transaction)) {
 				log_pedantic("Unable to create and fetch a newly created user key pair. { username = %.*s }", st_length_int(user->username),
 					st_char_get(user->username));
 				result = -1;
+			}
+
+
+			else if ((transaction = tran_start()) < 0 || new_meta_data_fetch_keys(user, &pair, transaction)) {
+
+				log_pedantic("Unable to create and fetch a newly created user key pair. { username = %.*s }", st_length_int(user->username),
+					st_char_get(user->username));
+
+				// Unless the second call to tran_start() fails, we'll have a valid transaction handle at this point.
+				if (transaction >= 0) tran_commit(transaction);
+				result = -1;
+			}
+			else {
+				tran_commit(transaction);
 			}
 
 		}

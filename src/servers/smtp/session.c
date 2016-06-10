@@ -217,7 +217,7 @@ void smtp_free_recipients(smtp_recipients_t *recipients) {
 void smtp_free_outbound(smtp_outbound_prefs_t *outbound) {
 
 	st_cleanup(outbound->domain);
-	
+
 	if (outbound->recipients) {
 		smtp_free_recipients(outbound->recipients);
 	}
@@ -237,12 +237,7 @@ void smtp_free_inbound(smtp_inbound_prefs_t *inbound) {
 	smtp_inbound_prefs_t *holder;
 
 	while (inbound) {
-		st_cleanup(inbound->rcptto);
-		st_cleanup(inbound->address);
-		st_cleanup(inbound->domain);
-		st_cleanup(inbound->forwarded);
-		st_cleanup(inbound->spamsig);
-		inx_cleanup(inbound->filters);
+		st_cleanup(inbound->pubkey, inbound->rcptto, inbound->address, inbound->domain, inbound->forwarded, inbound->spamsig, inbound->filters);
 		holder = inbound;
 		inbound = (smtp_inbound_prefs_t *)holder->next;
 		mm_free(holder);

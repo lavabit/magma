@@ -134,7 +134,7 @@ int_t auth_response(auth_t *auth, stringer_t *ephemeral) {
 
 		log_pedantic("The ephemeral token generation failed.");
 		mm_move(st_data_get(auth->seasoning.nonce), st_data_get(nonce), STACIE_NONCE_LENGTH);
-		if (stacie) auth_stacie_free(stacie);
+		auth_stacie_cleanup(stacie);
 		st_free(nonce);
 
 		return -1;

@@ -25,8 +25,8 @@ struct {
 };
 
 /**
- * @brief	Pull a connection from the sql pool and start a transaction.
- * @return	-1 on failure, or a mysql connection id from the sql pool on success.
+ * @brief	Pull a connection from the SQL pool and start a transaction.
+ * @return	-1 on failure, or a MySQL connection id from the SQL pool on success.
  */
 int64_t tran_start(void) {
 

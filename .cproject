@@ -53,7 +53,8 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="LICENSE|.deps/|.gitignore|.project|.settings/|res/|web/|.objs/|.gitattributes|README|dev/|COPYRIGHT|.cproject|lib/|INSTALL|sandbox/" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="check"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -85,29 +86,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma_check.h}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.142183936" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/freetype/include/}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/jpeg}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/png}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/gd}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/jansson/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/dspam/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/dkim/libopendkim/}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/geoip/libGeoIP}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/memcached}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/curl/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/curl/include/curl}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/zlib}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/bzip2}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/lzo/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/lzo/include/lzo}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/xml2/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/xml2/include/libxml}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/spf2/src/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/tokyocabinet}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/openssl/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/openssl/include/openssl}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/mysql/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/clamav/libclamav}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src}&quot;"/>
 								</option>
@@ -117,7 +95,7 @@
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.208862389" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.base.483216040" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base">
-								<option id="gnu.c.link.option.paths.2126104628" superClass="gnu.c.link.option.paths" valueType="libPaths">
+								<option id="gnu.c.link.option.paths.2126104628" name="Library search path (-L)" superClass="gnu.c.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/lzo/src/.libs}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.642217580" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
@@ -127,38 +105,13 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.888278271" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.base.399935483" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base">
-								<option id="gnu.both.asm.option.include.paths.1981211645" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/freetype/include/}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/jpeg}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/png}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/gd}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/jansson/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/dspam/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/dkim/libopendkim/}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/geoip/libGeoIP}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/memcached}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/curl/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/curl/include/curl}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/zlib}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/bzip2}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/lzo/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/lzo/include/lzo}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/xml2/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/xml2/include/libxml}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/spf2/src/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/tokyocabinet}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/openssl/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/openssl/include/openssl}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/mysql/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/clamav/libclamav}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src}&quot;"/>
-								</option>
+								<option id="gnu.both.asm.option.include.paths.1981211645" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath"/>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.900848572" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="check"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
@@ -225,30 +178,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma_check.h}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.1638267230" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/freetype/include/}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/jpeg}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/png}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/gd}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/jansson/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/dspam/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/dkim/libopendkim/}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/geoip/libGeoIP}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/memcached}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/curl/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/curl/include/curl}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/zlib}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/bzip2}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/lzo/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/lzo/include/lzo}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/xml2/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/xml2/include/libxml}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/spf2/src/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/tokyocabinet}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/openssl/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/openssl/include/openssl}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/mysql/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/clamav/libclamav}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check}&quot;"/>
 								</option>
@@ -258,7 +187,7 @@
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1278104211" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.base.2095182988" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base">
-								<option id="gnu.c.link.option.paths.807442027" superClass="gnu.c.link.option.paths" valueType="libPaths">
+								<option id="gnu.c.link.option.paths.807442027" name="Library search path (-L)" superClass="gnu.c.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/lzo/src/.libs}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.1677423579" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
@@ -269,29 +198,6 @@
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.562725748" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.base.2125045416" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base">
 								<option id="gnu.both.asm.option.include.paths.1115481090" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/freetype/include/}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/jpeg}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/png}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/gd}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/jansson/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/dspam/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/dkim/libopendkim/}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/geoip/libGeoIP}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/memcached}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/curl/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/curl/include/curl}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/zlib}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/bzip2}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/lzo/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/lzo/include/lzo}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/xml2/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/xml2/include/libxml}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/spf2/src/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/tokyocabinet}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/openssl/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/openssl/include/openssl}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/mysql/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/clamav/libclamav}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src}&quot;"/>
 								</option>
@@ -300,7 +206,8 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="LICENSE|.deps/|.gitignore|.project|.settings/|res/|web/|.objs/|.gitattributes|README|dev/|COPYRIGHT|.cproject|lib/|INSTALL|sandbox/" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="check"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

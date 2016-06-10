@@ -35,6 +35,7 @@ void __testname (int _i CK_ATTRIBUTE_UNUSED)\
 #include "network/network_check.h"
 #include "objects/objects_check.h"
 #include "users/users_check.h"
+#include "smtp/smtp_check.h"
 
 extern int case_timeout;
 

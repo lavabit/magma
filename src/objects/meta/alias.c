@@ -1,8 +1,8 @@
 
 /**
- * @file /magma/objects/users/aliases.c
+ * @file /magma/src/objects/meta/alias.c
  *
- * @brief	Functions for handling user aliases.
+ * @brief Functions used to handle the alias objects.
  *
  * $Author$
  * $Date$

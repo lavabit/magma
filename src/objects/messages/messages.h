@@ -13,6 +13,61 @@
 #ifndef MAGMA_OBJECTS_MESSAGES_H
 #define MAGMA_OBJECTS_MESSAGES_H
 
+
+// Message marking & status codes.
+enum {
+	MAIL_STATUS_NONE = 0,
+	MAIL_STATUS_EMPTY = 1,
+	MAIL_STATUS_RECENT = 2,
+	MAIL_STATUS_SEEN = 4,
+	MAIL_STATUS_ANSWERED = 8,
+	MAIL_STATUS_FLAGGED = 16,
+	MAIL_STATUS_DELETED = 32,
+	MAIL_STATUS_DRAFT = 64,
+
+	MAIL_STATUS_SECURE = 128,
+	MAIL_STATUS_APPENDED = 256, // Use to indicate uploaded messages. These don't get ads, and don't show up in POP sessions.
+	MAIL_STATUS_HIDDEN = 512, // Used to indicate the message has been deleted by a POP session.
+
+	MAIL_MARK_JUNK = 1024,
+	MAIL_MARK_INFECTED = 2048,
+	MAIL_MARK_SPOOFED = 4096,
+	MAIL_MARK_BLACKHOLED = 8192,
+	MAIL_MARK_PHISHING = 16384,
+
+	MAIL_STATUS_TAGGED = 32768,
+
+	MAIL_STATUS_ENCRYPTED = 65536
+};
+
+// The flags typically controlled by the user.
+#define MAIL_STATUS_USER_FLAGS (MAIL_STATUS_SEEN | MAIL_STATUS_ANSWERED | MAIL_STATUS_FLAGGED | MAIL_STATUS_DELETED | MAIL_STATUS_DRAFT)
+
+// The set of flags used exclusively by the system. User attempts to manipulate these flags should generate an error.
+#define MAIL_STATUS_SYSTEM_FLAGS (MAIL_STATUS_EMPTY | MAIL_STATUS_RECENT | MAIL_STATUS_SECURE | MAIL_STATUS_APPENDED | MAIL_STATUS_HIDDEN | \
+	MAIL_MARK_JUNK | MAIL_MARK_INFECTED | MAIL_MARK_SPOOFED | MAIL_MARK_BLACKHOLED | MAIL_MARK_PHISHING | MAIL_STATUS_TAGGED | MAIL_STATUS_ENCRYPTED)
+
+// The complete collection.
+#define MAIL_STATUS_ALL_FLAGS (MAIL_STATUS_USER_FLAGS | MAIL_STATUS_SYSTEM_FLAGS)
+
+// Email message types.
+#define MESSAGE_TYPE_UNKNOWN 0
+#define MESSAGE_TYPE_PLAIN 1
+#define MESSAGE_TYPE_HTML 2
+#define MESSAGE_TYPE_MULTI_ALTERNATIVE 3
+#define MESSAGE_TYPE_MULTI_MIXED 4
+#define MESSAGE_TYPE_MULTI_RELATED 5
+#define MESSAGE_TYPE_MULTI_RFC822 5
+#define MESSAGE_TYPE_MULTI_UNKOWN 6
+
+// Email message encodings.
+#define MESSAGE_ENCODING_UNKNOWN 0
+#define MESSAGE_ENCODING_QUOTED_PRINTABLE 1
+#define MESSAGE_ENCODING_BASE64 2
+#define MESSAGE_ENCODING_7BIT 3
+#define MESSAGE_ENCODING_8BIT 4
+
+
 /// LOW: Update the Messages table columns so they match the tank mail message header fields. Store individual header/body lengths
 /// and the compressed/uncompressed hash values; then update the message type to store and use the new information.
 

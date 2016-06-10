@@ -15,8 +15,5 @@
 
 Suite * suite_check_objects(void);
 
-bool_t check_advert_links(void);
-
-
 #endif
 

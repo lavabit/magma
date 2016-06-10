@@ -2,7 +2,7 @@
 /**
  * @file /magma/src/objects/meta/meta.h
  *
- * @brief The interface for the new_meta objects.
+ * @brief The interface for the meta objects.
  *
  * $Author$
  * $Date$
@@ -10,14 +10,12 @@
  *
  */
 
-#ifndef MAGMA_OBJECTS_NEW_META_H
-#define MAGMA_OBJECTS_NEW_META_H
+#ifndef MAGMA_OBJECTS_META_H
+#define MAGMA_OBJECTS_META_H
 
 typedef struct {
-
 	stringer_t *public;
 	stringer_t *private;
-
 } key_pair_t;
 
 typedef struct {
@@ -37,29 +35,29 @@ stringer_t *        meta_folders_name(inx_t *list, meta_folder_t *folder);
 inx_t *             meta_folders_stats_tags(inx_t *messages, uint64_t folder);
 
 /// serials.c
-bool_t     new_meta_user_serial_check(new_meta_user_t *user, uint64_t object);
-uint64_t   new_meta_user_serial_get(new_meta_user_t *user, uint64_t object);
-void       new_meta_user_serial_set(new_meta_user_t *user, uint64_t object, uint64_t serial);
+bool_t     meta_user_serial_check(meta_user_t *user, uint64_t object);
+uint64_t   meta_user_serial_get(meta_user_t *user, uint64_t object);
+void       meta_user_serial_set(meta_user_t *user, uint64_t object, uint64_t serial);
 
 /// updaters.c
-int_t   meta_update_aliases(new_meta_user_t *user, META_LOCK_STATUS locked);
-int_t   meta_update_keys(new_meta_user_t *user, stringer_t *master, META_LOCK_STATUS locked);
-int_t   meta_update_message_folders(new_meta_user_t *user, META_LOCK_STATUS locked);
-int_t   new_meta_update_contacts(new_meta_user_t *user, META_LOCK_STATUS locked);
-int_t   new_meta_update_folders(new_meta_user_t *user, META_LOCK_STATUS locked);
-int_t   new_meta_update_user(new_meta_user_t *user, META_LOCK_STATUS locked);
+int_t   meta_update_aliases(meta_user_t *user, META_LOCK_STATUS locked);
+int_t   meta_update_keys(meta_user_t *user, stringer_t *master, META_LOCK_STATUS locked);
+int_t   meta_update_message_folders(meta_user_t *user, META_LOCK_STATUS locked);
+int_t   meta_update_contacts(meta_user_t *user, META_LOCK_STATUS locked);
+int_t   meta_update_folders(meta_user_t *user, META_LOCK_STATUS locked);
+int_t   meta_update_user(meta_user_t *user, META_LOCK_STATUS locked);
 
 /// references.c
-void       new_meta_user_ref_add(new_meta_user_t *user, META_PROTOCOL protocol);
-void       new_meta_user_ref_dec(new_meta_user_t *user, META_PROTOCOL protocol);
-uint64_t   new_meta_user_ref_protocol_total(new_meta_user_t *user, META_PROTOCOL protocol);
-time_t     new_meta_user_ref_stamp(new_meta_user_t *user);
-uint64_t   new_meta_user_ref_total(new_meta_user_t *user);
+void       meta_user_ref_add(meta_user_t *user, META_PROTOCOL protocol);
+void       meta_user_ref_dec(meta_user_t *user, META_PROTOCOL protocol);
+uint64_t   meta_user_ref_protocol_total(meta_user_t *user, META_PROTOCOL protocol);
+time_t     meta_user_ref_stamp(meta_user_t *user);
+uint64_t   meta_user_ref_total(meta_user_t *user);
 
 /// meta.c
-new_meta_user_t *  new_meta_alloc(void);
-void               new_meta_free(new_meta_user_t *user);
-int_t              new_meta_get(uint64_t usernum, stringer_t *username, stringer_t *master, stringer_t *verification, META_PROTOCOL flags, META_GET get, new_meta_user_t **output);
+meta_user_t *  meta_alloc(void);
+void               meta_free(meta_user_t *user);
+int_t              meta_get(uint64_t usernum, stringer_t *username, stringer_t *master, stringer_t *verification, META_PROTOCOL flags, META_GET get, meta_user_t **output);
 
 /// datatier.c
 bool_t     meta_data_acknowledge_alert(uint64_t alertnum, uint64_t usernum, uint32_t transaction);
@@ -75,21 +73,21 @@ int_t      meta_data_insert_tag(meta_message_t *message, stringer_t *tag);
 int_t      meta_data_truncate_tags(meta_message_t *message);
 uint64_t   meta_data_update_folder_name(uint64_t usernum, uint64_t foldernum, stringer_t *name, uint64_t parent, uint32_t order);
 void       meta_data_update_lock(uint64_t usernum, uint8_t lock);
-bool_t     new_meta_data_fetch_folders(new_meta_user_t *user);
-int_t      new_meta_data_fetch_keys(new_meta_user_t *user, key_pair_t *output, int64_t transaction);
-int_t      new_meta_data_fetch_mailbox_aliases(new_meta_user_t *user);
-int_t      new_meta_data_fetch_user(new_meta_user_t *user);
-int_t      new_meta_data_insert_keys(uint64_t usernum, stringer_t *username, key_pair_t *input, int64_t transaction);
-void       new_meta_data_update_log(new_meta_user_t *user, META_PROTOCOL prot);
+bool_t     meta_data_fetch_folders(meta_user_t *user);
+int_t      meta_data_fetch_keys(meta_user_t *user, key_pair_t *output, int64_t transaction);
+int_t      meta_data_fetch_mailbox_aliases(meta_user_t *user);
+int_t      meta_data_fetch_user(meta_user_t *user);
+int_t      meta_data_insert_keys(uint64_t usernum, stringer_t *username, key_pair_t *input, int64_t transaction);
+void       meta_data_update_log(meta_user_t *user, META_PROTOCOL prot);
 
 /// locking.c
-void   new_meta_user_rlock(new_meta_user_t *user);
-void   new_meta_user_unlock(new_meta_user_t *user);
-void   new_meta_user_wlock(new_meta_user_t *user);
+void   meta_user_rlock(meta_user_t *user);
+void   meta_user_unlock(meta_user_t *user);
+void   meta_user_wlock(meta_user_t *user);
 
 /// indexes.c
-new_meta_user_t *  new_meta_inx_find(uint64_t usernum, META_PROTOCOL protocol);
-void               new_meta_inx_remove(uint64_t usernum, META_PROTOCOL protocol);
+meta_user_t *  meta_inx_find(uint64_t usernum, META_PROTOCOL protocol);
+void           meta_inx_remove(uint64_t usernum, META_PROTOCOL protocol);
 
 /// crypto.c
 int_t   meta_crypto_keys_create(uint64_t usernum, stringer_t *username, stringer_t *master, int64_t transaction);

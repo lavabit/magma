@@ -114,7 +114,7 @@ uint32_t imap_flag_parse(void *ptr, int_t type) {
 	return flags;
 }
 
-void imap_update_flags(new_meta_user_t *user, inx_t *messages, uint64_t foldernum, int_t action, uint32_t flags) {
+void imap_update_flags(meta_user_t *user, inx_t *messages, uint64_t foldernum, int_t action, uint32_t flags) {
 
 	inx_cursor_t *cursor;
 	meta_message_t *active;

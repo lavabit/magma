@@ -234,7 +234,7 @@ void pop_pass(connection_t *con) {
 	}
 
 	// Pull the user info out.
-	if ((state = new_meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification, META_PROTOCOL_POP,
+	if ((state = meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification, META_PROTOCOL_POP,
 		META_GET_MESSAGES | META_GET_KEYS, &(con->pop.user)))) {
 
 		if (state < 0) {
@@ -259,7 +259,7 @@ void pop_pass(connection_t *con) {
 	// and if so, check whether the transport layer is encrypted.
 	if (((con->pop.user->flags & META_USER_ENCRYPT_DATA) || (con->pop.user->flags & META_USER_TLS)) && con_secure(con) != 1) {
 
-		new_meta_inx_remove(con->pop.usernum, META_PROTOCOL_POP);
+		meta_inx_remove(con->pop.usernum, META_PROTOCOL_POP);
 		con_write_bl(con, "-ERR [SYS/PERM] This account requires an encrypted network connection to login. Your current connection is " \
 			"vulnerable to villainous voyeurs. Reconnect using transport layer security, aka SSL/TLS, to access this account.\r\n", 221);
 
@@ -270,9 +270,9 @@ void pop_pass(connection_t *con) {
 
 	// The POP protocol requires exclusive access to a mail store. If another POP connection is active, then this connection
 	// attempt must be rejected.
-	else if (new_meta_user_ref_protocol_total(con->pop.user, META_PROTOCOL_POP) != 1) {
+	else if (meta_user_ref_protocol_total(con->pop.user, META_PROTOCOL_POP) != 1) {
 
-		new_meta_inx_remove(con->pop.usernum, META_PROTOCOL_POP);
+		meta_inx_remove(con->pop.usernum, META_PROTOCOL_POP);
 		con_write_bl(con, "-ERR [IN-USE] This account is being used by another session. Please try again in a few minutes.\r\n", 97);
 
 		con->pop.user = NULL;
@@ -286,11 +286,11 @@ void pop_pass(connection_t *con) {
 		con->pop.user->refs.pop, con->pop.user->refs.imap, con->pop.user->messages ? inx_count(con->pop.user->messages) : 0);
 
 	// Update the log and unlock the session.
-	new_meta_data_update_log(con->pop.user, META_PROTOCOL_POP);
+	meta_data_update_log(con->pop.user, META_PROTOCOL_POP);
 
-	new_meta_user_wlock(con->pop.user);
+	meta_user_wlock(con->pop.user);
 	meta_messages_login_update(con->pop.user, META_LOCKED);
-	new_meta_user_unlock(con->pop.user);
+	meta_user_unlock(con->pop.user);
 
 	// Update session state.
 	con->pop.session_state = 1;
@@ -338,10 +338,10 @@ void pop_stat(connection_t *con) {
 		return;
 	}
 
-	new_meta_user_rlock(con->pop.user);
+	meta_user_rlock(con->pop.user);
 	count = pop_total_messages(con->pop.user->messages);
 	size = pop_total_size(con->pop.user->messages);
-	new_meta_user_unlock(con->pop.user);
+	meta_user_unlock(con->pop.user);
 
 	// Print the information.
 	con_print(con, "+OK %llu %llu\r\n", count, size);
@@ -364,9 +364,9 @@ void pop_last(connection_t *con) {
 		return;
 	}
 
-	new_meta_user_rlock(con->pop.user);
+	meta_user_rlock(con->pop.user);
 	number = pop_get_last(con->pop.user->messages);
-	new_meta_user_unlock(con->pop.user);
+	meta_user_unlock(con->pop.user);
 
 	// Print the information.
 	con_print(con, "+OK %llu\r\n", number);
@@ -395,7 +395,7 @@ void pop_list(connection_t *con) {
 	// Get the argument, if any.
 	result = pop_num_parse(con, &number, false);
 
-	new_meta_user_rlock(con->pop.user);
+	meta_user_rlock(con->pop.user);
 
 	// Output all of the messages that aren't deleted or appended.
 	if (!result) {
@@ -433,7 +433,7 @@ void pop_list(connection_t *con) {
 		}
 	}
 
-	new_meta_user_unlock(con->pop.user);
+	meta_user_unlock(con->pop.user);
 
 	return;
 }
@@ -459,7 +459,7 @@ void pop_dele(connection_t *con) {
 		return;
 	}
 
-	new_meta_user_wlock(con->pop.user);
+	meta_user_wlock(con->pop.user);
 
 	if (!(active = pop_get_message(con->pop.user->messages, number))) {
 		con_write_bl(con, "-ERR Message not found.\r\n", 25);
@@ -472,7 +472,7 @@ void pop_dele(connection_t *con) {
 		con_write_bl(con, "+OK Message marked for deletion.\r\n", 34);
 	}
 
-	new_meta_user_unlock(con->pop.user);
+	meta_user_unlock(con->pop.user);
 
 	return;
 }
@@ -497,7 +497,7 @@ void pop_uidl(connection_t *con) {
 	// Get the argument, if any.
 	result = pop_num_parse(con, &number, false);
 
-	new_meta_user_rlock(con->pop.user);
+	meta_user_rlock(con->pop.user);
 
 	// Output all of the messages that aren't deleted or appended.
 	if (!result) {
@@ -536,7 +536,7 @@ void pop_uidl(connection_t *con) {
 
 	}
 
-	new_meta_user_unlock(con->pop.user);
+	meta_user_unlock(con->pop.user);
 
 	return;
 }
@@ -564,31 +564,31 @@ void pop_top(connection_t *con) {
 		return;
 	}
 
-	new_meta_user_rlock(con->pop.user);
+	meta_user_rlock(con->pop.user);
 
 	// Get the message.
 	if (!(meta = pop_get_message(con->pop.user->messages, number))) {
-		new_meta_user_unlock(con->pop.user);
+		meta_user_unlock(con->pop.user);
 		con_write_bl(con, "-ERR Message not found.\r\n", 25);
 		return;
 	}
 
 	// Check for deletion.
 	if ((meta->status & MAIL_STATUS_HIDDEN) == MAIL_STATUS_HIDDEN) {
-		new_meta_user_unlock(con->pop.user);
+		meta_user_unlock(con->pop.user);
 		con_write_bl(con,  "-ERR This message has been marked for deletion.\r\n", 49);
 		return;
 	}
 
 	// Load the message and spit back the right number of lines.
 	if (!(message = mail_load_message_top(meta, con->pop.user, con->server, lines, true))) {
-		new_meta_user_unlock(con->pop.user);
+		meta_user_unlock(con->pop.user);
 		con_write_bl(con, "-ERR The message you requested could not be loaded into memory. It has either been deleted "
 			"by another connection or is corrupted.\r\n", 131);
 		return;
 	}
 
-	new_meta_user_unlock(con->pop.user);
+	meta_user_unlock(con->pop.user);
 
 	// Dot stuff the message.
 	st_replace(&(message->text), PLACER("\n.", 2), PLACER("\n..", 3));
@@ -635,31 +635,31 @@ void pop_retr(connection_t *con) {
 		return;
 	}
 
-	new_meta_user_rlock(con->pop.user);
+	meta_user_rlock(con->pop.user);
 
 	// Get the message.
 	if (!(meta = pop_get_message(con->pop.user->messages, number))) {
-		new_meta_user_unlock(con->pop.user);
+		meta_user_unlock(con->pop.user);
 		con_write_bl(con, "-ERR Message not found.\r\n", 25);
 		return;
 	}
 
 	// Check for deletion.
 	if ((meta->status & MAIL_STATUS_HIDDEN) == MAIL_STATUS_HIDDEN) {
-		new_meta_user_unlock(con->pop.user);
+		meta_user_unlock(con->pop.user);
 		con_write_bl(con,  "-ERR This message has been marked for deletion.\r\n", 49);
 		return;
 	}
 
 	// Load the message and spit back the right number of lines.
 	if (!(message = mail_load_message(meta, con->pop.user, con->server, 1))) {
-		new_meta_user_unlock(con->pop.user);
+		meta_user_unlock(con->pop.user);
 		con_write_bl(con, "-ERR The message you requested could not be loaded into memory. It has either been "
 			"deleted by another connection or is corrupted.\r\n", 131);
 		return;
 	}
 
-	new_meta_user_unlock(con->pop.user);
+	meta_user_unlock(con->pop.user);
 
 	// Dot stuff the message.
 	st_replace(&(message->text), PLACER("\n.", 2), PLACER("\n..", 3));

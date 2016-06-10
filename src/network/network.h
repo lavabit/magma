@@ -36,7 +36,6 @@
 #define MAGMA_NETWORK_H
 
 #include "meta.h"
-#include "new_meta.h"
 #include "sessions.h"
 #include "pop.h"
 #include "smtp.h"

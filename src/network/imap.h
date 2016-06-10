@@ -31,7 +31,7 @@ typedef struct {
 } imap_fetch_response_t;
 
 typedef struct {
-	new_meta_user_t *user;
+	meta_user_t *user;
 	imap_arguments_t *arguments;
 	stringer_t *tag, *command, *username;
 	int_t read_only, uid, session_state;

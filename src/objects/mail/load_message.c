@@ -20,7 +20,7 @@
  * @param	user	the meta user object of the user that owns the message.
  * @return	NULL on failure or a managed string containing the message's header on success.
  */
-stringer_t * mail_load_header(meta_message_t *meta, new_meta_user_t *user) {
+stringer_t * mail_load_header(meta_message_t *meta, meta_user_t *user) {
 
 	struct stat file_info;
 	message_fheader_t fheader;
@@ -236,7 +236,7 @@ stringer_t * mail_load_header(meta_message_t *meta, new_meta_user_t *user) {
  * @param	parse	if true, the header's Subject line is branded with any applicable labels such as JUNK, INFECTED, SPOOFED, BLACKHOLED, PHISHING.
  * @return	NULL on failure or a a mail message object containing the retrieved mail message data on success.
  */
-mail_message_t * mail_load_message(meta_message_t *meta, new_meta_user_t *user, server_t *server, bool_t parse) {
+mail_message_t * mail_load_message(meta_message_t *meta, meta_user_t *user, server_t *server, bool_t parse) {
 
 	int_t fd, keylen;
 	chr_t *path, key[128];
@@ -477,7 +477,7 @@ mail_message_t * mail_load_message(meta_message_t *meta, new_meta_user_t *user, 
  * @param	parse	sets the parse parameter passed to mail_load_message().
  * @return	NULL on failure or a a mail message object containing the retrieved mail message data (truncated if necessary) on success.
  */
-mail_message_t * mail_load_message_top(meta_message_t *meta, new_meta_user_t *user, server_t *server, uint64_t lines, bool_t parse) {
+mail_message_t * mail_load_message_top(meta_message_t *meta, meta_user_t *user, server_t *server, uint64_t lines, bool_t parse) {
 
 	chr_t *stream;
 	int_t header = 1;

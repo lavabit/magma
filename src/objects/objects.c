@@ -23,7 +23,7 @@ object_cache_t objects = {
  */
 bool_t obj_cache_start(void) {
 
-	if (!(objects.meta = inx_alloc(M_INX_HASHED | M_INX_LOCK_MANUAL, &new_meta_free))) {
+	if (!(objects.meta = inx_alloc(M_INX_HASHED | M_INX_LOCK_MANUAL, &meta_free))) {
 		log_critical("Unable to initialize the meta information cache.");
 		return false;
 	}
@@ -72,7 +72,7 @@ void obj_cache_prune(void) {
 	double_t gap;
 	session_t *sess;
 	inx_cursor_t *cursor;
-	new_meta_user_t *meta;
+	meta_user_t *meta;
 	uint64_t count, expired;
 
 	if ((now = time(NULL)) == (time_t)(-1)) {
@@ -104,7 +104,7 @@ void obj_cache_prune(void) {
 		meta = inx_cursor_value_next(cursor);
 
 		while (meta) {
-			if (difftime(now, new_meta_user_ref_stamp(meta)) > gap && !new_meta_user_ref_total(meta)) {
+			if (difftime(now, meta_user_ref_stamp(meta)) > gap && !meta_user_ref_total(meta)) {
 				inx_delete(objects.meta, inx_cursor_key_active(cursor));
 				inx_cursor_reset(cursor);
 				expired++;

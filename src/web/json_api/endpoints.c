@@ -45,7 +45,7 @@ void api_endpoint_auth(connection_t *con) {
 	int_t state;
 	auth_t *auth = NULL;
 	json_error_t jansson_err;
-	new_meta_user_t *user = NULL;
+	meta_user_t *user = NULL;
 	chr_t *username = NULL, *password = NULL;
 
 	if (json_unpack_ex_d(con->http.portal.params, &jansson_err, JSON_STRICT, "{s:s, s:s}", "username", &username, "password", &password) != 0) {
@@ -73,7 +73,7 @@ void api_endpoint_auth(connection_t *con) {
 		return;
 	}
 
-	if ((state = new_meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification, META_PROTOCOL_JSON, META_GET_NONE, &user))) {
+	if ((state = meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification, META_PROTOCOL_JSON, META_GET_NONE, &user))) {
 		if (state < 0) {
 			api_error(con, HTTP_ERROR_500, JSON_RPC_2_ERROR_SERVER_INTERNAL, "Internal server error.");
 		}

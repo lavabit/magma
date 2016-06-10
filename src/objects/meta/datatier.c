@@ -15,11 +15,11 @@
 /**
  * @brief	Update the per-user entry in the Log table for the specified protocol.
  * @note	This function will set the last session timestamp for the user, and increment the sessions counter in the database.
- * @param	user	the new_meta user object of the user making the logging request.
+ * @param	user	the meta user object of the user making the logging request.
  * @param	prot	the protocol associated with the log request: META_PROT_POP, META_PROT_IMAP, or META_PROT_WEB.
  * @return	This function returns no value.
  */
-void new_meta_data_update_log(new_meta_user_t *user, META_PROTOCOL prot) {
+void meta_data_update_log(meta_user_t *user, META_PROTOCOL prot) {
 
 	MYSQL_BIND parameters[1];
 
@@ -89,7 +89,7 @@ void meta_data_update_lock(uint64_t usernum, uint8_t lock) {
  * @param	user	a pointer to the meta user object of the user making the request, which will be updated on success.
  * @return	-1 on failure or 1 on success.
  */
-bool_t new_meta_data_fetch_folders(new_meta_user_t *user) {
+bool_t meta_data_fetch_folders(meta_user_t *user) {
 
 	row_t *row;
 	multi_t key;
@@ -190,7 +190,7 @@ bool_t new_meta_data_fetch_folders(new_meta_user_t *user) {
  *
  * @return	true on success or false on failure.
  */
-int_t new_meta_data_fetch_mailbox_aliases(new_meta_user_t *user) {
+int_t meta_data_fetch_mailbox_aliases(meta_user_t *user) {
 
 	row_t *row;
 	table_t *result;
@@ -255,7 +255,7 @@ int_t new_meta_data_fetch_mailbox_aliases(new_meta_user_t *user) {
  *
  * @return	-1 for unexpected program/system error, 0 on success, 1 if no rows are found.
  */
-int_t new_meta_data_fetch_user(new_meta_user_t *user) {
+int_t meta_data_fetch_user(meta_user_t *user) {
 
 	row_t *row;
 	table_t *result;
@@ -337,7 +337,7 @@ int_t new_meta_data_fetch_user(new_meta_user_t *user) {
  *
  * @return	-1 for unexpected program/system error, 0 on success, 1 if no rows are found.
  */
-int_t new_meta_data_fetch_keys(new_meta_user_t *user, key_pair_t *output, int64_t transaction) {
+int_t meta_data_fetch_keys(meta_user_t *user, key_pair_t *output, int64_t transaction) {
 
 	row_t *row;
 	table_t *result;
@@ -400,7 +400,7 @@ int_t new_meta_data_fetch_keys(new_meta_user_t *user, key_pair_t *output, int64_
  *
  * @return	-1 for unexpected program/system error, 0 on success, 1 if the query executes, but no rows are affected.
  */
-int_t new_meta_data_insert_keys(uint64_t usernum, stringer_t *username, key_pair_t *input, int64_t transaction) {
+int_t meta_data_insert_keys(uint64_t usernum, stringer_t *username, key_pair_t *input, int64_t transaction) {
 
 	int64_t affected;
 	MYSQL_BIND parameters[3];

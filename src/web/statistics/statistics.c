@@ -14,7 +14,6 @@
 
 extern statistics_vp_t portal_stats[portal_stat_users_num_statements];
 
-
 /**
  * @brief	Display the statistics page to the requesting connection.
  * @param	con		a pointer to the connection object across which the server statistics will be transmitted.

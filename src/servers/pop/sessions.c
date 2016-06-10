@@ -26,7 +26,7 @@ int_t pop_session_reset(connection_t *con) {
 		return 0;
 	}
 
-	new_meta_user_wlock(con->pop.user);
+	meta_user_wlock(con->pop.user);
 
 	if (con->pop.user->messages && (cursor = inx_cursor_alloc(con->pop.user->messages))) {
 
@@ -42,7 +42,7 @@ int_t pop_session_reset(connection_t *con) {
 		inx_cursor_free(cursor);
 	}
 
-	new_meta_user_unlock(con->pop.user);
+	meta_user_unlock(con->pop.user);
 
 	return 1;
 }
@@ -65,7 +65,7 @@ void pop_session_destroy(connection_t *con) {
 		// If it was a clean exit, and this is the only pop session, delete messages marked for deletion.
 		if (con->pop.expunge) {
 
-			new_meta_user_wlock(con->pop.user);
+			meta_user_wlock(con->pop.user);
 
 			if (con->pop.user->messages && (cursor = inx_cursor_alloc(con->pop.user->messages))) {
 
@@ -88,12 +88,12 @@ void pop_session_destroy(connection_t *con) {
 				inx_cursor_free(cursor);
 			}
 
-			new_meta_user_unlock(con->pop.user);
+			meta_user_unlock(con->pop.user);
 		}
 
 		// Check whether we're the last reference to this object.
 		if (con->pop.usernum) {
-			new_meta_inx_remove(con->pop.usernum, META_PROTOCOL_POP);
+			meta_inx_remove(con->pop.usernum, META_PROTOCOL_POP);
 		}
 
 	}

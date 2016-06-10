@@ -74,7 +74,7 @@ int_t                     imap_valid_sequence(stringer_t *range);
 int_t      imap_flag_action(stringer_t *string);
 uint32_t   imap_flag_parse(void *ptr, int_t type);
 uint32_t   imap_get_flag(stringer_t *string);
-void       imap_update_flags(new_meta_user_t *user, inx_t *messages, uint64_t foldernum, int_t action, uint32_t flags);
+void       imap_update_flags(meta_user_t *user, inx_t *messages, uint64_t foldernum, int_t action, uint32_t flags);
 
 /// folders.c
 int_t         imap_count_folder_levels(stringer_t *name);
@@ -151,14 +151,14 @@ stringer_t *  imap_range_build(size_t length, uint64_t *numbers);
 /// search.c
 int_t    imap_search_flag(uint32_t status, uint32_t flag, int_t has);
 inx_t *  imap_search_messages(connection_t *con);
-int_t    imap_search_messages_body(new_meta_user_t *user, mail_message_t **data, meta_message_t *active, stringer_t *value);
-int_t    imap_search_messages_date(new_meta_user_t *user, mail_message_t **data, stringer_t **header, meta_message_t *active, stringer_t *date, int_t internal, int_t expected);
+int_t    imap_search_messages_body(meta_user_t *user, mail_message_t **data, meta_message_t *active, stringer_t *value);
+int_t    imap_search_messages_date(meta_user_t *user, mail_message_t **data, stringer_t **header, meta_message_t *active, stringer_t *date, int_t internal, int_t expected);
 int_t    imap_search_messages_date_compare(stringer_t *one, stringer_t *two);
-int_t    imap_search_messages_header(new_meta_user_t *user, mail_message_t **data, stringer_t **header, meta_message_t *active, stringer_t *field, stringer_t *value);
-int_t    imap_search_messages_inner(new_meta_user_t *user, mail_message_t **message, stringer_t **header, meta_message_t *current, imap_arguments_t *array, unsigned recursion);
+int_t    imap_search_messages_header(meta_user_t *user, mail_message_t **data, stringer_t **header, meta_message_t *active, stringer_t *field, stringer_t *value);
+int_t    imap_search_messages_inner(meta_user_t *user, mail_message_t **message, stringer_t **header, meta_message_t *current, imap_arguments_t *array, unsigned recursion);
 int_t    imap_search_messages_range(meta_message_t *active, stringer_t *range, int_t uid);
 int_t    imap_search_messages_size(meta_message_t *active, stringer_t *value, int_t expected);
-int_t    imap_search_messages_text(new_meta_user_t *user, mail_message_t **data, meta_message_t *active, stringer_t *value);
+int_t    imap_search_messages_text(meta_user_t *user, mail_message_t **data, meta_message_t *active, stringer_t *value);
 
 /// sessions.c
 void    imap_session_destroy(connection_t *con);

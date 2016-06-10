@@ -20,7 +20,7 @@
  *
  * @return	-2 if there is a problem unscrambling the private key, -1 for a system error, 0 for success, and 1 if the keys were created.
  */
-int_t meta_update_keys(new_meta_user_t *user, stringer_t *master, META_LOCK_STATUS locked) {
+int_t meta_update_keys(meta_user_t *user, stringer_t *master, META_LOCK_STATUS locked) {
 
 	int_t result = 0;
 	int64_t transaction = 0;
@@ -32,7 +32,7 @@ int_t meta_update_keys(new_meta_user_t *user, stringer_t *master, META_LOCK_STAT
 
 	// Do we need a lock.
 	if (locked == META_NEED_LOCK) {
-		new_meta_user_wlock(user);
+		meta_user_wlock(user);
 	}
 
 	// We only need to fetch and decrypt the user keys if they aren't already stored in the structure.
@@ -45,7 +45,7 @@ int_t meta_update_keys(new_meta_user_t *user, stringer_t *master, META_LOCK_STAT
 		}
 
 		// Fetch the keys. If none are found, try to generate a new key pair for the user.
-		else if (new_meta_data_fetch_keys(user, &pair, transaction) == 1) {
+		else if (meta_data_fetch_keys(user, &pair, transaction) == 1) {
 
 			// Make sure we can retrieve the keys from the database before we return them to the caller.
 			if (meta_crypto_keys_create(user->usernum, user->username, master, transaction) < 0) {
@@ -61,7 +61,7 @@ int_t meta_update_keys(new_meta_user_t *user, stringer_t *master, META_LOCK_STAT
 			}
 
 
-			else if ((transaction = tran_start()) < 0 || new_meta_data_fetch_keys(user, &pair, transaction)) {
+			else if ((transaction = tran_start()) < 0 || meta_data_fetch_keys(user, &pair, transaction)) {
 
 				log_pedantic("Unable to create and fetch a newly created user key pair. { username = %.*s }", st_length_int(user->username),
 					st_char_get(user->username));
@@ -112,7 +112,7 @@ int_t meta_update_keys(new_meta_user_t *user, stringer_t *master, META_LOCK_STAT
 
 	// Do we need to clear the lock.
 	if (locked == META_NEED_LOCK) {
-		new_meta_user_unlock(user);
+		meta_user_unlock(user);
 	}
 
 	return result;
@@ -132,7 +132,7 @@ int_t meta_update_keys(new_meta_user_t *user, stringer_t *master, META_LOCK_STAT
  *
  * @return	-1 on error, 0 on success, 1 for an authentication issue.
  */
-int_t new_meta_update_user(new_meta_user_t *user, META_LOCK_STATUS locked) {
+int_t meta_update_user(meta_user_t *user, META_LOCK_STATUS locked) {
 
 	uint64_t serial;
 	int_t result = 0;
@@ -144,31 +144,31 @@ int_t new_meta_update_user(new_meta_user_t *user, META_LOCK_STATUS locked) {
 
 	// Do we need a lock.
 	if (locked == META_NEED_LOCK) {
-		new_meta_user_wlock(user);
+		meta_user_wlock(user);
 	}
 
 	// Check for cached data.
 	if (user->usernum && st_populated(user->username, user->verification)) {
 
 		// Check the cache server for an updated serial number. If the serial we find matches, assume the stored data is up to date.
-		if ((serial = serial_get(OBJECT_USER, user->usernum)) == new_meta_user_serial_get(user, OBJECT_USER)) {
+		if ((serial = serial_get(OBJECT_USER, user->usernum)) == meta_user_serial_get(user, OBJECT_USER)) {
 			result = 1;
 		}
 		// If the serial numbers don't match, then refresh the stored data and update the object serial number.
-		else if (!(result = new_meta_data_fetch_user(user))) {
-			new_meta_user_serial_set(user, OBJECT_USER, serial);
+		else if (!(result = meta_data_fetch_user(user))) {
+			meta_user_serial_set(user, OBJECT_USER, serial);
 		}
 
 	}
 
 	// The user structure is empty, so we need to populate it with information from the database.
-	else if (!(result = new_meta_data_fetch_user(user)) && !(user->serials.user = serial_get(OBJECT_USER, user->usernum))) {
+	else if (!(result = meta_data_fetch_user(user)) && !(user->serials.user = serial_get(OBJECT_USER, user->usernum))) {
 		user->serials.user = serial_increment(OBJECT_USER, user->usernum);
 	}
 
 	// Do we need to clear the lock.
 	if (locked == META_NEED_LOCK) {
-		new_meta_user_unlock(user);
+		meta_user_unlock(user);
 	}
 
 	return result;
@@ -182,7 +182,7 @@ int_t new_meta_update_user(new_meta_user_t *user, META_LOCK_STATUS locked) {
  * 							locked for the duration of the function.
  * @return
  */
-int_t meta_update_aliases(new_meta_user_t *user, META_LOCK_STATUS locked) {
+int_t meta_update_aliases(meta_user_t *user, META_LOCK_STATUS locked) {
 
 	uint64_t serial;
 	int_t result = 0;
@@ -194,31 +194,31 @@ int_t meta_update_aliases(new_meta_user_t *user, META_LOCK_STATUS locked) {
 
 	// Do we need a lock.
 	if (locked == META_NEED_LOCK) {
-		new_meta_user_wlock(user);
+		meta_user_wlock(user);
 	}
 
 	// Check for cached data.
 	if (user->usernum && user->aliases) {
 
 		// Check the cache server for an updated serial number. If the serial we find matches, assume the stored data is up to date.
-		if ((serial = serial_get(OBJECT_ALIASES, user->usernum)) == new_meta_user_serial_get(user, OBJECT_ALIASES)) {
+		if ((serial = serial_get(OBJECT_ALIASES, user->usernum)) == meta_user_serial_get(user, OBJECT_ALIASES)) {
 			result = 1;
 		}
 		// If the serial numbers don't match, then refresh the stored data and update the object serial number.
-		else if (!(result = new_meta_data_fetch_mailbox_aliases(user))) {
-			new_meta_user_serial_set(user, OBJECT_ALIASES, serial);
+		else if (!(result = meta_data_fetch_mailbox_aliases(user))) {
+			meta_user_serial_set(user, OBJECT_ALIASES, serial);
 		}
 
 	}
 
 	// The user structure is empty, so we need to populate it with information from the database.
-	else if (!(result = new_meta_data_fetch_mailbox_aliases(user)) && !(user->serials.aliases = serial_get(OBJECT_ALIASES, user->usernum))) {
+	else if (!(result = meta_data_fetch_mailbox_aliases(user)) && !(user->serials.aliases = serial_get(OBJECT_ALIASES, user->usernum))) {
 		user->serials.aliases = serial_increment(OBJECT_ALIASES, user->usernum);
 	}
 
 	// Do we need to clear the lock.
 	if (locked == META_NEED_LOCK) {
-		new_meta_user_unlock(user);
+		meta_user_unlock(user);
 	}
 
 	return result;
@@ -231,7 +231,7 @@ int_t meta_update_aliases(new_meta_user_t *user, META_LOCK_STATUS locked) {
  * @param	locked	if META_NEED_LOCK is specified, the meta user object will be locked for operation.
  * @return	-1 on failure or 1 on success.
  */
-int_t new_meta_update_contacts(new_meta_user_t *user, META_LOCK_STATUS locked) {
+int_t meta_update_contacts(meta_user_t *user, META_LOCK_STATUS locked) {
 
 	inx_t *fetch;
 	int_t output = 0;
@@ -243,7 +243,7 @@ int_t new_meta_update_contacts(new_meta_user_t *user, META_LOCK_STATUS locked) {
 
 	// Do we need a lock.
 	if (locked == META_NEED_LOCK) {
-		new_meta_user_wlock(user);
+		meta_user_wlock(user);
 	}
 
 	// If there is a contacts already available, use the serial number to see if it needs updating.
@@ -275,7 +275,7 @@ int_t new_meta_update_contacts(new_meta_user_t *user, META_LOCK_STATUS locked) {
 
 	// Do we need to clear the lock.
 	if (locked == META_NEED_LOCK) {
-		new_meta_user_unlock(user);
+		meta_user_unlock(user);
 	}
 
 	return output;
@@ -288,7 +288,7 @@ int_t new_meta_update_contacts(new_meta_user_t *user, META_LOCK_STATUS locked) {
  * @param	locked	if META_NEED_LOCK is specified, the meta user object will be locked for operation.
  * @return	-1 on failure or 1 on success.
  */
-int_t new_meta_update_folders(new_meta_user_t *user, META_LOCK_STATUS locked) {
+int_t meta_update_folders(meta_user_t *user, META_LOCK_STATUS locked) {
 
 	int_t output = 0;
 	uint64_t checkpoint;
@@ -299,7 +299,7 @@ int_t new_meta_update_folders(new_meta_user_t *user, META_LOCK_STATUS locked) {
 
 	// Do we need a lock.
 	if (locked == META_NEED_LOCK) {
-		new_meta_user_wlock(user);
+		meta_user_wlock(user);
 	}
 
 	if (!user->refs.pop && user->folders && (checkpoint = serial_get(OBJECT_FOLDERS, user->usernum)) != user->serials.folders) {
@@ -308,7 +308,7 @@ int_t new_meta_update_folders(new_meta_user_t *user, META_LOCK_STATUS locked) {
 			user->serials.folders = serial_increment(OBJECT_FOLDERS, user->usernum);
 		}
 
-		if ((output = new_meta_data_fetch_folders(user)) && user->messages) {
+		if ((output = meta_data_fetch_folders(user)) && user->messages) {
 			meta_messages_update_sequences(user->folders, user->messages);
 		}
 	}
@@ -320,14 +320,14 @@ int_t new_meta_update_folders(new_meta_user_t *user, META_LOCK_STATUS locked) {
 			user->serials.folders = serial_increment(OBJECT_FOLDERS, user->usernum);
 		}
 
-		if ((output = new_meta_data_fetch_folders(user)) && user->messages) {
+		if ((output = meta_data_fetch_folders(user)) && user->messages) {
 			meta_messages_update_sequences(user->folders, user->messages);
 		}
 	}
 
 	// Do we need to clear the lock.
 	if (locked == META_NEED_LOCK) {
-		new_meta_user_unlock(user);
+		meta_user_unlock(user);
 	}
 
 	return output;
@@ -340,7 +340,7 @@ int_t new_meta_update_folders(new_meta_user_t *user, META_LOCK_STATUS locked) {
  * @param	locked	if META_LOCKED, lock the meta user object for the duration of the request.
  * @return	-1 on failure, or 1 on success.
  */
-int_t meta_update_message_folders(new_meta_user_t *user, META_LOCK_STATUS locked) {
+int_t meta_update_message_folders(meta_user_t *user, META_LOCK_STATUS locked) {
 
 	inx_t *fetch;
 	int_t output = 0;
@@ -352,7 +352,7 @@ int_t meta_update_message_folders(new_meta_user_t *user, META_LOCK_STATUS locked
 
 	// Do we need a lock.
 	if (locked == META_NEED_LOCK) {
-		new_meta_user_wlock(user);
+		meta_user_wlock(user);
 	}
 
 	// If there is a message folder index already available, use the serial number to see if it needs updating.
@@ -386,7 +386,7 @@ int_t meta_update_message_folders(new_meta_user_t *user, META_LOCK_STATUS locked
 
 	// Do we need to clear the lock.
 	if (locked == META_NEED_LOCK) {
-		new_meta_user_unlock(user);
+		meta_user_unlock(user);
 	}
 
 	return output;

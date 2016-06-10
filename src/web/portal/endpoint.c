@@ -202,7 +202,7 @@ void portal_endpoint_auth(connection_t *con) {
 	int_t state;
 	json_error_t err;
 	auth_t *auth = NULL;
-	new_meta_user_t *user = NULL;
+	meta_user_t *user = NULL;
 	chr_t *username = NULL, *password = NULL;
 
 	// Check the session state.
@@ -222,7 +222,7 @@ void portal_endpoint_auth(connection_t *con) {
 
 
 	// Pull the user info out.
-	if ((state = new_meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification, META_PROTOCOL_IMAP,
+	if ((state = meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification, META_PROTOCOL_IMAP,
 		META_GET_MESSAGES | META_GET_FOLDERS, &(con->imap.user)))) {
 
 		// The UNAVAILABLE response code is provided by RFC 5530 which states: "Temporary failure because a subsystem is down."
@@ -291,7 +291,7 @@ void portal_endpoint_auth(connection_t *con) {
 	}
 
 	// Pull the user info out.
-	if ((state =  new_meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification, META_PROTOCOL_WEB,
+	if ((state =  meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification, META_PROTOCOL_WEB,
 		META_GET_MESSAGES | META_GET_KEYS | META_GET_ALIASES | META_GET_FOLDERS | META_GET_CONTACTS, &(user)))) {
 
 		if (state < 0) {
@@ -312,7 +312,7 @@ void portal_endpoint_auth(connection_t *con) {
 	// Transport Layer Security Required
 	if (((user->flags & META_USER_ENCRYPT_DATA) || (user->flags & META_USER_TLS)) && con_secure(con) != 1) {
 
-		new_meta_inx_remove(user->usernum, META_PROTOCOL_WEB);
+		meta_inx_remove(user->usernum, META_PROTOCOL_WEB);
 		portal_endpoint_response(con, "{s:s, s:{s:s, s:s}, s:I}", "jsonrpc", "2.0","result", "auth", "failed", "message",
 			"The provided user account requires all connections be secured using encryption.", "id", con->http.portal.id);
 		return;
@@ -345,7 +345,7 @@ void portal_endpoint_logout(connection_t *con) {
 	con->http.response.cookie = HTTP_COOKIE_DELETE;
 
 	portal_endpoint_response(con, "{s:s, s:{s:s}, s:I}", "jsonrpc", "2.0", "result", "logout", "success", "id", con->http.portal.id);
-	new_meta_user_ref_dec(con->http.session->user, META_PROTOCOL_WEB);
+	meta_user_ref_dec(con->http.session->user, META_PROTOCOL_WEB);
 	con->http.session->user = NULL;
 
 	return;
@@ -796,7 +796,7 @@ void portal_endpoint_folders_rename(connection_t *con) {
 	}
 
 	// Create the folder.
-	new_meta_user_wlock(con->http.session->user);
+	meta_user_wlock(con->http.session->user);
 
 	if (context == PORTAL_ENDPOINT_CONTEXT_MAIL) {
 		state = imap_folder_rename(con->http.session->user->usernum, con->http.session->user->folders, original, srename);
@@ -835,7 +835,7 @@ void portal_endpoint_folders_rename(connection_t *con) {
 
 	}
 
-	new_meta_user_unlock(con->http.session->user);
+	meta_user_unlock(con->http.session->user);
 
 	// Let the user know what happened.
 	if (state == 1) {
@@ -907,16 +907,16 @@ void portal_endpoint_folders_tags(connection_t *con) {
 	}
 
 	// Lock the user while we scan the folder.
-	new_meta_user_rlock(con->http.session->user);
+	meta_user_rlock(con->http.session->user);
 
 	// Invalid folder number.
 	if (!folder || !(meta_folders_by_number(con->http.session->user->folders, folder))) {
-		new_meta_user_unlock(con->http.session->user);
+		meta_user_unlock(con->http.session->user);
 		portal_endpoint_error(con, 400, PORTAL_ENDPOINT_ERROR_REFERENCE | PORTAL_ENDPOINT_ERROR_FOLDERS_TAGS, "The requested folder number is invalid.");
 		return;
 	}
 	else if (!(list = json_object_d())) {
-		new_meta_user_unlock(con->http.session->user);
+		meta_user_unlock(con->http.session->user);
 		portal_endpoint_error(con, 500, JSON_RPC_2_ERROR_SERVER_INTERNAL, "Internal server error.");
 		return;
 	}
@@ -938,7 +938,7 @@ void portal_endpoint_folders_tags(connection_t *con) {
 		inx_free(stats);
 	}
 
-	new_meta_user_unlock(con->http.session->user);
+	meta_user_unlock(con->http.session->user);
 	portal_endpoint_response(con, "{s:s, s:o, s:I}", "jsonrpc", "2.0", "result", list, "id", con->http.portal.id);
 
 	return;
@@ -1059,7 +1059,7 @@ void portal_endpoint_messages_copy(connection_t *con) {
 		return;
 	}
 
-	new_meta_user_wlock(con->http.session->user);
+	meta_user_wlock(con->http.session->user);
 
 	// Confirm the source and target folder IDs are legit and that the source and target folder IDs are not identical.
 	if (!src_folder || !dst_folder || src_folder == dst_folder || !(meta_folders_by_number(con->http.session->user->folders, src_folder)) ||
@@ -1118,7 +1118,7 @@ void portal_endpoint_messages_copy(connection_t *con) {
 		}
 	}
 
-	new_meta_user_unlock(con->http.session->user);
+	meta_user_unlock(con->http.session->user);
 
 	return;
 }
@@ -1203,10 +1203,10 @@ void portal_endpoint_messages_flag(connection_t *con) {
 	}
 
 	if (action == PORTAL_ENDPOINT_ACTION_LIST) {
-		new_meta_user_rlock(con->http.session->user);
+		meta_user_rlock(con->http.session->user);
 	}
 	else {
-		new_meta_user_wlock(con->http.session->user);
+		meta_user_wlock(con->http.session->user);
 	}
 
 	// Confirm the source and target folder IDs are legit and that the source and target folder IDs are not identical.
@@ -1308,7 +1308,7 @@ void portal_endpoint_messages_flag(connection_t *con) {
 	}
 
 	/// TODO: Were holding onto the user lock while waiting on the response to be sent over the wire; and this function could probably use a rethink.
-	new_meta_user_unlock(con->http.session->user);
+	meta_user_unlock(con->http.session->user);
 
 	if (list) {
 		inx_free(list);
@@ -1351,11 +1351,11 @@ void portal_endpoint_messages_move(connection_t *con) {
 	}
 	else if (src_folder == dst_folder) {
 		portal_endpoint_error(con, 400, PORTAL_ENDPOINT_ERROR_ILLEGAL_COMBINATION | PORTAL_ENDPOINT_ERROR_MESSAGES_MOVE, "The source and destination folders must be different.");
-		new_meta_user_unlock(con->http.session->user);
+		meta_user_unlock(con->http.session->user);
 		return;
 	}
 
-	new_meta_user_wlock(con->http.session->user);
+	meta_user_wlock(con->http.session->user);
 
 	// Confirm the source and target folder IDs are legit and that the source and target folder IDs are not identical.
 	if (!(meta_folders_by_number(con->http.session->user->folders, src_folder)) || !(meta_folders_by_number(con->http.session->user->folders, dst_folder))) {
@@ -1409,7 +1409,7 @@ void portal_endpoint_messages_move(connection_t *con) {
 		// }
 	}
 
-	new_meta_user_unlock(con->http.session->user);
+	meta_user_unlock(con->http.session->user);
 
 	return;
 }
@@ -1443,7 +1443,7 @@ void portal_endpoint_messages_remove(connection_t *con) {
 		return;
 	}
 
-	new_meta_user_wlock(con->http.session->user);
+	meta_user_wlock(con->http.session->user);
 
 	// Confirm the source and target folder IDs are legit and that the source and target folder IDs are not identical.
 	if (!folder || !(meta_folders_by_number(con->http.session->user->folders, folder))) {
@@ -1498,7 +1498,7 @@ void portal_endpoint_messages_remove(connection_t *con) {
 
 	}
 
-	new_meta_user_unlock(con->http.session->user);
+	meta_user_unlock(con->http.session->user);
 
 	return;
 }
@@ -1625,10 +1625,10 @@ void portal_endpoint_messages_tag(connection_t *con) {
 	}
 
 	if (action == PORTAL_ENDPOINT_ACTION_LIST) {
-		new_meta_user_rlock(con->http.session->user);
+		meta_user_rlock(con->http.session->user);
 	}
 	else {
-		new_meta_user_wlock(con->http.session->user);
+		meta_user_wlock(con->http.session->user);
 	}
 
 	// Confirm the source and target folder IDs are legit and that the source and target folder IDs are not identical.
@@ -1704,7 +1704,7 @@ void portal_endpoint_messages_tag(connection_t *con) {
 
 			/// TODO: If the update is triggered before the tagged flag is added to the database the refresh might not pull the data for who recently got tagged! We need to need to look
 			/// for this type of sequence bug elsewhere too.
-			new_meta_user_serial_check(con->http.session->user, OBJECT_MESSAGES);
+			meta_user_serial_check(con->http.session->user, OBJECT_MESSAGES);
 
 
 			// Commit should only be true if there were no errors. Which means we also still need to output a success confirmation.
@@ -1739,7 +1739,7 @@ void portal_endpoint_messages_tag(connection_t *con) {
 	}
 
 	/// TODO: Were holding onto the user lock while were waiting on the response to be sent over the wire; and this function could probably use a rethink.
-	new_meta_user_unlock(con->http.session->user);
+	meta_user_unlock(con->http.session->user);
 
 	if (list) {
 		inx_free(list);
@@ -2199,19 +2199,19 @@ void portal_endpoint_contacts_copy(connection_t *con) {
 		return;
 	}
 
-	new_meta_user_rlock(con->http.session->user);
+	meta_user_rlock(con->http.session->user);
 
 	if (!(folder = magma_folder_find_number(con->http.session->user->contacts, src_folder))) {
-		new_meta_user_unlock(con->http.session->user);
+		meta_user_unlock(con->http.session->user);
 		portal_endpoint_error(con, 400, PORTAL_ENDPOINT_ERROR_REFERENCE | PORTAL_ENDPOINT_ERROR_CONTACTS_COPY, "The source folder number is invalid.");
 		return;
 	} else if (!(target = magma_folder_find_number(con->http.session->user->contacts, dst_folder))) {
-		new_meta_user_unlock(con->http.session->user);
+		meta_user_unlock(con->http.session->user);
 		portal_endpoint_error(con, 400, PORTAL_ENDPOINT_ERROR_REFERENCE | PORTAL_ENDPOINT_ERROR_CONTACTS_COPY, "The target folder number is invalid.");
 		return;
 	}
 	else if (!(contact = contact_find_number(folder, contactnum))) {
-		new_meta_user_unlock(con->http.session->user);
+		meta_user_unlock(con->http.session->user);
 		portal_endpoint_error(con, 400, PORTAL_ENDPOINT_ERROR_REFERENCE | PORTAL_ENDPOINT_ERROR_CONTACTS_COPY, "The requested contact number is invalid.");
 		return;
 	}
@@ -2221,7 +2221,7 @@ void portal_endpoint_contacts_copy(connection_t *con) {
 
 		if (!(modified = st_merge("ss", PLACER("Copy of ", 8), contact->name))) {
 			log_error("Could not create named copy of user contact entry.");
-			new_meta_user_unlock(con->http.session->user);
+			meta_user_unlock(con->http.session->user);
 			portal_endpoint_error(con, 500, JSON_RPC_2_ERROR_SERVER_INTERNAL, "Internal server error.");
 			return;
 		}
@@ -2235,7 +2235,7 @@ void portal_endpoint_contacts_copy(connection_t *con) {
 	// We store the contact number using the multi variable here so that we can free the contact if an error occurs and still return the correct contact number.
 	if (!(copy = contact_create(con->http.session->user->usernum, target->foldernum, name)) || !(multi.val.u64 = copy->contactnum)) {
 		log_pedantic("Could not create duplicate contact entry.");
-		new_meta_user_unlock(con->http.session->user);
+		meta_user_unlock(con->http.session->user);
 
 		// The only way we can reach this point with contact holding a pointer value is if the second boolean expression fails: contactnum == 0.
 		portal_endpoint_error(con, 400, PORTAL_ENDPOINT_ERROR_CONSTRAINT_VIOLATION | PORTAL_ENDPOINT_ERROR_CONTACTS_COPY, "The contact name is invalid.");
@@ -2254,8 +2254,8 @@ void portal_endpoint_contacts_copy(connection_t *con) {
 		inx_cursor_free(cursor);
 	}
 
-	new_meta_user_unlock(con->http.session->user);
-	new_meta_user_wlock(con->http.session->user);
+	meta_user_unlock(con->http.session->user);
+	meta_user_wlock(con->http.session->user);
 
 	if (copy && (!(target = magma_folder_find_number(con->http.session->user->contacts, dst_folder)) || !inx_insert(target->records, multi, copy))) {
 		contact_free(copy);
@@ -2264,7 +2264,7 @@ void portal_endpoint_contacts_copy(connection_t *con) {
 		sess_serial_check(con->http.session, OBJECT_CONTACTS);
 	}
 
-	new_meta_user_unlock(con->http.session->user);
+	meta_user_unlock(con->http.session->user);
 	portal_endpoint_response(con, "{s:s, s:{s:I}, s:I}", "jsonrpc", "2.0", "result", "contactID", multi.val.u64, "id", con->http.portal.id);
 
 	// If we had to modified the name, make sure that buffer is freed.
@@ -2303,20 +2303,20 @@ void portal_endpoint_contacts_move(connection_t *con) {
 		return;
 	}
 	else if (src_folder == dst_folder) {
-		new_meta_user_unlock(con->http.session->user);
+		meta_user_unlock(con->http.session->user);
 		portal_endpoint_error(con, 400, PORTAL_ENDPOINT_ERROR_ILLEGAL_COMBINATION | PORTAL_ENDPOINT_ERROR_CONTACTS_MOVE, "The source and destination contacts folders must be different.");
 		return;
 	}
 
-	new_meta_user_wlock(con->http.session->user);
+	meta_user_wlock(con->http.session->user);
 
 	if (!(folder = magma_folder_find_number(con->http.session->user->contacts, src_folder)) || !(target = magma_folder_find_number(con->http.session->user->contacts, dst_folder))) {
-		new_meta_user_unlock(con->http.session->user);
+		meta_user_unlock(con->http.session->user);
 		portal_endpoint_error(con, 400, PORTAL_ENDPOINT_ERROR_REFERENCE | PORTAL_ENDPOINT_ERROR_CONTACTS_MOVE, "The requested folder number is invalid.");
 		return;
 	}
 	else if (!(contact = contact_find_number(folder, contactnum))) {
-		new_meta_user_unlock(con->http.session->user);
+		meta_user_unlock(con->http.session->user);
 		portal_endpoint_error(con, 400, PORTAL_ENDPOINT_ERROR_REFERENCE | PORTAL_ENDPOINT_ERROR_CONTACTS_MOVE, "The requested contact number is invalid.");
 		return;
 	}
@@ -2326,7 +2326,7 @@ void portal_endpoint_contacts_move(connection_t *con) {
 		sess_serial_check(con->http.session, OBJECT_CONTACTS);
 	}
 
-	new_meta_user_unlock(con->http.session->user);
+	meta_user_unlock(con->http.session->user);
 
 	if (status != 1) {
 		portal_endpoint_error(con, 500, JSON_RPC_2_ERROR_SERVER_INTERNAL, "Internal server error.");
@@ -2363,15 +2363,15 @@ void portal_endpoint_contacts_remove(connection_t *con) {
 		return;
 	}
 
-	new_meta_user_wlock(con->http.session->user);
+	meta_user_wlock(con->http.session->user);
 
 	if (!(folder = magma_folder_find_number(con->http.session->user->contacts, foldernum))) {
-		new_meta_user_unlock(con->http.session->user);
+		meta_user_unlock(con->http.session->user);
 		portal_endpoint_error(con, 400, PORTAL_ENDPOINT_ERROR_REFERENCE | PORTAL_ENDPOINT_ERROR_CONTACTS_REMOVE, "The requested folder number is invalid.");
 		return;
 	}
 	else if (!(contact = contact_find_number(folder, contactnum))) {
-		new_meta_user_unlock(con->http.session->user);
+		meta_user_unlock(con->http.session->user);
 		portal_endpoint_error(con, 400, PORTAL_ENDPOINT_ERROR_REFERENCE | PORTAL_ENDPOINT_ERROR_CONTACTS_REMOVE, "The requested contact number is invalid.");
 		return;
 	}
@@ -2381,7 +2381,7 @@ void portal_endpoint_contacts_remove(connection_t *con) {
 		sess_serial_check(con->http.session, OBJECT_CONTACTS);
 	}
 
-	new_meta_user_unlock(con->http.session->user);
+	meta_user_unlock(con->http.session->user);
 
 	if (status < 0) {
 		portal_endpoint_error(con, 500, JSON_RPC_2_ERROR_SERVER_INTERNAL, "Internal server error.");
@@ -2494,15 +2494,15 @@ void portal_endpoint_contacts_add(connection_t *con) {
 		return;
 	}
 
-	new_meta_user_rlock(con->http.session->user);
+	meta_user_rlock(con->http.session->user);
 
 	if (!(folder = magma_folder_find_number(con->http.session->user->contacts, foldernum))) {
-		new_meta_user_unlock(con->http.session->user);
+		meta_user_unlock(con->http.session->user);
 		portal_endpoint_error(con, 400, PORTAL_ENDPOINT_ERROR_REFERENCE | PORTAL_ENDPOINT_ERROR_CONTACTS_ADD, "The requested folder number is invalid.");
 		return;
 	}
 
-	new_meta_user_unlock(con->http.session->user);
+	meta_user_unlock(con->http.session->user);
 
 	// Ensure a name was provided.
 	if (!(name = json_object_get_d(pairs, "name")) || !json_is_string(name)) {
@@ -2566,7 +2566,7 @@ void portal_endpoint_contacts_add(connection_t *con) {
 		return;
 	}
 
-	new_meta_user_wlock(con->http.session->user);
+	meta_user_wlock(con->http.session->user);
 
 	// Since we released the read lock above were playing it safe and looking for the folder context again just to be sure.
 	if (!(folder = magma_folder_find_number(con->http.session->user->contacts, foldernum)) || !inx_insert(folder->records, multi, contact)) {
@@ -2576,7 +2576,7 @@ void portal_endpoint_contacts_add(connection_t *con) {
 		sess_serial_check(con->http.session, OBJECT_CONTACTS);
 	}
 
-	new_meta_user_unlock(con->http.session->user);
+	meta_user_unlock(con->http.session->user);
 
 	portal_endpoint_response(con, "{s:s, s:{s:I}, s:I}", "jsonrpc", "2.0", "result", "contactID", multi.val.u64, "id", con->http.portal.id);
 	return;
@@ -2613,22 +2613,22 @@ void portal_endpoint_contacts_edit(connection_t *con) {
 		return;
 	}
 
-	new_meta_user_rlock(con->http.session->user);
+	meta_user_rlock(con->http.session->user);
 
 	if (!(folder = magma_folder_find_number(con->http.session->user->contacts, foldernum))) {
-		new_meta_user_unlock(con->http.session->user);
+		meta_user_unlock(con->http.session->user);
 		portal_endpoint_error(con, 400, PORTAL_ENDPOINT_ERROR_REFERENCE | PORTAL_ENDPOINT_ERROR_CONTACTS_EDIT, "The requested folder number is invalid.");
 		return;
 	}
 	else if (!(contact = contact_find_number(folder, contactnum))) {
-		new_meta_user_unlock(con->http.session->user);
+		meta_user_unlock(con->http.session->user);
 		portal_endpoint_error(con, 400, PORTAL_ENDPOINT_ERROR_REFERENCE | PORTAL_ENDPOINT_ERROR_CONTACTS_EDIT, "The requested contact number is invalid.");
 		return;
 	}
 
-	new_meta_user_unlock(con->http.session->user);
+	meta_user_unlock(con->http.session->user);
 
-	new_meta_user_wlock(con->http.session->user);
+	meta_user_wlock(con->http.session->user);
 	iter = json_object_iter_d(pairs);
 
 	/// HIGH: We aren't checking/validating the contact details! And we should probably do our own duplication checks to avoid placing unnecessary load on the database.
@@ -2641,7 +2641,7 @@ void portal_endpoint_contacts_edit(connection_t *con) {
 	}
 
 	sess_serial_check(con->http.session, OBJECT_CONTACTS);
-	new_meta_user_unlock(con->http.session->user);
+	meta_user_unlock(con->http.session->user);
 
 	if (status < 0) {
 		portal_endpoint_error(con, 500, JSON_RPC_2_ERROR_SERVER_INTERNAL, "Internal server error.");

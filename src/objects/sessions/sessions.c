@@ -66,7 +66,7 @@ void sess_destroy(session_t *sess) {
 	if (sess) {
 
 		if (sess->user) {
-			new_meta_inx_remove(sess->user->usernum, META_PROTOCOL_WEB);
+			meta_inx_remove(sess->user->usernum, META_PROTOCOL_WEB);
 		}
 
 		st_cleanup(sess->warden.token);
@@ -276,11 +276,11 @@ void sess_update(session_t *sess) {
 		// Flush the update trackers to discourage unnecessary refreshes.
 		sess_refresh_flush(sess);
 
-		new_meta_update_user(sess->user, META_NEED_LOCK);
+		meta_update_user(sess->user, META_NEED_LOCK);
 		meta_update_aliases(sess->user, META_NEED_LOCK);
-		new_meta_update_folders(sess->user, META_NEED_LOCK);
+		meta_update_folders(sess->user, META_NEED_LOCK);
 		meta_messages_update(sess->user, META_NEED_LOCK);
-		new_meta_update_contacts(sess->user, META_NEED_LOCK);
+		meta_update_contacts(sess->user, META_NEED_LOCK);
 	}
 
 	return;
@@ -360,7 +360,7 @@ void sess_release_composition(composition_t *comp) {
  */
 void sess_serial_check(session_t *sess, uint64_t object) {
 
-	if (sess && new_meta_user_serial_check(sess->user, object)) {
+	if (sess && meta_user_serial_check(sess->user, object)) {
 		sess_trigger(sess);
 	}
 

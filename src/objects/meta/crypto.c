@@ -73,7 +73,7 @@ int_t meta_crypto_keys_create(uint64_t usernum, stringer_t *username, stringer_t
 
 	// Try storing the keys in the database. If 0 is returned, the new pair was stored, otherwise if a 1 is returned
 	// its possible another process created the keys already, in which case they will be retrieved below.
-	if (new_meta_data_insert_keys(usernum, username, &pair, transaction) < 0) {
+	if (meta_data_insert_keys(usernum, username, &pair, transaction) < 0) {
 		log_pedantic("Unable to store the user key pair. { username = %.*s }", st_length_int(username), st_char_get(username));
 		st_cleanup(pair.private, pair.public);
 		return 1;

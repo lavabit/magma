@@ -18,9 +18,7 @@
 pthread_mutex_t portal_statistics_mutex = PTHREAD_MUTEX_INITIALIZER;
 time_t statistics_last_updated = 0;
 
-
 statistics_vp_t portal_stats[portal_stat_users_num_statements];
-
 
 /**
  * @brief	Initialize the prepared sql statements used by the portal statistics page.

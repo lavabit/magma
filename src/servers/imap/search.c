@@ -84,7 +84,7 @@ int_t imap_search_messages_date_compare(stringer_t *one, stringer_t *two) {
 	return 1;
 }
 
-int_t imap_search_messages_date(new_meta_user_t *user, mail_message_t **data, stringer_t **header, meta_message_t *active, stringer_t *date, int_t internal, int_t expected) {
+int_t imap_search_messages_date(meta_user_t *user, mail_message_t **data, stringer_t **header, meta_message_t *active, stringer_t *date, int_t internal, int_t expected) {
 
 	time_t utime;
 	struct tm ltime;
@@ -163,7 +163,7 @@ int_t imap_search_messages_date(new_meta_user_t *user, mail_message_t **data, st
 }
 
 // Search the header.
-int_t imap_search_messages_header(new_meta_user_t *user, mail_message_t **data, stringer_t **header, meta_message_t *active, stringer_t *field, stringer_t *value) {
+int_t imap_search_messages_header(meta_user_t *user, mail_message_t **data, stringer_t **header, meta_message_t *active, stringer_t *field, stringer_t *value) {
 
 	size_t location;
 	int_t compare = -1;
@@ -199,7 +199,7 @@ int_t imap_search_messages_header(new_meta_user_t *user, mail_message_t **data, 
 	return compare;
 }
 
-int_t imap_search_messages_body(new_meta_user_t *user, mail_message_t **data, meta_message_t *active, stringer_t *value) {
+int_t imap_search_messages_body(meta_user_t *user, mail_message_t **data, meta_message_t *active, stringer_t *value) {
 
 	size_t location;
 	int_t compare = -1;
@@ -223,7 +223,7 @@ int_t imap_search_messages_body(new_meta_user_t *user, mail_message_t **data, me
 	return compare;
 }
 
-int_t imap_search_messages_text(new_meta_user_t *user, mail_message_t **data, meta_message_t *active, stringer_t *value) {
+int_t imap_search_messages_text(meta_user_t *user, mail_message_t **data, meta_message_t *active, stringer_t *value) {
 
 	size_t location;
 	int_t compare = -1;
@@ -350,7 +350,7 @@ int_t imap_search_messages_range(meta_message_t *active, stringer_t *range, int_
 	return -1;
 }
 
-int_t imap_search_messages_inner(new_meta_user_t *user, mail_message_t **message, stringer_t **header, meta_message_t *current, imap_arguments_t *array, unsigned recursion) {
+int_t imap_search_messages_inner(meta_user_t *user, mail_message_t **message, stringer_t **header, meta_message_t *current, imap_arguments_t *array, unsigned recursion) {
 
 	stringer_t *item;
 	unsigned number, increment = 0;
@@ -584,7 +584,7 @@ inx_t * imap_search_messages(connection_t *con) {
 	while (status() && !finished) {
 
 		/// LOW: Is a read lock necessary now that were using index reference counters and thread safe iteration cursors?
-		new_meta_user_rlock(con->imap.user);
+		meta_user_rlock(con->imap.user);
 		start = time(NULL);
 
 		if (con->imap.user && con->imap.user->messages && (cursor = inx_cursor_alloc(con->imap.user->messages))) {
@@ -618,7 +618,7 @@ inx_t * imap_search_messages(connection_t *con) {
 			count++;
 		}
 
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 		inx_cursor_free(cursor);
 
 		// If the search is defers it should also sleep to allowing other threads access.
@@ -633,7 +633,7 @@ inx_t * imap_search_messages(connection_t *con) {
 
 	// We need to update the sequence numbers.
 	if (!finished && con->imap.uid != 1 && con->imap.messages_checkpoint != con->imap.user->serials.messages && (cursor = inx_cursor_alloc(output))) {
-		new_meta_user_rlock(con->imap.user);
+		meta_user_rlock(con->imap.user);
 
 		while ((active = inx_cursor_value_next(cursor)) && con->imap.user && con->imap.user->messages) {
 
@@ -649,7 +649,7 @@ inx_t * imap_search_messages(connection_t *con) {
 			}
 		}
 
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 		inx_cursor_free(cursor);
 	}
 
@@ -674,7 +674,7 @@ inx_t * imap_search_messages(connection_t *con) {
 	while (status()) {
 
 		counter = 0;
-		new_meta_user_rlock(con->imap.user);
+		meta_user_rlock(con->imap.user);
 
 		// Record the start time.
 		start = time(NULL);
@@ -684,7 +684,7 @@ inx_t * imap_search_messages(connection_t *con) {
 			ll_reset(con->imap.user->messages);
 			while ((active = ll_pop(con->imap.user->messages)) != NULL && active->messagenum != uid);
 			if (active == NULL) {
-				new_meta_user_unlock(con->imap.user);
+				meta_user_unlock(con->imap.user);
 				return output;
 			}
 		}
@@ -721,8 +721,8 @@ inx_t * imap_search_messages(connection_t *con) {
 			if (con->imap.uid != 1 && con->imap.messages_checkpoint != con->imap.user->serials.messages) {
 
 				// Unlock and then relock the mailbox in case any other threads are waiting.
-				new_meta_user_unlock(con->imap.user);
-				new_meta_user_rlock(con->imap.user);
+				meta_user_unlock(con->imap.user);
+				meta_user_rlock(con->imap.user);
 
 				ll_reset(output);
 				while ((active = ll_pop(output)) != NULL) {
@@ -741,14 +741,14 @@ inx_t * imap_search_messages(connection_t *con) {
 				}
 			}
 
-			new_meta_user_unlock(con->imap.user);
+			meta_user_unlock(con->imap.user);
 			return output;
 		}
 		else {
 			uid = active->messagenum;
 		}
 
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 		log_pedantic("%lu deferring...", pthread_self());
 	}
 

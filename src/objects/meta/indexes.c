@@ -19,9 +19,9 @@
  * @param	protocol		specifies the protocol bound to the reference counter to be decremented (META_PROT_WEB, META_PROT_IMAP, etc.)
  * @return	This function returns no value.
  */
-void new_meta_inx_remove(uint64_t usernum, META_PROTOCOL protocol) {
+void meta_inx_remove(uint64_t usernum, META_PROTOCOL protocol) {
 
-	new_meta_user_t *user = NULL;
+	meta_user_t *user = NULL;
 	multi_t key = { .type = M_TYPE_UINT64, .val.u64 = usernum };
 
 	if (!usernum) {
@@ -33,7 +33,7 @@ void new_meta_inx_remove(uint64_t usernum, META_PROTOCOL protocol) {
 
 	// If we find the meta object, decrement the reference counter so it gets gets removed by the prune function.
 	if ((user = inx_find(objects.meta, key))) {
-		new_meta_user_ref_dec(user, protocol);
+		meta_user_ref_dec(user, protocol);
 	}
 
 	// Release the object cache.
@@ -42,9 +42,9 @@ void new_meta_inx_remove(uint64_t usernum, META_PROTOCOL protocol) {
 	return;
 }
 
-new_meta_user_t * new_meta_inx_find(uint64_t usernum, META_PROTOCOL protocol) {
+meta_user_t * meta_inx_find(uint64_t usernum, META_PROTOCOL protocol) {
 
-	new_meta_user_t *user = NULL;
+	meta_user_t *user = NULL;
 	multi_t key = { .type = M_TYPE_UINT64, .val.u64 = usernum };
 
 	if (!usernum) {
@@ -58,9 +58,9 @@ new_meta_user_t * new_meta_inx_find(uint64_t usernum, META_PROTOCOL protocol) {
 	if (!(user = inx_find(objects.meta, key))) {
 
 		// We need to create a new one.
-		if (!(user = new_meta_alloc()) || !inx_insert(objects.meta, key, user)) {
+		if (!(user = meta_alloc()) || !inx_insert(objects.meta, key, user)) {
 			inx_unlock(objects.meta);
-			new_meta_free(user);
+			meta_free(user);
 			return NULL;
 		}
 		else {
@@ -70,7 +70,7 @@ new_meta_user_t * new_meta_inx_find(uint64_t usernum, META_PROTOCOL protocol) {
 	}
 
 	// Add a reference.
-	new_meta_user_ref_add(user, protocol);
+	meta_user_ref_add(user, protocol);
 	inx_unlock(objects.meta);
 
 	return user;

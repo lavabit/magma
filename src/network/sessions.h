@@ -34,7 +34,7 @@ typedef struct {
 typedef struct {
 
 	int_t state;
-	new_meta_user_t *user;
+	meta_user_t *user;
 	inx_t *compositions;
 	uint64_t composed;
 

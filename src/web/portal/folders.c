@@ -39,13 +39,13 @@ void portal_folder_mail_add(connection_t *con, stringer_t *name, uint64_t parent
 	}
 
 	// Create the folder.
-	new_meta_user_wlock(con->http.session->user);
+	meta_user_wlock(con->http.session->user);
 
 	if ((state = imap_folder_create(con->http.session->user->usernum, con->http.session->user->folders, complete ? complete : name)) == 1) {
 		sess_serial_check(con->http.session, OBJECT_FOLDERS);
 	}
 
-	new_meta_user_unlock(con->http.session->user);
+	meta_user_unlock(con->http.session->user);
 
 	// Let the user know what happened.
 	if (state == -1) {
@@ -101,13 +101,13 @@ void portal_folder_contacts_add(connection_t *con, stringer_t *name, uint64_t pa
 	} */
 
 	// Create the folder.
-	new_meta_user_wlock(con->http.session->user);
+	meta_user_wlock(con->http.session->user);
 
 	if ((state = contact_folder_create(con->http.session->user->usernum, parent, name, con->http.session->user->contacts)) == 1) {
 		sess_serial_check(con->http.session, OBJECT_CONTACTS);
 	}
 
-	new_meta_user_unlock(con->http.session->user);
+	meta_user_unlock(con->http.session->user);
 
 	switch(state) {
 		case 0:
@@ -166,13 +166,13 @@ void portal_folder_mail_remove(connection_t *con, uint64_t foldernum) {
 		return;
 	}
 
-	new_meta_user_wlock(con->http.session->user);
+	meta_user_wlock(con->http.session->user);
 
 	if ((state = imap_folder_remove(con->http.session->user->usernum, con->http.session->user->folders, con->http.session->user->messages, folder)) == 1) {
 		sess_serial_check(con->http.session, OBJECT_FOLDERS);
 	}
 
-	new_meta_user_unlock(con->http.session->user);
+	meta_user_unlock(con->http.session->user);
 
 	// Let the user know what happened.
 	if (state == 1) {
@@ -214,14 +214,14 @@ void portal_folder_contacts_remove(connection_t *con, uint64_t foldernum) {
 		return;
 	}
 
-	new_meta_user_wlock(con->http.session->user);
+	meta_user_wlock(con->http.session->user);
 
 	// TODO: Double check this comparison
 	if (!(state = contact_folder_remove(con->http.session->user->usernum, foldernum, con->http.session->user->contacts))) {
 		sess_serial_check(con->http.session, OBJECT_CONTACTS);
 	}
 
-	new_meta_user_unlock(con->http.session->user);
+	meta_user_unlock(con->http.session->user);
 
 	// Let the user know what happened.
 	switch (state) {

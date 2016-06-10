@@ -2,7 +2,7 @@
 /**
  * @file /magma/src/objects/meta/meta.c
  *
- * @brief The primary interface for the new_meta objects.
+ * @brief The primary interface for the meta objects.
  *
  * $Author$
  * $Date$
@@ -19,7 +19,7 @@
  *
  * @return	This function returns no value.
  */
-void new_meta_free(new_meta_user_t *user) {
+void meta_free(meta_user_t *user) {
 
 	if (user) {
 
@@ -47,9 +47,9 @@ void new_meta_free(new_meta_user_t *user) {
  *
  * @return	NULL on failure, or a pointer to the newly allocated meta user object on success.
  */
-new_meta_user_t * new_meta_alloc(void) {
+meta_user_t * meta_alloc(void) {
 
-	new_meta_user_t *user;
+	meta_user_t *user;
 	pthread_rwlockattr_t attr;
 
 	// Configure the rwlock attributes to prefer write lock requests.
@@ -63,8 +63,8 @@ new_meta_user_t * new_meta_alloc(void) {
 		return NULL;
 	}
 
-	if (!(user = mm_alloc(sizeof(new_meta_user_t)))) {
-		log_pedantic("Unable to allocate %zu bytes for a user meta information structure.", sizeof(new_meta_user_t));
+	if (!(user = mm_alloc(sizeof(meta_user_t)))) {
+		log_pedantic("Unable to allocate %zu bytes for a user meta information structure.", sizeof(meta_user_t));
 		rwlock_attr_destroy(&attr);
 		return NULL;
 	}
@@ -102,10 +102,10 @@ new_meta_user_t * new_meta_alloc(void) {
  *
  * @return	-1 on error, 0 on success, 1 for an authentication issue.
  */
-int_t new_meta_get(uint64_t usernum, stringer_t *username, stringer_t *master, stringer_t *verification, META_PROTOCOL protocol, META_GET get, new_meta_user_t **output) {
+int_t meta_get(uint64_t usernum, stringer_t *username, stringer_t *master, stringer_t *verification, META_PROTOCOL protocol, META_GET get, meta_user_t **output) {
 
 	int_t state;
-	new_meta_user_t *user = NULL;
+	meta_user_t *user = NULL;
 
 	// If the auth structure is empty, or the usernum is invalid, return an error immediately.
 	if (!usernum || !st_populated(username, master, verification)) {
@@ -114,70 +114,70 @@ int_t new_meta_get(uint64_t usernum, stringer_t *username, stringer_t *master, s
 	}
 
 	// Pull the user from the usernum, or add it.
-	if (!(user = new_meta_inx_find(usernum, protocol))) {
+	if (!(user = meta_inx_find(usernum, protocol))) {
 		log_pedantic("Could not find an existing user object, nor could we create one.");
 		return -1;
 	}
 
-	new_meta_user_wlock(user);
+	meta_user_wlock(user);
 
 	// Pull the user information.
-	if ((state = new_meta_update_user(user, META_LOCKED)) < 0) {
-		new_meta_user_unlock(user);
-		new_meta_inx_remove(usernum, protocol);
+	if ((state = meta_update_user(user, META_LOCKED)) < 0) {
+		meta_user_unlock(user);
+		meta_inx_remove(usernum, protocol);
 		return state;
 	}
 
 	// The auth_t object should have checked the verification token already, but we check here just to be sure.
 	else if (st_empty(user->verification) || st_cmp_cs_eq(verification, user->verification)) {
-		new_meta_user_unlock(user);
-		new_meta_inx_remove(usernum, protocol);
+		meta_user_unlock(user);
+		meta_inx_remove(usernum, protocol);
 		return 1;
 	}
 
 	// Are we supposed to get the mailbox aliases.
 	if ((get & META_GET_KEYS) && meta_update_keys(user, master, META_LOCKED) < 0) {
-		new_meta_user_unlock(user);
-		new_meta_inx_remove(usernum, protocol);
+		meta_user_unlock(user);
+		meta_inx_remove(usernum, protocol);
 		return -1;
 	}
 
  	 // Are we supposed to get the mailbox aliases.
 	if ((get & META_GET_ALIASES) && meta_update_aliases(user, META_LOCKED) < 0) {
-		new_meta_user_unlock(user);
-		new_meta_inx_remove(usernum, protocol);
+		meta_user_unlock(user);
+		meta_inx_remove(usernum, protocol);
 		return -1;
 	}
 
 	// Are we supposed to get the messages.
 	if ((get & META_GET_MESSAGES) && meta_messages_update(user, META_LOCKED) < 0) {
-		new_meta_user_unlock(user);
-		new_meta_inx_remove(usernum, protocol);
+		meta_user_unlock(user);
+		meta_inx_remove(usernum, protocol);
 		return -1;
 	}
 
 	if ((get & META_GET_FOLDERS) && meta_update_message_folders(user, META_LOCKED) < 0) {
-		new_meta_user_unlock(user);
-		new_meta_inx_remove(usernum, protocol);
+		meta_user_unlock(user);
+		meta_inx_remove(usernum, protocol);
 		return -1;
 	}
 
 	// Are we supposed to update the folders.
-	if ((get & META_GET_FOLDERS) && new_meta_update_folders(user, META_LOCKED) < 0) {
-		new_meta_user_unlock(user);
-		new_meta_inx_remove(usernum, protocol);
+	if ((get & META_GET_FOLDERS) && meta_update_folders(user, META_LOCKED) < 0) {
+		meta_user_unlock(user);
+		meta_inx_remove(usernum, protocol);
 		return -1;
 	}
 
 	// Are we supposed to update the folders.
-	if ((get & META_GET_CONTACTS) && new_meta_update_contacts(user, META_LOCKED) < 0) {
-		new_meta_user_unlock(user);
-		new_meta_inx_remove(usernum, protocol);
+	if ((get & META_GET_CONTACTS) && meta_update_contacts(user, META_LOCKED) < 0) {
+		meta_user_unlock(user);
+		meta_inx_remove(usernum, protocol);
 		return -1;
 	}
 
 	*output = user;
-	new_meta_user_unlock(user);
+	meta_user_unlock(user);
 
 	return 0;
 }

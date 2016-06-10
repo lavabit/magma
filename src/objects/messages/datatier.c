@@ -116,7 +116,7 @@ void meta_data_fetch_message_tags(meta_message_t *message) {
  * @param	user	the meta user object whose mail messages will be retrieved.
  * @return	true on success or false on failure.
  */
-bool_t meta_data_fetch_messages(new_meta_user_t *user) {
+bool_t meta_data_fetch_messages(meta_user_t *user) {
 
 	row_t *row;
 	multi_t key;

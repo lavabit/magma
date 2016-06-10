@@ -15,7 +15,7 @@
 
 typedef struct {
 	bool_t expunge;
-	new_meta_user_t *user;
+	meta_user_t *user;
 	int_t session_state;
 	stringer_t *username;
 	uint64_t usernum;

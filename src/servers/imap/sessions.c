@@ -29,33 +29,33 @@ int_t imap_session_update(connection_t *con) {
 	}
 
 	if ((checkpoint = serial_get(OBJECT_USER, con->imap.user->usernum)) != con->imap.user_checkpoint) {
-		new_meta_user_wlock(con->imap.user);
+		meta_user_wlock(con->imap.user);
 
 		// Update the user preferences.
 		if (checkpoint != con->imap.user->serials.user) {
-			new_meta_update_user(con->imap.user, META_LOCKED);
+			meta_update_user(con->imap.user, META_LOCKED);
 		}
 
 		// Store the new checkpoint.
 		con->imap.user_checkpoint = con->imap.user->serials.user;
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 	}
 
 	if ((checkpoint = serial_get(OBJECT_FOLDERS, con->imap.user->usernum)) != con->imap.folders_checkpoint) {
-		new_meta_user_wlock(con->imap.user);
+		meta_user_wlock(con->imap.user);
 
 	   // Update the list of folders.
 		if (checkpoint != con->imap.user->serials.folders) {
-			new_meta_update_folders(con->imap.user, META_LOCKED);
+			meta_update_folders(con->imap.user, META_LOCKED);
 		}
 
 		// Store the new checkpoint.
 		con->imap.folders_checkpoint = con->imap.user->serials.folders;
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 	}
 
 	if ((checkpoint = serial_get(OBJECT_MESSAGES, con->imap.user->usernum)) != con->imap.messages_checkpoint) {
-		new_meta_user_wlock(con->imap.user);
+		meta_user_wlock(con->imap.user);
 
 		if (checkpoint != con->imap.user->serials.messages) {
 			meta_messages_update(con->imap.user, META_LOCKED);
@@ -89,7 +89,7 @@ int_t imap_session_update(connection_t *con) {
 		// Store the new checkpoint.
 		con->imap.messages_checkpoint = con->imap.user->serials.messages;
 
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 	}
 
 	return result;
@@ -100,7 +100,7 @@ void imap_session_destroy(connection_t *con) {
 	inx_cursor_t *cursor;
 	meta_message_t *active;
 
-	new_meta_user_wlock(con->imap.user);
+	meta_user_wlock(con->imap.user);
 
 	// If a folder was selected, clear the recent flag before closing the mailbox.
 	if (con->imap.session_state == 1 && con->imap.user && con->imap.selected && !con->imap.read_only &&
@@ -117,11 +117,11 @@ void imap_session_destroy(connection_t *con) {
 		inx_cursor_free(cursor);
 	}
 
-	new_meta_user_unlock(con->imap.user);
+	meta_user_unlock(con->imap.user);
 
 	// Is there a user session.
 	if (con->imap.user && con->imap.usernum) {
-		new_meta_inx_remove(con->imap.usernum, META_PROTOCOL_IMAP);
+		meta_inx_remove(con->imap.usernum, META_PROTOCOL_IMAP);
 	}
 
 	if (con->imap.arguments) {

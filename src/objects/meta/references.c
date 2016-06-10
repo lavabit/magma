@@ -1,8 +1,8 @@
 
 /**
- * @file /magma/src/objects/new_meta/references.c
+ * @file /magma/src/objects/meta/references.c
  *
- * @brief Functions for handling the new_meta object reference counters.
+ * @brief Functions for handling the meta object reference counters.
  *
  * $Author$
  * $Date$
@@ -13,16 +13,16 @@
 #include "magma.h"
 
 /**
- * @brief	Increment a new_meta user's reference counter for a specified protocol and update the activity timestamp.
+ * @brief	Increment a meta user's reference counter for a specified protocol and update the activity timestamp.
  *
  * @note	META_PROTOCOL_GENERIC can be specified for non-specific, protocol independent accounting purposes.
  *
- * @param	user		a pointer to the new_meta user object to be adjusted.
+ * @param	user		a pointer to the meta user object to be adjusted.
  * @param	protocol	the protocol identifier for the session.
  *
  * @return	This function returns no value.
  */
-void new_meta_user_ref_add(new_meta_user_t *user, META_PROTOCOL protocol) {
+void meta_user_ref_add(meta_user_t *user, META_PROTOCOL protocol) {
 
 	if (user) {
 
@@ -57,12 +57,12 @@ void new_meta_user_ref_add(new_meta_user_t *user, META_PROTOCOL protocol) {
  *
  * @note	META_PROTOCOL_GENERIC can be specified for non-specific, protocol independent accounting purposes.
  *
- * @param	user		a pointer to the new_meta user object to be adjusted.
+ * @param	user		a pointer to the meta user object to be adjusted.
  * @param	protocol	the protocol identifier for the session using the META_PROTOCOL enumerator.
  *
  * @return	This function returns no value.
  */
-void new_meta_user_ref_dec(new_meta_user_t *user, META_PROTOCOL protocol) {
+void meta_user_ref_dec(meta_user_t *user, META_PROTOCOL protocol) {
 
 	if (user) {
 
@@ -95,12 +95,12 @@ void new_meta_user_ref_dec(new_meta_user_t *user, META_PROTOCOL protocol) {
 /**
  * @brief	Get the total reference count for the user object over the specified protocol.
  *
- * @param	user		a pointer to the new_meta user object to be examined.
+ * @param	user		a pointer to the meta user object to be examined.
  * @param	protocol	the protocol identifier for the session using the META_PROTOCOL enumerator.
  *
  * @return	the total number of references held by the user.
  */
-uint64_t new_meta_user_ref_protocol_total(new_meta_user_t *user, META_PROTOCOL protocol) {
+uint64_t meta_user_ref_protocol_total(meta_user_t *user, META_PROTOCOL protocol) {
 
 	uint64_t result = 0;
 
@@ -132,11 +132,11 @@ uint64_t new_meta_user_ref_protocol_total(new_meta_user_t *user, META_PROTOCOL p
 /**
  * @brief	Get the total reference count for a user object, over all of the supported protocols.
  *
- * @param	user		a pointer to the new_meta user object to be examined.
+ * @param	user		a pointer to the meta user object to be examined.
  *
  * @return	the total number of references held by the user.
  */
-uint64_t new_meta_user_ref_total(new_meta_user_t *user) {
+uint64_t meta_user_ref_total(meta_user_t *user) {
 
 	uint64_t result = 0;
 
@@ -157,13 +157,13 @@ uint64_t new_meta_user_ref_total(new_meta_user_t *user) {
 }
 
 /**
- * @brief	Get the activity timestamp for a new_meta user object.
+ * @brief	Get the activity timestamp for a meta user object.
  *
- * @param	user	a pointer to the new_meta user object to be examined.
+ * @param	user	a pointer to the meta user object to be examined.
  *
- * @return	a timestamp containing the last time the new_meta user object's reference count changed.
+ * @return	a timestamp containing the last time the meta user object's reference count changed.
  */
-time_t new_meta_user_ref_stamp(new_meta_user_t *user) {
+time_t meta_user_ref_stamp(meta_user_t *user) {
 
 	time_t stamp = 0;
 

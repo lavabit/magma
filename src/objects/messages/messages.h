@@ -127,16 +127,16 @@ inx_t *      messages_update(uint64_t usernum);
 meta_message_t *  meta_message_by_number(inx_t *messages, uint64_t number);
 meta_message_t *  meta_message_dupe(meta_message_t *message);
 void              meta_message_free(meta_message_t *message);
-bool_t            meta_messages_copier(new_meta_user_t *user, meta_message_t *message, uint64_t target, uint64_t *outnum, bool_t sequences, META_LOCK_STATUS locked);
-bool_t            meta_messages_login_update(new_meta_user_t *user, META_LOCK_STATUS locked);
-int_t             meta_messages_mover(new_meta_user_t *user, meta_message_t *message, uint64_t target, bool_t lookup, bool_t sequences, META_LOCK_STATUS locked);
-int_t             meta_messages_update(new_meta_user_t *user, META_LOCK_STATUS locked);
+bool_t            meta_messages_copier(meta_user_t *user, meta_message_t *message, uint64_t target, uint64_t *outnum, bool_t sequences, META_LOCK_STATUS locked);
+bool_t            meta_messages_login_update(meta_user_t *user, META_LOCK_STATUS locked);
+int_t             meta_messages_mover(meta_user_t *user, meta_message_t *message, uint64_t target, bool_t lookup, bool_t sequences, META_LOCK_STATUS locked);
+int_t             meta_messages_update(meta_user_t *user, META_LOCK_STATUS locked);
 void              meta_messages_update_sequences(inx_t *folders, inx_t *messages);
 
 /// datatier.c
 bool_t   messages_fetch(uint64_t usernum, message_folder_t *folder);
 void     meta_data_fetch_message_tags(meta_message_t *message);
-bool_t   meta_data_fetch_messages(new_meta_user_t *user);
+bool_t   meta_data_fetch_messages(meta_user_t *user);
 
 #endif
 

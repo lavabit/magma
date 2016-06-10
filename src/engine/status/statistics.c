@@ -73,12 +73,9 @@ struct {
 			"provider.dkim.fail",
 			"provider.dkim.pass",
 
-
 			// Objects
 			"objects.meta.total",
 			"objects.meta.expired",
-			"objects.users.total",
-			"objects.users.expired",
 			"objects.sessions.total",
 			"objects.sessions.expired",
 

@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/objects/new_meta/locking.c
+ * @file /magma/src/objects/meta/locking.c
  *
  * @brief Meta object read and write locking functions.
  *
@@ -13,11 +13,11 @@
 #include "magma.h"
 
 /**
- * @brief	Acquire a read lock for a new_meta user object.
- * @param	user	a pointer to the new_meta user object to be locked.
+ * @brief	Acquire a read lock for a meta user object.
+ * @param	user	a pointer to the meta user object to be locked.
  * @return	This function returns no value.
  */
-void new_meta_user_rlock(new_meta_user_t *user) {
+void meta_user_rlock(meta_user_t *user) {
 
 	if (user) {
 		// When read/write locking issues have been fixed, this line can be used once again.
@@ -29,11 +29,11 @@ void new_meta_user_rlock(new_meta_user_t *user) {
 }
 
 /**
- * @brief	Acquire a write lock for a new_meta user object.
- * @param	user	a pointer to the new_meta user object to be locked.
+ * @brief	Acquire a write lock for a meta user object.
+ * @param	user	a pointer to the meta user object to be locked.
  * @return	This function returns no value.
  */
-void new_meta_user_wlock(new_meta_user_t *user) {
+void meta_user_wlock(meta_user_t *user) {
 
 	if (user) {
 		// When read/write locking issues have been fixed, this line can be used once again.
@@ -45,11 +45,11 @@ void new_meta_user_wlock(new_meta_user_t *user) {
 }
 
 /**
- * @brief	Release the lock for a new_meta user object.
- * @param	user	a pointer to the new_meta user object to be unlocked.
+ * @brief	Release the lock for a meta user object.
+ * @param	user	a pointer to the meta user object to be unlocked.
  * @return	This function returns no value.
  */
-void new_meta_user_unlock(new_meta_user_t *user) {
+void meta_user_unlock(meta_user_t *user) {
 
 	if (user) {
 		// When read/write locking issues have been fixed, this line can be used once again.

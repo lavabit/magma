@@ -1,8 +1,8 @@
 
 /**
- * @file /magma/network/meta.h
+ * @file /magma/src/network/meta.h
  *
- * @brief	Meta information structures/types for users, folders, messages, etc.
+ * @brief Meta information structures/types for users, folders, messages, etc.
  *
  * $Author$
  * $Date$
@@ -12,7 +12,6 @@
 
 #ifndef MAGMA_NETWORK_META_H
 #define MAGMA_NETWORK_META_H
-
 
 typedef enum {
 	META_GET_NONE = 0,
@@ -99,22 +98,27 @@ typedef struct {
 
 // All of a user's information is stored using this structure.
 typedef struct {
+
+	uint64_t usernum;
+	pthread_rwlock_t lock;
 	META_USER_FLAGS flags;
-	///NEXT: There is an undiscovered bug with read/write locks which can cause instability. To promote short term stability switch back
-	// to using a mutex. This will mean only one thread may read or write an individual user's mailbox at any given time.
-	// pthread_rwlock_t lock;
-	pthread_mutex_t lock;
-	stringer_t *username, *passhash /* passhash is old */, *verification, *storage_privkey, *storage_pubkey;
-	inx_t *aliases, *messages, *folders, *message_folders, *ads, *contacts;
+	stringer_t *username, *verification;
+	inx_t *aliases, *messages, *message_folders, *folders, *contacts;
+
 	struct {
-		uint64_t user, messages, folders, contacts;
+		stringer_t *public, *private;
+	} keys;
+
+	struct {
+		uint64_t user, messages, folders, contacts, aliases;
 	} serials;
+
 	struct {
 		time_t stamp;
 		uint64_t smtp, pop, imap, web, generic;
 		pthread_mutex_t lock;
 	} refs;
-	uint64_t usernum, lock_status;
+
 } meta_user_t;
 
 #endif

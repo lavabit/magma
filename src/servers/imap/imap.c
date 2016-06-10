@@ -170,7 +170,7 @@ void imap_login(connection_t *con) {
 	}
 
 	// Pull the user info out.
-	if ((state = new_meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification, META_PROTOCOL_IMAP,
+	if ((state = meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification, META_PROTOCOL_IMAP,
 		META_GET_MESSAGES | META_GET_KEYS | META_GET_FOLDERS, &(con->imap.user)))) {
 
 		// The UNAVAILABLE response code is provided by RFC 5530 which states: "Temporary failure because a subsystem is down."
@@ -199,7 +199,7 @@ void imap_login(connection_t *con) {
 	// and if so, check whether the transport layer is encrypted.
 	if (((con->imap.user->flags & META_USER_ENCRYPT_DATA) || (con->imap.user->flags & META_USER_TLS)) && con_secure(con) != 1) {
 
-		new_meta_inx_remove(con->imap.usernum, META_PROTOCOL_IMAP);
+		meta_inx_remove(con->imap.usernum, META_PROTOCOL_IMAP);
 
 		// The PRIVACYREQUIRED response code is provided by RFC 5530 which states: "The operation is not permitted due to a lack of privacy. If
 		// Transport Layer Security (TLS) is not in use, the client could try STARTTLS and then repeat the operation."
@@ -213,11 +213,11 @@ void imap_login(connection_t *con) {
 	}
 
 	// Store the checkpoints.
-	new_meta_user_rlock(con->imap.user);
+	meta_user_rlock(con->imap.user);
 	con->imap.messages_checkpoint = con->imap.user->serials.messages;
 	con->imap.folders_checkpoint = con->imap.user->serials.folders;
 	con->imap.user_checkpoint = con->imap.user->serials.user;
-	new_meta_user_unlock(con->imap.user);
+	meta_user_unlock(con->imap.user);
 
 	// Debug logging.
 	log_pedantic("User %.*s logged in from %s via IMAP. {poprefs = %lu, imaprefs = %lu, messages = %lu, folders = %lu}",
@@ -232,7 +232,7 @@ void imap_login(connection_t *con) {
 		//	meta_data_update_log(con->imap.user, META_PROT_WEB);
 		//}
 		//else {
-			new_meta_data_update_log(con->imap.user, META_PROTOCOL_IMAP);
+			meta_data_update_log(con->imap.user, META_PROTOCOL_IMAP);
 		//}
 	}
 
@@ -295,7 +295,7 @@ void imap_list(connection_t *con) {
 		return;
 	}
 
-	new_meta_user_rlock(con->imap.user);
+	meta_user_rlock(con->imap.user);
 
 
 	//********************************************//
@@ -352,7 +352,7 @@ void imap_list(connection_t *con) {
 		inx_free(list);
 	}
 
-	new_meta_user_unlock(con->imap.user);
+	meta_user_unlock(con->imap.user);
 
 	// Let the user know everything worked.
 	con_print(con, "%.*s OK LIST Complete.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
@@ -384,7 +384,7 @@ void imap_lsub(connection_t *con) {
 		return;
 	}
 
-	new_meta_user_rlock(con->imap.user);
+	meta_user_rlock(con->imap.user);
 
 	// Because the list index is a shallow copy we need to ensure the original memory buffers aren't freed by another thread.
 	if ((list = imap_narrow_folders(con->imap.user->folders, imap_get_st_ar(con->imap.arguments, 0), imap_get_st_ar(con->imap.arguments, 1))) != NULL) {
@@ -416,7 +416,7 @@ void imap_lsub(connection_t *con) {
 		inx_free(list);
 	}
 
-	new_meta_user_unlock(con->imap.user);
+	meta_user_unlock(con->imap.user);
 
 	// Let the user know everything worked.
 	con_print(con, "%.*s OK LSUB Complete.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
@@ -449,7 +449,7 @@ void imap_create(connection_t *con) {
 		return;
 	}
 
-	new_meta_user_wlock(con->imap.user);
+	meta_user_wlock(con->imap.user);
 
 	// Create the folder.
 	state = imap_folder_create(con->imap.user->usernum, con->imap.user->folders, imap_get_st_ar(con->imap.arguments, 0));
@@ -463,7 +463,7 @@ void imap_create(connection_t *con) {
 		serial_increment(OBJECT_FOLDERS, con->imap.user->usernum);
 	}
 
-	new_meta_user_unlock(con->imap.user);
+	meta_user_unlock(con->imap.user);
 
 	// Let the user know what happened.
 	if (state == 1) {
@@ -516,7 +516,7 @@ void imap_delete(connection_t *con) {
 		return;
 	}
 
-	new_meta_user_wlock(con->imap.user);
+	meta_user_wlock(con->imap.user);
 
 	// Delete the folder.
 	state = imap_folder_remove(con->imap.user->usernum, con->imap.user->folders, con->imap.user->messages, imap_get_st_ar(con->imap.arguments, 0));
@@ -530,7 +530,7 @@ void imap_delete(connection_t *con) {
 		serial_increment(OBJECT_FOLDERS, con->imap.user->usernum);
 	}
 
-	new_meta_user_unlock(con->imap.user);
+	meta_user_unlock(con->imap.user);
 
 	// Let the user know what happened.
 	if (state == 1) {
@@ -570,7 +570,7 @@ void imap_rename(connection_t *con) {
 		return;
 	}
 
-	new_meta_user_wlock(con->imap.user);
+	meta_user_wlock(con->imap.user);
 
 	// Rename the folder.
 	state = imap_folder_rename(con->imap.user->usernum, con->imap.user->folders, imap_get_st_ar(con->imap.arguments, 0), imap_get_st_ar(con->imap.arguments, 1));
@@ -584,7 +584,7 @@ void imap_rename(connection_t *con) {
 		serial_increment(OBJECT_FOLDERS, con->imap.user->usernum);
 	}
 
-	new_meta_user_unlock(con->imap.user);
+	meta_user_unlock(con->imap.user);
 
 	// Let the user know what happened.
 	if (state == 1) {
@@ -642,9 +642,9 @@ void imap_status(connection_t *con) {
 	}
 
 	// Get the folder status.
-	new_meta_user_rlock(con->imap.user);
+	meta_user_rlock(con->imap.user);
 	state = imap_folder_status(con->imap.user->folders, con->imap.user->messages, imap_get_st_ar(con->imap.arguments, 0), &status);
-	new_meta_user_unlock(con->imap.user);
+	meta_user_unlock(con->imap.user);
 
 	// Figure out what to output.
 	if (state == 1) {
@@ -723,13 +723,13 @@ void imap_subscribe(connection_t *con) {
 	}
 
 	// Create the folder.
-	new_meta_user_wlock(con->imap.user);
+	meta_user_wlock(con->imap.user);
 
 	if (!(folder = meta_folders_by_name(con->imap.user->folders, imap_get_st_ar(con->imap.arguments, 0)))) {
 		state = imap_folder_create(con->imap.user->usernum, con->imap.user->folders, imap_get_st_ar(con->imap.arguments, 0));
 	}
 
-	new_meta_user_unlock(con->imap.user);
+	meta_user_unlock(con->imap.user);
 
 	// Let the user know what happened.
 	if (state == 1) {
@@ -786,7 +786,7 @@ void imap_examine(connection_t *con) {
 
 	// If a folder was previously selected, clear the recent flag before closing the mailbox.
 	if (con->imap.selected != 0 && con->imap.read_only == 0) {
-		new_meta_user_wlock(con->imap.user);
+		meta_user_wlock(con->imap.user);
 		if ((cursor = inx_cursor_alloc(con->imap.user->messages))) {
 			while ((active = inx_cursor_value_next(cursor))) {
 				if (active->foldernum == con->imap.selected && (active->status & MAIL_STATUS_RECENT) == MAIL_STATUS_RECENT) {
@@ -795,14 +795,14 @@ void imap_examine(connection_t *con) {
 			}
 		inx_cursor_free(cursor);
 		}
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 	}
 	con->imap.read_only = con->imap.selected = con->imap.messages_total = con->imap.messages_recent = 0;
 
 	// Get the folder status.
-	new_meta_user_rlock(con->imap.user);
+	meta_user_rlock(con->imap.user);
 	state = imap_folder_status(con->imap.user->folders, con->imap.user->messages, imap_get_st_ar(con->imap.arguments, 0), &status);
-	new_meta_user_unlock(con->imap.user);
+	meta_user_unlock(con->imap.user);
 
 	if (state == 1) {
 
@@ -859,7 +859,7 @@ void imap_select(connection_t *con) {
 
 	// If a folder was previously selected, clear the recent flag before closing the mailbox.
 	if (con->imap.selected != 0 && con->imap.read_only == 0) {
-		new_meta_user_wlock(con->imap.user);
+		meta_user_wlock(con->imap.user);
 		if ((cursor = inx_cursor_alloc(con->imap.user->messages))) {
 			while ((active = inx_cursor_value_next(cursor))) {
 				if (active->foldernum == con->imap.selected && (active->status & MAIL_STATUS_RECENT) == MAIL_STATUS_RECENT) {
@@ -868,20 +868,20 @@ void imap_select(connection_t *con) {
 			}
 			inx_cursor_free(cursor);
 		}
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 	}
 
 	con->imap.read_only = con->imap.selected = con->imap.messages_total = con->imap.messages_recent = 0;
 
 	// Get the folder status.
-	new_meta_user_wlock(con->imap.user);
+	meta_user_wlock(con->imap.user);
 	if ((state = imap_folder_status(con->imap.user->folders, con->imap.user->messages, imap_get_st_ar(con->imap.arguments, 0), &status)) == 1) {
 
 		// Now that this folder has been opened, remove the recent flag in the database.
 		meta_data_flags_remove(con->imap.user->messages, con->imap.user->usernum, status.foldernum, MAIL_STATUS_RECENT);
 
 	}
-	new_meta_user_unlock(con->imap.user);
+	meta_user_unlock(con->imap.user);
 
 	if (state == 1) {
 
@@ -968,17 +968,17 @@ void imap_store(connection_t *con) {
 		return;
 	}
 
-	new_meta_user_wlock(con->imap.user);
+	meta_user_wlock(con->imap.user);
 
 	if (!con->imap.user || !con->imap.user->messages) {
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 		con_print(con, "%.*s OK Store complete.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		return;
 	}
 
 	// Narrow by the sequence range provided.
 	else if (!(messages = imap_narrow_messages(con->imap.user->messages, con->imap.selected, imap_get_st_ar(con->imap.arguments, 0), con->imap.uid))) {
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 		con_print(con, "%.*s OK Store complete.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		return;
 	}
@@ -1005,7 +1005,7 @@ void imap_store(connection_t *con) {
 		inx_free(messages);
 	}
 
-	new_meta_user_unlock(con->imap.user);
+	meta_user_unlock(con->imap.user);
 
 	// Loop through and output each message.
 	if ((action & IMAP_FLAG_SILENT) != IMAP_FLAG_SILENT && (cursor = inx_cursor_alloc(duplicate))) {
@@ -1078,7 +1078,7 @@ void imap_close(connection_t *con) {
 	}
 
 	// Scan the mailbox, and see if any messages need to be deleted or made non-recent.
-	new_meta_user_rlock(con->imap.user);
+	meta_user_rlock(con->imap.user);
 	if ((cursor = inx_cursor_alloc(con->imap.user->messages))) {
 		while ((active = inx_cursor_value_next(cursor)) && (recent == 0 || deleted == 0)) {
 			if (deleted == 0 && active->foldernum == con->imap.selected && (active->status & MAIL_STATUS_DELETED) == MAIL_STATUS_DELETED) {
@@ -1090,17 +1090,17 @@ void imap_close(connection_t *con) {
 		}
 		inx_cursor_free(cursor);
 	}
-	new_meta_user_unlock(con->imap.user);
+	meta_user_unlock(con->imap.user);
 
 	// If messages are deleted, get a global lock.
 	if (deleted == 1) {
 
-		new_meta_user_wlock(con->imap.user);
+		meta_user_wlock(con->imap.user);
 
 		// Don't expunge while POP session is active. We don't make this check until we have a write lock, just to prevent any
 		// POP sessions from starting between when we startup and when we finish.
 		if (con->imap.user->refs.pop > 0) {
-			new_meta_user_unlock(con->imap.user);
+			meta_user_unlock(con->imap.user);
 			con_print(con, "%.*s NO The mailbox is locked by a POP session. Please try again later.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 			con->imap.read_only = con->imap.selected = con->imap.messages_total = con->imap.messages_recent = 0;
 			return;
@@ -1108,7 +1108,7 @@ void imap_close(connection_t *con) {
 
 		// Lock the account.
 		if (user_lock(con->imap.user->usernum) != 1) {
-			new_meta_user_unlock(con->imap.user);
+			meta_user_unlock(con->imap.user);
 			con_print(con, "%.*s NO The close command could not lock the user account. Please try again later.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 			con->imap.read_only = con->imap.selected = con->imap.messages_total = con->imap.messages_recent = 0;
 			return;
@@ -1137,12 +1137,12 @@ void imap_close(connection_t *con) {
 		}
 
 		user_unlock(con->imap.user->usernum);
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 	}
 
 	// If a folder was previously selected, clear the recent flag before closing the mailbox.
 	if (recent == 1) {
-		new_meta_user_wlock(con->imap.user);
+		meta_user_wlock(con->imap.user);
 		if ((cursor = inx_cursor_alloc(con->imap.user->messages))) {
 			while ((active = inx_cursor_value_next(cursor))) {
 				if (active->foldernum == con->imap.selected && (active->status & MAIL_STATUS_RECENT) == MAIL_STATUS_RECENT) {
@@ -1151,7 +1151,7 @@ void imap_close(connection_t *con) {
 			}
 			inx_cursor_free(cursor);
 		}
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 	}
 
 	con->imap.read_only = con->imap.selected = con->imap.messages_total = con->imap.messages_recent = 0;
@@ -1187,7 +1187,7 @@ void imap_expunge(connection_t *con) {
 	}
 
 	// Scan the mailbox, and see if any messages need to be deleted.
-	new_meta_user_rlock(con->imap.user);
+	meta_user_rlock(con->imap.user);
 	if ((cursor = inx_cursor_alloc(con->imap.user->messages))) {
 		while ((active = inx_cursor_value_next(cursor)) && deleted == 0) {
 			if (active->foldernum == con->imap.selected && (active->status & MAIL_STATUS_DELETED) == MAIL_STATUS_DELETED) {
@@ -1196,17 +1196,17 @@ void imap_expunge(connection_t *con) {
 		}
 		inx_cursor_free(cursor);
 	}
-	new_meta_user_unlock(con->imap.user);
+	meta_user_unlock(con->imap.user);
 
 	// If messages are deleted, get a global lock.
 	if (deleted == 1) {
 
-		new_meta_user_wlock(con->imap.user);
+		meta_user_wlock(con->imap.user);
 
 		// Don't expunge while POP session is active. We don't make this check until we have a write lock, just to prevent any
 		// POP sessions from starting between when we startup and when we finish.
 		if (con->imap.user->refs.pop > 0) {
-			new_meta_user_unlock(con->imap.user);
+			meta_user_unlock(con->imap.user);
 			con_print(con, "%.*s NO The mailbox is locked by a POP session. Please try again later.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 			con->imap.read_only = con->imap.selected = con->imap.messages_total = con->imap.messages_recent = 0;
 			return;
@@ -1214,7 +1214,7 @@ void imap_expunge(connection_t *con) {
 
 		// Lock the account.
 		if (user_lock(con->imap.user->usernum) != 1) {
-			new_meta_user_unlock(con->imap.user);
+			meta_user_unlock(con->imap.user);
 			con_print(con, "%.*s NO The EXPUNGE command could not lock the user account. Try again later.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 			return;
 		}
@@ -1245,7 +1245,7 @@ void imap_expunge(connection_t *con) {
 		}
 
 		user_unlock(con->imap.user->usernum);
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 
 		// Output the new status.
 		imap_session_update(con);
@@ -1288,11 +1288,11 @@ void imap_copy(connection_t *con) {
 		return;
 	}
 
-	new_meta_user_wlock(con->imap.user);
+	meta_user_wlock(con->imap.user);
 
 	// Pull the folder structure.
 	if ((folder = meta_folders_by_name(con->imap.user->folders, imap_get_st_ar(con->imap.arguments, 1))) == NULL) {
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 		con_print(con, "%.*s NO [TRYCREATE] Unable to find the requested target folder.\r\n", st_length_int(con->imap.tag),
 			st_char_get(con->imap.tag));
 		return;
@@ -1300,7 +1300,7 @@ void imap_copy(connection_t *con) {
 
 	// Make sure were not copying to the same folder.
 	else if (folder->foldernum == con->imap.selected) {
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 		con_print(con, "%.*s NO The target folder must be different than the selected folder.\r\n", st_length_int(con->imap.tag),
 			st_char_get(con->imap.tag));
 		return;
@@ -1308,7 +1308,7 @@ void imap_copy(connection_t *con) {
 
 	// Make sure its a valid sequence number.
 	else if (imap_valid_sequence(imap_get_st_ar(con->imap.arguments, 0)) != 1) {
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 		con_print(con, "%.*s NO An invalid sequence was provided to the store command.\r\n", st_length_int(con->imap.tag),
 			st_char_get(con->imap.tag));
 		return;
@@ -1317,7 +1317,7 @@ void imap_copy(connection_t *con) {
 	// Narrow by the sequence range provided.
 	// Due to bugs in several clients, invalid sequences may be submitted. Return an okay if the sequence isn't found so the client doesn't hang.
 	else if (con->imap.user->messages == NULL || (messages = imap_narrow_messages(con->imap.user->messages, con->imap.selected, imap_get_st_ar(con->imap.arguments, 0), con->imap.uid)) == NULL) {
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 		con_print(con, "%.*s OK No messages were found matching the range provided.\r\n", st_length_int(con->imap.tag),
 			st_char_get(con->imap.tag));
 		return;
@@ -1325,7 +1325,7 @@ void imap_copy(connection_t *con) {
 
 	// Figure out how many nodes.
 	else if ((nodes = inx_count(messages)) == 0) {
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 		con_print(con, "%.*s OK No messages were found matching the range provided.\r\n", st_length_int(con->imap.tag),
 			st_char_get(con->imap.tag));
 		inx_free(messages);
@@ -1334,13 +1334,13 @@ void imap_copy(connection_t *con) {
 
 	// Setup the UID buffers.
 	else if ((source_uids = mm_alloc(nodes * sizeof(uint64_t))) == NULL) {
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 		con_print(con, "%.*s NO Internal server error. Please try again later.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		inx_free(messages);
 		return;
 	}
 	else if ((dest_uids = mm_alloc(nodes * sizeof(uint64_t))) == NULL) {
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 		con_print(con, "%.*s NO Internal server error. Please try again later.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		inx_free(messages);
 		mm_free(source_uids);
@@ -1350,7 +1350,7 @@ void imap_copy(connection_t *con) {
 	// Lock the account.
 	if (user_lock(con->imap.user->usernum) != 1) {
 		log_pedantic("Could not lock the user account %lu.", con->imap.user->usernum);
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 		con_print(con, "%.*s NO The COPY command could not lock the user account. Try again later.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		inx_free(messages);
 		mm_free(source_uids);
@@ -1363,7 +1363,7 @@ void imap_copy(connection_t *con) {
 		while ((active = inx_cursor_value_next(cursor))) {
 			if (imap_message_copier(con, active, folder->foldernum, &outnum) != 1) {
 				con_print(con, "%.*s NO Copy failed on message number %lu.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag), active->sequencenum);
-				new_meta_user_unlock(con->imap.user);
+				meta_user_unlock(con->imap.user);
 				user_unlock(con->imap.user->usernum);
 				inx_free(messages);
 				mm_free(source_uids);
@@ -1411,7 +1411,7 @@ void imap_copy(connection_t *con) {
 
 	// Cleanup
 	user_unlock(con->imap.user->usernum);
-	new_meta_user_unlock(con->imap.user);
+	meta_user_unlock(con->imap.user);
 	inx_free(messages);
 	mm_free(source_uids);
 	mm_free(dest_uids);
@@ -1461,18 +1461,18 @@ void imap_append(connection_t *con) {
 		flags = imap_flag_parse(imap_get_ptr(con->imap.arguments, 1), imap_get_type_ar(con->imap.arguments, 1));
 	}
 
-	new_meta_user_wlock(con->imap.user);
+	meta_user_wlock(con->imap.user);
 
 	// Pull the folder structure.
 	if ((folder = meta_folders_by_name(con->imap.user->folders, imap_get_st_ar(con->imap.arguments, 0))) == NULL) {
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 		con_print(con, "%.*s NO [TRYCREATE] Unable to find the requested target folder.\r\n", st_length_int(con->imap.tag),
 			st_char_get(con->imap.tag));
 		return;
 	}
 
 	if (imap_append_message(con, folder, flags, imap_get_st_ar(con->imap.arguments, ar_length_get(con->imap.arguments) - 1), &outnum) != 1) {
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 		con_print(con, "%.*s NO Unable to APPEND the message provided. Please try again later.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		return;
 	}
@@ -1503,7 +1503,7 @@ void imap_append(connection_t *con) {
 
 	// Stash the folder number so we can release the session lock before making the final network print.
 	recent = folder->foldernum;
-	new_meta_user_unlock(con->imap.user);
+	meta_user_unlock(con->imap.user);
 
 	con_print(con, "%.*s OK [APPENDUID %lu %lu] Append complete.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag), recent, outnum);
 	return;
@@ -1548,15 +1548,15 @@ void imap_fetch(connection_t *con) {
 
 	// If were going to be updating flags, get a write lock.
 	if (con->imap.read_only == 0 && (items->normal != NULL || items->rfc822 == 1 || items->rfc822_header == 1 || items->rfc822_text == 1)) {
-		new_meta_user_wlock(con->imap.user);
+		meta_user_wlock(con->imap.user);
 	}
 	else {
-		new_meta_user_rlock(con->imap.user);
+		meta_user_rlock(con->imap.user);
 	}
 
 	// Narrow by the sequence range provided.
 	if (con->imap.user->messages == NULL || (messages = imap_narrow_messages(con->imap.user->messages, con->imap.selected, imap_get_st_ar(con->imap.arguments, 0), con->imap.uid)) == NULL) {
-		new_meta_user_unlock(con->imap.user);
+		meta_user_unlock(con->imap.user);
 		con_print(con, "%.*s OK Fetch complete. No messages were found matching the range provided.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		imap_fetch_free_items(items);
 		return;
@@ -1594,7 +1594,7 @@ void imap_fetch(connection_t *con) {
 	// Create a deep copy so we can unlock the mailbox during the fetch.
 	duplicate = imap_duplicate_messages(messages);
 	inx_free(messages);
-	new_meta_user_unlock(con->imap.user);
+	meta_user_unlock(con->imap.user);
 
 	// Loop through and output each message.
 	if ((cursor = inx_cursor_alloc(duplicate))) {

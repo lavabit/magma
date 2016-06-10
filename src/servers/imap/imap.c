@@ -171,7 +171,7 @@ void imap_login(connection_t *con) {
 
 	// Pull the user info out.
 	if ((state = new_meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification, META_PROTOCOL_IMAP,
-		META_GET_MESSAGES | META_GET_FOLDERS, &(con->imap.user)))) {
+		META_GET_MESSAGES | META_GET_KEYS | META_GET_FOLDERS, &(con->imap.user)))) {
 
 		// The UNAVAILABLE response code is provided by RFC 5530 which states: "Temporary failure because a subsystem is down."
 		if (state < 0) {

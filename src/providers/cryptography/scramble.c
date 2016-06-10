@@ -12,7 +12,9 @@
 
 #include "magma.h"
 
-/// TODO: Create envelope functions to translate the scrambled buffer into a condensed/encoded stringer.
+/// TODO: Create a scramble_export() function, and/or alter the import interfaces to make using managed strings easier. ie. the import/export
+/// 		functions could provide wrappers around dsecrypt/encrypt which return strings instead of scramble objects.
+/// HIGH: Alter the interfaces here to allow passing in the output buffer, or options which allow us to store the decrypted data in secure memory.
 
 /**
  * @brief	Get the total length of a scrambled object.

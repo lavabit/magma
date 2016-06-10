@@ -162,7 +162,7 @@
 #define AUTH_UPDATE_LEGACY_TO_STACIE "UPDATE Users SET salt = ?, auth = ?, bonus = ?, legacy = NULL WHERE usernum = ? AND legacy = ?"
 
 // The meta data object.
-#define META_FETCH_USER "SELECT Users.auth, Users.`ssl`, Users.overquota, Dispatch.secure FROM Users INNER JOIN Dispatch ON Users.usernum = Dispatch.usernum WHERE userid = ? AND email = 1 LIMIT 1"
+#define META_FETCH_USER "SELECT Users.userid, Users.auth, Users.`ssl`, Users.overquota, Dispatch.secure FROM Users INNER JOIN Dispatch ON Users.usernum = Dispatch.usernum WHERE Users.usernum = ? AND email = 1 LIMIT 1"
 #define META_FETCH_STORAGE_KEYS "SELECT storage_pub, storage_priv FROM `Keys` WHERE usernum = ?"
 #define META_INSERT_STORAGE_KEYS "INSERT INTO `Keys` (usernum, storage_pub, storage_priv) VALUES (?, ?, ?)"
 

@@ -99,7 +99,8 @@ stringer_t * mail_load_header(meta_message_t *meta, new_meta_user_t *user) {
 			close(fd);
 			ns_free(path);
 			return NULL;
-		} else if (!(meta->status & MAIL_STATUS_ENCRYPTED) && (fheader.flags & FMESSAGE_OPT_ENCRYPTED)) {
+		}
+		else if (!(meta->status & MAIL_STATUS_ENCRYPTED) && (fheader.flags & FMESSAGE_OPT_ENCRYPTED)) {
 			log_pedantic("Message state mismatch: unencrypted in database but encrypted on disk.");
 			close(fd);
 			ns_free(path);
@@ -110,8 +111,8 @@ stringer_t * mail_load_header(meta_message_t *meta, new_meta_user_t *user) {
 		if (meta->status & MAIL_STATUS_ENCRYPTED) {
 			total = data_len;
 		// but if it's not, we don't need to decompress all of it.
-		} else
-		{
+		}
+		else {
 
 			// Seek to a position past the compression header.
 			if (lseek(fd, offset, SEEK_SET) != offset) {

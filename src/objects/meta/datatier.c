@@ -249,15 +249,22 @@ int_t new_meta_data_fetch_user(new_meta_user_t *user) {
 
 	// Users.auth, Users.`ssl`, Uesrs.overquota, Dispatch.secure,
 
+	// Store the username.
+	if (st_empty(user->username) && !(user->username = res_field_string(row, 0))) {
+		log_pedantic("Unable to copy username into the user object.");
+		res_table_free(result);
+		return -1;
+	}
+
 	// Store the verification token.
-	if (!(user->verification = res_field_string(row, 0))) {
+	if (st_empty(user->verification) && !(user->verification = hex_decode_st(PLACER(res_field_block(row, 1), res_field_length(row, 1)), NULL))) {
 		log_pedantic("Unable to copy password hash.");
 		res_table_free(result);
 		return -1;
 	}
 
 	// Transport Layer Security
-	if (res_field_int8(row, 1) == 1) {
+	if (res_field_int8(row, 2) == 1) {
 		user->flags = (user->flags | META_USER_TLS);
 	}
 	else {
@@ -265,7 +272,7 @@ int_t new_meta_data_fetch_user(new_meta_user_t *user) {
 	}
 
 	// Over Quota
-	if (res_field_int8(row, 2) == 1) {
+	if (res_field_int8(row, 3) == 1) {
 		user->flags = (user->flags | META_USER_OVERQUOTA);
 	}
 	else {
@@ -274,7 +281,7 @@ int_t new_meta_data_fetch_user(new_meta_user_t *user) {
 
 	// Update the secure storage flag. Note that if secure storage is enabled, then transport layer security
 	// must also be used to protect the data in transit.
-	if (res_field_int8(row, 3) == 1) {
+	if (res_field_int8(row, 4) == 1) {
 		user->flags = (user->flags | META_USER_ENCRYPT_DATA);
 	}
 	else {
@@ -283,31 +290,6 @@ int_t new_meta_data_fetch_user(new_meta_user_t *user) {
 
 	res_table_free(result);
 	return 0;
-/*
-	if (user->storage_privkey) {
-		st_free(user->storage_privkey);
-		user->storage_privkey = NULL;
-	}
-
-	if (user->storage_pubkey) {
-		st_free(user->storage_pubkey);
-		user->storage_pubkey = NULL;
-	}
-
-	// Finally, we make check if the user has generated a public and private key pair for encrypted storage. And generate new ones if encryption is enabled.
-	// But they still might need a storage key if the the secure flag is off and there is a batch of encrypted mail messages that needs to be decrypted.
-	if ((user->flags & META_USER_ENCRYPT_DATA) &&
-		(meta_data_user_build_storage_keys (user->usernum, master, &(user->storage_privkey), &(user->storage_pubkey), false, false, 0) < 0)) {
-		log_pedantic("A user with the secure storage feature enabled does not have storage keys and the creation attempt failed.");
-		return -1;
-	} else if (!(user->flags & META_USER_ENCRYPT_DATA) &&
-		(meta_data_user_build_storage_keys (user->usernum, master, &(user->storage_privkey), &(user->storage_pubkey), true, false, 0) < 0)) {
-		log_pedantic("A user with the secure storage feature disabled does not have storage keys in the database.");
-	}
-
-	return 1;
-*/
-
 }
 
 /**

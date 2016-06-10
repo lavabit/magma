@@ -237,7 +237,7 @@ void pop_pass(connection_t *con) {
 
 	// Pull the user info out.
 	if ((state = new_meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification, META_PROTOCOL_POP,
-		META_GET_MESSAGES, &(con->pop.user)))) {
+		META_GET_MESSAGES | META_GET_KEYS, &(con->pop.user)))) {
 
 		if (state < 0) {
 			con_write_bl(con, "-ERR [SYS/TEMP] Internal server error. Please try again later.\r\n", 64);

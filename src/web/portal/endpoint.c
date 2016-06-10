@@ -324,7 +324,7 @@ void portal_endpoint_auth(connection_t *con) {
 
 	// Pull the user info out.
 	if ((state =  new_meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification, META_PROTOCOL_WEB,
-		META_GET_ALIASES | META_GET_MESSAGES | META_GET_FOLDERS | META_GET_CONTACTS, &(user)))) {
+		META_GET_MESSAGES | META_GET_KEYS | META_GET_ALIASES | META_GET_FOLDERS | META_GET_CONTACTS, &(user)))) {
 
 		if (state < 0) {
 			portal_endpoint_error(con, 200, PORTAL_ENDPOINT_ERROR_AUTH, "This server is unable to access your mailbox. Please try again later.");

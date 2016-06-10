@@ -90,16 +90,19 @@ new_meta_user_t * new_meta_alloc(void) {
  *
  * @note	If the user is not found in the local session cache, the session will be constructed using the database, and then cached.
  *
- * @param	auth		Authentication object generated during the user log in process.
- * @param	flags		a set of flags specifying the protocol used by the calling function. Values can be META_PROT_NONE,
- * 						META_PROT_SMTP, META_PROT_POP, META_PROT_IMAP, META_PROT_WEB, or META_PROT_GENERIC.
- * @param	get			a set of flags specifying the data to be retrieved (META_GET_NONE, META_GET_MESSAGES,
- * 						META_GET_FOLDERS, or META_GET_CONTACTS)
- * @param	output		the address of a meta user object that will store a pointer to the result of the lookup.
+ * @param 	usernum			the numeric identifier for the user account.
+ * @param 	username		the official username stored in the database.
+ * @param	master			the user account's master encryption key which will be used to unlock the private storage key.
+ * @param 	verification	the verification token.
+ * @param	protocol			a set of protocol specifying the protocol used by the calling function. Values can be META_PROT_NONE,
+ * 							META_PROT_SMTP, META_PROT_POP, META_PROT_IMAP, META_PROT_WEB, or META_PROT_GENERIC.
+ * @param	get				a set of protocol specifying the data to be retrieved (META_GET_NONE, META_GET_MESSAGES,
+ * 							META_GET_FOLDERS, or META_GET_CONTACTS)
+ * @param	output			the address of a meta user object that will store a pointer to the result of the lookup.
  *
  * @return	-1 on error, 0 on success, 1 for an authentication issue.
  */
-int_t new_meta_get(uint64_t usernum, stringer_t *username, stringer_t *master, stringer_t *verification, META_PROTOCOL flags, META_GET get, new_meta_user_t **output) {
+int_t new_meta_get(uint64_t usernum, stringer_t *username, stringer_t *master, stringer_t *verification, META_PROTOCOL protocol, META_GET get, new_meta_user_t **output) {
 
 	int_t state;
 	new_meta_user_t *user = NULL;
@@ -111,7 +114,7 @@ int_t new_meta_get(uint64_t usernum, stringer_t *username, stringer_t *master, s
 	}
 
 	// Pull the user from the usernum, or add it.
-	if (!(user = new_meta_inx_find(usernum, flags))) {
+	if (!(user = new_meta_inx_find(usernum, protocol))) {
 		log_pedantic("Could not find an existing user object, nor could we create one.");
 		return -1;
 	}
@@ -121,41 +124,55 @@ int_t new_meta_get(uint64_t usernum, stringer_t *username, stringer_t *master, s
 	// Pull the user information.
 	if ((state = new_meta_user_update(user, META_LOCKED)) < 0) {
 		new_meta_user_unlock(user);
-		new_meta_inx_remove(usernum, flags);
+		new_meta_inx_remove(usernum, protocol);
 		return state;
+	}
+
+	// The auth_t object should have checked the verification token already, but we check here just to be sure.
+	else if (st_empty(user->verification) || st_cmp_cs_eq(verification, user->verification)) {
+		new_meta_user_unlock(user);
+		new_meta_inx_remove(usernum, protocol);
+		return 1;
+	}
+
+	// Are we supposed to get the mailbox aliases.
+	if ((get & META_GET_KEYS) && meta_keys_update(user, master, META_LOCKED) < 0) {
+		new_meta_user_unlock(user);
+		new_meta_inx_remove(usernum, protocol);
+		return -1;
 	}
 
  	 // Are we supposed to get the mailbox aliases.
 	if ((get & META_GET_ALIASES) && meta_aliases_update(user, META_LOCKED) < 0) {
 		new_meta_user_unlock(user);
-		new_meta_inx_remove(usernum, flags);
+		new_meta_inx_remove(usernum, protocol);
 		return -1;
 	}
 
 	// Are we supposed to get the messages.
 	if ((get & META_GET_MESSAGES) && meta_messages_update(user, META_LOCKED) < 0) {
 		new_meta_user_unlock(user);
-		new_meta_inx_remove(usernum, flags);
+		new_meta_inx_remove(usernum, protocol);
 		return -1;
 	}
 
 	if ((get & META_GET_FOLDERS) && meta_message_folders_update(user, META_LOCKED) < 0) {
 		new_meta_user_unlock(user);
-		new_meta_inx_remove(usernum, flags);
+		new_meta_inx_remove(usernum, protocol);
 		return -1;
 	}
 
 	// Are we supposed to update the folders.
 	if ((get & META_GET_FOLDERS) && new_meta_folders_update(user, META_LOCKED) < 0) {
 		new_meta_user_unlock(user);
-		new_meta_inx_remove(usernum, flags);
+		new_meta_inx_remove(usernum, protocol);
 		return -1;
 	}
 
 	// Are we supposed to update the folders.
 	if ((get & META_GET_CONTACTS) && new_meta_contacts_update(user, META_LOCKED) < 0) {
 		new_meta_user_unlock(user);
-		new_meta_inx_remove(usernum, flags);
+		new_meta_inx_remove(usernum, protocol);
 		return -1;
 	}
 

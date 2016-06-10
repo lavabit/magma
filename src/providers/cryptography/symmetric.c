@@ -12,6 +12,7 @@
 
 #include "magma.h"
 
+/// HIGH: Alter the interfaces here to allow passing in the output buffer, or options which allow us to store the decrypted data in secure memory.
 
 /**
  * @brief	Encrypt a block of data using a symmetric cipher.

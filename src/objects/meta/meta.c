@@ -122,7 +122,7 @@ int_t new_meta_get(uint64_t usernum, stringer_t *username, stringer_t *master, s
 	new_meta_user_wlock(user);
 
 	// Pull the user information.
-	if ((state = new_meta_user_update(user, META_LOCKED)) < 0) {
+	if ((state = new_meta_update_user(user, META_LOCKED)) < 0) {
 		new_meta_user_unlock(user);
 		new_meta_inx_remove(usernum, protocol);
 		return state;
@@ -136,14 +136,14 @@ int_t new_meta_get(uint64_t usernum, stringer_t *username, stringer_t *master, s
 	}
 
 	// Are we supposed to get the mailbox aliases.
-	if ((get & META_GET_KEYS) && meta_keys_update(user, master, META_LOCKED) < 0) {
+	if ((get & META_GET_KEYS) && meta_update_keys(user, master, META_LOCKED) < 0) {
 		new_meta_user_unlock(user);
 		new_meta_inx_remove(usernum, protocol);
 		return -1;
 	}
 
  	 // Are we supposed to get the mailbox aliases.
-	if ((get & META_GET_ALIASES) && meta_aliases_update(user, META_LOCKED) < 0) {
+	if ((get & META_GET_ALIASES) && meta_update_aliases(user, META_LOCKED) < 0) {
 		new_meta_user_unlock(user);
 		new_meta_inx_remove(usernum, protocol);
 		return -1;
@@ -156,21 +156,21 @@ int_t new_meta_get(uint64_t usernum, stringer_t *username, stringer_t *master, s
 		return -1;
 	}
 
-	if ((get & META_GET_FOLDERS) && meta_message_folders_update(user, META_LOCKED) < 0) {
+	if ((get & META_GET_FOLDERS) && meta_update_message_folders(user, META_LOCKED) < 0) {
 		new_meta_user_unlock(user);
 		new_meta_inx_remove(usernum, protocol);
 		return -1;
 	}
 
 	// Are we supposed to update the folders.
-	if ((get & META_GET_FOLDERS) && new_meta_folders_update(user, META_LOCKED) < 0) {
+	if ((get & META_GET_FOLDERS) && new_meta_update_folders(user, META_LOCKED) < 0) {
 		new_meta_user_unlock(user);
 		new_meta_inx_remove(usernum, protocol);
 		return -1;
 	}
 
 	// Are we supposed to update the folders.
-	if ((get & META_GET_CONTACTS) && new_meta_contacts_update(user, META_LOCKED) < 0) {
+	if ((get & META_GET_CONTACTS) && new_meta_update_contacts(user, META_LOCKED) < 0) {
 		new_meta_user_unlock(user);
 		new_meta_inx_remove(usernum, protocol);
 		return -1;

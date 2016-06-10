@@ -33,7 +33,7 @@ int_t imap_session_update(connection_t *con) {
 
 		// Update the user preferences.
 		if (checkpoint != con->imap.user->serials.user) {
-			new_meta_user_update(con->imap.user, META_LOCKED);
+			new_meta_update_user(con->imap.user, META_LOCKED);
 		}
 
 		// Store the new checkpoint.
@@ -46,7 +46,7 @@ int_t imap_session_update(connection_t *con) {
 
 	   // Update the list of folders.
 		if (checkpoint != con->imap.user->serials.folders) {
-			new_meta_folders_update(con->imap.user, META_LOCKED);
+			new_meta_update_folders(con->imap.user, META_LOCKED);
 		}
 
 		// Store the new checkpoint.

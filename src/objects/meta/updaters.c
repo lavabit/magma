@@ -20,7 +20,7 @@
  *
  * @return	-2 if there is a problem unscrambling the private key, -1 for a system error, 0 for success, and 1 if the keys were created.
  */
-int_t meta_keys_update(new_meta_user_t *user, stringer_t *master, META_LOCK_STATUS locked) {
+int_t meta_update_keys(new_meta_user_t *user, stringer_t *master, META_LOCK_STATUS locked) {
 
 	int_t result = 0;
 	size_t length = 0;
@@ -167,7 +167,7 @@ int_t meta_keys_update(new_meta_user_t *user, stringer_t *master, META_LOCK_STAT
  *
  * @return	-1 on error, 0 on success, 1 for an authentication issue.
  */
-int_t new_meta_user_update(new_meta_user_t *user, META_LOCK_STATUS locked) {
+int_t new_meta_update_user(new_meta_user_t *user, META_LOCK_STATUS locked) {
 
 	uint64_t serial;
 	int_t result = 0;
@@ -217,7 +217,7 @@ int_t new_meta_user_update(new_meta_user_t *user, META_LOCK_STATUS locked) {
  * 							locked for the duration of the function.
  * @return
  */
-int_t meta_aliases_update(new_meta_user_t *user, META_LOCK_STATUS locked) {
+int_t meta_update_aliases(new_meta_user_t *user, META_LOCK_STATUS locked) {
 
 	uint64_t serial;
 	int_t result = 0;
@@ -266,7 +266,7 @@ int_t meta_aliases_update(new_meta_user_t *user, META_LOCK_STATUS locked) {
  * @param	locked	if META_NEED_LOCK is specified, the meta user object will be locked for operation.
  * @return	-1 on failure or 1 on success.
  */
-int_t new_meta_contacts_update(new_meta_user_t *user, META_LOCK_STATUS locked) {
+int_t new_meta_update_contacts(new_meta_user_t *user, META_LOCK_STATUS locked) {
 
 	inx_t *fetch;
 	int_t output = 0;
@@ -323,7 +323,7 @@ int_t new_meta_contacts_update(new_meta_user_t *user, META_LOCK_STATUS locked) {
  * @param	locked	if META_NEED_LOCK is specified, the meta user object will be locked for operation.
  * @return	-1 on failure or 1 on success.
  */
-int_t new_meta_folders_update(new_meta_user_t *user, META_LOCK_STATUS locked) {
+int_t new_meta_update_folders(new_meta_user_t *user, META_LOCK_STATUS locked) {
 
 	int_t output = 0;
 	uint64_t checkpoint;
@@ -375,7 +375,7 @@ int_t new_meta_folders_update(new_meta_user_t *user, META_LOCK_STATUS locked) {
  * @param	locked	if META_LOCKED, lock the meta user object for the duration of the request.
  * @return	-1 on failure, or 1 on success.
  */
-int_t meta_message_folders_update(new_meta_user_t *user, META_LOCK_STATUS locked) {
+int_t meta_update_message_folders(new_meta_user_t *user, META_LOCK_STATUS locked) {
 
 	inx_t *fetch;
 	int_t output = 0;

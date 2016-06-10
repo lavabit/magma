@@ -26,12 +26,12 @@ uint64_t   new_meta_user_serial_get(new_meta_user_t *user, uint64_t object);
 void       new_meta_user_serial_set(new_meta_user_t *user, uint64_t object, uint64_t serial);
 
 /// updaters.c
-int_t   meta_aliases_update(new_meta_user_t *user, META_LOCK_STATUS locked);
-int_t   meta_keys_update(new_meta_user_t *user, stringer_t *master, META_LOCK_STATUS locked);
-int_t   meta_message_folders_update(new_meta_user_t *user, META_LOCK_STATUS locked);
-int_t   new_meta_contacts_update(new_meta_user_t *user, META_LOCK_STATUS locked);
-int_t   new_meta_folders_update(new_meta_user_t *user, META_LOCK_STATUS locked);
-int_t   new_meta_user_update(new_meta_user_t *user, META_LOCK_STATUS locked);
+int_t   meta_update_aliases(new_meta_user_t *user, META_LOCK_STATUS locked);
+int_t   meta_update_keys(new_meta_user_t *user, stringer_t *master, META_LOCK_STATUS locked);
+int_t   meta_update_message_folders(new_meta_user_t *user, META_LOCK_STATUS locked);
+int_t   new_meta_update_contacts(new_meta_user_t *user, META_LOCK_STATUS locked);
+int_t   new_meta_update_folders(new_meta_user_t *user, META_LOCK_STATUS locked);
+int_t   new_meta_update_user(new_meta_user_t *user, META_LOCK_STATUS locked);
 
 /// references.c
 void       new_meta_user_ref_add(new_meta_user_t *user, META_PROTOCOL protocol);

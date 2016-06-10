@@ -282,11 +282,11 @@ void sess_update(session_t *sess) {
 		// Flush the update trackers to discourage unnecessary refreshes.
 		sess_refresh_flush(sess);
 
-		new_meta_user_update(sess->user, META_NEED_LOCK);
-		meta_aliases_update(sess->user, META_NEED_LOCK);
-		new_meta_folders_update(sess->user, META_NEED_LOCK);
+		new_meta_update_user(sess->user, META_NEED_LOCK);
+		meta_update_aliases(sess->user, META_NEED_LOCK);
+		new_meta_update_folders(sess->user, META_NEED_LOCK);
 		meta_messages_update(sess->user, META_NEED_LOCK);
-		new_meta_contacts_update(sess->user, META_NEED_LOCK);
+		new_meta_update_contacts(sess->user, META_NEED_LOCK);
 	}
 
 	return;

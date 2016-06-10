@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	uncompressed = decompress_lzo(buf);
+	uncompressed = decompress_lzo(buf + 4);
 
 
 	if (uncompressed != NULL) {

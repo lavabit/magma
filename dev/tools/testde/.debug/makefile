@@ -8,8 +8,8 @@ RM := rm
 
 # All of the sources participating in the build are defined here
 -include sources.mk
--include subdir.mk
 -include framework/subdir.mk
+-include subdir.mk
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -25,17 +25,18 @@ endif
 # All Target
 all: testde
 
+
 # Tool invocations
 testde: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc  -o"testde" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/ladar/Lavabit/magma/lib/sources/lzo/src/.libs" -o "testde" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(C_DEPS)$(EXECUTABLES)$(OBJS) testde
+	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) testde
 	-@echo ' '
 
 .PHONY: all clean dependents

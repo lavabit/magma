@@ -38,41 +38,6 @@ C_SRCS += \
 ../framework/utility.c \
 ../framework/xml.c 
 
-C_DEPS += \
-./framework/append.d \
-./framework/base64.d \
-./framework/case.d \
-./framework/continue.d \
-./framework/copy.d \
-./framework/dataface.d \
-./framework/duplicate.d \
-./framework/extract.d \
-./framework/hash.d \
-./framework/hex.d \
-./framework/identical.d \
-./framework/ip.d \
-./framework/lavacache.d \
-./framework/length.d \
-./framework/logging.d \
-./framework/lzo.d \
-./framework/network.d \
-./framework/placer.d \
-./framework/print.d \
-./framework/qp.d \
-./framework/random.d \
-./framework/remove.d \
-./framework/replace.d \
-./framework/search.d \
-./framework/sql.d \
-./framework/ssl.d \
-./framework/starts.d \
-./framework/statements.d \
-./framework/stringer.d \
-./framework/tokenize.d \
-./framework/unit.d \
-./framework/utility.d \
-./framework/xml.d 
-
 OBJS += \
 ./framework/append.o \
 ./framework/base64.o \
@@ -108,12 +73,47 @@ OBJS += \
 ./framework/utility.o \
 ./framework/xml.o 
 
+C_DEPS += \
+./framework/append.d \
+./framework/base64.d \
+./framework/case.d \
+./framework/continue.d \
+./framework/copy.d \
+./framework/dataface.d \
+./framework/duplicate.d \
+./framework/extract.d \
+./framework/hash.d \
+./framework/hex.d \
+./framework/identical.d \
+./framework/ip.d \
+./framework/lavacache.d \
+./framework/length.d \
+./framework/logging.d \
+./framework/lzo.d \
+./framework/network.d \
+./framework/placer.d \
+./framework/print.d \
+./framework/qp.d \
+./framework/random.d \
+./framework/remove.d \
+./framework/replace.d \
+./framework/search.d \
+./framework/sql.d \
+./framework/ssl.d \
+./framework/starts.d \
+./framework/statements.d \
+./framework/stringer.d \
+./framework/tokenize.d \
+./framework/unit.d \
+./framework/utility.d \
+./framework/xml.d 
+
 
 # Each subdirectory must supply rules for building sources it contributes
 framework/%.o: ../framework/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C Compiler'
-	gcc -I/usr/include/mysql/ -I/usr/include/openssl/ -I/usr/include/lzo/ -I"/home/ladar/Lavabit/magma.so/sources/clamav/libclamav" -I/usr/include/libxml2/libxml/ -I/usr/include/libxml2/ -I"/home/ladar/Lavabit/magma.tools/testde" -O2 -g -w -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o"$@" "$<"
+	gcc -I"/home/ladar/Lavabit/magma/lib/sources/freetype/include" -I"/home/ladar/Lavabit/magma/lib/sources/jpeg" -I"/home/ladar/Lavabit/magma/lib/sources/png" -I"/home/ladar/Lavabit/magma/lib/sources/gd" -I"/home/ladar/Lavabit/magma/lib/sources/jansson/src" -I"/home/ladar/Lavabit/magma/lib/sources/dspam/src" -I"/home/ladar/Lavabit/magma/lib/sources/dkim/libopendkim" -I"/home/ladar/Lavabit/magma/lib/sources/geoip/libGeoIP" -I"/home/ladar/Lavabit/magma/lib/sources/memcached" -I"/home/ladar/Lavabit/magma/lib/sources/curl/include" -I"/home/ladar/Lavabit/magma/lib/sources/curl/include/curl" -I"/home/ladar/Lavabit/magma/lib/sources/zlib" -I"/home/ladar/Lavabit/magma/lib/sources/bzip2" -I"/home/ladar/Lavabit/magma/lib/sources/lzo/include" -I"/home/ladar/Lavabit/magma/lib/sources/lzo/include/lzo" -I"/home/ladar/Lavabit/magma/lib/sources/xml2/include" -I"/home/ladar/Lavabit/magma/lib/sources/xml2/include/libxml" -I"/home/ladar/Lavabit/magma/lib/sources/spf2/src/include" -I"/home/ladar/Lavabit/magma/lib/sources/tokyocabinet" -I"/home/ladar/Lavabit/magma/lib/sources/openssl/include" -I"/home/ladar/Lavabit/magma/lib/sources/openssl/include/openssl" -I"/home/ladar/Lavabit/magma/lib/sources/mysql/include" -I"/home/ladar/Lavabit/magma/lib/sources/clamav/libclamav" -I"/home/ladar/Lavabit/magma" -I"/home/ladar/Lavabit/magma/dev/tools/testde" -O2 -g -w -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

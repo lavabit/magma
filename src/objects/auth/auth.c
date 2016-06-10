@@ -230,7 +230,6 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 
 		// Store the values we need, and then free the legacy and STACIE structures.
 		auth->legacy.key = st_dupe(legacy->key);
-		auth->legacy.token = st_dupe(legacy->token);
 		auth->keys.master = st_dupe(stacie->keys.master);
 		auth->tokens.verification = st_dupe(stacie->tokens.verification);
 

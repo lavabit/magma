@@ -1,5 +1,3 @@
 README linguist-language=Markdown
-web/js/* linguist-vendored=true
-web/dev/* linguist-vendored=true
-web/ckeditor/* linguist-vendored=true
-web/tiny_mce/* linguist-vendored=true
+web/* linguist-vendored=true
+res/* linguist-vendored=true

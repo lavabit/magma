@@ -30,5 +30,6 @@ dev/tools/runner/.debug/runner
 dev/tools/runner/.debug/runner.d
 dev/tools/runner/.debug/runner.o
 dev/tools/testde/.debug/framework/*.d
+dev/tools/testde/.debug/framework/*.o
 dev/tools/testde/.debug/main.o
 dev/tools/testde/.debug/main.d

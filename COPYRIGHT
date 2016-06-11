@@ -1,8 +1,21 @@
-The source code contained in this directory was developed by Ladar Levison and Lavabit LLC, and 
-we collectively reserve all respective rights under applicable copyright laws. For information 
-on obtaining a license other than the one included (in the LICENSE file) in this distribution, 
-please contact the Lavabit customer support team. Thank you.
+Most of source code contained in this directory was developed by Ladar Levison (with help from
+his friends) and Lavabit LLC. All rights under the applicable copyright laws are reserved. For
+information on obtaining a license other than the one included in the LICENSE file (the AGPL)
+please contact the Lavabit customer support team.
+
+Please note that a handful of folders contain a number of dependencies which have been bundled
+for convenience. These bundled dependencies are own by their respective copyright holders, and
+their usage governed by the applicable licence. The folders containing such resources include,
+but may not be limited to, lib/archives, lib/sources, res/fonts, web/js/plugins, web/js/test
+(the qunit sub folder, and the jshint.js file). Some of the web dependencies have also been
+placed in the res/webmail folder.
+
+Please note that by submitting code to the  magma and libdime projects, you are granting Lavabit
+the use of those contributions, in perpetuity, under the current license, and possibly a different
+license in the future.
+
+Thank you.
 
 Lavabit LLC
-(469) 708-8086
-http://lavabit.com
+(972) 827-8086
+https://lavabit.com

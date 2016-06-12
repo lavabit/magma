@@ -54,13 +54,13 @@ b9339d535a3e0630f84152e272570e0af082124a4023e76cc8ea30390ef54ff5
 
 # Credits
 
-Greg Brown
-Ivan Tolkachev
-Ladar Levison
-Princess Levison
-Ryan Crites
-Sean Benson
-Stephen Watt
+Ladar Levison    
+Greg Brown    
+Ivan Tolkachev    
+Princess Levison    
+Ryan Crites    
+Sean Benson    
+Stephen Watt    
 
 And the army of Kickstarter supporters who contributed to this project.
 

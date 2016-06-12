@@ -151,7 +151,8 @@ EC_KEY * ecies_key_public(uint64_t format, placer_t data) {
 			log_info("An error occurred while allocate the elliptical curve point. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
 			EC_KEY_free_d(key);
 			return NULL;
-		} else if (EC_POINT_oct2point_d(EC_KEY_get0_group_d(key), point, pl_data_get(data), pl_length_get(data), NULL) != 1) {
+		}
+		else if (EC_POINT_oct2point_d(EC_KEY_get0_group_d(key), point, pl_data_get(data), pl_length_get(data), NULL) != 1) {
 			log_info("An error occurred while parsing the binary elliptical curve point data used to represent the public key. {%s}",
 					ERR_error_string_d(ERR_get_error_d(), NULL));
 			EC_POINT_free_d(point);

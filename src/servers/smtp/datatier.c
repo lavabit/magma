@@ -117,6 +117,7 @@ int_t smtp_fetch_inbound(stringer_t *address, smtp_inbound_prefs_t **output) {
 
 	row_t *row;
 	table_t *result;
+	placer_t domain;
 	MYSQL_BIND parameters[1];
 	int_t locked, filters, local;
 	smtp_inbound_prefs_t *inbound;
@@ -125,28 +126,30 @@ int_t smtp_fetch_inbound(stringer_t *address, smtp_inbound_prefs_t **output) {
 		.type = M_TYPE_UINT64, .val.u64 = 0
 	};
 
-	if (!st_empty(address) || !output) {
+	if (st_empty(address) || !output) {
 		return -1;
 	}
+	else if (mail_domain_get(address, &domain) == NULL) {
+		return -1;
+ 	}
 
 	*output = NULL;
 	mm_wipe(parameters, sizeof(parameters));
 
-	// Usernum
-	parameters[0].buffer_type = MYSQL_TYPE_LONGLONG;
+	// Username.
+	parameters[0].buffer_type = MYSQL_TYPE_STRING;
 	parameters[0].buffer_length = st_length_get(address);
 	parameters[0].buffer = st_char_get(address);
-	parameters[0].is_unsigned = true;
 
 	// If the address isn't found locally, check whether the domain configuration indicates we should also perform a wildcard search.
-	if ((result = stmt_get_result(stmts.select_prefs_inbound, parameters)) && res_row_count(result) == 0 && (local = domain_wildcard(address)) == 1) {
+	if ((result = stmt_get_result(stmts.select_prefs_inbound, parameters)) && res_row_count(result) == 0 && (local = domain_wildcard(&domain)) == 1) {
 
 		res_table_free(result);
 		mm_wipe(parameters, sizeof(parameters));
 
 		parameters[0].buffer_type = MYSQL_TYPE_STRING;
-		parameters[0].buffer_length = st_length_get(address);
-		parameters[0].buffer = st_char_get(address);
+		parameters[0].buffer_length = st_length_get(&domain);
+		parameters[0].buffer = st_char_get(&domain);
 
 		result = stmt_get_result(stmts.select_prefs_inbound, parameters);
 	}
@@ -232,7 +235,12 @@ int_t smtp_fetch_inbound(stringer_t *address, smtp_inbound_prefs_t **output) {
 	inbound->rbl = res_field_int8(row, 27);
 	inbound->rblaction = smtp_get_action(res_field_block(row, 28), res_field_length(row, 28));
 	filters = res_field_int8(row, 29);
-	inbound->pubkey = res_field_string(row, 30);
+
+	// We should only decode and store the public key if the account has storage security enabled. Otherwise the
+	// mail_store_message() function will interpret the presence of the key to mean encryption has been enabled.
+	if (inbound->secure) {
+		inbound->pubkey = base64_decode_mod(PLACER(res_field_block(row, 30), res_field_length(row, 30)), NULL);
+	}
 
 	// Free the memory.
 	res_table_free(result);

@@ -7,19 +7,18 @@ Magma was originally designed and developed by Ladar Levison for lavabit.com. Th
 ##### Magma Classic v6.0.1
 
 https://darkmail.info/downloads/magma-classic-6.0.1.tar.gz    
-https://darkmail.info/downloads/magma-classic-6.0.1.tar.gz.sha512
+https://darkmail.info/downloads/magma-classic-6.0.1.tar.gz.sha256    
 
-5bbafc8778ef1da9a4afc1c8cb8b17dca19c98d370d9fbdbc1ee6f136abaed76a04d86df4d4b63660e4c79cc261d22fbca781e775f7db9ed83de9358c62fb681
+d4c5b2d3e435eaae5a1c320cec5ec44db3818c67fe23819abcecab7d223e482e
 
 ##### Magma Development Machine, v1.0.0
 
 The development machine is a pre-built virtual machine with a graphical desktop and various development tools, and dependencies installed.
 
 https://darkmail.info/downloads/dark-mail-development-machine-1.0.0.tar.gz    
-https://darkmail.info/downloads/dark-mail-development-machine-1.0.0.tar.gz.sha512    
-https://darkmail.info/downloads/dark-mail-development-machine-1.0.0.torrent
+https://darkmail.info/downloads/dark-mail-development-machine-1.0.0.tar.gz.sha256    
 
-88d38c8c1f64fa03611f635ad478e75e7e3911a1717e5ca899ffd5f14bb1fa7083a1040aa5bb6bfd908796842a9eed0390afb8abd1ec9607227e8064d7115afa
+33808e4ed81859cb076ae879fed7ad85164a2561a1b1cd96f66f65f7e3bf7bd7
 
 ##### Magma Build Machines, v0.0.8
 
@@ -35,6 +34,23 @@ vagrant init lavabit/magma; vagrant up --provider virtualbox
 # libvirt
 vagrant init lavabit/magma; vagrant up --provider libvirt
 ```
+
+Or you can download the Vagrant box image manually.
+
+https://darkmail.info/downloads/magma-centos-vmware.box   
+https://darkmail.info/downloads/magma-centos-vmware.box.sha256    
+
+7ab90989877c3d996b015391819aa3872328bda9b97d8f252cef1dd6ac5a7915
+
+https://darkmail.info/downloads/magma-centos-virtualbox.box    
+https://darkmail.info/downloads/magma-centos-virtualbox.box.sha256    
+
+a134a57886ccec5690c143dceda0d48dc5f7cddb3c5944ae4d65ee78a280970b
+
+https://darkmail.info/downloads/magma-centos-libvirt.box    
+https://darkmail.info/downloads/magma-centos-libvirt.box.sha256    
+
+b9339d535a3e0630f84152e272570e0af082124a4023e76cc8ea30390ef54ff5   
 
 # Credits
 

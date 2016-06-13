@@ -238,9 +238,15 @@ int_t smtp_fetch_inbound(stringer_t *address, smtp_inbound_prefs_t **output) {
 
 	// We should only decode and store the public key if the account has storage security enabled. Otherwise the
 	// mail_store_message() function will interpret the presence of the key to mean encryption has been enabled.
-	if (inbound->secure) {
+	if (inbound->secure && res_field_length(row, 30)) {
 		inbound->pubkey = base64_decode_mod(PLACER(res_field_block(row, 30), res_field_length(row, 30)), NULL);
 	}
+#ifdef MAGMA_PEDANTIC
+	else if (inbound->secure) {
+		log_pedantic("Secure storage was enabled, but no public key was found for the account. { address = %.*s }", st_length_int(address),
+			st_char_get(address));
+	}
+#endif
 
 	// Free the memory.
 	res_table_free(result);

@@ -343,7 +343,7 @@ int_t smtp_accept_message(connection_t *con, smtp_inbound_prefs_t *prefs) {
 		}
 	}
 
-	// We add the user specific headers here. Because we want the spam filter to have the benefit of a recieved line.
+	// We add the user specific headers here. Because we want the spam filter to have the benefit of a received line.
 	if ((local = mail_add_inbound_headers(con, prefs)) == NULL) {
 		log_error("An error occurred while attempting to add the inbound headers.");
 		return SMTP_OUTCOME_TEMP_SERVER;

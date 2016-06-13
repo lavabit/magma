@@ -628,8 +628,8 @@ void smtp_rcpt_to(connection_t *con) {
 	// Check the connecting server against several RBL databases.
 	if (result->rbl == 1) {
 
-		// Perform the check.
-		if (con->smtp.checked.rbl == 0) {
+		// Perform the check if we haven't performed it yet, or the last attempt resulted in a temporary error.
+		if (con->smtp.checked.rbl == 0 || con->smtp.checked.rbl == -1) {
 			con->smtp.checked.rbl = smtp_check_rbl(con);
 		}
 
@@ -1125,7 +1125,9 @@ void smtp_data(connection_t *con) {
 		return;
 	}
 
-	// Count the number of Received lines.
+	// Count the number of Received lines. Some servers return error code 446 when the number of received lines indicates a delivery
+	// loop. Unfortunately that is a temporary error code, which would result in the server attempting delivery again later. Since the
+	// problem is unlikely to correct itself, we decided to return a permanent error code instead.
 	if (mail_count_received(text) > magma.smtp.relay_limit) {
 		con_write_bl(con, "550 DATA FAILED - THE MESSAGE HAS TOO MANY RECEIVED HEADER LINES AND IS BEING REJECTED BECAUSE IT APPEARS TO BE CAUGHT IN A " \
 			"FORWARD LOOP\r\n", 138);

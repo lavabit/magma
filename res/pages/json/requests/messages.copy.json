@@ -1,0 +1,9 @@
+{
+    "id": 19,
+    "method": "messages.copy",
+    "params": {
+        "messageIDs": [100, 101, 102],
+        "sourceFolderID": 1,
+        "targetFolderID": 10
+    }
+}

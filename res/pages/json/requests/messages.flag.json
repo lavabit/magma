@@ -1,0 +1,36 @@
+[{
+    "id": 20,
+    "method": "messages.flag",
+    "params": {
+    	"action": "add",
+    	"flags": ["junk"],
+        "messageIDs": [100, 101, 102],
+    	"folderID": 1
+    }
+},{
+    "id": 20,
+    "method": "messages.flag",
+    "params": {
+        "action": "replace",
+    	"flags": [],
+        "messageIDs": [100, 101, 102],
+    	"folderID": 1
+    }
+},{
+    "id": 20,
+    "method": "messages.flag",
+    "params": {
+        "action": "remove",
+		"flags": ["read"],
+	    "messageIDs": [100, 101, 102],
+		"folderID": 1
+    }
+},{
+    "id": 20,
+    "method": "messages.flag",
+    "params": {
+        "action": "list",
+	    "messageIDs": [100, 101, 102],
+		"folderID": 1
+    }
+}]

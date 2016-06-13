@@ -1,0 +1,25 @@
+[{
+    "result": [{
+        "contactID": 45,
+        "name": "John Resig",
+        "email": "jr@mozilla.org",
+    }, {
+        "contactID": 48,
+        "name": "Linus Torvalds",
+        "email": "lt@kernel.org",
+    }, {
+        "contactID": 53,
+        "name": "Douglas Crockford",
+        "email": "dc@yahoo.com",
+    }, {
+        "contactID": 58,
+        "name": "Paul Graham",
+        "email": "pg@ycombinator.com"
+    }, {
+        "contactID": 64,
+        "name": "John Paul",
+        "email": "jp@morgan.com"
+    }]
+}, {
+    "error": true
+}]

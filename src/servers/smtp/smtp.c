@@ -537,7 +537,8 @@ void smtp_rcpt_to(connection_t *con) {
 	//address = sanitized;
 
 	// Hit the mailboxes table, and see if this is a legitimate address.
-	state = smtp_fetch_inbound(address, &result);
+	state = smtp_fetch_inbound(sanitized, &result);
+	st_free(sanitized);
 
 	// If the account is locked.
 	if (state == -2) {
@@ -632,6 +633,13 @@ void smtp_rcpt_to(connection_t *con) {
 			con->smtp.checked.rbl = smtp_check_rbl(con);
 		}
 
+		// A temporary error occurred while checking the realtime blacklist, so we'll reject the recipient with a temporary error code.
+		if (con->smtp.checked.rbl == -1 && result->rblaction == SMTP_ACTION_REJECT) {
+			con_print(con, "451 MAILBOX UNAVAILABLE - PLEASE TRY AGAIN LATER\r\n");
+			smtp_free_inbound(result);
+			return;
+		}
+
 		// If the user has elected to reject these messages.
 		if (con->smtp.checked.rbl == -2 && result->rblaction == SMTP_ACTION_REJECT) {
 
@@ -644,6 +652,7 @@ void smtp_rcpt_to(connection_t *con) {
 			smtp_free_inbound(result);
 			return;
 		}
+
 	}
 
 	if (result->greylist == 1) {

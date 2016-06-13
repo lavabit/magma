@@ -18,7 +18,7 @@
  * @note	This function duplicates the input address string, with all characters converted to lowercase, and whitespace removed.
  * 			'.' and '-' are also converted to '_' in the username, and if there is a '+' in the local portion of an email
  * 			 address, all subsequent characters in that local part will be ignored, as they constitute a label.
- * @return	NULL on failure, or a managed string containing the sanitized address on success.
+ * @return	NULL on failure, or a managed string containing the sanitized address on success, that must be freed by the caller.
  */
 stringer_t * auth_sanitize_address(stringer_t *username) {
 

@@ -325,7 +325,7 @@ int_t smtp_accept_message(connection_t *con, smtp_inbound_prefs_t *prefs) {
 	}
 
 	// This will catch messages that failed the RBL checks, but weren't rejected.
-	if (!con->smtp.bypass && (prefs->mark == SMTP_MARK_NONE) && (prefs->rbl == 1) && (con->smtp.checked.rbl < 0)) {
+	if (!con->smtp.bypass && (prefs->mark == SMTP_MARK_NONE) && (prefs->rbl == 1) && (con->smtp.checked.rbl < -1)) {
 		if (prefs->rblaction == SMTP_ACTION_MARK_READ) {
 			prefs->mark = SMTP_MARK_READ | SMTP_MARK_RBL;
 		}

@@ -795,7 +795,7 @@ int_t smtp_data_read(connection_t *con, stringer_t **message) {
 		stream = st_data_get(con->network.buffer);
 
 		// Size check.
-		if (read + used > con->smtp.max_length) {
+		if ((read + used) > con->smtp.max_length) {
 			log_pedantic("Message exceeded size limit of %zu bytes. Reading till the end, and then returning an error.", con->smtp.max_length);
 			smtp_data_finish(con, read, checker);
 			st_free(result);

@@ -3,12 +3,10 @@
 	<name>testde</name>
 	<comment></comment>
 	<projects>
-		<project>magma.so</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
 			<name>org.eclipse.cdt.managedbuilder.core.genmakebuilder</name>
-			<triggers>clean,full,incremental,</triggers>
 			<arguments>
 				<dictionary>
 					<key>?name?</key>

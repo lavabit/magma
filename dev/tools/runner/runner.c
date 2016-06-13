@@ -115,6 +115,7 @@ void send_message(char *entrypath, FILE *buf_d) {
 
 	int fd;
 	int new;
+	int sent = 0;
 	char *buffer;
 	char input[1000];
 	struct stat info;
@@ -192,12 +193,15 @@ void send_message(char *entrypath, FILE *buf_d) {
 	close(fd);
 
 	// Dot stuff.
-	new = replace_ns_ns_ns(&buffer, info.st_size, "\n.", "\n..");
+	new = replace_ns_ns_ns(&buffer, info.st_size, ".", "..");
 
 	// Send the file.
-	fprintf(buf_d, "%.*s", new, buffer);
+	while (sent < new && sent >= 0) {
+		sent += fprintf(buf_d, "%.*s", new - sent, buffer);
+	}
+
 	free(buffer);
-	printf(" - %i bytes - ", (int)info.st_size);
+	printf(" - %i bytes - ", sent);
 
 	// End the transmission.
 	fprintf(buf_d, "\r\n.\r\n");

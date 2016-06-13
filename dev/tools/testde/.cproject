@@ -17,7 +17,7 @@
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.base.1499422078.2011602413." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.base.1763901382" name="cdt.managedbuild.toolchain.gnu.base" nonInternalBuilderId="cdt.managedbuild.target.gnu.builder.base" resourceTypeBasedDiscovery="false" superClass="cdt.managedbuild.toolchain.gnu.base">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.base.1610969500" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
-							<builder buildPath="${workspace_loc:/testde/.debug}" id="cdt.managedbuild.builder.gnu.cross.2045117960" keepEnvironmentInBuildfile="false" name="Gnu Make Builder" superClass="cdt.managedbuild.builder.gnu.cross"/>
+							<builder buildPath="${workspace_loc:/testde/.debug}" enableAutoBuild="true" id="cdt.managedbuild.builder.gnu.cross.2045117960" keepEnvironmentInBuildfile="false" name="Gnu Make Builder" superClass="cdt.managedbuild.builder.gnu.cross"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.736807079" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.1440735133" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.1475157915" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
@@ -62,7 +62,7 @@
 									<listOptionValue builtIn="false" value="lzo2"/>
 									<listOptionValue builtIn="false" value="xml2"/>
 								</option>
-								<option id="gnu.c.link.option.paths.1128742309" superClass="gnu.c.link.option.paths" valueType="libPaths">
+								<option id="gnu.c.link.option.paths.1128742309" name="Library search path (-L)" superClass="gnu.c.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/lzo/src/.libs}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.184012181" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
@@ -556,4 +556,9 @@
 		</scannerConfigBuildInfo>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName=".debug">
+			<resource resourceType="PROJECT" workspacePath="/testde"/>
+		</configuration>
+	</storageModule>
 </cproject>

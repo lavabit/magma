@@ -128,7 +128,7 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 		recv_limit = 1024;
 		send_limit = 256;
 	}
-	else if (plan) {
+	else if (plan == 2) {
 		quota = 1073741824UL; // 1,024 MB
 		size_limit = 64UL << 20;
 		recv_limit = 1024;

@@ -116,9 +116,19 @@ int ssl_read(SSL *ssl, void *buffer, int length, bool_t block) {
 		return -1;
 	}
 
-	if ((!block && (result = SSL_peek_d(ssl, buffer, length)) <= 0) || (result = SSL_read_d(ssl, buffer, length)) <= 0) {
+	if (!block && ((result = SSL_peek_d(ssl, buffer, length)) <= 0 && (result = SSL_read_d(ssl, buffer, length)) <= 0)) {
 
 		// If our socket is blocking and we get this error it's not really an error.. it just means we need to try again.
+		if ((sslerr = SSL_get_error_d(ssl, result)) != SSL_ERROR_WANT_READ) {
+			ERR_error_string_n_d(sslerr, bufptr, buflen);
+			log_pedantic("SSL_read error. { result = %i / error = %s }", result, bufptr);
+		}
+		else {
+			result = 0;
+		}
+
+	}
+	else if (block && (result = SSL_read_d(ssl, buffer, length)) <= 0) {
 		if ((sslerr = SSL_get_error_d(ssl, result)) != SSL_ERROR_WANT_READ) {
 			ERR_error_string_n_d(sslerr, bufptr, buflen);
 			log_pedantic("SSL_read error. { result = %i / error = %s }", result, bufptr);

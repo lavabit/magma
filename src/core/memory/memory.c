@@ -183,9 +183,11 @@ void * mm_alloc(size_t len) {
 	if (!len) {
 		log_pedantic("Attempted to allocate a zero length string.");
 		return NULL;
-	} else if ((result = malloc(len))) {
+	}
+	else if ((result = malloc(len))) {
 		mm_set(result, 0, len);
-	} else {
+	}
+	else {
 		log_pedantic("Unable to allocate a block of %zu bytes.", len);
 	}
 

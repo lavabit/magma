@@ -523,18 +523,12 @@ void smtp_rcpt_to(connection_t *con) {
 		return;
 	}
 
-	/// LOW: We should copy the address before sanitizing it. That way if the address is altered by the sanitizer we can still
-	/// 	print the original address with the error messages below.
+	// Sanitize the email address before attempting a database lookup.
 	if (!(sanitized = auth_sanitize_address(address))) {
 		con_write_bl(con, "451 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
 		st_free(address);
 		return;
 	}
-
-	// Free the address and replace it with the sanitized version.
-	// This is leftover from when the sanitizer copied the result into a new buffer.
-	//st_free(address);
-	//address = sanitized;
 
 	// Hit the mailboxes table, and see if this is a legitimate address.
 	state = smtp_fetch_inbound(sanitized, &result);
@@ -1098,7 +1092,6 @@ void smtp_data(connection_t *con) {
 		smtp_requeue(con);
 		return;
 	}
-	/// LOW: Why are -2 and -3 identical?
 	else if (state == -2 && con->smtp.authenticated == true) {
 		con_print(con, "552 DATA FAILED - OUTBOUND SIZE LIMIT EXCEEDED - THIS ACCOUNT MAY ONLY SEND MESSAGES UP TO %zu BYTES IN LENGTH\r\n", con->smtp.max_length);
 		smtp_requeue(con);

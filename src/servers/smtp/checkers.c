@@ -126,7 +126,7 @@ int_t smtp_check_rbl(connection_t *con) {
 		// If the return code code indicates an error, rather than simply not finding a matching entry.
 		// Do we also want to exclude EAI_ADDRFAMILY or EAI_NODATA
 		else if (ret != EAI_NONAME) {
-			log_pedantic("Blacklist DNS attempt resulted in an error. {getaddrinfo = %s}", gai_strerror(ret));
+			log_pedantic("Blacklist DNS attempt resulted in an error. { getaddrinfo = %s }", gai_strerror(ret));
 		}
 		else {
 			result = 1;

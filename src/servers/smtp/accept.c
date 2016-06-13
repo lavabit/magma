@@ -182,7 +182,7 @@ bool_t smtp_store_spamsig(smtp_inbound_prefs_t *prefs, int_t spam) {
 	}
 
 	prefs->spamkey = key;
-	log_pedantic("Statistical filter signature stored. {signature = %lu / key = %lu}", prefs->signum, prefs->spamkey);
+	//log_pedantic("Statistical filter signature stored. {signature = %lu / key = %lu}", prefs->signum, prefs->spamkey);
 
 	return true;
 }

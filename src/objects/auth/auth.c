@@ -183,7 +183,7 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 	auth_t *auth = NULL;
 	auth_stacie_t *stacie = NULL;
 	auth_legacy_t *legacy = NULL;
-	stringer_t *legacy_hex = NULL, *salt_hex = NULL, *verification_hex = NULL;
+	stringer_t *legacy_hex = NULL, *salt_b64 = NULL, *verification_b64 = NULL;
 
 	if (st_empty(username) || st_empty(password)) {
 		log_pedantic("An invalid username or password was provided.");
@@ -235,29 +235,29 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 
 		// Convert the verification token, salt, and legacy values into hex so they can be safely stored in the database.
 		legacy_hex = hex_encode_st(auth->legacy.token, NULL);
-		salt_hex = hex_encode_st(auth->seasoning.salt, NULL);
-		verification_hex = hex_encode_st(auth->tokens.verification, NULL);
+		salt_b64 = base64_encode_mod(auth->seasoning.salt, NULL);
+		verification_b64 = base64_encode_mod(auth->tokens.verification, NULL);
 
 		auth_legacy_free(legacy);
 		auth_stacie_free(stacie);
 
 		// Ensure all of the needed values were duplicated.
-		if (st_empty(auth->legacy.key, auth->legacy.token, auth->keys.master, auth->tokens.verification, legacy_hex, salt_hex, verification_hex)) {
+		if (st_empty(auth->legacy.key, auth->legacy.token, auth->keys.master, auth->tokens.verification, legacy_hex, salt_b64, verification_b64)) {
 			log_pedantic("Unable to store the credentials in the auth structure.");
-			st_cleanup(legacy_hex, salt_hex, verification_hex);
+			st_cleanup(legacy_hex, salt_b64, verification_b64);
 			auth_free(auth);
 			return -1;
 		}
 		// Replace the legacy credentials in the database with STACIE values.
-		else if (auth_data_update_legacy(auth->usernum, legacy_hex, salt_hex, verification_hex, auth->seasoning.bonus)) {
+		else if (auth_data_update_legacy(auth->usernum, legacy_hex, salt_b64, verification_b64, auth->seasoning.bonus)) {
 			log_pedantic("Unable to update the legacy credentials with the STACIE compatible equivalents.");
-			st_cleanup(legacy_hex, salt_hex, verification_hex);
+			st_cleanup(legacy_hex, salt_b64, verification_b64);
 			auth_free(auth);
 			return -1;
 		}
 
 		// Cleanup the hex equivalents and then return success.
-		st_cleanup(legacy_hex, salt_hex, verification_hex);
+		st_cleanup(legacy_hex, salt_b64, verification_b64);
 
 		// Valid legacy login!
 		*output = auth;

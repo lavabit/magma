@@ -29,8 +29,20 @@ int_t auth_data_update_legacy(uint64_t usernum, stringer_t *legacy, stringer_t *
 	mm_wipe(parameters, sizeof(parameters));
 
 	// Ensure a valid auth pointer was passed in and the required STACIE and legacy values are all present in the structure.
-	if (st_empty(salt) || st_empty(verification) || bonus > STACIE_ROUNDS_MAX || usernum == 0 || st_empty(legacy)) {
-		log_pedantic("The input variables were invalid.");
+	if (st_empty(legacy) || st_length_get(legacy) != 128) {
+		log_pedantic("The legacy token is invalid.");
+		return -1;
+	}
+	else if (st_empty(salt) || st_length_get(salt) != 171) {
+		log_pedantic("The salt is invalid.");
+		return -1;
+	}
+	else if (st_empty(verification) ||  st_length_get(verification) != 86) {
+		log_pedantic("The verification token is invalid.");
+		return -1;
+	}
+	else if (bonus > STACIE_ROUNDS_MAX || usernum == 0) {
+		log_pedantic("The numeric variables were invalid.");
 		return -1;
 	}
 
@@ -148,7 +160,17 @@ int_t auth_data_fetch(auth_t *auth) {
 		return -1;
 	}
 
-	// Save the database username in place of the user supplied version to ensure the password hash is deterministic.
+#ifdef MAGMA_PEDANTIC
+	if (st_cmp_cs_eq(PLACER(res_field_block(row, 1), res_field_length(row, 1)), auth->username)) {
+		log_pedantic("The database username does not match our sanitized username. { userid = %.*s / sanitized = %.*s }",
+			(int)res_field_length(row, 1), (char *)res_field_block(row, 1), st_length_int(auth->username), st_char_get(auth->username));
+	}
+#endif
+
+	// Save the database username in place of the user supplied version to ensure the password hash is deterministic. We need this
+	// for situations where someone authenticates using an email address that can't be sanitized into their username. This happens
+	// When the email address uses a domain that isn't the system domain and/or if the local part of the email address does not equal
+	// the actual username on the account.
 	if ((userid = res_field_string(row, 1))) {
 		st_free(auth->username);
 		auth->username = userid;
@@ -161,12 +183,12 @@ int_t auth_data_fetch(auth_t *auth) {
 
 	// Only save the STACIE salt value if it isn't NULL.
 	if (res_field_length(row, 2)) {
-		auth->seasoning.salt = hex_decode_st(PLACER(res_field_block(row, 2), res_field_length(row, 2)), NULL);
+		auth->seasoning.salt = base64_decode_mod(PLACER(res_field_block(row, 2), res_field_length(row, 2)), NULL);
 	}
 
 	// Only save the STACIE auth token if the field value isn't NULL.
 	if (res_field_length(row, 3)) {
-		auth->tokens.verification = hex_decode_st(PLACER(res_field_block(row, 3), res_field_length(row, 3)), NULL);
+		auth->tokens.verification = base64_decode_mod(PLACER(res_field_block(row, 3), res_field_length(row, 3)), NULL);
 	}
 
 	// The number of "bonus" hash rounds to apply when generating the STACIE encryption keys.

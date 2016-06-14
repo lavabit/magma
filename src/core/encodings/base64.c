@@ -12,6 +12,40 @@
 
 #include "magma.h"
 
+size_t base64_encoded_length(size_t length) {
+
+	size_t result = 0;
+
+	if (length < 0) {
+		return 0;
+	}
+
+	result = (length + 2) / 3 * 4;
+    result = result + (result - 1) / BASE64_LINE_WRAP_LENGTH;
+    return result;
+}
+size_t base64_decoded_length(size_t length) {
+	return ((size_t)(length * 3 / 4)) + 1;
+}
+
+size_t base64_encoded_mod_length(size_t length) {
+
+	size_t result = 0;
+
+	if (length < 0) {
+		return 0;
+	}
+
+	result = (length + 2) / 3 * 4;
+	return result;
+}
+
+size_t base64_decoded_mod_length(size_t length) {
+	return ((size_t)(length * 3 / 4)) + 1;
+}
+
+
+
 /**
  * @brief	Perform base64 encoding on a managed string with padding and line splitting at BASE64_LINE_WRAP_LENGTH characters.
  * @param	s			the managed string to be base64 encoded.
@@ -30,7 +64,7 @@ stringer_t * base64_encode_opts(stringer_t *s, uint32_t opts, bool_t modified) {
 		return NULL;
 	}
 
-	new_len = modified ? BASE64_ENCODED_MOD_LEN(len) : BASE64_ENCODED_LEN(len);
+	new_len = modified ? base64_encoded_mod_length(len) : base64_encoded_length(len);
 
 	if (!(result = st_alloc_opts(opts,new_len))) {
 		log_pedantic("Unable to allocate memory for base64 encoding output.");
@@ -75,7 +109,7 @@ stringer_t * base64_encode(stringer_t *s, stringer_t *output) {
 		return NULL;
 	}
 
-	new_len = BASE64_ENCODED_LEN(len);
+	new_len = base64_encoded_length(len);
 
 	// Make sure the output buffer is large enough or if output was passed in as NULL we'll attempt the allocation of our own buffer.
 	if ((result = output) && ((st_valid_avail(opts) && st_avail_get(output) < new_len) ||
@@ -155,7 +189,7 @@ stringer_t * base64_encode(stringer_t *s, stringer_t *output) {
 
 	// If an output buffer was supplied that is capable of tracking the data length, or a managed string buffer was allocated update the length param.
 	if (!output || st_valid_tracked(opts)) {
-		st_length_set(result, new_len);
+		st_length_set(result, written);
 	}
 
 	return result;
@@ -187,7 +221,7 @@ stringer_t * base64_encode_mod(stringer_t *s, stringer_t *output) {
 		return NULL;
 	}
 
-	new_len = BASE64_ENCODED_MOD_LEN(len);
+	new_len = base64_encoded_mod_length(len);
 
 	// Make sure the output buffer is large enough or if output was passed in as NULL we'll attempt the allocation of our own buffer.
 	if ((result = output) && ((st_valid_avail(opts) && st_avail_get(output) < new_len) ||
@@ -241,7 +275,7 @@ stringer_t * base64_encode_mod(stringer_t *s, stringer_t *output) {
 
 	// If an output buffer was supplied that is capable of tracking the data length, or a managed string buffer was allocated update the length param.
 	if (!output || st_valid_tracked(opts)) {
-		st_length_set(result, new_len);
+		st_length_set(result, written);
 	}
 
 	return result;
@@ -270,7 +304,7 @@ stringer_t * base64_decode(stringer_t *s, stringer_t *output) {
 		return NULL;
 	}
 
-	new_len = BASE64_DECODED_LEN(len);
+	new_len = base64_decoded_length(len);
 
 	// Make sure the output buffer is large enough or if output was passed in as NULL we'll attempt the allocation of our own buffer.
 	if ((result = output) && ((st_valid_avail(opts) && st_avail_get(output) < new_len) ||
@@ -363,7 +397,7 @@ stringer_t * base64_decode_opts(stringer_t *s, uint32_t opts, bool_t modified) {
 		return NULL;
 	}
 
-	new_len = modified ? BASE64_DECODED_MOD_LEN(len) : BASE64_DECODED_LEN(len);
+	new_len = modified ? base64_decoded_mod_length(len) : base64_decoded_length(len);
 
 	if (!(result = st_alloc_opts(opts,new_len))) {
 		log_pedantic("Unable to allocate memory for base64 decoding output.");
@@ -410,7 +444,7 @@ stringer_t * base64_decode_mod(stringer_t *s, stringer_t *output) {
 		return NULL;
 	}
 
-	new_len = BASE64_DECODED_MOD_LEN(len);
+	new_len = base64_decoded_mod_length(len);
 
 	// Make sure the output buffer is large enough or if output was passed in as NULL we'll attempt the allocation of our own buffer.
 	if ((result = output) && ((st_valid_avail(opts) && st_avail_get(output) < new_len) ||

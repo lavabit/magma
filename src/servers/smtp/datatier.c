@@ -596,9 +596,10 @@ int_t smtp_fetch_authorization(stringer_t *username, stringer_t *verification, s
 	int_t locked;
 	table_t *result;
 	MYSQL_BIND parameters[2];
+	stringer_t *encoded = NULL;
 	smtp_outbound_prefs_t *outbound;
 
-	if (!st_populated(username, verification) || !output) {
+	if (!st_populated(username, verification) || !output || !(encoded = base64_encode_mod(verification, NULL))) {
 		return -1;
 	}
 
@@ -611,13 +612,17 @@ int_t smtp_fetch_authorization(stringer_t *username, stringer_t *verification, s
 	parameters[0].buffer = st_char_get(username);
 
 	parameters[1].buffer_type = MYSQL_TYPE_STRING;
-	parameters[1].buffer_length = st_length_get(verification);
-	parameters[1].buffer = st_char_get(verification);
+	parameters[1].buffer_length = st_length_get(encoded);
+	parameters[1].buffer = st_char_get(encoded);
 
 	if (!(result = stmt_get_result(stmts.smtp_select_user_auth, parameters))) {
 		log_pedantic("Authentication attempt failed by database error.");
+		st_free(encoded);
 		return -1;
 	}
+
+	// Free the encoded version of the verification token.
+	st_free(encoded);
 
 	// Get the first row.
 	if (!(row = res_row_next(result))) {

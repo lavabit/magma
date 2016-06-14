@@ -319,7 +319,7 @@ void smtp_auth_plain(connection_t *con) {
 	}
 
 	// Authorize the user, and securely delete the keys.
-	if ((state = smtp_fetch_authorization(auth->username, auth->tokens.verification, &outbound)) < 0) {
+	if ((state = smtp_fetch_authorization(auth->username, auth->tokens.verification, &outbound)) <= 0) {
 		if (state == -4) {
 			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN LOCKED AT THE REQUEST OF THE USER\r\n", 86);
 		}

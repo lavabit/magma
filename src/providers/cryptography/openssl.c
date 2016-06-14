@@ -116,7 +116,11 @@ int ssl_read(SSL *ssl, void *buffer, int length, bool_t block) {
 		return -1;
 	}
 
-	if (!block && ((result = SSL_peek_d(ssl, buffer, length)) <= 0 && (result = SSL_read_d(ssl, buffer, length)) <= 0)) {
+	if (!block) {
+
+		if ((result = SSL_peek_d(ssl, buffer, length)) > 0) {
+			result = SSL_read_d(ssl, buffer, length);
+		}
 
 		// If our socket is blocking and we get this error it's not really an error.. it just means we need to try again.
 		if ((sslerr = SSL_get_error_d(ssl, result)) != SSL_ERROR_WANT_READ) {
@@ -160,11 +164,11 @@ int ssl_write(SSL *ssl, const void *buffer, int length) {
 		log_pedantic("Passed invalid data for the SSL_write function.");
 		return -1;
 	}
-	else if ((result = SSL_write_d(ssl, buffer, length)) < 0) {
+	else if ((result = SSL_write_d(ssl, buffer, length)) <= 0) {
 
 		// This might not really be an "error" ...
 		if ((sslerr = SSL_get_error_d(ssl, result)) != SSL_ERROR_WANT_WRITE) {
-			log_pedantic("SSL_write error. {error = %s}", ssl_error_string(bufptr, buflen));
+			log_pedantic("SSL_write error. {sslerr = %i / error = %s}", sslerr, ssl_error_string(bufptr, buflen));
 		}
 
 	}
@@ -423,8 +427,9 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 		ciphers = MAGMA_CIPHERS_GENERIC;
 	}
 	else if (security_level == 1) {
-		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
-		ciphers = MAGMA_CIPHERS_LOW;
+		options = (options | SSL_OP_NO_SSLv2);
+		//ciphers = MAGMA_CIPHERS_LOW;
+		ciphers = SSL_DEFAULT_CIPHER_LIST;
 	}
 	else if (security_level == 2) {
 		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION);

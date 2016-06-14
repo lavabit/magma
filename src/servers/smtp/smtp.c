@@ -628,11 +628,13 @@ void smtp_rcpt_to(connection_t *con) {
 		}
 
 		// A temporary error occurred while checking the realtime blacklist, so we'll reject the recipient with a temporary error code.
-		if (con->smtp.checked.rbl == -1 && result->rblaction == SMTP_ACTION_REJECT) {
-			con_print(con, "451 MAILBOX UNAVAILABLE - PLEASE TRY AGAIN LATER\r\n");
-			smtp_free_inbound(result);
-			return;
-		}
+		// We need to be careful here. If we enable this code, and something happens to the DNS server, then any user with RBL lists enabled
+		// will start blocking every incoming message.
+//		if (con->smtp.checked.rbl == -2 && result->rblaction == SMTP_ACTION_REJECT) {
+//			con_print(con, "451 MAILBOX UNAVAILABLE - PLEASE TRY AGAIN LATER\r\n");
+//			smtp_free_inbound(result);
+//			return;
+//		}
 
 		// If the user has elected to reject these messages.
 		if (con->smtp.checked.rbl == -2 && result->rblaction == SMTP_ACTION_REJECT) {

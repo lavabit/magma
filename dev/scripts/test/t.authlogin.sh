@@ -7,18 +7,18 @@
 
 echo ""
 
-# Success (ladar/test)
+# Success (magma/password)
 tput setaf 6; echo "Valid AUTH LOGIN requests:"; tput sgr0
 echo ""
-printf "AUTH LOGIN bGFkYXI=\r\ndGVzdA==\r\nQUIT\r\n" | nc localhost 7000
+printf "AUTH LOGIN bWFnbWE=\r\ncGFzc3dvcmQ=\r\nQUIT\r\n" | nc localhost 7000
 echo ""
-printf "AUTH LOGIN\r\nbGFkYXI=\r\ndGVzdA==\r\nQUIT\r\n" | nc localhost 7000
+printf "AUTH LOGIN\r\nbWFnbWE=\r\ncGFzc3dvcmQ=\r\nQUIT\r\n" | nc localhost 7000
 echo ""
 
-# Fail (ladar/password)
+# Fail (magma/invalidpassword)
 tput setaf 6; echo "Invalid AUTH LOGIN requests:"; tput sgr0
 echo ""
-printf "AUTH LOGIN bGFkYXI=\r\ncGFzc3dvcmQ=\r\nQUIT\r\n" | nc localhost 7000
+printf "AUTH LOGIN bWFnbWE=\r\naW52YWxpZHBhc3N3b3Jk\r\nQUIT\r\n" | nc localhost 7000
 echo ""
-printf "AUTH LOGIN\r\nbGFkYXI=\r\ncGFzc3dvcmQ=\r\nQUIT\r\n" | nc localhost 7000
+printf "AUTH LOGIN\r\nbWFnbWE=\r\naW52YWxpZHBhc3N3b3Jk\r\nQUIT\r\n" | nc localhost 7000
 echo ""

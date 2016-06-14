@@ -13,7 +13,7 @@ tput setaf 6; echo "Inbound Attachmented Message 2:"; tput sgr0
 nc localhost 7000 <<EOF
 EHLO bubba
 MAIL FROM: <bubba@example.com>
-RCPT TO: <ladar@lavabit.com>
+RCPT TO: <magma@lavabit.com>
 DATA
 Return-Path: <fudd-return-4141-ladar=lavabit.com@stranded.org>
 Received: from mail.stranded.org (stranded.org [209.59.192.220])
@@ -49,7 +49,7 @@ Content-Type: text/plain; charset=ISO-8859-1
 $30 a month for this speed!
 
 
--- 
+--
 *Scott Schlee*
 New Media Director
 Maxim Designs

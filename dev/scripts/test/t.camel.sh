@@ -5,13 +5,14 @@ export RANDOM=$SEED
 
 export IDNUM="1"
 export USERID="magma"
+export PASSWORD="password"
 export COOKIES=`mktemp`
 export SQLHOST="localhost"
 export CAMELHOST="http://localhost:10000"
 export CAMELPATH="$CAMELHOST/portal/camel"
 
 # Check and make sure magmad is running before attempting a connection.
-PID=`pidof magmad magmad.check`       
+PID=`pidof magmad magmad.check`
 
 if [ -z "$PID" ]; then
 	tput setaf 1; tput bold; echo "Magma process isn't running."; tput sgr0
@@ -22,29 +23,29 @@ wget --quiet --retry-connrefused --connect-timeout=1 --waitretry=1 --tries=0 --o
 if [ $? != 0 ]; then
 	tput setaf 1; tput bold; echo "tired of waiting on the magma daemon start"; tput sgr0
 	exit
-fi	
+fi
 
 submit() {
-	
-	# Client submission in yellow, server responses in red. 
-	tput setaf 3; tput bold; echo "$1"; 
-	
+
+	# Client submission in yellow, server responses in red.
+	tput setaf 3; tput bold; echo "$1";
+
 	# Submit using cURL
 	# To print the server supplied HTTP headers add --include
 
 	# export OUTPUT=`curl --silent --cookie "$COOKIES" --cookie-jar "$COOKIES" --data "$1" "$CAMELPATH"`
-	
+
 	# Submit using wget
 	# To print the server supplied HTTP headers add --server-response
 
 	export OUTPUT=`wget --load-cookies="$COOKIES" --save-cookies="$COOKIES" --quiet --output-document=- --post-data="$1" "$CAMELPATH"`
-	
+
 	if [[ "$OUTPUT" =~ "\"result\":" ]] && [[ ! "$OUTPUT" =~ "\"failed\"" ]]; then
-		tput setaf 2; tput bold; echo $OUTPUT	
+		tput setaf 2; tput bold; echo $OUTPUT
 	else
 		tput setaf 1; tput bold; echo $OUTPUT
-	fi  
-	
+	fi
+
 	tput sgr0; echo ""
 	export IDNUM=`expr $IDNUM + 1`
 }
@@ -71,7 +72,7 @@ echo ""
 tput setaf 6; echo "Camel requests:"; tput sgr0
 echo ""
 
-submit "{\"id\":$IDNUM,\"method\":\"auth\",\"params\":{\"username\":\"$USERID\",\"password\":\"test\"}}"
+submit "{\"id\":$IDNUM,\"method\":\"auth\",\"params\":{\"username\":\"$USERID\",\"password\":\"$PASSWORD\"}}"
 submit "{\"id\":$IDNUM,\"method\":\"config.edit\",\"params\":{\"key\":\"value\"}}"
 submit "{\"id\":$IDNUM,\"method\":\"config.load\"}"
 submit "{\"id\":$IDNUM,\"method\":\"config.edit\",\"params\":{\"key\":null}}"
@@ -91,7 +92,7 @@ foldernum "Lovers"; contactnums "Flight Crew" "1"; submit "{\"id\":$IDNUM,\"meth
 foldernum "Flight Crew"; submit "{\"id\":$IDNUM,\"method\":\"contacts.list\",\"params\":{\"folderID\":$FOLDERNUM }}"
 foldernum "Lovers"; submit "{\"id\":$IDNUM,\"method\":\"contacts.list\",\"params\":{\"folderID\":$FOLDERNUM }}"
 contactnums "Flight Crew" "1"; submit "{\"id\":$IDNUM,\"method\":\"contacts.remove\",\"params\":{\"folderID\":$SOURCENUM, \"contactID\":$CONTACTNUM }}"
-contactnums "Lovers" "1"; submit "{\"id\":$IDNUM,\"method\":\"contacts.remove\",\"params\":{\"folderID\":$SOURCENUM, \"contactID\":$CONTACTNUM }}"  
+contactnums "Lovers" "1"; submit "{\"id\":$IDNUM,\"method\":\"contacts.remove\",\"params\":{\"folderID\":$SOURCENUM, \"contactID\":$CONTACTNUM }}"
 foldernum "Lovers"; submit "{\"id\":$IDNUM,\"method\":\"contacts.list\",\"params\":{\"folderID\":$FOLDERNUM }}"
 foldernum "Flight Crew"; submit "{\"id\":$IDNUM,\"method\":\"folders.remove\",\"params\":{\"context\":\"contacts\",\"folderID\":$FOLDERNUM }}"
 foldernum "Lovers"; submit "{\"id\":$IDNUM,\"method\":\"folders.remove\",\"params\":{\"context\":\"contacts\",\"folderID\":$FOLDERNUM }}"
@@ -121,7 +122,7 @@ messagenums "Inbox" "1"; submit "{\"id\":$IDNUM,\"method\":\"messages.load\",\"p
 foldernum "Duplicate"; messagenums "Inbox" "100"; submit "{\"id\":$IDNUM,\"method\":\"messages.copy\",\"params\":{\"messageIDs\": [$MESSAGENUM], \"sourceFolderID\":$SOURCENUM, \"targetFolderID\":$FOLDERNUM }}"
 foldernum "Duplicate"; submit "{\"id\":$IDNUM,\"method\":\"folders.remove\",\"params\":{\"context\":\"mail\",\"folderID\":$FOLDERNUM }}"
 messagenums "Inbox" "100"; submit "{\"id\":$IDNUM,\"method\":\"messages.flag\",\"params\":{\"action\":\"add\", \"flags\":[\"flagged\"], \"messageIDs\": [$MESSAGENUM], \"folderID\":$SOURCENUM }}"
-messagenums "Inbox" "100"; submit "{\"id\":$IDNUM,\"method\":\"messages.tags\",\"params\":{\"action\":\"add\", \"tags\":[\"girlie\",\"girlie-$RANDOM\"], \"messageIDs\": [$MESSAGENUM], \"folderID\":$SOURCENUM }}" 
+messagenums "Inbox" "100"; submit "{\"id\":$IDNUM,\"method\":\"messages.tags\",\"params\":{\"action\":\"add\", \"tags\":[\"girlie\",\"girlie-$RANDOM\"], \"messageIDs\": [$MESSAGENUM], \"folderID\":$SOURCENUM }}"
 messagenums "Inbox" "100"; submit "{\"id\":$IDNUM,\"method\":\"messages.flag\",\"params\":{\"action\":\"list\", \"messageIDs\": [$MESSAGENUM], \"folderID\":$SOURCENUM }}"
 messagenums "Inbox" "100"; submit "{\"id\":$IDNUM,\"method\":\"messages.tags\",\"params\":{\"action\":\"list\", \"messageIDs\": [$MESSAGENUM], \"folderID\":$SOURCENUM }}"
 foldernum "Inbox"; submit "{\"id\":$IDNUM,\"method\":\"messages.list\",\"params\":{\"folderID\":$FOLDERNUM }}"

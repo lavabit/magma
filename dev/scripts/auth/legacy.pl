@@ -16,15 +16,18 @@ if (length($userid) == 0  or length($inpass) == 0) {
 	}
 
 
-$key = sha512_base64($userid . $salt . $inpass);
-$token = sha512_base64($inpass, sha512($inpass, sha512($userid . $salt . $inpass)));
+$key1 = sha512_base64($userid . $salt . $inpass);
+$key2 = sha512_hex($userid . $salt . $inpass);
+$token1 = sha512_base64($inpass, sha512($inpass, sha512($userid . $salt . $inpass)));
+$token2 = sha512_hex($inpass, sha512($inpass, sha512($userid . $salt . $inpass)));
 
-$key =~ s/\//\_/g;
-$key =~ s/\+/\-/g; 	
-$token =~ s/\//\_/g;
-$token =~ s/\+/\-/g; 	
+$key1 =~ s/\//\_/g;
+$key1 =~ s/\+/\-/g; 	
+$token1 =~ s/\//\_/g;
+$token1 =~ s/\+/\-/g; 	
 
-print "key = " . $key . "\n";
-print "token = " . $token . "\n";
-
+print "key[b64] = " . $key1 . "\n";
+print "key[hex] = " . $key2 . "\n";
+print "token[b64] = " . $token1 . "\n";
+print "token[hex] = " . $token2 . "\n";
 

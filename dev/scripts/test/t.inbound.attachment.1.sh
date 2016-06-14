@@ -12,7 +12,7 @@ tput setaf 6; echo "Inbound Attachmented Message 1:"; tput sgr0
 nc localhost 7000 <<EOF
 EHLO bubba
 MAIL FROM: <bubba@example.com>
-RCPT TO: <ladar@lavabit.com>
+RCPT TO: <magma@lavabit.com>
 DATA
 Return-Path: <fudd-return-4287-ladar=lavabit.com@stranded.org>
 Received: from mail.stranded.org (stranded.org [209.59.192.220])
@@ -43,9 +43,9 @@ Content-Type: text/plain; charset=ISO-8859-1
 Awesomeness...
 
 --001517511b480725f6049b3c2eda
-Content-Type: image/jpeg; 
+Content-Type: image/jpeg;
 	name="165385_10150133725564402_646419401_8016034_14112_n.jpg"
-Content-Disposition: attachment; 
+Content-Disposition: attachment;
 	filename="165385_10150133725564402_646419401_8016034_14112_n.jpg"
 Content-Transfer-Encoding: base64
 X-Attachment-Id: f_gjn3u6450

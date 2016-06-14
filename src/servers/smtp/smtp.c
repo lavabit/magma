@@ -380,7 +380,7 @@ void smtp_auth_login(connection_t *con) {
 	}
 
 	// Validate that an argument was extracted using the above logic.
-	if (!argument || !(username =	base64_decode(argument, NULL)) || st_empty(username)) {
+	if (!argument || !(username = base64_decode(argument, NULL)) || st_empty(username)) {
 		con_write_bl(con, "501 INVALID AUTH SYNTAX\r\n", 25);
 		st_cleanup(argument, username);
 		return;
@@ -405,7 +405,7 @@ void smtp_auth_login(connection_t *con) {
 	argument = NULL;
 
 	// Create the authentication context.
-	if ((state = auth_login(&username, &password, &auth)) || !auth) {
+	if ((state = auth_login(username, password, &auth)) || !auth) {
 		if (state < 0) {
 			con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
 		}
@@ -420,7 +420,7 @@ void smtp_auth_login(connection_t *con) {
 	st_cleanup(username, password);
 
 	// Authorize the user, and securely delete the keys.
-	if ((state = smtp_fetch_authorization(auth->username, auth->tokens.verification, &outbound)) < 0) {
+	if ((state = smtp_fetch_authorization(auth->username, auth->tokens.verification, &outbound)) <= 0) {
 		if (state == -4) {
 			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN LOCKED AT THE REQUEST OF THE USER\r\n", 86);
 		}

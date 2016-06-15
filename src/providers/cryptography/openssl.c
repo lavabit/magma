@@ -15,8 +15,6 @@
 char ssl_version[16];
 pthread_mutex_t **ssl_locks = NULL;
 
-int (*SSL_get_rfd_d)(const SSL *s) = NULL;
-
 /**
  * @brief	Return the version string of the OpenSSL library.
  * @return	a pointer to a character string containing the libopenssl version information.

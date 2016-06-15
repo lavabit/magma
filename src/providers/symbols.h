@@ -195,6 +195,7 @@ extern const EVP_MD * (*EVP_sha_d)(void);
 extern void (*COMP_zlib_cleanup_d)(void);
 extern const EVP_MD * (*EVP_sha1_d)(void);
 extern void (*EC_KEY_free_d)(EC_KEY *key);
+extern int (*SSL_get_rfd_d)(const SSL *s);
 extern const char * (*OBJ_nid2sn_d)(int n);
 extern const EVP_MD * (*EVP_sha224_d)(void);
 extern const EVP_MD * (*EVP_sha256_d)(void);

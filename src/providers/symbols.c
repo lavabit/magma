@@ -185,6 +185,7 @@ const EVP_MD * (*EVP_md4_d)(void) = NULL;
 const EVP_MD * (*EVP_md5_d)(void) = NULL;
 const EVP_MD * (*EVP_sha_d)(void) = NULL;
 void (*COMP_zlib_cleanup_d)(void) = NULL;
+int (*SSL_get_rfd_d)(const SSL *s) = NULL;
 const EVP_MD * (*EVP_sha1_d)(void) = NULL;
 void (*EC_KEY_free_d)(EC_KEY *key) = NULL;
 const char * (*OBJ_nid2sn_d)(int n) = NULL;

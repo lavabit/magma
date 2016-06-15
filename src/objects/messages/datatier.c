@@ -18,7 +18,7 @@
  * @param	folder		a pointer to the message folder object to be populated.
  * @return	true on success or false on failure.
  */
-bool_t messages_fetch(uint64_t usernum, message_folder_t *folder) {
+bool_t meta_data_fetch_folder_messages(uint64_t usernum, message_folder_t *folder) {
 
 	row_t *row;
 	table_t *result;

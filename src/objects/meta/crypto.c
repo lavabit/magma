@@ -177,8 +177,11 @@ int_t meta_crypto_keys_create(uint64_t usernum, stringer_t *username, stringer_t
 
 		new_fheader.flags |= FMESSAGE_OPT_ENCRYPTED;
 		cryptex_free(enc_data);
+
+	}
+
 	// If encryption is off and the message is encrypted, decrypt it.
-	} else if (!do_encrypt && message_encrypted) {
+	else if (!do_encrypt && message_encrypted) {
 
 		if (!(fheader->flags & FMESSAGE_OPT_ENCRYPTED)) {
 			log_pedantic("Message state mismatch: encrypted in database but unencrypted on disk.");

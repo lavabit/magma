@@ -112,7 +112,7 @@ inx_t * messages_update(uint64_t usernum) {
 
 	while ((active = inx_cursor_value_next(cursor))) {
 
-		if (!messages_fetch(usernum, active)) {
+		if (!meta_data_fetch_folder_messages(usernum, active)) {
 			log_pedantic("Unable to load the user's messages. { usernum = %lu / folder = %lu }", usernum, active->foldernum);
 			inx_cursor_free(cursor);
 			inx_free(folders);

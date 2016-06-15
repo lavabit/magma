@@ -134,7 +134,7 @@ int_t             meta_messages_update(meta_user_t *user, META_LOCK_STATUS locke
 void              meta_messages_update_sequences(inx_t *folders, inx_t *messages);
 
 /// datatier.c
-bool_t   messages_fetch(uint64_t usernum, message_folder_t *folder);
+bool_t   meta_data_fetch_folder_messages(uint64_t usernum, message_folder_t *folder);
 void     meta_data_fetch_message_tags(meta_message_t *message);
 bool_t   meta_data_fetch_messages(meta_user_t *user);
 

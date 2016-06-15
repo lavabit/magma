@@ -15,6 +15,8 @@
 char ssl_version[16];
 pthread_mutex_t **ssl_locks = NULL;
 
+int (*SSL_get_rfd_d)(const SSL *s) = NULL;
+
 /**
  * @brief	Return the version string of the OpenSSL library.
  * @return	a pointer to a character string containing the libopenssl version information.
@@ -57,10 +59,11 @@ bool_t lib_load_openssl(void) {
 		M_BIND(SSL_CTX_free), M_BIND(SSL_CTX_load_verify_locations), M_BIND(SSL_CTX_new), M_BIND(SSL_CTX_set_cipher_list),
 		M_BIND(SSL_CTX_set_tmp_dh_callback), M_BIND(SSL_CTX_set_tmp_ecdh_callback), M_BIND(SSL_CTX_use_certificate_chain_file),
 		M_BIND(SSL_CTX_use_PrivateKey_file), M_BIND(SSLeay_version), M_BIND(SSL_free), M_BIND(SSL_get_error), M_BIND(SSL_get_peer_certificate),
-		M_BIND(SSL_get_shutdown), M_BIND(SSL_get_wbio), M_BIND(SSL_library_init), M_BIND(SSL_load_error_strings), M_BIND(SSL_new), M_BIND(SSL_peek),
+		M_BIND(SSL_get_shutdown), M_BIND(SSL_get_wbio), M_BIND(SSL_library_init), M_BIND(SSL_load_error_strings), M_BIND(SSL_new),
 		M_BIND(SSL_read), M_BIND(SSL_set_bio), M_BIND(SSL_shutdown), M_BIND(SSLv23_client_method), M_BIND(SSLv23_server_method),
 		M_BIND(SSL_version_str), M_BIND(SSL_write), M_BIND(TLSv1_server_method), M_BIND(X509_get_ext), M_BIND(X509_get_ext_count),
-		M_BIND(X509_get_subject_name), M_BIND(X509_NAME_get_text_by_NID), M_BIND(EVP_MD_type)
+		M_BIND(X509_get_subject_name), M_BIND(X509_NAME_get_text_by_NID), M_BIND(EVP_MD_type), M_BIND(SSL_pending), M_BIND(SSL_want),
+		M_BIND(SSL_get_rfd)
 	};
 
 	if (!lib_symbols(sizeof(openssl) / sizeof(symbol_t), openssl)) {
@@ -109,7 +112,7 @@ char * ssl_error_string(chr_t *buffer, int_t length) {
  */
 int ssl_read(SSL *ssl, void *buffer, int length, bool_t block) {
 
-	int result = -1, sslerr;
+	int result = 0, sslerr;
 
 	if (!ssl || !buffer || !length) {
 		log_pedantic("Passed invalid data for the SSL_read function.");
@@ -118,18 +121,33 @@ int ssl_read(SSL *ssl, void *buffer, int length, bool_t block) {
 
 	if (!block) {
 
-		if ((result = SSL_peek_d(ssl, buffer, length)) > 0) {
+		// In the future, when we switch to OpenSSL v1.1.0 around the year ~2032, we should look into using an
+		// asynchronous SSL context to facilitate our non-blocking read/write operations. Look to configure the
+		// context using SSL_CTX_set_mode(SSL_CTX *ctx, long mode) with mode set to SSL_MODE_ASYNC.
+
+		// Method One.
+		//int fd = SSL_get_rfd_d(ssl);
+		//if (recv(fd, buffer, length, MSG_PEEK | MSG_DONTWAIT) != 0) {
 			result = SSL_read_d(ssl, buffer, length);
-		}
+			if (result <= 0 && (sslerr = SSL_get_error_d(ssl, result)) != SSL_ERROR_WANT_READ) {
+				ERR_error_string_n_d(sslerr, bufptr, buflen);
+				log_pedantic("SSL_read error. { result = %i / error = %s }", result, bufptr);
+			}
+			else if (result < 0) {
+				result = 0;
+			}
+		//}
+		//else {
+		//	result = 0;
+		//}
+
+		// Method two.
+//		if (SSL_want_d(ssl) == SSL_READING || SSL_pending_d(ssl) > 0) {
+//			result = SSL_read_d(ssl, buffer, length);
+//		}
 
 		// If our socket is blocking and we get this error it's not really an error.. it just means we need to try again.
-		if ((sslerr = SSL_get_error_d(ssl, result)) != SSL_ERROR_WANT_READ) {
-			ERR_error_string_n_d(sslerr, bufptr, buflen);
-			log_pedantic("SSL_read error. { result = %i / error = %s }", result, bufptr);
-		}
-		else {
-			result = 0;
-		}
+
 
 	}
 	else if (block && (result = SSL_read_d(ssl, buffer, length)) <= 0) {

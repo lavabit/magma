@@ -297,7 +297,6 @@ void imap_list(connection_t *con) {
 
 	meta_user_rlock(con->imap.user);
 
-
 	//********************************************//
 
 	//Here. Now force the lister to use the new interface.
@@ -308,7 +307,6 @@ void imap_list(connection_t *con) {
 		message_folder_t *cur;
 		while ((cur = inx_cursor_value_next(cursor))) {
 			if ((nm = magma_folder_name(con->imap.user->message_folders, cur))) {
-				log_pedantic("%.*s = %lu", st_length_int(nm), st_char_get(nm), inx_count(cur->records));
 				st_free(nm);
 			}
 			else {
@@ -320,7 +318,6 @@ void imap_list(connection_t *con) {
 		inx_cursor_free(cursor);
 	}
 	//*************************************************//
-
 
 	// Because the list index is a shallow copy we need to ensure the original memory buffers aren't freed by another thread.
 	if ((list = imap_narrow_folders(con->imap.user->folders, imap_get_st_ar(con->imap.arguments, 0), imap_get_st_ar(con->imap.arguments, 1))) != NULL) {

@@ -117,8 +117,8 @@ int64_t con_read_line(connection_t *con, bool_t block) {
 }
 
 /**
- * @brief	Read data from a connection, and store it in its internal buffer.
- * @note	This function handles reading data from both regular and ssl connections.
+ * @brief	Read data from a network connection, and store the data in the connection context buffer.
+ * @note	This function handles reading data from both regular and SSL connections.
  * 			If the connection's network buffer hasn't been allocated, it will be initialized.
  * @param	con		a pointer to the connection object from which the data will be read.
  * @return	-1 on internal error, or on a read error.
@@ -154,6 +154,8 @@ int64_t con_read(connection_t *con) {
 
 		// Clear the line buffer.
 		con->network.line = pl_null();
+
+		return st_length_get(con->network.buffer);
 
 	}
 	// Otherwise reset the buffer and line lengths to zero.

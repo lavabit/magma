@@ -3175,7 +3175,7 @@ void portal_upload(connection_t *con) {
 	inx_cursor_t *cursor;
 	attachment_t *attachment;
 	http_data_t *data, *cdisposition, *ctype, *ctransfer;
-	placer_t boundary, token, fname, ffilename;
+	placer_t boundary, token, ffilename;
 	uint64_t ntokens;
 	char *ptr;
 
@@ -3329,8 +3329,6 @@ void portal_upload(connection_t *con) {
     	 http_data_free(ctransfer);
     	 con->http.mode = HTTP_ERROR_405;
      }
-
-     fname = pl_null();
 
      http_data_free(cdisposition);
      http_data_free(ctype);

@@ -286,7 +286,7 @@ stringer_t * smtp_parse_mail_from_path(connection_t *con) {
 #endif
 			}
 			// The SIZE parameter provided by RFCs 1870.
-			else if (!st_cmp_ci_starts(&token, CONSTANT("SIZE=")) && !tok_get_pl(token, '=', 1, &token) >= 0) {
+			else if (!st_cmp_ci_starts(&token, CONSTANT("SIZE=")) && !(tok_get_pl(token, '=', 1, &token) >= 0)) {
 				if (!uint64_conv_pl(token, &(con->smtp.suggested_length))) {
 					tok_get_bl(input, length, ' ', i, &token);
 					log_pedantic("Invalid SIZE parameter, so were ignoring it. {%s PARAM = %.*s}", con->command->string, pl_length_int(token), pl_char_get(token));

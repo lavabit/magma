@@ -33,7 +33,6 @@ void mail_destroy_message(smtp_message_t *message) {
  */
 void mail_setup_basic(basic_message_t *message, stringer_t *text) {
 
-	chr_t *line;
 	chr_t *stream;
 	int_t next = 1;
 	size_t length;
@@ -42,7 +41,6 @@ void mail_setup_basic(basic_message_t *message, stringer_t *text) {
 	message->text = text;
 	length = mail_header_end(text);
 	stream = st_char_get(message->text);
-	line = NULL;
 
 	// Increment through. When key headers are found, store the locations in placer's.
 	for (increment = 0; increment < length; increment++) {
@@ -104,7 +102,6 @@ void mail_destroy(mail_message_t *message) {
  */
 mail_message_t * mail_message(stringer_t *text) {
 
-	chr_t *line;
 	chr_t *stream;
 	int_t next = 1;
 	size_t length;
@@ -127,7 +124,6 @@ mail_message_t * mail_message(stringer_t *text) {
 
 	length = result->header_length;
 	stream = st_char_get(result->text);
-	line = NULL;
 
 	if (length > st_length_get(result->text)) {
 		log_pedantic("The header length is longer than the message.");

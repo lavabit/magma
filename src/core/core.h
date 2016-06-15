@@ -42,6 +42,7 @@ typedef __int128_t int128_t;
  * Different types used throughout.
  */
 typedef enum {
+	M_TYPE_EMPTY = 0,
 	M_TYPE_MULTI = 1,   //!< M_TYPE_MULTI is multi_t
 	M_TYPE_ENUM,		//!< M_TYPE_ENUM is enum
 	M_TYPE_BOOLEAN, //!< M_TYPE_BOOLEAN is bool_t

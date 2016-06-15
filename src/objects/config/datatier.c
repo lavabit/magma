@@ -36,7 +36,7 @@ int_t user_config_delete(uint64_t usernum, stringer_t *key) {
 	parameters[1].buffer_length = st_length_get(key);
 	parameters[1].buffer = st_char_get(key);
 
-	if (!(affected = stmt_exec_affected(stmts.delete_user_config, parameters)) == -1) {
+	if ((affected = stmt_exec_affected(stmts.delete_user_config, parameters)) == -1) {
 		log_pedantic("The user config deletion request triggered an error. { user = %lu / key = %.*s }", usernum, st_length_int(key), st_char_get(key));
 		return -1;
 	}
@@ -83,7 +83,7 @@ int_t user_config_upsert(uint64_t usernum, stringer_t *key, stringer_t *value, u
 	parameters[3].buffer = &flags;
 	parameters[3].is_unsigned = true;
 
-	if (!(affected = stmt_exec_affected(stmts.upsert_user_config, parameters)) == -1) {
+	if ((affected = stmt_exec_affected(stmts.upsert_user_config, parameters)) == -1) {
 		log_pedantic("The user config upsert triggered an error. { user = %lu / key = %.*s }", usernum, st_length_int(key), st_char_get(key));
 		return -1;
 	}

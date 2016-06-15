@@ -326,10 +326,9 @@ bool_t check_stacie_determinism(void) {
 */
 bool_t check_stacie_parameters(void) {
 
-	stringer_t *temp_st, *res, *temp_st64, *temp_empty;
+	stringer_t *temp_st, *res, *temp_st64;
 	temp_st = NULLER("temp_string");
 	temp_st64 = NULLER("TEMP1234TEMP5678TEMP9012TEMP3456TEMP7890TEMP1234TEMP5678TEMP9012");
-	temp_empty = NULLER("");
 
 	if(stacie_rounds_calculate(NULL, 0)) {
 		return false;

@@ -365,9 +365,10 @@ START_TEST (check_users_inbox_s) {
 	log_unit("%-64.64s", "USERS / INBOX / SINGLE THREADED:");
 	errmsg = "User inbox test incomplete.";
 	log_unit("%10.10s\n", "SKIPPED");
+	return;
 
-	//log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
-	//fail_unless(!errmsg, errmsg);
+	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
+	fail_unless(!errmsg, errmsg);
 } END_TEST
 
 START_TEST (check_users_message_s) {
@@ -378,8 +379,9 @@ START_TEST (check_users_message_s) {
 	errmsg = "User message test incomplete.";
 	log_unit("%10.10s\n", "SKIPPED");
 
-	//log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
-	//fail_unless(!errmsg, errmsg);
+	return;
+	log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
+	fail_unless(!errmsg, errmsg);
 } END_TEST
 
 Suite * suite_check_users(void) {

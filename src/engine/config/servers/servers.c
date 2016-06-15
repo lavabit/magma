@@ -229,7 +229,7 @@ bool_t servers_validate(void) {
 					break;
 
 				case (M_TYPE_ENUM):
-					if (!st_cmp_ci_eq(NULLER(server_keys[j].name), CONSTANT(".protocol")) && (*((M_PROTOCOL *)(((char *)magma.servers[i]) + server_keys[j].offset))) == EMPTY) {
+					if (!st_cmp_ci_eq(NULLER(server_keys[j].name), CONSTANT(".protocol")) && (*((M_PROTOCOL *)(((char *)magma.servers[i]) + server_keys[j].offset))) == GENERIC) {
 						log_critical("magma.servers[%u]%s is required and has not been set.", i, server_keys[j].name);
 						result = false;
 					}
@@ -369,7 +369,7 @@ void servers_output_settings(void) {
 						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "DMTP");
 					else if (*((M_PROTOCOL *)(((char *)magma.servers[i]) + server_keys[j].offset)) == SUBMISSION)
 						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "SUBMISSION");
-					else if (*((M_PROTOCOL *)(((char *)magma.servers[i]) + server_keys[j].offset)) == EMPTY)
+					else if (*((M_PROTOCOL *)(((char *)magma.servers[i]) + server_keys[j].offset)) == GENERIC)
 						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "EMPTY");
 					else
 						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "UNKNOWN");

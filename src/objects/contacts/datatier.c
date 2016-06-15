@@ -45,7 +45,7 @@ int_t contact_update_stamp(uint64_t contactnum, uint64_t usernum, uint64_t folde
 	parameters[2].is_unsigned = true;
 
 	// Since the updated column is always updated this function should only return 0 if the query doesn't match any rows, otherwise 1 to indicate success.
-	if (!(affected = stmt_exec_affected(stmts.update_contact_stamp, parameters)) == -1) {
+	if ((affected = stmt_exec_affected(stmts.update_contact_stamp, parameters)) == -1) {
 		log_pedantic("The contact entry time stamp update triggered an error. { usernum = %lu / foldernum = %lu / contact = %lu }", usernum, foldernum, contactnum);
 		return -1;
 	}
@@ -89,7 +89,7 @@ int_t contact_delete(uint64_t contactnum, uint64_t usernum, uint64_t foldernum) 
 	parameters[2].is_unsigned = true;
 
 	// Since the updated column is always updated this function should only return 0 if the query doesn't match any rows, otherwise 1 to indicate success.
-	if (!(affected = stmt_exec_affected(stmts.delete_contact, parameters)) == -1) {
+	if ((affected = stmt_exec_affected(stmts.delete_contact, parameters)) == -1) {
 		log_pedantic("The contact entry time stamp update triggered an error. { usernum = %lu / foldernum = %lu / contact = %lu }", usernum, foldernum, contactnum);
 		return -1;
 	}
@@ -157,7 +157,7 @@ int_t contact_update(uint64_t contactnum, uint64_t usernum, uint64_t cur_folder,
 	parameters[4].is_unsigned = true;
 
 	// Since the updated column is always updated this function should only return 0 if the query doesn't match any rows, otherwise 1 to indicate success.
-	if (!(affected = stmt_exec_affected(stmts.update_contact, parameters)) == -1) {
+	if ((affected = stmt_exec_affected(stmts.update_contact, parameters)) == -1) {
 		log_pedantic("The contact entry update triggered an error. { usernum = %lu / foldernum = %lu / contact = %lu }", usernum, cur_folder, contactnum);
 		return -1;
 	}
@@ -224,7 +224,7 @@ int_t contact_detail_delete(uint64_t contactnum, stringer_t *key) {
 	parameters[1].buffer_length = st_length_get(key);
 	parameters[1].buffer = st_char_get(key);
 
-	if (!(affected = stmt_exec_affected(stmts.delete_contact_details, parameters)) == -1) {
+	if ((affected = stmt_exec_affected(stmts.delete_contact_details, parameters)) == -1) {
 		log_pedantic("The contact detail deletion request triggered an error. { contact = %lu / key = %.*s }", contactnum, st_length_int(key), st_char_get(key));
 		return -1;
 	}
@@ -272,7 +272,7 @@ int_t contact_detail_upsert(uint64_t contactnum, stringer_t *key, stringer_t *va
 	parameters[3].buffer = &flags;
 	parameters[3].is_unsigned = true;
 
-	if (!(affected = stmt_exec_affected(stmts.upsert_contact_detail, parameters)) == -1) {
+	if ((affected = stmt_exec_affected(stmts.upsert_contact_detail, parameters)) == -1) {
 		log_pedantic("The contact detail upsert triggered an error. { contact = %lu / key = %.*s }", contactnum, st_length_int(key), st_char_get(key));
 		return -1;
 	}

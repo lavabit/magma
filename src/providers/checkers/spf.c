@@ -118,7 +118,9 @@ int_t spf_check(ip_t *ip, stringer_t *helo, stringer_t *mailfrom) {
 
 	uint32_t item;
 	placer_t domain;
+#ifdef MAGMA_SPF_DEBUG
 	SPF_reason_t reason;
+#endif
 	SPF_errcode_t error;
 	SPF_result_t response;
 	SPF_request_t *spf_request = NULL;
@@ -180,7 +182,9 @@ int_t spf_check(ip_t *ip, stringer_t *helo, stringer_t *mailfrom) {
 
 	// Check the result.
 	response = SPF_response_result_d(spf_response);
+#ifdef MAGMA_SPF_DEBUG
 	reason = SPF_response_reason_d(spf_response);
+#endif
 	SPF_response_free_d(spf_response);
 	SPF_request_free_d(spf_request);
 	pool_release(spf_pool, item);

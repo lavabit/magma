@@ -37,7 +37,7 @@ bool_t mt_is_empty(multi_t multi) {
 
 	bool_t result = false;
 
-	if (multi.type == EMPTY)
+	if (multi.type == M_TYPE_EMPTY)
 		return true;
 
 	switch (multi.type) {
@@ -91,7 +91,7 @@ bool_t mt_is_number(multi_t multi) {
 	case (M_TYPE_STRINGER):
 	case (M_TYPE_NULLER):
 	case (M_TYPE_BLOCK):
-	case (EMPTY):
+	case (M_TYPE_EMPTY):
 		break;
 	case (M_TYPE_UINT64):
 	case (M_TYPE_UINT32):
@@ -159,7 +159,7 @@ uint64_t mt_get_number(multi_t multi) {
 	case (M_TYPE_STRINGER):
 	case (M_TYPE_NULLER):
 	case (M_TYPE_BLOCK):
-	case (EMPTY):
+	case (M_TYPE_EMPTY):
 	default:
 		log_options(M_LOG_PEDANTIC | M_LOG_STACK_TRACE, "The mt_get_number function was called on an unsupported type. {type = %s = %u}", type(multi.type), multi.type);
 		break;

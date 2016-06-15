@@ -115,7 +115,8 @@ stringer_t * register_captcha_generate(stringer_t *value) {
 	double font_size = 40.0, angle;
 	stringer_t *output = NULL, *font_path = NULL;
 	chr_t *gderr;
-	int_t brect[8], characters, color, white, increment;
+	int_t brect[8], characters, color, increment;
+	// int_t white;
 
 	if (!(characters = st_length_get(value))) {
 		log_pedantic("Zero length value passed in.");
@@ -142,7 +143,8 @@ stringer_t * register_captcha_generate(stringer_t *value) {
 	}
 
 	// The first color you allocate is used for the background.
-	white = gdImageColorResolve_d(image, 255, 255, 255);
+	//white = gdImageColorResolve_d(image, 255, 255, 255);
+	gdImageColorResolve_d(image, 255, 255, 255);
 
 	// Write a bunch of randomly colored pixels onto the background.
 	register_captcha_write_noise(image, (characters * 36) + 11, 47);

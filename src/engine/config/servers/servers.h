@@ -19,6 +19,7 @@ typedef enum {
 } M_PORT;
 
 typedef enum {
+	GENERIC = 0,
 	MOLTEN = 1,
 	HTTP,
 	POP,

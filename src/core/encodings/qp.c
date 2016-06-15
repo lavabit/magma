@@ -22,7 +22,7 @@
 stringer_t * qp_encode(stringer_t *s) {
 
 	chr_t hex[4];
-	uchr_t *p, *o;
+	uchr_t *p;//, *o;
 	stringer_t *output, *r;
 	size_t len, expected = 0, line = 0;
 
@@ -55,7 +55,7 @@ stringer_t * qp_encode(stringer_t *s) {
 
 	// Get setup.
 	p = st_data_get(s);
-	o = st_data_get(output);
+	//o = st_data_get(output);
 
 	// Increment through the stringer and copy the data into the new stringer.
 	for (size_t i = 0; i < len; i++) {

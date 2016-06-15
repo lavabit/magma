@@ -91,6 +91,10 @@ char * type(M_TYPE type) {
 	case (M_TYPE_DOUBLE):
 		answer = "M_TYPE_DOUBLE";
 		break;
+
+	default:
+		answer = "EMPTY";
+		break;
 	}
 	return answer;
 }

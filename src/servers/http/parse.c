@@ -165,6 +165,10 @@ void http_parse_context(connection_t *con, stringer_t *application, stringer_t *
 		json_decref_d(object);
 	}
 
+	if (result < 0) {
+		log_pedantic("Session retrieval failed. { sess_get = %i }", result);
+	}
+
 	return;
 }
 
@@ -374,13 +378,13 @@ placer_t get_header_opt(stringer_t *vstring, stringer_t *optname) {
 bool_t multipart_get_boundary(connection_t *con, placer_t *output) {
 
 	http_data_t *content_type;
-	placer_t ctypestr, ctypeval;
+	placer_t ctypeval;
 
 	if (!(content_type = http_data_get(con, HTTP_DATA_HEADER, "Content-Type"))) {
 		return false;
 	}
 
-	ctypestr = get_header_value_noopt(content_type->value);
+	get_header_value_noopt(content_type->value);
 
 	if (pl_empty(ctypeval = get_header_opt(content_type->value, NULLER("boundary")))) {
 		return false;

@@ -64,13 +64,12 @@ register_session_t * register_session_generate(void) {
 register_session_t * register_session_get(connection_t *con, stringer_t *name) {
 
 	chr_t key[256];
-	size_t keylen;
 	stringer_t *data;
 	serialization_t serial;
 	register_session_t *session;
 
 	// Build the key.
-	keylen = snprintf(key, 256, "lavad.register.session.%s.%.*s", st_char_get(con_addr_presentation(con, MANAGEDBUF(64))), st_length_int(name), st_char_get(name));
+	snprintf(key, 256, "lavad.register.session.%s.%.*s", st_char_get(con_addr_presentation(con, MANAGEDBUF(64))), st_length_int(name), st_char_get(name));
 
 	// Pull it. If no session is found, generate it.
 	if (!(data = cache_get(NULLER(key)))) {
@@ -111,7 +110,7 @@ register_session_t * register_session_get(connection_t *con, stringer_t *name) {
 bool_t register_session_cache(connection_t *con, register_session_t *session) {
 
 	char key[256];
-	size_t keylen;
+
 	stringer_t *data = NULL;
 
 	// Serialize the session.
@@ -124,7 +123,7 @@ bool_t register_session_cache(connection_t *con, register_session_t *session) {
 	}
 
 	// Build the key.
-	keylen = snprintf(key, 256, "lavad.register.session.%s.%.*s", st_char_get(con_addr_presentation(con, MANAGEDBUF(64))), st_length_int(session->name), st_char_get(session->name));
+	snprintf(key, 256, "lavad.register.session.%s.%.*s", st_char_get(con_addr_presentation(con, MANAGEDBUF(64))), st_length_int(session->name), st_char_get(session->name));
 
 	// Store it.
 	if (cache_set(NULLER(key), data, 3600) != 1) {

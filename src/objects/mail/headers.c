@@ -325,7 +325,7 @@ placer_t mail_store_header(chr_t *stream, size_t length) {
 bool_t mail_headers(smtp_message_t *message) {
 
 	int_t next = 1;
-	chr_t *line, *stream;
+	chr_t *stream;
 	size_t length, increment;
 
 	if (!message || !message->text) {
@@ -336,7 +336,6 @@ bool_t mail_headers(smtp_message_t *message) {
 	// Setup
 	length = message->header_length;
 	stream = st_char_get(message->text);
-	line = NULL;
 
 	if (length > st_length_get(message->text)) {
 		log_pedantic("The header length is longer than the message.");

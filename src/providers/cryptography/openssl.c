@@ -306,6 +306,7 @@ SSL * ssl_alloc(void *server, int sockd, int flags) {
 
 	SSL *ssl;
 	BIO *bio;
+	int result = 0;
 	server_t *local = server;
 
 #ifdef MAGMA_PEDANTIC
@@ -333,8 +334,9 @@ SSL * ssl_alloc(void *server, int sockd, int flags) {
 
 	SSL_set_bio_d(ssl, bio, bio);
 
-	if (SSL_accept_d(ssl) != 1) {
-		log_pedantic("SSL accept error. {error = %s}", ssl_error_string(bufptr, buflen));
+	if ((result = SSL_accept_d(ssl)) != 1) {
+		ERR_error_string_n_d(SSL_get_error_d(ssl, result), bufptr, buflen);
+		log_pedantic("SSL accept error. { accept = %i / error = %s }", result, bufptr);
 		SSL_free_d(ssl);
 		return NULL;
 	}

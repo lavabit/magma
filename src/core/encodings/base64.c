@@ -12,7 +12,6 @@
 
 #include "magma.h"
 
-
 size_t base64_encoded_length_mod(size_t length) {
 
 	size_t result = 0, remainder = 0;

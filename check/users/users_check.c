@@ -389,6 +389,8 @@ Suite * suite_check_users(void) {
 	TCase *tc;
 	Suite *s = suite_create("\tUsers");
 
+	testcase(s, tc, "Auth Usernames/S", check_users_auth_username_s);
+	testcase(s, tc, "Auth Addresses/S", check_users_auth_address_s);
 	testcase(s, tc, "Auth Legacy/S", check_users_auth_legacy_s);
 	testcase(s, tc, "Auth Stacie/S", check_users_auth_stacie_s);
 	testcase(s, tc, "Auth Challenge/S", check_users_auth_challenge_s);

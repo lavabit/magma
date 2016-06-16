@@ -27,7 +27,7 @@ stringer_t * symmetric_encrypt(cipher_t *cipher, stringer_t *vector, stringer_t 
 	EVP_CIPHER_CTX ctx;
 	stringer_t *output = NULL;
 	size_t vlen = 0, klen = 0, ilen = 0;
-	int_t block_len, out_len, avail_len, used_len = 0;
+	int_t block_len, out_len, avail_len, used_len = 0, tag_len = 16;
 	uchr_t *vdata = NULL, *kdata = NULL, *idata = NULL;
 
 	if (!cipher || st_empty_out(key, &kdata, &klen) || st_empty_out(input, &idata, &ilen)) {
@@ -61,8 +61,20 @@ stringer_t * symmetric_encrypt(cipher_t *cipher, stringer_t *vector, stringer_t 
 		return NULL;
 	}
 
+	// Setup a tag length of 16 bytes for CCM.
+	else if ((EVP_CIPHER_flags_d((const EVP_CIPHER *)cipher) & EVP_CIPH_MODE) == EVP_CIPH_CCM_MODE) {
+
+		// OpenSSL v1.1.0 uses EVP_CTRL_AEAD_SET_IVLEN and EVP_CTRL_AEAD_SET_TAG, but in the interim, the GCM defines below
+		// will work correctly using CCM or GCM mode.
+		if (EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_CCM_SET_TAG, tag_len, NULL) != 1) {
+			log_pedantic("The authenticated symmetric cipher tag length could not be set to 16 bytes.");
+			EVP_CIPHER_CTX_cleanup_d(&ctx);
+			return NULL;
+		}
+	}
+
 	// Add the vector and key data.
-	else if (EVP_EncryptInit_ex_d(&ctx, NULL, NULL, kdata, vdata) != 1) {
+	if (EVP_EncryptInit_ex_d(&ctx, NULL, NULL, kdata, vdata) != 1) {
 		log_pedantic("An error occurred initializing the symmetric cipher with the provided key and vector data.");
 		EVP_CIPHER_CTX_cleanup_d(&ctx);
 		return NULL;
@@ -76,7 +88,7 @@ stringer_t * symmetric_encrypt(cipher_t *cipher, stringer_t *vector, stringer_t 
 	}
 
 	// Output buffer.
-	else if (!(output = st_alloc(out_len))) {
+	else if (!(output = st_alloc(out_len + tag_len))) {
 		log_pedantic("Unable to allocate a buffer of %i bytes for the output buffer.", out_len);
 		EVP_CIPHER_CTX_cleanup_d(&ctx);
 		return NULL;
@@ -100,7 +112,19 @@ stringer_t * symmetric_encrypt(cipher_t *cipher, stringer_t *vector, stringer_t 
 		return NULL;
 	}
 
-	st_length_set(output, used_len + avail_len);
+	// If were using an authenticated cipher, then we have an extra step. Storing the tag length.
+	else if ((EVP_CIPHER_flags_d((const EVP_CIPHER *)cipher) & EVP_CIPH_MODE) == EVP_CIPH_GCM_MODE
+	|| (EVP_CIPHER_flags_d((const EVP_CIPHER *)cipher) & EVP_CIPH_MODE) == EVP_CIPH_CCM_MODE) {
+
+		// Note that EVP_CTRL_CCM_GET_TAG is aliased to EVP_CTRL_GCM_GET_TAG.
+		EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_GCM_GET_TAG, tag_len, st_data_get(output) + used_len);
+		st_length_set(output, used_len + avail_len + tag_len);
+
+	}
+	else {
+		st_length_set(output, used_len + avail_len);
+	}
+
 	EVP_CIPHER_CTX_cleanup_d(&ctx);
 
 	return output;
@@ -111,7 +135,7 @@ stringer_t * symmetric_decrypt(cipher_t *cipher, stringer_t *vector, stringer_t 
 	EVP_CIPHER_CTX ctx;
 	stringer_t *output = NULL;
 	size_t vlen = 0, klen = 0, ilen = 0;
-	int_t block_len, out_len, avail_len, used_len = 0;
+	int_t block_len, out_len, avail_len, used_len = 0, tag_len = 0;
 	uchr_t *vdata = NULL, *kdata = NULL, *idata = NULL;
 
 	if (!cipher || st_empty_out(key, &kdata, &klen) || st_empty_out(input, &idata, &ilen)) {
@@ -145,8 +169,21 @@ stringer_t * symmetric_decrypt(cipher_t *cipher, stringer_t *vector, stringer_t 
 		return NULL;
 	}
 
+	// Setup a tag length of 16 bytes for CCM and GCM.
+	else if ((EVP_CIPHER_flags_d((const EVP_CIPHER *)cipher) & EVP_CIPH_MODE) == EVP_CIPH_CCM_MODE) {
+
+		// OpenSSL v1.1.0 uses EVP_CTRL_AEAD_SET_IVLEN and EVP_CTRL_AEAD_SET_TAG, but in the interim, the GCM defines below
+		// will work correctly using CCM or GCM mode.
+		if (EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_CCM_SET_TAG, 16, NULL) != 1) {
+
+			log_pedantic("The authenticated symmetric cipher tag length could not be set to 16 bytes.");
+			EVP_CIPHER_CTX_cleanup_d(&ctx);
+			return NULL;
+		}
+	}
+
 	// Add the vector and key data.
-	else if (EVP_DecryptInit_ex_d(&ctx, NULL, NULL, kdata, vdata) != 1) {
+	if (EVP_DecryptInit_ex_d(&ctx, NULL, NULL, kdata, vdata) != 1) {
 		log_pedantic("An error occurred initializing the symmetric cipher with the provided key and vector data.");
 		EVP_CIPHER_CTX_cleanup_d(&ctx);
 		return NULL;
@@ -166,8 +203,18 @@ stringer_t * symmetric_decrypt(cipher_t *cipher, stringer_t *vector, stringer_t 
 		return NULL;
 	}
 
+	// If were using an authenticated cipher, then we have an extra step. Storing the tag length.
+	else if ((EVP_CIPHER_flags_d((const EVP_CIPHER *)cipher) & EVP_CIPH_MODE) == EVP_CIPH_GCM_MODE
+		|| (EVP_CIPHER_flags_d((const EVP_CIPHER *)cipher) & EVP_CIPH_MODE) == EVP_CIPH_CCM_MODE) {
+
+		tag_len = 16;
+
+		// Note that EVP_CTRL_CCM_SET_TAG is aliased to EVP_CTRL_GCM_SET_TAG.
+		EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_GCM_SET_TAG, tag_len, idata + (ilen - tag_len));
+	}
+
 	// Decrypt the input buffer.
-	else if (EVP_DecryptUpdate_d(&ctx, st_data_get(output), &avail_len, idata, ilen) != 1) {
+	if (EVP_DecryptUpdate_d(&ctx, st_data_get(output), &avail_len, idata, ilen - tag_len) != 1) {
 		log_pedantic("An error occurred while trying to decrypt the input buffer using the chosen symmetric cipher.");
 		EVP_CIPHER_CTX_cleanup_d(&ctx);
 		st_free(output);
@@ -177,11 +224,20 @@ stringer_t * symmetric_decrypt(cipher_t *cipher, stringer_t *vector, stringer_t 
 	used_len += avail_len;
 	avail_len = out_len - used_len;
 
-	if (EVP_DecryptFinal_ex_d(&ctx, st_data_get(output) + used_len, &avail_len) != 1) {
+	// Calling EVP_DecryptFinal_ex() when using CCM will always return an error.
+	if ((EVP_CIPHER_flags_d((const EVP_CIPHER *)cipher) & EVP_CIPH_MODE) != EVP_CIPH_CCM_MODE &&
+		EVP_DecryptFinal_ex_d(&ctx, st_data_get(output) + used_len, &avail_len) != 1) {
+
 		log_pedantic("An error occurred while trying to complete decryption process. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
 		EVP_CIPHER_CTX_cleanup_d(&ctx);
 		st_free(output);
 		return NULL;
+	}
+	// Normally avail_len gets zero'ed by the call to EVP_DecryptFinal_ex() above, but in CCM mode we don't make that
+	// function call, so we zero out the avail space counter, or the st_length_set() call below will incorrectly claim
+	// empty trailing space is actual data.
+	else if ((EVP_CIPHER_flags_d((const EVP_CIPHER *)cipher) & EVP_CIPH_MODE) == EVP_CIPH_CCM_MODE) {
+		avail_len = 0;
 	}
 
 	st_length_set(output, used_len + avail_len);

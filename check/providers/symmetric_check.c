@@ -21,7 +21,7 @@ bool_t check_symmetric_sthread(chr_t *name) {
 	stringer_t *key, *vector, *encrypted, *decrypted;
 	byte_t buffer[SYMMETRIC_CHECK_SIZE_MAX];
 
-	for (uint64_t i = 0; status() && i < SYMMETRIC_CHECK_ITERATIONS && result; i++) {
+	for (uint64_t i = 0; status() && result && i < SYMMETRIC_CHECK_ITERATIONS; i++) {
 
 		encrypted = decrypted = vector = key = NULL;
 

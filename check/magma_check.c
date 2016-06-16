@@ -333,7 +333,6 @@ int main(int argc, char *argv[]) {
 
 	// Cleanup and free the resources allocated by the magma code.
 	process_stop();
-	system_init_umask();
 
 	ns_cleanup(virus_check_data_path);
 	ns_cleanup(tank_check_data_path);

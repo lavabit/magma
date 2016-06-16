@@ -262,10 +262,10 @@ START_TEST (check_hmac_s) {
 END_TEST
 
 START_TEST (check_symmetric_s)
-	{
-//
-		bool_t outcome = true;
-		chr_t errmsg[1024], *cipher_list[] = {
+{
+
+	stringer_t *errmsg = NULL, *failed = NULL;
+	chr_t *cipher_list[] = {
 			"aes-128-cbc", "aes-128-ccm", "aes-128-cfb", "aes-128-cfb1", "aes-128-cfb8", "aes-128-ctr", "aes-128-ecb", "aes-128-gcm",
 			"aes-128-ofb", "aes-128-xts", "aes-192-cbc", "aes-192-ccm", "aes-192-cfb", "aes-192-cfb1", "aes-192-cfb8", "aes-192-ctr",
 			"aes-192-ecb", "aes-192-gcm", "aes-192-ofb", "aes-256-cbc", "aes-256-ccm", "aes-256-cfb", "aes-256-cfb1", "aes-256-cfb8",
@@ -274,20 +274,31 @@ START_TEST (check_symmetric_s)
 			"camellia-192-cfb", "camellia-192-cfb1", "camellia-192-cfb8", "camellia-192-ecb", "camellia-192-ofb", "camellia-256-cbc",
 			"camellia-256-cfb", "camellia-256-cfb1", "camellia-256-cfb8", "camellia-256-ecb", "camellia-256-ofb", "camellia128",
 			"camellia192", "camellia256", "idea", "idea-cbc", "idea-cfb", "idea-ecb", "idea-ofb", "rc2-40-cbc", "rc2-64-cbc", "rc2-cbc",
-			"rc2-cfb", "rc2-ecb", "rc2-ofb", "rc4-40", "seed-cbc", "seed-cfb", "seed-ecb", "seed-ofb"
-		};
+			"rc2-cfb", "rc2-ecb", "rc2-ofb", "rc4-40", "seed-cbc", "seed-cfb", "seed-ecb", "seed-ofb", "des", "des-cbc", "des-cfb",
+			"des-cfb1", "des-cfb8", "des-ecb", "des-ede", "des-ede-cbc", "des-ede-cfb", "des-ede-ofb", "des-ede3", "des-ede3-cbc",
+			"des-ede3-cfb", "des-ede3-cfb8", "des-ede3-ofb", "des-ofb", "des3", "desx", "desx-cbc", "bf", "bf-cbc",
+			"bf-cfb", "bf-ecb", "bf-ofb", "id-aes128-GCM", "id-aes192-GCM", "id-aes256-GCM"
+	};
 
-		mm_wipe(errmsg, sizeof(errmsg));
+	log_disable();
 
-		log_unit("%-64.64s", "CRYPTOGRAPHY / SYMMETRIC / SINGLE THREADED:");
-		for (uint64_t i = 0; status() && outcome == true && i < (sizeof(cipher_list) / sizeof(chr_t *)); i++) {
-			if (!(outcome = check_symmetric_sthread(cipher_list[i]))) {
-				snprintf(errmsg, 1024, "%s failed...", cipher_list[i]);
-			}
+	for (uint64_t i = 0; status() && i < (sizeof(cipher_list) / sizeof(chr_t *)); i++) {
+
+		if (status() && !(check_symmetric_sthread(cipher_list[i]))) {
+			failed = st_append(failed, NULLER(cipher_list[i]));
+			failed = st_append(failed, NULLER(" "));
 		}
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, errmsg);
+
 	}
+
+	if (st_populated(failed)) {
+		errmsg = st_aprint("%.*sfailed...", st_length_int(failed), st_char_get(failed));
+	}
+
+	log_test("CRYPTOGRAPHY / SYMMETRIC / SINGLE THREADED:", errmsg);
+	fail_unless(!errmsg, st_char_get(errmsg));
+	st_cleanup(failed, errmsg);
+}
 END_TEST
 
 START_TEST (check_scramble_s)

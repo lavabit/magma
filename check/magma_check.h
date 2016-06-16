@@ -103,7 +103,7 @@ void     log_test(chr_t *test, stringer_t *error);
 #define DIGEST_CHECK_ITERATIONS 16
 
 #define SYMMETRIC_CHECK_SIZE_MIN 64
-#define SYMMETRIC_CHECK_SIZE_MAX 1024
+#define SYMMETRIC_CHECK_SIZE_MAX 8192
 #define SYMMETRIC_CHECK_ITERATIONS 16
 
 #define ECIES_CHECK_SIZE_MIN (1024) // 1 kilobyte

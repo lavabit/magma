@@ -35,10 +35,10 @@ bool_t check_symmetric_sthread(chr_t *name) {
 		else if (!(cipher = cipher_name(NULLER(name))) || (vlen = cipher_vector_length(cipher)) < 0 ||	(klen = cipher_key_length(cipher)) <= 0) {
 			return false;
 		}
-		else if (!(key = rand_choices("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", klen))) {
+		else if (rand_write((key = st_alloc(klen))) != klen) {
 			return false;
 		}
-		else if (vlen && !(vector = rand_choices("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", vlen))) {
+		else if (rand_write((vector = st_alloc(vlen))) != vlen) {
 			st_free(key);
 			return false;
 		}
@@ -63,13 +63,11 @@ bool_t check_symmetric_sthread(chr_t *name) {
 			result = false;
 		}
 
-
 		/*stringer_t *hex[3] = { hex_encode_st(PLACER(buffer, len), NULL),	hex_encode_st(encrypted, NULL), hex_encode_st(decrypted, NULL) };
 		log_pedantic("%-15.15s = %.*s", "plain", st_length_int(hex[0]), st_char_get(hex[0]));
 		log_pedantic("%-15.15s = %.*s", "encrypted", st_length_int(hex[1]), st_char_get(hex[1]));
 		log_pedantic("%-15.15s = %.*s", "decrypted", st_length_int(hex[2]), st_char_get(hex[2]));
 		st_free(hex[0]); st_free(hex[1]);	st_free(hex[2]);*/
-
 
 		if (vector) {
 			st_free(vector);

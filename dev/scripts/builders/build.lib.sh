@@ -1993,19 +1993,22 @@ load() {
 
 keys() {
 
-	printf "Generating new keys for TLS and DKIM usage...\n"
+	printf "Generating TLS and DKIM keys for the magma sandbox...\n"
 
 	# The DKIM private key and a sample DNS record with the public key.
 	"$M_LOCAL/bin/"openssl genrsa -out "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem" 2048 2>&1 >& /dev/null
 	"$M_LOCAL/bin/"openssl rsa -in "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem" -pubout -outform PEM  >& /dev/null | \
 	sed -r "s/-----BEGIN PUBLIC KEY-----$//" | sed -r "s/-----END PUBLIC KEY-----//" | tr -d [:space:] | \
 	awk '{ print "bazinga._domainkey IN TXT \"v=DKIM1; k=rsa; p=" $1 "\" ; ----- DKIM bazinga" }' > \
-	"$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
+	"$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub" ; error
 
 	# The TLS private key and a self-signed certificate.
 	"$M_LOCAL/bin/"openssl req -x509 -nodes -batch -days 1826 -newkey rsa:4096 \
 	-keyout "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem" \
-	-out "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem" >& /dev/null
+	-out "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem" >& /dev/null ; error
+
+	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"; error
+	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem"; error
 }
 
 combo() {

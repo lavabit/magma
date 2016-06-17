@@ -81,10 +81,10 @@ LD						= gcc
 LDFLAGS					= -rdynamic
 
 MAGMA_DYNAMIC			= -lrt -ldl -lpthread
-CHECK_DYNAMIC			= $(MAGMA_DYNAMIC) -lcheck -L$(TOPDIR)/lib/local/lib
+CHECK_DYNAMIC			= $(MAGMA_DYNAMIC) -lm
 
 MAGMA_STATIC			= 
-CHECK_STATIC			= 
+CHECK_STATIC			= $(TOPDIR)/lib/local/lib/libcheck.a
 
 # Archiver Parameters
 AR						= ar
@@ -208,14 +208,14 @@ ifeq ($(VERBOSE),no)
 else
 	@echo 
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_OBJFILES) $(BUILD_OBJFILES) -Wl,--start-group $(MAGMA_STATIC) -Wl,--end-group $(MAGMA_DYNAMIC)
+	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_OBJFILES) $(BUILD_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) -Wl,--end-group
 
 # Construct the magma unit test executable
 $(CHECK_PROGRAM): $(CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) $(BUILD_OBJFILES)
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) $(BUILD_OBJFILES) -Wl,--start-group $(CHECK_STATIC) -Wl,--end-group $(CHECK_DYNAMIC)
+	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) $(BUILD_OBJFILES) -Wl,--start-group,--whole-archive $(CHECK_STATIC) -Wl,--no-whole-archive,--end-group  $(CHECK_DYNAMIC) 
 
 # The Magma Daemon Object files
 $(OBJDIR)/src/%.o: src/%.c

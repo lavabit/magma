@@ -8,6 +8,9 @@ sandbox/logs/*
 sandbox/spool/*
 sandbox/virus/*
 sandbox/storage/*
+sandbox/etc/dkim.localhost.localdomain.pem
+sandbox/etc/dkim.localhost.localdomain.pub
+sandbox/etc/localhost.localdomain.pem
 
 # Magma Build Directories
 .deps/

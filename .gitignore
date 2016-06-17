@@ -15,6 +15,7 @@ sandbox/storage/*
 
 # Bundled Dependency Directories
 lib/logs/
+lib/local/
 lib/objects/
 lib/sources/
 

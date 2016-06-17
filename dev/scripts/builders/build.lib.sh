@@ -779,8 +779,8 @@ bzip2() {
 		;;
 		bzip2-build)
 			cd "$M_SOURCES/bzip2"; error
-			make CC=gcc AR=ar RANLIB=ranlib PREFIX="$M_SOURCES" CFLAGS="-O2 -g3 -fPIC -rdynamic -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -D_FILE_OFFSET_BITS=64" &>> "$M_LOGS/bzip2.txt"; error
-			make install &>> "$M_LOGS/bzip2.txt"; error
+			make CC=gcc AR=ar RANLIB=ranlib 'CFLAGS=-O2 -g3 -fPIC -rdynamic -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -D_FILE_OFFSET_BITS=64' &>> "$M_LOGS/bzip2.txt"; error
+			make PREFIX="$M_SOURCES" install &>> "$M_LOGS/bzip2.txt"; error
 		;;
 		bzip2-check)
 			cd "$M_SOURCES/bzip2"; error
@@ -928,7 +928,7 @@ mysql() {
 			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
 			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
 
-			./configure --with-pic --enable-thread-safe-client --with-readline --with-charset=latin1
+			./configure --with-pic --enable-thread-safe-client --with-readline --with-charset=latin1 \
 			--with-extra-charsets=all --with-plugins=all --prefix="$M_LOCAL" \
 			&>> "$M_LOGS/mysql.txt"; error
 
@@ -957,7 +957,7 @@ mysql() {
 		mysql-check)
 			cd "$M_SOURCES/mysql"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
-			make --jobs=2 test-fast &>> "$M_LOGS/mysql.txt"; error
+			make --jobs=4 test-fast &>> "$M_LOGS/mysql.txt"; error
 		;;
 		mysql-check-full)
 
@@ -969,8 +969,8 @@ mysql() {
 
 			# test-full combines the test, test-nr and test-ps targets
 			make clean &>> "$M_LOGS/mysql.txt"; error
-			make --jobs=2 &>> "$M_LOGS/mysql.txt"; error
-			make --jobs=2 test-full &>> "$M_LOGS/mysql.txt"; error
+			make --jobs=4 &>> "$M_LOGS/mysql.txt"; error
+			make --jobs=4 test-full &>> "$M_LOGS/mysql.txt"; error
 
 			# make clean &>> "$M_LOGS/mysql.txt"; error
 			#make --jobs=2 &>> "$M_LOGS/mysql.txt"; error
@@ -1323,16 +1323,14 @@ openssl() {
 			# See here for reasoning behind openssl-specific linker flags:
 			# https://mta.openssl.org/pipermail/openssl-users/2015-April/001053.html
 			cd "$M_SOURCES/openssl"; error
-			./config \
-				-d shared zlib no-dso no-asm \
-				--openssldir="$M_SOURCES/openssl" --prefix="$M_LOCAL" \
+		./config \
+			-d shared zlib-dynamic no-asm --openssldir="$M_LOCAL" \
 				-I"$M_SOURCES/zlib" -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
 				-L"$M_SOURCES/openssl" -Wl,-rpath,"$M_SOURCES/openssl" \
 				-L"$M_SOURCES/zlib" -Wl,-rpath,"$M_SOURCES/zlib" \
 				&>> "$M_LOGS/openssl.txt"; error
 
-			make --jobs=4 &>> "$M_LOGS/openssl.txt"; error
-			make install_docs &>> "$M_LOGS/openssl.txt"; error
+			make MAKEFLAGS="--jobs=8" &>> "$M_LOGS/openssl.txt"; error
 			make install &>> "$M_LOGS/openssl.txt"; error
 
 			# Fool autotools checks into thinking this is a normal OpenSSL install (e.g., ClamAV)
@@ -1543,7 +1541,7 @@ utf8proc() {
 			cd "$M_SOURCES/utf8proc"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
 			make prefix="$M_LOCAL" &>> "$M_LOGS/utf8proc.txt"; error
-			make install &>> "$M_LOGS/utf8proc.txt"; error
+			make prefix="$M_LOCAL" install &>> "$M_LOGS/utf8proc.txt"; error
 			unset CFLAGS;
 		;;
 		utf8proc-check)
@@ -1706,7 +1704,6 @@ tokyocabinet() {
 		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/tokyocabinet.txt"
 	fi
 
-
 	case "$1" in
 		tokyocabinet-extract)
 			extract $TOKYOCABINET "tokyocabinet" &>> "$M_LOGS/tokyocabinet.txt"
@@ -1753,7 +1750,12 @@ tokyocabinet() {
 		tokyocabinet-tail)
 			tail --lines=30 --follow=name --retry "$M_LOGS/tokyocabinet.txt"; error
 		;;
-		tokyocabinet-log)
+		tokyocabinet-log)echo ""
+	printf "Checking shared object... "
+
+	mkdir -p "$M_CHECK"; error
+	cd "$M_CHECK"; error
+
 			cat "$M_LOGS/tokyocabinet.txt"; error
 		;;
 		tokyocabinet)
@@ -1989,6 +1991,23 @@ load() {
 	./magma.open.check "$M_SO"; error
 }
 
+keys() {
+
+	printf "Generating new keys for TLS and DKIM usage...\n"
+
+	# The DKIM private key and a sample DNS record with the public key.
+	"$M_LOCAL/bin/"openssl genrsa -out "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem" 2048 2>&1 >& /dev/null
+	"$M_LOCAL/bin/"openssl rsa -in "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem" -pubout -outform PEM  >& /dev/null | \
+	sed -r "s/-----BEGIN PUBLIC KEY-----$//" | sed -r "s/-----END PUBLIC KEY-----//" | tr -d [:space:] | \
+	awk '{ print "bazinga._domainkey IN TXT \"v=DKIM1; k=rsa; p=" $1 "\" ; ----- DKIM bazinga" }' > \
+	"$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
+
+	# The TLS private key and a self-signed certificate.
+	"$M_LOCAL/bin/"openssl req -x509 -nodes -batch -days 1826 -newkey rsa:4096 \
+	-keyout "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem" \
+	-out "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem" >& /dev/null
+}
+
 combo() {
 
 	date +"%nStarting $1 at %r on %x%n" &>> "$M_LOGS/build.txt"
@@ -2116,7 +2135,7 @@ advance() {
 status() {
 
 	CPU=`iostat cpu | head -4 | tail -2`
-	DISK=`iostat -m -x sda sdb sdc | tail -n +6 | awk '{print $1 "\t\t\t" $6 "\t" $7 "\t" $12}'`
+	DISK=`iostat -m -x sda sdb sdc vda vdb vdc | tail -n +6 | sed "s/Device:/device:/" | awk '{print $1 "\t  " $6 "\t" $7 "\t" $14}'`
 
 	while true; do
 		clear
@@ -2134,7 +2153,7 @@ status() {
 			echo "$C $line"
 		done
 		tput sgr0;  tput sgr 0 1; tput setaf 6; printf "\n# Load\n\n"; tput sgr0
-		uptime | sed "s/^ //"
+		uptime | sed "s/^.*load average://" | awk -F',' '{print "avg-load: " $1 ", " $2 ", " $3 }'
 		tput sgr0;  tput sgr 0 1; tput setaf 6; printf "\n# Processor\n\n"; tput sgr0
 		echo "$CPU"
 		tput sgr0;  tput sgr 0 1; tput setaf 6; printf "\n# Disk\n\n"; tput sgr0
@@ -2142,7 +2161,7 @@ status() {
 
 		# Refresh the stats for the next loop; note that this takes 4 seconds to complete.
 		CPU=`iostat cpu 4 2 | tail -5 | head -2`
-		DISK=`iostat -m -x sda sdb sdc 4 2 | tail -3 | head -2 | awk '{print $1 "\t\t\t" $6 "\t" $7 "\t" $12}'`
+		DISK=`iostat -m -x sda sdb sdc vda vdb vdc 4 2 | tail -3 | head -2 | sed "s/Device:/device:/" | awk '{print $1 "\t  " $6 "\t" $7 "\t" $14}'`
 	done
 }
 
@@ -2155,6 +2174,7 @@ all() {
 	$M_BUILD "build"
 	$M_BUILD "combine"
 	$M_BUILD "load"
+	$M_BUILD "keys"
 	$M_BUILD "check"
 	date +"%nFinished at %r on %x%n"
 	date +"Finished at %r on %x" &>> "$M_LOGS/build.txt"
@@ -2209,6 +2229,7 @@ elif [[ $1 == "combine" ]]; then combine
 elif [[ $1 == "status" ]]; then status
 elif [[ $1 == "follow" ]]; then follow
 elif [[ $1 == "load" ]]; then load
+elif [[ $1 == "keys" ]]; then keys
 elif [[ $1 == "log" ]]; then log
 elif [[ $1 == "all" ]]; then all
 

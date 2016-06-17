@@ -57,7 +57,7 @@ INCDIR					= $(TOPDIR)/lib/sources
 MAGMA_INCDIRS			= spf2/src/include clamav/libclamav mysql/include openssl/include lzo/include xml2/include \
 		zlib bzip2 tokyocabinet memcached dkim/libopendkim dspam/src jansson/src gd png jpeg freetype/include \
 		utf8proc
-CHECK_INCDIRS			= $(MAGMA_INCDIRS) checker/include
+CHECK_INCDIRS			= checker/src
 
 # Compiler Parameters
 CC						= gcc
@@ -67,7 +67,8 @@ CFLAGS_WARNINGS			= -Wall -Werror -Winline -Wformat-security -Warray-bounds
 CFLAGS_PEDANTIC			= -Wextra -Wpacked -Wunreachable-code -Wformat=2
 
 MAGMA_CINCLUDES			= -Isrc $(addprefix -I,$(MAGMA_INCLUDE_ABSPATHS))
-CHECK_CINCLUDES			= -Icheck -Isrc $(addprefix -I,$(CHECK_INCLUDE_ABSPATHS))
+CHECK_CINCLUDES			= -Icheck -Isrc -I$(TOPDIR)/lib/local/include $(addprefix -I,$(MAGMA_INCLUDE_ABSPATHS)) 
+# $(addprefix -I,$(CHECK_INCLUDE_ABSPATHS))
 
 CDEFINES				= -D_REENTRANT -D_GNU_SOURCE -D_LARGEFILE64_SOURCE -DHAVE_NS_TYPE -DFORTIFY_SOURCE=2 -DMAGMA_PEDANTIC 
 CDEFINES.build.c 		= \
@@ -80,7 +81,7 @@ LD						= gcc
 LDFLAGS					= -rdynamic
 
 MAGMA_DYNAMIC			= -lrt -ldl -lpthread
-CHECK_DYNAMIC			= $(MAGMA_DYNAMIC) -lcheck
+CHECK_DYNAMIC			= $(MAGMA_DYNAMIC) -lcheck -L$(TOPDIR)/lib/local/lib
 
 MAGMA_STATIC			= 
 CHECK_STATIC			= 

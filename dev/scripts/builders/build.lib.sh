@@ -2237,6 +2237,7 @@ elif [[ $1 =~ "memcached" ]]; then (memcached "$1") & MEMCACHED_PID=$!; wait $ME
 elif [[ $1 =~ "tokyocabinet" ]]; then (tokyocabinet "$1") & TOKYOCABINET_PID=$!; wait $TOKYOCABINET_PID
 
 # Globals
+elif [[ $1 == "generate" ]]; then generate
 elif [[ $1 == "combine" ]]; then combine
 elif [[ $1 == "status" ]]; then status
 elif [[ $1 == "follow" ]]; then follow

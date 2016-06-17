@@ -1,0 +1,31 @@
+diff --git a/configure.ac b/configure.ac
+index 2b72f3a..380522a 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -10,7 +10,7 @@ CHECK_MINOR_VERSION=10
+ CHECK_MICRO_VERSION=0
+ CHECK_VERSION=$CHECK_MAJOR_VERSION.$CHECK_MINOR_VERSION.$CHECK_MICRO_VERSION
+ 
+-# unique source file --- primitive safety check 
++# unique source file --- primitive safety check
+ AC_CONFIG_SRCDIR([src/check.c])
+ 
+ # place where extra autoconf macros are kept
+@@ -23,7 +23,7 @@ AC_CONFIG_LIBOBJ_DIR([lib])
+ AC_CONFIG_AUX_DIR([build-aux])
+ 
+ # really severe build strictness
+-AM_INIT_AUTOMAKE([-Wall gnits 1.11.2])
++AM_INIT_AUTOMAKE([-Wall gnits 1.11.1])
+ # Change to using into-in-builddir in the future:
+ #AM_INIT_AUTOMAKE([info-in-builddir -Wall -Werror gnits 1.14])
+ 
+@@ -93,7 +93,7 @@ AC_HELP_STRING([--enable-subunit],
+     echo "Subunit support will enable automatically."
+     ;;
+   *)   AC_MSG_ERROR(bad value ${enableval} for --enable-subunit) ;;
+-esac], 
++esac],
+ [echo "Subunit support will enable automatically."
+  enable_subunit=autodetect])
+ 

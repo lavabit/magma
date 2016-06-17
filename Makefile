@@ -54,9 +54,10 @@ CHECK_SRCFILES			= $(foreach dir,$(CHECK_SRCDIRS), $(wildcard $(dir)/*.c))
 
 # Bundled Dependency Include Paths
 INCDIR					= $(TOPDIR)/lib/sources
-INCDIRS					= spf2/src/include clamav/libclamav mysql/include openssl/include lzo/include xml2/include \
+MAGMA_INCDIRS			= spf2/src/include clamav/libclamav mysql/include openssl/include lzo/include xml2/include \
 		zlib bzip2 tokyocabinet memcached dkim/libopendkim dspam/src jansson/src gd png jpeg freetype/include \
 		utf8proc
+CHECK_INCDIRS			= $(MAGMA_INCDIRS) checker/include
 
 # Compiler Parameters
 CC						= gcc
@@ -65,9 +66,8 @@ CFLAGS					= -std=gnu99 -O0 -fPIC -fmessage-length=0 -ggdb3 -rdynamic -c $(CFLAG
 CFLAGS_WARNINGS			= -Wall -Werror -Winline -Wformat-security -Warray-bounds
 CFLAGS_PEDANTIC			= -Wextra -Wpacked -Wunreachable-code -Wformat=2
 
-CINCLUDES				= $(addprefix -I,$(INCLUDE_DIR_ABSPATHS))
-MAGMA_CINCLUDES			= -Isrc $(CINCLUDES)
-CHECK_CINCLUDES			= -Icheck $(MAGMA_CINCLUDES)
+MAGMA_CINCLUDES			= -Isrc $(addprefix -I,$(MAGMA_INCLUDE_ABSPATHS))
+CHECK_CINCLUDES			= -Icheck -Isrc $(addprefix -I,$(CHECK_INCLUDE_ABSPATHS))
 
 CDEFINES				= -D_REENTRANT -D_GNU_SOURCE -D_LARGEFILE64_SOURCE -DHAVE_NS_TYPE -DFORTIFY_SOURCE=2 -DMAGMA_PEDANTIC 
 CDEFINES.build.c 		= \
@@ -109,7 +109,10 @@ CHECK_OBJFILES			= $(patsubst %.c,$(OBJDIR)/%.o,$(CHECK_SRCFILES))
 # Resolve the External Include Directory Paths
 INCLUDE_DIR_VPATH		= $(INCDIR) /usr/include /usr/local/include
 INCLUDE_DIR_SEARCH 		= $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(INCLUDE_DIR_VPATH)))))
-INCLUDE_DIR_ABSPATHS	+= $(foreach target,$(INCDIRS), $(call INCLUDE_DIR_SEARCH,$(target)))
+
+# Generate the Absolute Directory Paths for Includes
+MAGMA_INCLUDE_ABSPATHS	+= $(foreach target,$(MAGMA_INCDIRS), $(call INCLUDE_DIR_SEARCH,$(target)))
+CHECK_INCLUDE_ABSPATHS	+= $(foreach target,$(CHECK_INCDIRS), $(call INCLUDE_DIR_SEARCH,$(target)))
 
 # Other External programs
 MV						= mv --force

@@ -14,6 +14,7 @@ DSPAM="dspam-3.10.2"
 MYSQL="mysql-5.1.73"
 GEOIP="GeoIP-1.4.8"
 CLAMAV="clamav-0.98.4"
+CHECKER="check-0.10.0"
 OPENSSL="openssl-1.0.2h"
 JANSSON="jansson-2.2.1"
 UTF8PROC="utf8proc-1.3.1"
@@ -66,5 +67,6 @@ M_LDPATH="\
 	$M_SOURCES/gd/.libs/:\
 	$M_SOURCES/png/.libs/:\
 	$M_SOURCES/jpeg/.libs/:\
-	$M_SOURCES/freetype/objs/.libs/\
-	$M_SOURCES/zlib"
+	$M_SOURCES/freetype/objs/.libs/:\
+	$M_SOURCES/zlib:\
+	$M_SOURCES/checker"

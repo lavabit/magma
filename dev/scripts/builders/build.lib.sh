@@ -540,7 +540,7 @@ xml2() {
 			./configure --without-lzma --without-python --without-http --without-ftp &>> "$M_LOGS/xml2.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
-			make --jobs=2 &>> "$M_LOGS/xml2.txt"; error
+			make --jobs=4 &>> "$M_LOGS/xml2.txt"; error
 		;;
 		xml2-check)
 			cd "$M_SOURCES/xml2"; error
@@ -703,7 +703,7 @@ zlib() {
 
 			make &>> "$M_LOGS/zlib.txt"; error
 
-			# Fool autotools checks into thinking this is a normal openssl install (e.g., clamav)
+			# Fool Autotools checks into thinking this is a normal OpenSSL install (e.g., clamav)
 			ln -s `pwd` lib
 			ln -s `pwd` include
 		;;
@@ -1131,8 +1131,10 @@ clamav() {
 
 			# Note that at least in version 0.97 and 0.98, --disable-llvm breaks the unit tests.
 
-			./configure --with-openssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" --disable-llvm --with--disable-xml --enable-check \
-				--enable-static --disable-silent-rules --disable-libcurl \
+			./configure  \
+				--disable-llvm --with--disable-xml --enable-check --enable-static --disable-silent-rules --disable-libcurl \
+				--with-openssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" --with-libcheck-prefix="$M_SOURCES/checker" \
+				--with-libbz2-prefix="$M_SOURCES/bzip2" \
 				&>> "$M_LOGS/clamav.txt"; error
 
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
@@ -1146,7 +1148,7 @@ clamav() {
 				printf "\x23\x21/bin/bash\nexit 77\n" > "$M_SOURCES/clamav/unit_tests/check4_clamd.sh"; error
 			fi
 
-			make --jobs=2 &>> "$M_LOGS/clamav.txt"; error
+			make --jobs=4 &>> "$M_LOGS/clamav.txt"; error
 		;;
 		clamav-check)
 			cd "$M_SOURCES/clamav"; error
@@ -1211,6 +1213,77 @@ clamav() {
 
 }
 
+checker() {
+
+	if [[ $1 == "checker-extract" ]]; then
+		rm -f "$M_LOGS/checker.txt"; error
+	elif [[ $1 != "checker-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/checker.txt"
+	fi
+
+	case "$1" in
+		checker-extract)
+			extract $CHECKER "checker" &>> "$M_LOGS/checker.txt"
+		;;
+		checker-prep)
+			cd "$M_SOURCES/checker"; error
+			# The automake requirement is changed from 1.11.2 to 1.11.1 so libcheck will build on CentOS 6. Systems with
+			# non-POSIX archivers might require the AM_PROG_AR macro to work, which was added to automake in version 1.11.2.
+			# For those systems, this patch might break things in unpredictable ways, assuming that automake is indeed 1.11.1.
+			cat "$M_PATCHES/checker/"checker-automake-version.patch | patch -p1 --verbose &>> "$M_LOGS/checker.txt"; error
+		;;
+		checker-build)
+			cd "$M_SOURCES/checker"; error
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+
+			autoreconf --install &>> "$M_LOGS/checker.txt"; error
+			./configure --prefix="$M_SOURCES/checker" &>> "$M_LOGS/checker.txt"; error
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
+
+			make &>> "$M_LOGS/checker.txt"; error
+			make install &>> "$M_LOGS/checker.txt"; error
+		;;
+		checker-check)
+			cd "$M_SOURCES/checker"; error
+			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			make check &>> "$M_LOGS/checker.txt"; error
+		;;
+		checker-check-full)
+			cd "$M_SOURCES/checker"; error
+			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			make check &>> "$M_LOGS/checker.txt"; error
+		;;
+		checker-clean)
+			cd "$M_SOURCES/checker"; error
+			make clean &>> "$M_LOGS/checker.txt"; error
+		;;
+		checker-tail)
+			tail --lines=30 --follow=name --retry "$M_LOGS/checker.txt"; error
+		;;
+		checker-log)
+			cat "$M_LOGS/checker.txt"; error
+		;;
+		checker)
+			checker "checker-extract"
+			checker "checker-prep"
+			checker "checker-build"
+			checker "checker-check"
+		;;
+		*)
+			printf "\nUnrecognized request.\n $1"
+			exit 2
+		;;
+	esac
+
+	date +"Finished $1 at %r on %x"
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/checker.txt"
+
+	return $?
+
+}
+
 openssl() {
 
 	if [[ $1 == "openssl-extract" ]]; then
@@ -1244,7 +1317,7 @@ openssl() {
 				-L"$M_SOURCES/zlib" -Wl,-rpath,"$M_SOURCES/zlib" \
 				&>> "$M_LOGS/openssl.txt"; error
 
-			make &>> "$M_LOGS/openssl.txt"; error
+			make --jobs=4 &>> "$M_LOGS/openssl.txt"; error
 			make install_docs &>> "$M_LOGS/openssl.txt"; error
 
 			# Fool autotools checks into thinking this is a normal OpenSSL install (e.g., ClamAV)
@@ -1911,8 +1984,8 @@ combo() {
 		wait $DSPAM_PID; error
 		($0 "curl-$1") & CURL_PID=$!
 		wait $CURL_PID; error
-		($0 "clamav-$1") & CLAMAV_PID=$!
-		wait $CLAMAV_PID; error
+		($0 "checker-$1") & CHECKER_PID=$!
+		wait $CHECKER_PID; error
 		($0 "png-$1") & PNG_PID=$!
 		wait $PNG_PID; error
 		($0 "lzo-$1") & LZO_PID=$!
@@ -1941,6 +2014,8 @@ combo() {
 		wait $TOKYOCABINET_PID; error
 		($0 "gd-$1") & GD_PID=$!
 		wait $GD_PID; error
+		($0 "clamav-$1") & CLAMAV_PID=$!
+		wait $CLAMAV_PID; error
 
 	else
 
@@ -1961,6 +2036,7 @@ combo() {
 		($0 "bzip2-$1") & BZIP2_PID=$!
 		($0 "dspam-$1") & DSPAM_PID=$!
 		($0 "geoip-$1") & GEOIP_PID=$!
+		($0 "checker-$1") & CHECKER_PID=$!
 		($0 "openssl-$1") & OPENSSL_PID=$!
 		($0 "jansson-$1") & JANSSON_PID=$!
 		($0 "freetype-$1") & FREETYPE_PID=$!
@@ -1981,6 +2057,7 @@ combo() {
 		wait $DSPAM_PID; error
 		wait $MYSQL_PID; error
 		wait $GEOIP_PID; error
+		wait $CHECKER_PID; error
 		wait $OPENSSL_PID; error
 		wait $JANSSON_PID; error
 		wait $UTF8PROC_PID; error
@@ -1999,7 +2076,7 @@ follow() {
 	tail -n 0 -F "$M_LOGS/clamav.txt" "$M_LOGS/curl.txt" "$M_LOGS/dspam.txt" "$M_LOGS/jansson.txt" "$M_LOGS/memcached.txt" "$M_LOGS/openssl.txt" \
 		"$M_LOGS/tokyocabinet.txt" "$M_LOGS/zlib.txt" "$M_LOGS/bzip2.txt" "$M_LOGS/dkim.txt" "$M_LOGS/geoip.txt" "$M_LOGS/lzo.txt" \
 		"$M_LOGS/mysql.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt" \
-		"$M_LOGS/utf8proc.txt"
+		"$M_LOGS/utf8proc.txt" "$M_LOGS/checker.txt"
 }
 
 log() {
@@ -2007,7 +2084,7 @@ log() {
 	cat "$M_LOGS/clamav.txt" "$M_LOGS/curl.txt" "$M_LOGS/dspam.txt" "$M_LOGS/jansson.txt" "$M_LOGS/memcached.txt" "$M_LOGS/openssl.txt" \
 		"$M_LOGS/tokyocabinet.txt" "$M_LOGS/zlib.txt" "$M_LOGS/bzip2.txt" "$M_LOGS/dkim.txt" "$M_LOGS/geoip.txt" "$M_LOGS/lzo.txt" \
 		"$M_LOGS/mysql.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt" \
-		"$M_LOGS/utf8proc.txt"
+		"$M_LOGS/utf8proc.txt" "$M_LOGS/checker.txt"
 }
 
 advance() {
@@ -2098,6 +2175,7 @@ elif [[ $1 =~ "dspam" ]]; then (dspam "$1") & DSPAM_PID=$!; wait $DSPAM_PID
 elif [[ $1 =~ "mysql" ]]; then (mysql "$1") & MYSQL_PID=$!; wait $MYSQL_PID
 elif [[ $1 =~ "geoip" ]]; then (geoip "$1") & GEOIP_PID=$!; wait $GEOIP_PID
 elif [[ $1 =~ "clamav" ]]; then (clamav "$1") & CLAMAV_PID=$!; wait $CLAMAV_PID
+elif [[ $1 =~ "checker" ]]; then (checker "$1") & CHECKER_PID=$!; wait $CHECKER_PID
 elif [[ $1 =~ "openssl" ]]; then (openssl "$1") & OPENSSL_PID=$!; wait $OPENSSL_PID
 elif [[ $1 =~ "jansson" ]]; then (jansson "$1") & JANSSON_PID=$!; wait $JANSSON_PID
 elif [[ $1 =~ "freetype" ]]; then (freetype "$1") & FREETYPE_PID=$!; wait $FREETYPE_PID
@@ -2119,7 +2197,7 @@ elif [[ $1 == "tail" ]]; then follow
 # Catchall
 else
 	echo ""
-	echo $"  `basename $0` {gd|png|lzo|jpeg|curl|spf2|xml2|dkim|zlib|bzip2|dspam|mysql|geoip|clamav|openssl|freetype|utf8proc|memcached|tokyocabinet} and/or "
+	echo $"  `basename $0` {gd|png|lzo|jpeg|curl|spf2|xml2|dkim|zlib|bzip2|dspam|mysql|geoip|clamav|checker|openssl|freetype|utf8proc|memcached|tokyocabinet} and/or "
 	echo $"  `basename $0` {extract|prep|build|check|check-full|clean|tail|log} or "
 	echo $"  `basename $0` {combine|load|follow|log|status|all}"
 	echo ""

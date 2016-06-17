@@ -33,6 +33,7 @@ M_PATCHES="$M_ROOT/patches"
 M_SOURCES="$M_ROOT/sources"
 M_OBJECTS="$M_ROOT/objects"
 M_CHECK="$M_ROOT/check"
+M_LOCAL="$M_ROOT/local"
 
 # Where the symbols.h file can be found
 M_SYM_FILE="$M_PROJECT_ROOT/src/providers/symbols.h"

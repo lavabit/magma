@@ -31,6 +31,7 @@ fi
 . "$M_PROJECT_ROOT/dev/scripts/builders/build.lib.params.sh"
 
 mkdir -p "$M_LOGS"
+mkdir -p "$M_LOCAL"
 mkdir -p "$M_SOURCES"
 mkdir -p "$M_OBJECTS"
 
@@ -97,10 +98,12 @@ gd() {
 				-L$M_SOURCES/freetype/objs/.libs -Wl,-rpath,$M_SOURCES/freetype/objs/.libs"
 			./configure --without-xpm --without-fontconfig --without-x \
 				--with-png="$M_SOURCES/png" --with-jpeg="$M_SOURCES/jpeg" --with-freetype="$M_SOURCES/freetype" \
+				--prefix="$M_LOCAL" \
 				&>> "$M_LOGS/gd.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make &>> "$M_LOGS/gd.txt"; error
+			make --jobs=4 &>> "$M_LOGS/gd.txt"; error
 		;;
 		gd-check)
 			cd "$M_SOURCES/gd"; error
@@ -166,10 +169,11 @@ png() {
 			# The shared library build is explicitly disabled because using the
 			# bundled zlib version seems to muck up the magic libpng uses to
 			# generate its shared library version script
-			./configure --disable-shared &>> "$M_LOGS/png.txt"; error
+			./configure --disable-shared --prefix="$M_LOCAL" &>> "$M_LOGS/png.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset CC
 
-			make &>> "$M_LOGS/png.txt"; error
+			make --jobs=4 &>> "$M_LOGS/png.txt"; error
+			make install &>> "$M_LOGS/png.txt"; error
 		;;
 		png-check)
 			cd "$M_SOURCES/png"; error
@@ -230,10 +234,11 @@ lzo() {
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			./configure --enable-shared &>> "$M_LOGS/lzo.txt"; error
+			./configure --enable-shared --prefix="$M_LOCAL" &>> "$M_LOGS/lzo.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
-			make &>> "$M_LOGS/lzo.txt"; error
+			make --jobs=4 &>> "$M_LOGS/lzo.txt"; error
+			make install &>> "$M_LOGS/lzo.txt"; error
 		;;
 		lzo-check)
 			cd "$M_SOURCES/lzo"; error
@@ -295,10 +300,11 @@ jpeg() {
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			./configure &>> "$M_LOGS/jpeg.txt"; error
+			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/jpeg.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
-			make &>> "$M_LOGS/jpeg.txt"; error
+			make --jobs=4 &>> "$M_LOGS/jpeg.txt"; error
+			make install &>> "$M_LOGS/jpeg.txt"; error
 		;;
 		jpeg-check)
 			cd "$M_SOURCES/jpeg"; error
@@ -360,10 +366,11 @@ spf2() {
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
-			./configure &>> "$M_LOGS/spf2.txt"; error
+			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/spf2.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
-			make &>> "$M_LOGS/spf2.txt"; error
+			make --jobs=4 &>> "$M_LOGS/spf2.txt"; error
+			make install &>> "$M_LOGS/spf2.txt"; error
 		;;
 		spf2-check)
 			cd "$M_SOURCES/spf2"; error
@@ -439,11 +446,13 @@ curl() {
 			--disable-rtsp --disable-smtp --disable-smtps --disable-telnet \
 			--disable-tftp --disable-ldap --disable-ssh --disable-dict \
 			--build=x86_64-redhat-linux-gnu --target=x86_64-redhat-linux-gnu --with-pic \
-			--with-ssl=$M_SOURCES/openssl --with-zlib=$M_SOURCES/zlib &>> "$M_LOGS/curl.txt"; error
+			--with-ssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" --prefix="$M_LOCAL" \
+			&>> "$M_LOGS/curl.txt"; error
 
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make --jobs=4 &>> "$M_LOGS/curl.txt"; error
+			make install &>> "$M_LOGS/curl.txt"; error
 		;;
 		curl-check)
 			# The target 'check' is an alias for the targets 'test' and 'examples'
@@ -537,10 +546,12 @@ xml2() {
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
 			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
-			./configure --without-lzma --without-python --without-http --without-ftp &>> "$M_LOGS/xml2.txt"; error
+			./configure --without-lzma --without-python --without-http --without-ftp --prefix="$M_LOCAL" \
+			&>> "$M_LOGS/xml2.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make --jobs=4 &>> "$M_LOGS/xml2.txt"; error
+			make install &>> "$M_LOGS/xml2.txt"; error
 		;;
 		xml2-check)
 			cd "$M_SOURCES/xml2"; error
@@ -609,17 +620,13 @@ dkim() {
 				-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl\
 				-L$M_SOURCES/openssl/engines -Wl,-rpath,$M_SOURCES/openssl/engines"
 			./configure \
-				--disable-filter \
-				--without-milter \
-				--without-sasl \
-				--without-gnutls \
-				--without-odbx \
-				--without-openldap \
-				--with-openssl="$M_SOURCES/openssl" \
+				--disable-filter --without-milter --without-sasl --without-gnutls --without-odbx \
+				--without-openldap --with-openssl="$M_SOURCES/openssl" --prefix="$M_LOCAL" \
 				&>> "$M_LOGS/dkim.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
-			make &>> "$M_LOGS/dkim.txt"; error
+			make --jobs=4 &>> "$M_LOGS/dkim.txt"; error
+			make install &>> "$M_LOGS/dkim.txt"; error
 		;;
 		dkim-check)
 			cd "$M_SOURCES/dkim"; error
@@ -688,20 +695,22 @@ zlib() {
 		zlib-build)
 			cd "$M_SOURCES/zlib"; error
 			if [[ $ZLIB == "1.2.3" ]]; then
-				export CFLAGS='-O2 -g3 -rdynamic -fPIC -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic'; error
-				export CXXFLAGS='-O2 -g3 -rdynamic -fPIC -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic'; error
-				export FFLAGS='-O2 -g3 -rdynamic -fPIC -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -I/usr/lib64/gfortran/modules'; error
+				export CFLAGS="-O2 -g3 -rdynamic -fPIC -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic"; error
+				export CXXFLAGS="-O2 -g3 -rdynamic -fPIC -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic"; error
+				export FFLAGS="-O2 -g3 -rdynamic -fPIC -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -I/usr/lib64/gfortran/modules"; error
 				autoreconf --install &>> "$M_LOGS/zlib.txt"; error
-				./configure --build=x86_64-unknown-linux-gnu --host=x86_64-unknown-linux-gnu --target=x86_64-redhat-linux-gnu &>> "$M_LOGS/zlib.txt"; error
+				./configure --build=x86_64-unknown-linux-gnu --host=x86_64-unknown-linux-gnu --target=x86_64-redhat-linux-gnu \
+				--prefix="$M_LOCAL" &>> "$M_LOGS/zlib.txt"; error
 			else
 				export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 				export FFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 				export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-				./configure --64 &>> "$M_LOGS/zlib.txt"; error
+				./configure --prefix="$M_LOCAL" --64 &>> "$M_LOGS/zlib.txt"; error
 			fi
 			unset CFLAGS; unset CXXFLAGS; unset FFLAGS
 
 			make &>> "$M_LOGS/zlib.txt"; error
+			make install &>> "$M_LOGS/zlib.txt"; error
 
 			# Fool Autotools checks into thinking this is a normal OpenSSL install (e.g., clamav)
 			ln -s `pwd` lib
@@ -770,7 +779,8 @@ bzip2() {
 		;;
 		bzip2-build)
 			cd "$M_SOURCES/bzip2"; error
-			make CC=gcc AR=ar RANLIB=ranlib 'CFLAGS=-O2 -g3 -fPIC -rdynamic -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -D_FILE_OFFSET_BITS=64' &>> "$M_LOGS/bzip2.txt"; error
+			make CC=gcc AR=ar RANLIB=ranlib PREFIX="$M_SOURCES" CFLAGS="-O2 -g3 -fPIC -rdynamic -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -D_FILE_OFFSET_BITS=64" &>> "$M_LOGS/bzip2.txt"; error
+			make install &>> "$M_LOGS/bzip2.txt"; error
 		;;
 		bzip2-check)
 			cd "$M_SOURCES/bzip2"; error
@@ -847,12 +857,12 @@ dspam() {
 
 			./configure --enable-static --with-pic --enable-preferences-extension --enable-virtual-users \
 			--with-storage-driver=mysql_drv --disable-trusted-user-security --disable-mysql4-initialization	\
-			--with-mysql-includes="$M_SOURCES/mysql/include" \
-			--with-mysql-libraries="$M_SOURCES/mysql/libmysql/.libs" \
-			&>> "$M_LOGS/dspam.txt"; error
+			--with-mysql-includes="$M_SOURCES/mysql/include" --with-mysql-libraries="$M_SOURCES/mysql/libmysql/.libs" \
+			--prefix="$M_LOCAL" &>> "$M_LOGS/dspam.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset LD_LIBRARY_PATH
 
 			make &>> "$M_LOGS/dspam.txt"; error
+			make install &>> "$M_LOGS/dspam.txt"; error
 		;;
 		dspam-check)
 			cd "$M_SOURCES/dspam"; error
@@ -918,8 +928,9 @@ mysql() {
 			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
 			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
 
-			./configure --with-pic --enable-thread-safe-client --with-readline --with-charset=latin1 --with-extra-charsets=all \
-			--with-plugins=all &>> "$M_LOGS/mysql.txt"; error
+			./configure --with-pic --enable-thread-safe-client --with-readline --with-charset=latin1
+			--with-extra-charsets=all --with-plugins=all --prefix="$M_LOCAL" \
+			&>> "$M_LOGS/mysql.txt"; error
 
 			# According to the RHEL build spec, MySQL checks will fail without --with-big-tables,
 			# And the "with-plugin" and "without-plugin options" do actually work; so we can ignore warnings about them...
@@ -941,6 +952,7 @@ mysql() {
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make --jobs=4 &>> "$M_LOGS/mysql.txt"; error
+			make install &>> "$M_LOGS/mysql.txt"; error
 		;;
 		mysql-check)
 			cd "$M_SOURCES/mysql"; error
@@ -1015,7 +1027,7 @@ geoip() {
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
 			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
-			./configure &>> "$M_LOGS/geoip.txt"; error
+			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/geoip.txt"; error
 
 			make &>> "$M_LOGS/geoip.txt"
 			if [ $? -ne 0 ]; then
@@ -1025,6 +1037,7 @@ geoip() {
 				./configure &>> "$M_LOGS/geoip.txt"; error
 				make &>> "$M_LOGS/geoip.txt"; error
 			fi
+			make install &>> "$M_LOGS/geoip.txt"
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 		;;
 		geoip-check)
@@ -1134,7 +1147,7 @@ clamav() {
 			./configure  \
 				--disable-llvm --with--disable-xml --enable-check --enable-static --disable-silent-rules --disable-libcurl \
 				--with-openssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" --with-libcheck-prefix="$M_SOURCES/checker" \
-				--with-libbz2-prefix="$M_SOURCES/bzip2" \
+				--with-libbz2-prefix="$M_SOURCES/bzip2" --prefix="$M_LOCAL" \
 				&>> "$M_LOGS/clamav.txt"; error
 
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
@@ -1149,6 +1162,7 @@ clamav() {
 			fi
 
 			make --jobs=4 &>> "$M_LOGS/clamav.txt"; error
+			make install &>> "$M_LOGS/clamav.txt"; error
 		;;
 		clamav-check)
 			cd "$M_SOURCES/clamav"; error
@@ -1239,7 +1253,7 @@ checker() {
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 
 			autoreconf --install &>> "$M_LOGS/checker.txt"; error
-			./configure --prefix="$M_SOURCES/checker" &>> "$M_LOGS/checker.txt"; error
+			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/checker.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make &>> "$M_LOGS/checker.txt"; error
@@ -1311,7 +1325,7 @@ openssl() {
 			cd "$M_SOURCES/openssl"; error
 			./config \
 				-d shared zlib no-dso no-asm \
-				--openssldir="$M_SOURCES/openssl" \
+				--openssldir="$M_SOURCES/openssl" --prefix="$M_LOCAL" \
 				-I"$M_SOURCES/zlib" -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
 				-L"$M_SOURCES/openssl" -Wl,-rpath,"$M_SOURCES/openssl" \
 				-L"$M_SOURCES/zlib" -Wl,-rpath,"$M_SOURCES/zlib" \
@@ -1319,6 +1333,7 @@ openssl() {
 
 			make --jobs=4 &>> "$M_LOGS/openssl.txt"; error
 			make install_docs &>> "$M_LOGS/openssl.txt"; error
+			make install &>> "$M_LOGS/openssl.txt"; error
 
 			# Fool autotools checks into thinking this is a normal OpenSSL install (e.g., ClamAV)
 			ln -s `pwd` lib
@@ -1392,13 +1407,14 @@ jansson() {
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
-			./configure &>> "$M_LOGS/jansson.txt"; error
+			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/jansson.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
 			make &>> "$M_LOGS/jansson.txt"; error
 			if [ -e "/usr/bin/sphinx-1.0-build" ] || [ -e "/usr/bin/sphinx-build" ]; then
 				make html &>> "$M_LOGS/jansson.txt"; error
 			fi
+			make install &>> "$M_LOGS/jansson.txt"; error
 		;;
 		jansson-check)
 			cd "$M_SOURCES/jansson"; error
@@ -1461,10 +1477,11 @@ freetype() {
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
 			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
-			./configure --without-harfbuzz &>> "$M_LOGS/freetype.txt"; error
+			./configure --prefix="$M_LOCAL" --without-harfbuzz &>> "$M_LOGS/freetype.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
-			make &>> "$M_LOGS/freetype.txt"; error
+			make --jobs=4 &>> "$M_LOGS/freetype.txt"; error
+			make install &>> "$M_LOGS/freetype.txt"; error
 		;;
 		freetype-check)
 			cd "$M_SOURCES/freetype"; error
@@ -1525,7 +1542,8 @@ utf8proc() {
 		utf8proc-build)
 			cd "$M_SOURCES/utf8proc"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
-			make &>> "$M_LOGS/utf8proc.txt"; error
+			make prefix="$M_LOCAL" &>> "$M_LOGS/utf8proc.txt"; error
+			make install &>> "$M_LOGS/utf8proc.txt"; error
 			unset CFLAGS;
 		;;
 		utf8proc-check)
@@ -1607,7 +1625,8 @@ memcached() {
 			# Options used for 1.0.3+
 			./configure --disable-silent-rules --disable-dtrace --disable-sasl --disable-libinnodb --disable-libevent --disable-mtmalloc \
 			--enable-64bit --enable-largefile --enable-static --enable-shared --with-pic --with-debug \
-			--with-memcached="/usr/local/bin/memcached" &>> "$M_LOGS/memcached.txt"; error
+			--with-memcached="/usr/local/bin/memcached" --prefix="$M_LOCAL" \
+			&>> "$M_LOGS/memcached.txt"; error
 
 			# Options used for 1.0.2
 			#./configure --disable-silent-rules --disable-dtrace --disable-sasl --disable-libinnodb --disable-libevent --disable-mtmalloc \
@@ -1623,7 +1642,8 @@ memcached() {
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 			# unset GEARMAND_BINARY; unset MEMCACHED_BINARY
 
-			make &>> "$M_LOGS/memcached.txt"; error
+			make --jobs=4 &>> "$M_LOGS/memcached.txt"; error
+			make install &>> "$M_LOGS/memcached.txt"; error
 		;;
 		memcached-check)
 			cd "$M_SOURCES/memcached"; error
@@ -1705,10 +1725,11 @@ tokyocabinet() {
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib -I$M_SOURCES/bzip2"
 			export LDFLAGS="-L$M_SOURCES/zlib -L$M_SOURCES/bzip2"
-			./configure &>> "$M_LOGS/tokyocabinet.txt"; error
+			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/tokyocabinet.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
-			make &>> "$M_LOGS/tokyocabinet.txt"; error
+			make --jobs=4 &>> "$M_LOGS/tokyocabinet.txt"; error
+			make install &>> "$M_LOGS/tokyocabinet.txt"; error
 		;;
 		tokyocabinet-check)
 			cd "$M_SOURCES/tokyocabinet"; error

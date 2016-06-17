@@ -1330,6 +1330,7 @@ openssl() {
 				-L"$M_SOURCES/zlib" -Wl,-rpath,"$M_SOURCES/zlib" \
 				&>> "$M_LOGS/openssl.txt"; error
 
+			make depend &>> "$M_LOGS/openssl.txt"; error
 			make MAKEFLAGS="--jobs=8" &>> "$M_LOGS/openssl.txt"; error
 			make install &>> "$M_LOGS/openssl.txt"; error
 
@@ -1991,11 +1992,11 @@ load() {
 	./magma.open.check "$M_SO"; error
 }
 
-keys() {
+generate() {
 
-	printf "Generating TLS and DKIM keys for the magma sandbox...\n"
+	printf "Generating TLS and DKIM keys for the magma sandbox...\n\n"
 
-	# The DKIM private key and a sample DNS record with the public key.
+		# The DKIM private key and a sample DNS record with the public key.
 	"$M_LOCAL/bin/"openssl genrsa -out "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem" 2048 2>&1 >& /dev/null
 	"$M_LOCAL/bin/"openssl rsa -in "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem" -pubout -outform PEM  >& /dev/null | \
 	sed -r "s/-----BEGIN PUBLIC KEY-----$//" | sed -r "s/-----END PUBLIC KEY-----//" | tr -d [:space:] | \
@@ -2006,6 +2007,14 @@ keys() {
 	"$M_LOCAL/bin/"openssl req -x509 -nodes -batch -days 1826 -newkey rsa:4096 \
 	-keyout "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem" \
 	-out "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem" >& /dev/null ; error
+
+	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"; error
+	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem"; error
+}
+
+keys() {
+
+	printf "Fixing the permissions for the TLS and DKIM keys in the magma sandbox...\n\n"
 
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"; error
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem"; error
@@ -2242,9 +2251,16 @@ elif [[ $1 == "tail" ]]; then follow
 # Catchall
 else
 	echo ""
+	echo " Libraries"
 	echo $"  `basename $0` {gd|png|lzo|jpeg|curl|spf2|xml2|dkim|zlib|bzip2|dspam|mysql|geoip|clamav|checker|openssl|freetype|utf8proc|memcached|tokyocabinet} and/or "
+	echo ""
+	echo " Stages (which may be combined via a dash with the above)"
 	echo $"  `basename $0` {extract|prep|build|check|check-full|clean|tail|log} or "
-	echo $"  `basename $0` {combine|load|follow|log|status|all}"
+	echo ""
+	echo " Global Commands"
+	echo $"  `basename $0` {combine|load|keys|generate|follow|log|status|all}"
+	echo ""
+	echo " Please specify a library, a stage, a global command or a combination of library and stage."
 	echo ""
 	exit 2
 fi

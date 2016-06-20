@@ -1335,7 +1335,7 @@ openssl() {
 				&>> "$M_LOGS/openssl.txt"; error
 
 			make depend &>> "$M_LOGS/openssl.txt"; error
-			make MAKEFLAGS="--jobs=8" &>> "$M_LOGS/openssl.txt"; error
+			make &>> "$M_LOGS/openssl.txt"; error
 			make install &>> "$M_LOGS/openssl.txt"; error
 
 			# Fool autotools checks into thinking this is a normal OpenSSL install (e.g., ClamAV)

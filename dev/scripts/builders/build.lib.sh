@@ -1323,9 +1323,9 @@ openssl() {
 			# See here for reasoning behind openssl-specific linker flags:
 			# https://mta.openssl.org/pipermail/openssl-users/2015-April/001053.html
 			cd "$M_SOURCES/openssl"; error
-        	grep "CentOS Linux release 7" /etc/system-release
+        	grep "CentOS Linux release 7" /etc/system-release >& /dev/null
         	if [ $? == 0 ]; then
-                	export CONFIGOPTS='-fno-merge-debug-strings ' >& /dev/null
+                	export CONFIGOPTS='-fno-merge-debug-strings '
         	fi
 		    ./config \
 		        -d shared zlib-dynamic no-asm --openssldir="$M_LOCAL" \

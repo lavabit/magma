@@ -1323,9 +1323,13 @@ openssl() {
 			# See here for reasoning behind openssl-specific linker flags:
 			# https://mta.openssl.org/pipermail/openssl-users/2015-April/001053.html
 			cd "$M_SOURCES/openssl"; error
-		./config \
-			-d shared zlib-dynamic no-asm --openssldir="$M_LOCAL" \
-				-I"$M_SOURCES/zlib" -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
+        	grep "CentOS Linux release 7" /etc/system-release
+        	if [ $? == 0 ]; then
+                	export CONFIGOPTS='-fno-merge-debug-strings ' >& /dev/null
+        	fi
+		    ./config \
+		        -d shared zlib-dynamic no-asm --openssldir="$M_LOCAL" \
+				-I"$M_SOURCES/zlib" -O $CONFIGOPTS -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
 				-L"$M_SOURCES/openssl" -Wl,-rpath,"$M_SOURCES/openssl" \
 				-L"$M_SOURCES/zlib" -Wl,-rpath,"$M_SOURCES/zlib" \
 				&>> "$M_LOGS/openssl.txt"; error

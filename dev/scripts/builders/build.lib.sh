@@ -918,7 +918,7 @@ mysql() {
 		mysql-prep)
 			cd "$M_SOURCES/mysql"; error
 			touch libtoolT; error
-
+			cat "$M_PATCHES/mysql/"mysql-test-run.patch | patch -p1 --verbose &>> "$M_LOGS/mysql.txt"; error
 		;;
 		mysql-build)
 			cd "$M_SOURCES/mysql"; error

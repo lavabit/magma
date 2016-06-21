@@ -1,0 +1,26 @@
+diff -r 38122040f01c mysql-test/mysql-test-run.pl
+--- a/mysql-test/mysql-test-run.pl	Mon Jun 20 20:47:33 2016 -0500
++++ b/mysql-test/mysql-test-run.pl	Mon Jun 20 20:49:55 2016 -0500
+@@ -439,21 +439,21 @@
+   {
+     my $ret_pid= waitpid($pid, 0);
+     if ($ret_pid != $pid){
+       mtr_report("Unknown process $ret_pid exited");
+     }
+     else {
+       delete $children{$ret_pid};
+     }
+   }
+ 
+-  if ( not defined @$completed ) {
++  if ( not @$completed ) {
+     mtr_error("Test suite aborted");
+   }
+ 
+   if ( @$completed != $num_tests){
+ 
+     if ($opt_force){
+       # All test should have been run, print any that are still in $tests
+       #foreach my $test ( @$tests ){
+       #  $test->print_test();
+       #}

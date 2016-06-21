@@ -233,7 +233,7 @@ bool_t servers_validate(void) {
 						log_critical("magma.servers[%u]%s is required and has not been set.", i, server_keys[j].name);
 						result = false;
 					}
-					else if (!st_cmp_ci_eq(NULLER(server_keys[j].name), CONSTANT(".network.type")) && (*((M_PORT *)(((char *)magma.servers[i]) + server_keys[j].offset))) == SSL_PORT &&
+					else if (!st_cmp_ci_eq(NULLER(server_keys[j].name), CONSTANT(".network.type")) && (*((M_PORT *)(((char *)magma.servers[i]) + server_keys[j].offset))) == TLS_PORT &&
 							ns_empty(magma.servers[i]->ssl.certificate)) {
 						log_critical("magma.servers[%u]%s has been configured to use SSL, but no certificate file has been provided.", i, server_keys[j].name);
 						result = false;
@@ -377,7 +377,7 @@ void servers_output_settings(void) {
 				else if (!st_cmp_cs_eq(NULLER(server_keys[j].name), CONSTANT(".network.type"))) {
 					if (*((M_PORT *)(((char *)magma.servers[i]) + server_keys[j].offset)) == TCP_PORT)
 						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "TCP");
-					else if (*((M_PORT *)(((char *)magma.servers[i]) + server_keys[j].offset)) == SSL_PORT)
+					else if (*((M_PORT *)(((char *)magma.servers[i]) + server_keys[j].offset)) == TLS_PORT)
 						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "SSL");
 					else
 						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "UNKNOWN");
@@ -506,7 +506,7 @@ bool_t servers_set_value(server_keys_t *setting, server_t *server, stringer_t *v
 			else if (!st_cmp_ci_eq(value, CONSTANT("TCP")))
 				*((M_PORT *)(((char *)server) + setting->offset)) = TCP_PORT;
 			else if (!st_cmp_ci_eq(value, CONSTANT("SSL")))
-				*((M_PORT *)(((char *)server) + setting->offset)) = SSL_PORT;
+				*((M_PORT *)(((char *)server) + setting->offset)) = TLS_PORT;
 			else {
 				log_critical("The value %.*s is an invalid port type. Use TCP or SSL as the port type.", st_length_int(value), st_char_get(value));
 				result = false;

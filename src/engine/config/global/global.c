@@ -143,7 +143,7 @@ void config_output_value_generic(chr_t *prefix, chr_t *name, M_TYPE type, void *
 			} else if (!st_cmp_cs_eq(NULLER(name), CONSTANT(".network.type"))) {
 				if (*((M_PORT *)((char *)val)) == TCP_PORT)
 					log_info("%s%s%s = TCP", prefix, name, reqstr);
-				else if (*((M_PORT *)((char *)val)) == SSL_PORT)
+				else if (*((M_PORT *)((char *)val)) == TLS_PORT)
 					log_info("%s%s%s = SSL", prefix, name, reqstr);
 				else
 					log_info("%s%s%s = [UNKNOWN]", prefix, name, reqstr);

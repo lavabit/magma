@@ -15,7 +15,7 @@
 
 typedef enum {
 	TCP_PORT = 1,
-	SSL_PORT
+	TLS_PORT
 } M_PORT;
 
 typedef enum {

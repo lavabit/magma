@@ -143,6 +143,6 @@ void protocol_process(server_t *server, int sockd) {
 		return;
 	}
 
-	server->network.type == SSL_PORT && server->ssl.context ? enqueue(&protocol_secure, con) : enqueue(&protocol_enqueue, con);
+	server->network.type == TLS_PORT && server->ssl.context ? enqueue(&protocol_secure, con) : enqueue(&protocol_enqueue, con);
 	return;
 }

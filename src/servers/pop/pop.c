@@ -38,9 +38,9 @@ void pop_starttls(connection_t *con) {
 	// Tell the user that we are ready to start the negotiation.
 	con_write_bl(con, "+OK Ready to start TLS negotiation.\r\n", 37);
 
-	if (!(con->network.ssl = ssl_alloc(con->server, con->network.sockd, M_SSL_BIO_NOCLOSE))) {
+	if (!(con->network.tls = ssl_alloc(con->server, con->network.sockd, M_SSL_BIO_NOCLOSE))) {
 		con_write_bl(con, "-ERR STARTTLS FAILED\r\n", 22);
-		log_pedantic("The SSL connection attempt failed.");
+		log_pedantic("The TLS connection attempt failed.");
 		return;
 	}
 
@@ -164,7 +164,7 @@ void pop_user(connection_t *con) {
  * @brief	Accept and verify a password for POP3 authentication.
  * @note	This command is only allowed for sessions which have not yet been authenticated, but which have already supplied a username.
  *			If the username/password combo was validated, the account information is retrieved and checked to see if it is locked.
- *			After successful authentication, this function will prohibit insecure connections for any user configured to use SSL only,
+ *			After successful authentication, this function will prohibit insecure connections for any user configured to use TLS only,
  *			and enforce the existence of only one POP3 session at a time.
  *			Finally, the database Log table for this user's POP3 access is updated, and all the user's messages are retrieved.
  * @param	con		the POP3 client connection issuing the command.
@@ -309,7 +309,7 @@ void pop_pass(connection_t *con) {
  */
 void pop_capa(connection_t *con) {
 
-	// If the user is in authorization mode via an insecure channel and there is an SSL context, output the STLS capability.
+	// If the user is in authorization mode via an insecure channel and there is an TLS context, output the STLS capability.
 	if (con->pop.session_state == 0 && con_secure(con) == 0) {
 		con_print(con, "+OK Capabilities follow.\r\nTOP\r\nUSER\r\nUIDL\r\nSTLS\r\nPIPELINING\r\nEXPIRE NEVER\r\nLOGIN-DELAY 0\r\n"
 			"RESP-CODES\r\nAUTH-RESP-CODE\r\nIMPLEMENTATION magmad %s\r\n.\r\n", build_version());

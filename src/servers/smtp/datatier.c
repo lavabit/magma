@@ -661,7 +661,7 @@ int_t smtp_fetch_authorization(stringer_t *username, stringer_t *verification, s
 		return -1;
 	}
 
-	outbound->ssl = res_field_int8(row, 2);
+	outbound->tls = res_field_int8(row, 2);
 	outbound->domain = res_field_string(row, 3);
 	outbound->send_size_limit = res_field_uint32(row, 4);
 	outbound->daily_send_limit = res_field_uint32(row, 5);

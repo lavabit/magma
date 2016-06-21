@@ -100,7 +100,7 @@ typedef struct {
 typedef struct {
 	uint64_t usernum;
 	stringer_t *domain;
-	int_t ssl, importance;
+	int_t tls, importance;
 	uint32_t sent_today, daily_send_limit, send_size_limit;
 	smtp_recipients_t *recipients;
 } smtp_outbound_prefs_t;

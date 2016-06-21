@@ -40,8 +40,8 @@ typedef struct {
 typedef struct {
 	struct {
 		SSL_CTX *context;
-		char *certificate;
-	} ssl;
+		chr_t *certificate;
+	} tls;
 	struct {
 		int sockd;
 		bool_t ipv6;
@@ -61,11 +61,11 @@ typedef struct {
 
 // A linked list of servers.
 typedef struct {
-	SSL_CTX *ssl_ctx;
+	SSL_CTX *tls_ctx;
 	char *certificate;
-	int ssl_sd, normal_sd;
+	int tls_sd, normal_sd;
 	stringer_t *name, *spam, *domain, *banner;
-	unsigned ssl_port, normal_port, listen_queue, socket_timeout, bad_command_cutoff, bad_command_delay;
+	unsigned tls_port, tcp_port, listen_queue, socket_timeout, bad_command_cutoff, bad_command_delay;
 	struct server_config_t *next;
 } server_config_t;
 

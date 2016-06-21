@@ -61,7 +61,7 @@ typedef struct {
 
 // Setup the structure of variables used to relay and bounce messages.
 typedef struct {
-	void *ssl; /* The SSL connection object. */
+	void *tls; /* The TLS connection object. */
 	int sockd; /* The socket connection. */
 	int status; /* Track whether the last network generated an error. */
 	placer_t line; /* The current line being processed. */
@@ -83,7 +83,7 @@ typedef struct {
 	} protocol;
 
 	struct {
-		void *ssl; /* The SSL connection object. */
+		void *tls; /* The TLS connection object. */
 		int sockd; /* The socket connection. */
 		int status; /* Track whether the last network operation generated an error. */
 		placer_t line; /* The current line being processed. */

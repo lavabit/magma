@@ -35,7 +35,7 @@ relay_keys_t relay_keys[] = {
 		.norm.type = M_TYPE_BOOLEAN,
 		.norm.val.binary = false,
 		.name = ".secure",
-		.description = "Determines whether connections should be made using SSL.",
+		.description = "Determines whether connections should be made using TLS.",
 		.required = false
 	}
 };

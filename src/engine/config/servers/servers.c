@@ -74,12 +74,12 @@ bool_t servers_network_start(void) {
  * @return	true on success or false on failure.
  */
 bool_t servers_encryption_start(void) {
-	// Loop through and setup the transport security layer for all of the server instances that provided SSL/TLS certificates.
+	// Loop through and setup the transport security layer for all of the server instances that provided TLS certificates.
 	for (uint32_t i = 0; i < MAGMA_SERVER_INSTANCES; i++) {
 
 		// The trenary increases the security level for DMTP (and DMAP in the future) connections, which require TLSv1.2 and only allow
 		// two cipher suites. Otherwise we allow any version of TSLv1.0 and higher, and any ciphersuite with forward secrecy.
-		if (magma.servers[i] && magma.servers[i]->enabled && magma.servers[i]->ssl.certificate &&
+		if (magma.servers[i] && magma.servers[i]->enabled && magma.servers[i]->tls.certificate &&
 			!ssl_server_create(magma.servers[i], magma.servers[i]->protocol == DMTP ? 3 : 1)) {
 			return false;
 		}
@@ -106,7 +106,7 @@ void servers_network_stop(void) {
  */
 void servers_encryption_stop(void) {
 	for (uint32_t i = 0; i < MAGMA_SERVER_INSTANCES; i++) {
-		if (magma.servers[i]  && magma.servers[i]->enabled && magma.servers[i]->ssl.context) {
+		if (magma.servers[i]  && magma.servers[i]->enabled && magma.servers[i]->tls.context) {
 			ssl_server_destroy(magma.servers[i]);
 		}
 	}
@@ -200,15 +200,17 @@ bool_t servers_validate(void) {
 	for (uint32_t i = 0; i < MAGMA_SERVER_INSTANCES; i++) {
 		for (uint64_t j = 0; magma.servers[i] && j < sizeof(server_keys) / sizeof(server_keys_t); j++) {
 
-			// Do some very basic file-system validation on ssl certificates
-			if (!st_cmp_ci_eq(NULLER(server_keys[j].name), CONSTANT(".ssl.certificate"))) {
+			// Do some very basic file-system validation on TLS certificates
+			if (!st_cmp_ci_eq(NULLER(server_keys[j].name), CONSTANT(".tls.certificate"))) {
 				sval = *((char **)(((char *)magma.servers[i]) + server_keys[j].offset));
 
 				if (sval &&  !file_readwritable(sval)) {
-					log_critical("SSL certificate cannot be read: { path = %s, error = %s }", sval, strerror_r(errno, bufptr, buflen));
+					log_critical("TLS certificate/key file could not be opened for reading. { path = %s / error = %s }", sval,
+						strerror_r(errno, bufptr, buflen));
 					result = false;
-				} else if (sval && file_world_accessible(sval)) {
-					log_critical("Warning: SSL certificate has world-access file permissions! Please fix. { path = %s }", sval);
+				}
+				else if (sval && file_world_accessible(sval)) {
+					log_critical("Warning: The TLS certificate/key has incorrect file permissions. Please fix. { path = %s }", sval);
 				}
 
 			}
@@ -234,8 +236,8 @@ bool_t servers_validate(void) {
 						result = false;
 					}
 					else if (!st_cmp_ci_eq(NULLER(server_keys[j].name), CONSTANT(".network.type")) && (*((M_PORT *)(((char *)magma.servers[i]) + server_keys[j].offset))) == TLS_PORT &&
-							ns_empty(magma.servers[i]->ssl.certificate)) {
-						log_critical("magma.servers[%u]%s has been configured to use SSL, but no certificate file has been provided.", i, server_keys[j].name);
+							ns_empty(magma.servers[i]->tls.certificate)) {
+						log_critical("magma.servers[%u]%s has been configured to use TLS, but no certificate/key file has been provided.", i, server_keys[j].name);
 						result = false;
 					}
 					break;
@@ -378,7 +380,7 @@ void servers_output_settings(void) {
 					if (*((M_PORT *)(((char *)magma.servers[i]) + server_keys[j].offset)) == TCP_PORT)
 						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "TCP");
 					else if (*((M_PORT *)(((char *)magma.servers[i]) + server_keys[j].offset)) == TLS_PORT)
-						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "SSL");
+						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "TLS");
 					else
 						log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, "UNKNOWN");
 				}
@@ -505,10 +507,10 @@ bool_t servers_set_value(server_keys_t *setting, server_t *server, stringer_t *v
 				*((M_PORT *)(((char *)server) + setting->offset)) = setting->norm.val.u64;
 			else if (!st_cmp_ci_eq(value, CONSTANT("TCP")))
 				*((M_PORT *)(((char *)server) + setting->offset)) = TCP_PORT;
-			else if (!st_cmp_ci_eq(value, CONSTANT("SSL")))
+			else if (!st_cmp_ci_eq(value, CONSTANT("TLS")))
 				*((M_PORT *)(((char *)server) + setting->offset)) = TLS_PORT;
 			else {
-				log_critical("The value %.*s is an invalid port type. Use TCP or SSL as the port type.", st_length_int(value), st_char_get(value));
+				log_critical("The port type %.*s is invalid. The value must be TCP or TLS.", st_length_int(value), st_char_get(value));
 				result = false;
 			}
 		}

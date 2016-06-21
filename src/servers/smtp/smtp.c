@@ -21,7 +21,7 @@
  */
 void smtp_starttls(connection_t *con) {
 
-	// Check for an existing SSL connection.
+	// Check for an existing TLS connection.
 	if (con_secure(con) == 1) {
 		con_write_bl(con, "454 Session is already encrypted.\r\n", 35);
 		return;
@@ -34,7 +34,7 @@ void smtp_starttls(connection_t *con) {
 
 	con_write_bl(con, "220 READY\r\n", 11);
 
-	if (!(con->network.ssl = ssl_alloc(con->server, con->network.sockd, M_SSL_BIO_NOCLOSE))) {
+	if (!(con->network.tls = ssl_alloc(con->server, con->network.sockd, M_SSL_BIO_NOCLOSE))) {
 		con_write_bl(con, "454 STARTTLS FAILED\r\n", 21);
 		log_pedantic("The SSL connection attempt failed.");
 		return;
@@ -488,7 +488,7 @@ void smtp_rcpt_to(connection_t *con) {
 	if (con->smtp.authenticated == true) {
 
 		// Are we only allowing this user to send messages via a secure method?
-		if (con->smtp.out_prefs->ssl == 1 && con_secure(con) != 1) {
+		if (con->smtp.out_prefs->tls == 1 && con_secure(con) != 1) {
 			con_write_bl(con, "530 TRANSPORT LAYER SECURITY REQUIRED - THIS ACCOUNT CAN ONLY BE ACCESSED USING A SECURE NETWORK CONNECTION, PLEASE ENABLE " \
 				"SSL OR TLS AND TRY AGAIN\r\n", 149);
 			st_free(address);

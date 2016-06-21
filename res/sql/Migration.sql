@@ -16,4 +16,7 @@ ALTER TABLE `Folders` ADD COLUMN `type` INT(10) UNSIGNED NOT NULL DEFAULT 1 AFTE
 ALTER TABLE `Folders` DROP INDEX `UNIQ_FOLDERNAME`, ADD UNIQUE INDEX `UNIQ_FOLDERNAME` (`usernum`, `type`, `parent`, `foldername`) ;
 
 /* Alter the Users table for STACIE support. Deprecate any existing legacy passwords. */
-/* ALTER TABLE `Lavabit`.`Users` CHANGE COLUMN `password` `legacy` VARCHAR(130) NULL DEFAULT NULL ; */
+/* ALTER TABLE `Lavabit`.`Users` CHANGE COLUMN `password` `legacy` VARCHAR(130) NULL DEFAULT NULL; */
+
+ALTER TABLE `Lavabit`.`Users` CHANGE COLUMN `ssl` `tls` tinyint(1) NOT NULL DEFAULT '0';
+ALTER TABLE `Lavabit`.`Limits` CHANGE COLUMN `ssl` `tls` tinyint(1) NOT NULL DEFAULT '1';

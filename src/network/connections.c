@@ -19,10 +19,10 @@
  */
 int_t con_secure(connection_t *con) {
 
-	if (con && con->network.ssl) {
+	if (con && con->network.tls) {
 		return 1;
 	}
-	else if (con && con->server && con->server->ssl.context) {
+	else if (con && con->server && con->server->tls.context) {
 		return 0;
 	}
 
@@ -57,7 +57,7 @@ void con_destroy(connection_t *con) {
 		switch (con->server->protocol) {
 			case (POP):
 
-				if (con->network.ssl) {
+				if (con->network.tls) {
 					stats_decrement_by_name("pop.connections.secure");
 				}
 
@@ -65,7 +65,7 @@ void con_destroy(connection_t *con) {
 				pop_session_destroy(con);
 				break;
 			case (IMAP):
-				if (con->network.ssl) {
+				if (con->network.tls) {
 					stats_decrement_by_name("imap.connections.secure");
 				}
 
@@ -73,7 +73,7 @@ void con_destroy(connection_t *con) {
 				imap_session_destroy(con);
 				break;
 			case (HTTP):
-				if (con->network.ssl) {
+				if (con->network.tls) {
 					stats_decrement_by_name("http.connections.secure");
 				}
 
@@ -81,7 +81,7 @@ void con_destroy(connection_t *con) {
 				http_session_destroy(con);
 				break;
 			case (SMTP):
-				if (con->network.ssl) {
+				if (con->network.tls) {
 					stats_decrement_by_name("smtp.connections.secure");
 				}
 
@@ -89,7 +89,7 @@ void con_destroy(connection_t *con) {
 				smtp_session_destroy(con);
 				break;
 			case (SUBMISSION):
-				if (con->network.ssl) {
+				if (con->network.tls) {
 					stats_decrement_by_name("smtp.connections.secure");
 				}
 
@@ -97,7 +97,7 @@ void con_destroy(connection_t *con) {
 				smtp_session_destroy(con);
 				break;
 			case (MOLTEN):
-				if (con->network.ssl) {
+				if (con->network.tls) {
 					stats_decrement_by_name("molten.connections.secure");
 				}
 
@@ -108,8 +108,8 @@ void con_destroy(connection_t *con) {
 				break;
 		}
 
-		if (con->network.ssl) {
-			ssl_free(con->network.ssl);
+		if (con->network.tls) {
+			ssl_free(con->network.tls);
 		}
 
 		if (con->network.sockd != -1) {

@@ -36,10 +36,6 @@ static bool_t is_localhost(connection_t *con) {
 	return con_addr_word(con, 0) == 0x0100007f;
 }
 
-static bool_t is_ssl(connection_t *con) {
-	return con_secure(con) == 1;
-}
-
 static
 void internal_error(connection_t *con) {
 	api_error(con, HTTP_ERROR_500, JSON_RPC_2_ERROR_SERVER_INTERNAL, "Internal server error.");
@@ -56,7 +52,7 @@ void not_found_error(connection_t *con) {
 }
 
 /**
- * @brief	The entry point for json api requests.
+ * @brief	The entry point for json API requests.
  * @param con	The connection object corresponding to the web client making the request.
  * @return This function returns no value.
  */
@@ -67,7 +63,7 @@ void json_api_dispatch(connection_t *con) {
 	api_lookup_t *found_method;
 	api_lookup_t method_lookup = {.callback = NULL};
 
-	if (magma.web.portal.safeguard && !is_ssl(con) && !is_localhost(con)) {
+	if (magma.web.portal.safeguard && con_secure(con) != 1 && !is_localhost(con)) {
 		log_pedantic("Insecure request denied");
 		bad_request_error(con);
 		goto out;

@@ -42,16 +42,16 @@ int64_t con_write_bl(connection_t *con, char *block, size_t length) {
 	// Loop until bytes have been written to the socket.
 	do {
 
-		if (con->network.ssl) {
-			written = ssl_write(con->network.ssl, block + position, length);
-			sslerr = SSL_get_error_d(con->network.ssl, written);
+		if (con->network.tls) {
+			written = ssl_write(con->network.tls, block + position, length);
+			sslerr = SSL_get_error_d(con->network.tls, written);
 		}
 		else {
 			written = send(con->network.sockd, block + position, length, 0);
 		}
 
 		// Check for errors on SSL writes.
-		if (con->network.ssl) {
+		if (con->network.tls) {
 
 			// If 0 bytes were written, and it wasn't related to a shutdown, or if < 0 was returned and there was no more data waiting to be written, it's an error.
 			if ((!written && sslerr != SSL_ERROR_NONE && sslerr != SSL_ERROR_ZERO_RETURN) || ((written < 0) && sslerr != SSL_ERROR_WANT_WRITE)) {
@@ -215,16 +215,16 @@ int64_t client_write(client_t *client, stringer_t *s) {
 	// Loop until bytes have been written to the socket.
 	do {
 
-		if (client->ssl) {
-			written = ssl_write(client->ssl, block + position, length);
-			sslerr = SSL_get_error_d(client->ssl, written);
+		if (client->tls) {
+			written = ssl_write(client->tls, block + position, length);
+			sslerr = SSL_get_error_d(client->tls, written);
 		}
 		else {
 			written = send(client->sockd, block + position, length, 0);
 		}
 
 		// Check for errors on SSL writes.
-		if (client->ssl) {
+		if (client->tls) {
 
 			// If 0 bytes were written, and it wasn't related to a shutdown, or if < 0 was returned and there was no more data waiting to be written, it's an error.
 			if ((!written && sslerr != SSL_ERROR_NONE && sslerr != SSL_ERROR_ZERO_RETURN) || ((written < 0) && sslerr != SSL_ERROR_WANT_WRITE)) {

@@ -13,7 +13,7 @@
 #include "magma.h"
 
 /**
- * @brief	Prepare a thread to exit by destroying its mysql and openssl-specific and associated mail cache data.
+ * @brief	Prepare a thread to exit by destroying its MySQL and OpenSSL thread storage, and the thread specific mail cache.
  * @return	This function returns no value.
  */
 void thread_stop(void) {
@@ -26,7 +26,7 @@ void thread_stop(void) {
 }
 
 /**
- * @brief	Setup a new thread by setting up signal handling and preparing it for mysql processing.
+ * @brief	Setup a new thread by registering the signal handlers and preparing the MySQL thread specific storage.
  * @return	true on success or false on failure.
  */
 bool_t thread_start(void) {

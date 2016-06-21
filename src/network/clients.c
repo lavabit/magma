@@ -39,11 +39,11 @@ int_t client_secure(client_t *client) {
 	if (!client) {
 		return -1;
 	}
-	else if (client->ssl) {
+	else if (client->tls) {
 		return 0;
 	}
 
-	else if (!(client->ssl = ssl_client_create(client->sockd))) {
+	else if (!(client->tls = ssl_client_create(client->sockd))) {
 		client->status = -1;
 		return -1;
 	}
@@ -138,8 +138,8 @@ void client_close(client_t *client) {
 
 	if (client) {
 
-		if (client->ssl) {
-			ssl_free(client->ssl);
+		if (client->tls) {
+			ssl_free(client->tls);
 		}
 
 		if (client->sockd != -1) {

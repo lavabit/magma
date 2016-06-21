@@ -17,10 +17,10 @@
  * @note	SSL downgrades are not possible; in order for an ssl upgrade, magma.web.ssl_redirect must first be set.
  * @param	con			the client's http connection handle.
  * @param	location	the url to which the client will be redirected.
- * @param	ssl			if 1, direct to https:// else direct to http:// address.
+ * @param	tls			if 1, direct to https:// else direct to http:// address.
  * @return	This function returns no value.
  */
-void http_print_301(connection_t *con, chr_t *location, int_t ssl) {
+void http_print_301(connection_t *con, chr_t *location, int_t tls) {
 
 	stringer_t *redirect = NULL;
 	bool_t do_transform = false;
@@ -28,29 +28,30 @@ void http_print_301(connection_t *con, chr_t *location, int_t ssl) {
 	chr_t *protocol, numbuf[16];
 
 	// If we're trying to upgrade the security of the connection and the operation isn't supported, throw an error.
-	if (ssl && (con_secure(con) <= 0) && !magma.web.ssl_redirect) {
-		log_pedantic("Failed to upgrade 301 redirection: magma.web.ssl_redirect was not specified.");
+	if (tls && (con_secure(con) <= 0) && !magma.web.tls_redirect) {
+		log_pedantic("Failed to upgrade 301 redirection: magma.web.tls_redirect was not specified.");
 		http_print_403(con);
 		return;
-	} else if (ssl != (con_secure(con) > 0)) {
+	}
+	else if (tls != (con_secure(con) > 0)) {
 		do_transform = true;
 	}
 
-	protocol = (ssl == 1) ? "https://" : "http://";
+	protocol = (tls == 1) ? "https://" : "http://";
 
-	if (do_transform && ssl) {
-		site = st_dupe(magma.web.ssl_redirect);
-	} else
-	{
+	if (do_transform && tls) {
+		site = st_dupe(magma.web.tls_redirect);
+	}
+	else {
 
 		// If the user tries to downgrade security, don't alow them to do so.
-		if (!ssl && do_transform) {
-			log_pedantic("HTTP redirect from ssl to insecure transport is not currently supported.");
-			ssl = 1;
+		if (!tls && do_transform) {
+			log_pedantic("HTTP redirect from TLS to insecure transport is not currently supported.");
+			tls = 1;
 		}
 
 		// If we're using a non-standard port, the url needs to reflect that.
-		if ((ssl && con->http.port != 443) || ((ssl <= 0) && con->http.port != 80)) {
+		if ((tls && con->http.port != 443) || ((tls <= 0) && con->http.port != 80)) {
 			snprintf(numbuf, sizeof(numbuf), ":%u", con->http.port);
 			site = st_merge("sn", con->http.host, numbuf);
 		}

@@ -3,7 +3,7 @@
  * @file /magma/engine/controller/protocol.c
  *
  * @brief	Functions used to route incoming network connections to their designated protocol modules. This layer also tracks overall protocol
- * 			statistics and establishes SSL connections for connections that arrive on secure ports.
+ * 			statistics and establishes TLS connections for connections that arrive on secure ports.
  *
  * $Author$
  * $Date$
@@ -90,10 +90,10 @@ void protocol_enqueue(connection_t *con) {
 }
 
 /**
- * @brief	Establish a secure channel for an inbound ssl connection before passing it off to the general server request handler.
+ * @brief	Establish a secure channel for an inbound TLS connection before passing it off to the general server request handler.
  * @see		protocol_enqueue()
- * @note	This function destroys the client connection completely and returns silently upon any ssl-related failure.
- * @param	con		the The connection object associated with the inbound ssl connection.
+ * @note	This function destroys the client connection completely and returns silently upon any TLS-related failure.
+ * @param	con		the The connection object associated with the inbound TLS connection.
  * @return	This function returns no value.
  */
 void protocol_secure(connection_t *con) {
@@ -102,13 +102,13 @@ void protocol_secure(connection_t *con) {
 	log_check(con == NULL);
 	log_check(con->server == NULL);
 
-	// Create a new SSL object.
-	if (!(con->network.ssl = ssl_alloc(con->server, con->network.sockd, BIO_NOCLOSE))) {
+	// Create a new TLS object.
+	if (!(con->network.tls = ssl_alloc(con->server, con->network.sockd, BIO_NOCLOSE))) {
 
-		log_pedantic("The SSL/TLS connection attempt failed.");
+		log_pedantic("The TLS connection attempt failed.");
 
 		// We manually free the connection structure since calling con_destroy() would improperly decrement the statistical counters.
-		if (con->network.ssl) ssl_free(con->network.ssl);
+		if (con->network.tls) ssl_free(con->network.tls);
 		if (con->network.sockd != -1) close(con->network.sockd);
 		if (con->network.buffer) st_free(con->network.buffer);
 		mutex_destroy(&(con->lock));
@@ -143,6 +143,6 @@ void protocol_process(server_t *server, int sockd) {
 		return;
 	}
 
-	server->network.type == TLS_PORT && server->ssl.context ? enqueue(&protocol_secure, con) : enqueue(&protocol_enqueue, con);
+	server->network.type == TLS_PORT && server->tls.context ? enqueue(&protocol_secure, con) : enqueue(&protocol_enqueue, con);
 	return;
 }

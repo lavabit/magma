@@ -302,7 +302,7 @@ int ssl_shutdown_get(SSL *ssl) {
  */
 SSL * ssl_alloc(void *server, int sockd, int flags) {
 
-	SSL *ssl;
+	SSL *tls;
 	BIO *bio;
 	int result = 0;
 	server_t *local = server;
@@ -310,7 +310,7 @@ SSL * ssl_alloc(void *server, int sockd, int flags) {
 #ifdef MAGMA_PEDANTIC
 	if (!local) {
 		log_pedantic("Passed a NULL server pointer.");
-	} else if (!local->ssl.context) {
+	} else if (!local->tls.context) {
 		log_pedantic("Passed a NULL SSL context pointer.");
 	}
 	else if (sockd < 0) {
@@ -318,28 +318,28 @@ SSL * ssl_alloc(void *server, int sockd, int flags) {
 	}
 #endif
 
-	if (!local || !local->ssl.context || sockd < 0) {
+	if (!local || !local->tls.context || sockd < 0) {
 		return NULL;
-	} else if (!(ssl = SSL_new_d(local->ssl.context)) || !(bio = BIO_new_socket_d(sockd, flags))) {
+	} else if (!(tls = SSL_new_d(local->tls.context)) || !(bio = BIO_new_socket_d(sockd, flags))) {
 		log_pedantic("SSL/BIO allocation error. {error = %s}", ssl_error_string(bufptr, buflen));
 
-		if (ssl) {
-			SSL_free_d(ssl);
+		if (tls) {
+			SSL_free_d(tls);
 		}
 
 		return NULL;
 	}
 
-	SSL_set_bio_d(ssl, bio, bio);
+	SSL_set_bio_d(tls, bio, bio);
 
-	if ((result = SSL_accept_d(ssl)) != 1) {
-		ERR_error_string_n_d(SSL_get_error_d(ssl, result), bufptr, buflen);
+	if ((result = SSL_accept_d(tls)) != 1) {
+		ERR_error_string_n_d(SSL_get_error_d(tls, result), bufptr, buflen);
 		log_pedantic("SSL accept error. { accept = %i / error = %s }", result, bufptr);
-		SSL_free_d(ssl);
+		SSL_free_d(tls);
 		return NULL;
 	}
 
-	return ssl;
+	return tls;
 }
 
 /**
@@ -352,12 +352,12 @@ void ssl_server_destroy(void *server) {
 	server_t *local = server;
 
 #ifdef MAGMA_PEDANTIC
-	if (!local || !local->ssl.context) {
+	if (!local || !local->tls.context) {
 		log_pedantic("Passed invalid data. Going to execute the function call anyways.");
 	}
 #endif
 
-	SSL_CTX_free_d(local->ssl.context);
+	SSL_CTX_free_d(local->tls.context);
 
 	return;
 }
@@ -384,7 +384,7 @@ void * ssl_client_create(int_t sockd) {
 		return NULL;
 	}
 
-	/// LOW: Add requisite config options and sandbox resources to verify server SSL certificates.
+	/// LOW: Add requisite config options and sandbox resources to verify server TLS certificates.
 	// SSL_CTX_load_verify_locations(result, SSL_CAFILE, SSL_CAPATH);
 	// lookup = X509_STORE_add_lookup(SSL_CTX_get_cert_store(result.context), X509_LOOKUP_file());
 	// X509_load_crl_file(lookup, SSL_CRLFILE, X509_FILETYPE_PEM);
@@ -460,7 +460,7 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 
 	// We use the generic SSLv23 method, which really means support SSLv2 and above, including TLSv1, TLSv1.1, etc, and then limit
 	// the actual protocols the SSL context will support using the options variable configured above, and the call to SSL_CTX_ctrl() below.
-	if (!(local->ssl.context = SSL_CTX_new_d(SSLv23_server_method_d()))) {
+	if (!(local->tls.context = SSL_CTX_new_d(SSLv23_server_method_d()))) {
 		log_critical("Could not create a valid SSL context.");
 		return false;
 	}
@@ -469,36 +469,36 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 	// #define SSL_CTX_set_options(ctx, op) SSL_CTX_ctrl((ctx),SSL_CTRL_OPTIONS,(op),NULL)
 	// Pete suggested "RC4:kEDH:HIGH:!aNULL:!eNULL:!EXP:!LOW:!SSLv2:!MD5" or using SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS to workaround the Thunderbird SSL bug.
 	// Otherwise the suggestion was to use "kEDH:HIGH:RC4:!aNULL:!eNULL:!EXP:!LOW:!SSLv2:!MD5" once the stream bug is fixed.
-	else if ((SSL_CTX_ctrl_d(local->ssl.context, SSL_CTRL_OPTIONS, options, NULL) & options) != options) {
-		log_critical("Could set the options mask on the SSL context.");
+	else if ((SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_OPTIONS, options, NULL) & options) != options) {
+		log_critical("Could set the options mask on the TLS context.");
 		return false;
 	}
-	else if (SSL_CTX_use_certificate_chain_file_d(local->ssl.context, local->ssl.certificate) != 1) {
-		log_critical("Could not create a valid SSL certificate chain using the file %s.", local->ssl.certificate);
+	else if (SSL_CTX_use_certificate_chain_file_d(local->tls.context, local->tls.certificate) != 1) {
+		log_critical("Could not create a valid TLS certificate chain using the file %s.", local->tls.certificate);
 		return false;
 	}
-	else if (SSL_CTX_use_PrivateKey_file_d(local->ssl.context, local->ssl.certificate, SSL_FILETYPE_PEM) != 1) {
-		log_critical("Could not load the private key for our SSL certificate chain using the file %s.", local->ssl.certificate);
+	else if (SSL_CTX_use_PrivateKey_file_d(local->tls.context, local->tls.certificate, SSL_FILETYPE_PEM) != 1) {
+		log_critical("Could not load the private key for our TLS certificate chain using the file %s.", local->tls.certificate);
 		return false;
 	}
-	else if (SSL_CTX_check_private_key_d(local->ssl.context) != 1) {
-		log_critical("Could not verify the SSL private key. Make sure a valid private key is in the file %s.", local->ssl.certificate);
+	else if (SSL_CTX_check_private_key_d(local->tls.context) != 1) {
+		log_critical("Could not verify the SSL private key. Make sure a valid private key is in the file %s.", local->tls.certificate);
 		return false;
 	}
 	// We had some compatibility issues enabling PFS, so this needs to be resolved soon.
-	else if (SSL_CTX_set_cipher_list_d(local->ssl.context, ciphers) != 1) {
+	else if (SSL_CTX_set_cipher_list_d(local->tls.context, ciphers) != 1) {
 		log_critical("Could not load the default collection of ciphers.");
 		return false;
 	}
-	else if (SSL_CTX_ctrl_d(local->ssl.context, SSL_CTRL_SET_ECDH_AUTO, 1, NULL) != 1) {
+	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_ECDH_AUTO, 1, NULL) != 1) {
 		log_critical("Could not enable the automatic, default selection of the strongest curve.");
 		return false;
 	}
 
-	SSL_CTX_set_tmp_dh_callback_d(local->ssl.context, ssl_dh_exchange_callback);
+	SSL_CTX_set_tmp_dh_callback_d(local->tls.context, ssl_dh_exchange_callback);
 
 	/// TODO: The SSL_CTX_set_tmp_ecdh_callback() may no longer be needed with SSL_CTX_set_ecdh_auto(). More research is needed.
-	SSL_CTX_set_tmp_ecdh_callback_d(local->ssl.context, ssl_ecdh_exchange_callback);
+	SSL_CTX_set_tmp_ecdh_callback_d(local->tls.context, ssl_ecdh_exchange_callback);
 
 	return true;
 }
@@ -590,7 +590,7 @@ bool_t ssl_start(void) {
 
 	// Thread locking setup.
 	if (!(ssl_locks = mm_alloc(CRYPTO_num_locks_d() * sizeof(pthread_mutex_t *)))) {
-		log_critical("Could not allocate %zu bytes for the SSL library locks.", CRYPTO_num_locks_d() * sizeof(pthread_mutex_t *));
+		log_critical("Could not allocate %zu bytes for the TLS library locks.", CRYPTO_num_locks_d() * sizeof(pthread_mutex_t *));
 		return false;
 	}
 
@@ -618,19 +618,21 @@ bool_t ssl_start(void) {
 	CRYPTO_set_id_callback_d(&ssl_thread_id_callback);
 	CRYPTO_set_locking_callback_d(&ssl_locking_callback);
 
-	// This must be done here because we have to wait for openssl to be initialized first.
+	// This must be done here because we have to wait for OpenSSL to be initialized first.
 	if (magma.dkim.enabled) {
+
 		keyname = magma.dkim.privkey;
 
 		if (file_world_accessible(st_char_get(keyname))) {
-			log_critical("Warning: DKIM private key has world-access file permissions! Please fix. { path = %s }", st_char_get(keyname));
+			log_critical("Warning: DKIM private key has world-access file permissions! Please fix. { path = %.*s }",  st_length_int(keyname), st_char_get(keyname));
 		}
 
 		if (!ssl_verify_privkey(st_char_get(keyname))) {
-			log_critical("Unable to validate DKIM private key: %s", st_char_get(keyname));
+			log_critical("Unable to validate DKIM private key. { path = %.*s }", st_length_int(keyname), st_char_get(keyname));
 			return false;
-		} else if (!(magma.dkim.privkey = file_load(st_char_get(keyname)))) {
-			log_critical("Unable to load DKIM private key contents from file: %s", st_char_get(keyname));
+		}
+		else if (!(magma.dkim.privkey = file_load(st_char_get(keyname)))) {
+			log_critical("Unable to load DKIM private key contents from file. { path = %.*s }", st_length_int(keyname), st_char_get(keyname));
 			return false;
 		}
 

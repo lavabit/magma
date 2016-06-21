@@ -250,11 +250,11 @@ magma_keys_t magma_keys[] = {
 		.required = false
 	},
 	{
-		.store = (void *)&(magma.web.ssl_redirect),
+		.store = (void *)&(magma.web.tls_redirect),
 		.norm.type = M_TYPE_STRINGER,
 		.norm.val.ns = NULL,
-		.name = "magma.web.ssl_redirect",
-		.description = "Specifies an optional ssl hostname and/or port for redirecting secure-only web requests.",
+		.name = "magma.web.tls_redirect",
+		.description = "Specifies an optional TLS hostname and/or port for redirecting secure-only web requests.",
 		.file = true,
 		.database = true,
 		.overwrite = true,

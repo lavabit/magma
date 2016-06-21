@@ -284,8 +284,6 @@ int_t meta_data_fetch_user(meta_user_t *user) {
 		return 1;
 	}
 
-	// Users.auth, Users.`ssl`, Uesrs.overquota, Dispatch.secure,
-
 	// Store the username.
 	if (st_empty(user->username) && !(user->username = res_field_string(row, 0))) {
 		log_pedantic("Unable to copy username into the user object.");

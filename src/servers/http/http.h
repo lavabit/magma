@@ -73,7 +73,7 @@ void           http_data_value_decode(stringer_t *string);
 int_t          http_data_value_parse(connection_t *con, HTTP_DATA source, placer_t pair);
 
 /// errors.c
-void   http_print_301(connection_t *con, chr_t *location, int_t ssl);
+void   http_print_301(connection_t *con, chr_t *location, int_t tls);
 void   http_print_400(connection_t *con);
 void   http_print_403(connection_t *con);
 void   http_print_404(connection_t *con);

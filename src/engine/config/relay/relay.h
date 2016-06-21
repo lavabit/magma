@@ -22,7 +22,7 @@ typedef struct {
 } relay_keys_t;
 
 typedef struct {
-	bool_t secure; /* Use SSL. */
+	bool_t secure; /* Use TLS. */
 	bool_t premium; /* Reserve for premium users. */
 	chr_t *name; /* The relay name. */
 	uint32_t port; /* The relay port. */

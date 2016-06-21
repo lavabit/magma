@@ -253,6 +253,12 @@
 		<configuration configurationName="Check">
 			<resource resourceType="PROJECT" workspacePath="/magma"/>
 		</configuration>
+		<configuration configurationName=".check">
+			<resource resourceType="PROJECT" workspacePath="/magma"/>
+		</configuration>
+		<configuration configurationName=".debug">
+			<resource resourceType="PROJECT" workspacePath="/magma"/>
+		</configuration>
 		<configuration configurationName="Default">
 			<resource resourceType="PROJECT" workspacePath="/magma"/>
 		</configuration>

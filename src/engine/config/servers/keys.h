@@ -64,11 +64,11 @@ server_keys_t server_keys[] = {
 		.required = true
 	},
 	{
-		.offset = offsetof (server_t, ssl.certificate),
+		.offset = offsetof (server_t, tls.certificate),
 		.norm.type = M_TYPE_NULLER,
 		.norm.val.ns = NULL,
-		.name = ".ssl.certificate",
-		.description = "The SSL certificate file used by the instance. Providing a file enables SSL.",
+		.name = ".tls.certificate",
+		.description = "The TLS certificate and private key used for transport security by this server instance.",
 		.required = false
 	},
 	{
@@ -92,7 +92,7 @@ server_keys_t server_keys[] = {
 		.norm.type = M_TYPE_ENUM,
 		.norm.val.u64 = TCP_PORT,
 		.name = ".network.type",
-		.description = "The type of port. Either TCP or SSL can be specified.",
+		.description = "The type of port. Either TCP or TLS can be specified.",
 		.required = false
 	},
 	{

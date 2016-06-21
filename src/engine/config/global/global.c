@@ -144,7 +144,7 @@ void config_output_value_generic(chr_t *prefix, chr_t *name, M_TYPE type, void *
 				if (*((M_PORT *)((char *)val)) == TCP_PORT)
 					log_info("%s%s%s = TCP", prefix, name, reqstr);
 				else if (*((M_PORT *)((char *)val)) == TLS_PORT)
-					log_info("%s%s%s = SSL", prefix, name, reqstr);
+					log_info("%s%s%s = TLS", prefix, name, reqstr);
 				else
 					log_info("%s%s%s = [UNKNOWN]", prefix, name, reqstr);
 			}
@@ -355,7 +355,8 @@ bool_t config_validate_settings(void) {
 	if (magma.iface.virus.available && !magma.iface.virus.signatures) {
 		log_critical("magma.iface.virus.signatures is required and must be set when the virus scanner is enabled.");
 		result = false;
-	} else {
+	}
+	else {
 		CONFIG_CHECK_DIR_READABLE(magma.iface.virus.signatures);
 	}
 
@@ -447,7 +448,7 @@ bool_t config_validate_settings(void) {
 			result = false;
 		}
 
-		// The rest has to be executed after the openssl library is loaded.
+		// The rest has to be executed after the OpenSSL library is loaded.
 
 	}
 

@@ -146,7 +146,7 @@ typedef struct {
 		} contact;
 		bool_t statistics; /* Whether or not the statistics page is enabled. */
 		bool_t registration; /* Whether or not the new user registration page is enabled. */
-		stringer_t *ssl_redirect; /* An ssl hostname and/or port for redirecting secure-only web requests. */
+		stringer_t *tls_redirect; /* The TLS hostname and/or port for redirecting web requests which require transport security. */
 	} web;
 
 	struct {

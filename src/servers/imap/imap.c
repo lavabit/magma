@@ -20,7 +20,7 @@
  *
  * @note	RFC 2595 / section 3.1 specifies that STARTTLS is only available in a non-authenticated state.
  *
- * @param	con		the connection on top of which the ssl session will be established.
+ * @param	con		the connection on top of which the TLS session will be established.
  *
  * @return	This function returns no value.
  */
@@ -31,7 +31,7 @@ void imap_starttls(connection_t *con) {
 		return;
 	}
 	else if (con_secure(con) == 1) {
-		con_print(con, "%.*s BAD This session is already using SSL.\r\n", st_length_get(con->imap.tag), st_char_get(con->imap.tag));
+		con_print(con, "%.*s BAD This session is already using TLS.\r\n", st_length_get(con->imap.tag), st_char_get(con->imap.tag));
 		return;
 	}
 	else if (con_secure(con) == -1) {
@@ -42,9 +42,9 @@ void imap_starttls(connection_t *con) {
 	// Tell the user that we are ready to start the negotiation.
 	con_print(con, "%.*s OK Ready to start TLS negotiation.\r\n", st_length_get(con->imap.tag), st_char_get(con->imap.tag));
 
-	if (!(con->network.ssl = ssl_alloc(con->server, con->network.sockd, M_SSL_BIO_NOCLOSE))) {
-		con_print(con, "%.*s NO SSL Connection attempt failed.\r\n", st_length_get(con->imap.tag), st_char_get(con->imap.tag));
-		log_pedantic("The SSL connection attempt failed.");
+	if (!(con->network.tls = ssl_alloc(con->server, con->network.sockd, M_SSL_BIO_NOCLOSE))) {
+		con_print(con, "%.*s NO TLS Connection attempt failed.\r\n", st_length_get(con->imap.tag), st_char_get(con->imap.tag));
+		log_pedantic("The TLS connection attempt failed.");
 		return;
 	}
 
@@ -1795,7 +1795,7 @@ void imap_capability(connection_t *con) {
 		return;
 	}
 
-	// STARTTLS should only appear if the server instance has been configured with an SSL certificate. The connection must also be pre-authentication and unencrypted.
+	// STARTTLS should only appear if the server instance has been configured with an TLS certificate. The connection must also be pre-authentication and unencrypted.
 	con_print(con, "* CAPABILITY IMAP4 IMAP4rev1%sLITERAL+ ID\r\n%.*s OK Completed.\r\n", con_secure(con) == 0 && con->imap.session_state == 0 ?
 		" STARTTLS " : " ",	st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 

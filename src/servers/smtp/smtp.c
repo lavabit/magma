@@ -699,7 +699,7 @@ void smtp_rcpt_to(connection_t *con) {
 
 			con_print(con, "550 MESSAGE BLOCKED - THE MESSAGE IS BEING REJECTED BECAUSE THE ADDRESS [%.*s] IS NOT AUTHORIZED TO SEND "
 				"MESSAGES FROM <%.*s> - PLEASE CORRECT THE ISSUE AND TRY AGAIN\r\n", st_length_int(address), st_char_get(address),
-				st_length_int(result->rcptto), st_char_get(lower_st(result->rcptto)));
+				st_length_int(con->smtp.mailfrom), st_char_get(lower_st(con->smtp.mailfrom)));
 			smtp_free_inbound(result);
 			return;
 		}

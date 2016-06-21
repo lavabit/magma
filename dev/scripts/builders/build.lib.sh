@@ -1146,7 +1146,7 @@ clamav() {
 
 			./configure  \
 				--disable-llvm --with--disable-xml --enable-check --enable-static --disable-silent-rules --disable-libcurl \
-				--with-openssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" --with-libcheck-prefix="$M_SOURCES/checker" \
+				--with-openssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" --with-libcheck-prefix="$M_LOCAL" \
 				--with-libbz2-prefix="$M_SOURCES/bzip2" --prefix="$M_LOCAL" \
 				&>> "$M_LOGS/clamav.txt"; error
 

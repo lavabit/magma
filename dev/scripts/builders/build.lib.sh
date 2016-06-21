@@ -1253,7 +1253,7 @@ checker() {
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 
 			autoreconf --install &>> "$M_LOGS/checker.txt"; error
-			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/checker.txt"; error
+			./configure --disable-subunit --prefix="$M_LOCAL" &>> "$M_LOGS/checker.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make &>> "$M_LOGS/checker.txt"; error

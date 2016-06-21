@@ -21,6 +21,12 @@
  */
 void smtp_starttls(connection_t *con) {
 
+	// If they try to send this command without saying hello.
+	if (!con->smtp.helo) {
+		con_write_bl(con, "503 PLEASE PROVIDE A HELO OR EHLO AND TRY AGAIN\r\n", 70);
+		return;
+	}
+
 	// Check for an existing SSL connection.
 	if (con_secure(con) == 1) {
 		con_write_bl(con, "454 Session is already encrypted.\r\n", 35);
@@ -64,6 +70,12 @@ void smtp_mail_from(connection_t *con) {
 	// If they try to send this command without saying hello.
 	if (!con->smtp.helo && !con->smtp.authenticated) {
 		con_write_bl(con, "503 MAIL FROM REJECTED - PLEASE PROVIDE A HELO OR EHLO AND TRY AGAIN\r\n", 70);
+		return;
+	}
+
+	if(magma.smtp.enforce_tls && con_secure(con) != 1) {
+		con_write_bl(con, "530 MUST ISSUE A STARTTLS COMMAND FIRST\r\n", 62);
+		smtp_requeue(con);
 		return;
 	}
 
@@ -167,6 +179,12 @@ void smtp_noop(connection_t *con) {
  */
 void smtp_disabled(connection_t *con) {
 
+	if(magma.smtp.enforce_tls && con_secure(con) != 1) {
+		con_write_bl(con, "530 MUST ISSUE A STARTTLS COMMAND FIRST\r\n", 62);
+		smtp_requeue(con);
+		return;
+	}
+
 	con->protocol.violations++;
 	usleep(con->server->violations.delay);
 	con_print(con, "502 %.*s DISABLED\r\n", (int)con->command->length, con->command->string);
@@ -252,9 +270,21 @@ void smtp_auth_plain(connection_t *con) {
 	placer_t username = { .opts = PLACER_T | JOINTED | STACK | FOREIGNDATA}, password = { .opts = PLACER_T | JOINTED | STACK | FOREIGNDATA},
 		authorize_id = { .opts = PLACER_T | JOINTED | STACK | FOREIGNDATA };
 
+	// If they try to send this command without saying hello.
+	if (!con->smtp.helo) {
+		con_write_bl(con, "503 MAIL FROM REJECTED - PLEASE PROVIDE A HELO OR EHLO AND TRY AGAIN\r\n", 70);
+		return;
+	}
+
 	// If the user is already authenticated.
 	if (con->smtp.authenticated) {
 		con_write_bl(con, "503 ALREADY AUTHENTICATED\r\n", 27);
+		return;
+	}
+
+	if(magma.smtp.enforce_tls && con_secure(con) != 1) {
+		con_write_bl(con, "530 MUST ISSUE A STARTTLS COMMAND FIRST\r\n", 62);
+		smtp_requeue(con);
 		return;
 	}
 
@@ -361,9 +391,21 @@ void smtp_auth_login(connection_t *con) {
 	smtp_outbound_prefs_t *outbound;
 	stringer_t *username = NULL, *password = NULL, *argument = NULL;
 
+	// If they try to send this command without saying hello.
+	if (!con->smtp.helo) {
+		con_write_bl(con, "503 MAIL FROM REJECTED - PLEASE PROVIDE A HELO OR EHLO AND TRY AGAIN\r\n", 70);
+		return;
+	}
+
 	// If the user is already authenticated.
-	if (con->smtp.authenticated == true) {
+	if (con->smtp.authenticated) {
 		con_write_bl(con, "503 ALREADY AUTHENTICATED\r\n", 27);
+		return;
+	}
+
+	if(magma.smtp.enforce_tls && con_secure(con) != 1) {
+		con_write_bl(con, "530 MUST ISSUE A STARTTLS COMMAND FIRST\r\n", 62);
+		smtp_requeue(con);
 		return;
 	}
 
@@ -465,6 +507,11 @@ void smtp_rcpt_to(connection_t *con) {
 	// If they try to send this command without saying hello.
 	if (!(con->smtp.helo) && con->smtp.authenticated == false) {
 		con_write_bl(con, "503 RCPT TO REJECTED - PLEASE PROVIDE A HELO OR EHLO AND TRY AGAIN\r\n", 68);
+		return;
+	}
+	else if(magma.smtp.enforce_tls && con_secure(con) != 1) {
+		con_write_bl(con, "530 MUST ISSUE A STARTTLS COMMAND FIRST\r\n", 62);
+		smtp_requeue(con);
 		return;
 	}
 	else if (!(con->smtp.mailfrom)) {
@@ -1072,6 +1119,11 @@ void smtp_data(connection_t *con) {
 	// If the remote host tries to send data before sending a MAIL FROM and RCPT TO, return a protocol error.
 	if (con->smtp.helo == NULL && con->smtp.authenticated == false) {
 		con_write_bl(con, "503 DATA REJECTED - PLEASE PROVIDE A HELO OR EHLO AND TRY AGAIN\r\n", 65);
+		smtp_requeue(con);
+		return;
+	}
+	else if(magma.smtp.enforce_tls && con_secure(con) != 1) {
+		con_write_bl(con, "530 MUST ISSUE A STARTTLS COMMAND FIRST\r\n", 62);
 		smtp_requeue(con);
 		return;
 	}

@@ -107,6 +107,7 @@ typedef struct {
 		uint32_t helo_length_limit; /* How big of a HELO/EHLO parameter will the system allow? */
 		uint32_t wrap_line_length; /* When formatting email messages attempt to wrap lines longer than this length. */
 		uint64_t message_length_limit; /* How big of a message will the system allow via SMTP? */
+		bool_t enforce_tls; /* Enforce client use an encrypted connection */
 
 		// Store information about the realtime blacklists used to block messages via SMTP.
 		struct {

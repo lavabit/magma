@@ -802,6 +802,18 @@ magma_keys_t magma_keys[] = {
 		.required = false
 	},
 	{
+		.store = (void *)&(magma.smtp.enforce_tls),
+		.norm.type = M_TYPE_BOOLEAN,
+		.norm.val.binary = false,
+		.name = "magma.smtp.enforce_tls",
+		.description = "Enforce client use an encrypted connection.",
+		.file = true,
+		.database = true,
+		.overwrite = true,
+		.set = false,
+		.required = false
+	},
+	{
 		.store = (void *)&(magma.dkim.enabled),
 		.norm.type = M_TYPE_BOOLEAN,
 		.norm.val.ns = false,

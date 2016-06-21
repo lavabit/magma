@@ -19,10 +19,10 @@ int main(int argc, char **argv) {
 	}
 
 	if ((copypath = strdup(libpath)) && (basepath = basename(libpath))) {
-		printf("%s loaded...\n\n", basepath);
+		printf("%s loaded...\n", basepath);
 	}
 	else {
-		printf("%s loaded...\n\n", libpath);
+		printf("%s loaded...\n", libpath);
 	}
 
 	if (copypath) free(copypath);

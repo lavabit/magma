@@ -1919,7 +1919,7 @@ combine() {
 	#	"$M_OBJECTS"/memcached/*.o "$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o
 	#	"$M_OBJECTS"/utf8proc/*.o &>> "$M_LOGS/combine.txt"; error
 
-	date +"%nFinished creating the shared object at %r on %x%n"
+	date +"Finished creating the shared object at %r on %x"
 }
 
 load() {
@@ -1998,7 +1998,7 @@ load() {
 
 generate() {
 
-	printf "Generating TLS and DKIM keys for the magma sandbox...\n\n"
+	printf "Generating TLS and DKIM keys for the magma sandbox...\n"
 
 		# The DKIM private key and a sample DNS record with the public key.
 	"$M_LOCAL/bin/"openssl genrsa -out "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem" 2048 2>&1 >& /dev/null

@@ -200,17 +200,48 @@ bool_t servers_validate(void) {
 	for (uint32_t i = 0; i < MAGMA_SERVER_INSTANCES; i++) {
 		for (uint64_t j = 0; magma.servers[i] && j < sizeof(server_keys) / sizeof(server_keys_t); j++) {
 
-			// Do some very basic file-system validation on TLS certificates
+			// Do some very basic file-system validation/permission checks on TLS certificate/key files.
 			if (!st_cmp_ci_eq(NULLER(server_keys[j].name), CONSTANT(".tls.certificate"))) {
 				sval = *((char **)(((char *)magma.servers[i]) + server_keys[j].offset));
 
-				if (sval &&  !file_readwritable(sval)) {
+				if (sval && !file_readwritable(sval)) {
 					log_critical("TLS certificate/key file could not be opened for reading. { path = %s / error = %s }", sval,
 						strerror_r(errno, bufptr, buflen));
 					result = false;
 				}
 				else if (sval && file_world_accessible(sval)) {
 					log_critical("Warning: The TLS certificate/key has incorrect file permissions. Please fix. { path = %s }", sval);
+				}
+
+			}
+			else if (!st_cmp_ci_eq(NULLER(server_keys[j].name), CONSTANT(".tls.forced")) && magma.servers[i]->tls.forced) {
+
+				// Check to ensure a TCP-capable protocol is specified, as the MOLTEN/DMTP/HTTP protocols don't use the forced flag.
+				if (!(magma.servers[i]->protocol == SMTP || magma.servers[i]->protocol == POP || magma.servers[i]->protocol == IMAP
+					|| magma.servers[i]->protocol == SUBMISSION)) {
+
+					if (magma.servers[i]->protocol == MOLTEN)
+						log_critical("magma.servers[%u]%s does not apply to %s server instances.", i, server_keys[j].name, "MOLTEN");
+					else if (magma.servers[i]->protocol == HTTP)
+						log_critical("magma.servers[%u]%s does not apply to %s server instances.", i, server_keys[j].name, "HTTP");
+					else if (magma.servers[i]->protocol == DMTP)
+						log_critical("magma.servers[%u]%s does not apply to %s server instances.", i, server_keys[j].name, "DMTP");
+					else if (magma.servers[i]->protocol == GENERIC)
+						log_critical("magma.servers[%u]%s does not apply to %s server instances.", i, server_keys[j].name, "EMPTY");
+					else
+						log_critical("magma.servers[%u]%s does not apply to %s server instances.", i, server_keys[j].name, "UNKNOWN");
+
+					result = false;
+				}
+				// The TLS forced flag only applies to TCP server instances, since TLS server instances are always secure.
+				else if (magma.servers[i]->network.type != TCP_PORT) {
+					log_critical("magma.servers[%u]%s may only be used on TCP server instances.", i, server_keys[j].name);
+					result = false;
+				}
+				// Any server that does force the use of TLS must also have a valid certificate file specified.
+				else if (ns_empty(magma.servers[i]->tls.certificate)) {
+					log_critical("magma.servers[%u]%s may only be used on server instances with a valid TLS certificat/key files.", i, server_keys[j].name);
+					result = false;
 				}
 
 			}
@@ -387,7 +418,16 @@ void servers_output_settings(void) {
 				break;
 
 			case (M_TYPE_BOOLEAN):
-				log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, (*((bool_t *) (((char *)magma.servers[i]) + server_keys[j].offset)) == true ? "true" : "false"));
+				// Only print the .tls.forced value network type is TCP and the protocol is SMTP/POP/IMAP/SUBMISSION.
+				if (!st_cmp_cs_eq(NULLER(server_keys[j].name), CONSTANT(".tls.forced")) && magma.servers[i]->network.type == TCP_PORT &&
+					(magma.servers[i]->protocol == SMTP || magma.servers[i]->protocol == POP || 	magma.servers[i]->protocol == IMAP
+					|| magma.servers[i]->protocol == SUBMISSION)) {
+					log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, (*((bool_t *) (((char *)magma.servers[i]) + server_keys[j].offset)) == true ? "true" : "false"));
+				}
+				// Always print boolean values if the name is _not_ .tls.forced.
+				else if (st_cmp_cs_eq(NULLER(server_keys[j].name), CONSTANT(".tls.forced"))) {
+					log_info("magma.servers[%u]%s = %s", i, server_keys[j].name, (*((bool_t *) (((char *)magma.servers[i]) + server_keys[j].offset)) == true ? "true" : "false"));
+				}
 				break;
 
 			case (M_TYPE_INT8):

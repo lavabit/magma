@@ -64,14 +64,6 @@ server_keys_t server_keys[] = {
 		.required = true
 	},
 	{
-		.offset = offsetof (server_t, tls.certificate),
-		.norm.type = M_TYPE_NULLER,
-		.norm.val.ns = NULL,
-		.name = ".tls.certificate",
-		.description = "The TLS certificate and private key used for transport security by this server instance.",
-		.required = false
-	},
-	{
 		.offset = offsetof (server_t, network.timeout),
 		.norm.type = M_TYPE_UINT32,
 		.norm.val.u32 = 600,
@@ -109,6 +101,22 @@ server_keys_t server_keys[] = {
 		.norm.val.u32 = 100,
 		.name = ".violations.delay",
 		.description = "The number of protocol or authentication errors allowed before terminating a connection.",
+		.required = false
+	},
+	{
+		.offset = offsetof (server_t, tls.forced),
+		.norm.type = M_TYPE_BOOLEAN,
+		.norm.val.binary = false,
+		.name = ".tls.forced",
+		.description = "The server instance requires connections to start TLS before issuing substantive commands.",
+		.required = false
+	},
+	{
+		.offset = offsetof (server_t, tls.certificate),
+		.norm.type = M_TYPE_NULLER,
+		.norm.val.ns = NULL,
+		.name = ".tls.certificate",
+		.description = "The TLS certificate and private key used for transport security by this server instance.",
 		.required = false
 	}
 };

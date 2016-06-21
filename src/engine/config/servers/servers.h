@@ -40,6 +40,7 @@ typedef struct {
 typedef struct {
 	struct {
 		SSL_CTX *context;
+		bool_t forced;
 		chr_t *certificate;
 	} tls;
 	struct {

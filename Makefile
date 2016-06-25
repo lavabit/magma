@@ -181,11 +181,9 @@ endif
 # Alias the target names on Windows to the equivalent without the exe extension.
 ifeq ($(HOSTTYPE),Windows)
 
-.PHONY: $(basename $(MAGMA_PROGRAM(OBJDIR)/src/%.o: src/%.cM))
-$(basename $(MAGMA_PROGRAM)): $(MAGMA_PROGRAM)
-
-.PHONY: $(basename $(CHECK_PROGRAM))
 $(basename $(CHECK_PROGRAM)): $(CHECK_PROGRAM)
+
+$(basename $(MAGMA_PROGRAM)): $(MAGMA_PROGRAM)
 
 endif
 

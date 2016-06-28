@@ -25,8 +25,21 @@ int_t case_timeout = RUN_TEST_CASE_TIMEOUT;
  * @param error	The error string, which should be NULL if the test was skipped, or if the test passed.
  */
 void log_test(chr_t *test, stringer_t *error) {
+
+	const chr_t *color = "";
+
+	if (!status() || (error && !st_cmp_ci_eq(NULLER("SKIPPED"), error))) {
+		color = color_yellow_bold();
+	}
+	else if (st_populated(error)) {
+		color = color_red_bold();
+	}
+	else {
+		color = color_green();
+	}
+
 	log_enable();
-	log_unit("%-64.64s%10.10s\n", test, (!status() ? "SKIPPED" : !error ? "PASSED" : "FAILED"));
+	log_unit("%-64.64s%s%10.10s%s\n", test, color, (!status() ? "SKIPPED" : !error ? "PASSED" : "FAILED"), color_reset());
 	return;
 }
 

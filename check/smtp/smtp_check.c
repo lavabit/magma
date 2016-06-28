@@ -17,6 +17,8 @@ START_TEST (check_smtp_inbound_creation_s) {
 	//auth_t *cred;
 	char *errmsg = NULL;
 
+	log_test("SMTP / INBOUND / CREATION / SINGLE THREADED:", NULLER("FAILED"));
+	return;
 	log_unit("%-64.64s%10.10s\n", "SMTP / INBOUND / CREATION / SINGLE THREADED:", "SKIPPED");
 	return;
 

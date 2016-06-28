@@ -16,22 +16,12 @@ PACKAGE_STRING			= $(PACKAGE_NAME) $(PACKAGE_VERSION)
 PACKAGE_BUGREPORT		= support@lavabit.com
 PACKAGE_URL				= https://lavabit.com
 
-ifeq ($(OS),Windows_NT)
-    HOSTTYPE 			:= "Windows"
-    LIBPREFIX			:= 
-    DYNLIBEXT			:= ".dll"
-    STATLIBEXT			:= ".lib"
-    EXEEXT 				:= ".exe"
-else
-    HOSTTYPE			:= $(shell uname -s)
-    LIBPREFIX			:= "lib"
-    DYNLIBEXT			:= ".so"
-    STATLIBEXT			:= ".a"
-    EXEEXT				:= 
-endif
-
 MAGMA_PROGRAM			= $(addsuffix $(EXEEXT), magmad)
 CHECK_PROGRAM			= $(addsuffix $(EXEEXT), magmad.check)
+
+DIME_PROGRAM			= $(addsuffix $(EXEEXT), dime)
+SIGNET_PROGRAM			= $(addsuffix $(EXEEXT), signet)
+GENREC_PROGRAM			= $(addsuffix $(EXEEXT), genrec)
 
 MAGMA_REPO				= $(shell which git &> /dev/null && git log &> /dev/null && echo 1) 
 ifneq ($(strip $(MAGMA_REPO)),1)
@@ -47,44 +37,55 @@ MAGMA_TIMESTAMP			= $(shell date +'%Y%m%d.%H%M')
 BUILD_SRCFILES			= src/engine/status/build.c
 
 MAGMA_SRCDIRS			= $(shell find src -type d -print)
-MAGMA_SRCFILES			= $(filter-out src/engine/status/build.c, $(foreach dir,$(MAGMA_SRCDIRS), $(wildcard $(dir)/*.c)))
+MAGMA_SRCFILES			= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(MAGMA_SRCDIRS), $(wildcard $(dir)/*.c)))
 
 CHECK_SRCDIRS			= $(shell find check -type d -print)
-CHECK_SRCFILES			= $(foreach dir,$(CHECK_SRCDIRS), $(wildcard $(dir)/*.c))
+CHECK_SRCFILES			= $(foreach dir, $(CHECK_SRCDIRS), $(wildcard $(dir)/*.c))
 
+DIME_SRCDIRS			= $(shell find src/providers/dime tools/dime -type d -print)
+DIME_SRCFILES			= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(DIME_SRCDIRS), $(wildcard $(dir)/*.c)))
+
+SIGNET_SRCDIRS			= $(shell find src/providers/dime tools/signet -type d -print)
+SIGNET_SRCFILES			= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(SIGNET_SRCDIRS), $(wildcard $(dir)/*.c)))
+
+GENREC_SRCDIRS			= $(shell find src/providers/dime tools/genrec -type d -print)
+GENREC_SRCFILES			= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(GENREC_SRCDIRS), $(wildcard $(dir)/*.c)))
+
+FILTERED_SRCFILES		= src/providers/dime/ed25519/test.c src/providers/dime/ed25519/test-internals.c \
+ src/providers/dime/ed25519/fuzz/curve25519-ref10.c src/providers/dime/ed25519/fuzz/ed25519-donna-sse2.c \
+ src/providers/dime/ed25519/fuzz/fuzz-curve25519.c src/providers/dime/ed25519/fuzz/ed25519-donna.c \
+ src/providers/dime/ed25519/fuzz/ed25519-ref10.c src/providers/dime/ed25519/fuzz/fuzz-ed25519.c
+ 
 # Bundled Dependency Include Paths
 INCDIR					= $(TOPDIR)/lib/sources
 MAGMA_INCDIRS			= spf2/src/include clamav/libclamav mysql/include openssl/include lzo/include xml2/include \
 		zlib bzip2 tokyocabinet memcached dkim/libopendkim dspam/src jansson/src gd png jpeg freetype/include \
 		utf8proc
-CHECK_INCDIRS			= checker/src
+
+CHECK_INCDIRS			= 
+
+MAGMA_CINCLUDES			= -Isrc -Isrc/providers $(addprefix -I,$(MAGMA_INCLUDE_ABSPATHS))
+CHECK_CINCLUDES			= -Icheck $(MAGMA_CINCLUDES) -I$(TOPDIR)/lib/local/include $(addprefix -I,$(CHECK_INCLUDE_ABSPATHS))
+
+CDEFINES				= -D_REENTRANT -D_GNU_SOURCE -D_LARGEFILE64_SOURCE -DHAVE_NS_TYPE -DFORTIFY_SOURCE=2 -DMAGMA_PEDANTIC 
+CDEFINES.build.c 		= -DMAGMA_VERSION=\"$(MAGMA_VERSION)\" -DMAGMA_COMMIT=\"$(MAGMA_COMMIT)\" -DMAGMA_TIMESTAMP=\"$(MAGMA_TIMESTAMP)\"
+CDEFINES				+= -DDIME_BUILD=\"$(MAGMA_VERSION)\" -DDIME_STAMP=\"$(MAGMA_TIMESTAMP)\"
+
+MAGMA_DYNAMIC			= -lrt -ldl -lpthread -lresolv
+CHECK_DYNAMIC			= $(MAGMA_DYNAMIC) -lm
+
+MAGMA_STATIC			= $(TOPDIR)/lib/local/lib/libz.a $(TOPDIR)/lib/local/lib/libcrypto.a $(TOPDIR)/lib/local/lib/libssl.a
+CHECK_STATIC			= $(MAGMA_STATIC) $(TOPDIR)/lib/local/lib/libcheck.a
 
 # Compiler Parameters
 CC						= gcc
-
 CFLAGS					= -std=gnu99 -O0 -fPIC -fmessage-length=0 -ggdb3 -rdynamic -c $(CFLAGS_WARNINGS) -MMD 
 CFLAGS_WARNINGS			= -Wall -Werror -Winline -Wformat-security -Warray-bounds
 CFLAGS_PEDANTIC			= -Wextra -Wpacked -Wunreachable-code -Wformat=2
 
-MAGMA_CINCLUDES			= -Isrc $(addprefix -I,$(MAGMA_INCLUDE_ABSPATHS))
-CHECK_CINCLUDES			= -Icheck -Isrc -I$(TOPDIR)/lib/local/include $(addprefix -I,$(MAGMA_INCLUDE_ABSPATHS)) 
-# $(addprefix -I,$(CHECK_INCLUDE_ABSPATHS))
-
-CDEFINES				= -D_REENTRANT -D_GNU_SOURCE -D_LARGEFILE64_SOURCE -DHAVE_NS_TYPE -DFORTIFY_SOURCE=2 -DMAGMA_PEDANTIC 
-CDEFINES.build.c 		= \
-		-DMAGMA_VERSION=\"$(MAGMA_VERSION)\" \
-		-DMAGMA_COMMIT=\"$(MAGMA_COMMIT)\" \
-		-DMAGMA_TIMESTAMP=\"$(MAGMA_TIMESTAMP)\"
-
 # Linker Parameters
 LD						= gcc
 LDFLAGS					= -rdynamic
-
-MAGMA_DYNAMIC			= -lrt -ldl -lpthread
-CHECK_DYNAMIC			= $(MAGMA_DYNAMIC) -lm
-
-MAGMA_STATIC			= 
-CHECK_STATIC			= $(TOPDIR)/lib/local/lib/libcheck.a
 
 # Archiver Parameters
 AR						= ar
@@ -92,20 +93,19 @@ ARFLAGS					= rcs
 
 # Hidden Directory for Dependency Files
 DEPDIR					= .deps
-BUILD_DEPFILES			= $(patsubst %.c,$(OBJDIR)/%.d,$(BUILD_SRCFILES))
+DIME_DEPFILES			= $(patsubst %.c,$(DEPDIR)/%.d,$(DIME_SRCFILES))
 MAGMA_DEPFILES			= $(patsubst %.c,$(DEPDIR)/%.d,$(MAGMA_SRCFILES))
 CHECK_DEPFILES			= $(patsubst %.c,$(DEPDIR)/%.d,$(CHECK_SRCFILES))
+SIGNET_DEPFILES			= $(patsubst %.c,$(DEPDIR)/%.d,$(SIGNET_SRCFILES))
+GENREC_DEPFILES			= $(patsubst %.c,$(DEPDIR)/%.d,$(GENREC_SRCFILES))
 
 # Hidden Directory for Object Files
 OBJDIR					= .objs
-BUILD_OBJFILES			= $(patsubst %.c,$(OBJDIR)/%.o,$(BUILD_SRCFILES))
+DIME_OBJFILES			= $(patsubst %.c,$(OBJDIR)/%.o,$(DIME_SRCFILES))
 MAGMA_OBJFILES			= $(patsubst %.c,$(OBJDIR)/%.o,$(MAGMA_SRCFILES))
 CHECK_OBJFILES			= $(patsubst %.c,$(OBJDIR)/%.o,$(CHECK_SRCFILES))
-
-# Modified Object Files
-#MODIFIED_SRCFILES		= $(shell git ls-files --modified --others src)
-#MODIFIED_SRCFILES		= $(shell find src -mmin -1)
-#MODIFIED_OBJFILES		= $(patsubst %.c,$(OBJDIR)/%.o,$(MODIFIED_SRCFILES))
+SIGNET_OBJFILES			= $(patsubst %.c,$(OBJDIR)/%.o,$(SIGNET_SRCFILES))
+GENREC_OBJFILES			= $(patsubst %.c,$(OBJDIR)/%.o,$(GENREC_SRCFILES))
 
 # Resolve the External Include Directory Paths
 INCLUDE_DIR_VPATH		= $(INCDIR) /usr/include /usr/local/include
@@ -147,13 +147,27 @@ else
 TARGETGOAL				= $(.DEFAULT_GOAL)
 endif
 
-# Special Make Directives
-.NOTPARALLEL: warning conifg
+ifeq ($(OS),Windows_NT)
+    HOSTTYPE 			:= "Windows"
+    LIBPREFIX			:= 
+    DYNLIBEXT			:= ".dll"
+    STATLIBEXT			:= ".lib"
+    EXEEXT 				:= ".exe"
+    
+    # Alias the target names on Windows to the equivalent without the exe extension.
+    $(basename $(MAGMA_PROGRAM)) := $(MAGMA_PROGRAM)
+	$(basename $(CHECK_PROGRAM)) := $(CHECK_PROGRAM)
+else
+    HOSTTYPE			:= $(shell uname -s)
+    LIBPREFIX			:= "lib"
+    DYNLIBEXT			:= ".so"
+    STATLIBEXT			:= ".a"
+    EXEEXT				:= 
+endif
 
-.PHONY: warning config finished all check incremental
-all: config warning $(MAGMA_PROGRAM) $(CHECK_PROGRAM) finished
+all: config warning $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(CHECK_PROGRAM)
 
-check: config warning $(CHECK_PROGRAM)
+check: config warning $(CHECK_PROGRAM) finished
 
 warning:
 ifeq ($(VERBOSE),no)
@@ -177,46 +191,63 @@ finished:
 ifeq ($(VERBOSE),no)
 	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
 endif
-	
-# Alias the target names on Windows to the equivalent without the exe extension.
-ifeq ($(HOSTTYPE),Windows)
-
-$(basename $(CHECK_PROGRAM)): $(CHECK_PROGRAM)
-
-$(basename $(MAGMA_PROGRAM)): $(MAGMA_PROGRAM)
-
-endif
 
 # Delete the compiled program along with the generated object and dependency files
 clean:
-	@$(RM) $(MAGMA_PROGRAM) $(CHECK_PROGRAM) $(MAGMA_OBJFILES) $(CHECK_OBJFILES) $(MAGMA_DEPFILES) $(CHECK_DEPFILES)
-	@for d in $(sort $(dir $(MAGMA_OBJFILES)) $(dir $(CHECK_OBJFILES))); do if test -d "$$d"; then $(RMDIR) "$$d"; fi; done
-	@for d in $(sort $(dir $(MAGMA_DEPFILES)) $(dir $(CHECK_DEPFILES))); do if test -d "$$d"; then $(RMDIR) "$$d"; fi; done
+	@$(RM) $(MAGMA_PROGRAM) $(CHECK_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM)
+	@$(RM) $(MAGMA_OBJFILES) $(CHECK_OBJFILES) $(DIME_OBJFILES) $(SIGNET_OBJFILES) $(GENREC_OBJFILES)  
+	@$(RM) $(MAGMA_DEPFILES) $(CHECK_DEPFILES) $(DIME_DEPFILES) $(SIGNET_DEPFILES) $(GENREC_DEPFILES)
+	@for d in $(sort $(dir $(MAGMA_OBJFILES)) $(dir $(CHECK_OBJFILES)) $(dir $(DIME_OBJFILES)) $(dir $(SIGNET_OBJFILES)) $(dir $(GENREC_OBJFILES))); \
+		do if test -d "$$d"; then $(RMDIR) "$$d"; fi; done
+	@for d in $(sort $(dir $(MAGMA_DEPFILES)) $(dir $(CHECK_DEPFILES)) $(dir $(DIME_DEPFILES)) $(dir $(SIGNET_DEPFILES)) $(dir $(GENREC_DEPFILES))); \
+		do if test -d "$$d"; then $(RMDIR) "$$d"; fi; done
 	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
 
-incremental: $(MODIFIED_OBJFILES)
-
-# The Build Information
-$(BUILD_OBJFILES): $(BUILD_SRCFILES) $(MAGMA_SRCFILES) $(CHECK_SRCFILES)
-
 # Construct the magma daemon executable file
-$(MAGMA_PROGRAM): $(MAGMA_OBJFILES) $(BUILD_OBJFILES)
+$(MAGMA_PROGRAM): $(MAGMA_OBJFILES)
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 else
 	@echo 
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_OBJFILES) $(BUILD_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) -Wl,--end-group
+	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) -Wl,--end-group
 
 # Construct the magma unit test executable
-$(CHECK_PROGRAM): $(CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) $(BUILD_OBJFILES)
+$(CHECK_PROGRAM): $(CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES))
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) $(BUILD_OBJFILES) -Wl,--start-group,--whole-archive $(CHECK_STATIC) -Wl,--no-whole-archive,--end-group  $(CHECK_DYNAMIC) 
+	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) -Wl,--start-group,--whole-archive $(CHECK_STATIC) -Wl,--no-whole-archive,--end-group  $(CHECK_DYNAMIC) 
+
+# Construct the dime command line utility
+$(DIME_PROGRAM): $(DIME_OBJFILES) 
+ifeq ($(VERBOSE),no)
+	@echo 'Constructing' $(RED)$@$(NORMAL)
+else
+	@echo 
+endif
+	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(DIME_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) -Wl,--end-group
+
+# Construct the signet command line utility
+$(SIGNET_PROGRAM): $(SIGNET_OBJFILES) 
+ifeq ($(VERBOSE),no)
+	@echo 'Constructing' $(RED)$@$(NORMAL)
+else
+	@echo 
+endif
+	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(SIGNET_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) -Wl,--end-group
+
+# Construct the dime command line utility
+$(GENREC_PROGRAM): $(GENREC_OBJFILES) 
+ifeq ($(VERBOSE),no)
+	@echo 'Constructing' $(RED)$@$(NORMAL)
+else
+	@echo 
+endif
+	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(GENREC_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) -Wl,--end-group
 
 # The Magma Daemon Object files
-$(OBJDIR)/src/%.o: src/%.c
+$(OBJDIR)/%.o: %.c
 ifeq ($(VERBOSE),no)
 	@echo 'Building' $(YELLOW)$<$(NORMAL)
 endif
@@ -235,5 +266,10 @@ endif
 
 # If we've already generated dependency files, use them to see if a rebuild is required
 -include $(MAGMA_DEPFILES) $(CHECK_DEPFILES) $(BUILD_DEPFILES)
+
+# Special Make Directives
+.NOTPARALLEL: warning conifg
+
+.PHONY: warning config finished all check incremental
 
 # vim:set softtabstop=4 shiftwidth=4 tabstop=4:

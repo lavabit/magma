@@ -23,9 +23,12 @@ lib/objects/
 lib/sources/
 
 # Compiled Binaries
-magmad
-magmad.so
-magmad.check
+/magmad
+/magmad.so
+/magmad.check
+/dime
+/signet
+/genrec
 lib/check/magma.open.check
 
 # Tool Compiler Artifacts and Binaries

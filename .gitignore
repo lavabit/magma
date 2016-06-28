@@ -29,6 +29,7 @@ lib/sources/
 /dime
 /signet
 /genrec
+/dime.check
 lib/check/magma.open.check
 
 # Tool Compiler Artifacts and Binaries

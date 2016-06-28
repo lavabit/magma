@@ -1353,6 +1353,148 @@ openssl() {
 
 }
 
+googtap() {
+
+	if [[ $1 == "googtap-extract" ]]; then
+		rm -f "$M_LOGS/googtap.txt"; error
+	elif [[ $1 != "googtap-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/googtap.txt"
+	fi
+
+	case "$1" in
+		googtap-extract)
+			extract $GOOGTAP "googtap" &>> "$M_LOGS/googtap.txt"
+		;;
+		googtap-prep)
+			cd "$M_SOURCES/googtap"; error
+		;;
+		googtap-build)
+			cd "$M_SOURCES/googtap"; error
+		;;
+		googtap-check)
+			cd "$M_SOURCES/googtap"; error
+		;;
+		googtap-check-full)
+			cd "$M_SOURCES/googtap"; error
+		;;
+		googtap-clean)
+			cd "$M_SOURCES/googtap"; error
+		;;
+		googtap-tail)
+			tail --lines=30 --follow=name --retry "$M_LOGS/googtap.txt"; error
+		;;
+		googtap-log)
+			cat "$M_LOGS/googtap.txt"; error
+		;;
+		googtap)
+			googtap "googtap-extract"
+			googtap "googtap-prep"
+			googtap "googtap-build"
+			googtap "googtap-check"
+		;;
+		*)
+			printf "\nUnrecognized request.\n"
+			exit 2
+		;;
+	esac
+
+	date +"Finished $1 at %r on %x"
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/googtap.txt"
+
+	return $?
+}
+
+googtest() {
+
+	if [[ $1 == "googtest-extract" ]]; then
+		rm -f "$M_LOGS/googtest.txt"; error
+	elif [[ $1 != "googtest-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/googtest.txt"
+	fi
+
+	case "$1" in
+		googtest-extract)
+			extract $GOOGTEST "googtest" &>> "$M_LOGS/googtest.txt"
+		;;
+		googtest-prep)
+			cd "$M_SOURCES/googtest"; error
+		;;
+		googtest-build)
+			cd "$M_SOURCES/googtest"; error
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			
+			autoreconf --install &>> "$M_LOGS/googtest.txt"; error
+			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/googtest.txt"; error
+			unset CFLAGS; unset CXXFLAGS
+			
+			make &>> "$M_LOGS/googtest.txt"; error
+		;;
+		googtest-check)
+			cd "$M_SOURCES/googtest"; error
+			make check &>> "$M_LOGS/googtest.txt"; error
+			
+			mkdir build && cd build; error
+			cmake -Dgtest_build_samples=ON "$M_SOURCES/googtest" &>> "$M_LOGS/googtest.txt"; error
+			make &>> "$M_LOGS/googtest.txt"; error
+			./sample1_unittest &>> "$M_LOGS/googtest.txt"; error
+			./sample2_unittest &>> "$M_LOGS/googtest.txt"; error
+			./sample3_unittest &>> "$M_LOGS/googtest.txt"; error
+			./sample4_unittest &>> "$M_LOGS/googtest.txt"; error
+			./sample5_unittest &>> "$M_LOGS/googtest.txt"; error
+			./sample6_unittest &>> "$M_LOGS/googtest.txt"; error
+			./sample7_unittest &>> "$M_LOGS/googtest.txt"; error
+			./sample8_unittest &>> "$M_LOGS/googtest.txt"; error
+			./sample9_unittest &>> "$M_LOGS/googtest.txt"; error
+			./sample10_unittest &>> "$M_LOGS/googtest.txt"; error
+		;;
+		googtest-check-full)
+			cd "$M_SOURCES/googtest"; error
+			make check &>> "$M_LOGS/googtest.txt"; error
+			
+			mkdir build && cd build; error
+			cmake -Dgtest_build_samples=ON "$M_SOURCES/googtest" &>> "$M_LOGS/googtest.txt"; error
+			make &>> "$M_LOGS/googtest.txt"; error
+			./sample1_unittest &>> "$M_LOGS/googtest.txt"; error
+			./sample2_unittest &>> "$M_LOGS/googtest.txt"; error
+			./sample3_unittest &>> "$M_LOGS/googtest.txt"; error
+			./sample4_unittest &>> "$M_LOGS/googtest.txt"; error
+			./sample5_unittest &>> "$M_LOGS/googtest.txt"; error
+			./sample6_unittest &>> "$M_LOGS/googtest.txt"; error
+			./sample7_unittest &>> "$M_LOGS/googtest.txt"; error
+			./sample8_unittest &>> "$M_LOGS/googtest.txt"; error
+			./sample9_unittest &>> "$M_LOGS/googtest.txt"; error
+			./sample10_unittest &>> "$M_LOGS/googtest.txt"; error
+		;;
+		googtest-clean)
+			cd "$M_SOURCES/googtest"; error
+			make clean &>> "$M_LOGS/googtest.txt"; error
+		;;
+		googtest-tail)
+			tail --lines=30 --follow=name --retry "$M_LOGS/googtest.txt"; error
+		;;
+		googtest-log)
+			cat "$M_LOGS/googtest.txt"; error
+		;;
+		googtest)
+			googtest "googtest-extract"
+			googtest "googtest-prep"
+			googtest "googtest-build"
+			googtest "googtest-check"
+		;;
+		*)
+			printf "\nUnrecognized request.\n"
+			exit 2
+		;;
+	esac
+
+	date +"Finished $1 at %r on %x"
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/googtest.txt"
+
+	return $?
+
+}
+
 jansson() {
 
 	if [[ $1 == "jansson-extract" ]]; then
@@ -2054,6 +2196,10 @@ combo() {
 		wait $GD_PID; error
 		($M_BUILD "clamav-$1") & CLAMAV_PID=$!
 		wait $CLAMAV_PID; error
+		($M_BUILD "googtest-$1") & GOOGTEST_PID=$!
+		wait $GOOGTEST_PID; error
+		($M_BUILD "googtap-$1") & GOOGTAP_PID=$!
+		wait $GOOGTAP_PID; error
 
 	else
 
@@ -2076,6 +2222,8 @@ combo() {
 		($M_BUILD "geoip-$1") & GEOIP_PID=$!
 		($M_BUILD "checker-$1") & CHECKER_PID=$!
 		($M_BUILD "openssl-$1") & OPENSSL_PID=$!
+		($M_BUILD "googtest-$1") & GOOGTEST_PID=$!
+		($M_BUILD "googtap-$1") & GOOGTAP_PID=$!
 		($M_BUILD "jansson-$1") & JANSSON_PID=$!
 		($M_BUILD "freetype-$1") & FREETYPE_PID=$!
 		($M_BUILD "utf8proc-$1") & UTF8PROC_PID=$!
@@ -2097,6 +2245,8 @@ combo() {
 		wait $GEOIP_PID; error
 		wait $CHECKER_PID; error
 		wait $OPENSSL_PID; error
+		wait $GOOGTEST_PID; error
+		wait $GOOGTAP_PID; error
 		wait $JANSSON_PID; error
 		wait $UTF8PROC_PID; error
 		wait $FREETYPE_PID; error
@@ -2201,27 +2351,29 @@ elif [[ $1 == "check-full" ]]; then combo "$1"
 elif [[ $1 == "clean" ]]; then combo "$1"
 
 # Libraries
-elif [[ $1 =~ "gd" ]]; then (gd "$1") & GD_PID=$!; wait $GD_PID
-elif [[ $1 =~ "png" ]]; then (png "$1") & PNG_PID=$!; wait $PNG_PID
-elif [[ $1 =~ "lzo" ]]; then (lzo "$1") & LZO_PID=$!; wait $LZO_PID
-elif [[ $1 =~ "jpeg" ]]; then (jpeg "$1") & JPEG_PID=$!; wait $JPEG_PID
-elif [[ $1 =~ "curl" ]]; then (curl "$1") & CURL_PID=$!; wait $CURL_PID
-elif [[ $1 =~ "spf2" ]]; then (spf2 "$1") & SPF2_PID=$!; wait $SPF2_PID
-elif [[ $1 =~ "xml2" ]]; then (xml2 "$1") & XML2_PID=$!; wait $XML2_PID
-elif [[ $1 =~ "dkim" ]]; then (dkim "$1") & DKIM_PID=$!; wait $DKIM_PID
-elif [[ $1 =~ "zlib" ]]; then (zlib "$1") & ZLIB_PID=$!; wait $ZLIB_PID
-elif [[ $1 =~ "bzip2" ]]; then (bzip2 "$1") & BZIP2_PID=$!; wait $BZIP2_PID
-elif [[ $1 =~ "dspam" ]]; then (dspam "$1") & DSPAM_PID=$!; wait $DSPAM_PID
-elif [[ $1 =~ "mysql" ]]; then (mysql "$1") & MYSQL_PID=$!; wait $MYSQL_PID
-elif [[ $1 =~ "geoip" ]]; then (geoip "$1") & GEOIP_PID=$!; wait $GEOIP_PID
-elif [[ $1 =~ "clamav" ]]; then (clamav "$1") & CLAMAV_PID=$!; wait $CLAMAV_PID
-elif [[ $1 =~ "checker" ]]; then (checker "$1") & CHECKER_PID=$!; wait $CHECKER_PID
-elif [[ $1 =~ "openssl" ]]; then (openssl "$1") & OPENSSL_PID=$!; wait $OPENSSL_PID
-elif [[ $1 =~ "jansson" ]]; then (jansson "$1") & JANSSON_PID=$!; wait $JANSSON_PID
-elif [[ $1 =~ "freetype" ]]; then (freetype "$1") & FREETYPE_PID=$!; wait $FREETYPE_PID
-elif [[ $1 =~ "utf8proc" ]]; then (utf8proc "$1") & UTF8PROC_PID=$!; wait $UTF8PROC_PID
-elif [[ $1 =~ "memcached" ]]; then (memcached "$1") & MEMCACHED_PID=$!; wait $MEMCACHED_PID
-elif [[ $1 =~ "tokyocabinet" ]]; then (tokyocabinet "$1") & TOKYOCABINET_PID=$!; wait $TOKYOCABINET_PID
+elif [[ $1 =~ "gd" ]]; then gd "$1"
+elif [[ $1 =~ "png" ]]; then png "$1"
+elif [[ $1 =~ "lzo" ]]; then lzo "$1"
+elif [[ $1 =~ "jpeg" ]]; then jpeg "$1"
+elif [[ $1 =~ "curl" ]]; then curl "$1"
+elif [[ $1 =~ "spf2" ]]; then spf2 "$1"
+elif [[ $1 =~ "xml2" ]]; then xml2 "$1"
+elif [[ $1 =~ "dkim" ]]; then dkim "$1"
+elif [[ $1 =~ "zlib" ]]; then zlib "$1"
+elif [[ $1 =~ "bzip2" ]]; then bzip2 "$1"
+elif [[ $1 =~ "dspam" ]]; then dspam "$1"
+elif [[ $1 =~ "mysql" ]]; then mysql "$1"
+elif [[ $1 =~ "geoip" ]]; then geoip "$1"
+elif [[ $1 =~ "clamav" ]]; then clamav "$1"
+elif [[ $1 =~ "checker" ]]; then checker "$1"
+elif [[ $1 =~ "openssl" ]]; then openssl "$1"
+elif [[ $1 =~ "googtap" ]]; then googtap "$1"
+elif [[ $1 =~ "googtest" ]]; then googtest "$1"	
+elif [[ $1 =~ "jansson" ]]; then jansson "$1"
+elif [[ $1 =~ "freetype" ]]; then freetype "$1"
+elif [[ $1 =~ "utf8proc" ]]; then utf8proc "$1"
+elif [[ $1 =~ "memcached" ]]; then memcached "$1"
+elif [[ $1 =~ "tokyocabinet" ]]; then tokyocabinet "$1"
 
 # Globals
 elif [[ $1 == "generate" ]]; then generate

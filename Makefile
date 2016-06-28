@@ -65,7 +65,7 @@ MAGMA_INCDIRS			= spf2/src/include clamav/libclamav mysql/include openssl/includ
 CHECK_INCDIRS			= 
 
 MAGMA_CINCLUDES			= -Isrc -Isrc/providers $(addprefix -I,$(MAGMA_INCLUDE_ABSPATHS))
-CHECK_CINCLUDES			= -Icheck $(MAGMA_CINCLUDES) -I$(TOPDIR)/lib/local/include $(addprefix -I,$(CHECK_INCLUDE_ABSPATHS))
+CHECK_CINCLUDES			= -Icheck -Ilib/local/include/ $(MAGMA_CINCLUDES) $(addprefix -I,$(CHECK_INCLUDE_ABSPATHS))
 
 CDEFINES				= -D_REENTRANT -D_GNU_SOURCE -D_LARGEFILE64_SOURCE -DHAVE_NS_TYPE -DFORTIFY_SOURCE=2 -DMAGMA_PEDANTIC 
 CDEFINES.build.c 		= -DMAGMA_VERSION=\"$(MAGMA_VERSION)\" -DMAGMA_COMMIT=\"$(MAGMA_COMMIT)\" -DMAGMA_TIMESTAMP=\"$(MAGMA_TIMESTAMP)\"
@@ -246,15 +246,6 @@ else
 endif
 	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(GENREC_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) -Wl,--end-group
 
-# The Magma Daemon Object files
-$(OBJDIR)/%.o: %.c
-ifeq ($(VERBOSE),no)
-	@echo 'Building' $(YELLOW)$<$(NORMAL)
-endif
-	@test -d $(DEPDIR)/$(dir $<) || $(MKDIR) $(DEPDIR)/$(dir $<)
-	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
-	$(RUN)$(CC) $(CFLAGS) $(CFLAGS.$(<F)) $(CDEFINES) $(CDEFINES.$(<F)) $(MAGMA_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" -o"$@" "$<"
-
 # The Magma Unit Test Object files
 $(OBJDIR)/check/%.o: check/%.c
 ifeq ($(VERBOSE),no)
@@ -263,6 +254,15 @@ endif
 	@test -d $(DEPDIR)/$(dir $<) || $(MKDIR) $(DEPDIR)/$(dir $<)
 	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
 	$(RUN)$(CC) $(CFLAGS) $(CFLAGS.$(<F)) $(CDEFINES) $(CDEFINES.$(<F)) $(CHECK_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" -o"$@" "$<"
+
+# The Magma Daemon Object files
+$(OBJDIR)/%.o: %.c
+ifeq ($(VERBOSE),no)
+	@echo 'Building' $(YELLOW)$<$(NORMAL)
+endif
+	@test -d $(DEPDIR)/$(dir $<) || $(MKDIR) $(DEPDIR)/$(dir $<)
+	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
+	$(RUN)$(CC) $(CFLAGS) $(CFLAGS.$(<F)) $(CDEFINES) $(CDEFINES.$(<F)) $(MAGMA_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" -o"$@" "$<"
 
 # If we've already generated dependency files, use them to see if a rebuild is required
 -include $(MAGMA_DEPFILES) $(CHECK_DEPFILES) $(BUILD_DEPFILES)

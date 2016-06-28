@@ -2,7 +2,7 @@
 
 GD="gd-2.0.35"
 LZO="lzo-2.09"
-PNG="libpng-1.6.22"
+PNG="libpng-1.6.23"
 CURL="curl-7.23.1"
 SPF2="libspf2-1.2.10"
 XML2="libxml2-2.9.1"

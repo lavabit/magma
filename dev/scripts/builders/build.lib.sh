@@ -15,11 +15,11 @@
 
 LINK=`readlink -f $0`
 BASE=`dirname $LINK`
+M_BUILD=`readlink -f $0`
 
 cd $BASE/../../../lib/
 
 M_ROOT=`pwd`
-M_BUILD=`readlink -f $0`
 
 # Set parent directory as project root by default (used to find scripts,
 # bundled tarballs, patches, etc.)
@@ -29,11 +29,6 @@ fi
 
 # Read in the build parameters.
 . "$M_PROJECT_ROOT/dev/scripts/builders/build.lib.params.sh"
-
-mkdir -p "$M_LOGS"
-mkdir -p "$M_LOCAL"
-mkdir -p "$M_SOURCES"
-mkdir -p "$M_OBJECTS"
 
 error() {
 	if [ $? -ne 0 ]; then
@@ -680,33 +675,15 @@ zlib() {
 			extract $ZLIB "zlib" &>> "$M_LOGS/zlib.txt"
 		;;
 		zlib-prep)
-			# Apply RHEL zlib prep steps.
 			cd "$M_SOURCES/zlib"; error
-			if [[ $ZLIB == "1.2.3" ]]; then
-				chmod -Rf a+rX,u+w,g-w,o-w . &>> "$M_LOGS/zlib.txt"; error
-				cat "$M_PATCHES/zlib/"zlib-1.2.3-autotools.patch | patch -p1 -b --suffix .atools --fuzz=0 &>> "$M_LOGS/zlib.txt"; error
-				mkdir m4 &>> "$M_LOGS/zlib.txt"; error
-				cat "$M_PATCHES/zlib/"minizip-1.2.3-malloc.patch | patch -p1 -b --suffix .mal --fuzz=0 &>> "$M_LOGS/zlib.txt"; error
-				iconv -f windows-1252 -t utf-8 <ChangeLog >ChangeLog.tmp &>> "$M_LOGS/zlib.txt"; error
-				mv ChangeLog.tmp ChangeLog &>> "$M_LOGS/zlib.txt"; error
-				cp Makefile Makefile.old &>> "$M_LOGS/zlib.txt"; error
-			fi
 		;;
 		zlib-build)
 			cd "$M_SOURCES/zlib"; error
-			if [[ $ZLIB == "1.2.3" ]]; then
-				export CFLAGS="-O2 -g3 -rdynamic -fPIC -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic"; error
-				export CXXFLAGS="-O2 -g3 -rdynamic -fPIC -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic"; error
-				export FFLAGS="-O2 -g3 -rdynamic -fPIC -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -I/usr/lib64/gfortran/modules"; error
-				autoreconf --install &>> "$M_LOGS/zlib.txt"; error
-				./configure --build=x86_64-unknown-linux-gnu --host=x86_64-unknown-linux-gnu --target=x86_64-redhat-linux-gnu \
-				--prefix="$M_LOCAL" &>> "$M_LOGS/zlib.txt"; error
-			else
-				export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-				export FFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-				export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-				./configure --prefix="$M_LOCAL" --64 &>> "$M_LOGS/zlib.txt"; error
-			fi
+		
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export FFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			./configure --prefix="$M_LOCAL" --64 &>> "$M_LOGS/zlib.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset FFLAGS
 
 			make &>> "$M_LOGS/zlib.txt"; error
@@ -1311,11 +1288,7 @@ openssl() {
 			extract $OPENSSL "openssl" &>> "$M_LOGS/openssl.txt"
 		;;
 		openssl-prep)
-			# OpenSSL 1.0.0b has a known bug
-			# http://www.mail-archive.com/openssl-dev@openssl.org/msg28468.html
-			# http://cvs.openssl.org/chngview?cn=19998
 			cd "$M_SOURCES/openssl"; error
-			if [[ $OPENSSL == "openssl-1.0.0b" ]]; then	cat "$M_PATCHES/openssl/1.0.0b_SSL_server_fix.patch" | patch -p1 --batch &>> "$M_LOGS/openssl.txt"; error; fi
 		;;
 		openssl-build)
 			# OpenSSL does not use environment variables to pickup additional compiler flags
@@ -2001,7 +1974,7 @@ generate() {
 
 	printf "Generating TLS and DKIM keys for the magma sandbox...\n"
 
-		# The DKIM private key and a sample DNS record with the public key.
+	# The DKIM private key and a sample DNS record with the public key.
 	"$M_LOCAL/bin/"openssl genrsa -out "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem" 2048 2>&1 >& /dev/null
 	"$M_LOCAL/bin/"openssl rsa -in "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem" -pubout -outform PEM  >& /dev/null | \
 	sed -r "s/-----BEGIN PUBLIC KEY-----$//" | sed -r "s/-----END PUBLIC KEY-----//" | tr -d [:space:] | \
@@ -2015,6 +1988,10 @@ generate() {
 
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"; error
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem"; error
+	
+	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"
+	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
+	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
 }
 
 keys() {
@@ -2023,6 +2000,10 @@ keys() {
 
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"; error
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem"; error
+	
+	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"
+	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
+	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
 }
 
 combo() {
@@ -2031,75 +2012,75 @@ combo() {
 
 	if [[ $1 != "check" ]] && [[ $1 != "check-full" ]]; then
 
-		($0 "zlib-$1") & ZLIB_PID=$!
+		($M_BUILD "zlib-$1") & ZLIB_PID=$!
 		wait $ZLIB_PID; error
-		($0 "openssl-$1") & OPENSSL_PID=$!
+		($M_BUILD "openssl-$1") & OPENSSL_PID=$!
 		wait $OPENSSL_PID; error
-		($0 "mysql-$1") & MYSQL_PID=$!
+		($M_BUILD "mysql-$1") & MYSQL_PID=$!
 		wait $MYSQL_PID; error
-		($0 "dspam-$1") & DSPAM_PID=$!
+		($M_BUILD "dspam-$1") & DSPAM_PID=$!
 		wait $DSPAM_PID; error
-		($0 "curl-$1") & CURL_PID=$!
+		($M_BUILD "curl-$1") & CURL_PID=$!
 		wait $CURL_PID; error
-		($0 "checker-$1") & CHECKER_PID=$!
+		($M_BUILD "checker-$1") & CHECKER_PID=$!
 		wait $CHECKER_PID; error
-		($0 "png-$1") & PNG_PID=$!
+		($M_BUILD "png-$1") & PNG_PID=$!
 		wait $PNG_PID; error
-		($0 "lzo-$1") & LZO_PID=$!
+		($M_BUILD "lzo-$1") & LZO_PID=$!
 		wait $LZO_PID; error
-		($0 "jpeg-$1") & JPEG_PID=$!
+		($M_BUILD "jpeg-$1") & JPEG_PID=$!
 		wait $JPEG_PID; error
-		($0 "spf2-$1") & SPF2_PID=$!
+		($M_BUILD "spf2-$1") & SPF2_PID=$!
 		wait $SPF2_PID; error
-		($0 "xml2-$1") & XML2_PID=$!
+		($M_BUILD "xml2-$1") & XML2_PID=$!
 		wait $XML2_PID; error
-		($0 "dkim-$1") & DKIM_PID=$!
+		($M_BUILD "dkim-$1") & DKIM_PID=$!
 		wait $DKIM_PID; error
-		($0 "bzip2-$1") & BZIP2_PID=$!
+		($M_BUILD "bzip2-$1") & BZIP2_PID=$!
 		wait $BZIP2_PID; error
-		($0 "geoip-$1") & GEOIP_PID=$!
+		($M_BUILD "geoip-$1") & GEOIP_PID=$!
 		wait $GEOIP_PID; error
-		($0 "jansson-$1") & JANSSON_PID=$!
+		($M_BUILD "jansson-$1") & JANSSON_PID=$!
 		wait $JANSSON_PID; error
-		($0 "utf8proc-$1") & UTF8PROC_PID=$!
+		($M_BUILD "utf8proc-$1") & UTF8PROC_PID=$!
 		wait $UTF8PROC_PID; error
-		($0 "freetype-$1") & FREETYPE_PID=$!
+		($M_BUILD "freetype-$1") & FREETYPE_PID=$!
 		wait $FREETYPE_PID; error
-		($0 "memcached-$1") & MEMCACHED_PID=$!
+		($M_BUILD "memcached-$1") & MEMCACHED_PID=$!
 		wait $MEMCACHED_PID; error
-		($0 "tokyocabinet-$1") & TOKYOCABINET_PID=$!
+		($M_BUILD "tokyocabinet-$1") & TOKYOCABINET_PID=$!
 		wait $TOKYOCABINET_PID; error
-		($0 "gd-$1") & GD_PID=$!
+		($M_BUILD "gd-$1") & GD_PID=$!
 		wait $GD_PID; error
-		($0 "clamav-$1") & CLAMAV_PID=$!
+		($M_BUILD "clamav-$1") & CLAMAV_PID=$!
 		wait $CLAMAV_PID; error
 
 	else
 
 		# The ClamAV unit tests will timeout if the system is under heavy load so they run alone.
-		($0 "clamav-$1") & CLAMAV_PID=$!
+		($M_BUILD "clamav-$1") & CLAMAV_PID=$!
 		wait $CLAMAV_PID; error
 
-		($0 "gd-$1") & GD_PID=$!
-		($0 "png-$1") & PNG_PID=$!
-		($0 "lzo-$1") & LZO_PID=$!
-		($0 "curl-$1") & CURL_PID=$!
-		($0 "jpeg-$1") & JPEG_PID=$!
-		($0 "spf2-$1") & SPF2_PID=$!
-		($0 "xml2-$1") & XML2_PID=$!
-		($0 "dkim-$1") & DKIM_PID=$!
-		($0 "zlib-$1") & ZLIB_PID=$!
-		($0 "mysql-$1") & MYSQL_PID=$!
-		($0 "bzip2-$1") & BZIP2_PID=$!
-		($0 "dspam-$1") & DSPAM_PID=$!
-		($0 "geoip-$1") & GEOIP_PID=$!
-		($0 "checker-$1") & CHECKER_PID=$!
-		($0 "openssl-$1") & OPENSSL_PID=$!
-		($0 "jansson-$1") & JANSSON_PID=$!
-		($0 "freetype-$1") & FREETYPE_PID=$!
-		($0 "utf8proc-$1") & UTF8PROC_PID=$!
-		($0 "memcached-$1") & MEMCACHED_PID=$!
-		($0 "tokyocabinet-$1") & TOKYOCABINET_PID=$!
+		($M_BUILD "gd-$1") & GD_PID=$!
+		($M_BUILD "png-$1") & PNG_PID=$!
+		($M_BUILD "lzo-$1") & LZO_PID=$!
+		($M_BUILD "curl-$1") & CURL_PID=$!
+		($M_BUILD "jpeg-$1") & JPEG_PID=$!
+		($M_BUILD "spf2-$1") & SPF2_PID=$!
+		($M_BUILD "xml2-$1") & XML2_PID=$!
+		($M_BUILD "dkim-$1") & DKIM_PID=$!
+		($M_BUILD "zlib-$1") & ZLIB_PID=$!
+		($M_BUILD "mysql-$1") & MYSQL_PID=$!
+		($M_BUILD "bzip2-$1") & BZIP2_PID=$!
+		($M_BUILD "dspam-$1") & DSPAM_PID=$!
+		($M_BUILD "geoip-$1") & GEOIP_PID=$!
+		($M_BUILD "checker-$1") & CHECKER_PID=$!
+		($M_BUILD "openssl-$1") & OPENSSL_PID=$!
+		($M_BUILD "jansson-$1") & JANSSON_PID=$!
+		($M_BUILD "freetype-$1") & FREETYPE_PID=$!
+		($M_BUILD "utf8proc-$1") & UTF8PROC_PID=$!
+		($M_BUILD "memcached-$1") & MEMCACHED_PID=$!
+		($M_BUILD "tokyocabinet-$1") & TOKYOCABINET_PID=$!
 
 		wait $GD_PID; error
 		wait $PNG_PID; error
@@ -2207,8 +2188,9 @@ fi
 
 # Setup
 if [ ! -d "$M_SOURCES" ]; then mkdir "$M_SOURCES"; error; fi
-if [ ! -d "$M_LOGS" ]; then mkdir "$M_LOGS"; error; fi
 if [ ! -d "$M_OBJECTS" ]; then mkdir "$M_OBJECTS"; error; fi
+if [ ! -d "$M_LOCAL" ]; then mkdir "$M_LOCAL"; error; fi
+if [ ! -d "$M_LOGS" ]; then mkdir "$M_LOGS"; error; fi
 
 # Aggregations
 if [[ $1 == "extract" ]]; then combo "$1"

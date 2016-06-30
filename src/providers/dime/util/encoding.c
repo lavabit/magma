@@ -115,7 +115,7 @@ libdime_base64_decode(
                 break;
             default:
                 err = ERR_ENCODING;
-                LOG_ERROR(dime_ctx,
+                DIME_LOG_ERROR(dime_ctx,
                     "an unexpected error occurred during base64 decoding");
                 goto cleanup_result;
             }
@@ -223,7 +223,7 @@ libdime_base64_encode(
         *o++ = '=';
         break;
     default:
-        LOG_ERROR(dime_ctx,
+        DIME_LOG_ERROR(dime_ctx,
             "an unexpected error occurred during base64 encoding");
         goto cleanup_result;
     }

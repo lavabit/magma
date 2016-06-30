@@ -23,8 +23,6 @@ bool_t lib_load(void);
 void lib_unload(void);
 bool_t lib_symbols(size_t count, symbol_t symbols[]);
 
-#include "symbols.h"
-
 #include "database/database.h"
 #include "consumers/consumers.h"
 #include "checkers/checkers.h"

@@ -44,7 +44,7 @@ sha512_ROTR64(uint64_t x, int k) {
 
 static uint64_t
 sha512_LOAD64_BE(const uint8_t *p) {
-	return 
+	return
 		((uint64_t)p[0] << 56) |
 		((uint64_t)p[1] << 48) |
 		((uint64_t)p[2] << 40) |
@@ -192,27 +192,28 @@ ed25519_hash(uint8_t *hash, const uint8_t *in, size_t inlen) {
 #else
 
 #include <openssl/sha.h>
+#include "providers/symbols.h"
 
 typedef SHA512_CTX ed25519_hash_context;
 
 static void
 ed25519_hash_init(ed25519_hash_context *ctx) {
-	SHA512_Init(ctx);
+	SHA512_Init_d(ctx);
 }
 
 static void
 ed25519_hash_update(ed25519_hash_context *ctx, const uint8_t *in, size_t inlen) {
-	SHA512_Update(ctx, in, inlen);
+	SHA512_Update_d(ctx, in, inlen);
 }
 
 static void
 ed25519_hash_final(ed25519_hash_context *ctx, uint8_t *hash) {
-	SHA512_Final(hash, ctx);
+	SHA512_Final_d(hash, ctx);
 }
 
 static void
 ed25519_hash(uint8_t *hash, const uint8_t *in, size_t inlen) {
-	SHA512(in, inlen, hash);
+	SHA512_d(in, inlen, hash);
 }
 
 #endif

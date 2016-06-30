@@ -10,6 +10,8 @@
 #include "dime/common/error.h"
 #include "dime/common/misc.h"
 
+#include "providers/symbols.h"
+
 // sizeof(errinfo_t) and number elements chosen so the entire data structure fits inside one 4,096 byte page.
 struct thread_err_stack {
     errinfo_t error_stack[ERR_STACK_SIZE];
@@ -264,17 +266,17 @@ errinfo_t *_push_error_stack_openssl(const char *filename, const char *funcname,
 
     if (!loaded) {
         ERR_load_crypto_strings();
-        SSL_load_error_strings();
+        SSL_load_error_strings_d();
         loaded = 1;
     }
 
     memset(auxmsg, 0, sizeof(auxmsg));
 
     // Keep doing this as long as there's more errors there.
-    while (ERR_peek_error_line_data(&ssl_filename, &ssl_line, &ssl_data, &ssl_flags)) {
+    while (ERR_peek_error_line_data_d(&ssl_filename, &ssl_line, &ssl_data, &ssl_flags)) {
 
         if (!first_pass) {
-            BUF_strlcat(auxmsg, " | ", sizeof(auxmsg));
+            BUF_strlcat_d(auxmsg, " | ", sizeof(auxmsg));
         } else {
             first_pass = 0;
         }
@@ -283,11 +285,11 @@ errinfo_t *_push_error_stack_openssl(const char *filename, const char *funcname,
         snprintf(tmpbuf, sizeof(tmpbuf), ":%s:%d", ssl_filename, ssl_line);
 
         memset(tmpbuf2, 0, sizeof(tmpbuf2));
-        ERR_error_string_n(ERR_get_error(), tmpbuf2, sizeof(tmpbuf2));
+        ERR_error_string_n_d(ERR_get_error_d(), tmpbuf2, sizeof(tmpbuf2));
 
         // Combine the two error strings and add them to the buffer.
-        BUF_strlcat(auxmsg, tmpbuf2, sizeof(auxmsg));
-        BUF_strlcat(auxmsg, tmpbuf, sizeof(auxmsg));
+        BUF_strlcat_d(auxmsg, tmpbuf2, sizeof(auxmsg));
+        BUF_strlcat_d(auxmsg, tmpbuf, sizeof(auxmsg));
     }
 
     return (_push_error_stack(filename, funcname, lineno, errcode, xerrno, auxmsg));

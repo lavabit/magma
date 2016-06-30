@@ -9,6 +9,8 @@
 #include "dime/common/misc.h"
 #include "dime/common/error.h"
 
+#include "providers/symbols.h"
+
 static EC_GROUP *_encryption_group = NULL;
 static EVP_MD const *_ecies_envelope_evp = NULL;
 
@@ -21,16 +23,16 @@ static EVP_MD const *_ecies_envelope_evp = NULL;
 int
 _crypto_init(void)
 {
-    SSL_load_error_strings();
-    SSL_library_init();
-    OPENSSL_add_all_algorithms_noconf();
+    SSL_load_error_strings_d();
+    SSL_library_init_d();
+    OPENSSL_add_all_algorithms_noconf_d();
 
-    if (!(_encryption_group = EC_GROUP_new_by_curve_name(EC_ENCRYPT_CURVE))) {
+    if (!(_encryption_group = EC_GROUP_new_by_curve_name_d(EC_ENCRYPT_CURVE))) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_INT(ERR_UNSPEC, "could not initialize encryption curve");
     }
 
-    if (!(_ecies_envelope_evp = EVP_get_digestbyname(OBJ_nid2sn(NID_sha512)))) {
+    if (!(_ecies_envelope_evp = EVP_get_digestbyname_d(OBJ_nid2sn_d(NID_sha512)))) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_INT(ERR_UNSPEC, "unable to get SHA-512 digest by NID");
     }
@@ -48,12 +50,12 @@ void
 _crypto_shutdown(void)
 {
     if (_encryption_group) {
-        EC_GROUP_clear_free(_encryption_group);
+        EC_GROUP_clear_free_d(_encryption_group);
         _encryption_group = NULL;
     }
 
-    EVP_cleanup();
-    ERR_free_strings();
+    EVP_cleanup_d();
+    ERR_free_strings_d();
 }
 
 /**
@@ -90,7 +92,7 @@ _verify_ec_signature(
         RET_ERROR_INT(ERR_BAD_PARAM, NULL);
     }
 
-    if (!(ec_sig = d2i_ECDSA_SIG(NULL, &sig, slen))) {
+    if (!(ec_sig = d2i_ECDSA_SIG_d(NULL, &sig, slen))) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_INT(ERR_UNSPEC, "unable to read EC signature from buffer");
     }
@@ -192,7 +194,7 @@ _ec_sign_data(
             "unable to take ECDSA signature of hash buffer");
     }
 
-    if ((bsize = i2d_ECDSA_SIG(signature, &buf)) < 0) {
+    if ((bsize = i2d_ECDSA_SIG_d(signature, &buf)) < 0) {
         PUSH_ERROR_OPENSSL();
         ECDSA_SIG_free(signature);
         RET_ERROR_PTR(ERR_UNSPEC, "unable to serialize ECDSA signature");
@@ -272,7 +274,7 @@ _serialize_ec_pubkey(EC_KEY *key, size_t *outsize)
         RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
     }
 
-    if ((bsize = i2o_ECPublicKey(key, &buf)) < 0) {
+    if ((bsize = i2o_ECPublicKey_d(key, &buf)) < 0) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(ERR_UNSPEC, "unable to serialize EC public key");
     }
@@ -314,29 +316,29 @@ _deserialize_ec_pubkey(
 
     nid = signing ? EC_SIGNING_CURVE : EC_ENCRYPT_CURVE;
 
-    if (!(result = EC_KEY_new())) {
+    if (!(result = EC_KEY_new_d())) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(
             ERR_UNSPEC,
             "could not generate new EC key for deserialization");
     }
 
-    if (EC_KEY_set_group(result, EC_GROUP_new_by_curve_name(nid)) != 1) {
+    if (EC_KEY_set_group_d(result, EC_GROUP_new_by_curve_name_d(nid)) != 1) {
         PUSH_ERROR_OPENSSL();
-        EC_KEY_free(result);
+        EC_KEY_free_d(result);
         RET_ERROR_PTR(
             ERR_UNSPEC,
             "could not get curve group for deserialization");
     }
 
     if (!(result =
-            o2i_ECPublicKey(
+            o2i_ECPublicKey_d(
                 &result,
                 (const unsigned char **)&buf,
                 blen)))
     {
         PUSH_ERROR_OPENSSL();
-        EC_KEY_free(result);
+        EC_KEY_free_d(result);
         RET_ERROR_PTR(
             ERR_UNSPEC,
             "deserialization of EC public key portion failed");
@@ -366,7 +368,7 @@ _serialize_ec_privkey(EC_KEY *key, size_t *outsize)
         RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
     }
 
-    if ((bsize = i2d_ECPrivateKey(key, &buf)) < 0) {
+    if ((bsize = i2d_ECPrivateKey_d(key, &buf)) < 0) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(ERR_UNSPEC, "unable to serialize EC private key");
     }
@@ -410,28 +412,28 @@ _deserialize_ec_privkey(
 
     nid = signing ? EC_SIGNING_CURVE : EC_ENCRYPT_CURVE;
 
-    if (!(result = EC_KEY_new())) {
+    if (!(result = EC_KEY_new_d())) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(
             ERR_UNSPEC,
             "could not generate new EC key for deserialization");
     }
 
-    if (EC_KEY_set_group(
+    if (EC_KEY_set_group_d(
             result,
-            EC_GROUP_new_by_curve_name(nid))
+            EC_GROUP_new_by_curve_name_d(nid))
         != 1)
     {
         PUSH_ERROR_OPENSSL();
-        EC_KEY_free(result);
+        EC_KEY_free_d(result);
         RET_ERROR_PTR(
             ERR_UNSPEC,
             "could not get curve group for deserialization");
     }
 
-    if (!(result = d2i_ECPrivateKey(&result, &bufptr, blen))) {
+    if (!(result = d2i_ECPrivateKey_d(&result, &bufptr, blen))) {
         PUSH_ERROR_OPENSSL();
-        EC_KEY_free(result);
+        EC_KEY_free_d(result);
         RET_ERROR_PTR(
             ERR_UNSPEC,
             "deserialization of EC public key portion failed");
@@ -551,20 +553,20 @@ _generate_ec_keypair(void)
         RET_ERROR_PTR(ERR_UNSPEC, "could not determine curve group for operation");
     }
 
-    if (!(result = EC_KEY_new())) {
+    if (!(result = EC_KEY_new_d())) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(ERR_UNSPEC, "unable to allocate new EC key pair for generation");
     }
 
-    if (EC_KEY_set_group(result, group) != 1) {
+    if (EC_KEY_set_group_d(result, group) != 1) {
         PUSH_ERROR_OPENSSL();
-        EC_KEY_free(result);
+        EC_KEY_free_d(result);
         RET_ERROR_PTR(ERR_UNSPEC, "unable to associate curve group with new EC key pair");
     }
 
-    if (EC_KEY_generate_key(result) != 1) {
+    if (EC_KEY_generate_key_d(result) != 1) {
         PUSH_ERROR_OPENSSL();
-        EC_KEY_free(result);
+        EC_KEY_free_d(result);
         RET_ERROR_PTR(ERR_UNSPEC, "unable to generate new EC key pair");
     }
 
@@ -585,7 +587,7 @@ _free_ec_key(EC_KEY *key)
         return;
     }
 
-    EC_KEY_free(key);
+    EC_KEY_free_d(key);
 }
 
 /**
@@ -610,7 +612,7 @@ _generate_ed25519_keypair(void)
 
     memset(result, 0, sizeof(ED25519_KEY));
 
-    if (RAND_bytes(
+    if (RAND_bytes_d(
             result->private_key,
             sizeof(result->private_key))
         != 1)
@@ -842,7 +844,7 @@ _ecies_env_derivation(
     void *output,
     size_t *olen)
 {
-    if (EVP_Digest(
+    if (EVP_Digest_d(
             input,
             ilen,
             output,
@@ -878,7 +880,7 @@ _compute_aes256_kek(
     if (ECDH_compute_key(
             aeskey,
             sizeof(aeskey),
-            EC_KEY_get0_public_key(public_key),
+            EC_KEY_get0_public_key_d(public_key),
             private_key,
             _ecies_env_derivation)
         != SHA_512_SIZE)
@@ -919,7 +921,7 @@ _get_random_bytes(
         RET_ERROR_INT(ERR_BAD_PARAM, NULL);
     }
 
-    if (!RAND_bytes(buf, len)) {
+    if (!RAND_bytes_d(buf, len)) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_INT(ERR_UNSPEC, "unable to generate random bytes");
     }
@@ -967,28 +969,28 @@ _encrypt_aes_256(
             "input data was not aligned to required padding size");
     }
 
-    if (!(ctx = EVP_CIPHER_CTX_new())) {
+    if (!(ctx = EVP_CIPHER_CTX_new_d())) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_INT(
             ERR_UNSPEC,
             "unable to create new context for AES-256 encryption");
     }
 
-    if (EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv) != 1) {
+    if (EVP_EncryptInit_ex_d(ctx, EVP_aes_256_cbc_d(), NULL, key, iv) != 1) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_INT(
             ERR_UNSPEC,
             "unable to initialize context for AES-256 encryption");
     }
 
-    if (EVP_CIPHER_CTX_set_padding(ctx, 0) != 1) {
+    if (EVP_CIPHER_CTX_set_padding_d(ctx, 0) != 1) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_INT(
             ERR_UNSPEC,
             "unable to set no padding for AES-256 encryption");
     }
 
-    if (EVP_EncryptUpdate(ctx, outbuf, &len, data, dlen) != 1) {
+    if (EVP_EncryptUpdate_d(ctx, outbuf, &len, data, dlen) != 1) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_INT(
             ERR_UNSPEC,
@@ -997,7 +999,7 @@ _encrypt_aes_256(
 
     result = len;
 
-    if (EVP_EncryptFinal_ex(ctx, (unsigned char *)outbuf + len, &len) != 1) {
+    if (EVP_EncryptFinal_ex_d(ctx, (unsigned char *)outbuf + len, &len) != 1) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_INT(
             ERR_UNSPEC,
@@ -1005,7 +1007,7 @@ _encrypt_aes_256(
     }
 
     result += len;
-    EVP_CIPHER_CTX_free(ctx);
+    EVP_CIPHER_CTX_free_d(ctx);
     ctx = NULL;
 
     return result;
@@ -1049,36 +1051,36 @@ _decrypt_aes_256(
         RET_ERROR_INT(ERR_BAD_PARAM, "input data was not aligned to required padding size");
     }
 
-    if (!(ctx = EVP_CIPHER_CTX_new())) {
+    if (!(ctx = EVP_CIPHER_CTX_new_d())) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_INT(ERR_UNSPEC, "unable to create new context for AES-256 decryption");
     }
 
-    if (EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv) != 1) {
+    if (EVP_DecryptInit_ex_d(ctx, EVP_aes_256_cbc_d(), NULL, key, iv) != 1) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_INT(ERR_UNSPEC, "unable to initialize context for AES-256 decryption");
     }
 
-    if (EVP_CIPHER_CTX_set_padding(ctx, 0) != 1) {
+    if (EVP_CIPHER_CTX_set_padding_d(ctx, 0) != 1) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_INT(ERR_UNSPEC, "unable to set no padding for AES-256 decryption");
     }
 
-    if (EVP_DecryptUpdate(ctx, outbuf, &len, data, dlen) != 1) {
+    if (EVP_DecryptUpdate_d(ctx, outbuf, &len, data, dlen) != 1) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_INT(ERR_UNSPEC, "AES-256 decryption update failed");
     }
 
     result = len;
 
-    if (EVP_DecryptFinal_ex(ctx, (unsigned char *)outbuf + len, &len) != 1) {
+    if (EVP_DecryptFinal_ex_d(ctx, (unsigned char *)outbuf + len, &len) != 1) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_INT(ERR_UNSPEC, "AES-256 decryption finalization failed");
     }
 
     result += len;
 
-    EVP_CIPHER_CTX_free(ctx);
+    EVP_CIPHER_CTX_free_d(ctx);
     ctx = NULL;
 
     return result;

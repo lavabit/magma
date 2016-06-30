@@ -234,7 +234,7 @@ crypto_hash_sha512(unsigned char *hash, const unsigned char *in, size_t inlen) {
 
 static void
 crypto_hash_sha512(unsigned char *hash, const unsigned char *in, size_t inlen) {
-	SHA512(in, inlen, hash);
+	SHA512_d(in, inlen, hash);
 }
 
 #endif

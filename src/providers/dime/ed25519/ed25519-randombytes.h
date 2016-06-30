@@ -82,11 +82,11 @@ ED25519_FN(ed25519_randombytes_unsafe) (void *p, size_t len) {
 #else
 
 #include <openssl/rand.h>
-
+#include "providers/symbols.h"
 void
 ED25519_FN(ed25519_randombytes_unsafe) (void *p, size_t len) {
 
-  RAND_bytes(p, (int) len);
+  RAND_bytes_d(p, (int) len);
 
 }
 #endif

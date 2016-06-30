@@ -9,6 +9,7 @@
 #include "dime/signet-resolver/dmtp.h"
 #include "dime/signet-resolver/signet-ssl.h"
 
+#include "providers/symbols.h"
 
 /* Thoughts: Any reason to change our code to leverage X509_digest() ? */
 
@@ -25,8 +26,8 @@ static char *_crl_file = NULL;
  */
 int _ssl_initialize(void) {
 
-    SSL_load_error_strings();
-    SSL_library_init();
+    SSL_load_error_strings_d();
+    SSL_library_init_d();
 
     if (_ssl_initialized) {
         return 0;
@@ -55,11 +56,11 @@ int _ssl_initialize(void) {
 void _ssl_shutdown(void) {
 
     if (_dmtp_ssl_client_ctx) {
-        SSL_CTX_free(_dmtp_ssl_client_ctx);
+        SSL_CTX_free_d(_dmtp_ssl_client_ctx);
         _dmtp_ssl_client_ctx = NULL;
     }
 
-    ERR_free_strings();
+    ERR_free_strings_d();
 
     _dbgprint(4, "Unloaded openssl library.\n");
 
@@ -84,13 +85,13 @@ SSL_CTX *_ssl_get_client_context(void) {
     }
 
     // We start with this as our base client method and then disable older transport methods below with options.
-    if (!(_dmtp_ssl_client_ctx = SSL_CTX_new(SSLv23_client_method()))) {
+    if (!(_dmtp_ssl_client_ctx = SSL_CTX_new_d(SSLv23_client_method_d()))) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(ERR_UNSPEC, "could not retrieve SSL client context");
     }
 
     // This will need to be commented out in order for the ./x utility to work.
-    if (!SSL_CTX_set_cipher_list(_dmtp_ssl_client_ctx, DMTP_V1_CIPHER_LIST)) {
+    if (!SSL_CTX_set_cipher_list_d(_dmtp_ssl_client_ctx, DMTP_V1_CIPHER_LIST)) {
         PUSH_ERROR_OPENSSL();
         _dmtp_ssl_client_ctx = NULL;
         RET_ERROR_PTR(ERR_UNSPEC, "could not set mandatory DMTP cipher suite");
@@ -106,7 +107,7 @@ SSL_CTX *_ssl_get_client_context(void) {
 
     // Probably don't want SSL_VERIFY_PEER
     // Set the callback verification that will be set if there's a self-signed certificate, etc.
-    SSL_CTX_set_verify(_dmtp_ssl_client_ctx, SSL_VERIFY_NONE, _verify_certificate_callback);
+    SSL_CTX_set_verify_d(_dmtp_ssl_client_ctx, SSL_VERIFY_NONE, _verify_certificate_callback);
 
     return _dmtp_ssl_client_ctx;
 }
@@ -128,17 +129,17 @@ SSL *_ssl_starttls(int fd) {
         RET_ERROR_PTR(ERR_UNSPEC, "could not get SSL client context");
     }
 
-    if (!(result = SSL_new(ctx))) {
+    if (!(result = SSL_new_d(ctx))) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(ERR_UNSPEC, "could not create new SSL connection object");
     }
 
-    if (!SSL_set_fd(result, fd)) {
+    if (!SSL_set_fd_d(result, fd)) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(ERR_UNSPEC, "could not set SSL connection descriptor");
     }
 
-    if (SSL_connect(result) <= 0) {
+    if (SSL_connect_d(result) <= 0) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(ERR_UNSPEC, "could not establish SSL connection");
     }
@@ -174,12 +175,12 @@ SSL *_ssl_connect_host(const char *hostname, unsigned short port, int force_fami
         RET_ERROR_PTR(ERR_UNSPEC, "could not connect to remote host");
     }
 
-    if (!(result = SSL_new(ctx))) {
+    if (!(result = SSL_new_d(ctx))) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(ERR_UNSPEC, "could not create new SSL connection object");
     }
 
-    if (!SSL_set_fd(result, fd)) {
+    if (!SSL_set_fd_d(result, fd)) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(ERR_UNSPEC, "could not set SSL connection descriptor");
     }
@@ -195,7 +196,7 @@ SSL *_ssl_connect_host(const char *hostname, unsigned short port, int force_fami
     SSL_CTX_set_tlsext_status_cb(ctx, _ocsp_response_callback);
     SSL_CTX_set_tlsext_status_arg(ctx, NULL);
 
-    if (SSL_connect(result) <= 0) {
+    if (SSL_connect_d(result) <= 0) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(ERR_UNSPEC, "could not establish SSL connection");
     }
@@ -218,17 +219,17 @@ void _ssl_disconnect(SSL *handle) {
         return;
     }
 
-    if ((fd = SSL_get_fd(handle)) < 0) {
-        ERR_print_errors_fp(stderr);
+    if ((fd = SSL_get_fd_d(handle)) < 0) {
+        ERR_print_errors_fp_d(stderr);
     }
 
-    SSL_shutdown(handle);
+    SSL_shutdown_d(handle);
 
     if ((fd >= 0) && (close(fd) < 0)) {
         perror("close");
     }
 
-    SSL_free(handle);
+    SSL_free_d(handle);
     _dbgprint(4, "SSL session and underlying socket was terminated.\n");
 
 }
@@ -255,24 +256,24 @@ int _do_x509_validation(X509 *cert, STACK_OF(X509) *chain) {
 
     if (_verbose >= 1) {
         memset(dbuf, 0, sizeof(dbuf));
-        X509_NAME_oneline(X509_get_subject_name(cert), dbuf, sizeof(dbuf));
+        X509_NAME_oneline_d(X509_get_subject_name_d(cert), dbuf, sizeof(dbuf));
         _dbgprint(1, "Performing x509 validation on subject: %s\n", dbuf);
     }
 
-    if (!(store = X509_STORE_new())) {
+    if (!(store = X509_STORE_new_d())) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_INT(ERR_UNSPEC, "unable to initialize X509 certificate store");
     }
 
-    if (!(lookup = X509_STORE_add_lookup(store, X509_LOOKUP_file()))) {
+    if (!(lookup = X509_STORE_add_lookup_d(store, X509_LOOKUP_file_d()))) {
         PUSH_ERROR_OPENSSL();
-        X509_STORE_free(store);
+        X509_STORE_free_d(store);
         RET_ERROR_INT(ERR_UNSPEC, "unable to add X509 lookup");
     }
 
-    if (X509_STORE_load_locations(store, _ca_file, NULL) != 1) {
+    if (X509_STORE_load_locations_d(store, _ca_file, NULL) != 1) {
         PUSH_ERROR_OPENSSL();
-        X509_STORE_free(store);
+        X509_STORE_free_d(store);
         RET_ERROR_INT_FMT(ERR_UNSPEC, "unable to load certificate chain file: %s", _ca_file);
     }
 
@@ -281,56 +282,56 @@ int _do_x509_validation(X509 *cert, STACK_OF(X509) *chain) {
     // Not sure if necessary?
 /*  if (!(X509_LOOKUP_load_file(lookup, _ca_file, X509_FILETYPE_PEM))) {
                 PUSH_ERROR_OPENSSL();
-                X509_STORE_free(store);
+                X509_STORE_free_d(store);
                 RET_ERROR_INT_FMT(ERR_UNSPEC, "unable to load lookup chain file: %s", _ca_file);
         }  */
 
     // TODO: temporarily disabled... does this go back in?
 /*  if((res = X509_load_crl_file(lookup, _crl_file, X509_FILETYPE_PEM)) < 1) {
                 PUSH_ERROR_OPENSSL();
-                X509_STORE_free(store);
+                X509_STORE_free_d(store);
                 RET_ERROR_INT_FMT(ERR_UNSPEC, "unable to load CRL file: %s", _crl_file);
         }
 
         _dbgprint(4, "Loaded a total of %d entries from CRL file.\n", res); */
 
-//  if (X509_STORE_set_flags(store, (X509_V_FLAG_CRL_CHECK | X509_V_FLAG_CRL_CHECK_ALL)) != 1) {
-    if (X509_STORE_set_flags(store, X509_V_FLAG_X509_STRICT) != 1) {
+//  if (X509_STORE_set_flags_d(store, (X509_V_FLAG_CRL_CHECK | X509_V_FLAG_CRL_CHECK_ALL)) != 1) {
+    if (X509_STORE_set_flags_d(store, X509_V_FLAG_X509_STRICT) != 1) {
         PUSH_ERROR_OPENSSL();
-        X509_STORE_free(store);
+        X509_STORE_free_d(store);
         RET_ERROR_INT(ERR_UNSPEC, "unable to configure X509 store");
     }
 
-    if (!(ctx = X509_STORE_CTX_new())) {
+    if (!(ctx = X509_STORE_CTX_new_d())) {
         PUSH_ERROR_OPENSSL();
-        X509_STORE_free(store);
+        X509_STORE_free_d(store);
         RET_ERROR_INT(ERR_UNSPEC, "unable to create x509 certificate store context");
     }
 
-    if (!X509_STORE_CTX_init(ctx, store, cert, NULL)) {
+    if (!X509_STORE_CTX_init_d(ctx, store, cert, NULL)) {
         PUSH_ERROR_OPENSSL();
-        X509_STORE_free(store);
-        X509_STORE_CTX_free(ctx);
+        X509_STORE_free_d(store);
+        X509_STORE_CTX_free_d(ctx);
         RET_ERROR_INT(ERR_UNSPEC, "unable to initialize x509 certificate store context");
     }
 
     if (chain) {
-        X509_STORE_CTX_set_chain(ctx, chain);
+        X509_STORE_CTX_set_chain_d(ctx, chain);
     }
 
-    res = X509_verify_cert(ctx);
+    res = X509_verify_cert_d(ctx);
 
     if (res < 0) {
         PUSH_ERROR_OPENSSL();
-        fprintf(stderr, "Error: x509 verification encountered error: %s\n", X509_verify_cert_error_string(ctx->error));
+        fprintf(stderr, "Error: x509 verification encountered error: %s\n", X509_verify_cert_error_string_d(ctx->error));
     } else if (!res) {
-        _dbgprint(1, "x509 certificate did not pass verification: %s\n", X509_verify_cert_error_string(ctx->error));
+        _dbgprint(1, "x509 certificate did not pass verification: %s\n", X509_verify_cert_error_string_d(ctx->error));
     } else {
         _dbgprint(1, "x509 certificate passed verification.\n");
     }
 
-    X509_STORE_free(store);
-    X509_STORE_CTX_free(ctx);
+    X509_STORE_free_d(store);
+    X509_STORE_CTX_free_d(ctx);
 
     return res;
 }
@@ -358,9 +359,9 @@ int _do_x509_hostname_check(X509 *cert, const char *domain) {
         RET_ERROR_INT(ERR_BAD_PARAM, NULL);
     }
 
-    return (X509_check_host(cert, domain, strlen(domain), 0, NULL));
+    return (X509_check_host_d(cert, domain, strlen(domain), 0, NULL));
 
-/*  if (!(xname = X509_get_subject_name(cert))) {
+/*  if (!(xname = X509_get_subject_name_d(cert))) {
                 PUSH_ERROR_OPENSSL();
                 RET_ERROR_INT(ERR_UNSPEC, "could not read subject name from certificate");
         }
@@ -386,7 +387,7 @@ int _do_x509_hostname_check(X509 *cert, const char *domain) {
 
                 if (gn->type == GEN_DNS) {
 
-                        if (!(dnsname = (char *)ASN1_STRING_data(gn->d.dNSName))) {
+                        if (!(dnsname = (char *)ASN1_STRING_data_d(gn->d.dNSName))) {
                                 continue;
                         }
 
@@ -446,12 +447,12 @@ int _do_ocsp_validation(SSL *connection, int *fallthrough) {
     }
 
     // Get this certificate and the certificate chain.
-    if (!(cert = SSL_get_peer_certificate(connection))) {
+    if (!(cert = SSL_get_peer_certificate_d(connection))) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_INT(ERR_UNSPEC, "could not retrieve peer certificate for OCSP validation");
     }
 
-    if ((!(certstack = SSL_get_peer_cert_chain(connection))) || !sk_num((void *)certstack)) {
+    if ((!(certstack = SSL_get_peer_cert_chain_d(connection))) || !sk_num_d((void *)certstack)) {
 
         if (!certstack) {
             PUSH_ERROR_OPENSSL();
@@ -460,13 +461,13 @@ int _do_ocsp_validation(SSL *connection, int *fallthrough) {
         RET_ERROR_INT(ERR_UNSPEC, "could not retrieve peer certificate chain for OCSP validation");
     }
 
-    _dbgprint(4, "OCSP validator: certificate chain contained %u entries.\n", sk_num((void *)certstack));
+    _dbgprint(4, "OCSP validator: certificate chain contained %u entries.\n", sk_num_d((void *)certstack));
 
     // Walk the certificate chain to determine which one issued ours.
-    for (int i = 0; i < sk_num((void *)certstack); i++) {
-        pcert = (X509 *)sk_value((void *)certstack, i);
+    for (int i = 0; i < sk_num_d((void *)certstack); i++) {
+        pcert = (X509 *)sk_value_d((void *)certstack, i);
 
-        if (!X509_check_issued(pcert, cert)) {
+        if (!X509_check_issued_d(pcert, cert)) {
             issuer = pcert;
             break;
         }
@@ -479,7 +480,7 @@ int _do_ocsp_validation(SSL *connection, int *fallthrough) {
 
     // Is this the cipher we necessarily want? or NULL?
     // cid = OCSP_onereq_get0_id(one); OCSP_id_get0_info(NULL,&cert_id_md_oid, NULL,NULL, cid); cert_id_md = EVP_get_digestbyobj(cert_id_md_oid);
-    if (!(cid = OCSP_cert_to_id(NULL, cert, issuer))) {
+    if (!(cid = OCSP_cert_to_id_d(NULL, cert, issuer))) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_INT(ERR_UNSPEC, "OCSP validation failed with indeterminate certificate ID");
     }
@@ -502,10 +503,10 @@ int _do_ocsp_validation(SSL *connection, int *fallthrough) {
 
     // If we got a cached OCSP response, then we can skip straight to a very abbreviated form of the verification steps below.
     // Is the line below the exact logic we want?
-    if (response && (OCSP_response_status(response) == OCSP_RESPONSE_STATUS_SUCCESSFUL)) {
+    if (response && (OCSP_response_status_d(response) == OCSP_RESPONSE_STATUS_SUCCESSFUL)) {
         _dbgprint(2, "Retrieved cached OCSP response.\n");
 
-        if (!(basic = OCSP_response_get1_basic(response))) {
+        if (!(basic = OCSP_response_get1_basic_d(response))) {
             PUSH_ERROR_OPENSSL();
             _unlink_object(cached_ocsp, 1, 0);
             RET_ERROR_INT(ERR_UNSPEC, "unable to inspect basic OCSP response details");
@@ -524,7 +525,7 @@ int _do_ocsp_validation(SSL *connection, int *fallthrough) {
             }
 
             OCSP_BASICRESP_free(basic);
-            X509_STORE_free(store);
+            X509_STORE_free_d(store);
             _unlink_object(cached_ocsp, 1, 0);
 
             if (ret < 0) {
@@ -534,9 +535,9 @@ int _do_ocsp_validation(SSL *connection, int *fallthrough) {
             return 0;
         }
 
-        X509_STORE_free(store);
+        X509_STORE_free_d(store);
 
-        if ((ret = OCSP_resp_find_status(basic, cid, &status, &reason, &revtime, &thisupd, &nextupd)) <= 0) {
+        if ((ret = OCSP_resp_find_status_d(basic, cid, &status, &reason, &revtime, &thisupd, &nextupd)) <= 0) {
 
             if (ret < 0) {
                 PUSH_ERROR_OPENSSL();
@@ -554,19 +555,19 @@ int _do_ocsp_validation(SSL *connection, int *fallthrough) {
 
         if (_verbose >= 3) {
 
-            if ((dbgbio = BIO_new_fp(stderr, BIO_NOCLOSE))) {
+            if ((dbgbio = BIO_new_fp_d(stderr, BIO_NOCLOSE))) {
                 fprintf(stderr, "--- This OCSP update: ");
-                ASN1_GENERALIZEDTIME_print(dbgbio, thisupd);
+                ASN1_GENERALIZEDTIME_print_d(dbgbio, thisupd);
                 fprintf(stderr, "\n--- Next OCSP update: ");
-                ASN1_GENERALIZEDTIME_print(dbgbio, nextupd);
+                ASN1_GENERALIZEDTIME_print_d(dbgbio, nextupd);
                 fprintf(stderr, "\n");
-                BIO_free(dbgbio);
+                BIO_free_d(dbgbio);
             }
 
         }
 
         // Requested with a maximum clock skew time of 5 minutes, and ignore the max age option. (maybe we shouldn't).
-        if ((ret = OCSP_check_validity(thisupd, nextupd, 300, -1)) <= 0) {
+        if ((ret = OCSP_check_validity_d(thisupd, nextupd, 300, -1)) <= 0) {
 
             if (ret < 0) {
                 PUSH_ERROR_OPENSSL();
@@ -593,7 +594,7 @@ int _do_ocsp_validation(SSL *connection, int *fallthrough) {
         return 1;
     }
 
-    if ((!(ocspst = X509_get1_ocsp(cert))) || (!sk_OPENSSL_STRING_num(ocspst))) {
+    if ((!(ocspst = X509_get1_ocsp_d(cert))) || (!sk_OPENSSL_STRING_num(ocspst))) {
         // Could not get OCSP URI from certificate.
 
         if (fallthrough) {
@@ -612,7 +613,7 @@ int _do_ocsp_validation(SSL *connection, int *fallthrough) {
     }
 
     // There's probably a more aptly named function somewhere?
-    X509_email_free(ocspst);
+    X509_email_free_d(ocspst);
 
     if (!purl) {
         PUSH_ERROR_SYSCALL("strdup");
@@ -622,8 +623,8 @@ int _do_ocsp_validation(SSL *connection, int *fallthrough) {
     _dbgprint(4, "Found OCSP url in certificate file: %s\n", purl);
 
     // Parse the OCSP server URI from the certificate into its respective fields.
-    // TODO: There is a memory leak here resulting from these parsed parameters from OCSP_parse_url().
-    if (!OCSP_parse_url(purl, &phost, &pport, &ppath, &pssl)) {
+    // TODO: There is a memory leak here resulting from these parsed parameters from OCSP_parse_url_d().
+    if (!OCSP_parse_url_d(purl, &phost, &pport, &ppath, &pssl)) {
         PUSH_ERROR_OPENSSL();
         free(purl);
         RET_ERROR_INT(ERR_UNSPEC, "OCSP validation failed because of url parsing error");
@@ -637,14 +638,14 @@ int _do_ocsp_validation(SSL *connection, int *fallthrough) {
         RET_ERROR_INT(ERR_UNSPEC, "OCSP validation failed because of memory allocation error");
     }
 
-    if (!OCSP_request_add0_id(request, cid)) {
+    if (!OCSP_request_add0_id_d(request, cid)) {
         PUSH_ERROR_OPENSSL();
         OCSP_REQUEST_free(request);
         RET_ERROR_INT(ERR_UNSPEC, "OCSP validation failed because of certificate ID add failure");
     }
 
     // This doesn't necessarily mean the server will support it.
-    if (OCSP_request_add1_nonce(request, NULL, -1) <= 0) {
+    if (OCSP_request_add1_nonce_d(request, NULL, -1) <= 0) {
         PUSH_ERROR_OPENSSL();
         OCSP_REQUEST_free(request);
         RET_ERROR_INT(ERR_UNSPEC, "OCSP validation failed because nonce could not be added to request");
@@ -654,13 +655,13 @@ int _do_ocsp_validation(SSL *connection, int *fallthrough) {
 
     // Establish a connection to the OCSP server and pass it off to openssl.
     if ((fd = _connect_host(phost, atoi(pport), 0)) < 0) {
-        OCSP_REQUEST_free(request);
+        OCSP_REQUEST_free_d(request);
         RET_ERROR_INT_FMT(ERR_UNSPEC, "could not establish a connection to the OCSP server at %s:%s", phost, pport);
     }
 
-    if (!(bsock = BIO_new_socket(fd, 1))) {
+    if (!(bsock = BIO_new_socket_d(fd, 1))) {
         PUSH_ERROR_OPENSSL();
-        OCSP_REQUEST_free(request);
+        OCSP_REQUEST_free_d(request);
         close(fd);
         RET_ERROR_INT(ERR_UNSPEC, "could not complete OCSP verification because of openssl BIO error");
     }
@@ -669,49 +670,49 @@ int _do_ocsp_validation(SSL *connection, int *fallthrough) {
 
     if (_verbose >= 4) {
 
-        if ((dbgbio = BIO_new_fp(stderr, BIO_NOCLOSE))) {
-            OCSP_REQUEST_print(dbgbio, request, 0);
-            BIO_free(dbgbio);
+        if ((dbgbio = BIO_new_fp_d(stderr, BIO_NOCLOSE))) {
+            OCSP_REQUEST_print_d(dbgbio, request, 0);
+            BIO_free_d(dbgbio);
         }
 
     }
 
-    if (!(octx = OCSP_sendreq_new(bsock, ppath, NULL, -1))) {
+    if (!(octx = OCSP_sendreq_new_d(bsock, ppath, NULL, -1))) {
         PUSH_ERROR_OPENSSL();
-        OCSP_REQUEST_free(request);
-        BIO_free_all(bsock);
+        OCSP_REQUEST_free_d(request);
+        BIO_free_all_d(bsock);
         RET_ERROR_INT(ERR_UNSPEC, "could not complete OCSP verification because of unknown error in constructing request");
     }
 
-    if (!OCSP_REQ_CTX_add1_header(octx, "HOST", phost)) {
-        ERR_print_errors_fp(stderr);
+    if (!OCSP_REQ_CTX_add1_header_d(octx, "HOST", phost)) {
+        ERR_print_errors_fp_d(stderr);
         fprintf(stderr, "Warning: OCSP validator could not add HOST header to OCSP request.\n");
     }
 
-    if (!OCSP_REQ_CTX_set1_req(octx, request)) {
+    if (!OCSP_REQ_CTX_set1_req_d(octx, request)) {
         PUSH_ERROR_OPENSSL();
-        OCSP_REQUEST_free(request);
-        BIO_free_all(bsock);
+        OCSP_REQUEST_free_d(request);
+        BIO_free_all_d(bsock);
         RET_ERROR_INT(ERR_UNSPEC, "could not complete OCSP verification because of unknown error in setting request");
     }
 
-    if (OCSP_sendreq_nbio(&response, octx) <= 0) {
+    if (OCSP_sendreq_nbio_d(&response, octx) <= 0) {
         PUSH_ERROR_OPENSSL();
-        OCSP_REQUEST_free(request);
-        BIO_free_all(bsock);
+        OCSP_REQUEST_free_d(request);
+        BIO_free_all_d(bsock);
         RET_ERROR_INT(ERR_UNSPEC, "could not complete OCSP verification because of unknown error in retrieving response");
     }
 
-    rcode = OCSP_response_status(response);
-    BIO_free_all(bsock);
+    rcode = OCSP_response_status_d(response);
+    BIO_free_all_d(bsock);
 
-    _dbgprint(1, "Received OCSP response: %s\n", OCSP_response_status_str(rcode));
+    _dbgprint(1, "Received OCSP response: %s\n", OCSP_response_status_str_d(rcode));
 
     // We probably need a way of returning a much more detailed error message here for another code.
     if (rcode != OCSP_RESPONSE_STATUS_SUCCESSFUL) {
         _dbgprint(0, "Error: OCSP response was not successful {code = %u}.\n", rcode);
-        OCSP_REQUEST_free(request);
-        OCSP_RESPONSE_free(response);
+        OCSP_REQUEST_free_d(request);
+        OCSP_RESPONSE_free_d(response);
 
         if (fallthrough) {
             *fallthrough = 1;
@@ -722,25 +723,25 @@ int _do_ocsp_validation(SSL *connection, int *fallthrough) {
 
     if (_verbose >= 4) {
 
-        if ((dbgbio = BIO_new_fp(stderr, BIO_NOCLOSE))) {
-            OCSP_RESPONSE_print(dbgbio, response, 0);
-            BIO_free(dbgbio);
+        if ((dbgbio = BIO_new_fp_d(stderr, BIO_NOCLOSE))) {
+            OCSP_RESPONSE_print_d(dbgbio, response, 0);
+            BIO_free_d(dbgbio);
         }
 
     }
 
-    if (!(basic = OCSP_response_get1_basic(response))) {
+    if (!(basic = OCSP_response_get1_basic_d(response))) {
         PUSH_ERROR_OPENSSL();
-        OCSP_REQUEST_free(request);
-        OCSP_RESPONSE_free(response);
+        OCSP_REQUEST_free_d(request);
+        OCSP_RESPONSE_free_d(response);
         RET_ERROR_INT(ERR_UNSPEC, "unable to inspect basic OCSP response details");
     }
 
     // Possible return values:
     // -1: no nonce in reply, 1 = nonces match, 2/3 = ignore, 0 = mismatch
-    if (!(status = OCSP_check_nonce(request, basic))) {
-        OCSP_REQUEST_free(request);
-        OCSP_RESPONSE_free(response);
+    if (!(status = OCSP_check_nonce_d(request, basic))) {
+        OCSP_REQUEST_free_d(request);
+        OCSP_RESPONSE_free_d(response);
         OCSP_BASICRESP_free(basic);
         RET_ERROR_INT(ERR_UNSPEC, "OCSP verification failed because of response nonce mismatch");
     } else if (status == 1) {
@@ -751,22 +752,22 @@ int _do_ocsp_validation(SSL *connection, int *fallthrough) {
 
     // Create the x509 certificate store that will be used for final response validation.
     if (!(store = _get_cert_store())) {
-        OCSP_REQUEST_free(request);
-        OCSP_RESPONSE_free(response);
+        OCSP_REQUEST_free_d(request);
+        OCSP_RESPONSE_free_d(response);
         OCSP_BASICRESP_free(basic);
         RET_ERROR_INT(ERR_UNSPEC, "unable to verify OCSP response because of certificate store error");
     }
 
     // Do we need any flags? OCSP_TRUSTOTHER?
-    if ((ret = OCSP_basic_verify(basic, certstack, store, 0)) <= 0) {
+    if ((ret = OCSP_basic_verify_d(basic, certstack, store, 0)) <= 0) {
 
         if (ret < 0) {
             PUSH_ERROR_OPENSSL();
         }
 
-        OCSP_REQUEST_free(request);
-        OCSP_RESPONSE_free(response);
-        X509_STORE_free(store);
+        OCSP_REQUEST_free_d(request);
+        OCSP_RESPONSE_free_d(response);
+        X509_STORE_free_d(store);
         OCSP_BASICRESP_free(basic);
 
         if (ret < 0) {
@@ -776,16 +777,16 @@ int _do_ocsp_validation(SSL *connection, int *fallthrough) {
         return 0;
     }
 
-    X509_STORE_free(store);
+    X509_STORE_free_d(store);
 
-    if ((ret = OCSP_resp_find_status(basic, cid, &status, &reason, &revtime, &thisupd, &nextupd)) <= 0) {
+    if ((ret = OCSP_resp_find_status_d(basic, cid, &status, &reason, &revtime, &thisupd, &nextupd)) <= 0) {
 
         if (ret < 0) {
             PUSH_ERROR_OPENSSL();
         }
 
-        OCSP_REQUEST_free(request);
-        OCSP_RESPONSE_free(response);
+        OCSP_REQUEST_free_d(request);
+        OCSP_RESPONSE_free_d(response);
         OCSP_BASICRESP_free(basic);
 
         if (ret < 0) {
@@ -797,21 +798,21 @@ int _do_ocsp_validation(SSL *connection, int *fallthrough) {
 
     if (_verbose >= 3) {
 
-        if ((dbgbio = BIO_new_fp(stderr, BIO_NOCLOSE))) {
+        if ((dbgbio = BIO_new_fp_d(stderr, BIO_NOCLOSE))) {
             fprintf(stderr, "--- This OCSP update: ");
-            ASN1_GENERALIZEDTIME_print(dbgbio, thisupd);
+            ASN1_GENERALIZEDTIME_print_d(dbgbio, thisupd);
             fprintf(stderr, "\n--- Next OCSP update: ");
-            ASN1_GENERALIZEDTIME_print(dbgbio, nextupd);
+            ASN1_GENERALIZEDTIME_print_d(dbgbio, nextupd);
             fprintf(stderr, "\n");
-            BIO_free(dbgbio);
+            BIO_free_d(dbgbio);
         }
 
     }
 
     // Requested with a maximum clock skew time of 5 minutes, and ignore the max age option. (maybe we shouldn't).
-    status = OCSP_check_validity(thisupd, nextupd, 300, -1);
+    status = OCSP_check_validity_d(thisupd, nextupd, 300, -1);
 
-    OCSP_REQUEST_free(request);
+    OCSP_REQUEST_free_d(request);
 
     if (status <= 0) {
 
@@ -819,7 +820,7 @@ int _do_ocsp_validation(SSL *connection, int *fallthrough) {
             PUSH_ERROR_OPENSSL();
         }
 
-        OCSP_RESPONSE_free(response);
+        OCSP_RESPONSE_free_d(response);
         OCSP_BASICRESP_free(basic);
 
         if (status < 0) {
@@ -875,7 +876,7 @@ int _do_ocsp_validation(SSL *connection, int *fallthrough) {
         fprintf(stderr, "Error: unable to add OCSP response to object cache.\n");
         dump_error_stack();
         _clear_error_stack();
-        OCSP_RESPONSE_free(response);
+        OCSP_RESPONSE_free_d(response);
         OCSP_BASICRESP_free(basic);
     }
 
@@ -887,6 +888,24 @@ int _do_ocsp_validation(SSL *connection, int *fallthrough) {
 
     return 1;
 }
+
+OCSP_REQUEST *d2i_OCSP_REQUEST(OCSP_REQUEST **a, const unsigned char **in, long len) \
+        { \
+                return (OCSP_REQUEST *)ASN1_item_d2i((ASN1_VALUE **)a, in, len, ASN1_ITEM_rptr(OCSP_REQUEST));\
+        };
+        int i2d_OCSP_REQUEST(OCSP_REQUEST *a, unsigned char **out) \
+        { \
+                return ASN1_item_i2d((ASN1_VALUE *)a, out, ASN1_ITEM_rptr(OCSP_REQUEST));\
+        }
+
+OCSP_REQUEST *OCSP_REQUEST_new(void) \
+        { \
+                return (OCSP_REQUEST *)ASN1_item_new(ASN1_ITEM_rptr(OCSP_REQUEST)); \
+        } \
+        void OCSP_REQUEST_free(OCSP_REQUEST *a) \
+        { \
+                ASN1_item_free((ASN1_VALUE *)a, ASN1_ITEM_rptr(OCSP_REQUEST)); \
+        }
 
 
 /**
@@ -907,21 +926,21 @@ char *_get_cert_subject_cn(X509 *cert) {
         RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
     }
 
-    if (!(xname = X509_get_subject_name(cert))) {
+    if (!(xname = X509_get_subject_name_d(cert))) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(ERR_UNSPEC, "unable to get certificate subject common name");
     }
 
-    if ((idxnid = X509_NAME_get_index_by_NID(xname, NID_commonName, -1)) != -1) {
+    if ((idxnid = X509_NAME_get_index_by_NID_d(xname, NID_commonName, -1)) != -1) {
 
-        if ((xne = X509_NAME_get_entry(xname, idxnid))) {
+        if ((xne = X509_NAME_get_entry_d(xname, idxnid))) {
 
-            if (!(cnstr = X509_NAME_ENTRY_get_data(xne))) {
+            if (!(cnstr = X509_NAME_ENTRY_get_data_d(xne))) {
                 PUSH_ERROR_OPENSSL();
                 RET_ERROR_PTR(ERR_UNSPEC, "unable to read certificate subject common name data");
             }
 
-            if (!(cn = ASN1_STRING_data(cnstr))) {
+            if (!(cn = ASN1_STRING_data_d(cnstr))) {
                 PUSH_ERROR_OPENSSL();
                 RET_ERROR_PTR(ERR_UNSPEC, "unable to read certificate subject common name data string");
             } else if (!(result = strdup((char *)cn))) {
@@ -940,7 +959,7 @@ char *_get_cert_subject_cn(X509 *cert) {
 
 /**
  * @brief   An internal callback function for DMTP TLS certificate verification.
- * @note    This callback is set from SSL_CTX_set_verify().
+ * @note    This callback is set from SSL_CTX_set_verify_d().
  * @param   preverify_ok    if set, indicates that the verification of the certificate passed, or 0 if it didn't.
  * @param   ctx     a pointer to the complete context used for the certificate chain verification.
  * @return  if 0, the verification process is stopped immediately, or if 1, the process is continued.
@@ -954,26 +973,26 @@ int _verify_certificate_callback(int preverify_ok, X509_STORE_CTX *ctx) {
     int depth = -1, err = -1;
 
     // This function isn't really used anything except facilitating debugging output;
-    // since we call X509_verify_cert() manually we discard the automatic chain verification provided by
+    // since we call X509_verify_cert_d() manually we discard the automatic chain verification provided by
     // openssl and instead try this process again later after having built a proper certificate store.
     // Therefore we always return 1 to keep the chain traversal going no matter what.
 
-    if (!(cert = X509_STORE_CTX_get_current_cert(ctx))) {
-        ERR_print_errors_fp(stderr);
+    if (!(cert = X509_STORE_CTX_get_current_cert_d(ctx))) {
+        ERR_print_errors_fp_d(stderr);
         fprintf(stderr, "Error: unable to get x509 certificate in verification callback.\n");
         return 1;
     }
 
-    if (!(xname = X509_get_subject_name(cert))) {
-        ERR_print_errors_fp(stderr);
+    if (!(xname = X509_get_subject_name_d(cert))) {
+        ERR_print_errors_fp_d(stderr);
         fprintf(stderr, "Error: unable to get x509 certificate subject name in verification callback.\n");
         return 1;
     }
 
     memset(depthstr, 0, sizeof(depthstr));
 
-    if ((err = X509_STORE_CTX_get_error(ctx)) != X509_V_OK) {
-        depth = X509_STORE_CTX_get_error_depth(ctx);
+    if ((err = X509_STORE_CTX_get_error_d(ctx)) != X509_V_OK) {
+        depth = X509_STORE_CTX_get_error_depth_d(ctx);
         strncpy(depthstr, "[unknown]", sizeof(depthstr) - 1);
     }
 
@@ -987,11 +1006,11 @@ int _verify_certificate_callback(int preverify_ok, X509_STORE_CTX *ctx) {
     } else {
         _clear_error_stack();
         memset(buf, 0, sizeof(buf));
-        X509_NAME_oneline(X509_get_subject_name(cert), buf, sizeof(buf));
+        X509_NAME_oneline_d(X509_get_subject_name_d(cert), buf, sizeof(buf));
         _dbgprint(1, "Attempting validation in x509 certificate chain %s (level %s); verified = %s / %d\n", buf, depthstr, (preverify_ok ? "yes" : "no"), err);
     }
 
-//  printf("XXX: depth = %d, error = %d (%s)\n", depth, err, X509_verify_cert_error_string(err));
+//  printf("XXX: depth = %d, error = %d (%s)\n", depth, err, X509_verify_cert_error_string_d(err));
 
     return 1;
 }
@@ -1009,29 +1028,29 @@ int _validate_self_signed(X509 *cert) {
     X509_STORE *store;
     int result, error;
 
-    if (!(store = X509_STORE_new())) {
+    if (!(store = X509_STORE_new_d())) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_INT(ERR_UNSPEC, "could not validate self-signed X509 certificate because of x509 store error");
     }
 
-    if (!(ctx = X509_STORE_CTX_new())) {
+    if (!(ctx = X509_STORE_CTX_new_d())) {
         PUSH_ERROR_OPENSSL();
-        X509_STORE_free(store);
+        X509_STORE_free_d(store);
         RET_ERROR_INT(ERR_UNSPEC, "could not validate self-signed X509 certificate because of x509 store context error");
     }
 
-    if (!X509_STORE_CTX_init(ctx, store, cert, NULL)) {
+    if (!X509_STORE_CTX_init_d(ctx, store, cert, NULL)) {
         PUSH_ERROR_OPENSSL();
-        X509_STORE_free(store);
-        X509_STORE_CTX_free(ctx);
+        X509_STORE_free_d(store);
+        X509_STORE_CTX_free_d(ctx);
         RET_ERROR_INT(ERR_UNSPEC, "unable to initialize x509 store context");
     }
 
-    if (X509_verify_cert(ctx) == 1) {
+    if (X509_verify_cert_d(ctx) == 1) {
         result = 1;
     } else {
         result = 0;
-        error = X509_STORE_CTX_get_error(ctx);
+        error = X509_STORE_CTX_get_error_d(ctx);
 
         // TODO: need to resubmit for validation
         if (error == X509_V_ERR_CERT_HAS_EXPIRED) {
@@ -1041,13 +1060,13 @@ int _validate_self_signed(X509 *cert) {
             _dbgprint(0, "Warning: self-signed certificate was not yet valid but still passed check.\n");
             result = 1;
         } else {
-            fprintf(stderr, "x509 certificate verification failed: %s\n", X509_verify_cert_error_string(ctx->error));
+            fprintf(stderr, "x509 certificate verification failed: %s\n", X509_verify_cert_error_string_d(ctx->error));
         }
 
     }
 
-    X509_STORE_free(store);
-    X509_STORE_CTX_free(ctx);
+    X509_STORE_free_d(store);
+    X509_STORE_CTX_free_d(ctx);
 
     return result;
 }
@@ -1126,14 +1145,14 @@ X509_STORE *_get_cert_store(void) {
 
     X509_STORE *store;
 
-    if (!(store = X509_STORE_new())) {
+    if (!(store = X509_STORE_new_d())) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(ERR_UNSPEC, "could not initialize new certificate store");
     }
 
-    if (X509_STORE_load_locations(store, _ca_file, NULL) != 1) {
+    if (X509_STORE_load_locations_d(store, _ca_file, NULL) != 1) {
         PUSH_ERROR_OPENSSL();
-        X509_STORE_free(store);
+        X509_STORE_free_d(store);
         RET_ERROR_PTR(ERR_UNSPEC, "could not load x509 certificate store");
     }
 
@@ -1152,8 +1171,8 @@ void _ssl_fd_loop(SSL *connection) {
     ssize_t nread, nwritten;
     int ssl_fd;
 
-    if ((ssl_fd = SSL_get_rfd(connection)) < 0) {
-        ERR_print_errors_fp(stderr);
+    if ((ssl_fd = SSL_get_rfd_d(connection)) < 0) {
+        ERR_print_errors_fp_d(stderr);
         return;
     }
 
@@ -1191,8 +1210,8 @@ void _ssl_fd_loop(SSL *connection) {
                 return;
             }
 
-            if ((nwritten = SSL_write(connection, buf, nread)) <= 0) {
-                ERR_print_errors_fp(stderr);
+            if ((nwritten = SSL_write_d(connection, buf, nread)) <= 0) {
+                ERR_print_errors_fp_d(stderr);
                 return;
             } else if (nwritten != nread) {
                 fprintf(stderr, "[Unable to write all data to SSL buffer]\n");
@@ -1206,8 +1225,8 @@ void _ssl_fd_loop(SSL *connection) {
             return;
         } else if (FD_ISSET(ssl_fd, &rfds)) {
 
-            if ((nread = SSL_read(connection, buf, sizeof(buf))) < 0) {
-                ERR_print_errors_fp(stderr);
+            if ((nread = SSL_read_d(connection, buf, sizeof(buf))) < 0) {
+                ERR_print_errors_fp_d(stderr);
                 return;
             } else if (!nread) {
                 fprintf(stderr, "[Reached end of ssl stream]\n");
@@ -1230,7 +1249,7 @@ void _ssl_fd_loop(SSL *connection) {
 
 
 /**
- * @brief   An OCSP stapling response callback for the TLS subsystem.
+ * @brief   An OCSP stapling rOCSP_REQUEST_freeesponse callback for the TLS subsystem.
  * @note    This function currently does not do anything!
  * @param   s   a pointer to the SSL connection that generated the callback.
  * @param   arg an optional callback parameter that was set by the caller.
@@ -1245,22 +1264,22 @@ int _ocsp_response_callback(SSL *s, void *arg) {
     len = SSL_get_tlsext_status_ocsp_resp(s, &p);
 
     if (!p) {
-        ERR_print_errors_fp(stderr);
+        ERR_print_errors_fp_d(stderr);
         // No OCSP response was sent.
         return 1;
     }
 
     if (!(response = d2i_OCSP_RESPONSE(NULL, &p, len))) {
-        ERR_print_errors_fp(stderr);
+        ERR_print_errors_fp_d(stderr);
         fprintf(stderr, "Error: could not parse OCSP response message.\n");
         return 0;
     }
 
     if (_verbose >= 3) {
-        OCSP_RESPONSE_print(arg, response, 0);
+        OCSP_RESPONSE_print_d(arg, response, 0);
     }
 
-    OCSP_RESPONSE_free(response);
+    OCSP_RESPONSE_free_d(response);
 
     return 1;
 }
@@ -1276,7 +1295,7 @@ void _destroy_ocsp_response_cb(void *record) {
 
     OCSP_RESPONSE *response = (OCSP_RESPONSE *)record;
 
-    OCSP_RESPONSE_free(response);
+    OCSP_RESPONSE_free_d(response);
 }
 
 
@@ -1313,11 +1332,11 @@ char *_get_cache_ocsp_id(X509 *cert, OCSP_CERTID *cid, char *buf, size_t blen) {
 
     if (_compute_sha_hash(160, (unsigned char *)cbuf, cid_size, hashbuf) < 0) {
         free(cn);
-        OPENSSL_free(cbuf);
+        CRYPTO_free_d(cbuf);
         RET_ERROR_PTR(ERR_UNSPEC, "could not compute SHA hash of x509 certificate id");
     }
 
-    OPENSSL_free(cbuf);
+    CRYPTO_free_d(cbuf);
     memset(hexbuf, 0, sizeof(hexbuf));
 
     // Simple byte-to-hex conversion routine for the 20 bytes of the SHA-160 hash.
@@ -1362,8 +1381,8 @@ void _dump_ocsp_response_cb(FILE *fp, void *record, int brief) {
         return;
     }
 
-    rcode = OCSP_response_status(response);
-    fprintf(fp, "response = %s", OCSP_response_status_str(rcode));
+    rcode = OCSP_response_status_d(response);
+    fprintf(fp, "response = %s", OCSP_response_status_str_d(rcode));
 
     // We probably need a way of returning a much more detailed error message here for another code.
     if (rcode != OCSP_RESPONSE_STATUS_SUCCESSFUL) {
@@ -1371,8 +1390,8 @@ void _dump_ocsp_response_cb(FILE *fp, void *record, int brief) {
         return;
     }
 
-    if (!(basic = OCSP_response_get1_basic(response))) {
-        ERR_print_errors_fp(stderr);
+    if (!(basic = OCSP_response_get1_basic_d(response))) {
+        ERR_print_errors_fp_d(stderr);
         fprintf(stderr, "Error: unable to inspect basic OCSP response details.\n");
         return;
     }
@@ -1399,8 +1418,8 @@ void _dump_ocsp_response_cb(FILE *fp, void *record, int brief) {
         fprintf(fp, "[unknown]");
     }
 
-    if (!(bio = BIO_new_fp(fp, BIO_NOCLOSE))) {
-        ERR_print_errors_fp(stderr);
+    if (!(bio = BIO_new_fp_d(fp, BIO_NOCLOSE))) {
+        ERR_print_errors_fp_d(stderr);
         fprintf(stderr, "Error: unable to dump cached OCSP response data.\n");
         OCSP_BASICRESP_free(basic);
         return;
@@ -1409,9 +1428,9 @@ void _dump_ocsp_response_cb(FILE *fp, void *record, int brief) {
     while (sk_OCSP_SINGLERESP_num(respstack) > 0) {
         sresp = sk_OCSP_SINGLERESP_pop(respstack);
         fprintf(fp, ", this update = ");
-        ASN1_GENERALIZEDTIME_print(bio, sresp->thisUpdate);
+        ASN1_GENERALIZEDTIME_print_d(bio, sresp->thisUpdate);
         fprintf(fp, ", next update = ");
-        ASN1_GENERALIZEDTIME_print(bio, sresp->nextUpdate);
+        ASN1_GENERALIZEDTIME_print_d(bio, sresp->nextUpdate);
         fprintf(fp, ", cert status = ");
 
         if (sresp->certStatus) {
@@ -1439,9 +1458,9 @@ void _dump_ocsp_response_cb(FILE *fp, void *record, int brief) {
 
         if (sresp->certId && sresp->certId->serialNumber) {
 
-            if ((serial = ASN1_INTEGER_to_BN(sresp->certId->serialNumber, NULL))) {
-                fprintf(fp, "%s", BN_bn2hex(serial));
-                BN_free(serial);
+            if ((serial = ASN1_INTEGER_to_BN_d(sresp->certId->serialNumber, NULL))) {
+                fprintf(fp, "%s", BN_bn2hex_d(serial));
+                BN_free_d(serial);
             } else {
                 fprintf(fp, "[unknown]");
             }
@@ -1451,7 +1470,7 @@ void _dump_ocsp_response_cb(FILE *fp, void *record, int brief) {
         fprintf(fp, ", valid = ");
 
         // Requested with a maximum clock skew time of 5 minutes, and ignore the max age option. (maybe we shouldn't).
-        if (OCSP_check_validity(sresp->thisUpdate, sresp->nextUpdate, 300, -1) <= 0) {
+        if (OCSP_check_validity_d(sresp->thisUpdate, sresp->nextUpdate, 300, -1) <= 0) {
             fprintf(fp, "no");
         } else {
             fprintf(fp, "yes");
@@ -1461,7 +1480,7 @@ void _dump_ocsp_response_cb(FILE *fp, void *record, int brief) {
     }
 
 
-    BIO_free(bio);
+    BIO_free_d(bio);
 
 
     OCSP_BASICRESP_free(basic);

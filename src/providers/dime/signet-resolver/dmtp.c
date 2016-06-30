@@ -9,6 +9,8 @@
 #include "dime/common/misc.h"
 #include "dime/common/error.h"
 
+#include "providers/symbols.h"
+
 
 signet_t *_get_signet(const char *name, const char *fingerprint, int use_cache) {
 
@@ -412,13 +414,13 @@ int _verify_dx_certificate(dmtp_session_t *session) {
         RET_ERROR_INT(ERR_BAD_PARAM, NULL);
     }
 
-    if (!(cert = SSL_get_peer_certificate(session->con))) {
+    if (!(cert = SSL_get_peer_certificate_d(session->con))) {
         PUSH_ERROR_OPENSSL();
         _dbgprint(1, "DX TLS certificate verification failed: could not get peer certificate.\n");
         RET_ERROR_INT(ERR_UNSPEC, "could not get peer certificate");
     }
 
-    if (X509_check_issued(cert, cert) == X509_V_OK) {
+    if (X509_check_issued_d(cert, cert) == X509_V_OK) {
         _dbgprint(2, "Continuing verification of self-signed DX TLS certificate ...\n");
         selfsign = 1;
     }
@@ -482,7 +484,7 @@ int _verify_dx_certificate(dmtp_session_t *session) {
     }
 
     // Before continue, make sure that this certificate even matches the expected hostname of the DX.
-    // Our version of OpenSSL doesn't support X509_check_host() so it looks like this is what we need to do:
+    // Our version of OpenSSL doesn't support X509_check_host_d() so it looks like this is what we need to do:
     // The hostname is either 1. the dnsName field of the subjectAlternativeName extension, or 2. the CN field of the subject.
     switch (_do_x509_hostname_check(cert, session->dx)) {
 
@@ -499,7 +501,7 @@ int _verify_dx_certificate(dmtp_session_t *session) {
 
     }
 
-    switch(_do_x509_validation(cert, SSL_get_peer_cert_chain(session->con))) {
+    switch(_do_x509_validation(cert, SSL_get_peer_cert_chain_d(session->con))) {
 
     case 0:
         _dbgprint(1, "DX TLS certificate failed x509 chain validation.\n");
@@ -1311,7 +1313,7 @@ char *_sgnt_resolv_read_dmtp_line(dmtp_session_t *session, int *overflow, unsign
 
         // Determine whether we're reading from a vanilla socket or an SSL connection.
         if (session->con) {
-            nread = SSL_read(session->con, &(session->_inbuf[session->_inpos]), nleft);
+            nread = SSL_read_d(session->con, &(session->_inbuf[session->_inpos]), nleft);
         } else {
             nread = recv(session->_fd, &(session->_inbuf[session->_inpos]), nleft, 0);
         }
@@ -1724,7 +1726,7 @@ int _sgnt_resolv_dmtp_issue_command(dmtp_session_t *session, const char *cmd) {
     // Figure out if this is being written plain text or through an established SSL connection.
     if (session->con) {
 
-        if ((nwritten = SSL_write(session->con, cmd, strlen(cmd))) <= 0) {
+        if ((nwritten = SSL_write_d(session->con, cmd, strlen(cmd))) <= 0) {
             PUSH_ERROR_OPENSSL();
         }
 
@@ -1795,7 +1797,7 @@ int _sgnt_resolv_dmtp_write_data(dmtp_session_t *session, const void *buf, size_
         // Figure out if this is being written plain text or through an established SSL connection.
         if (session->con) {
 
-            if ((nwritten = SSL_write(session->con, dataptr, buflen)) <= 0) {
+            if ((nwritten = SSL_write_d(session->con, dataptr, buflen)) <= 0) {
                 PUSH_ERROR_OPENSSL();
                 RET_ERROR_INT(ERR_UNSPEC, "could not write all data in buffer to remove server");
             }

@@ -4,6 +4,8 @@
 #include "dime/common/misc.h"
 #include "dime/common/error.h"
 
+#include "providers/symbols.h"
+
 #define INITIALIZE_DNS() { if (!_dns_initialized && (_initialize_resolver() < 0)) { RET_ERROR_PTR(ERR_UNSPEC, "failed to initialize DNS resolver"); } }
 
 static int _dns_initialized = 0;
@@ -160,7 +162,7 @@ RSA *_get_rsa_dnskey(const unsigned char *rdptr, size_t rdlen) {
         RET_ERROR_PTR(ERR_UNSPEC, "DNSKEY rdata terminated before end of exponent");
     }
 
-    if (!(exp = BN_bin2bn(ptr, explen, NULL))) {
+    if (!(exp = BN_bin2bn_d(ptr, explen, NULL))) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(ERR_UNSPEC, "unable to read exponent from DNSKEY rdata");
     }
@@ -169,9 +171,9 @@ RSA *_get_rsa_dnskey(const unsigned char *rdptr, size_t rdlen) {
     len -= explen;
 
     // The remainder is the modulus.
-    if (!(mod = BN_bin2bn(ptr, len, NULL))) {
+    if (!(mod = BN_bin2bn_d(ptr, len, NULL))) {
         PUSH_ERROR_OPENSSL();
-        BN_free(exp);
+        BN_free_d(exp);
         RET_ERROR_PTR_FMT(ERR_UNSPEC, "unable to extract modulus from DNSKEY rdata {%u bytes}", (unsigned int)len);
     }
 
@@ -180,17 +182,17 @@ RSA *_get_rsa_dnskey(const unsigned char *rdptr, size_t rdlen) {
 
     // The number of bits in the modulus determines the public key size;
     // RFC 3110 demands that this value should not be less than 512 bits or greater than 4096 bits.
-    if (((keysize = BN_num_bits(mod)) < 512) || (keysize > 4096)) {
+    if (((keysize = BN_num_bits_d(mod)) < 512) || (keysize > 4096)) {
         PUSH_ERROR_OPENSSL();
-        BN_free(exp);
-        BN_free(mod);
+        BN_free_d(exp);
+        BN_free_d(mod);
         RET_ERROR_PTR(ERR_UNSPEC, "modulus doesn't fall in mandatory length range of 512-4096 bits");
     }
 
-    if (!(result = RSA_new())) {
+    if (!(result = RSA_new_d())) {
         PUSH_ERROR_OPENSSL();
-        BN_free(exp);
-        BN_free(mod);
+        BN_free_d(exp);
+        BN_free_d(mod);
         RET_ERROR_PTR(ERR_UNSPEC, "unable to allocate new RSA public key holder");
     }
 
@@ -200,8 +202,8 @@ RSA *_get_rsa_dnskey(const unsigned char *rdptr, size_t rdlen) {
     result->p = NULL;
     result->q = NULL;
 
-    //printf("MOD dec = [%s], hex = [%s]\n", BN_bn2dec(mod), BN_bn2hex(mod));
-    //printf("EXP dec = [%s], hex = [%s]\n", BN_bn2dec(exp), BN_bn2hex(exp));
+    //printf("MOD dec = [%s], hex = [%s]\n", BN_bn2dec(mod), BN_bn2hex_d(mod));
+    //printf("EXP dec = [%s], hex = [%s]\n", BN_bn2dec(exp), BN_bn2hex_d(exp));
     _dbgprint(3, "Read DNSKEY, exp. len: %u, total raw pubkey len: %u\n", explen, (unsigned int)len);
 
     return result;
@@ -358,26 +360,26 @@ int _rsa_verify_record(const char *label, unsigned char algorithm, RSA *pubkey, 
         RET_ERROR_INT(ERR_UNSPEC, "could not validate RRSIG SHA hash: no matching RRs were found");
     }
 
-    if (!(pkey = EVP_PKEY_new())) {
+    if (!(pkey = EVP_PKEY_new_d())) {
         PUSH_ERROR_OPENSSL();
         free(hdata);
         RET_ERROR_INT(ERR_UNSPEC, "an unexpected error occurred while verifying RR signature");
     }
 
-    if (EVP_PKEY_set1_RSA(pkey, pubkey) != 1) {
+    if (EVP_PKEY_set1_RSA_d(pkey, pubkey) != 1) {
         PUSH_ERROR_OPENSSL();
         free(hdata);
         RET_ERROR_INT(ERR_UNSPEC, "could not set key for RR signature verification");
     }
 
-    EVP_MD_CTX_init(&ctx);
+    EVP_MD_CTX_init_d(&ctx);
 
     if (algorithm == NS_ALG_RSASHA1) {
-        digtype = EVP_sha1();
+        digtype = EVP_sha1_d();
     } else if (algorithm == NS_ALG_RSASHA256) {
-        digtype = EVP_sha256();
+        digtype = EVP_sha256_d();
     } else {
-        digtype = EVP_sha512();
+        digtype = EVP_sha512_d();
     }
 
     if (EVP_VerifyInit(&ctx, digtype) != 1) {
@@ -392,7 +394,7 @@ int _rsa_verify_record(const char *label, unsigned char algorithm, RSA *pubkey, 
         RET_ERROR_INT(ERR_UNSPEC, "could not read hash for RR signature verification");
     }
 
-    result = EVP_VerifyFinal(&ctx, sigbuf, siglen, pkey);
+    result = EVP_VerifyFinal_d(&ctx, sigbuf, siglen, pkey);
     free(hdata);
 
     if (result == 1) {
@@ -1078,7 +1080,7 @@ void _destroy_dnskey(dnskey_t *key) {
     }
 
     if (key->pubkey) {
-        RSA_free(key->pubkey);
+        RSA_free_d(key->pubkey);
     }
 
     if (key->rdata) {
@@ -2413,7 +2415,7 @@ void *_clone_dnskey_record_cb(void *record) {
 
     memcpy(result->rdata, original->rdata, result->rdlen);
 
-    if (original->pubkey && (!(result->pubkey = RSAPublicKey_dup(original->pubkey)))) {
+    if (original->pubkey && (!(result->pubkey = RSAPublicKey_dup_d(original->pubkey)))) {
         _destroy_dnskey(result);
         RET_ERROR_PTR(ERR_UNSPEC, "could not clone DNSKEY RSA key");
     }

@@ -11,6 +11,8 @@
 #include "dime/common/misc.h"
 #include "dime/common/error.h"
 
+#include "providers/symbols.h"
+
 int _verbose = 0;
 
 static const unsigned char
@@ -1036,9 +1038,9 @@ _compute_sha_hash(
 
     if (nbits == 160) {
 
-        if (!SHA1_Init(&ctx160)
-            || !SHA1_Update(&ctx160, buf, blen)
-            || !SHA1_Final(outbuf, &ctx160))
+        if (!SHA1_Init_d(&ctx160)
+            || !SHA1_Update_d(&ctx160, buf, blen)
+            || !SHA1_Final_d(outbuf, &ctx160))
         {
             PUSH_ERROR_OPENSSL();
             RET_ERROR_INT(
@@ -1048,9 +1050,9 @@ _compute_sha_hash(
 
     } else if (nbits == 256) {
 
-        if (!SHA256_Init(&ctx256)
-            || !SHA256_Update(&ctx256, buf, blen)
-            || !SHA256_Final(outbuf, &ctx256))
+        if (!SHA256_Init_d(&ctx256)
+            || !SHA256_Update_d(&ctx256, buf, blen)
+            || !SHA256_Final_d(outbuf, &ctx256))
         {
             PUSH_ERROR_OPENSSL();
             RET_ERROR_INT(
@@ -1060,9 +1062,9 @@ _compute_sha_hash(
 
     } else if (nbits == 512) {
 
-        if (!SHA512_Init(&ctx512)
-            || !SHA512_Update(&ctx512, buf, blen)
-            || !SHA512_Final(outbuf, &ctx512))
+        if (!SHA512_Init_d(&ctx512)
+            || !SHA512_Update_d(&ctx512, buf, blen)
+            || !SHA512_Final_d(outbuf, &ctx512))
         {
             PUSH_ERROR_OPENSSL();
             RET_ERROR_INT(
@@ -1118,13 +1120,13 @@ _compute_sha_hash_multibuf(
 
     switch(nbits) {
     case 160:
-        res = SHA1_Init(&ctx160);
+        res = SHA1_Init_d(&ctx160);
         break;
     case 256:
-        res = SHA256_Init(&ctx256);
+        res = SHA256_Init_d(&ctx256);
         break;
     case 512:
-        res = SHA512_Init(&ctx512);
+        res = SHA512_Init_d(&ctx512);
         break;
     default:
         RET_ERROR_INT(ERR_UNSPEC, "invalid number of bits for SHA hash");
@@ -1140,13 +1142,13 @@ _compute_sha_hash_multibuf(
 
         switch(nbits) {
         case 160:
-            res = SHA1_Update(&ctx160, bufptr->data, bufptr->len);
+            res = SHA1_Update_d(&ctx160, bufptr->data, bufptr->len);
             break;
         case 256:
-            res = SHA256_Update(&ctx256, bufptr->data, bufptr->len);
+            res = SHA256_Update_d(&ctx256, bufptr->data, bufptr->len);
             break;
         case 512:
-            res = SHA512_Update(&ctx512, bufptr->data, bufptr->len);
+            res = SHA512_Update_d(&ctx512, bufptr->data, bufptr->len);
             break;
         }
 
@@ -1160,13 +1162,13 @@ _compute_sha_hash_multibuf(
 
     switch(nbits) {
     case 160:
-        res = SHA1_Final(outbuf, &ctx160);
+        res = SHA1_Final_d(outbuf, &ctx160);
         break;
     case 256:
-        res = SHA256_Final(outbuf, &ctx256);
+        res = SHA256_Final_d(outbuf, &ctx256);
         break;
     case 512:
-        res = SHA512_Final(outbuf, &ctx512);
+        res = SHA512_Final_d(outbuf, &ctx512);
         break;
     }
 
@@ -1228,7 +1230,7 @@ _decode_rsa_pubkey(unsigned char *data, size_t dlen)
         RET_ERROR_PTR(ERR_UNSPEC, "reached premature end of exponent");
     }
 
-    if (!(exp = BN_bin2bn(ptr, explen, NULL))) {
+    if (!(exp = BN_bin2bn_d(ptr, explen, NULL))) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(ERR_UNSPEC, "could not read exponent");
     }
@@ -1237,16 +1239,16 @@ _decode_rsa_pubkey(unsigned char *data, size_t dlen)
     left -= explen;
 
     // The remainder is the modulus.
-    if (!(mod = BN_bin2bn(ptr, left, NULL))) {
+    if (!(mod = BN_bin2bn_d(ptr, left, NULL))) {
         PUSH_ERROR_OPENSSL();
-        BN_free(exp);
+        BN_free_d(exp);
         RET_ERROR_PTR(ERR_UNSPEC, "could not read modulus");
     }
 
-    if (!(result = RSA_new())) {
+    if (!(result = RSA_new_d())) {
         PUSH_ERROR_OPENSSL();
-        BN_free(exp);
-        BN_free(mod);
+        BN_free_d(exp);
+        BN_free_d(mod);
         RET_ERROR_PTR(ERR_UNSPEC, "could not create new RSA public key holder");
     }
 
@@ -1310,7 +1312,7 @@ _encode_rsa_pubkey(RSA *pubkey, size_t *enclen)
     }
 
     // Finally, store the exponent followed by the modulus.
-    if (!BN_bn2bin(pubkey->e, rptr)) {
+    if (!BN_bn2bin_d(pubkey->e, rptr)) {
         PUSH_ERROR_OPENSSL();
         free(result);
         RET_ERROR_PTR(ERR_UNSPEC, "could not encode RSA public key exponent");
@@ -1318,7 +1320,7 @@ _encode_rsa_pubkey(RSA *pubkey, size_t *enclen)
 
     rptr += BN_num_bytes(pubkey->e);
 
-    if (!BN_bn2bin(pubkey->n, rptr)) {
+    if (!BN_bn2bin_d(pubkey->n, rptr)) {
         PUSH_ERROR_OPENSSL();
         free(result);
         RET_ERROR_PTR(ERR_UNSPEC, "could not encode RSA public key modulus");
@@ -1354,19 +1356,18 @@ _get_x509_cert_sha_hash(
     if (!cert || !out) {
         RET_ERROR_INT(ERR_BAD_PARAM, NULL);
     }
-
     if ((blen = i2d_X509(cert, &buf)) < 0) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_INT(ERR_UNSPEC, "could not serialize X509 certificate");
     }
 
     if (_compute_sha_hash(nbits, buf, blen, out) < 0) {
-        OPENSSL_free(buf);
+        CRYPTO_free_d(buf);
         RET_ERROR_INT(ERR_UNSPEC, "SHA hash on X509 certificate data failed");
     }
 
     // TODO: Is this really the proper way to free this buffer?
-    OPENSSL_free(buf);
+    CRYPTO_free_d(buf);
 
     return 0;
 }

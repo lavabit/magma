@@ -2,6 +2,7 @@
 #define DIME_CTX_H
 
 #include "dime/error_codes.h"
+#include "providers/symbols.h"
 
 #include <stddef.h>
 #include <stdarg.h>
@@ -54,7 +55,7 @@ dime_ctx_log(
     char const *format,
     ...);
 
-#define LOG_DEBUG(ctx, ...) \
+#define DIME_LOG_DEBUG(ctx, ...) \
     dime_ctx_log( \
         ctx, \
         __FILE__, \
@@ -62,7 +63,7 @@ dime_ctx_log(
         LOG_LEVEL_DEBUG, \
         __VA_ARGS__)
 
-#define LOG_INFO(ctx, ...) \
+#define DIME_LOG_INFO(ctx, ...) \
     dime_ctx_log( \
         ctx, \
         __FILE__, \
@@ -70,7 +71,7 @@ dime_ctx_log(
         LOG_LEVEL_INFO, \
         __VA_ARGS__)
 
-#define LOG_ERROR(ctx, ...) \
+#define DIME_LOG_ERROR(ctx, ...) \
     dime_ctx_log( \
         ctx, \
         __FILE__, \

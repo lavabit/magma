@@ -33,8 +33,8 @@ get_openssl_error(
     static int loaded = 0;
 
     if (!loaded) {
-        ERR_load_crypto_strings();
-        SSL_load_error_strings();
+        ERR_load_crypto_strings_d();
+        SSL_load_error_strings_d();
         loaded = 1;
     }
 
@@ -42,14 +42,14 @@ get_openssl_error(
 
     // Keep doing this as long as there's more errors there.
     while (
-        ERR_peek_error_line_data(
+        ERR_peek_error_line_data_d(
             &ssl_filename,
             &ssl_line,
             &ssl_data,
             &ssl_flags))
     {
         if (!first_pass) {
-            BUF_strlcat(result, " | ", result_length);
+            BUF_strlcat_d(result, " | ", result_length);
         } else {
             first_pass = 0;
         }
@@ -63,18 +63,18 @@ get_openssl_error(
             ssl_line);
 
         memset(tmpbuf2, 0, sizeof(tmpbuf2));
-        ERR_error_string_n(ERR_get_error(), tmpbuf2, sizeof(tmpbuf2));
+        ERR_error_string_n_d(ERR_get_error_d(), tmpbuf2, sizeof(tmpbuf2));
 
         // Combine the two error strings and add them to the buffer.
-        BUF_strlcat(result, tmpbuf2, result_length);
-        BUF_strlcat(result, tmpbuf, result_length);
+        BUF_strlcat_d(result, tmpbuf2, result_length);
+        BUF_strlcat_d(result, tmpbuf, result_length);
     }
 }
 
 #define LOG_OPENSSL_ERROR(ctx, buf, msg) do {\
     get_openssl_error(buf, sizeof(buf)); \
-    LOG_ERROR(dime_ctx, buf); \
-    LOG_ERROR(dime_ctx, msg); \
+    DIME_LOG_ERROR(dime_ctx, buf); \
+    DIME_LOG_ERROR(dime_ctx, msg); \
 } while (0)
 
 /**
@@ -107,12 +107,12 @@ encrypt_ctx_new(
     }
     memset(*result, 0, sizeof(encrypt_ctx_t));
 
-    SSL_load_error_strings();
-    SSL_library_init();
-    OPENSSL_add_all_algorithms_noconf();
+    SSL_load_error_strings_d();
+    SSL_library_init_d();
+    OPENSSL_add_all_algorithms_noconf_d();
 
     (*result)->encryption_group =
-        EC_GROUP_new_by_curve_name(NID_secp256k1);
+        EC_GROUP_new_by_curve_name_d(NID_secp256k1);
     if ((*result)->encryption_group == NULL) {
         LOG_OPENSSL_ERROR(
             dime_ctx,
@@ -123,7 +123,7 @@ encrypt_ctx_new(
     }
 
     (*result)->ecies_envelope_evp =
-        EVP_get_digestbyname(OBJ_nid2sn(NID_sha512));
+        EVP_get_digestbyname_d(OBJ_nid2sn_d(NID_sha512));
     if ((*result)->ecies_envelope_evp == NULL) {
         LOG_OPENSSL_ERROR(
             dime_ctx,
@@ -138,10 +138,10 @@ encrypt_ctx_new(
     return NULL;
 
 cleanup_group:
-    EC_GROUP_clear_free((*result)->encryption_group);
+    EC_GROUP_clear_free_d((*result)->encryption_group);
 cleanup_evp:
-    EVP_cleanup();
-    ERR_free_strings();
+    EVP_cleanup_d();
+    ERR_free_strings_d();
     free(*result);
     *result = NULL;
 error:
@@ -156,11 +156,11 @@ void
 encrypt_ctx_free(encrypt_ctx_t *ctx)
 {
     if (ctx->encryption_group != NULL) {
-        EC_GROUP_clear_free(ctx->encryption_group);
+        EC_GROUP_clear_free_d(ctx->encryption_group);
     }
 
-    EVP_cleanup();
-    ERR_free_strings();
+    EVP_cleanup_d();
+    ERR_free_strings_d();
 
     free(ctx);
 }
@@ -190,7 +190,7 @@ encrypt_keypair_generate(
         goto error;
     }
 
-    *ec_key = EC_KEY_new();
+    *ec_key = EC_KEY_new_d();
     if (*ec_key == NULL) {
         LOG_OPENSSL_ERROR(dime_ctx, errbuf,
             "unable to allocate new EC key pair for generation");
@@ -198,14 +198,14 @@ encrypt_keypair_generate(
         goto error;
     }
 
-    if (EC_KEY_set_group(*ec_key, encrypt_ctx->encryption_group) != 1) {
+    if (EC_KEY_set_group_d(*ec_key, encrypt_ctx->encryption_group) != 1) {
         LOG_OPENSSL_ERROR(dime_ctx, errbuf,
             "unable to associate curve group with new EC key pair");
         err = ERR_CRYPTO;
         goto cleanup_ec_key;
     }
 
-    if (EC_KEY_generate_key(*ec_key) != 1) {
+    if (EC_KEY_generate_key_d(*ec_key) != 1) {
         LOG_OPENSSL_ERROR(dime_ctx, errbuf,
             "unable to generate new EC key pair");
         err = ERR_CRYPTO;
@@ -215,7 +215,7 @@ encrypt_keypair_generate(
     return NULL;
 
 cleanup_ec_key:
-    EC_KEY_free(*ec_key);
+    EC_KEY_free_d(*ec_key);
     *ec_key = NULL;
 error:
     return err;
@@ -252,16 +252,16 @@ encrypt_deserialize_pubkey(
         goto error;
     }
 
-    if (!(*ec_key = EC_KEY_new())) {
+    if (!(*ec_key = EC_KEY_new_d())) {
         LOG_OPENSSL_ERROR(dime_ctx, errbuf,
             "could not generate new EC key for deserialization");
         err = ERR_CRYPTO;
         goto error;
     }
 
-    if (EC_KEY_set_group(
+    if (EC_KEY_set_group_d(
             *ec_key,
-            EC_GROUP_new_by_curve_name(NID_secp256k1))
+            EC_GROUP_new_by_curve_name_d(NID_secp256k1))
         != 1)
     {
         LOG_OPENSSL_ERROR(dime_ctx, errbuf,
@@ -271,7 +271,7 @@ encrypt_deserialize_pubkey(
     }
 
     if (!(*ec_key =
-            o2i_ECPublicKey(
+            o2i_ECPublicKey_d(
                 ec_key,
                 (const unsigned char **)&buf,
                 blen)))
@@ -285,7 +285,7 @@ encrypt_deserialize_pubkey(
     return NULL;
 
 cleanup_ec_key:
-    EC_KEY_free(*ec_key);
+    EC_KEY_free_d(*ec_key);
     *ec_key = NULL;
 error:
     return err;
@@ -311,7 +311,7 @@ encrypt_deserialize_privkey(
 {
     derror_t const *err = NULL;
     EC_KEY **result_key = (EC_KEY **)result;
-    const unsigned char *bufptr = buf;
+    const unsigned char *bptr = buf;
     char errbuf[512];
 
     if (dime_ctx == NULL
@@ -324,7 +324,7 @@ encrypt_deserialize_privkey(
         goto error;
     }
 
-    *result_key = EC_KEY_new();
+    *result_key = EC_KEY_new_d();
     if (*result_key == NULL) {
         LOG_OPENSSL_ERROR(dime_ctx, errbuf,
             "could not generate new EC key for deserialization");
@@ -332,9 +332,9 @@ encrypt_deserialize_privkey(
         goto error;
     }
 
-    if (EC_KEY_set_group(
+    if (EC_KEY_set_group_d(
             *result_key,
-            EC_GROUP_new_by_curve_name(NID_secp256k1))
+            EC_GROUP_new_by_curve_name_d(NID_secp256k1))
         != 1)
     {
         LOG_OPENSSL_ERROR(dime_ctx, errbuf,
@@ -343,7 +343,7 @@ encrypt_deserialize_privkey(
         goto cleanup_ec_key;
     }
 
-    *result_key = d2i_ECPrivateKey(result_key, &bufptr, blen);
+    *result_key = d2i_ECPrivateKey_d(result_key, &bptr, blen);
     if (*result_key == NULL) {
         LOG_OPENSSL_ERROR(dime_ctx, errbuf,
             "deserialization of EC public key portion failed");
@@ -361,7 +361,7 @@ encrypt_deserialize_privkey(
     return NULL;
 
 cleanup_ec_key:
-    EC_KEY_free(*result_key);
+    EC_KEY_free_d(*result_key);
     *result_key = NULL;
 error:
     return err;
@@ -459,18 +459,18 @@ error:
 //        RET_ERROR_INT(ERR_BAD_PARAM, NULL);
 //    }
 //
-//    if (!(ec_sig = d2i_ECDSA_SIG(NULL, &sig, slen))) {
+//    if (!(ec_sig = d2i_ECDSA_SIG_d(NULL, &sig, slen))) {
 //        PUSH_ERROR_OPENSSL();
 //        RET_ERROR_INT(ERR_UNSPEC, "unable to read EC signature from buffer");
 //    }
 //
-//    if ((result = ECDSA_do_verify(hash, hlen, ec_sig, key)) < 0) {
+//    if ((result = ECDSA_do_verify_d(hash, hlen, ec_sig, key)) < 0) {
 //        PUSH_ERROR_OPENSSL();
-//        ECDSA_SIG_free(ec_sig);
+//        ECDSA_SIG_free_d(ec_sig);
 //        RET_ERROR_INT(ERR_UNSPEC, "unable to complete ECDSA signature verification");
 //    }
 //
-//    ECDSA_SIG_free(ec_sig);
+//    ECDSA_SIG_free_d(ec_sig);
 //
 //    return result;
 //}
@@ -554,20 +554,20 @@ error:
 //        RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
 //    }
 //
-//    if (!(signature = ECDSA_do_sign(hash, hlen, key))) {
+//    if (!(signature = ECDSA_do_sign_d(hash, hlen, key))) {
 //        PUSH_ERROR_OPENSSL();
 //        RET_ERROR_PTR(
 //            ERR_UNSPEC,
 //            "unable to take ECDSA signature of hash buffer");
 //    }
 //
-//    if ((bsize = i2d_ECDSA_SIG(signature, &buf)) < 0) {
+//    if ((bsize = i2d_ECDSA_SIG_d(signature, &buf)) < 0) {
 //        PUSH_ERROR_OPENSSL();
-//        ECDSA_SIG_free(signature);
+//        ECDSA_SIG_free_d(signature);
 //        RET_ERROR_PTR(ERR_UNSPEC, "unable to serialize ECDSA signature");
 //    }
 //
-//    ECDSA_SIG_free(signature);
+//    ECDSA_SIG_free_d(signature);
 //
 //    *siglen = bsize;
 //
@@ -641,7 +641,7 @@ error:
 //        RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
 //    }
 //
-//    if ((bsize = i2o_ECPublicKey(key, &buf)) < 0) {
+//    if ((bsize = i2o_ECPublicKey_d(key, &buf)) < 0) {
 //        PUSH_ERROR_OPENSSL();
 //        RET_ERROR_PTR(ERR_UNSPEC, "unable to serialize EC public key");
 //    }
@@ -672,7 +672,7 @@ error:
 //        RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
 //    }
 //
-//    if ((bsize = i2d_ECPrivateKey(key, &buf)) < 0) {
+//    if ((bsize = i2d_ECPrivateKey_d(key, &buf)) < 0) {
 //        PUSH_ERROR_OPENSSL();
 //        RET_ERROR_PTR(ERR_UNSPEC, "unable to serialize EC private key");
 //    }
@@ -737,7 +737,7 @@ error:
 //        return;
 //    }
 //
-//    EC_KEY_free(key);
+//    EC_KEY_free_d(key);
 //}
 //
 //void *
@@ -747,7 +747,7 @@ error:
 //    void *output,
 //    size_t *olen)
 //{
-//    if (EVP_Digest(
+//    if (EVP_Digest_d(
 //            input,
 //            ilen,
 //            output,
@@ -779,10 +779,10 @@ error:
 //        RET_ERROR_INT(ERR_BAD_PARAM, NULL);
 //    }
 //
-//    if (ECDH_compute_key(
+//    if (ECDH_compute_key_d(
 //            aeskey,
 //            sizeof(aeskey),
-//            EC_KEY_get0_public_key(public_key),
+//            EC_KEY_get0_public_key_d(public_key),
 //            private_key,
 //            _ecies_env_derivation)
 //        != SHA_512_SIZE)
@@ -822,7 +822,7 @@ error:
 //        RET_ERROR_INT(ERR_BAD_PARAM, NULL);
 //    }
 //
-//    if (!RAND_bytes(buf, len)) {
+//    if (!RAND_bytes_d(buf, len)) {
 //        PUSH_ERROR_OPENSSL();
 //        RET_ERROR_INT(ERR_UNSPEC, "unable to generate random bytes");
 //    }
@@ -870,28 +870,28 @@ error:
 //            "input data was not aligned to required padding size");
 //    }
 //
-//    if (!(ctx = EVP_CIPHER_CTX_new())) {
+//    if (!(ctx = EVP_CIPHER_CTX_new_d())) {
 //        PUSH_ERROR_OPENSSL();
 //        RET_ERROR_INT(
 //            ERR_UNSPEC,
 //            "unable to create new context for AES-256 encryption");
 //    }
 //
-//    if (EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv) != 1) {
+//    if (EVP_EncryptInit_ex_d(ctx, EVP_aes_256_cbc_d(), NULL, key, iv) != 1) {
 //        PUSH_ERROR_OPENSSL();
 //        RET_ERROR_INT(
 //            ERR_UNSPEC,
 //            "unable to initialize context for AES-256 encryption");
 //    }
 //
-//    if (EVP_CIPHER_CTX_set_padding(ctx, 0) != 1) {
+//    if (EVP_CIPHER_CTX_set_padding_d(ctx, 0) != 1) {
 //        PUSH_ERROR_OPENSSL();
 //        RET_ERROR_INT(
 //            ERR_UNSPEC,
 //            "unable to set no padding for AES-256 encryption");
 //    }
 //
-//    if (EVP_EncryptUpdate(ctx, outbuf, &len, data, dlen) != 1) {
+//    if (EVP_EncryptUpdate_d(ctx, outbuf, &len, data, dlen) != 1) {
 //        PUSH_ERROR_OPENSSL();
 //        RET_ERROR_INT(
 //            ERR_UNSPEC,
@@ -900,7 +900,7 @@ error:
 //
 //    result = len;
 //
-//    if (EVP_EncryptFinal_ex(ctx, (unsigned char *)outbuf + len, &len) != 1) {
+//    if (EVP_EncryptFinal_ex_d(ctx, (unsigned char *)outbuf + len, &len) != 1) {
 //        PUSH_ERROR_OPENSSL();
 //        RET_ERROR_INT(
 //            ERR_UNSPEC,
@@ -908,7 +908,7 @@ error:
 //    }
 //
 //    result += len;
-//    EVP_CIPHER_CTX_free(ctx);
+//    EVP_CIPHER_CTX_free_d(ctx);
 //    ctx = NULL;
 //
 //    return result;
@@ -952,36 +952,36 @@ error:
 //        RET_ERROR_INT(ERR_BAD_PARAM, "input data was not aligned to required padding size");
 //    }
 //
-//    if (!(ctx = EVP_CIPHER_CTX_new())) {
+//    if (!(ctx = EVP_CIPHER_CTX_new_d())) {
 //        PUSH_ERROR_OPENSSL();
 //        RET_ERROR_INT(ERR_UNSPEC, "unable to create new context for AES-256 decryption");
 //    }
 //
-//    if (EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv) != 1) {
+//    if (EVP_DecryptInit_ex_d(ctx, EVP_aes_256_cbc_d(), NULL, key, iv) != 1) {
 //        PUSH_ERROR_OPENSSL();
 //        RET_ERROR_INT(ERR_UNSPEC, "unable to initialize context for AES-256 decryption");
 //    }
 //
-//    if (EVP_CIPHER_CTX_set_padding(ctx, 0) != 1) {
+//    if (EVP_CIPHER_CTX_set_padding_d(ctx, 0) != 1) {
 //        PUSH_ERROR_OPENSSL();
 //        RET_ERROR_INT(ERR_UNSPEC, "unable to set no padding for AES-256 decryption");
 //    }
 //
-//    if (EVP_DecryptUpdate(ctx, outbuf, &len, data, dlen) != 1) {
+//    if (EVP_DecryptUpdate_d(ctx, outbuf, &len, data, dlen) != 1) {
 //        PUSH_ERROR_OPENSSL();
 //        RET_ERROR_INT(ERR_UNSPEC, "AES-256 decryption update failed");
 //    }
 //
 //    result = len;
 //
-//    if (EVP_DecryptFinal_ex(ctx, (unsigned char *)outbuf + len, &len) != 1) {
+//    if (EVP_DecryptFinal_ex_d(ctx, (unsigned char *)outbuf + len, &len) != 1) {
 //        PUSH_ERROR_OPENSSL();
 //        RET_ERROR_INT(ERR_UNSPEC, "AES-256 decryption finalization failed");
 //    }
 //
 //    result += len;
 //
-//    EVP_CIPHER_CTX_free(ctx);
+//    EVP_CIPHER_CTX_free_d(ctx);
 //    ctx = NULL;
 //
 //    return result;

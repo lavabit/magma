@@ -269,6 +269,12 @@ void *dynamic_lib_handle = NULL;
 
 #define log_critical(...) printf (__VA_ARGS__)
 
+// Our macro for declaring external symbol binding points
+#define M_BIND(x) 		{ \
+                        .name = #x, \
+                        .pointer = (void *)&x##_d \
+                        }
+
 /**
  * @brief	Initialize and bind an import symbol table.
  * @see		dlsym()

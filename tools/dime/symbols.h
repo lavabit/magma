@@ -26,12 +26,6 @@
 #include <openssl/err.h>
 #include <openssl/ocsp.h>
 
-// Our macro for declaring external symbol binding points
-#define M_BIND(x) 		{ \
-                        .name = #x, \
-                        .pointer = (void *)&x##_d \
-                        }
-
 //! OPENSSL
 extern DH * (*DH_new_d)(void);
 extern char **SSL_version_str_d;

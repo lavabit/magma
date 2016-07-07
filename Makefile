@@ -116,7 +116,7 @@ MAGMA_CHECK_INCLUDE_ABSPATHS	+= $(foreach target,$(MAGMA_CHECK_INCDIRS), $(call 
 # Compiler Parameters
 CC								= gcc
 CFLAGS							= -std=gnu99 -O0 -fPIC -fmessage-length=0 -ggdb3 -rdynamic -c $(CFLAGS_WARNINGS) -MMD 
-CFLAGS_WARNINGS					= -Wall -Werror -Winline -Wformat-security -Warray-bounds
+CFLAGS_WARNINGS					= -Wall -Werror -Winline -Wformat-security -Warray-bounds -Wfatal-errors
 CFLAGS_PEDANTIC					= -Wextra -Wpacked -Wunreachable-code -Wformat=2
 
 CPP								= g++

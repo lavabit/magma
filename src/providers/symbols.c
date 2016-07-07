@@ -600,7 +600,7 @@ bool_t lib_symbols(size_t count, symbol_t symbols[]) {
 				log_critical("A dynamic function pointer has been referenced twice. {name = %s / pointer = %p}", symbols[i].name, symbols[i].pointer);
 				return false;
 			}
-			else if (!st_cmp_cs_eq(NULLER(symbols[i].name), NULLER(symbols[j].name))) {
+			else if (!st_cmp_cs_eq(NULLER((chr_t *)symbols[i].name), NULLER((chr_t *)symbols[j].name))) {
 				log_critical("A dynamically loaded symbol has been referenced twice. {name = %s / pointer = %p}", symbols[i].name, symbols[i].pointer);
 				return false;
 			}

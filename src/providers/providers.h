@@ -14,7 +14,7 @@
 #define MAGMA_PROVIDERS_H
 
 typedef struct {
-	char * name;
+	const chr_t * name;
 	void **pointer;
 } symbol_t;
 

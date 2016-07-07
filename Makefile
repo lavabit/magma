@@ -27,7 +27,7 @@ DIME_CHECK_PROGRAM				= $(addsuffix $(EXEEXT), dime.check)
 # Source Files
 BUILD_SRCFILES					= src/engine/status/build.c
 
-MAGMA_STATIC					= #$(TOPDIR)/lib/local/lib/libz.a $(TOPDIR)/lib/local/lib/libcrypto.a $(TOPDIR)/lib/local/lib/libssl.a
+MAGMA_STATIC					= 
 MAGMA_DYNAMIC					= -lrt -ldl -lpthread -lresolv
 MAGMA_SRCDIRS					= $(shell find src -type d -print)
 MAGMA_SRCFILES					= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(MAGMA_SRCDIRS), $(wildcard $(dir)/*.c)))

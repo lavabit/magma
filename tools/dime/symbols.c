@@ -259,7 +259,7 @@ void (*ERR_clear_error_d)(void) = NULL;
 void (*ERR_put_error_d)(int lib, int func, int reason, const char *file, int line) = NULL;
 
 typedef struct {
-	char * name;
+	const char * name;
 	void **pointer;
 } symbol_t;
 

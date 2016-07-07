@@ -61,7 +61,26 @@ bool_t lib_load_openssl(void) {
 		M_BIND(SSL_read), M_BIND(SSL_set_bio), M_BIND(SSL_shutdown), M_BIND(SSLv23_client_method), M_BIND(SSLv23_server_method),
 		M_BIND(SSL_version_str), M_BIND(SSL_write), M_BIND(TLSv1_server_method), M_BIND(X509_get_ext), M_BIND(X509_get_ext_count),
 		M_BIND(X509_get_subject_name), M_BIND(X509_NAME_get_text_by_NID), M_BIND(EVP_MD_type), M_BIND(SSL_pending), M_BIND(SSL_want),
-		M_BIND(SSL_get_rfd), M_BIND(EVP_CIPHER_CTX_ctrl), M_BIND(EVP_CIPHER_CTX_flags), M_BIND(EVP_CIPHER_flags)
+		M_BIND(SSL_get_rfd), M_BIND(EVP_CIPHER_CTX_ctrl), M_BIND(EVP_CIPHER_CTX_flags), M_BIND(EVP_CIPHER_flags), M_BIND(X509_STORE_CTX_new),
+		M_BIND(sk_pop), M_BIND(i2d_OCSP_RESPONSE), M_BIND(ECDSA_do_sign), M_BIND(ECDSA_SIG_free), M_BIND(i2d_OCSP_CERTID), M_BIND(d2i_OCSP_RESPONSE),
+		M_BIND(OCSP_REQUEST_new), M_BIND(OCSP_BASICRESP_free), M_BIND(i2d_X509), M_BIND(SSL_CTX_callback_ctrl), M_BIND(SSL_ctrl),
+		M_BIND(X509_NAME_ENTRY_get_data), M_BIND(ASN1_INTEGER_to_BN), M_BIND(BIO_new_fp), M_BIND(X509_NAME_oneline), M_BIND(OCSP_response_status_str),
+		M_BIND(X509_verify_cert_error_string), M_BIND(EVP_aes_256_cbc), M_BIND(d2i_ECPrivateKey), M_BIND(o2i_ECPublicKey), M_BIND(d2i_ECDSA_SIG),
+		M_BIND(EVP_CIPHER_CTX_new), M_BIND(EVP_PKEY_new), M_BIND(ASN1_GENERALIZEDTIME_print), M_BIND(BIO_free), M_BIND(ECDSA_do_verify),
+		M_BIND(EVP_PKEY_set1_RSA), M_BIND(EVP_VerifyFinal), M_BIND(i2d_ECDSA_SIG), M_BIND(i2d_ECPrivateKey), M_BIND(i2o_ECPublicKey),
+		M_BIND(OCSP_basic_verify), M_BIND(OCSP_check_nonce), M_BIND(OCSP_check_validity), M_BIND(OCSP_parse_url), M_BIND(OCSP_REQ_CTX_add1_header),
+		M_BIND(OCSP_REQ_CTX_set1_req), M_BIND(OCSP_request_add1_nonce), M_BIND(OCSP_REQUEST_print), M_BIND(OCSP_resp_find_status),
+		M_BIND(OCSP_RESPONSE_print), M_BIND(OCSP_response_status), M_BIND(OCSP_sendreq_nbio), M_BIND(SHA1_Final), M_BIND(SHA1_Init),
+		M_BIND(SHA1_Update), M_BIND(SHA256_Final), M_BIND(SHA256_Init), M_BIND(SHA256_Update), M_BIND(SHA512_Final), M_BIND(SHA512_Init),
+		M_BIND(SHA512_Update), M_BIND(sk_num), M_BIND(SSL_get_fd), M_BIND(SSL_set_fd), M_BIND(X509_check_host), M_BIND(X509_check_issued),
+		M_BIND(X509_NAME_get_index_by_NID), M_BIND(X509_STORE_CTX_get_error), M_BIND(X509_STORE_CTX_get_error_depth), M_BIND(X509_STORE_CTX_init),
+		M_BIND(X509_STORE_load_locations), M_BIND(X509_STORE_set_flags), M_BIND(X509_verify_cert), M_BIND(OCSP_sendreq_new), M_BIND(RSA_new),
+		M_BIND(RSAPublicKey_dup), M_BIND(BUF_strlcat), M_BIND(X509_get1_ocsp), M_BIND(SSL_get_peer_cert_chain), M_BIND(ASN1_STRING_data),
+		M_BIND(SHA512), M_BIND(ERR_peek_error_line_data), M_BIND(BIO_free_all), M_BIND(EC_GROUP_clear_free), M_BIND(ERR_load_crypto_strings),
+		M_BIND(ERR_print_errors_fp), M_BIND(EVP_CIPHER_CTX_free), M_BIND(OCSP_REQUEST_free), M_BIND(OCSP_RESPONSE_free), M_BIND(RSA_free),
+		M_BIND(SSL_CTX_set_verify), M_BIND(X509_email_free), M_BIND(X509_STORE_CTX_free), M_BIND(X509_STORE_CTX_set_chain), M_BIND(X509_STORE_free),
+		M_BIND(OCSP_cert_to_id), M_BIND(OCSP_request_add0_id), M_BIND(OCSP_response_get1_basic), M_BIND(sk_value), M_BIND(X509_STORE_CTX_get_current_cert),
+		M_BIND(X509_STORE_add_lookup), M_BIND(X509_LOOKUP_file), M_BIND(X509_NAME_get_entry), M_BIND(X509_STORE_new)
 	};
 
 	if (!lib_symbols(sizeof(openssl) / sizeof(symbol_t), openssl)) {

@@ -300,6 +300,109 @@ int (*EVP_EncryptInit_ex_d)(EVP_CIPHER_CTX *ctx, const EVP_CIPHER *cipher, ENGIN
 size_t (*EC_POINT_point2oct_d)(const EC_GROUP *group, const EC_POINT *p, point_conversion_form_t form, unsigned char *buf, size_t len, BN_CTX *ctx) = NULL;
 int (*ECDH_compute_key_d)(void *out, size_t outlen, const EC_POINT *pub_key, EC_KEY *ecdh, void *(*KDF)(const void *in, size_t inlen, void *out, size_t *outlen)) = NULL;
 
+/////////////
+///
+/// new functions which need to be added to symbols.c and then bound by loader in openssl.c
+///
+
+void *(*sk_pop_d)(_STACK *st) = NULL;
+int (*i2d_OCSP_RESPONSE_d)(OCSP_RESPONSE *a, unsigned char **out) = NULL;
+ECDSA_SIG * (*ECDSA_do_sign_d)(const unsigned char *dgst, int dgst_len, EC_KEY *eckey) = NULL;
+void (*ECDSA_SIG_free_d)(ECDSA_SIG *a) = NULL;
+int (*i2d_OCSP_CERTID_d)(OCSP_CERTID *a, unsigned char **out) = NULL;
+OCSP_RESPONSE * (*d2i_OCSP_RESPONSE_d)(OCSP_RESPONSE **a, const unsigned char **in, long len) = NULL;
+OCSP_REQUEST * (*OCSP_REQUEST_new_d)(void) = NULL;
+void (*OCSP_BASICRESP_free_d)(OCSP_BASICRESP *a) = NULL;
+int (*i2d_X509_d)(X509 *a, unsigned char **out) = NULL;
+long (*SSL_CTX_callback_ctrl_d)(SSL_CTX *, int, void (*)(void)) = NULL;
+long (*SSL_ctrl_d)(SSL *s, int cmd, long larg, void *parg) = NULL;
+ASN1_STRING * (*X509_NAME_ENTRY_get_data_d)(X509_NAME_ENTRY *ne) = NULL;
+BIGNUM * (*ASN1_INTEGER_to_BN_d)(const ASN1_INTEGER *ai, BIGNUM *bn) = NULL;
+BIO * (*BIO_new_fp_d)(FILE *stream, int close_flag) = NULL;
+char * (*X509_NAME_oneline_d)(X509_NAME *a, char *buf, int len) = NULL;
+const char * (*OCSP_response_status_str_d)(long s) = NULL;
+const char * (*X509_verify_cert_error_string_d)(long n) = NULL;
+const EVP_CIPHER * (*EVP_aes_256_cbc_d)(void) = NULL;
+EC_KEY * (*d2i_ECPrivateKey_d)(EC_KEY **key, const unsigned char **in, long len) = NULL;
+EC_KEY * (*o2i_ECPublicKey_d)(EC_KEY **key, const unsigned char **in, long len) = NULL;
+ECDSA_SIG * (*d2i_ECDSA_SIG_d)(ECDSA_SIG **sig, const unsigned char **pp, long len) = NULL;
+EVP_CIPHER_CTX * (*EVP_CIPHER_CTX_new_d)(void) = NULL;
+EVP_PKEY * (*EVP_PKEY_new_d)(void) = NULL;
+int (*ASN1_GENERALIZEDTIME_print_d)(BIO *fp, const ASN1_GENERALIZEDTIME *a) = NULL;
+int (*BIO_free_d)(BIO *a) = NULL;
+int (*ECDSA_do_verify_d)(const unsigned char *dgst, int dgst_len, const ECDSA_SIG *sig, EC_KEY *eckey) = NULL;
+int (*EVP_PKEY_set1_RSA_d)(EVP_PKEY *pkey, struct rsa_st *key) = NULL;
+int (*EVP_VerifyFinal_d)(EVP_MD_CTX *ctx, const unsigned char *sigbuf, unsigned int siglen, EVP_PKEY *pkey) = NULL;
+int (*i2d_ECDSA_SIG_d)(const ECDSA_SIG *sig, unsigned char **pp) = NULL;
+int (*i2d_ECPrivateKey_d)(EC_KEY *key, unsigned char **out) = NULL;
+int (*i2o_ECPublicKey_d)(EC_KEY *key, unsigned char **out) = NULL;
+int (*OCSP_basic_verify_d)(void *bs, struct stack_st_X509 *certs, struct x509_store_st *st, unsigned long flags) = NULL;
+int (*OCSP_check_nonce_d)(void *req, void *bs) = NULL;
+int (*OCSP_check_validity_d)(ASN1_GENERALIZEDTIME *thisupd, ASN1_GENERALIZEDTIME *nextupd, long sec, long maxsec) = NULL;
+int (*OCSP_parse_url_d)(const char *url, char **phost, char **pport, char **ppath, int *pssl) = NULL;
+int (*OCSP_REQ_CTX_add1_header_d)(OCSP_REQ_CTX *rctx, const char *name, const char *value) = NULL;
+int (*OCSP_REQ_CTX_set1_req_d)(OCSP_REQ_CTX *rctx, void *req) = NULL;
+int (*OCSP_request_add1_nonce_d)(void *req, unsigned char *val, int len) = NULL;
+int (*OCSP_REQUEST_print_d)(BIO *bp, void *a, unsigned long flags) = NULL;
+int (*OCSP_resp_find_status_d)(void *bs, void *id, int *status, int *reason, ASN1_GENERALIZEDTIME **revtime, ASN1_GENERALIZEDTIME **thisupd, ASN1_GENERALIZEDTIME **nextupd) = NULL;
+int (*OCSP_RESPONSE_print_d)(BIO *bp, OCSP_RESPONSE *o, unsigned long flags) = NULL;
+int (*OCSP_response_status_d)(OCSP_RESPONSE *resp) = NULL;
+int (*OCSP_sendreq_nbio_d)(OCSP_RESPONSE **presp, OCSP_REQ_CTX *rctx) = NULL;
+int (*SHA1_Final_d)(unsigned char *md, SHA_CTX *c) = NULL;
+int (*SHA1_Init_d)(SHA_CTX *c) = NULL;
+int (*SHA1_Update_d)(SHA_CTX *c, const void *data, size_t len) = NULL;
+int (*SHA256_Final_d)(unsigned char *md, SHA256_CTX *c) = NULL;
+int (*SHA256_Init_d)(SHA256_CTX *c) = NULL;
+int (*SHA256_Update_d)(SHA256_CTX *c, const void *data, size_t len) = NULL;
+int (*SHA512_Final_d)(unsigned char *md, SHA512_CTX *c) = NULL;
+int (*SHA512_Init_d)(SHA512_CTX *c) = NULL;
+int (*SHA512_Update_d)(SHA512_CTX *c, const void *data, size_t len) = NULL;
+int (*sk_num_d)(const _STACK *) = NULL;
+int (*SSL_get_fd_d)(const SSL *s) = NULL;
+int (*SSL_set_fd_d)(SSL *s, int fd) = NULL;
+int (*X509_check_host_d)(X509 *x, const char *chk, size_t chklen, unsigned int flags, char **peername) = NULL;
+int (*X509_check_issued_d)(X509 *issuer, X509 *subject) = NULL;
+int (*X509_NAME_get_index_by_NID_d)(X509_NAME *name, int nid, int lastpos) = NULL;
+int (*X509_STORE_CTX_get_error_d)(X509_STORE_CTX *ctx) = NULL;
+int (*X509_STORE_CTX_get_error_depth_d)(X509_STORE_CTX *ctx) = NULL;
+int (*X509_STORE_CTX_init_d)(X509_STORE_CTX *ctx, X509_STORE *store, X509 *x509, STACK_OF(X509) *chain) = NULL;
+int (*X509_STORE_load_locations_d)(X509_STORE *ctx, const char *file, const char *path) = NULL;
+int (*X509_STORE_set_flags_d)(X509_STORE *ctx, unsigned long flags) = NULL;
+int (*X509_verify_cert_d)(X509_STORE_CTX *ctx) = NULL;
+OCSP_REQ_CTX * (*OCSP_sendreq_new_d)(BIO *io, const char *path, void *req, int maxline) = NULL;
+RSA * (*RSA_new_d)(void) = NULL;
+RSA * (*RSAPublicKey_dup_d)(RSA *rsa) = NULL;
+size_t (*BUF_strlcat_d)(char *dst, const char *src, size_t siz) = NULL;
+struct stack_st_OPENSSL_STRING * (*X509_get1_ocsp_d)(X509 *x) = NULL;
+struct stack_st_X509 * (*SSL_get_peer_cert_chain_d)(const SSL *s) = NULL;
+unsigned char * (*ASN1_STRING_data_d)(ASN1_STRING *x) = NULL;
+unsigned char * (*SHA512_d)(const unsigned char *d, size_t n, unsigned char *md) = NULL;
+unsigned long (*ERR_peek_error_line_data_d)(const char **file, int *line, const char **data, int *flags) = NULL;
+void (*BIO_free_all_d)(BIO *a) = NULL;
+void (*EC_GROUP_clear_free_d)(EC_GROUP *group) = NULL;
+void (*ERR_load_crypto_strings_d)(void) = NULL;
+void (*ERR_print_errors_fp_d)(FILE *fp) = NULL;
+void (*EVP_CIPHER_CTX_free_d)(EVP_CIPHER_CTX *a) = NULL;
+void (*OCSP_REQUEST_free_d)(OCSP_REQUEST *a) = NULL;
+void (*OCSP_RESPONSE_free_d)(OCSP_RESPONSE *a) = NULL;
+void (*RSA_free_d)(RSA *r) = NULL;
+void (*SSL_CTX_set_verify_d)(SSL_CTX *ctx, int mode, int (*cb) (int, X509_STORE_CTX *)) = NULL;
+void (*X509_email_free_d)(struct stack_st_OPENSSL_STRING *sk) = NULL;
+void (*X509_STORE_CTX_free_d)(X509_STORE_CTX *ctx) = NULL;
+void (*X509_STORE_CTX_set_chain_d)(struct x509_store_ctx_st *ctx, struct stack_st_X509 *sk) = NULL;
+void (*X509_STORE_free_d)(X509_STORE *v) = NULL;
+void * (*OCSP_cert_to_id_d)(const EVP_MD *dgst, X509 *subject, X509 *issuer) = NULL;
+void * (*OCSP_request_add0_id_d)(void *req, void *cid) = NULL;
+void * (*OCSP_response_get1_basic_d)(OCSP_RESPONSE *resp) = NULL;
+void * (*sk_value_d)(const _STACK *, int) = NULL;
+X509 * (*X509_STORE_CTX_get_current_cert_d)(X509_STORE_CTX *ctx) = NULL;
+X509_LOOKUP * (*X509_STORE_add_lookup_d)(X509_STORE *v, X509_LOOKUP_METHOD *m) = NULL;
+X509_LOOKUP_METHOD * (*X509_LOOKUP_file_d)(void) = NULL;
+X509_NAME_ENTRY * (*X509_NAME_get_entry_d)(X509_NAME *name, int loc) = NULL;
+X509_STORE * (*X509_STORE_new_d)(void) = NULL;
+X509_STORE_CTX * (*X509_STORE_CTX_new_d)(void) = NULL;
+
+
 //! PNG
 png_uint_32 (*png_access_version_number_d)(void) = NULL;
 

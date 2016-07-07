@@ -1287,11 +1287,11 @@ _encode_rsa_pubkey(RSA *pubkey, size_t *enclen)
     }
 
     // If the exponent length can be fit in one byte, it will. Otherwise, it will be stored as a null byte followed by a 2-byte length.
-    if ((explen = BN_num_bytes(pubkey->e)) < 0xff) {
+    if ((explen = ((BN_num_bits_d(pubkey->e)+7)/8)) < 0xff) {
         byte = explen;
-        *enclen = explen + 1 + BN_num_bytes(pubkey->n);
+        *enclen = explen + 1 + ((BN_num_bits_d(pubkey->n)+7)/8);
     } else {
-        *enclen = explen + 3 + BN_num_bytes(pubkey->n);
+        *enclen = explen + 3 + ((BN_num_bits_d(pubkey->n)+7)/8);
         explen = htons(explen);
     }
 
@@ -1318,7 +1318,7 @@ _encode_rsa_pubkey(RSA *pubkey, size_t *enclen)
         RET_ERROR_PTR(ERR_UNSPEC, "could not encode RSA public key exponent");
     }
 
-    rptr += BN_num_bytes(pubkey->e);
+    rptr += ((BN_num_bits_d(pubkey->e)+7)/8);
 
     if (!BN_bn2bin_d(pubkey->n, rptr)) {
         PUSH_ERROR_OPENSSL();
@@ -1356,7 +1356,7 @@ _get_x509_cert_sha_hash(
     if (!cert || !out) {
         RET_ERROR_INT(ERR_BAD_PARAM, NULL);
     }
-    if ((blen = i2d_X509(cert, &buf)) < 0) {
+    if ((blen = i2d_X509_d(cert, &buf)) < 0) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_INT(ERR_UNSPEC, "could not serialize X509 certificate");
     }

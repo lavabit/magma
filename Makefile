@@ -39,12 +39,15 @@ MAGMA_CHECK_SRCFILES			= $(foreach dir, $(MAGMA_CHECK_SRCDIRS), $(wildcard $(dir
 
 DIME_SRCDIRS					= $(shell  find src/providers/dime tools/dime -type d -print)
 DIME_SRCFILES					= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(DIME_SRCDIRS), $(wildcard $(dir)/*.c)))
+DIME_STATIC						= lib/local/lib/libz$(STATLIBEXT) lib/local/lib/libssl$(STATLIBEXT) lib/local/lib/libcrypto$(STATLIBEXT)
 
 SIGNET_SRCDIRS					= $(shell find src/providers/dime tools/signet -type d -print)
 SIGNET_SRCFILES					= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(SIGNET_SRCDIRS), $(wildcard $(dir)/*.c)))
+SIGNET_STATIC					= lib/local/lib/libz$(STATLIBEXT) lib/local/lib/libssl$(STATLIBEXT) lib/local/lib/libcrypto$(STATLIBEXT)
 
 GENREC_SRCDIRS					= $(shell find src/providers/dime tools/genrec -type d -print)
 GENREC_SRCFILES					= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(GENREC_SRCDIRS), $(wildcard $(dir)/*.c)))
+GENREC_STATIC					= lib/local/lib/libz$(STATLIBEXT) lib/local/lib/libssl$(STATLIBEXT) lib/local/lib/libcrypto$(STATLIBEXT)
 
 DIME_CHECK_STATIC				= $(MAGMA_STATIC) $(TOPDIR)/lib/sources/googtest/lib/.libs/libgtest.a
 DIME_CHECK_DYNAMIC				= $(MAGMA_DYNAMIC) -lstdc++
@@ -250,7 +253,7 @@ ifeq ($(VERBOSE),no)
 else
 	@echo 
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(DIME_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) -Wl,--end-group
+	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(DIME_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) $(DIME_STATIC) -Wl,--end-group
 
 # Construct the signet command line utility
 $(SIGNET_PROGRAM): $(SIGNET_OBJFILES) 
@@ -259,7 +262,7 @@ ifeq ($(VERBOSE),no)
 else
 	@echo 
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(SIGNET_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) -Wl,--end-group
+	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(SIGNET_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) $(SIGNET_STATIC) -Wl,--end-group
 
 # Construct the dime command line utility
 $(GENREC_PROGRAM): $(GENREC_OBJFILES) 
@@ -268,7 +271,7 @@ ifeq ($(VERBOSE),no)
 else
 	@echo 
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(GENREC_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) -Wl,--end-group
+	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(GENREC_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) $(GENREC_STATIC) -Wl,--end-group
 
 # Construct the magma unit test executable
 $(MAGMA_CHECK_PROGRAM): $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES))

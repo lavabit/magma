@@ -382,13 +382,13 @@ int _rsa_verify_record(const char *label, unsigned char algorithm, RSA *pubkey, 
         digtype = EVP_sha512_d();
     }
 
-    if (EVP_VerifyInit(&ctx, digtype) != 1) {
+    if (EVP_DigestInit_d(&ctx, digtype) != 1) {
         PUSH_ERROR_OPENSSL();
         free(hdata);
         RET_ERROR_INT(ERR_UNSPEC, "could not set digest for RR signature verification");
     }
 
-    if (EVP_VerifyUpdate(&ctx, hdata, hlen) != 1) {
+    if (EVP_DigestUpdate_d(&ctx, hdata, hlen) != 1) {
         PUSH_ERROR_OPENSSL();
         free(hdata);
         RET_ERROR_INT(ERR_UNSPEC, "could not read hash for RR signature verification");

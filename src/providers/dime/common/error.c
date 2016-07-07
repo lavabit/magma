@@ -265,7 +265,7 @@ errinfo_t *_push_error_stack_openssl(const char *filename, const char *funcname,
     static int loaded = 0;
 
     if (!loaded) {
-        ERR_load_crypto_strings();
+        ERR_load_crypto_strings_d();
         SSL_load_error_strings_d();
         loaded = 1;
     }

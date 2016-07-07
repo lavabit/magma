@@ -97,13 +97,13 @@ _verify_ec_signature(
         RET_ERROR_INT(ERR_UNSPEC, "unable to read EC signature from buffer");
     }
 
-    if ((result = ECDSA_do_verify(hash, hlen, ec_sig, key)) < 0) {
+    if ((result = ECDSA_do_verify_d(hash, hlen, ec_sig, key)) < 0) {
         PUSH_ERROR_OPENSSL();
-        ECDSA_SIG_free(ec_sig);
+        ECDSA_SIG_free_d(ec_sig);
         RET_ERROR_INT(ERR_UNSPEC, "unable to complete ECDSA signature verification");
     }
 
-    ECDSA_SIG_free(ec_sig);
+    ECDSA_SIG_free_d(ec_sig);
 
     return result;
 }
@@ -187,7 +187,7 @@ _ec_sign_data(
         RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
     }
 
-    if (!(signature = ECDSA_do_sign(hash, hlen, key))) {
+    if (!(signature = ECDSA_do_sign_d(hash, hlen, key))) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(
             ERR_UNSPEC,
@@ -196,11 +196,11 @@ _ec_sign_data(
 
     if ((bsize = i2d_ECDSA_SIG_d(signature, &buf)) < 0) {
         PUSH_ERROR_OPENSSL();
-        ECDSA_SIG_free(signature);
+        ECDSA_SIG_free_d(signature);
         RET_ERROR_PTR(ERR_UNSPEC, "unable to serialize ECDSA signature");
     }
 
-    ECDSA_SIG_free(signature);
+    ECDSA_SIG_free_d(signature);
 
     *siglen = bsize;
 
@@ -877,7 +877,7 @@ _compute_aes256_kek(
         RET_ERROR_INT(ERR_BAD_PARAM, NULL);
     }
 
-    if (ECDH_compute_key(
+    if (ECDH_compute_key_d(
             aeskey,
             sizeof(aeskey),
             EC_KEY_get0_public_key_d(public_key),

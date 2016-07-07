@@ -5,6 +5,8 @@
 #include <dime/signet/keys.h>
 #include <dime/signet/signet.h>
 
+#include "symbols.h"
+
 /**
  * @brief	Display the app options to the user.
  * @param	progname	Tool name.
@@ -221,7 +223,6 @@ static void generate_signet(const char *signet_name, const char *signet_file, co
 	dime_sgnt_signet_destroy(signet);
 }
 
-
 /**
  * @brief	Signs an existing ssr with organizational pok to create a user signet.
  * @param	signet_name	Signet Id to be given to the new user signet.
@@ -324,7 +325,6 @@ static void sign_signet(const char *signet_name, const char *ssr_f, const char *
 	}
 }
 
-
 /**
  * @brief	Dumps signet or ssr.
  * @param	signet_file	Filename of the signet to be dumped.
@@ -373,7 +373,6 @@ static void dump_signet(const char *signet_file) {                      // TODO 
 	dime_sgnt_signet_destroy(signet);
 }
 
-
 /**
  * @brief	Dumps field names and descriptions for the specified signet type.
  * @param	type	Signet type to be examined.
@@ -413,7 +412,6 @@ static void examine_signet(signet_type_t type) {
 	}
 
 }
-
 
 int main(int argc, char **argv) {
 
@@ -541,6 +539,12 @@ int main(int argc, char **argv) {
 	if(is_help) {
 		usage(argv[0]);
 		return 0;
+	}
+
+	// Load the OpenSSL symbols used by libdime.
+	if (lib_load()) {
+		fprintf(stderr, "Error: unable to bind the program to the required dynamic symbols.\n");
+		exit(EXIT_FAILURE);
 	}
 
 	crypto_init();

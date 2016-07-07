@@ -10,6 +10,8 @@
 #include <dime/common/misc.h>
 #include <dime/common/network.h>
 
+#include "symbols.h"
+
 static void __attribute__((noreturn)) usage(const char *progname)  {
 
 	fprintf(stderr, "\nUsage: %s [-d dxserver] [-p port] [-i dimefile [-0] [-f fingerprint] [-h or -c] [-e endfp] [-n] [-4 or -6] [-v] <signet>    where\n", progname);
@@ -30,7 +32,6 @@ static void __attribute__((noreturn)) usage(const char *progname)  {
 
 	exit(EXIT_FAILURE);
 }
-
 
 static void show_coc(const char *cocstr) {
 
@@ -107,7 +108,6 @@ static void show_coc(const char *cocstr) {
 
 }
 
-
 int main(int argc, char *argv[]) {
 
 	dime_record_t *drec;
@@ -173,6 +173,12 @@ int main(int argc, char *argv[]) {
 			break;
 		}
 
+	}
+
+	// Load the OpenSSL symbols used by libdime.
+	if (lib_load()) {
+		fprintf(stderr, "Error: unable to bind the program to the required dynamic symbols.\n");
+		exit(EXIT_FAILURE);
 	}
 
 	if (no_cache) {

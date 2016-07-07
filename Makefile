@@ -39,20 +39,20 @@ MAGMA_CHECK_SRCFILES			= $(foreach dir, $(MAGMA_CHECK_SRCDIRS), $(wildcard $(dir
 
 DIME_SRCDIRS					= $(shell  find src/providers/dime tools/dime -type d -print)
 DIME_SRCFILES					= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(DIME_SRCDIRS), $(wildcard $(dir)/*.c)))
-DIME_STATIC						= lib/local/lib/libz$(STATLIBEXT) lib/local/lib/libssl$(STATLIBEXT) lib/local/lib/libcrypto$(STATLIBEXT)
+DIME_STATIC						= $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT)
 
 SIGNET_SRCDIRS					= $(shell find src/providers/dime tools/signet -type d -print)
 SIGNET_SRCFILES					= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(SIGNET_SRCDIRS), $(wildcard $(dir)/*.c)))
-SIGNET_STATIC					= lib/local/lib/libz$(STATLIBEXT) lib/local/lib/libssl$(STATLIBEXT) lib/local/lib/libcrypto$(STATLIBEXT)
+SIGNET_STATIC					= $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT)
 
 GENREC_SRCDIRS					= $(shell find src/providers/dime tools/genrec -type d -print)
 GENREC_SRCFILES					= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(GENREC_SRCDIRS), $(wildcard $(dir)/*.c)))
-GENREC_STATIC					= lib/local/lib/libz$(STATLIBEXT) lib/local/lib/libssl$(STATLIBEXT) lib/local/lib/libcrypto$(STATLIBEXT)
+GENREC_STATIC					= $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT)
 
-DIME_CHECK_STATIC				= $(MAGMA_STATIC) $(TOPDIR)/lib/sources/googtest/lib/.libs/libgtest.a
+DIME_CHECK_STATIC				= $(MAGMA_STATIC) $(TOPDIR)/lib/sources/googtest/lib/.libs/libgtest.a $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT)
 DIME_CHECK_DYNAMIC				= $(MAGMA_DYNAMIC) -lstdc++
 DIME_CHECK_CPPDIRS				= $(shell find check/dime -type d -print)
-DIME_CHECK_SRCDIRS				= $(shell find src/providers/dime -type d -print)
+DIME_CHECK_SRCDIRS				= $(shell find src/providers/dime check/dime -type d -print)
 DIME_CHECK_CPPFILES				= $(foreach dir, $(DIME_CHECK_CPPDIRS), $(wildcard $(dir)/*.cpp))
 DIME_CHECK_SRCFILES				= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(DIME_CHECK_SRCDIRS), $(wildcard $(dir)/*.c)))
  
@@ -158,7 +158,7 @@ else
 	MAGMA_VERSION				:= $(PACKAGE_VERSION).$(shell git log --format='%H' | wc -l)
 	MAGMA_COMMIT				:= $(shell git log --format="%H" -n 1 | cut -c33-40)
 endif
-setup: $(PACKAGE_DEPENDENCIES)
+
 MAGMA_TIMESTAMP					= $(shell date +'%Y%m%d.%H%M')
 
 ifeq ($(VERBOSE),yes)
@@ -183,13 +183,17 @@ ifeq ($(OS),Windows_NT)
     EXEEXT 						:= ".exe"
     
     # Alias the target names on Windows to the equivalent without the exe extension.
-    $(basename $(MAGMA_PROGRAM)) := $(MAGMA_PROGRAM)
+	$(basename $(DIME_PROGRAM)) := $(DIME_PROGRAM)
+	$(basename $(MAGMA_PROGRAM)) := $(MAGMA_PROGRAM)
+	$(basename $(SIGNET_PROGRAM)) := $(SIGNET_PROGRAM)
+	$(basename $(GENREC_PROGRAM)) := $(GENREC_PROGRAM)
+	$(basename $(DIME_CHECK_PROGRAM)) := $(DIME_CHECK_PROGRAM)
 	$(basename $(MAGMA_CHECK_PROGRAM)) := $(MAGMA_CHECK_PROGRAM)
 else
     HOSTTYPE					:= $(shell uname -s)
-    LIBPREFIX					:= "lib"
-    DYNLIBEXT					:= ".so"
-    STATLIBEXT					:= ".a"
+    LIBPREFIX					:= lib
+    DYNLIBEXT					:= .so
+    STATLIBEXT					:= .a
     EXEEXT						:= 
 endif
 
@@ -253,7 +257,7 @@ ifeq ($(VERBOSE),no)
 else
 	@echo 
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(DIME_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) $(DIME_STATIC) -Wl,--end-group
+	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(DIME_OBJFILES) -Wl,--start-group,--whole-archive $(MAGMA_STATIC) $(DIME_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_DYNAMIC) 
 
 # Construct the signet command line utility
 $(SIGNET_PROGRAM): $(SIGNET_OBJFILES) 
@@ -262,7 +266,7 @@ ifeq ($(VERBOSE),no)
 else
 	@echo 
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(SIGNET_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) $(SIGNET_STATIC) -Wl,--end-group
+	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(SIGNET_OBJFILES) -Wl,--start-group,--whole-archive $(MAGMA_STATIC) $(SIGNET_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_DYNAMIC)
 
 # Construct the dime command line utility
 $(GENREC_PROGRAM): $(GENREC_OBJFILES) 
@@ -271,7 +275,7 @@ ifeq ($(VERBOSE),no)
 else
 	@echo 
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(GENREC_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) $(GENREC_STATIC) -Wl,--end-group
+	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(GENREC_OBJFILES) -Wl,--start-group,--whole-archive $(MAGMA_STATIC) $(GENREC_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_DYNAMIC)
 
 # Construct the magma unit test executable
 $(MAGMA_CHECK_PROGRAM): $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES))
@@ -286,15 +290,6 @@ ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 endif
 	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(DIME_CHECK_OBJFILES) -Wl,--start-group,--whole-archive $(DIME_CHECK_STATIC) -Wl,--no-whole-archive,--end-group $(DIME_CHECK_DYNAMIC) 
-
-# The Dime Unit Test Object Files
-#.objs/lib/sources/googtest/src/gtest-all.o: lib/sources/googtest/src/gtest-all.cc
-#ifeq ($(VERBOSE),no)
-#	@echo 'Building' $(YELLOW)$<$(NORMAL)
-#endif
-#	@test -d $(DEPDIR)/$(dir $<) || $(MKDIR) $(DEPDIR)/$(dir $<)
-#	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
-#	$(RUN)$(CPP) $(CPPFLAGS) $(CPPFLAGS.$(<F)) $(CPPDEFINES) $(CDEFINES.$(<F)) $(DIME_CHECK_CPPINCLUDES) -MF"$(<:%.cc=$(DEPDIR)/%.d)" -MT"$@" -o"$@" "$<"
 
 $(OBJDIR)/check/dime/%.o: check/dime/%.cpp 
 ifeq ($(VERBOSE),no)

@@ -80,7 +80,8 @@ bool_t lib_load_openssl(void) {
 		M_BIND(ERR_print_errors_fp), M_BIND(EVP_CIPHER_CTX_free), M_BIND(OCSP_REQUEST_free), M_BIND(OCSP_RESPONSE_free), M_BIND(RSA_free),
 		M_BIND(SSL_CTX_set_verify), M_BIND(X509_email_free), M_BIND(X509_STORE_CTX_free), M_BIND(X509_STORE_CTX_set_chain), M_BIND(X509_STORE_free),
 		M_BIND(OCSP_cert_to_id), M_BIND(OCSP_request_add0_id), M_BIND(OCSP_response_get1_basic), M_BIND(sk_value), M_BIND(X509_STORE_CTX_get_current_cert),
-		M_BIND(X509_STORE_add_lookup), M_BIND(X509_LOOKUP_file), M_BIND(X509_NAME_get_entry), M_BIND(X509_STORE_new)
+		M_BIND(X509_STORE_add_lookup), M_BIND(X509_LOOKUP_file), M_BIND(X509_NAME_get_entry), M_BIND(X509_STORE_new), M_BIND(ERR_clear_error),
+		M_BIND(ERR_put_error)
 	};
 
 	if (!lib_symbols(sizeof(openssl) / sizeof(symbol_t), openssl)) {

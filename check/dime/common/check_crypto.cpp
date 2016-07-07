@@ -6,6 +6,7 @@
 extern "C" {
 #include "dime/common/dcrypto.h"
 #include "dime/common/misc.h"
+#include "symbols.h"
 }
 #include "gtest/gtest.h"
 
@@ -21,14 +22,14 @@ static unsigned char *gen_random_data(size_t minlen, size_t maxlen, size_t *outl
 
     EXPECT_GE(maxlen, minlen);
 
-    res = RAND_pseudo_bytes((unsigned char *)&rval, sizeof(rval));
+    res = RAND_bytes_d((unsigned char *)&rval, sizeof(rval));
     EXPECT_TRUE(res == 0 || res == 1);
     rlen = minlen + (rval % (maxlen - minlen + 1));
 
     result = (unsigned char *)malloc(rlen);
     EXPECT_TRUE(result != NULL);
 
-    res = RAND_pseudo_bytes(result, rlen);
+    res = RAND_bytes_d(result, rlen);
     EXPECT_TRUE(res == 0 || res == 1);
     *outlen = rlen;
 

@@ -305,6 +305,9 @@ int (*ECDH_compute_key_d)(void *out, size_t outlen, const EC_POINT *pub_key, EC_
 /// new functions which need to be added to symbols.c and then bound by loader in openssl.c
 ///
 
+
+void (*ERR_put_error_d)(int lib, int func, int reason, const char *file, int line) = NULL;
+void (*ERR_clear_error_d)(void) = NULL;
 void *(*sk_pop_d)(_STACK *st) = NULL;
 int (*i2d_OCSP_RESPONSE_d)(OCSP_RESPONSE *a, unsigned char **out) = NULL;
 ECDSA_SIG * (*ECDSA_do_sign_d)(const unsigned char *dgst, int dgst_len, EC_KEY *eckey) = NULL;

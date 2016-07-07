@@ -10,6 +10,8 @@
 #include <dime/signet-resolver/mrec.h>
 #include <dime/signet-resolver/signet-ssl.h>
 
+#include "symbols.h"
+
 static void usage(const char *progname) {
 
 	fprintf(stderr, "\nUsage: %s <-k privkey_file> [-c cert_file] [-d dx] [-p policy] [-s policy] [-e expiry] [-y syndicate] [-v version]  where\n", progname);
@@ -40,6 +42,12 @@ int main(int argc, char *argv[]) {
 	int opt, maxprint;
 	unsigned int version = DIME_VERSION_NO;
 	size_t i, dlen;
+
+	// Load the OpenSSL symbols used by libdime.
+	if (lib_load()) {
+		fprintf(stderr, "Error: unable to bind the program to the required dynamic symbols.\n");
+		exit(EXIT_FAILURE);
+	}
 
 	crypto_init();
 

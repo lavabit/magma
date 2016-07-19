@@ -2058,15 +2058,16 @@ load() {
 		sed "s/extern //" | \
 		sed "s/;/ = NULL;/g" \
 		>> magma.open.symbols.c; error
-	echo "void symbols_check(void *magma) {" >> magma.open.symbols.c; error
+	echo "const char * symbols_check(void *magma) {" >> magma.open.symbols.c; error
 	cat magma.open.symbols.h | \
 		grep "extern" | \
 		awk -F'(' '{print $2}' | \
 		grep -v '^$' | \
 		tr -d '*' | sed 's/_d)//' | \
 		sed 's/SSL_COMP)/SSL_COMP_get_compression_methods/g' | \
-		awk '{ print "*(void **)&(" $1 "_d) = dlsym(magma, \"" $1 "\");"}' \
+		awk '{ print "if ((*(void **)&(" $1 "_d) = dlsym(magma, \"" $1 "\")) == NULL) return \"" $1 "\";"}' \
 		>> magma.open.symbols.c; error
+	echo "return NULL;" >> magma.open.symbols.c; error
 	echo "}" >> magma.open.symbols.c; error
 
 	## Because GeoIPDBDescription is an array of pointers it doesn't need the leading ampersand.

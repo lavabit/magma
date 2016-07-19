@@ -482,7 +482,7 @@ int (*json_unpack_d)(json_t *root, const char *fmt, ...) = NULL;
 int (*json_unpack_ex_d)(json_t *root, json_error_t *error, size_t flags, const char *fmt, ...) = NULL;
 json_t * (*json_vpack_ex_d)(json_error_t *error, size_t flags, const char *fmt, va_list ap) = NULL;
 int (*json_vunpack_ex_d)(json_t *root, json_error_t *error, size_t flags, const char *fmt, va_list ap) = NULL;
-const char * (*utf8proc_release_d)(void) = NULL;
+const char * (*utf8proc_version_d)(void) = NULL;
 const char * (*utf8proc_errmsg_d)(utf8proc_ssize_t errcode) = NULL;
 const char * (*utf8proc_category_string_d)(utf8proc_int32_t c) = NULL;
 utf8proc_category_t (*utf8proc_category_d)(utf8proc_int32_t c) = NULL;
@@ -998,7 +998,7 @@ if ((*(void **)&(json_unpack_d) = dlsym(magma, "json_unpack")) == NULL) return "
 if ((*(void **)&(json_unpack_ex_d) = dlsym(magma, "json_unpack_ex")) == NULL) return "json_unpack_ex";
 if ((*(void **)&(json_vpack_ex_d) = dlsym(magma, "json_vpack_ex")) == NULL) return "json_vpack_ex";
 if ((*(void **)&(json_vunpack_ex_d) = dlsym(magma, "json_vunpack_ex")) == NULL) return "json_vunpack_ex";
-if ((*(void **)&(utf8proc_release_d) = dlsym(magma, "utf8proc_release")) == NULL) return "utf8proc_release";
+if ((*(void **)&(utf8proc_version_d) = dlsym(magma, "utf8proc_version")) == NULL) return "utf8proc_version";
 if ((*(void **)&(utf8proc_errmsg_d) = dlsym(magma, "utf8proc_errmsg")) == NULL) return "utf8proc_errmsg";
 if ((*(void **)&(utf8proc_category_string_d) = dlsym(magma, "utf8proc_category_string")) == NULL) return "utf8proc_category_string";
 if ((*(void **)&(utf8proc_category_d) = dlsym(magma, "utf8proc_category")) == NULL) return "utf8proc_category";

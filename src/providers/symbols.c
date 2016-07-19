@@ -528,7 +528,7 @@ json_t * (*json_vpack_ex_d)(json_error_t *error, size_t flags, const char *fmt, 
 int (*json_vunpack_ex_d)(json_t *root, json_error_t *error, size_t flags, const char *fmt, va_list ap) = NULL;
 
 //! UTF8
-const char * (*utf8proc_release_d)(void) = NULL;
+const char * (*utf8proc_version_d)(void) = NULL;
 const char * (*utf8proc_errmsg_d)(utf8proc_ssize_t errcode) = NULL;
 const char * (*utf8proc_category_string_d)(utf8proc_int32_t c) = NULL;
 utf8proc_category_t (*utf8proc_category_d)(utf8proc_int32_t c) = NULL;

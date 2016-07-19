@@ -18,7 +18,7 @@
  * @return	a pointer to a character string containing the libutf8proc version information.
  */
 chr_t * lib_version_utf8proc(void) {
-	return (chr_t *)utf8proc_release_d();
+	return (chr_t *)utf8proc_version_d();
 }
 
 /**
@@ -28,7 +28,7 @@ chr_t * lib_version_utf8proc(void) {
 bool_t lib_load_utf8proc(void) {
 
 	symbol_t utf8proc[] = {
-		M_BIND(utf8proc_release), M_BIND(utf8proc_iterate), M_BIND(utf8proc_errmsg), M_BIND(utf8proc_category),
+		M_BIND(utf8proc_version), M_BIND(utf8proc_iterate), M_BIND(utf8proc_errmsg), M_BIND(utf8proc_category),
 		M_BIND(utf8proc_category_string), M_BIND(utf8proc_get_property)
 	};
 

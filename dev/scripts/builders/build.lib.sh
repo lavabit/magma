@@ -679,7 +679,7 @@ zlib() {
 		;;
 		zlib-build)
 			cd "$M_SOURCES/zlib"; error
-		
+
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export FFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
@@ -1423,17 +1423,17 @@ googtest() {
 			cd "$M_SOURCES/googtest"; error
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			
+
 			autoreconf --install &>> "$M_LOGS/googtest.txt"; error
 			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/googtest.txt"; error
 			unset CFLAGS; unset CXXFLAGS
-			
+
 			make &>> "$M_LOGS/googtest.txt"; error
 		;;
 		googtest-check)
 			cd "$M_SOURCES/googtest"; error
 			make check &>> "$M_LOGS/googtest.txt"; error
-			
+
 			mkdir build && cd build; error
 			cmake -Dgtest_build_samples=ON "$M_SOURCES/googtest" &>> "$M_LOGS/googtest.txt"; error
 			make &>> "$M_LOGS/googtest.txt"; error
@@ -1451,7 +1451,7 @@ googtest() {
 		googtest-check-full)
 			cd "$M_SOURCES/googtest"; error
 			make check &>> "$M_LOGS/googtest.txt"; error
-			
+
 			mkdir build && cd build; error
 			cmake -Dgtest_build_samples=ON "$M_SOURCES/googtest" &>> "$M_LOGS/googtest.txt"; error
 			make &>> "$M_LOGS/googtest.txt"; error
@@ -1655,7 +1655,9 @@ utf8proc() {
 		;;
 		utf8proc-prep)
 			cd "$M_SOURCES/utf8proc"; error
-			cat "$M_PATCHES/utf8proc/"utf8proc.release.version.patch | patch -p1 --verbose &>> "$M_LOGS/utf8proc.txt"; error
+			if [[ $UTF8PROC == "1.3.1" ]]; then
+				cat "$M_PATCHES/utf8proc/"utf8proc.release.version.patch | patch -p1 --verbose &>> "$M_LOGS/utf8proc.txt"; error
+			fi
 		;;
 		utf8proc-build)
 			cd "$M_SOURCES/utf8proc"; error
@@ -2130,7 +2132,7 @@ generate() {
 
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"; error
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem"; error
-	
+
 	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"
 	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
 	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
@@ -2142,7 +2144,7 @@ keys() {
 
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"; error
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem"; error
-	
+
 	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"
 	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
 	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
@@ -2368,7 +2370,7 @@ elif [[ $1 =~ "clamav" ]]; then clamav "$1"
 elif [[ $1 =~ "checker" ]]; then checker "$1"
 elif [[ $1 =~ "openssl" ]]; then openssl "$1"
 elif [[ $1 =~ "googtap" ]]; then googtap "$1"
-elif [[ $1 =~ "googtest" ]]; then googtest "$1"	
+elif [[ $1 =~ "googtest" ]]; then googtest "$1"
 elif [[ $1 =~ "jansson" ]]; then jansson "$1"
 elif [[ $1 =~ "freetype" ]]; then freetype "$1"
 elif [[ $1 =~ "utf8proc" ]]; then utf8proc "$1"

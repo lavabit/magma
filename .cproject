@@ -321,6 +321,7 @@
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.587691846" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.832138411" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
 								<option id="gnu.c.compiler.option.include.files.930683726" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" valueType="includeFiles">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/lib/sources/lzo/config.h}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/magma.h}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma/magma_check.h}&quot;"/>
 								</option>

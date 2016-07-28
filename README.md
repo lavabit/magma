@@ -40,17 +40,17 @@ Or you can download the Vagrant box image manually.
 https://darkmail.info/downloads/magma-centos-vmware.box   
 https://darkmail.info/downloads/magma-centos-vmware.box.sha256    
 
-7ab90989877c3d996b015391819aa3872328bda9b97d8f252cef1dd6ac5a7915
+847042e2b40b2be4abf01071b537d8ccb3dba596345f9a242023da3d13be7dac
 
 https://darkmail.info/downloads/magma-centos-virtualbox.box    
 https://darkmail.info/downloads/magma-centos-virtualbox.box.sha256    
 
-a134a57886ccec5690c143dceda0d48dc5f7cddb3c5944ae4d65ee78a280970b
+fb917e12e44886a27192962f34cb836828ac8f8bec14f686abb5b1620663cefa
 
 https://darkmail.info/downloads/magma-centos-libvirt.box    
 https://darkmail.info/downloads/magma-centos-libvirt.box.sha256    
 
-b9339d535a3e0630f84152e272570e0af082124a4023e76cc8ea30390ef54ff5   
+7c47d37113eb2dc2eb4f2c4d8c5317868b8d882317b139ebb76e20f3d4a366df   
 
 # Credits
 

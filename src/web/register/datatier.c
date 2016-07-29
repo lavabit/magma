@@ -180,8 +180,8 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 
 	// The authentication token derived from the password.
 	parameters[2].buffer_type = MYSQL_TYPE_STRING;
-	parameters[2].buffer = st_data_get(stacie->tokens.verification);
-	parameters[2].buffer_length = st_length_get(stacie->tokens.verification);
+	parameters[2].buffer = st_data_get(b64_verification);
+	parameters[2].buffer_length = st_length_get(b64_verification);
 
 	// The number of bonus hash rounds.
 	parameters[3].buffer_type = MYSQL_TYPE_LONG;

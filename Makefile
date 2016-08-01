@@ -203,7 +203,7 @@ setup: $(PACKAGE_DEPENDENCIES)
 
 check: config warning $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) finished
 	$(RUN)$(TOPDIR)/$(MAGMA_CHECK_PROGRAM) sandbox/etc/magma.sandbox.config
-	$(RUN)$(TOPDIR)/$(DIME_CHECK_PROGRAM) sandbox/etc/magma.sandbox.config
+	$(RUN)$(TOPDIR)/$(DIME_CHECK_PROGRAM)
 
 setup: $(PACKAGE_DEPENDENCIES)
 

@@ -1,5 +1,6 @@
 #include <unistd.h>
 extern "C" {
+#include "dime_check_params.h"
 #include "dime/common/misc.h"
 #include "dime/signet/keys.h"
 #include "dime/signet/signet.h"
@@ -10,7 +11,9 @@ extern "C" {
 TEST(DIME, check_keys_file_handling)
 {
 
-    const char *filename_u = ".out/keys_user.keys", *filename_o = ".out/keys_org.keys", *filename_w = ".out/keys_wrong.keys";
+    const char *filename_u = DIME_CHECK_OUTPUT_PATH "keys_user.keys",
+    	*filename_o = DIME_CHECK_OUTPUT_PATH "keys_org.keys",
+		*filename_w = DIME_CHECK_OUTPUT_PATH "keys_wrong.keys";
     EC_KEY *enckey, *enckey2;
     ED25519_KEY *signkey, *signkey2;
     int res;
@@ -24,13 +27,12 @@ TEST(DIME, check_keys_file_handling)
 
     ser_enc1 = _serialize_ec_privkey(enckey, &enc1_size);
 
-/* testing user keys file */
+    /* testing user keys file */
     res = dime_keys_file_create(KEYS_TYPE_USER, signkey, enckey, filename_u);
     ASSERT_EQ(0, res) << "Failure creating user keys file.";
 
     signkey2 = dime_keys_signkey_fetch(filename_u);
     ASSERT_TRUE(signkey2 != NULL) << "Failure fetching signing key.";
-
 
     res = memcmp(signkey->private_key, signkey2->private_key, ED25519_KEY_SIZE);
     ASSERT_EQ(0, res) << "Corruption of signing key data.";

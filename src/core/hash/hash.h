@@ -13,6 +13,7 @@
 #ifndef MAGMA_CORE_HASH_H
 #define MAGMA_CORE_HASH_H
 
+uint32_t hash_crc24(void *buffer, size_t length);
 uint32_t hash_crc32(void *buffer, size_t length);
 uint64_t hash_crc64(void *buffer, size_t length);
 uint32_t hash_crc32_update(void *buffer, size_t length, uint32_t crc);

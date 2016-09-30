@@ -6,9 +6,8 @@
 
 #define SIGNET_VER_NO           0x1
 #define SIGNET_HEADER_SIZE      5
-#define SIGNET_MAX_SIZE         16777220
-#define SIGNET_KEY_ORG          "ORGANIZATIONAL PRIVATE KEY"
-#define SIGNET_KEY_USER         "USER PRIVATE KEY"
+#define SIGNET_KEY_ORG          "ORGANIZATIONAL KEY"
+#define SIGNET_KEY_USER         "USER KEY"
 #define SIGNET_ORG              "ORGANIZATIONAL SIGNET"
 #define SIGNET_USER             "USER SIGNET"
 #define KEYS_HEADER_SIZE        5
@@ -19,6 +18,9 @@
 #define SIGNET_FID_MAX          255
 #define KEYS_FID_MAX            3
 #define DIME_NUMBER_SIZE        2
+
+// The actual maximum is 16,777,215 for the payload, plus 5 bytes for the header.
+#define SIGNET_MAX_SIZE         16777220
 
 typedef enum dime_number_t {        /**< Dime numbers are the magic numbers */
     DIME_ORG_SIGNET = 1776,         /**< File contains an organizational signet */

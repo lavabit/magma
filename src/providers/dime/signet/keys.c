@@ -304,8 +304,9 @@ keys_file_create(
     EC_KEY *enc_key,
     char const *filename)
 {
-    char *b64_keys = NULL;
+    char *b64_keys = NULL, *b64_crc_keys = NULL, holder[16];
     int res;
+    uint32_t crc;
     size_t serial_size = 0, enc_size = 0, at = 0;;
     unsigned char *serial_keys = NULL, *serial_enc = NULL, serial_sign[ED25519_KEY_SIZE], sign_fid, enc_fid;
     dime_number_t number;
@@ -365,17 +366,28 @@ keys_file_create(
     _secure_wipe(serial_enc, enc_size);
     free(serial_enc);
 
+    crc = _compute_crc24_checksum(serial_keys, serial_size);
     b64_keys = _b64encode(serial_keys, serial_size);
+    b64_crc_keys = _b64encode((unsigned char *)&crc, (size_t)3);
     _secure_wipe(serial_keys, serial_size);
     free(serial_keys);
 
-    if (!b64_keys) {
+    if (!b64_keys || !b64_crc_keys) {
+    	if (b64_keys) free(b64_keys);
+    	if (b64_crc_keys) free(b64_crc_keys);
         RET_ERROR_INT(ERR_UNSPEC, "could not base64 encode the keys");
     }
 
-    res = _write_pem_data(b64_keys, type == KEYS_TYPE_USER ? SIGNET_KEY_USER : SIGNET_KEY_ORG, filename);
+    if (snprintf(holder, 16, "\n=%s", b64_crc_keys) != 6) {
+    	free(b64_keys);
+    	free(b64_crc_keys);
+        RET_ERROR_INT(ERR_UNSPEC, "could not armor the keys");
+    }
+
+    res = _write_pem_data(b64_keys, holder, type == KEYS_TYPE_USER ? SIGNET_KEY_USER : SIGNET_KEY_ORG, filename);
     _secure_wipe(b64_keys, strlen(b64_keys));
     free(b64_keys);
+    free(b64_crc_keys);
 
     if(res < 0) {
         RET_ERROR_INT(ERR_UNSPEC, "could not store keys in PEM file.");

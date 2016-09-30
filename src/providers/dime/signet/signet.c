@@ -60,6 +60,7 @@ static signet_t *              sgnt_signet_binary_deserialize(const unsigned cha
 static unsigned char *         sgnt_signet_binary_serialize(signet_t *signet, uint32_t *serial_size);
 static signet_t *              sgnt_signet_b64_deserialize(const char *b64_in);
 static char *                  sgnt_signet_b64_serialize(signet_t *signet);
+static char *                  sgnt_signet_crc24_serialize(signet_t *signet);
 static signet_t *              sgnt_signet_create(signet_type_t type);
 static signet_t *              sgnt_signet_create_w_keys(signet_type_t type, const char *keysfile);
 static signet_t *              sgnt_signet_crypto_split(const signet_t *signet);
@@ -1200,18 +1201,22 @@ static signet_t *sgnt_signet_load(const char *filename) {
 */
 static int sgnt_file_create(signet_t *signet, const char *filename) {
 
-    char *armored;
+    char *armored, *checksum;
 
     if(!signet || !filename) {
         RET_ERROR_INT(ERR_BAD_PARAM, NULL);
     }
 
-    if(!(armored = sgnt_signet_b64_serialize(signet))) {
-        RET_ERROR_INT(ERR_UNSPEC, "could not serialize armored signet");
+    if (!(checksum = sgnt_signet_crc24_serialize(signet))) {
+        RET_ERROR_INT(ERR_UNSPEC, "could not serialize the signet checksum");
     }
 
+    if(!(armored = sgnt_signet_b64_serialize(signet))) {
+    	free(checksum);
+        RET_ERROR_INT(ERR_UNSPEC, "could not serialize the armored signet");
+    }
 
-    if(_write_pem_data(armored, signet->type == SIGNET_TYPE_USER ? SIGNET_USER : SIGNET_ORG, filename) < 0) {
+    if(_write_pem_data(armored, checksum, signet->type == SIGNET_TYPE_USER ? SIGNET_USER : SIGNET_ORG, filename) < 0) {
         free(armored);
         RET_ERROR_INT(ERR_UNSPEC, "could not write signet to PEM file");
     }
@@ -1390,7 +1395,6 @@ static unsigned char *sgnt_signet_binary_serialize(signet_t *signet, uint32_t *s
     return serial;
 }
 
-
 /**
  * @brief   Serializes a signet structure into b64 data.
  * @param   signet      Pointer to the target signet.
@@ -1420,6 +1424,45 @@ static char *sgnt_signet_b64_serialize(signet_t *signet) {
 
     return base64;
 }
+
+/**
+ * @brief   Serializes a signet structure and calculates the crc24 checksum then returns it in base64 form.
+ * @param   signet      Pointer to the target signet.
+ * @return  CRC24 serialized into b64 data. Null on error.
+ * @free_using{free}
+*/
+static char *sgnt_signet_crc24_serialize(signet_t *signet) {
+
+    unsigned char *serial;
+    uint32_t serial_size = 0, crc;
+    char *base64, *result;
+
+    if (!signet) {
+        RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
+    }
+
+    if(!(serial = sgnt_signet_binary_serialize(signet, &serial_size))) {
+        RET_ERROR_PTR(ERR_UNSPEC, "could not serialize signet");
+    }
+
+    crc = _compute_crc24_checksum(serial, serial_size);
+    free(serial);
+
+    if(!(base64 = _b64encode((unsigned char *)&crc, (size_t)3))) {
+        RET_ERROR_PTR(ERR_UNSPEC, "could not base64 encode serialized signet");
+    }
+
+    if(!(result = malloc(strlen(base64) + 3)) || (snprintf(result, strlen(base64) + 3, "\n=%s", base64) != 6)) {
+    	if (result) free(result);
+    	free(base64);
+    	RET_ERROR_PTR(ERR_UNSPEC, "could not base64 encode the signet crc");
+
+    }
+
+    free(base64);
+    return result;
+}
+
 
 
 /* Dump signet */

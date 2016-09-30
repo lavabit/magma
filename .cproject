@@ -27,6 +27,7 @@
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.404305589" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
 								<option id="gnu.c.compiler.option.include.files.205075807" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" valueType="includeFiles">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/magma.h}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/providers/dime/common/misc.h}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.490644488" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/freetype/include/}&quot;"/>
@@ -173,6 +174,7 @@
 								<option id="gnu.c.compiler.option.include.files.903229593" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" valueType="includeFiles">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/magma.h}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma/magma_check.h}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/providers/dime/common/misc.h}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.142183936" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/freetype/include/}&quot;"/>
@@ -322,6 +324,7 @@
 								<option id="gnu.c.compiler.option.include.files.930683726" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" valueType="includeFiles">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/magma.h}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma/magma_check.h}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/providers/dime/common/misc.h}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.1638267230" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/freetype/include/}&quot;"/>
@@ -468,6 +471,7 @@
 								<option id="gnu.c.compiler.option.include.files.1183183271" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" valueType="includeFiles">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/magma.h}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/dime/dime_check_params.h}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/providers/dime/common/misc.h}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.718257223" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/freetype/include/}&quot;"/>

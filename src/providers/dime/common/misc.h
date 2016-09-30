@@ -60,7 +60,7 @@ PUBLIC_FUNC_DECL(size_t,          mem_append,                unsigned char **buf
 PUBLIC_FUNC_DECL(void *,          ptr_chain_add,             void *buf, const void *addr);
 PUBLIC_FUNC_DECL(void,            ptr_chain_free,            void *buf);
 PUBLIC_FUNC_DECL(int,             count_ptr_chain,           void *buf);
-PUBLIC_FUNC_DECL(void *,         ptr_chain_clone,           void *buf);
+PUBLIC_FUNC_DECL(void *,          ptr_chain_clone,           void *buf);
 
 // Miscellaneous/no category.
 PUBLIC_FUNC_DECL(char *,          get_chr_date,              time_t time, int local);
@@ -81,8 +81,8 @@ PUBLIC_FUNC_DECL(void,            dump_buf_outer,            const unsigned char
 PUBLIC_FUNC_DECL_VA(void,         dbgprint,                  unsigned int dbglevel, const char *fmt);
 
 // File I/O helpers.
-PUBLIC_FUNC_DECL(int, write_pem_data, const char *b64_data, const char *tag, const char *filename);
-PUBLIC_FUNC_DECL(unsigned char *, read_file_data,            const char *filename, size_t *fsize);
+PUBLIC_FUNC_DECL(int,             write_pem_data,           const char *b64_data, const char *checksum, const char *tag, const char *filename);
+PUBLIC_FUNC_DECL(unsigned char *, read_file_data,           const char *filename, size_t *fsize);
 PUBLIC_FUNC_DECL(char *,          read_pem_data,             const char *pemfile, const char *tag, int nospace);
 
 // Various cryptographic operations.
@@ -91,5 +91,8 @@ PUBLIC_FUNC_DECL(int,             compute_sha_hash_multibuf, size_t nbits, sha_d
 PUBLIC_FUNC_DECL(RSA *,           decode_rsa_pubkey,         unsigned char *data, size_t dlen);
 PUBLIC_FUNC_DECL(unsigned char *, encode_rsa_pubkey,         RSA *pubkey, size_t *enclen);
 PUBLIC_FUNC_DECL(int,             get_x509_cert_sha_hash,    X509 *cert, size_t nbits, unsigned char *out);
+
+// Checksum function.
+PUBLIC_FUNC_DECL(int,             _compute_crc24_checksum,   void *buffer, size_t length);
 
 #endif

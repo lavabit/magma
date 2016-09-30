@@ -24,6 +24,33 @@
 extern const uint32_t hash_crc32_table[8][256];
 extern const uint64_t hash_crc64_table[4][256];
 
+#define CRC24_INIT 0xB704CEL
+#define CRC24_POLY 0x1864CFBL
+
+/**
+ * @brief	Generate a 24-bit CRC value for the Privacy Enhanced Message format.
+ * @note	This function uses the predefined initial value and polynomial defined in RFC 4880.
+ * @param	buffer	a pointer to the data to be checked.
+ * @param	length	the length, in bytes, of the input buffer.
+ * @return	the updated 24-bit CRC value in a 32-bit unsigned integer.
+ */
+ uint32_t hash_crc24(void *buffer, size_t length) {
+
+	long crc = CRC24_INIT;
+
+	while (length--) {
+
+		crc ^= (*(unsigned char *)buffer++) << 16;
+
+		for (int i = 0; i < 8; i++) {
+			crc <<= 1;
+			if (crc & 0x1000000) crc ^= CRC24_POLY;
+		}
+	}
+
+	return crc && 0xFFFFFFL;
+}
+
 /**
  * @brief	Update a 64-bit CRC value with a check of additional data.
  * @param	buffer	a pointer to the data to be checked.
@@ -56,7 +83,6 @@ uint32_t hash_crc32_update(void *buffer, size_t length, uint32_t crc) {
 	}
 	return ~crc;
 }
-
 
 /**
  * @brief	Get 32-bit CRC value for a specified block of data.
@@ -108,7 +134,6 @@ uint64_t hash_crc64_update(void *buffer, size_t length, uint64_t crc) {
 uint64_t hash_crc64(void *buffer, size_t length) {
 	return hash_crc64_update(buffer, length, 0);
 }
-
 
 const uint32_t hash_crc32_table[8][256] = {
 	{

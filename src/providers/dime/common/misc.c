@@ -1496,7 +1496,15 @@ _read_pem_data(char const *pemfile, char const *tag, int nospace) {
 				ptr++;
 			}
 
-			if (!_str_printf(&result, line)) {
+			// We found the terminating checksum, which we (stupidly) ignore because rewriting this function
+			// to handle it right this second would take time we don't have.
+			// What we should get is a line that starts with '=' followed by 4 base64 characters that result
+			// in a crc24 for the preceeding binary data, followed by the closing tag.
+			if (*line == '=' && strlen(line) == 5) {
+				printf("Skipping.\n");
+			}
+
+			else if (!_str_printf(&result, line)) {
 				fclose(fp);
 				RET_ERROR_PTR(ERR_NOMEM, "unable to allocate space for PEM file contents");
 			}

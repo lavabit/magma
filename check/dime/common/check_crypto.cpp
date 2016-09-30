@@ -182,7 +182,7 @@ TEST(DIME, load_ec_key_file)
 		}
 
 
-        _write_pem_data(b64key, NULL, "PUBLIC KEY", filename);
+        _write_pem_data(b64key, holder, "PUBLIC KEY", filename);
         free(b64key);
     }
 

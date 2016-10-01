@@ -48,7 +48,7 @@ extern const uint64_t hash_crc64_table[4][256];
 		}
 	}
 
-	return crc && 0xFFFFFFL;
+	return crc & 0xFFFFFFL;
 }
 
 /**

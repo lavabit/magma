@@ -10,8 +10,8 @@
  *
  */
 
-#ifndef MAGMA_CORE_HASH_H
-#define MAGMA_CORE_HASH_H
+#ifndef MAGMA_CORE_CHECKSUM_H
+#define MAGMA_CORE_CHECKSUM_H
 
 uint32_t hash_crc24(void *buffer, size_t length);
 uint32_t hash_crc32(void *buffer, size_t length);

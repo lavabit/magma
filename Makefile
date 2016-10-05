@@ -208,6 +208,10 @@ ifeq ($(VERBOSE),no)
 	@echo 'Running the '$(YELLOW)'setup'$(NORMAL)' scripts.'
 endif
 	$(RUN)dev/scripts/linkup.sh
+ifeq ($(VERBOSE),no)
+	@echo 'Generating new '$(YELLOW)'key'$(NORMAL)' files.'
+endif
+	$(RUN)dev/scripts/builders/build.lib.sh generate
 	
 warning:
 ifeq ($(VERBOSE),no)

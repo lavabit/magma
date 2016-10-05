@@ -2133,10 +2133,15 @@ generate() {
 
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"; error
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem"; error
-
-	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"
-	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
-	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
+	
+	# Tell git to skip checking for changes to the key files, but only if git is on the system and the files 
+	# are stored inside a repo. 
+	GIT_IS_AVAILABLE=`which git &> /dev/null && git log &> /dev/null && echo 1`
+	if [[ "$GIT_IS_AVAILABLE" == "1" ]]; then
+		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"
+		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
+		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
+	fi
 }
 
 keys() {
@@ -2145,10 +2150,15 @@ keys() {
 
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"; error
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem"; error
-
-	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"
-	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
-	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
+	
+	# Tell git to skip checking for changes to the key files, but only if git is on the system and the files 
+	# are stored inside a repo. 
+	GIT_IS_AVAILABLE=`which git &> /dev/null && git log &> /dev/null && echo 1`
+	if [[ "$GIT_IS_AVAILABLE" == "1" ]]; then
+		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"
+		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
+		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
+	fi
 }
 
 combo() {

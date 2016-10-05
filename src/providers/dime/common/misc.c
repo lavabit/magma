@@ -1459,7 +1459,12 @@ unsigned char * _read_file_data(char const *filename, size_t *fsize) {
  * @free_using{free}
  */
 char * _read_pem_data(char const *pemfile, char const *tag, int nospace) {
+
 	FILE *fp;
+	int checked = 0;
+	size_t rawlen = 0;
+	long crc, checksum;
+	unsigned char *raw;
 	const char *hyphens = "-----", *begin = "BEGIN ", *end = "END ";
 	char line[4096], *result = NULL, *ptr;
 	unsigned int in_tag = 0, in_end = 0, slen;
@@ -1498,7 +1503,43 @@ char * _read_pem_data(char const *pemfile, char const *tag, int nospace) {
 			// to handle it right this second would take time we don't have.
 			// What we should get is a line that starts with '=' followed by 4 base64 characters that result
 			// in a crc24 for the preceeding binary data, followed by the closing tag.
-			if ((*line != '=' || strlen(line) != 5) && !_str_printf(&result, line)) {
+			if (*line == '=' && strlen(line) == 5) {
+
+				// Calculate the actual CRC value.
+				if ((raw = _b64decode(result, strlen(result), &rawlen))) {
+					crc = _compute_crc24_checksum(raw, rawlen);
+					free(raw);
+				}
+				else {
+					crc = 0;
+				}
+
+				// Extract the CRC value line.
+				if ((raw = _b64decode(line + 1, 4, &rawlen))) {
+					checksum = 0;
+					((unsigned char *)&checksum)[0] = raw[2];
+					((unsigned char *)&checksum)[1] = raw[1];
+					((unsigned char *)&checksum)[2] = raw[0];
+					free(raw);
+				}
+				else {
+					checksum = 0;
+				}
+
+				if (crc != checksum) {
+					fclose(fp);
+					free(result);
+					dbgprint(5, "%s computed crc24 = %li / provided crc24 = %li %s", pemfile, crc, line);
+					RET_ERROR_PTR(ERR_CORRUPTION, "the PEM file provided a checksum which doesn't match the data");
+				}
+				else {
+					checked = 1;
+				}
+
+			}
+
+			else if (!_str_printf(&result, line)) {
+				free(result);
 				fclose(fp);
 				RET_ERROR_PTR(ERR_NOMEM, "unable to allocate space for PEM file contents");
 			}
@@ -1570,6 +1611,10 @@ char * _read_pem_data(char const *pemfile, char const *tag, int nospace) {
 		// If we have successfully parsed an end tag then it's time to return;
 		if (in_end) {
 			fclose(fp);
+			if (!checked) {
+				free(result);
+				RET_ERROR_PTR(ERR_UNSPEC, "the PEM file doesn't contain a checksum line at the end");
+			}
 			return result;
 		}
 

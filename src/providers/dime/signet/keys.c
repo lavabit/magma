@@ -308,7 +308,7 @@ keys_file_create(
     int res;
     uint32_t crc;
     size_t serial_size = 0, enc_size = 0, at = 0;;
-    unsigned char *serial_keys = NULL, *serial_enc = NULL, serial_sign[ED25519_KEY_SIZE], sign_fid, enc_fid;
+    unsigned char *serial_keys = NULL, *serial_enc = NULL, serial_sign[ED25519_KEY_SIZE], sign_fid, enc_fid, be[3];
     dime_number_t number;
 
     if(!sign_key || !enc_key || !filename) {
@@ -368,7 +368,12 @@ keys_file_create(
 
     crc = _compute_crc24_checksum(serial_keys, serial_size);
     b64_keys = _b64encode(serial_keys, serial_size);
-    b64_crc_keys = _b64encode((unsigned char *)&crc, (size_t)3);
+
+	be[0] = ((unsigned char *)&crc)[2];
+	be[1] = ((unsigned char *)&crc)[1];
+	be[2] = ((unsigned char *)&crc)[0];
+
+    b64_crc_keys = _b64encode((unsigned char *)&be, (size_t)3);
     _secure_wipe(serial_keys, serial_size);
     free(serial_keys);
 

@@ -92,6 +92,9 @@ bool_t check_checksum_fixed_sthread(void) {
 
 	return result;
 }
+
+
+
 /*
 		char c[3];
 		c[0] = ((uchr_t *)&comp)[2];

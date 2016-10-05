@@ -148,11 +148,12 @@ TEST(DIME, load_ec_key_file)
         b64key = _b64encode(serial, size);
 
 		crc = _compute_crc24_checksum(serial, size);
+
 		be[0] = ((unsigned char *)&crc)[2];
 		be[1] = ((unsigned char *)&crc)[1];
 		be[2] = ((unsigned char *)&crc)[0];
 
-		b64_crc_keys = _b64encode((unsigned char *)&be, 3);
+		b64_crc_keys = _b64encode(be, 3);
 
 		if (snprintf(holder, 16, "\n=%s", b64_crc_keys) != 6) {
 			free(b64_crc_keys);
@@ -163,6 +164,8 @@ TEST(DIME, load_ec_key_file)
 			free(serial);
 			free(b64_crc_keys);
 		}
+
+		//printf ("%s crc = %li %s\n", filename, crc, holder + 1);
 
         _write_pem_data(b64key, holder, "EC PRIVATE KEY", filename);
         free(b64key);
@@ -178,7 +181,7 @@ TEST(DIME, load_ec_key_file)
 		be[1] = ((unsigned char *)&crc)[1];
 		be[2] = ((unsigned char *)&crc)[0];
 
-		b64_crc_keys = _b64encode((unsigned char *)&be, 3);
+		b64_crc_keys = _b64encode(be, 3);
 
 		if (snprintf(holder, 16, "\n=%s", b64_crc_keys) != 6) {
 			free(b64_crc_keys);
@@ -189,6 +192,8 @@ TEST(DIME, load_ec_key_file)
 			free(b64_crc_keys);
 			free(serial);
 		}
+
+		// printf ("%s crc = %li %s\n", filename, crc, holder + 1);
         _write_pem_data(b64key, holder, "PUBLIC KEY", filename);
         free(b64key);
     }

@@ -1061,7 +1061,7 @@ int _validate_self_signed(X509 *cert) {
  */
 int _domain_wildcard_check(const char *pattern, const char *domain) {
 
-    _dbgprint(5, "x509 hostname wildcard check: %s against %s ...\n", pattern, domain);
+    //_dbgprint(5, "x509 hostname wildcard check: %s against %s ...\n", pattern, domain);
 
     char *p, *pptr, *d, *dptr;
     int result = 0;

@@ -1276,7 +1276,7 @@ int _is_buf_zeroed(void *buf, size_t len) {
  * @param	length	the length, in bytes, of the input buffer.
  * @return	the updated 24-bit CRC value in a 32-bit unsigned integer.
  */
- int _compute_crc24_checksum(void *buffer, size_t length) {
+int _compute_crc24_checksum(void *buffer, size_t length) {
 
 	long crc = 0xB704CEL;
 
@@ -1397,8 +1397,7 @@ int _write_pem_data(char const *b64_data, char const *checksum, char const *tag,
  *  NULL on failure.
  * @free_using{free}
  */
-unsigned char *
-_read_file_data(char const *filename, size_t *fsize) {
+unsigned char * _read_file_data(char const *filename, size_t *fsize) {
 	unsigned char *result;
 	struct stat sb;
 	int fd, nread;
@@ -1459,8 +1458,7 @@ _read_file_data(char const *filename, size_t *fsize) {
  *  tag, or NULL on failure.
  * @free_using{free}
  */
-char *
-_read_pem_data(char const *pemfile, char const *tag, int nospace) {
+char * _read_pem_data(char const *pemfile, char const *tag, int nospace) {
 	FILE *fp;
 	const char *hyphens = "-----", *begin = "BEGIN ", *end = "END ";
 	char line[4096], *result = NULL, *ptr;
@@ -1500,11 +1498,7 @@ _read_pem_data(char const *pemfile, char const *tag, int nospace) {
 			// to handle it right this second would take time we don't have.
 			// What we should get is a line that starts with '=' followed by 4 base64 characters that result
 			// in a crc24 for the preceeding binary data, followed by the closing tag.
-			if (*line == '=' && strlen(line) == 5) {
-				printf("Skipping { line = %s }\n", line);
-			}
-
-			else if (!_str_printf(&result, line)) {
+			if ((*line != '=' || strlen(line) != 5) && !_str_printf(&result, line)) {
 				fclose(fp);
 				RET_ERROR_PTR(ERR_NOMEM, "unable to allocate space for PEM file contents");
 			}

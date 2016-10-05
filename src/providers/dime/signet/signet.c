@@ -1433,7 +1433,7 @@ static char *sgnt_signet_b64_serialize(signet_t *signet) {
 */
 static char *sgnt_signet_crc24_serialize(signet_t *signet) {
 
-    unsigned char *serial;
+    unsigned char *serial, be[3];
     uint32_t serial_size = 0, crc;
     char *base64, *result;
 
@@ -1448,15 +1448,17 @@ static char *sgnt_signet_crc24_serialize(signet_t *signet) {
     crc = _compute_crc24_checksum(serial, serial_size);
     free(serial);
 
-    if(!(base64 = _b64encode((unsigned char *)&crc, (size_t)3))) {
-        RET_ERROR_PTR(ERR_UNSPEC, "could not base64 encode serialized signet");
-    }
+	be[0] = ((unsigned char *)&crc)[2];
+	be[1] = ((unsigned char *)&crc)[1];
+	be[2] = ((unsigned char *)&crc)[0];
 
+	if (!(base64 = _b64encode((unsigned char *)&be, 3))) {
+		RET_ERROR_PTR(ERR_UNSPEC, "could not encode the crc value into a base64 string");
+	}
     if(!(result = malloc(strlen(base64) + 3)) || (snprintf(result, strlen(base64) + 3, "\n=%s", base64) != 6)) {
     	if (result) free(result);
     	free(base64);
     	RET_ERROR_PTR(ERR_UNSPEC, "could not base64 encode the signet crc");
-
     }
 
     free(base64);

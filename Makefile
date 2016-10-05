@@ -197,16 +197,18 @@ else
     EXEEXT						:= 
 endif
 
-all: config warning setup $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) 
-
-setup: $(PACKAGE_DEPENDENCIES)
+all: config warning $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) 
 
 check: config warning $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) finished
 	$(RUN)$(TOPDIR)/$(MAGMA_CHECK_PROGRAM) sandbox/etc/magma.sandbox.config
 	$(RUN)$(TOPDIR)/$(DIME_CHECK_PROGRAM)
 
 setup: $(PACKAGE_DEPENDENCIES)
-
+ifeq ($(VERBOSE),no)
+	@echo 'Running the ' $(YELLOW)'setup'$(NORMAL) ' scripts.'
+endif
+	$(RUN)dev/scripts/linkup.sh
+	
 warning:
 ifeq ($(VERBOSE),no)
 	@echo 
@@ -242,7 +244,7 @@ clean:
 	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
 
 # Construct the magma daemon executable file
-$(MAGMA_PROGRAM): $(MAGMA_OBJFILES)
+$(MAGMA_PROGRAM): $(PACKAGE_DEPENDENCIES) $(MAGMA_OBJFILES)
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 else
@@ -251,7 +253,7 @@ endif
 	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) -Wl,--end-group
 
 # Construct the dime command line utility
-$(DIME_PROGRAM): $(DIME_OBJFILES) 
+$(DIME_PROGRAM): $(PACKAGE_DEPENDENCIES) $(DIME_OBJFILES) 
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 else
@@ -260,7 +262,7 @@ endif
 	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(DIME_OBJFILES) -Wl,--start-group,--whole-archive $(MAGMA_STATIC) $(DIME_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_DYNAMIC) 
 
 # Construct the signet command line utility
-$(SIGNET_PROGRAM): $(SIGNET_OBJFILES) 
+$(SIGNET_PROGRAM): $(PACKAGE_DEPENDENCIES) $(SIGNET_OBJFILES) 
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 else
@@ -269,7 +271,7 @@ endif
 	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(SIGNET_OBJFILES) -Wl,--start-group,--whole-archive $(MAGMA_STATIC) $(SIGNET_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_DYNAMIC)
 
 # Construct the dime command line utility
-$(GENREC_PROGRAM): $(GENREC_OBJFILES) 
+$(GENREC_PROGRAM): $(PACKAGE_DEPENDENCIES) $(GENREC_OBJFILES) 
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 else
@@ -278,14 +280,14 @@ endif
 	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(GENREC_OBJFILES) -Wl,--start-group,--whole-archive $(MAGMA_STATIC) $(GENREC_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_DYNAMIC)
 
 # Construct the magma unit test executable
-$(MAGMA_CHECK_PROGRAM): $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES))
+$(MAGMA_CHECK_PROGRAM): $(PACKAGE_DEPENDENCIES) $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES))
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 endif
 	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) -Wl,--start-group,--whole-archive $(MAGMA_CHECK_STATIC) -Wl,--no-whole-archive,--end-group  $(MAGMA_CHECK_DYNAMIC) 
 
 # Construct the dime unit test executable
-$(DIME_CHECK_PROGRAM): $(DIME_CHECK_OBJFILES) 
+$(DIME_CHECK_PROGRAM): $(PACKAGE_DEPENDENCIES) $(DIME_CHECK_OBJFILES) 
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 endif
@@ -309,7 +311,7 @@ endif
 	$(RUN)$(CC) $(CFLAGS) $(CFLAGS.$(<F)) $(CDEFINES) $(CDEFINES.$(<F)) $(MAGMA_CHECK_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" -o"$@" "$<"
 
 # The Magma Daemon Object files
-$(OBJDIR)/%.o: %.c $(PACKAGE_DEPENDENCIES)
+$(OBJDIR)/%.o: %.c 
 ifeq ($(VERBOSE),no)
 	@echo 'Building' $(YELLOW)$<$(NORMAL)
 endif
@@ -318,10 +320,6 @@ endif
 	$(RUN)$(CC) $(CFLAGS) $(CFLAGS.$(<F)) $(CDEFINES) $(CDEFINES.$(<F)) $(MAGMA_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" -o"$@" "$<"
 	
 $(PACKAGE_DEPENDENCIES): 
-ifeq ($(VERBOSE),no)
-	@echo 'Running the ' $(YELLOW)'setup'$(NORMAL) ' scripts.'
-endif
-	$(RUN)dev/scripts/linkup.sh
 ifeq ($(VERBOSE),no)
 	@echo 'Building the ' $(YELLOW)'bundled'$(NORMAL) ' dependencies.'
 endif
@@ -332,7 +330,7 @@ endif
 
 # Special Make Directives
 .SUFFIXES: .c .cc .cpp .o 
-# .NOTPARALLEL: warning conifg
+.NOTPARALLEL: warning conifg $(PACKAGE_DEPENDENCIES)
 .PHONY: all warning config finished check setup
 
 # vim:set softtabstop=4 shiftwidth=4 tabstop=4:

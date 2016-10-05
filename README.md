@@ -132,21 +132,21 @@ To link up the development and build scripts run the linkup.sh. This will create
 magma/dev/scripts/linkup.sh
 ```
 
-To build the dependencies and create the magmad.so library, run the build.lib script. Run the script without any parameters to see the possible command line options. To run all of the steps in a single operation:
+To build the dependencies and create the magmad.so library separately, run the build.lib script. Run the script without any parameters to see the possible command line options. To compile and combine all of dependencies in a single operation:
 
 
 ```shell
 build.lib all
 ```
 
-Once the dependencies have been compiled the bundled Makefile can be used to compile magma. It points to the relevant folders created by the previous step when searching for the necessary header files. If the Makefile has trouble finding the necessary include files, odds are its because the previous step hasn't been run. To compile magmad and magmad.check:
+The bundled Makefile can be used to compile magma. It will detect when the dependencies haven't been compiled and run the preceeding step automatically, if necessary, as the Makefile looks for required header files in folders created by the previous step. If the Makefile has trouble finding the necessary include files, odds are its because the previous step didn't run properly. Assuming the dependencies are available, you can compile magmad and magmad.check using:
 
 ```shell
 build.magma
 build.check
 ```
 
-To configure a sandbox database which can be used to run the unit tests, or experiment with magma, run:
+To setup a sandbox database which can be used to run the unit tests, or experiment with magma, run (assuming the development userid is setup with permission to your database):
 
 ```shell
 schema.reset
@@ -167,7 +167,7 @@ freshen.clamav
 
 ### Deploying
 
-To deploy magma, run the INSTALL script. Note the script is slightly out of date, and may need to tweaking to operate perfectly against a copy of the current magma development branch cloned directly via git.
+To deploy magma, run the INSTALL script. Note the INSTALL script is out of date, and will need to tweaking to operate perfectly against a copy of the current magma development branch cloned directly via git. Pull requests welcome.
 
 ```shell
 ./INSTALL -d ~/ -u magma -p volcano -s Lavabit

@@ -1222,6 +1222,9 @@ checker() {
 			# non-POSIX archivers might require the AM_PROG_AR macro to work, which was added to automake in version 1.11.2.
 			# For those systems, this patch might break things in unpredictable ways, assuming that automake is indeed 1.11.1.
 			cat "$M_PATCHES/checker/"checker-automake-version.patch | patch -p1 --verbose &>> "$M_LOGS/checker.txt"; error
+			# Valgrind will complain about uninitialized bytes if we don't memset the timer variable before using it.
+			cat "$M_PATCHES/checker/"checker-timer-memset.patch | patch -p1 --verbose &>> "$M_LOGS/checker.txt"; error
+			
 		;;
 		checker-build)
 			cd "$M_SOURCES/checker"; error

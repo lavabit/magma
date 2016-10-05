@@ -1290,7 +1290,7 @@ int _is_buf_zeroed(void *buf, size_t len) {
 		}
 	}
 
-	return crc && 0xFFFFFFL;
+	return crc & 0xFFFFFFL;
 }
 
 /**
@@ -1501,7 +1501,7 @@ _read_pem_data(char const *pemfile, char const *tag, int nospace) {
 			// What we should get is a line that starts with '=' followed by 4 base64 characters that result
 			// in a crc24 for the preceeding binary data, followed by the closing tag.
 			if (*line == '=' && strlen(line) == 5) {
-				printf("Skipping.\n");
+				printf("Skipping { line = %s }\n", line);
 			}
 
 			else if (!_str_printf(&result, line)) {

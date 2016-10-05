@@ -99,4 +99,8 @@ bool_t   check_bitwise_parameters(void);
 bool_t   check_bitwise_determinism(void);
 bool_t   check_bitwise_simple(void);
 
+/// checksum_check.c
+bool_t check_checksum_fuzz_sthread(void);
+bool_t check_checksum_fixed_sthread(void);
+
 #endif

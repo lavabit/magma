@@ -1,5 +1,5 @@
 
-/**
+/**t
  * @file /check/core/core_check.c
  *
  * @brief The heart of the suite of unit tests for the Magma core module.
@@ -71,7 +71,8 @@ START_TEST(check_bsearch)
 		outcome = errmsg ? false : true;
 		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
 		fail_unless(outcome, errmsg);
-	}END_TEST
+	}
+END_TEST
 
 START_TEST (check_compare)
 	{
@@ -122,7 +123,8 @@ START_TEST (check_compare)
 		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
 		fail_unless(outcome, errmsg);
 
-	}END_TEST
+	}
+END_TEST
 
 START_TEST (check_inx_linked_s)
 	{
@@ -366,7 +368,8 @@ START_TEST (check_constants)
 
 		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
 		fail_unless(outcome, errmsg);
-	}END_TEST
+	}
+END_TEST
 
 START_TEST (check_allocation)
 	{
@@ -392,7 +395,8 @@ START_TEST (check_allocation)
 		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
 		fail_unless(outcome, errmsg);
 
-	}END_TEST
+	}
+END_TEST
 
 START_TEST (check_reallocation)
 	{
@@ -418,7 +422,8 @@ START_TEST (check_reallocation)
 		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
 		fail_unless(outcome, errmsg);
 
-	}END_TEST
+	}
+END_TEST
 
 START_TEST (check_duplication)
 	{
@@ -444,7 +449,8 @@ START_TEST (check_duplication)
 		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
 		fail_unless(outcome, errmsg);
 
-	}END_TEST
+	}
+END_TEST
 
 START_TEST (check_merge)
 	{
@@ -614,7 +620,7 @@ START_TEST (check_capitalization)
 		log_unit("%10.10s\n", (outcome ? "PASSED" : status() ? "FAILED" : "SKIPPED"));
 		fail_unless(outcome, errmsg);
 
-}
+	}
 END_TEST
 
 START_TEST (check_classify)
@@ -637,7 +643,7 @@ START_TEST (check_classify)
 		outcome = errmsg ? false : true;
 		log_unit("%10.10s\n", (outcome ? "PASSED" : status() ? "FAILED" : "SKIPPED"));
 		fail_unless(outcome, errmsg);
-}
+	}
 END_TEST
 
 START_TEST (check_qp)
@@ -653,7 +659,8 @@ START_TEST (check_qp)
 		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
 		fail_unless(outcome, errmsg);
 
-	}END_TEST
+	}
+END_TEST
 
 START_TEST (check_hex)
 	{
@@ -668,7 +675,8 @@ START_TEST (check_hex)
 		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
 		fail_unless(outcome, errmsg);
 
-	}END_TEST
+	}
+END_TEST
 
 START_TEST (check_url)
 	{
@@ -683,7 +691,8 @@ START_TEST (check_url)
 		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
 		fail_unless(outcome, errmsg);
 
-	}END_TEST
+	}
+END_TEST
 
 START_TEST (check_base64)
 	{
@@ -720,84 +729,79 @@ START_TEST (check_zbase32)
 		outcome = errmsg ? false : true;
 		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
 		fail_unless(outcome, errmsg);
-	}END_TEST
-
-START_TEST (check_hashers) {
-
-		chr_t buffer[128];
-
-		log_unit("%-64.64s", "CORE / CRYPTOGRAPHY / HASH / SINGLE THREADED:");
-
-		// Intended largely to test the functions for stability and access violations since every possibly return value could be legitimate.
-		for (int_t i = 0; status() && i < 128; i++) {
-			rand_write(PLACER(buffer, 128));
-			hash_crc32(buffer, 128);
-			hash_crc64(buffer, 128);
-			hash_crc32_update(buffer, 128, 0);
-			hash_crc64_update(buffer, 128, 0);
-			hash_adler32(buffer, 128);
-			hash_murmur32(buffer, 128);
-			hash_murmur64(buffer, 128);
-			hash_fletcher32(buffer, 128);
-		}
-
-		log_unit("%10.10s\n", (status() ? "PASSED" : "SKIPPED"));
-		fail_unless(true, "Insanity.");
 	}
 END_TEST
 
-START_TEST (check_secmem) {
+START_TEST (check_checksum)
+	{
 
-	size_t bsize;
-	void *blocks[1024];
-	chr_t *errmsg = NULL;
+		stringer_t *errmsg = NULL;
 
-	log_unit("%-64.64s", "MEMORY / SECURE ADDRESS RANGE / SINGLE THREADED:");
-	log_disable();
-
-	if (status() && magma.secure.memory.enable && (bsize = (magma.secure.memory.length / 1024))) {
-
-		// Now try and trigger an overflow.
-		for (size_t i = 0; i < 1024; i++) {
-			blocks[i] = mm_sec_alloc(bsize + 16);
+		if (status() && !check_checksum_fuzz_sthread()) {
+			errmsg = NULLER("Checksum fuzz test failed.");
+		}
+		else if (status() && !check_checksum_fixed_sthread()) {
+			errmsg = NULLER("Checksum output failed to match the expected value.");
 		}
 
-		for (size_t i = 0; i < 1024; i++) {
-			if (blocks[i]) {
-				mm_sec_free(blocks[i]);
-				blocks[i] = NULL;
-			}
-		}
+		log_test("CORE / MEMORY / CHECKSUMS / SINGLE THREADED:", errmsg);
+		fail_unless(!errmsg, st_char_get(errmsg));
 
-		// Now try and trigger a single byte overflow.
-		for (size_t i = 0; i < 1024; i++) {
-			blocks[i] = mm_sec_alloc(bsize + 1);
-		}
-
-		for (size_t i = 0; i < 1024; i++) {
-			if (blocks[i]) {
-				mm_sec_free(blocks[i]);
-				blocks[i] = NULL;
-			}
-		}
-
-		// Now were going to request randomly sized blocks.
-		for (size_t i = 0; i < 1024; i++) {
-			blocks[i] = mm_sec_alloc(bsize + rand_get_uint32() % 32);
-		}
-
-		for (size_t i = 0; i < 1024; i++) {
-			if (blocks[i]) {
-				mm_sec_free(blocks[i]);
-				blocks[i] = NULL;
-			}
-		}
 	}
+END_TEST
 
-	log_enable();
-	log_unit("%10.10s\n", (!errmsg ? (status() && magma.secure.memory.enable && (magma.secure.memory.length / 1024) ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(!errmsg, errmsg);
-}
+START_TEST (check_secmem)
+	{
+		size_t bsize;
+		void *blocks[1024];
+		chr_t *errmsg = NULL;
+
+		log_unit("%-64.64s", "CORE / MEMORY / SECURE ADDRESS RANGE / SINGLE THREADED:");
+		log_disable();
+
+		if (status() && magma.secure.memory.enable && (bsize = (magma.secure.memory.length / 1024))) {
+
+			// Now try and trigger an overflow.
+			for (size_t i = 0; i < 1024; i++) {
+				blocks[i] = mm_sec_alloc(bsize + 16);
+			}
+
+			for (size_t i = 0; i < 1024; i++) {
+				if (blocks[i]) {
+					mm_sec_free(blocks[i]);
+					blocks[i] = NULL;
+				}
+			}
+
+			// Now try and trigger a single byte overflow.
+			for (size_t i = 0; i < 1024; i++) {
+				blocks[i] = mm_sec_alloc(bsize + 1);
+			}
+
+			for (size_t i = 0; i < 1024; i++) {
+				if (blocks[i]) {
+					mm_sec_free(blocks[i]);
+					blocks[i] = NULL;
+				}
+			}
+
+			// Now were going to request randomly sized blocks.
+			for (size_t i = 0; i < 1024; i++) {
+				blocks[i] = mm_sec_alloc(bsize + rand_get_uint32() % 32);
+			}
+
+			for (size_t i = 0; i < 1024; i++) {
+				if (blocks[i]) {
+					mm_sec_free(blocks[i]);
+					blocks[i] = NULL;
+				}
+			}
+		}
+
+		log_enable();
+		log_unit("%10.10s\n", (!errmsg ? (status() && magma.secure.memory.enable && (magma.secure.memory.length / 1024) ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(!errmsg, errmsg);
+	}
 END_TEST
 
 START_TEST (check_signames_s)
@@ -830,68 +834,70 @@ START_TEST (check_errnames_s)
 	}
 END_TEST
 
-START_TEST (check_nbo_s) {
+START_TEST (check_nbo_s)
+	{
 
-	bool_t outcome = true;
+		bool_t outcome = true;
 
-	bool_t (*checks[])(void) = {
-		&check_nbo_parameters,
-		&check_nbo_simple
-	};
+		bool_t (*checks[])(void) = {
+			&check_nbo_parameters,
+			&check_nbo_simple
+		};
 
-	stringer_t *err = NULL;
+		stringer_t *err = NULL;
 
-	stringer_t *errors[] = {
-		NULLER("check_nbo_parameters failed"),
-		NULLER("check_nbo_simple failed")
-	};
+		stringer_t *errors[] = {
+			NULLER("check_nbo_parameters failed"),
+			NULLER("check_nbo_simple failed")
+		};
 
-	log_unit("%-64.64s", "CORE / NETWORK BYTE ORDER / SINGLE THREADED:");
+		log_unit("%-64.64s", "CORE / NETWORK BYTE ORDER / SINGLE THREADED:");
 
-	for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof((checks)[0]); ++i) {
-		log_disable();
-		if(!(outcome = checks[i]())) {
-			err = errors[i];
+		for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof((checks)[0]); ++i) {
+			log_disable();
+			if(!(outcome = checks[i]())) {
+				err = errors[i];
+			}
+			log_enable();
 		}
-		log_enable();
-	}
 
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, st_data_get(err));
-}
+		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(outcome, st_data_get(err));
+	}
 END_TEST
 
-START_TEST (check_bitwise) {
+START_TEST (check_bitwise)
+	{
 
-	bool_t outcome = true;
+		bool_t outcome = true;
 
-	bool_t (*checks[])(void) = {
-		&check_bitwise_parameters,
-		&check_bitwise_determinism,
-		&check_bitwise_simple
-	};
+		bool_t (*checks[])(void) = {
+			&check_bitwise_parameters,
+			&check_bitwise_determinism,
+			&check_bitwise_simple
+		};
 
-	stringer_t *err = NULL;
+		stringer_t *err = NULL;
 
-	stringer_t *errors[] = {
-		NULLER("check_bitwise_parameters failed"),
-		NULLER("check_bitwise_determinism failed"),
-		NULLER("check_bitwise_simple failed")
-	};
+		stringer_t *errors[] = {
+			NULLER("check_bitwise_parameters failed"),
+			NULLER("check_bitwise_determinism failed"),
+			NULLER("check_bitwise_simple failed")
+		};
 
-	log_unit("%-64.64s", "CORE / STRINGS / BITWISE / SINGLE THREADED:");
+		log_unit("%-64.64s", "CORE / STRINGS / BITWISE / SINGLE THREADED:");
 
-	for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof((checks)[0]); ++i) {
-		log_disable();
-		if(!(outcome = checks[i]())) {
-			err = errors[i];
+		for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof((checks)[0]); ++i) {
+			log_disable();
+			if(!(outcome = checks[i]())) {
+				err = errors[i];
+			}
+			log_enable();
 		}
-		log_enable();
-	}
 
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, st_data_get(err));
-}
+		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(outcome, st_data_get(err));
+	}
 END_TEST
 
 Suite * suite_check_core(void) {
@@ -912,6 +918,7 @@ Suite * suite_check_core(void) {
 	testcase(s, tc, "Strings / Compare", check_compare);
 	testcase(s, tc, "Strings / Binary Search", check_bsearch);
 	testcase(s, tc, "Strings / Bitwise Operations", check_bitwise);
+	testcase(s, tc, "Memory / Checksum", check_checksum);
 	testcase(s, tc, "Memory / Secure Address Range", check_secmem);
 	testcase(s, tc, "System / Signal Names", check_signames_s);
 	testcase(s, tc, "System / Error Names", check_errnames_s);
@@ -921,7 +928,6 @@ Suite * suite_check_core(void) {
 	testcase(s, tc, "Encoding / Base64", check_base64);
 	testcase(s, tc, "Encoding / Zbase32", check_zbase32);
 	testcase(s, tc, "Encoding / Network Byte Order/S", check_nbo_s);
-	testcase(s, tc, "Cryptography / Hash", check_hashers);
 	testcase(s, tc, "Indexes / Linked/S", check_inx_linked_s);
 	testcase(s, tc, "Indexes / Linked/M", check_inx_linked_m);
 	testcase(s, tc, "Indexes / Hashed/S", check_inx_hashed_s);

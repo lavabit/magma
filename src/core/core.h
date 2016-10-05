@@ -80,7 +80,7 @@ char * type(M_TYPE type);
 #include "thread/thread.h"
 #include "buckets/buckets.h"
 #include "parsers/parsers.h"
-#include "hash/hash.h"
+#include <core/checksum/checksum.h>
 #include "host/host.h"
 
 #endif

@@ -205,7 +205,7 @@ check: config warning $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) finished
 
 setup: $(PACKAGE_DEPENDENCIES)
 ifeq ($(VERBOSE),no)
-	@echo 'Running the ' $(YELLOW)'setup'$(NORMAL) ' scripts.'
+	@echo 'Running the '$(YELLOW)'setup'$(NORMAL)' scripts.'
 endif
 	$(RUN)dev/scripts/linkup.sh
 	
@@ -321,7 +321,7 @@ endif
 	
 $(PACKAGE_DEPENDENCIES): 
 ifeq ($(VERBOSE),no)
-	@echo 'Building the ' $(YELLOW)'bundled'$(NORMAL) ' dependencies.'
+	@echo 'Building the '$(YELLOW)'bundled'$(NORMAL)' dependencies.'
 endif
 	$(RUN)dev/scripts/builders/build.lib.sh all
 

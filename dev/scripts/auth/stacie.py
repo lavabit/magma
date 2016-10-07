@@ -204,94 +204,93 @@ def RealmKeyDerivation(master_key, realm="", shard=""):
 
 def ExtractRealmVectorKey(realm_key):
     realm_vector_key = realm_key[0:16]
-      
+
     return realm_vector_key
 
 def ExtractRealmTagKey(realm_key):
     realm_tag_key = realm_key[16:32]
 
     return realm_tag_key
-    
+
 def ExtractRealmCipherKey(realm_key):
     realm_cipher_key = realm_key[32:64]
-    
+
     return realm_cipher_key
 
 def RealmEncrypt(realm_vector_key, realm_tag_key, realm_cipher_key, message, serial=0):
-     
+
     count = 0
-     
+
     if serial < 0 or serial >= pow(2, 16):
         raise ValueError("Serial numbers must be greater than 0 and less than 65,536.")
     elif len(realm_cipher_key) != 32:
         raise ValueError("The encryption key must be 32 octets in length.")
     elif len(realm_vector_key) != 16:
         raise ValueError("The vector key must be 16 octets in length.")
-    elif len(message) == 0: 
+    elif len(message) == 0:
         raise ValueError("The secret being encrypted must be at least 1 octet in length.")
     elif len(message) >= pow(2, 24):
         raise ValueError("The secret being encrypted must be at less than 16,777,216 in length.")
-     
+
     key = realm_cipher_key
-    dynamic_iv = get_random_bytes(16) 
-     
+    dynamic_iv = get_random_bytes(16)
+
     iv = str().join(chr(operator.xor(ord(a), ord(b))) \
         for a,b in zip(realm_vector_key, dynamic_iv))
- 
+
     size = len(message)
-    pad = (16 - operator.mod(size, 16)) 
+    pad = (16 - operator.mod(size, 16))
     padding = ""
-    
+
     while count < pad:
         padding += struct.pack(">I", pad)[3:4]
         count = operator.add(count, 1)
-           
-           
+
+
     encryptor = Cipher(algorithms.AES(key), modes.GCM(iv), backend=default_backend()).encryptor()
     ciphertext = encryptor.update(struct.pack(">I", size)[1:4] + struct.pack(">I", pad)[3:4] + message + padding) + encryptor.finalize()
-    
+
     tag = encryptor.tag
     dynamic_tag = str().join(chr(operator.xor(ord(a), ord(b))) \
         for a,b in zip(realm_tag_key, tag))
-    
+
     return struct.pack(">H", serial) + dynamic_iv + dynamic_tag + ciphertext
 
 def RealmDecrypt(realm_vector_key, realm_tag_key, realm_cipher_key, buffer):
 
     count = 0
-    
+
     if len(realm_cipher_key) != 32:
         raise ValueError("The encryption key must be 32 octets in length.")
     elif len(realm_vector_key) != 16:
         raise ValueError("The vector key must be 16 octets in length.")
-    elif len(buffer) < 54: 
+    elif len(buffer) < 54:
         raise ValueError("The minimum length of a correctly formatted cipher text is 54 octets.")
-    
+
     dynamic_iv = buffer[2:18]
     dynamic_tag = buffer[18:34]
-    ciphertext = buffer[34:] 
+    ciphertext = buffer[34:]
 
     key = realm_cipher_key
     iv = str().join(chr(operator.xor(ord(a), ord(b))) \
         for a,b in zip(realm_vector_key, dynamic_iv))
-    
+
     tag = str().join(chr(operator.xor(ord(a), ord(b))) \
        for a,b in zip(realm_tag_key, dynamic_tag))
-    
+
     decryptor = Cipher(algorithms.AES(key), modes.GCM(iv, tag), backend=default_backend()).decryptor()
     plaintext = decryptor.update(ciphertext) + decryptor.finalize()
-    
+
     size = struct.unpack(">I", '\x00' + plaintext[0:3])[0]
     pad = struct.unpack(">I", '\x00' + '\x00' + '\x00' + plaintext[3:4])[0]
-    
-    
+
     if operator.mod(size + pad, 16) != 0 or len(plaintext) != size + pad + 4:
         raise ValueError("The encrypted buffer is invalid.")
-    
+
     for offset in xrange(size + 4, size + pad + 4, 1):
         if struct.unpack(">I", '\x00' + '\x00' + '\x00' + plaintext[offset: offset + 1])[0] != pad:
             raise ValueError("The encrypted buffer contained an invalid padding value.")
-        
+
     return plaintext[4:size + 4]
 
 hex = 0

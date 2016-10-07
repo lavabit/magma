@@ -233,7 +233,7 @@ def RealmEncrypt(realm_vector_key, realm_tag_key, realm_cipher_key, message, ser
         raise ValueError("The secret being encrypted must be at less than 16,777,216 in length.")
      
     key = realm_cipher_key
-    dynamic_iv = get_random_bytes(128) 
+    dynamic_iv = get_random_bytes(16) 
      
     iv = str().join(chr(operator.xor(ord(a), ord(b))) \
         for a,b in zip(realm_vector_key, dynamic_iv))
@@ -254,11 +254,15 @@ def RealmEncrypt(realm_vector_key, realm_tag_key, realm_cipher_key, message, ser
     dynamic_tag = str().join(chr(operator.xor(ord(a), ord(b))) \
         for a,b in zip(realm_tag_key, tag))
     
-    return (serial, dynamic_iv, dynamic_tag, ciphertext)
+    return struct.pack(">H", serial) + dynamic_iv + dynamic_tag + ciphertext
 
-def RealmDecrypt(realm_vector_key, realm_tag_key, realm_cipher_key, dynamic_iv, dynamic_tag, ciphertext):
+def RealmDecrypt(realm_vector_key, realm_tag_key, realm_cipher_key, buffer):
 
     count = 0
+    
+    dynamic_iv = buffer[2:18]
+    dynamic_tag = buffer[18:34]
+    ciphertext = buffer[34:] 
 
     key = realm_cipher_key
     iv = str().join(chr(operator.xor(ord(a), ord(b))) \
@@ -282,8 +286,6 @@ def RealmDecrypt(realm_vector_key, realm_tag_key, realm_cipher_key, dynamic_iv, 
             raise ValueError("The encrypted buffer contained an invalid padding value.")
         
     return plaintext[4:size + 4]
-    
-
 
 hex = 0
 bonus = 0
@@ -372,12 +374,13 @@ realm_tag_key = ExtractRealmTagKey(realm_key)
 realm_vector_key = ExtractRealmVectorKey(realm_key)
 realm_cipher_key = ExtractRealmCipherKey(realm_key)
 
-print ("realm-tag-key: " + (hex_encode(realm_tag_key) if hex == 1 else  base64url_encode(realm_tag_key)))
-print ("realm-vector-key: " + (hex_encode(realm_vector_key) if hex == 1 else  base64url_encode(realm_vector_key)))
+print ("realm-tag-key: " + (hex_encode(realm_tag_key) if hex == 1 else base64url_encode(realm_tag_key)))
+print ("realm-vector-key: " + (hex_encode(realm_vector_key) if hex == 1 else base64url_encode(realm_vector_key)))
 print ("realm-cipher-key: " + (hex_encode(realm_cipher_key) if hex == 1 else base64url_encode(realm_cipher_key)) + os.linesep)
 
-serial, dynamic_iv, dynamic_tag, ciphertext = RealmEncrypt(realm_vector_key, realm_tag_key, realm_cipher_key, secret_message)
-decrypted_buffer = RealmDecrypt(realm_vector_key, realm_tag_key, realm_cipher_key, dynamic_iv, dynamic_tag, ciphertext)
+encrypted_buffer = RealmEncrypt(realm_vector_key, realm_tag_key, realm_cipher_key, secret_message)
+decrypted_buffer = RealmDecrypt(realm_vector_key, realm_tag_key, realm_cipher_key, encrypted_buffer)
 
+print ("encrypted-data: " + (hex_encode(encrypted_buffer) if hex == 1 else base64url_encode(encrypted_buffer)))
 print ("decrypted-data: " + decrypted_buffer + os.linesep)
 

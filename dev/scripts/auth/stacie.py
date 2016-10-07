@@ -17,6 +17,60 @@ import warnings
 from Crypto.Random import get_random_bytes
 from Crypto.Hash import SHA512
 from Crypto.Hash.HMAC import HMAC
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
+from em import Stream
+
+def PrintUsage():
+    print ("Usage: stacie.py [--hex|--help] username password [salt]")
+
+def base64url_encode(binary):
+    # Encodes a string using the standard base64 method, and
+    # converts the output into the proper format.
+
+    # Encode the binary input using standard base64 method.
+    output = base64.b64encode(binary)
+
+    # Swap ‘+‘ (plus) with ‘-‘ (minus).
+    output = output.replace('+', '-')
+
+    # Swap ‘/‘ (slash) with ‘_‘ (underscore).
+    output = output.replace('/', '_')
+
+    # Remove the padding ‘=‘ (equal).
+    output = output.replace('=', '')
+
+    # Remove line breaks and other whitespace.
+    return output.join((output.split()))
+
+def base64url_decode(string):
+    # Converts the string into the standard base64 format, and
+    # then uses the standard method to convert the string.
+
+    # Swap ‘-‘ (minus) with ‘+‘ (plus).
+    string = string.replace('-', '+');
+
+    # Swap ‘_‘ (underscore) with ‘/‘ (slash).
+    string = string.replace('_', '/');
+
+    # Determine if padding must be appended to the string.
+    if operator.mod(len(string), 4) == 3:
+        string = string + "="
+    elif operator.mod(len(string), 4) == 2:
+        string = string + "=="
+
+    # Finally, convert the string using a standard base64 decoder.
+    return base64.b64decode(string)
+
+def hex_encode(binary):
+    # Encodes a string using the standard base64 method, and
+    # converts the output into the proper format.
+
+    # Encode the binary input using standard base64 method.
+    output =  binascii.hexlify(binary)
+
+    # Remove line breaks and other whitespace.
+    return output.join((output.split()))
 
 def CalculateHashRounds(password, bonus):
     # Accepts a user password and bonus value, and calculates
@@ -148,82 +202,88 @@ def RealmKeyDerivation(master_key, realm="", shard=""):
 
     return realm_key
 
-def ExtractRealmCipherKey(realm_key):
-    realm_cipher_key = realm_key[0:32]
-    return realm_cipher_key
-
 def ExtractRealmVectorKey(realm_key):
-    realm_vector_key = str().join(chr(operator.xor(ord(a), ord(b))) \
-        for a,b in zip(realm_key[32:48], realm_key[48:64]))
+    realm_vector_key = realm_key[0:16]
+      
     return realm_vector_key
 
+def ExtractRealmTagKey(realm_key):
+    realm_tag_key = realm_key[16:32]
 
-def base64url_encode(binary):
-    # Encodes a string using the standard base64 method, and
-    # converts the output into the proper format.
+    return realm_tag_key
+    
+def ExtractRealmCipherKey(realm_key):
+    realm_cipher_key = realm_key[32:64]
+    
+    return realm_cipher_key
 
-    # Encode the binary input using standard base64 method.
-    output = base64.b64encode(binary)
+def RealmEncrypt(realm_vector_key, realm_tag_key, realm_cipher_key, message, serial=0):
+     
+    count = 0
+     
+    if serial < 0 or serial >= pow(2, 16):
+        raise ValueError("Serial numbers must be greater than 0 and less than 65,536.")
+    elif len(realm_cipher_key) != 32:
+        raise ValueError("The encryption key must be 32 octets in length.")
+    elif len(realm_vector_key) != 16:
+        raise ValueError("The vector key must be 16 octets in length.")
+    elif len(message) == 0: 
+        raise ValueError("The secret being encrypted must be at least 1 octet in length.")
+    elif len(message) >= pow(2, 24):
+        raise ValueError("The secret being encrypted must be at less than 16,777,216 in length.")
+     
+    key = realm_cipher_key
+    dynamic_iv = get_random_bytes(128) 
+     
+    iv = str().join(chr(operator.xor(ord(a), ord(b))) \
+        for a,b in zip(realm_vector_key, dynamic_iv))
+ 
+    size = len(message)
+    pad = (16 - operator.mod(size, 16)) 
+    padding = ""
+    
+    while count < pad:
+        padding += struct.pack(">I", pad)[3:4]
+        count = operator.add(count, 1)
+           
+           
+    encryptor = Cipher(algorithms.AES(key), modes.GCM(iv), backend=default_backend()).encryptor()
+    ciphertext = encryptor.update(struct.pack(">I", size)[1:4] + struct.pack(">I", pad)[3:4] + message + padding) + encryptor.finalize()
+    
+    tag = encryptor.tag
+    dynamic_tag = str().join(chr(operator.xor(ord(a), ord(b))) \
+        for a,b in zip(realm_tag_key, tag))
+    
+    return (serial, dynamic_iv, dynamic_tag, ciphertext)
 
-    # Swap ‘+‘ (plus) with ‘-‘ (minus).
-    output = output.replace('+', '-')
+def RealmDecrypt(realm_vector_key, realm_tag_key, realm_cipher_key, dynamic_iv, dynamic_tag, ciphertext):
 
-    # Swap ‘/‘ (slash) with ‘_‘ (underscore).
-    output = output.replace('/', '_')
+    count = 0
 
-    # Remove the padding ‘=‘ (equal).
-    output = output.replace('=', '')
+    key = realm_cipher_key
+    iv = str().join(chr(operator.xor(ord(a), ord(b))) \
+        for a,b in zip(realm_vector_key, dynamic_iv))
+    
+    tag = str().join(chr(operator.xor(ord(a), ord(b))) \
+       for a,b in zip(realm_tag_key, dynamic_tag))
+    
+    decryptor = Cipher(algorithms.AES(key), modes.GCM(iv, tag), backend=default_backend()).decryptor()
+    plaintext = decryptor.update(ciphertext) + decryptor.finalize()
+    
+    size = struct.unpack(">I", '\x00' + plaintext[0:3])[0]
+    pad = struct.unpack(">I", '\x00' + '\x00' + '\x00' + plaintext[3:4])[0]
+    
+    
+    if operator.mod(size + pad, 16) != 0 or len(plaintext) != size + pad + 4:
+        raise ValueError("The encrypted buffer is invalid.")
+    
+    for offset in xrange(size + 4, size + pad + 4, 1):
+        if struct.unpack(">I", '\x00' + '\x00' + '\x00' + plaintext[offset: offset + 1])[0] != pad:
+            raise ValueError("The encrypted buffer contained an invalid padding value.")
+        
+    return plaintext[4:size + 4]
+    
 
-    # Remove line breaks and other whitespace.
-    return output.join((output.split()))
-
-def base64url_decode(string):
-    # Converts the string into the standard base64 format, and
-    # then uses the standard method to convert the string.
-
-    # Swap ‘-‘ (minus) with ‘+‘ (plus).
-    string = string.replace('-', '+');
-
-    # Swap ‘_‘ (underscore) with ‘/‘ (slash).
-    string = string.replace('_', '/');
-
-    # Determine if padding must be appended to the string.
-    if operator.mod(len(string), 4) == 3:
-        string = string + "="
-    elif operator.mod(len(string), 4) == 2:
-        string = string + "=="
-
-    # Finally, convert the string using a standard base64 decoder.
-    return base64.b64decode(string)
-
-def hex_encode(binary):
-    # Encodes a string using the standard base64 method, and
-    # converts the output into the proper format.
-
-    # Encode the binary input using standard base64 method.
-    output =  binascii.hexlify(binary)
-
-
-    # Remove line breaks and other whitespace.
-    return output.join((output.split()))
-
-def PrintUsage():
-    print ("Usage: stacie.py [--hex|--help] username password [salt]")
-
-# User Inputs
-# @username = The normalized username.
-# @password = The plaintext user password.
-
-# Server Inputs
-# @salt = Additional non-secret, per-site, or per-user entropy.
-# @bonus = Additional hash rounds added beyond those determined by a password's length.
-# @nonce = A non-secret ephemerally generated string of random octets, which are combined with a verification token to derive a login token.
-
-# @rounds = Required number of hash rounds during each key derivation stage.
-# @master_key = The derived key required to decrypt and use realm specific keys.
-# @password_key = The output from the second key derivation phase, and required to authenticate password update requests.
-# @verification_token = The persistent token stored by a server and used to authenticate future login requests.
-# @ephemeral_login_token = The ephemeral value used to authenticate a session or connection.
 
 hex = 0
 bonus = 0
@@ -231,6 +291,9 @@ username = None
 password = None
 salt = base64url_encode(get_random_bytes(128))
 nonce = base64url_encode(get_random_bytes(128))
+
+realm = "mail"
+secret_message = "Attack at dawn!"
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "hx", ["help", "hex"])
@@ -253,7 +316,6 @@ password = args[1]
 if len(args) == 3:
     salt = args[2]
 
-
 #print (os.linesep + "Inputs")
 print ("username: " + username)
 print ("password: " + password)
@@ -267,34 +329,55 @@ print ("rounds: " + repr(rounds))
 seed = ExtractEntropySeed(rounds, username, password, base64url_decode(salt))
 print ("seed: " + (hex_encode(seed) if hex == 1 else base64url_encode(seed)) + os.linesep)
 
-#print ("Keys")
+# print ("Keys")
 master_key = HashedKeyDerivation(seed, rounds, username, password, base64url_decode(salt))
 print ("master-key: " + (hex_encode(master_key) if hex == 1 else base64url_encode(master_key)))
 
 password_key = HashedKeyDerivation(master_key, rounds, username, password, base64url_decode(salt))
 print ("password-key: " + (hex_encode(password_key) if hex == 1 else base64url_encode(password_key)) + os.linesep)
 
-#print ("Tokens")
+# print ("Tokens")
 verification_token = HashedTokenDerivation(password_key, username, base64url_decode(salt))
 print ("verification-token: " + (hex_encode(verification_token) if hex == 1 else base64url_encode(verification_token)))
 
 ephemeral_login_token = HashedTokenDerivation(verification_token, username, base64url_decode(salt), base64url_decode(nonce))
 print ("nonce: " + (hex_encode(base64url_decode(nonce)) if hex == 1 else nonce) + os.linesep)
-print ("ephemeral-login-token: " + (hex_encode(ephemeral_login_token) if hex == 1 else base64url_encode(ephemeral_login_token)))
+print ("ephemeral-login-token: " + (hex_encode(ephemeral_login_token) if hex == 1 else base64url_encode(ephemeral_login_token)) + os.linesep)
 
+# User Inputs
+# @username = The normalized username.
+# @password = The plaintext user password.
 #
-# # Realm Inputs
-# # @realm = The category and/or type of data.
-# # @shard = A non-secret fragment required to derive the key associated with a given realm.
+# Server Inputs
+# @salt = Additional non-secret, per-site, or per-user entropy.
+# @bonus = Additional hash rounds added beyond those determined by a password's length.
+# @nonce = A non-secret ephemerally generated string of random octets, which are combined with a verification token to derive a login token.
 #
-# realm = "mail"
-# shard = "gD65Kdeda1hB2Q6gdZl0fetGg2viLXWG0vmKN4HxE3Jp3Z" \
-#     "0Gkt5prqSmcuY2o8t24iGSCOnFDpP71c3xl9SX9Q"
+# @rounds = Required number of hash rounds during each key derivation stage.
+# @master_key = The derived key required to decrypt and use realm specific keys.
+# @password_key = The output from the second key derivation phase, and required to authenticate password update requests.
+# @verification_token = The persistent token stored by a server and used to authenticate future login requests.
+# @ephemeral_login_token = The ephemeral value used to authenticate a session or connection.
 #
-# realm_key = RealmKeyDerivation(master_key, realm, base64url_decode(shard))
+# Realm Inputs
+# @realm = The category and/or type of data.
+# @shard = A non-secret fragment required to derive the key associated with a given realm.
 #
-# realm_cipher_key = ExtractRealmCipherKey(realm_key)
-# realm_vector_key = ExtractRealmVectorKey(realm_key)
-#
-# print ("realm-vector-key: " + base64url_encode(realm_vector_key))
-# print ("realm-cipher-key: " + base64url_encode(realm_cipher_key))
+shard = "gD65Kdeda1hB2Q6gdZl0fetGg2viLXWG0vmKN4HxE3Jp3Z" \
+    "0Gkt5prqSmcuY2o8t24iGSCOnFDpP71c3xl9SX9Q"
+
+realm_key = RealmKeyDerivation(master_key, realm, base64url_decode(shard))
+
+realm_tag_key = ExtractRealmTagKey(realm_key)
+realm_vector_key = ExtractRealmVectorKey(realm_key)
+realm_cipher_key = ExtractRealmCipherKey(realm_key)
+
+print ("realm-tag-key: " + (hex_encode(realm_tag_key) if hex == 1 else  base64url_encode(realm_tag_key)))
+print ("realm-vector-key: " + (hex_encode(realm_vector_key) if hex == 1 else  base64url_encode(realm_vector_key)))
+print ("realm-cipher-key: " + (hex_encode(realm_cipher_key) if hex == 1 else base64url_encode(realm_cipher_key)) + os.linesep)
+
+serial, dynamic_iv, dynamic_tag, ciphertext = RealmEncrypt(realm_vector_key, realm_tag_key, realm_cipher_key, secret_message)
+decrypted_buffer = RealmDecrypt(realm_vector_key, realm_tag_key, realm_cipher_key, dynamic_iv, dynamic_tag, ciphertext)
+
+print ("decrypted-data: " + decrypted_buffer + os.linesep)
+

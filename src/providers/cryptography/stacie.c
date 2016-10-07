@@ -609,3 +609,26 @@ stringer_t * stacie_realm_vector_key(stringer_t *realm_key) {
 
 	return vector_key;
 }
+
+/**
+ * @brief   Extract the tag key from the realm key.
+ *
+ * @param	realm_key	The complete realm key, which holds the vector, tag and symmetric key values.
+ *
+ * @return  provides a managed string with the tag key stored in a secure memory buffer, or NULL if an error
+ * 		occurs.
+ */
+stringer_t * stacie_realm_tag_key(stringer_t *realm_key) {
+
+	stringer_t *tag_key = NULL;
+
+	if (st_empty(realm_key) || st_length_get(realm_key) != 64) {
+		log_error("The realm tag key extraction failed because the realm key passed in wasn't valid.");
+	}
+	else if (!(tag_key = st_dupe_opts(MANAGED_T | CONTIGUOUS | SECURE, PLACER(st_data_get(realm_key), 16)))) {
+		log_error("The realm tag key extraction failed because a secure memory buffer could not be allocated to hold the result.");
+	}
+
+	return tag_key;
+}
+

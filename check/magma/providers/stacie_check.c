@@ -12,7 +12,6 @@
 
 #include "magma_check.h"
 
-
 /**
  * @brief Check that all calculation results match up accurately with results from Python reference.
  * @return True if passes, false if fails.

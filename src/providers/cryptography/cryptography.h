@@ -208,6 +208,7 @@ stringer_t *  stacie_entropy_seed_derive(uint32_t rounds, stringer_t *password, 
 stringer_t *  stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt);
 stringer_t *  stacie_hashed_token_derive(stringer_t *base, stringer_t *username, stringer_t *salt, stringer_t *nonce);
 stringer_t *  stacie_realm_cipher_key(stringer_t *realm_key);
+stringer_t *  stacie_realm_tag_key(stringer_t *realm_key);
 stringer_t *  stacie_realm_vector_key(stringer_t *realm_key);
 stringer_t *  stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, stringer_t *shard);
 uint32_t      stacie_rounds_calculate(stringer_t *password, uint32_t bonus);

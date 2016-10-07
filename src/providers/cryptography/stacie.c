@@ -625,7 +625,7 @@ stringer_t * stacie_realm_tag_key(stringer_t *realm_key) {
 	if (st_empty(realm_key) || st_length_get(realm_key) != 64) {
 		log_error("The realm tag key extraction failed because the realm key passed in wasn't valid.");
 	}
-	else if (!(tag_key = st_dupe_opts(MANAGED_T | CONTIGUOUS | SECURE, PLACER(st_data_get(realm_key), 16)))) {
+	else if (!(tag_key = st_dupe_opts(MANAGED_T | CONTIGUOUS | SECURE, PLACER(st_data_get(realm_key) + 16, 16)))) {
 		log_error("The realm tag key extraction failed because a secure memory buffer could not be allocated to hold the result.");
 	}
 
@@ -653,7 +653,7 @@ stringer_t * stacie_realm_encrypt(uint16_t serial, stringer_t *vector_key, strin
 	uchr_t *buffer_data, tag[16];
 	uint32_t buffer_len_be;
 	int_t  out_len, avail_len, used_len = 0;
-	stringer_t *vector = MANAGEDBUF(16), *vector_shard = MANAGEDBUF(16), *tag_shard = NULL, *output = NULL;
+	stringer_t *vector = MANAGEDBUF(16), *vector_shard = MANAGEDBUF(16), *tag_shard = MANAGEDBUF(16), *output = NULL;
 
 	if (st_length_get(vector_key) != 16) {
 		log_error("STACIE realm encryption requires a 16 byte vector key. { vector_key_len = %zu }", st_length_get(vector_key));
@@ -663,7 +663,7 @@ stringer_t * stacie_realm_encrypt(uint16_t serial, stringer_t *vector_key, strin
 		log_error("STACIE realm encryption requires a 16 byte tag key. { tag_key_len = %zu }", st_length_get(tag_key));
 		return NULL;
 	}
-	else if (st_length_get(cipher_key) != 16) {
+	else if (st_length_get(cipher_key) != 32) {
 		log_error("STACIE realm encryption requires a 32 byte cipher key. { cipher_key_len = %zu }", st_length_get(cipher_key));
 		return NULL;
 	}
@@ -680,7 +680,7 @@ stringer_t * stacie_realm_encrypt(uint16_t serial, stringer_t *vector_key, strin
 	}
 
 	// Calculate the number of padding bytes required.
-	pad = STACIE_BLOCK_LENGTH - (buffer_len % STACIE_BLOCK_LENGTH);
+	pad = STACIE_BLOCK_LENGTH - ((buffer_len + 4) % STACIE_BLOCK_LENGTH);
 	avail_len = buffer_len + pad + 4;
 	out_len = STACIE_ENVELOPE_LENGTH + avail_len;
 
@@ -781,7 +781,7 @@ stringer_t * stacie_realm_encrypt(uint16_t serial, stringer_t *vector_key, strin
 
 	used_len += avail_len;
 
-	if (EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_GCM_GET_TAG, 16, &tag) != 1 || !st_xor(tag_key, PLACER(&tag, 16), tag_shard)) {
+	if (EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_GCM_GET_TAG, 16, &tag[0]) != 1 || st_xor(tag_key, PLACER(&tag[0], 16), tag_shard) != tag_shard) {
 		log_pedantic("An error occurred while trying to retrieve the tag value.");
 		EVP_CIPHER_CTX_cleanup_d(&ctx);
 		st_free(output);
@@ -791,8 +791,8 @@ stringer_t * stacie_realm_encrypt(uint16_t serial, stringer_t *vector_key, strin
 	EVP_CIPHER_CTX_cleanup_d(&ctx);
 
 	mm_move(st_data_get(output), ((uchr_t *)&serial_be), 2);
-	mm_move(st_data_get(output) + 2, vector_shard, 16);
-	mm_move(st_data_get(output) + 18, tag_shard, 16);
+	mm_move(st_data_get(output) + 2, st_data_get(vector_shard), 16);
+	mm_move(st_data_get(output) + 18, st_data_get(tag_shard), 16);
 	st_length_set(output, STACIE_ENVELOPE_LENGTH + used_len);
 
 	return output;
@@ -827,7 +827,7 @@ stringer_t * stacie_realm_decrypt(stringer_t *vector_key, stringer_t *tag_key, s
 		log_error("STACIE realm encryption requires a 16 byte tag key. { tag_key_len = %zu }", st_length_get(tag_key));
 		return NULL;
 	}
-	else if (st_length_get(cipher_key) != 16) {
+	else if (st_length_get(cipher_key) != 32) {
 		log_error("STACIE realm encryption requires a 32 byte cipher key. { cipher_key_len = %zu }", st_length_get(cipher_key));
 		return NULL;
 	}
@@ -909,7 +909,7 @@ stringer_t * stacie_realm_decrypt(stringer_t *vector_key, stringer_t *tag_key, s
 	buffer_len = be32toh(buffer_len_be);
 
 
-	if (((buffer_len + pad) % 16) != 0 || (buffer_len + pad + 4) != used_len) {
+	if (((buffer_len + pad + 4) % 16) != 0 || (buffer_len + pad + 4) != used_len) {
 		log_pedantic("An invalid length or pad value was found inside the decrypted buffer.");
 		st_free(output);
 		return NULL;

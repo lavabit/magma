@@ -239,7 +239,7 @@ def RealmEncrypt(realm_vector_key, realm_tag_key, realm_cipher_key, message, ser
         for a,b in zip(realm_vector_key, dynamic_iv))
 
     size = len(message)
-    pad = (16 - operator.mod(size, 16))
+    pad = (16 - operator.mod(size + 4, 16))
     padding = ""
 
     while count < pad:
@@ -284,7 +284,7 @@ def RealmDecrypt(realm_vector_key, realm_tag_key, realm_cipher_key, buffer):
     size = struct.unpack(">I", '\x00' + plaintext[0:3])[0]
     pad = struct.unpack(">I", '\x00' + '\x00' + '\x00' + plaintext[3:4])[0]
 
-    if operator.mod(size + pad, 16) != 0 or len(plaintext) != size + pad + 4:
+    if operator.mod(size + pad + 4, 16) != 0 or len(plaintext) != size + pad + 4:
         raise ValueError("The encrypted buffer is invalid.")
 
     for offset in xrange(size + 4, size + pad + 4, 1):

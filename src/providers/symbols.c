@@ -238,6 +238,7 @@ OCSP_REQUEST * (*OCSP_REQUEST_new_d)(void) = NULL;
 int (*EC_KEY_check_key_d)(const EC_KEY *key) = NULL;
 int (*EVP_MD_CTX_cleanup_d)(EVP_MD_CTX *ctx) = NULL;
 void (*OCSP_REQUEST_free_d)(OCSP_REQUEST *a) = NULL;
+const EVP_CIPHER * (*EVP_aes_256_gcm_d)(void) = NULL;
 int (*SSL_peek_d)(SSL *ssl,void *buf,int num) = NULL;
 const EVP_CIPHER * (*EVP_aes_256_cbc_d)(void) = NULL;
 EVP_CIPHER_CTX * (*EVP_CIPHER_CTX_new_d)(void) = NULL;

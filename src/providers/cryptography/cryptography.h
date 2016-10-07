@@ -45,6 +45,12 @@
 #define STACIE_KEY_LENGTH		64
 #define STACIE_TOKEN_LENGTH		64
 
+// This STACIE implementation only supports realm encryption of buffers up to 16,777,215 bytews in length.
+#define STACIE_ENCRYPT_MIN		1
+#define STACIE_ENCRYPT_MAX		16777215
+#define STACIE_BLOCK_LENGTH		16
+#define STACIE_ENVELOPE_LENGTH	34
+
 typedef enum {
 	ECIES_PRIVATE_HEX = 1,
 	ECIES_PRIVATE_BINARY = 2,
@@ -207,13 +213,15 @@ uint64_t      scramble_vector_length(scramble_t *buffer);
 stringer_t *  stacie_entropy_seed_derive(uint32_t rounds, stringer_t *password, stringer_t *salt);
 stringer_t *  stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt);
 stringer_t *  stacie_hashed_token_derive(stringer_t *base, stringer_t *username, stringer_t *salt, stringer_t *nonce);
+stringer_t *  stacie_nonce_create(void);
 stringer_t *  stacie_realm_cipher_key(stringer_t *realm_key);
+stringer_t *  stacie_realm_decrypt(stringer_t *vector_key, stringer_t *tag_key, stringer_t *cipher_key, stringer_t *ciphertext);
+stringer_t *  stacie_realm_encrypt(uint16_t serial, stringer_t *vector_key, stringer_t *tag_key, stringer_t *cipher_key, stringer_t *buffer);
+stringer_t *  stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, stringer_t *shard);
 stringer_t *  stacie_realm_tag_key(stringer_t *realm_key);
 stringer_t *  stacie_realm_vector_key(stringer_t *realm_key);
-stringer_t *  stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, stringer_t *shard);
 uint32_t      stacie_rounds_calculate(stringer_t *password, uint32_t bonus);
 stringer_t *  stacie_salt_create(void);
-stringer_t *  stacie_nonce_create(void);
 
 /// symmetric.c
 stringer_t *  symmetric_decrypt(cipher_t *cipher, stringer_t *vector, stringer_t *key, stringer_t *input);

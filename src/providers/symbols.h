@@ -335,6 +335,7 @@ extern OCSP_REQUEST * (*OCSP_REQUEST_new_d)(void);
 extern int (*EC_KEY_check_key_d)(const EC_KEY *key);
 extern int (*EVP_MD_CTX_cleanup_d)(EVP_MD_CTX *ctx);
 extern void (*OCSP_REQUEST_free_d)(OCSP_REQUEST *a);
+extern const EVP_CIPHER * (*EVP_aes_256_gcm_d)(void);
 extern const EVP_CIPHER * (*EVP_aes_256_cbc_d)(void);
 extern int 	(*SSL_peek_d)(SSL *ssl,void *buf,int num);
 extern EVP_CIPHER_CTX * (*EVP_CIPHER_CTX_new_d)(void);

@@ -334,7 +334,7 @@ endif
 
 # Special Make Directives
 .SUFFIXES: .c .cc .cpp .o 
-.NOTPARALLEL: warning conifg $(PACKAGE_DEPENDENCIES)
+#.NOTPARALLEL: warning conifg $(PACKAGE_DEPENDENCIES)
 .PHONY: all warning config finished check setup
 
 # vim:set softtabstop=4 shiftwidth=4 tabstop=4:

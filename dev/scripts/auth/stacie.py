@@ -260,6 +260,13 @@ def RealmDecrypt(realm_vector_key, realm_tag_key, realm_cipher_key, buffer):
 
     count = 0
     
+    if len(realm_cipher_key) != 32:
+        raise ValueError("The encryption key must be 32 octets in length.")
+    elif len(realm_vector_key) != 16:
+        raise ValueError("The vector key must be 16 octets in length.")
+    elif len(buffer) < 54: 
+        raise ValueError("The minimum length of a correctly formatted cipher text is 54 octets.")
+    
     dynamic_iv = buffer[2:18]
     dynamic_tag = buffer[18:34]
     ciphertext = buffer[34:] 

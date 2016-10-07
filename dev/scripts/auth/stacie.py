@@ -294,18 +294,39 @@ def RealmDecrypt(realm_vector_key, realm_tag_key, realm_cipher_key, buffer):
 
     return plaintext[4:size + 4]
 
+# User Inputs
+# @username = The normalized username.
+# @password = The plaintext user password.
+#
+# Server Inputs
+# @salt = Additional non-secret, per-site, or per-user entropy.
+# @bonus = Additional hash rounds added beyond those determined by a password's length.
+# @nonce = A non-secret ephemerally generated string of random octets, which are combined with a verification token to derive a login token.
+#
+# @rounds = Required number of hash rounds during each key derivation stage.
+# @master_key = The derived key required to decrypt and use realm specific keys.
+# @password_key = The output from the second key derivation phase, and required to authenticate password update requests.
+# @verification_token = The persistent token stored by a server and used to authenticate future login requests.
+# @ephemeral_login_token = The ephemeral value used to authenticate a session or connection.
+#
+# Realm Inputs
+# @realm = The category and/or type of data.
+# @shard = A non-secret fragment required to derive the key associated with a given realm.
+#
+
 hex = 0
-#bonus = 0
-bonus = 128
+bonus = 0
+realm = "mail"
 username = None
 password = None
-#salt = base64url_encode(get_random_bytes(128))
-salt = "lyrtpzN8cBRZvsiHX6y4j-pJOjIyJeuw5aVXzrItw1G4EOa-6CA4R9BhVpinkeH0UeXyOeTisHR3Ik3yuOhxbWPyesMJvfp0IBtx0f0uorb8wPnhw5BxDJVCb1TOSE50PFKGBFMkc63Koa7vMDj-WEoDj2X0kkTtlW6cUvF8i-M"
-#nonce = base64url_encode(get_random_bytes(128))
-nonce = "oDdYAHOsiX7Nl2qTwT18onW0hZdeTO3ebxzZp6nXMTo__0_vr_AsmAm3vYRwWtSCPJz0sA2o66uhNm6YenOGz0NkHcSAVgQhKdEBf_BTYkyULDuw2fSkbO7mlnxEhxqrJEc27ZVam6ogYABfHZjgVUTAi_SICyKAN7KOMuImL2g"
-
-realm = "mail"
 secret_message = "Attack at dawn!"
+salt = base64url_encode(get_random_bytes(128))
+nonce = base64url_encode(get_random_bytes(128))
+
+# Use these values when comparing with the predefined values in stacie_check.c.
+# bonus = 128
+# salt = "lyrtpzN8cBRZvsiHX6y4j-pJOjIyJeuw5aVXzrItw1G4EOa-6CA4R9BhVpinkeH0UeXyOeTisHR3Ik3yuOhxbWPyesMJvfp0IBtx0f0uorb8wPnhw5BxDJVCb1TOSE50PFKGBFMkc63Koa7vMDj-WEoDj2X0kkTtlW6cUvF8i-M"
+# nonce = "oDdYAHOsiX7Nl2qTwT18onW0hZdeTO3ebxzZp6nXMTo__0_vr_AsmAm3vYRwWtSCPJz0sA2o66uhNm6YenOGz0NkHcSAVgQhKdEBf_BTYkyULDuw2fSkbO7mlnxEhxqrJEc27ZVam6ogYABfHZjgVUTAi_SICyKAN7KOMuImL2g"
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "hx", ["help", "hex"])
@@ -356,25 +377,6 @@ ephemeral_login_token = HashedTokenDerivation(verification_token, username, base
 print ("nonce: " + (hex_encode(base64url_decode(nonce)) if hex == 1 else nonce) + os.linesep)
 print ("ephemeral-login-token: " + (hex_encode(ephemeral_login_token) if hex == 1 else base64url_encode(ephemeral_login_token)) + os.linesep)
 
-# User Inputs
-# @username = The normalized username.
-# @password = The plaintext user password.
-#
-# Server Inputs
-# @salt = Additional non-secret, per-site, or per-user entropy.
-# @bonus = Additional hash rounds added beyond those determined by a password's length.
-# @nonce = A non-secret ephemerally generated string of random octets, which are combined with a verification token to derive a login token.
-#
-# @rounds = Required number of hash rounds during each key derivation stage.
-# @master_key = The derived key required to decrypt and use realm specific keys.
-# @password_key = The output from the second key derivation phase, and required to authenticate password update requests.
-# @verification_token = The persistent token stored by a server and used to authenticate future login requests.
-# @ephemeral_login_token = The ephemeral value used to authenticate a session or connection.
-#
-# Realm Inputs
-# @realm = The category and/or type of data.
-# @shard = A non-secret fragment required to derive the key associated with a given realm.
-#
 shard = "gD65Kdeda1hB2Q6gdZl0fetGg2viLXWG0vmKN4HxE3Jp3Z" \
     "0Gkt5prqSmcuY2o8t24iGSCOnFDpP71c3xl9SX9Q"
 

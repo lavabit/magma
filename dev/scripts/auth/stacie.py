@@ -13,13 +13,14 @@ import struct
 import getopt
 import binascii
 import operator
-import warnings
 from Crypto.Random import get_random_bytes
 from Crypto.Hash import SHA512
 from Crypto.Hash.HMAC import HMAC
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.backends import default_backend
-from em import Stream
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore",category=DeprecationWarning)
+    from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+    from cryptography.hazmat.backends import default_backend
 
 def PrintUsage():
     print ("Usage: stacie.py [--hex|--help] username password [salt]")
@@ -294,11 +295,14 @@ def RealmDecrypt(realm_vector_key, realm_tag_key, realm_cipher_key, buffer):
     return plaintext[4:size + 4]
 
 hex = 0
-bonus = 0
+#bonus = 0
+bonus = 128
 username = None
 password = None
-salt = base64url_encode(get_random_bytes(128))
-nonce = base64url_encode(get_random_bytes(128))
+#salt = base64url_encode(get_random_bytes(128))
+salt = "lyrtpzN8cBRZvsiHX6y4j-pJOjIyJeuw5aVXzrItw1G4EOa-6CA4R9BhVpinkeH0UeXyOeTisHR3Ik3yuOhxbWPyesMJvfp0IBtx0f0uorb8wPnhw5BxDJVCb1TOSE50PFKGBFMkc63Koa7vMDj-WEoDj2X0kkTtlW6cUvF8i-M"
+#nonce = base64url_encode(get_random_bytes(128))
+nonce = "oDdYAHOsiX7Nl2qTwT18onW0hZdeTO3ebxzZp6nXMTo__0_vr_AsmAm3vYRwWtSCPJz0sA2o66uhNm6YenOGz0NkHcSAVgQhKdEBf_BTYkyULDuw2fSkbO7mlnxEhxqrJEc27ZVam6ogYABfHZjgVUTAi_SICyKAN7KOMuImL2g"
 
 realm = "mail"
 secret_message = "Attack at dawn!"

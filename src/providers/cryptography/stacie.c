@@ -593,10 +593,10 @@ stringer_t * stacie_realm_cipher_key(stringer_t *realm_key) {
  *
  * @param	realm_key	The complete realm key, which holds the initialization vector and the symmetric key.
  *
- * @return  provides a managed string with the initialization vector stored in a secure memory buffer, or NULL if an error
+ * @return  provides a managed string with the initialization vector key stored in a secure memory buffer, or NULL if an error
  * 		occurs.
  */
-stringer_t * stacie_realm_init_vector(stringer_t *realm_key) {
+stringer_t * stacie_realm_init_vector_key(stringer_t *realm_key) {
 
 	stringer_t *vector = NULL;
 

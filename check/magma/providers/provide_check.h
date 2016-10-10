@@ -77,6 +77,7 @@ bool_t   check_stacie_simple(void);
 bool_t   check_stacie_parameters(void);
 bool_t   check_stacie_rounds(void);
 bool_t   check_stacie_determinism(void);
+bool_t check_stacie_bitflip(void);
 
 /// unicode_check.c
 chr_t * check_unicode_valid(void);

@@ -87,7 +87,6 @@ bool_t check_stacie_simple(void) {
 
 	st_free(extracted);
 
-
 	// Calculate the ephemeral login token.
 	if (!(extracted = stacie_hashed_token_derive(verification_token, username, salt, nonce)) || st_cmp_cs_eq(extracted, ephemeral_login_token)) {
 		st_cleanup(ephemeral_login_token, verification_token, realm_vector_key, realm_tag_key, realm_cipher_key, password_key);
@@ -482,3 +481,45 @@ bool_t check_stacie_parameters(void) {
 	return true;
 }
 
+/**
+ * @brief	Check that data protected by STACIE will detect and reject buffers which are modified.
+ * @return	True if unit test passes, false if it fails.
+*/
+bool_t check_stacie_bitflip(void) {
+
+	stringer_t  *cipher_key = NULL, *vector_key = NULL, *tag_key = NULL,
+		*encrypted_buffer = NULL, *decrypted_buffer = NULL;
+
+	if (!(cipher_key = base64_decode_mod(NULLER("QLkIIqMf2eLUxcobqwrjCfCXRcCHL5ZCeHq5Guh-9q4"), MANAGEDBUF(32))) ||
+		!(vector_key = base64_decode_mod(NULLER("u18KkHQ1jtcvsx-p__1JeA"), MANAGEDBUF(16))) ||
+		!(tag_key = base64_decode_mod(NULLER("xMkMCh6awjwqnDoE3oWGHw"), MANAGEDBUF(16)))) {
+		return false;
+	}
+
+	// Encrypt the buffer.
+	if (!(encrypted_buffer = stacie_realm_encrypt(0, vector_key, tag_key, cipher_key, PLACER("Attack at dawn!", 15)))) {
+		st_cleanup(encrypted_buffer);
+		return false;
+	}
+
+	// Take the last byte in the buffer and modify it.
+	*((uchr_t *)st_data_get(encrypted_buffer) + st_length_get(encrypted_buffer) - 1) += 1;
+
+	// Decryption should fail because the buffer has been modified. If it doesn't fail, then the test fails.
+	if ((decrypted_buffer = stacie_realm_decrypt(vector_key, tag_key, cipher_key, encrypted_buffer))) {
+		st_cleanup(decrypted_buffer, encrypted_buffer);
+		return false;
+	}
+
+	// Restore the last byte in the buffer to its original state.
+	*((uchr_t *)st_data_get(encrypted_buffer) + st_length_get(encrypted_buffer) - 1) -= 1;
+
+	// Decryption should succeed because the buffer has been returned to restored.
+	if (!(decrypted_buffer = stacie_realm_decrypt(vector_key, tag_key, cipher_key, encrypted_buffer))) {
+		st_cleanup(encrypted_buffer);
+		return false;
+	}
+
+	st_cleanup(decrypted_buffer, encrypted_buffer);
+	return true;
+}

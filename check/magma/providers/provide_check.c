@@ -348,10 +348,11 @@ START_TEST (check_stacie_s) {
 	bool_t outcome = true;
 
 	bool_t (*checks[])(void) = {
-		&check_stacie_parameters, //check_stacie_parameters,
-		&check_stacie_determinism, //check_stacie_determinism,
+		&check_stacie_parameters,
+		&check_stacie_determinism,
 		&check_stacie_rounds,
-		&check_stacie_simple
+		&check_stacie_simple,
+		&check_stacie_bitflip
 	};
 
 	stringer_t *err = NULL;
@@ -360,7 +361,8 @@ START_TEST (check_stacie_s) {
 		NULLER("check_stacie_parameters failed"),
 		NULLER("check_stacie_determinism failed"),
 		NULLER("check_stacie_rounds failed"),
-		NULLER("check_stacie_simple failed")
+		NULLER("check_stacie_simple failed"),
+		NULLER("check_stacie_bitflip failed")
 	};
 
 	log_unit("%-64.64s", "CRYPTOGRAPHY / STACIE / SINGLE THREADED:");

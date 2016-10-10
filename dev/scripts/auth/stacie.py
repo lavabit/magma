@@ -218,81 +218,97 @@ def ExtractRealmCipherKey(realm_key):
 
     return realm_cipher_key
 
-def RealmEncrypt(realm_vector_key, realm_tag_key, realm_cipher_key, message, serial=0):
+def RealmEncrypt(vector_key, tag_key, cipher_key, buffer, serial=0):
 
     count = 0
 
     if serial < 0 or serial >= pow(2, 16):
-        raise ValueError("Serial numbers must be greater than 0 and less than 65,536.")
-    elif len(realm_cipher_key) != 32:
-        raise ValueError("The encryption key must be 32 octets in length.")
-    elif len(realm_vector_key) != 16:
+        raise ValueError("Serial numbers must be greater than 0 " \
+            "and less than 65,536.")
+    elif len(cipher_key) != 32:
+        raise ValueError("The encryption key must be 32 octets in " \
+            "length.")
+    elif len(vector_key) != 16:
         raise ValueError("The vector key must be 16 octets in length.")
-    elif len(message) == 0:
-        raise ValueError("The secret being encrypted must be at least 1 octet in length.")
-    elif len(message) >= pow(2, 24):
-        raise ValueError("The secret being encrypted must be at less than 16,777,216 in length.")
+    elif len(buffer) == 0:
+        raise ValueError("The secret being encrypted must be at " \
+            "least 1 octet in length.")
+    elif len(buffer) >= pow(2, 24):
+        raise ValueError("The secret being encrypted must be at " \
+            "less than 16,777,216 in length.")
 
-    key = realm_cipher_key
-    dynamic_iv = get_random_bytes(16)
+    vector_shard = get_random_bytes(16)
 
     iv = str().join(chr(operator.xor(ord(a), ord(b))) \
-        for a,b in zip(realm_vector_key, dynamic_iv))
+        for a,b in zip(vector_key, vector_shard))
 
-    size = len(message)
+    size = len(buffer)
     pad = (16 - operator.mod(size + 4, 16))
-    padding = ""
 
     while count < pad:
-        padding += struct.pack(">I", pad)[3:4]
+        buffer += struct.pack(">I", pad)[3:4]
         count = operator.add(count, 1)
 
+    encryptor = Cipher(algorithms.AES(cipher_key), modes.GCM(iv), \
+        backend=default_backend()).encryptor()
+    ciphertext = encryptor.update(struct.pack(">I", size)[1:4] \
+        + struct.pack(">I", pad)[3:4] + buffer) \
+        + encryptor.finalize()
 
-    encryptor = Cipher(algorithms.AES(key), modes.GCM(iv), backend=default_backend()).encryptor()
-    ciphertext = encryptor.update(struct.pack(">I", size)[1:4] + struct.pack(">I", pad)[3:4] + message + padding) + encryptor.finalize()
+    tag_shard = str().join(chr(operator.xor(ord(a), ord(b))) \
+        for a,b in zip(tag_key, encryptor.tag))
 
-    tag = encryptor.tag
-    dynamic_tag = str().join(chr(operator.xor(ord(a), ord(b))) \
-        for a,b in zip(realm_tag_key, tag))
+    return struct.pack(">H", serial) + vector_shard + tag_shard \
+        + ciphertext
 
-    return struct.pack(">H", serial) + dynamic_iv + dynamic_tag + ciphertext
-
-def RealmDecrypt(realm_vector_key, realm_tag_key, realm_cipher_key, buffer):
+def RealmDecrypt(vector_key, tag_key, cipher_key, buffer):
 
     count = 0
 
-    if len(realm_cipher_key) != 32:
+    # Sanity check the input values.
+    if len(cipher_key) != 32:
         raise ValueError("The encryption key must be 32 octets in length.")
-    elif len(realm_vector_key) != 16:
+    elif len(tag_key) != 16:
+        raise ValueError("The tag key must be 16 octets in length.")
+    elif len(vector_key) != 16:
         raise ValueError("The vector key must be 16 octets in length.")
     elif len(buffer) < 54:
         raise ValueError("The minimum length of a correctly formatted cipher text is 54 octets.")
+    elif operator.mod(len(buffer) - 34, 16) != 0:
+        raise ValueError("The cipher text was not aligned to a 16 octet boundary or some of the data is missing.")
 
-    dynamic_iv = buffer[2:18]
-    dynamic_tag = buffer[18:34]
+    # Parse the envelope.
+    vector_shard = buffer[2:18]
+    tag_shard = buffer[18:34]
     ciphertext = buffer[34:]
 
-    key = realm_cipher_key
+    # Combine the shard values with the key to device the iv and tag.
     iv = str().join(chr(operator.xor(ord(a), ord(b))) \
-        for a,b in zip(realm_vector_key, dynamic_iv))
+        for a,b in zip(vector_key, vector_shard))
 
     tag = str().join(chr(operator.xor(ord(a), ord(b))) \
-       for a,b in zip(realm_tag_key, dynamic_tag))
+        for a,b in zip(tag_key, tag_shard))
 
-    decryptor = Cipher(algorithms.AES(key), modes.GCM(iv, tag), backend=default_backend()).decryptor()
+    # Decrypt the payload.
+    decryptor = Cipher(algorithms.AES(cipher_key), modes.GCM(iv, tag), backend=default_backend()).decryptor()
     plaintext = decryptor.update(ciphertext) + decryptor.finalize()
 
+    # Parse the prefix.
     size = struct.unpack(">I", '\x00' + plaintext[0:3])[0]
     pad = struct.unpack(">I", '\x00' + '\x00' + '\x00' + plaintext[3:4])[0]
 
+    # Validate the prefix values.
     if operator.mod(size + pad + 4, 16) != 0 or len(plaintext) != size + pad + 4:
         raise ValueError("The encrypted buffer is invalid.")
 
+    # Confirm the suffix values.
     for offset in xrange(size + 4, size + pad + 4, 1):
         if struct.unpack(">I", '\x00' + '\x00' + '\x00' + plaintext[offset: offset + 1])[0] != pad:
             raise ValueError("The encrypted buffer contained an invalid padding value.")
 
+    # Return just the plain text value.
     return plaintext[4:size + 4]
+
 
 # User Inputs
 # @username = The normalized username.

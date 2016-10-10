@@ -316,17 +316,20 @@ def RealmDecrypt(realm_vector_key, realm_tag_key, realm_cipher_key, buffer):
 
 hex = 0
 bonus = 0
-realm = "mail"
 username = None
 password = None
-secret_message = "Attack at dawn!"
 salt = base64url_encode(get_random_bytes(128))
 nonce = base64url_encode(get_random_bytes(128))
+
+realm = "mail"
+secret_message = "Attack at dawn!"
+shard = base64url_encode(get_random_bytes(64))
 
 # Use these values when comparing with the predefined values in stacie_check.c.
 # bonus = 128
 # salt = "lyrtpzN8cBRZvsiHX6y4j-pJOjIyJeuw5aVXzrItw1G4EOa-6CA4R9BhVpinkeH0UeXyOeTisHR3Ik3yuOhxbWPyesMJvfp0IBtx0f0uorb8wPnhw5BxDJVCb1TOSE50PFKGBFMkc63Koa7vMDj-WEoDj2X0kkTtlW6cUvF8i-M"
 # nonce = "oDdYAHOsiX7Nl2qTwT18onW0hZdeTO3ebxzZp6nXMTo__0_vr_AsmAm3vYRwWtSCPJz0sA2o66uhNm6YenOGz0NkHcSAVgQhKdEBf_BTYkyULDuw2fSkbO7mlnxEhxqrJEc27ZVam6ogYABfHZjgVUTAi_SICyKAN7KOMuImL2g"
+# shard = "gD65Kdeda1hB2Q6gdZl0fetGg2viLXWG0vmKN4HxE3Jp3Z0Gkt5prqSmcuY2o8t24iGSCOnFDpP71c3xl9SX9Q"
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "hx", ["help", "hex"])
@@ -377,11 +380,7 @@ ephemeral_login_token = HashedTokenDerivation(verification_token, username, base
 print ("nonce: " + (hex_encode(base64url_decode(nonce)) if hex == 1 else nonce) + os.linesep)
 print ("ephemeral-login-token: " + (hex_encode(ephemeral_login_token) if hex == 1 else base64url_encode(ephemeral_login_token)) + os.linesep)
 
-shard = "gD65Kdeda1hB2Q6gdZl0fetGg2viLXWG0vmKN4HxE3Jp3Z" \
-    "0Gkt5prqSmcuY2o8t24iGSCOnFDpP71c3xl9SX9Q"
-
 realm_key = RealmKeyDerivation(master_key, realm, base64url_decode(shard))
-
 realm_tag_key = ExtractRealmTagKey(realm_key)
 realm_vector_key = ExtractRealmVectorKey(realm_key)
 realm_cipher_key = ExtractRealmCipherKey(realm_key)

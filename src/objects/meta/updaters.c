@@ -36,7 +36,7 @@ int_t meta_update_keys(meta_user_t *user, stringer_t *master, META_LOCK_STATUS l
 	}
 
 	// We only need to fetch and decrypt the user keys if they aren't already stored in the structure.
-	if (user->usernum && st_empty(user->keys.private, user->keys.public)) {
+	if (user->usernum && st_empty(user->keys.private, user->keys.signet)) {
 
 		if ((transaction = tran_start()) < 0) {
 			log_pedantic("Unable to start storage key SQL transaction. { username = %.*s }", st_length_int(user->username),
@@ -95,13 +95,13 @@ int_t meta_update_keys(meta_user_t *user, stringer_t *master, META_LOCK_STATUS l
 		/// BUG: We shouldn't need to duplicate the private key. This is a short term solution because we can't store the decrypted data in
 		/// 		a secure buffer yet.
 		// Copy the private key into a secure buffer and assign the public key to the user object.
-		else if (!(user->keys.public = pair.public) || !(user->keys.private = st_dupe_opts(MANAGED_T | CONTIGUOUS | SECURE, holder))) {
+		else if (!(user->keys.signet = pair.public) || !(user->keys.private = st_dupe_opts(MANAGED_T | CONTIGUOUS | SECURE, holder))) {
 
 			log_pedantic("Unable to copy the key pair into the user object. { username = %.*s }", st_length_int(user->username),
 				st_char_get(user->username));
 
 			st_cleanup(holder, pair.private, pair.public);
-			user->keys.public = user->keys.private = NULL;
+			user->keys.signet = user->keys.private = NULL;
 			result = -1;
 		}
 

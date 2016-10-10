@@ -14,6 +14,7 @@
 
 /// TODO: Review error messages and update them with the appropriate response code.
 /// LOW: When should we check the serial number to see if the local data is stale and needs to be refreshed?
+/// LOW: Add function descriptions to all of the different IMAP commands.
 
 /**
  * @brief	Create a secure connection for an IMAP session.

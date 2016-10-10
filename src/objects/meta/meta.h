@@ -56,8 +56,8 @@ uint64_t   meta_user_ref_total(meta_user_t *user);
 
 /// meta.c
 meta_user_t *  meta_alloc(void);
-void               meta_free(meta_user_t *user);
-int_t              meta_get(uint64_t usernum, stringer_t *username, stringer_t *master, stringer_t *verification, META_PROTOCOL flags, META_GET get, meta_user_t **output);
+void           meta_free(meta_user_t *user);
+int_t          meta_get(uint64_t usernum, stringer_t *username, stringer_t *master, stringer_t *verification, META_PROTOCOL protocol, META_GET get, meta_user_t **output);
 
 /// datatier.c
 bool_t     meta_data_acknowledge_alert(uint64_t alertnum, uint64_t usernum, uint32_t transaction);

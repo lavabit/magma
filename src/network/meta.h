@@ -106,7 +106,7 @@ typedef struct {
 	inx_t *aliases, *messages, *message_folders, *folders, *contacts;
 
 	struct {
-		stringer_t *public, *private;
+		stringer_t *signet, *private;
 	} keys;
 
 	struct {

@@ -107,5 +107,4 @@ unsigned long stacker_nodes(stacker_t *stack);
 void * stacker_pop(stacker_t *stack);
 void stacker_free(stacker_t *stack);
 
-
 #endif

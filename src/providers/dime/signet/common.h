@@ -22,12 +22,14 @@
 // The actual maximum is 16,777,215 for the payload, plus 5 bytes for the header.
 #define SIGNET_MAX_SIZE         16777220
 
-typedef enum dime_number_t {        /**< Dime numbers are the magic numbers */
-    DIME_ORG_SIGNET = 1776,         /**< File contains an organizational signet */
-    DIME_USER_SIGNET = 1789,        /**< File contains a user signet */
-    DIME_SSR = 1216,                /**< File contains an ssr*/
-    DIME_ORG_KEYS = 1952,           /**< File contains organizational keys*/
-    DIME_USER_KEYS = 2013,          /**< File contains user keys*/
+typedef enum dime_number_t {            /**< Dime numbers are the magic numbers */
+	DIME_SSR = 1215,                    /**< File contains an ssr*/
+    DIME_ORG_SIGNET = 1776,             /**< File contains an organizational signet */
+    DIME_USER_SIGNET = 1789,            /**< File contains a user signet */
+	DIME_ENCRYPTED_ORG_KEYS = 1947,     /**< File contains an encrypted organizational key. */
+    DIME_ORG_KEYS = 1952,               /**< File contains organizational keys*/
+    DIME_ENCRYPTED_USER_KEYS = 1976,    /**< File contains an encrypted user key. */
+	DIME_USER_KEYS = 2013,              /**< File contains user keys*/
     DIME_MSG_TRACING = 1837,
     DIME_ENCRYPTED_MSG = 1847
 } dime_number_t;

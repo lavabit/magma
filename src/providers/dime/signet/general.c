@@ -1070,14 +1070,18 @@ signet_field_key_t signet_ssr_field_keys[256] = {
 const char * dime_number_to_str(dime_number_t number) {
 	switch (number) {
 
+	case DIME_SSR:
+		return "SSR";
 	case DIME_ORG_SIGNET:
 		return "organizational signet";
 	case DIME_USER_SIGNET:
 		return "user signet";
-	case DIME_SSR:
-		return "SSR";
+	case DIME_ENCRYPTED_ORG_KEYS:
+		return "encrypted organizational signet keychain";
 	case DIME_ORG_KEYS:
 		return "organizational signet keychain";
+	case DIME_ENCRYPTED_USER_KEYS:
+		return "encrypted user signet keychain";
 	case DIME_USER_KEYS:
 		return "user signet keychain";
 	case DIME_MSG_TRACING:

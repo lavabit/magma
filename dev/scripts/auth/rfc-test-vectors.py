@@ -330,36 +330,26 @@ def RealmDecrypt(vector_key, tag_key, cipher_key, buffer):
 #
 
 hex = 0
-bonus = 0
-username = None
-password = None
-salt = base64url_encode(get_random_bytes(128))
-nonce = base64url_encode(get_random_bytes(128))
+
+bonus = 131072
+password = "password"
+username = "user@example.tld"
+
+salt = "lyrtpzN8cBRZvsiHX6y4j-pJOjIyJeuw5aVXzrItw1G4EOa-6CA4R" \
+    "9BhVpinkeH0UeXyOeTisHR3Ik3yuOhxbWPyesMJvfp0IBtx0f0uorb8w" \
+    "Pnhw5BxDJVCb1TOSE50PFKGBFMkc63Koa7vMDj-WEoDj2X0kkTtlW6cU" \
+    "vF8i-M"
+
+nonce = "oDdYAHOsiX7Nl2qTwT18onW0hZdeTO3ebxzZp6nXMTo__0_vr_" \
+    "AsmAm3vYRwWtSCPJz0sA2o66uhNm6YenOGz0NkHcSAVgQhKdEBf_BT" \
+    "YkyULDuw2fSkbO7mlnxEhxqrJEc27ZVam6ogYABfHZjgVUTAi_SICy" \
+    "KAN7KOMuImL2g"
 
 realm = "mail"
+shard = "gD65Kdeda1hB2Q6gdZl0fetGg2viLXWG0vmKN4HxE3Jp3Z" \
+    "0Gkt5prqSmcuY2o8t24iGSCOnFDpP71c3xl9SX9Q"
+
 secret_message = "Attack at dawn!"
-shard = base64url_encode(get_random_bytes(64))
-
-try:
-    opts, args = getopt.getopt(sys.argv[1:], "hx", ["help", "hex"])
-except getopt.GetoptError:
-    PrintUsage()
-    sys.exit(2)
-for opt, arg in opts:
-    if opt in ("-h", "--help"):
-        PrintUsage()
-        sys.exit(0)
-    elif opt in ("-x", "--hex"):
-        hex = 1
-
-if len(args) != 2 and len(args) != 3:
-    PrintUsage()
-    sys.exit(2)
-
-username = args[0]
-password = args[1]
-if len(args) == 3:
-    salt = args[2]
 
 #print (os.linesep + "Inputs")
 print ("username: " + username)

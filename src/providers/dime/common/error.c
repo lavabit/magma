@@ -179,7 +179,7 @@ const errinfo_t *get_first_error(void) {
  */
 void _clear_error_stack(void) {
 
-	for (int i = 0; i < ERR_STACK_SIZE; i++) {
+	for (unsigned int i = 0; i < ERR_STACK_SIZE; i++) {
 		memset(&(_t_err_stack.error_stack[i]), 0, sizeof(errinfo_t));
 	}
     _t_err_stack.error_stack_top = NULL;

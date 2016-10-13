@@ -602,6 +602,8 @@
 		<configuration configurationName="Dime Check">
 			<resource resourceType="PROJECT" workspacePath="/magma"/>
 		</configuration>
+		<configuration configurationName="Magma Check"/>
+		<configuration configurationName="Magma Daemon"/>
 		<configuration configurationName="Daemon"/>
 		<configuration configurationName="Check">
 			<resource resourceType="PROJECT" workspacePath="/magma"/>
@@ -615,6 +617,7 @@
 		<configuration configurationName="Default">
 			<resource resourceType="PROJECT" workspacePath="/magma"/>
 		</configuration>
+		<configuration configurationName="DIME Check"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">

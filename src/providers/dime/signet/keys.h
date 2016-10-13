@@ -14,6 +14,7 @@ typedef enum {
 int           dime_keys_file_create(keys_type_t type, ED25519_KEY *sign_key, EC_KEY *enc_key, const char *filename);
 EC_KEY *      dime_keys_enckey_fetch(const char *filename);
 ED25519_KEY * dime_keys_signkey_fetch(const char *filename);
+char *        dime_keys_generate(keys_type_t type);
 
 #if 0
  not implemented yet TODO

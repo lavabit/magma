@@ -765,6 +765,77 @@ _b64encode(unsigned char const *buf, size_t len) {
 	return result;
 }
 
+char *
+_b64encode_w_lineseperators(unsigned char const *buf, size_t len) {
+	unsigned char *o;
+	const unsigned char *p;
+	char *result;
+	size_t new_len, counter = 0;
+	unsigned char c1, c2, c3;
+
+	if (!buf || !len) {
+		RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
+	}
+
+	new_len = B64_ENCODED_LEN(len) + 4;
+	new_len += (new_len / 64) + 4;
+
+	if (!(result = malloc(new_len))) {
+		PUSH_ERROR_SYSCALL("malloc");
+		RET_ERROR_PTR(ERR_NOMEM, "could not allocate space for base64-encoded string");
+	}
+
+	memset(result, 0, new_len);
+
+	o = (unsigned char *)result;
+	p = buf;
+
+	// This will process three bytes at a time.
+	for (size_t i = 0; i < len / 3; i++) {
+		c1 = (*p++) & 0xFF;
+		c2 = (*p++) & 0xFF;
+		c3 = (*p++) & 0xFF;
+
+		*o++ = _base64_chars[c1 >> 2];
+		*o++ = _base64_chars[((c1 << 4) | (c2 >> 4)) & 0x3F];
+		*o++ = _base64_chars[((c2 << 2) | (c3 >> 6)) & 0x3F];
+		*o++ = _base64_chars[c3 & 0x3F];
+
+		// Every 64 characters output a new line.
+		counter += 4;
+		if (counter % 64 == 0) {
+			*o++ = '\n';
+		}
+	}
+
+	// Encode the remaining one or two characters in the input buffer
+	switch (len % 3) {
+	case 0:
+		break;
+	case 1:
+		c1 = (*p++) & 0xFF;
+		*o++ = _base64_chars[(c1 & 0xFC) >> 2];
+		*o++ = _base64_chars[((c1 & 0x03) << 4)];
+		*o++ = '=';
+		*o++ = '=';
+		break;
+	case 2:
+		c1 = (*p++) & 0xFF;
+		c2 = (*p++) & 0xFF;
+		*o++ = _base64_chars[(c1 & 0xFC) >> 2];
+		*o++ = _base64_chars[((c1 & 0x03) << 4) | ((c2 & 0xF0) >> 4)];
+		*o++ = _base64_chars[((c2 & 0x0F) << 2)];
+		*o++ = '=';
+		break;
+	default:
+		free(result);
+		RET_ERROR_PTR(ERR_UNSPEC, "an unexpected error occurred during base64 encoding");
+		break;
+	}
+
+	return result;
+}
+
 /**
  * @brief
  *  Dump a data buffer to the console for debugging purposes.

@@ -72,6 +72,7 @@ PUBLIC_FUNC_DECL(unsigned char *, b64decode,                 const char *buf, si
 PUBLIC_FUNC_DECL(unsigned char *, b64decode_nopad,           const char *buf, size_t len, size_t *outlen);
 PUBLIC_FUNC_DECL(char *,          b64encode,                 const unsigned char *buf, size_t len);
 PUBLIC_FUNC_DECL(char *,          b64encode_nopad,           const unsigned char *buf, size_t len);
+PUBLIC_FUNC_DECL(char *,          b64encode_w_lineseperators,const unsigned char *buf, size_t len);
 PUBLIC_FUNC_DECL(char *,          hex_encode,                const unsigned char *buf, size_t len);
 
 // Functions for dumping data and printing debugging messages.

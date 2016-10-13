@@ -19,7 +19,7 @@ static ED25519_KEY * keys_signkey_from_binary(unsigned char const *bin_keys, siz
 
 static keys_type_t keys_type_get(unsigned char const *bin_keys, size_t len);
 
-static char * keys_generate(keys_type_t type);
+static int keys_generate(keys_type_t type, char **signet_pem, char **key_pem);
 
 // TODO - keys files not currently encrypted
 // TODO - private key serialization currently occurs into DER encoded format
@@ -324,24 +324,26 @@ static int keys_file_create(keys_type_t type, ED25519_KEY *sign_key, EC_KEY *enc
 	return 0;
 }
 
-static char * keys_generate(keys_type_t type) {
+static int keys_generate(keys_type_t type, char **signet_pem, char **key_pem) {
 
 	int res;
-	uint32_t crc;
+	uint32_t crc, signet_len;
+	signet_t *signet;
 	dime_number_t number;
 	EC_KEY *enc_key = NULL;
 	ED25519_KEY *sign_key = NULL;
 	size_t serial_size = 0, enc_size = 0, at = 0;
-	char *b64_keys = NULL, *b64_crc_keys = NULL, *result = NULL;
-	unsigned char *serial_keys = NULL, *serial_enc = NULL, serial_sign[ED25519_KEY_SIZE], sign_fid, enc_fid, be[3];
+	char *b64_keys = NULL, *b64_crc_keys = NULL, *b64_signet = NULL, *b64_crc_signet = NULL, *result = NULL;
+	unsigned char *serial_keys = NULL, *serial_signet = NULL, *serial_enc = NULL,
+		serial_sign[ED25519_KEY_SIZE], sign_fid, enc_fid, be[3];
 
 	if (!(sign_key = _generate_ed25519_keypair())) {
-		RET_ERROR_PTR(ERR_UNSPEC, "could not generate ed25519 key pair");
+		RET_ERROR_INT(ERR_UNSPEC, "could not generate ed25519 key pair");
 	}
 
 	if (!(enc_key = _generate_ec_keypair())) {
 		_free_ed25519_key(sign_key);
-		RET_ERROR_PTR(ERR_UNSPEC, "could not generate elliptic curve key pair");
+		RET_ERROR_INT(ERR_UNSPEC, "could not generate elliptic curve key pair");
 	}
 
 	switch (type) {
@@ -357,14 +359,41 @@ static char * keys_generate(keys_type_t type) {
 		enc_fid	 = KEYS_USER_PRIVATE_ENC;
 		break;
 	default:
-		RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
+		RET_ERROR_INT(ERR_BAD_PARAM, NULL);
 		break;
 
 	}
+
+	if (!(signet = dime_sgnt_signet_create(type))) {
+		_free_ec_key(enc_key);
+		_free_ed25519_key(sign_key);
+		RET_ERROR_INT(ERR_UNSPEC, "could not create signet object");
+	}
+
+	res = dime_sgnt_signkey_set(signet, sign_key, SIGNKEY_DEFAULT_FORMAT);
+	res = dime_sgnt_enckey_set(signet, enc_key, 0);
+
+	serial_signet = dime_sgnt_signet_binary_serialize(signet, &signet_len);
+	crc = _compute_crc24_checksum(serial_signet, signet_len);
+
+	be[0] = ((unsigned char *)&crc)[2];
+	be[1] = ((unsigned char *)&crc)[1];
+	be[2] = ((unsigned char *)&crc)[0];
+
+	b64_crc_signet = _b64encode((unsigned char *)&be, (size_t)3);
+	b64_signet = _b64encode_w_lineseperators(serial_signet, signet_len);
+
+	res = str_printf(&result, "-----BEGIN %s-----\n%s\n=%s\n-----END %s-----\n",
+		type == KEYS_TYPE_USER ? SIGNET_USER : SIGNET_ORG, b64_signet, b64_crc_signet,
+		type == KEYS_TYPE_USER ? SIGNET_USER : SIGNET_ORG);
+
+	*signet_pem = result;
+	result = NULL;
+
 	memcpy(serial_sign, sign_key->private_key, ED25519_KEY_SIZE);
 	if (!(serial_enc = _serialize_ec_privkey(enc_key, &enc_size))) {
 		_secure_wipe(serial_sign, ED25519_KEY_SIZE);
-		RET_ERROR_PTR(ERR_UNSPEC, "could not serialize private key");
+		RET_ERROR_INT(ERR_UNSPEC, "could not serialize private key");
 	}
 	serial_size = KEYS_HEADER_SIZE + 1 + 1 + ED25519_KEY_SIZE + 1 + 2 + enc_size;
 	if (!(serial_keys = malloc(serial_size))) {
@@ -372,7 +401,7 @@ static char * keys_generate(keys_type_t type) {
 		_secure_wipe(serial_sign, ED25519_KEY_SIZE);
 		_secure_wipe(serial_enc, enc_size);
 		free(serial_enc);
-		RET_ERROR_PTR(ERR_NOMEM, NULL);
+		RET_ERROR_INT(ERR_NOMEM, NULL);
 	}
 	memset(serial_keys, 0, serial_size);
 	_int_no_put_2b(serial_keys, (uint16_t)number);
@@ -403,20 +432,22 @@ static char * keys_generate(keys_type_t type) {
 	if (!b64_keys || !b64_crc_keys) {
 		if (b64_keys) {free(b64_keys); }
 		if (b64_crc_keys) {free(b64_crc_keys); }
-		RET_ERROR_PTR(ERR_UNSPEC, "could not base64 encode the keys");
+		RET_ERROR_INT(ERR_UNSPEC, "could not base64 encode the keys");
 	}
 
 	res = str_printf(&result, "-----BEGIN %s-----\n%s\n=%s\n-----END %s-----\n",
-		KEYS_TYPE_USER ? SIGNET_KEY_USER : SIGNET_KEY_ORG, b64_keys, b64_crc_keys,
-		KEYS_TYPE_USER ? SIGNET_KEY_USER : SIGNET_KEY_ORG);
+		type == KEYS_TYPE_USER ? SIGNET_KEY_USER : SIGNET_KEY_ORG, b64_keys, b64_crc_keys,
+		type == KEYS_TYPE_USER ? SIGNET_KEY_USER : SIGNET_KEY_ORG);
 
 	_secure_wipe(b64_keys, strlen(b64_keys));
 	free(b64_keys);
 	free(b64_crc_keys);
 	if (res < 0) {
-		RET_ERROR_PTR(ERR_UNSPEC, "could not generate keys in PEM format.");
+		RET_ERROR_INT(ERR_UNSPEC, "could not generate keys in PEM format.");
 	}
-	return result;
+
+	*key_pem = result;
+	return 0;
 
 }
 
@@ -554,6 +585,6 @@ EC_KEY * dime_keys_enckey_fetch(char const *filename) {
 	PUBLIC_FUNCTION_IMPLEMENT(keys_enckey_fetch, filename);
 }
 
-char * dime_keys_generate(keys_type_t type) {
-	PUBLIC_FUNCTION_IMPLEMENT(keys_generate, type);
+int dime_keys_generate(keys_type_t type, char **signet_pem, char **key_pem) {
+	PUBLIC_FUNCTION_IMPLEMENT(keys_generate, type, signet_pem, key_pem);
 }

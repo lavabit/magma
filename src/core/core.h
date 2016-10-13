@@ -74,13 +74,12 @@ char * type(M_TYPE type);
 #include "strings/strings.h"
 #include "classify/classify.h"
 #include "encodings/encodings.h"
-#include "log/log.h"
 #include "indexes/indexes.h"
 #include "compare/compare.h"
 #include "thread/thread.h"
 #include "buckets/buckets.h"
 #include "parsers/parsers.h"
-#include <core/checksum/checksum.h>
+#include "checksum/checksum.h"
 #include "host/host.h"
 
 #endif

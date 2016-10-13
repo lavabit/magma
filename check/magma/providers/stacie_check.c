@@ -262,8 +262,8 @@ bool_t check_stacie_determinism(void) {
 	res1 = res2 = NULL;*/
 
 
-	if (!(res1 = stacie_entropy_seed_derive(STACIE_ROUNDS_MIN, password, salt)) ||
-		!(res2 = stacie_entropy_seed_derive(STACIE_ROUNDS_MIN, password, salt)) ||
+	if (!(res1 = stacie_entropy_seed_derive(STACIE_KEY_ROUNDS_MIN, password, salt)) ||
+		!(res2 = stacie_entropy_seed_derive(STACIE_KEY_ROUNDS_MIN, password, salt)) ||
 		st_cmp_cs_eq(res1, res2)) {
 		st_cleanup(res1, res2);
 		return false;
@@ -274,8 +274,8 @@ bool_t check_stacie_determinism(void) {
 	res1 = res2 = NULL;
 
 	// Run deterministic tests on the hash derivation stage.
-	if (!(res1 = stacie_hashed_key_derive(base, STACIE_ROUNDS_MIN, username, password, salt)) ||
-		!(res2 = stacie_hashed_key_derive(base, STACIE_ROUNDS_MIN, username, password, salt)) ||
+	if (!(res1 = stacie_hashed_key_derive(base, STACIE_KEY_ROUNDS_MIN, username, password, salt)) ||
+		!(res2 = stacie_hashed_key_derive(base, STACIE_KEY_ROUNDS_MIN, username, password, salt)) ||
 		st_cmp_cs_eq(res1, res2)) {
 		st_cleanup(res1, res2, base);
 		return false;
@@ -363,27 +363,27 @@ bool_t check_stacie_parameters(void) {
 		return false;
 	}
 
-	if ((res = stacie_entropy_seed_derive(STACIE_ROUNDS_MIN, temp_st, NULL))) {
+	if ((res = stacie_entropy_seed_derive(STACIE_KEY_ROUNDS_MIN, temp_st, NULL))) {
 		st_free(res);
 		return false;
 	}
 
-	if ((res = stacie_entropy_seed_derive(STACIE_ROUNDS_MIN, temp_st, temp_st64))) {
+	if ((res = stacie_entropy_seed_derive(STACIE_KEY_ROUNDS_MIN, temp_st, temp_st64))) {
 		st_free(res);
 		return false;
 	}
 
-	if ((res = stacie_entropy_seed_derive(STACIE_ROUNDS_MIN, temp_st, temp_st))) {
+	if ((res = stacie_entropy_seed_derive(STACIE_KEY_ROUNDS_MIN, temp_st, temp_st))) {
 		st_free(res);
 		return false;
 	}
 
-	if ((res = stacie_hashed_key_derive(NULL, STACIE_ROUNDS_MIN, temp_st, temp_st, NULL))) {
+	if ((res = stacie_hashed_key_derive(NULL, STACIE_KEY_ROUNDS_MIN, temp_st, temp_st, NULL))) {
 		st_free(res);
 		return false;
 	}
 
-	if ((res = stacie_hashed_key_derive(temp_st, STACIE_ROUNDS_MIN, temp_st, temp_st, NULL))) {
+	if ((res = stacie_hashed_key_derive(temp_st, STACIE_KEY_ROUNDS_MIN, temp_st, temp_st, NULL))) {
 		st_free(res);
 		return false;
 	}
@@ -398,12 +398,12 @@ bool_t check_stacie_parameters(void) {
 		return false;
 	}
 
-	if ((res = stacie_hashed_key_derive(temp_st64, STACIE_ROUNDS_MIN, NULL, temp_st, NULL))) {
+	if ((res = stacie_hashed_key_derive(temp_st64, STACIE_KEY_ROUNDS_MIN, NULL, temp_st, NULL))) {
 		st_free(res);
 		return false;
 	}
 
-	if ((res = stacie_hashed_key_derive(temp_st64, STACIE_ROUNDS_MIN, temp_st, NULL, NULL))) {
+	if ((res = stacie_hashed_key_derive(temp_st64, STACIE_KEY_ROUNDS_MIN, temp_st, NULL, NULL))) {
 		st_free(res);
 		return false;
 	}

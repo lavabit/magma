@@ -134,6 +134,7 @@
 #define REGISTER_CHECK_USERNAME	"SELECT usernum FROM Users WHERE userid = ?"
 #define REGISTER_INSERT_USER "INSERT INTO Users (`userid`, `legacy`, `plan`, `quota`, `plan_expiration`) VALUES (?, ?, ?, ?, ?)"
 #define REGISTER_INSERT_STACIE_USER "INSERT INTO Users (`userid`, `salt`, `auth`, `bonus`, `plan`, `quota`, `plan_expiration`) VALUES (?, ?, ?, ?, ?, ?, ?)"
+#define REGISTER_INSERT_STACIE_REALMS "INSERT INTO User_Realms (`usernum`, `serial`, `label`, `shard`) VALUES (?, ?, ?, ?)"
 #define REGISTER_INSERT_PROFILE "INSERT INTO Profile (`usernum`) VALUES (?)"
 #define REGISTER_INSERT_FOLDERS "INSERT INTO Folders (`usernum`) VALUES (?)"
 #define REGISTER_INSERT_FOLDER_NAME "INSERT INTO Folders (`usernum`, `foldername`) VALUES (?, ?)"
@@ -174,7 +175,7 @@
  *
  */
 
-#define QUERIES_INIT	SELECT_DOMAINS, \
+#define QUERIES_INIT						SELECT_DOMAINS, \
 											SELECT_CONFIG, \
 											SELECT_HOST_NUMBER, \
 											DELETE_OBJECT, \
@@ -251,6 +252,7 @@
 											REGISTER_CHECK_USERNAME, \
 											REGISTER_INSERT_USER, \
 											REGISTER_INSERT_STACIE_USER, \
+											REGISTER_INSERT_STACIE_REALMS, \
 											REGISTER_INSERT_PROFILE, \
 											REGISTER_INSERT_FOLDERS, \
 											REGISTER_INSERT_FOLDER_NAME, \
@@ -277,7 +279,7 @@
 											META_FETCH_STORAGE_KEYS, \
 											META_INSERT_STORAGE_KEYS
 
-#define STMTS_INIT		**select_domains, \
+#define STMTS_INIT							**select_domains, \
 											**select_config, \
 											**select_host_number, \
 											**delete_object, \
@@ -354,6 +356,7 @@
 											**register_check_username, \
 											**register_insert_user, \
 											**register_insert_stacie_user, \
+											**register_insert_stacie_realms, \
 											**register_insert_profile, \
 											**register_insert_folders, \
 											**register_insert_folder_name, \
@@ -379,7 +382,6 @@
 											**meta_fetch_user, \
 											**meta_fetch_storage_keys, \
 											**meta_insert_storage_keys
-
 
 extern chr_t *queries[];
 struct { MYSQL_STMT STMTS_INIT; } stmts __attribute__ ((common));

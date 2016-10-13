@@ -15,6 +15,28 @@
 #include "magma.h"
 
 /**
+ * @brief	Generates a random shard of precisely 64 bytes, suitable for use with a STACIE realm.
+ *
+ * @note	The master key is combined with the realm serial number, label and a random shard value to create the realm key.
+ *
+ * @return	A managed string holding the freshly generated shard in binary form. The result must be freed by the caller.
+ *
+ */
+stringer_t * stacie_shard_create(void) {
+
+	stringer_t *result = NULL;
+
+	// We call cleanup on the result pointer just in case the allocation succeeds but the random write operation fails.
+	if (!(result = st_alloc(STACIE_SHARD_LENDTH)) || rand_write(result) != STACIE_SHARD_LENDTH) {
+		log_pedantic("Failed to create a random shard value.");
+		st_cleanup(result);
+		return NULL;
+	}
+
+	return result;
+}
+
+/**
  * @brief	Generates a random salt of precisely 128 bytes, suitable for use with STACIE authentication scheme.
  *
  * @note	While the salt and nonce creation functions are nearly identical, they remain seperated so they can use distinct
@@ -112,7 +134,7 @@ uint32_t stacie_rounds_calculate(stringer_t *password, uint32_t bonus) {
 	// variation of the clamp function is used to avoid being tricked into an overflow situation. Magma should never pass
 	// in an illegal value, but we protect against overflows just in case somebody decides to copy this code without
 	// realizing they should be checking their values higher up the stack.
-	return (uint32_t)uint64_clamp(STACIE_ROUNDS_MIN, STACIE_ROUNDS_MAX, (dynamic + bonus));
+	return (uint32_t)uint64_clamp(STACIE_KEY_ROUNDS_MIN, STACIE_KEY_ROUNDS_MAX, (dynamic + bonus));
 }
 
 /**
@@ -143,7 +165,7 @@ stringer_t * stacie_entropy_seed_derive(uint32_t rounds, stringer_t *password, s
 	const EVP_MD *digest = EVP_sha512_d();
 
 	// Sanity check the rounds value.
-	if (rounds < STACIE_ROUNDS_MIN || rounds > STACIE_ROUNDS_MAX) {
+	if (rounds < STACIE_KEY_ROUNDS_MIN || rounds > STACIE_KEY_ROUNDS_MAX) {
 		log_error("An invalid value for rounds was passed to the STACIE seed derivation function. { rounds = %u }", rounds);
 		return NULL;
 	}
@@ -247,7 +269,7 @@ stringer_t * stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringe
 	const EVP_MD *digest = EVP_sha512_d();
 
 	// Sanity check the rounds value.
-	if (rounds < STACIE_ROUNDS_MIN || rounds > STACIE_ROUNDS_MAX) {
+	if (rounds < STACIE_KEY_ROUNDS_MIN || rounds > STACIE_KEY_ROUNDS_MAX) {
 		log_error("An invalid value for rounds was passed to The STACIE key derivation function. { rounds = %u }", rounds);
 		return NULL;
 	}
@@ -422,7 +444,7 @@ stringer_t * stacie_hashed_token_derive(stringer_t *base, stringer_t *username, 
 	// Initialize the context. We only need to do this once.
 	EVP_MD_CTX_init_d(&ctx);
 
-	for (uint32_t count = 0; count < STACIE_ROUNDS_TOKENS; count++) {
+	for (uint32_t count = 0; count < STACIE_TOKEN_ROUNDS; count++) {
 
 		// Store the counter as a big endian number.
 		count_data = htobe32(count);
@@ -501,16 +523,19 @@ stringer_t * stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, 
 		log_error("The STACIE realm key derivation failed because the hash function wasn't available.");
 		return NULL;
 	}
+
 	// What's the point of going any further if the master key is empty?
-	else if (st_empty_out(master_key, &key_data, &key_len) || key_len != 64) {
+	else if (st_empty_out(master_key, &key_data, &key_len) || key_len != STACIE_KEY_LENGTH) {
 		log_error("The STACIE realm key derivation failed because the master key was empty.");
 		return NULL;
 	}
-	// This implementation requires the base value to be 64 bytes in length,
+
+	// This implementation requires the realm label to be less than 16
 	else if (st_empty_out(realm, &realm_data, &realm_len)) {
-		log_error("The STACIE realm key derivation failed because the name value was empty.");
+		log_error("The STACIE realm key derivation failed because the realm label was empty.");
 		return NULL;
 	}
+
 	// And the shard value, which must also be 64 bytes in length.
 	else if (st_empty_out(shard, &shard_data, &shard_len) || shard_len != 64) {
 		log_error("The STACIE realm key derivation failed because the shard value was empty.");

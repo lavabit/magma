@@ -61,14 +61,12 @@ CREATE TABLE `User_Keys` (
 
 DROP TABLE  IF EXISTS `User_Realms`;
 CREATE TABLE `User_Realms` (
-  `realmnum` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `usernum` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `serialnum` smallint(5) NOT NULL DEFAULT '0',
+  `serial` smallint(5) NOT NULL DEFAULT '0',
   `label` VARCHAR(16) NOT NULL,
   `shard` VARCHAR(86) NOT NULL,
-  PRIMARY KEY (`realmnum`),
+  PRIMARY KEY (`usernum`, `serial`, `label`),
   KEY `IX_USERNUM` (`usernum`),
-  UNIQUE KEY `UNIQ_USERNUM_SERIALNUM_REALM` (`usernum`, `serialnum`, `realm`),
   CONSTRAINT `User_Realms_ibfk_1` FOREIGN KEY (`usernum`) REFERENCES `Users` (`usernum`) ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1 MAX_ROWS=4294967295 AVG_ROW_LENGTH=100 COMMENT='User shard values for the different realms.';
 

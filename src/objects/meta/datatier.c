@@ -14,9 +14,12 @@
 
 /**
  * @brief	Update the per-user entry in the Log table for the specified protocol.
+ *
  * @note	This function will set the last session timestamp for the user, and increment the sessions counter in the database.
+ *
  * @param	user	the meta user object of the user making the logging request.
  * @param	prot	the protocol associated with the log request: META_PROT_POP, META_PROT_IMAP, or META_PROT_WEB.
+ *
  * @return	This function returns no value.
  */
 void meta_data_update_log(meta_user_t *user, META_PROTOCOL prot) {
@@ -48,8 +51,10 @@ void meta_data_update_log(meta_user_t *user, META_PROTOCOL prot) {
 
 /**
  * @brief	Update a user's lock in the database.
+ *
  * @param	usernum		the numerical id of the user for whom the lock will be set.
  * @param	lock		the new value to which the specified user's lock will be set.
+ *
  * @return	This function returns no value.
  */
 void meta_data_update_lock(uint64_t usernum, uint8_t lock) {
@@ -85,8 +90,11 @@ void meta_data_update_lock(uint64_t usernum, uint8_t lock) {
 
 /**
  * @brief	Retrieve all of a user's message folders from the database.
+ *
  * @note	If the user already had a working set of message folders they will be deleted first.
+ *
  * @param	user	a pointer to the meta user object of the user making the request, which will be updated on success.
+ *
  * @return	-1 on failure or 1 on success.
  */
 bool_t meta_data_fetch_folders(meta_user_t *user) {
@@ -332,6 +340,7 @@ int_t meta_data_fetch_user(meta_user_t *user) {
  *
  * @param	user	a meta object with the user number field populated.
  * @param	output	a key pair object to hold the results.
+ * @param	transaction	the mysql transaction id of the acknowledgment operation, in cases batch changes need to be rolled back.
  *
  * @return	-1 for unexpected program/system error, 0 on success, 1 if no rows are found.
  */
@@ -348,7 +357,7 @@ int_t meta_data_fetch_keys(meta_user_t *user, key_pair_t *output, int64_t transa
 		return -1;
 	}
 
-	// This function is used to update a user structure.
+	// This function is used to fetch user keys.
 	mm_wipe(parameters, sizeof(parameters));
 
 	// Usernum.
@@ -393,8 +402,10 @@ int_t meta_data_fetch_keys(meta_user_t *user, key_pair_t *output, int64_t transa
 /**
  * @brief	Store the encryption keys for a user account.
  *
- * @param	user	a meta object with the user number field populated.
- * @param	output	a key pair object to hold the results.
+ * @param	usernum		the numerical id of the user to whom the alert message belongs.
+ * @param	username	the plain text username.
+ * @param	input		the public and private key pair.
+ * @param	transaction	the mysql transaction id of the acknowledgment operation, in cases batch changes need to be rolled back.
  *
  * @return	-1 for unexpected program/system error, 0 on success, 1 if the query executes, but no rows are affected.
  */
@@ -457,11 +468,148 @@ int_t meta_data_insert_keys(uint64_t usernum, stringer_t *username, key_pair_t *
 }
 
 /**
+ * @brief	Retrieve a shard value for user account.
+ *
+ * @param	usernum		the numerical id of the user to whom the alert message belongs.
+ * @param	serial		the nummerid serial number associated with the shard value.
+ * @param	label		the textual label associated with the shard value.
+ * @param	output		the buffer where the binary output should be stored.
+ * @param	transaction	the mysql transaction id of the acknowledgment operation, in cases batch changes need to be rolled back.
+ *
+ * @return	-1 for unexpected program/system error, 0 on success, 1 if no rows are found.
+ */
+int_t meta_data_fetch_shard(uint64_t usernum, uint16_t serial, stringer_t *label, stringer_t *output, int64_t transaction) {
+
+	row_t *row;
+	table_t *result;
+	MYSQL_BIND parameters[3];
+
+	// Sanity check.
+	if (!usernum || st_empty(label) || !output || !st_valid_destination(st_opt_get(output)) ||
+		st_avail_get(output) != STACIE_SHARD_LENGTH) {
+		log_pedantic("Invalid parameters passed to the shard fetch function.");
+		return -1;
+	}
+
+	// This function is used to fetch a user shard for value for a given realm.
+	mm_wipe(parameters, sizeof(parameters));
+
+	// Usernum.
+	parameters[0].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[0].buffer_length = sizeof(uint64_t);
+	parameters[0].buffer = &usernum;
+	parameters[0].is_unsigned = true;
+
+	// Serial
+	parameters[1].buffer_type = MYSQL_TYPE_SHORT;
+	parameters[1].buffer_length = sizeof(uint16_t);
+	parameters[1].buffer = &serial;
+	parameters[1].is_unsigned = true;
+
+	// Label
+	parameters[2].buffer_type = MYSQL_TYPE_STRING;
+	parameters[2].buffer = st_data_get(label);
+	parameters[2].buffer_length = st_length_get(label);
+
+	if (!(result = stmt_get_result_conn(stmts.meta_fetch_shard, parameters, transaction))) {
+		return -1;
+	}
+	else if (!(row = res_row_next(result))) {
+		res_table_free(result);
+		return 1;
+	}
+
+	// Store the shard value.
+	if (res_field_length(row, 0) != 86 || !(output = base64_decode_mod(PLACER(res_field_block(row, 0), res_field_length(row, 0)), output))) {
+		log_pedantic("Unable to decode and store a user shard value. { usernum = %lu / label = %.*s / serial = %hu / length = %zu }",
+			usernum, st_length_int(label), st_char_get(label), serial, res_field_length(row, 0));
+		res_table_free(result);
+		return -1;
+	}
+
+	// Free the query results and return the decoded values.
+	res_table_free(result);
+	return 0;
+}
+
+/**
+* @brief	Store the user realm shard value.
+ *
+ * @param	usernum		the numerical id of the user to whom the alert message belongs.
+ * @param	serial		the nummerid serial number associated with the shard value.
+ * @param	label		the textual label associated with the shard value.
+ * @param	shard		the binary shard value.
+ * @param	transaction	the mysql transaction id of the acknowledgment operation, in cases batch changes need to be rolled back.
+ *
+ * @return	-1 for unexpected program/system error, 0 on success, 1 if the query executes, but no rows are affected.
+ */
+int_t meta_data_insert_shard(uint64_t usernum, uint16_t serial, stringer_t *label, stringer_t *shard, int64_t transaction) {
+
+	int64_t affected;
+	MYSQL_BIND parameters[4];
+	stringer_t *b64_shard = NULL;
+
+	// Sanity check.
+	if (!usernum || st_empty(label) || st_empty(shard) || st_length_get(shard) != STACIE_SHARD_LENGTH) {
+		log_pedantic("Invalid parameters passed to the shard insert function.");
+		return -1;
+	}
+
+	// Encode the key values using base64 modified. We are also checking to make sure the encoded values are the expected length. Also,
+	// note the key length is hard coded here but is dynamic below, on purpose, to make changes easier.
+	if (!(b64_shard = base64_encode_mod(shard, MANAGEDBUF(87)))) {
+		log_pedantic("Unable to store a user realm shard. { usernum = %lu }", usernum);
+		return -1;
+	}
+
+	// This function is used to update a user structure.
+	mm_wipe(parameters, sizeof(parameters));
+
+	// Usernum.
+	parameters[0].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[0].buffer_length = sizeof(uint64_t);
+	parameters[0].buffer = &usernum;
+	parameters[0].is_unsigned = true;
+
+	// Serial
+	parameters[1].buffer_type = MYSQL_TYPE_SHORT;
+	parameters[1].buffer_length = sizeof(uint16_t);
+	parameters[1].buffer = &serial;
+	parameters[1].is_unsigned = true;
+
+	// Label
+	parameters[2].buffer_type = MYSQL_TYPE_STRING;
+	parameters[2].buffer = st_data_get(label);
+	parameters[2].buffer_length = st_length_get(label);
+
+	// Shard
+	parameters[3].buffer_type = MYSQL_TYPE_STRING;
+	parameters[3].buffer = st_data_get(b64_shard);
+	parameters[3].buffer_length = st_length_get(b64_shard);
+
+	if ((affected = stmt_exec_affected_conn(stmts.meta_insert_shard, parameters, transaction)) != 1 && affected == -1) {
+		log_pedantic("Unable to insert the user shard value. A database error occurred. { usernum = %lu / label = %.*s }",
+			usernum, st_length_int(label), st_char_get(label));
+		return -1;
+	}
+	else if (!affected) {
+		log_pedantic("Unable to insert the user shard value. It's possible the database already holds a shard for this user. {  usernum = %lu / label = %.*s }",
+			usernum, st_length_int(label), st_char_get(label));
+		return 1;
+	}
+
+	return 0;
+}
+
+/**
  * @brief	Mark a user alert message as acknowledged in the database.
+ *
  * @note	If the table is not updated immediately, another check is made to see if the alert is still pending. If so, false is returned.
+ *
  * @param	alertnum	the numerical id of the alert message to be acknowledged.
  * @param	usernum		the numerical id of the user to whom the alert message belongs.
  * @param	transaction	the mysql transaction id of the acknowledgment operation, in cases batch changes need to be rolled back.
+ *
  * @return	true if the alert was acknowledged successfully, or false on failure.
  */
 bool_t meta_data_acknowledge_alert(uint64_t alertnum, uint64_t usernum, uint32_t transaction) {
@@ -524,7 +672,9 @@ bool_t meta_data_acknowledge_alert(uint64_t alertnum, uint64_t usernum, uint32_t
 
 /**
  * @brief	Get all unacknowledged alert messages for a user.
+ *
  * @param	usernum		the numerical id of the user for whom the alert messages will be fetched.
+ *
  * @return	NULL on failure, or a pointer to an inx holder containing all of the user's alert messages on success.
  */
 inx_t * meta_data_fetch_alerts(uint64_t usernum) {
@@ -581,11 +731,14 @@ inx_t * meta_data_fetch_alerts(uint64_t usernum) {
 
 /**
  * @brief	Remove all user (non-system) flags from a collection of mail messages, and set the specified flags mask for them.
+ *
  * @note	The new mask can contain both user and system flags, but only user flags will be stripped from each message initially.
+ *
  * @param	messages	an inx holder containing the collection of messages to have their flags updated.
  * @param	usernum		the numerical of the user to whom the target messages belong, for validation purposes.
  * @param	foldernum	the numerical id of the parent folder containing the messages to be updated, for validation purposes.
  * @param	flags		a mask of all flags that are to be added to any matching messages in the collection.
+ *
  * @return	true on success or false on failure.
  */
 bool_t meta_data_flags_replace(inx_t *messages, uint64_t usernum, uint64_t foldernum, uint32_t flags) {
@@ -662,10 +815,12 @@ bool_t meta_data_flags_replace(inx_t *messages, uint64_t usernum, uint64_t folde
 
 /**
  * @brief	Remove the specified flags mask from a collection of mail messages.
+ *
  * @param	messages	an inx holder containing the collection of messages to have their flags removed.
  * @param	usernum		the numerical id of the user to whom the target messages belong, for validation purposes.
  * @param	foldernum	the numerical id of the parent folder containing the messages to be updated, for validation purposes.
  * @param	flags		a mask of all flags that are to be stripped from any matching messages in the collection.
+ *
  * @return	true on success or false on failure.
  */
 bool_t meta_data_flags_remove(inx_t *messages, uint64_t usernum, uint64_t foldernum, uint32_t flags) {
@@ -734,10 +889,12 @@ bool_t meta_data_flags_remove(inx_t *messages, uint64_t usernum, uint64_t folder
 
 /**
  * @brief	Add the specified flags mask to a collection of mail messages.
+ *
  * @param	messages	an inx holder containing the collection of messages to have their flags updated.
  * @param	usernum		the numerical id of the user to whom the target messages belong, for validation purposes.
  * @param	foldernum	the numerical id of the parent folder containing the messages to be updated, for validation purposes.
  * @param	flags		a mask of all flags that are to be added to any matching messages in the collection.
+ *
  * @return	true on success or false on failure.
  */
 bool_t meta_data_flags_add(inx_t *messages, uint64_t usernum, uint64_t foldernum, uint32_t flags) {
@@ -797,8 +954,10 @@ bool_t meta_data_flags_add(inx_t *messages, uint64_t usernum, uint64_t foldernum
 
 /**
  * @brief	Delete a message folder from the database.
+ *
  * @param	usernum		the numerical id of the user that owns the folder to be deleted.
  * @param	foldernum	the folder id of the message folder to be deleted.
+ *
  * @return	1 if the message folder was successfully, or <= 0 if there was an error.
  */
 uint64_t meta_data_delete_folder(uint64_t usernum, uint64_t foldernum) {
@@ -832,11 +991,13 @@ uint64_t meta_data_delete_folder(uint64_t usernum, uint64_t foldernum) {
 
 /**
  * @brief	Update the record for a message folder in the database.
+ *
  * @param	usernum		the numerical id of the user that owns the specified folder.
  * @param	foldernum	the id of the folder to have its properties adjusted.
  * @param	name		a managed string containing the new name of the specified folder.
  * @param	parent		the id of the new parent folder to be set for the specified message folder.
  * @param	order		the value of the order for the specified folder.
+ *
  * @return	1 on success, or <= 0 on failure.
  */
 uint64_t meta_data_update_folder_name(uint64_t usernum, uint64_t foldernum, stringer_t *name, uint64_t parent, uint32_t order) {
@@ -887,10 +1048,12 @@ uint64_t meta_data_update_folder_name(uint64_t usernum, uint64_t foldernum, stri
 
 /**
  * @brief	Insert a new mail folder into the database.
+ *
  * @param	usernum		the numerical id of the user to whom the new folder belongs.
  * @param	name		a managed string containing the name of the new mail folder.
  * @param	parent		the numerical id of the mail folder to be the parent of the new mail folder.
  * @param	order		the order number of this folder in its parent folder.
+ *
  * @return	0 on failure, or the numerical id of the newly inserted mail folder in the database on success.
  */
 uint64_t meta_data_insert_folder(uint64_t usernum, stringer_t *name, uint64_t parent, uint32_t order) {
@@ -934,8 +1097,10 @@ uint64_t meta_data_insert_folder(uint64_t usernum, stringer_t *name, uint64_t pa
 
 /**
  * @brief	Insert a tag for a message into the database.
+ *
  * @param	message		the meta message object of the message to be tagged.
  * @param	tag			a managed string containing the name of the tag.
+ *
  * @return	0 on success or -1 on failure.
  */
 int_t meta_data_insert_tag(meta_message_t *message, stringer_t *tag) {
@@ -966,7 +1131,9 @@ int_t meta_data_insert_tag(meta_message_t *message, stringer_t *tag) {
 
 /**
  * @brief	Remove all tags associated with a message in the database.
+ *
  * @param	message		a pointer to the meta message object of the message to have all of its tags stripped.
+ *
  * @return	0 on success or -1 on failure.
  */
 int_t meta_data_truncate_tags(meta_message_t *message) {
@@ -991,9 +1158,11 @@ int_t meta_data_truncate_tags(meta_message_t *message) {
 }
 
 /**
- * @brief	Remove a tag from a message in the database..
+ * @brief	Remove a tag from a message in the database.
+ *
  * @param	message		a pointer to the meta message object of the message to have the tag stripped.
  * @param	tag			a managed string containing the name of the tag to be deleted.
+ *
  * @return	0 on success or -1 on failure.
  */
 int_t meta_data_delete_tag(meta_message_t *message, stringer_t *tag) {
@@ -1024,7 +1193,9 @@ int_t meta_data_delete_tag(meta_message_t *message, stringer_t *tag) {
 
 /**
  * @brief	Fetch all the tags attached to messages of a specified user from the database.
+ *
  * @param	usernum		the numerical id of the user for whom the message tags will be fetched.
+ *
  * @return	NULL on failure, or an inx holder containing a list of all the user's messages' tags as managed strings on success.
  */
 inx_t * meta_data_fetch_all_tags(uint64_t usernum) {

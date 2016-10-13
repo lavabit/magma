@@ -13,13 +13,15 @@
 #include "magma.h"
 
 
-/*
+/**
  * @brief	Replaces legacy auth tokens with STACIE compatible tokens.
+ *
  * @param	usernum	The user account number.
  * @param	legacy The legacy auth token, encoded as a hexadecimal string.
  * @param	salt The user specific salt value, encoded as a hexadecimal string.
  * @param	verification The STACIE verification token, encoded as a hexadecimal string.
  * @param	bonus	The number of bonus hash rounds.
+ *
  * @return	0 if the user information was updated correctly, or -1 if an error occurs.
  */
 int_t auth_data_update_legacy(uint64_t usernum, stringer_t *legacy, stringer_t *salt, stringer_t *verification, uint32_t bonus) {
@@ -41,7 +43,7 @@ int_t auth_data_update_legacy(uint64_t usernum, stringer_t *legacy, stringer_t *
 		log_pedantic("The verification token is invalid.");
 		return -1;
 	}
-	else if (bonus > STACIE_ROUNDS_MAX || usernum == 0) {
+	else if (bonus > STACIE_KEY_ROUNDS_MAX || usernum == 0) {
 		log_pedantic("The numeric variables were invalid.");
 		return -1;
 	}
@@ -81,11 +83,14 @@ int_t auth_data_update_legacy(uint64_t usernum, stringer_t *legacy, stringer_t *
 	return 0;
 }
 
-/*
+/**
  * @brief	Fetches the authentication information based on the provided username.
+ *
  * @note This function searches the Users table first, and the Mailboxes table second. This way if someone sneaks a username
  * 		into the Mailboxes table, they won't override the Users table.
+ *
  * @param	auth	The authentication object providing the username, and used to store the result.
+ *
  * @return	0 if the user information is pulled correctly, 1 if the user isn't found, and -1 if an error occurs.
  */
 int_t auth_data_fetch(auth_t *auth) {
@@ -206,7 +211,7 @@ int_t auth_data_fetch(auth_t *auth) {
 
 	// If the legacy value is NULL then we must have valid STACIE values for authentication.
 	if (st_empty(auth->legacy.token) && (st_empty(auth->seasoning.salt) || st_length_get(auth->seasoning.salt) != STACIE_SALT_LENGTH ||
-		st_empty(auth->tokens.verification) || st_length_get(auth->tokens.verification) != STACIE_TOKEN_LENGTH || auth->seasoning.bonus > STACIE_ROUNDS_MAX)) {
+		st_empty(auth->tokens.verification) || st_length_get(auth->tokens.verification) != STACIE_TOKEN_LENGTH || auth->seasoning.bonus > STACIE_KEY_ROUNDS_MAX)) {
 		log_error("The user should have valid STACIE credentials, but the retrieved values don't look like they are the right length. { username = %.*s }",
 			st_length_int(auth->username), st_char_get(auth->username));
 		return -1;

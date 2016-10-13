@@ -13,10 +13,100 @@
 #include "magma.h"
 
 /**
+ * @brief	Fetches the user realm keys and extracts the different components.
  *
- * @param user
- * @param master
- * @param locked
+ * @param	user			a pointer to the meta object that is to be populated.
+ * @param	master			the user master key value.
+ * @param	locked			the meta lock status of the operation (if META_NEED_LOCK is supplied, the meta user object will be
+ * 							locked for the duration of the function.
+ *
+ * @return	-2 if there is a problem extracting the key values, -1 for a system error, 0 for success, and 1 if the keys were created.
+ */
+int_t meta_update_realms(meta_user_t *user, stringer_t *master, META_LOCK_STATUS locked) {
+
+	int_t result = 0;
+	int64_t transaction = -1;
+	stringer_t *shard = MANAGEDBUF(64), *holder = NULL, *realm_key = NULL;
+
+	// Do we need a lock.
+	if (locked == META_NEED_LOCK) {
+		meta_user_wlock(user);
+	}
+
+	if (st_empty(user->realms.mail.tag, user->realms.mail.vector, user->realms.mail.cipher)) {
+
+		if (!user->usernum || st_empty(master) || st_length_get(master) != STACIE_KEY_LENGTH) {
+			log_pedantic("Invalid parameters passed to the realm updater. { username = %.*s }", st_length_int(user->username),
+				st_char_get(user->username));
+			result = -1;
+		}
+
+		else if ((transaction = tran_start()) < 0) {
+			log_pedantic("Unable to start storage key SQL transaction. { username = %.*s }", st_length_int(user->username),
+				st_char_get(user->username));
+			result = -1;
+		}
+
+		// Fetch the mail realm shard. If one isn't found, try generating a new shard value for the user.
+		else if (meta_data_fetch_shard(user->usernum, 0, PLACER("mail", 4), shard, transaction) == 1) {
+
+			if (!(holder = stacie_shard_create(shard)) || meta_data_insert_shard(user->usernum, 0, PLACER("mail", 4), holder, transaction) < 0) {
+				log_pedantic("Unable to create a user shard for the mail realm. { username = %.*s }", st_length_int(user->username),
+					st_char_get(user->username));
+				tran_rollback(transaction);
+				transaction = -1;
+				result = -1;
+			}
+			else if (tran_commit(transaction)) {
+				log_pedantic("Unable to create a user shard for the mail realm. { username = %.*s }", st_length_int(user->username),
+					st_char_get(user->username));
+				transaction = -1;
+				result = -1;
+			}
+			else if ((transaction = tran_start()) < 0 || meta_data_fetch_shard(user->usernum, 0, PLACER("mail", 4), shard, transaction)) {
+				log_pedantic("Unable to create and fetch a user shard for the mail realm. { username = %.*s }", st_length_int(user->username),
+					st_char_get(user->username));
+				result = -1;
+			}
+		}
+
+		// Release the transaction handle.
+		if (transaction >= 0) {
+			tran_commit(transaction);
+		}
+
+		// If we reach this point and the result is still zero, and the shard value is populated, parse the realm key.
+		if (!result && st_length_get(shard) == STACIE_SHARD_LENGTH) {
+
+			// Derive the realm key and store the relevant pieces.
+			if (!(realm_key = stacie_realm_key_derive(master, PLACER("mail",  4), shard)) ||
+				!(user->realms.mail.tag = stacie_realm_tag_key(realm_key)) ||
+				!(user->realms.mail.vector = stacie_realm_vector_key(realm_key)) ||
+				!(user->realms.mail.cipher = stacie_realm_cipher_key(realm_key))) {
+				log_pedantic("Unable to parse the realm key. { username = %.*s }", st_length_int(user->username),
+					st_char_get(user->username));
+				result = -1;
+			}
+
+			st_cleanup(realm_key);
+		}
+
+	}
+
+	// Do we need to clear the lock.
+	if (locked == META_NEED_LOCK) {
+		meta_user_unlock(user);
+	}
+
+	return result;
+}
+
+/**
+ * @brief	Fetches the user signet and private key. Relies on the mail realm to decrypt the values.
+ *
+ * @param	user			a pointer to the meta object that is to be populated.
+ * @param	locked			the meta lock status of the operation (if META_NEED_LOCK is supplied, the meta user object will be
+ * 							locked for the duration of the function.
  *
  * @return	-2 if there is a problem unscrambling the private key, -1 for a system error, 0 for success, and 1 if the keys were created.
  */
@@ -39,12 +129,12 @@ int_t meta_update_keys(meta_user_t *user, stringer_t *master, META_LOCK_STATUS l
 	if (user->usernum && st_empty(user->keys.private, user->keys.signet)) {
 
 		if ((transaction = tran_start()) < 0) {
-			log_pedantic("Unable to start storage key SQL transaction. { username = %.*s }", st_length_int(user->username),
+			log_pedantic("Unable to start shard SQL transaction. { username = %.*s }", st_length_int(user->username),
 				st_char_get(user->username));
 			result = -1;
 		}
 
-		// Fetch the keys. If none are found, try to generate a new key pair for the user.
+		// Fetch the mail shard. If we can't find a mail shard, try to generate a new shard value.
 		else if (meta_data_fetch_keys(user, &pair, transaction) == 1) {
 
 			// Make sure we can retrieve the keys from the database before we return them to the caller.
@@ -52,28 +142,26 @@ int_t meta_update_keys(meta_user_t *user, stringer_t *master, META_LOCK_STATUS l
 				log_pedantic("Unable to create and fetch a newly created user key pair. { username = %.*s }", st_length_int(user->username),
 					st_char_get(user->username));
 				tran_rollback(transaction);
+				transaction = -1;
 				result = -1;
 			}
 			else if (tran_commit(transaction)) {
 				log_pedantic("Unable to create and fetch a newly created user key pair. { username = %.*s }", st_length_int(user->username),
 					st_char_get(user->username));
+				transaction = -1;
 				result = -1;
 			}
-
-
 			else if ((transaction = tran_start()) < 0 || meta_data_fetch_keys(user, &pair, transaction)) {
-
 				log_pedantic("Unable to create and fetch a newly created user key pair. { username = %.*s }", st_length_int(user->username),
 					st_char_get(user->username));
-
-				// Unless the second call to tran_start() fails, we'll have a valid transaction handle at this point.
-				if (transaction >= 0) tran_commit(transaction);
 				result = -1;
 			}
-			else {
-				tran_commit(transaction);
-			}
 
+		}
+
+		// Release the transaction handle.
+		if (transaction >= 0) {
+			tran_commit(transaction);
 		}
 
 		// If we reach this point and the key pair is still empty, then a negative value was returned by the first

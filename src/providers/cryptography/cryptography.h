@@ -44,7 +44,7 @@
 // This STACIE implementation uses SHA-2/512 resulting in key, token, and shard lengths of 64 bytes.
 #define STACIE_KEY_LENGTH		64
 #define STACIE_TOKEN_LENGTH		64
-#define STACIE_SHARD_LENDTH		64
+#define STACIE_SHARD_LENGTH		64
 
 // This STACIE implementation only supports realm encryption of buffers up to 16,777,215 bytews in length.
 #define STACIE_ENCRYPT_MIN		1
@@ -223,7 +223,7 @@ stringer_t *  stacie_realm_tag_key(stringer_t *realm_key);
 stringer_t *  stacie_realm_vector_key(stringer_t *realm_key);
 uint32_t      stacie_rounds_calculate(stringer_t *password, uint32_t bonus);
 stringer_t *  stacie_salt_create(void);
-stringer_t *  stacie_shard_create(void);
+stringer_t *  stacie_shard_create(stringer_t *output);
 
 /// symmetric.c
 stringer_t *  symmetric_decrypt(cipher_t *cipher, stringer_t *vector, stringer_t *key, stringer_t *input);

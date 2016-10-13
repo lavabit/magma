@@ -201,7 +201,6 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 	}
 
 	/************************** BEGIN LEGACY AUTHENTICATION SUPPORT LOGIC **************************/
-
 	// If the account uses legacy hash values for authentication the legacy token will be populated.
 	if (auth->legacy.token && !(legacy = auth_legacy(auth->username, password))) {
 		log_pedantic("Unable to calculate the legacy hash tokens for comparison.");

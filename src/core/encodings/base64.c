@@ -216,7 +216,7 @@ stringer_t * base64_encode(stringer_t *s, stringer_t *output) {
  * @note	In this function, the '+' and '/' characters are replaced with '-' and '_' respectively,
  * 			making the output suitable for use in URL parameters without additional encoding.
  * @param	s		the managed string to be base64 modified-encoded.
- * @param	output	a managed string to receive the encoded output; if passed as NULL, one will be allocated to the caller.
+ * @param	output	a managed string to receive the encoded output; if passed as NULL, an output buffer will be allocated which must be freed by the caller.
  * @return	NULL 	on failure, or a newly allocated managed string containing the modified encoded result on success.
  */
 stringer_t * base64_encode_mod(stringer_t *s, stringer_t *output) {
@@ -233,7 +233,6 @@ stringer_t * base64_encode_mod(stringer_t *s, stringer_t *output) {
 	}
 	else if (st_empty_out(s, &p, &len)) {
 		log_pedantic("An empty string was passed in for encoding.");
-		debug_hook();
 		return NULL;
 	}
 

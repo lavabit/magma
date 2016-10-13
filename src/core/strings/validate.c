@@ -23,7 +23,8 @@ bool_t st_valid_placer(uint32_t opts) {
 
 	if (!st_valid_opts(opts)) {
 		return false;
-	} else if (!(opts & PLACER_T) && !(opts & JOINTED) && !(opts & (STACK | HEAP | SECURE)) &&
+	}
+	else if (!(opts & PLACER_T) && !(opts & JOINTED) && !(opts & (STACK | HEAP | SECURE)) &&
 			(opts & ~(PLACER_T | JOINTED | STACK | HEAP | SECURE))) {
 		return false;
 	}
@@ -40,7 +41,8 @@ bool_t st_valid_destination(uint32_t opts) {
 
 	if (!st_valid_opts(opts)) {
 		return false;
-	} else if (opts & CONSTANT_T) {
+	}
+	else if (opts & CONSTANT_T) {
 		return false;
 	}
 
@@ -56,9 +58,11 @@ bool_t st_valid_append(uint32_t opts) {
 
 	if (!st_valid_opts(opts)) {
 		return false;
-	} else if (!(opts & (MANAGED_T | MAPPED_T))) {
+	}
+	else if (!(opts & (MANAGED_T | MAPPED_T))) {
 		return false;
-	} else if (!(opts & (JOINTED))) {
+	}
+	else if (!(opts & (JOINTED))) {
 		return false;
 	}
 
@@ -75,7 +79,6 @@ bool_t st_valid_free(uint32_t opts) {
 	if (!st_valid_opts(opts)) {
 		return false;
 	}
-	// QUESTION: Foreign data is OK if it's a placer, right?
 	else if ((opts & STACK) || (opts & FOREIGNDATA && !(opts & PLACER_T))) {
 		return false;
 	}
@@ -92,7 +95,8 @@ bool_t st_valid_tracked(uint32_t opts) {
 
 	if (!st_valid_opts(opts)) {
 		return false;
-	} else if (!(opts & (PLACER_T | MANAGED_T | MAPPED_T))) {
+	}
+	else if (!(opts & (PLACER_T | MANAGED_T | MAPPED_T))) {
 		return false;
 	}
 
@@ -125,7 +129,8 @@ bool_t st_valid_avail(uint32_t opts) {
 
 	if (!st_valid_opts(opts)) {
 		return false;
-	} else if (!(opts & (MANAGED_T | MAPPED_T))) {
+	}
+	else if (!(opts & (MANAGED_T | MAPPED_T))) {
 		return false;
 	}
 

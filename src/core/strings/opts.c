@@ -21,7 +21,7 @@ uint32_t st_opt_get(stringer_t *s) {
 
 	uint32_t opts = 0;
 
-	if (!s) {
+	if (s) {
 		opts = *((uint32_t *)s);
 	}
 

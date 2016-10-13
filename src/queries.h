@@ -132,7 +132,6 @@
 
 // For the portal/user management.
 #define REGISTER_CHECK_USERNAME	"SELECT usernum FROM Users WHERE userid = ?"
-#define REGISTER_INSERT_USER "INSERT INTO Users (`userid`, `legacy`, `plan`, `quota`, `plan_expiration`) VALUES (?, ?, ?, ?, ?)"
 #define REGISTER_INSERT_STACIE_USER "INSERT INTO Users (`userid`, `salt`, `auth`, `bonus`, `plan`, `quota`, `plan_expiration`) VALUES (?, ?, ?, ?, ?, ?, ?)"
 #define REGISTER_INSERT_STACIE_REALMS "INSERT INTO User_Realms (`usernum`, `serial`, `label`, `shard`) VALUES (?, ?, ?, ?)"
 #define REGISTER_INSERT_PROFILE "INSERT INTO Profile (`usernum`) VALUES (?)"
@@ -164,11 +163,14 @@
 
 // The meta data object.
 #define META_FETCH_USER "SELECT Users.userid, Users.auth, Users.tls, Users.overquota, Dispatch.secure FROM Users INNER JOIN Dispatch ON Users.usernum = Dispatch.usernum WHERE Users.usernum = ? AND email = 1 LIMIT 1"
+#define META_FETCH_SHARD "SELECT `shard` FROM `User_Realms` WHERE `usernum` = ? AND `serial` = ? AND `label` = ?"
 #define META_FETCH_STORAGE_KEYS "SELECT storage_pub, storage_priv FROM `Keys` WHERE usernum = ?"
+#define META_INSERT_SHARD "INSERT INTO `User_Realms` (`usernum`, `serial`, `label`, `shard`) VALUES (?, ?, ?, ?)"
 #define META_INSERT_STORAGE_KEYS "INSERT INTO `Keys` (usernum, storage_pub, storage_priv) VALUES (?, ?, ?)"
 
 /**
  * @note Be sure to add any new queries to this list. Run the queries.sh script, or the commands below.
+ *
  * @remark Queries + Stmts Init
  *	 	 	 cat queries.h | grep "\#define" | egrep -v "MAGMA_DATA_QUERIES_H|INIT" | grep -v "//" | awk -F' ' '{ print $2 }' | egrep "^[A-Z_]+$" | awk -F' ' '{ print "\t\t\t\t\t\t\t\t\t\t\t" $1 ", \\" }'; \
  *	 	 	 cat queries.h | grep "\#define" | egrep -v "MAGMA_DATA_QUERIES_H|INIT" | grep -v "//" | awk -F' ' '{ print $2 }' | egrep "^[A-Z_]+$" | awk -F' ' '{ print "\t\t\t\t\t\t\t\t\t\t\t**" tolower($1) ", \\" }'
@@ -250,7 +252,6 @@
 											UPDATE_SIGNATURE_FLAGS_REMOVE, \
 											DELETE_SIGNATURE, \
 											REGISTER_CHECK_USERNAME, \
-											REGISTER_INSERT_USER, \
 											REGISTER_INSERT_STACIE_USER, \
 											REGISTER_INSERT_STACIE_REALMS, \
 											REGISTER_INSERT_PROFILE, \
@@ -276,7 +277,9 @@
 											AUTH_GET_BY_ADDRESS, \
 											AUTH_UPDATE_LEGACY_TO_STACIE, \
 											META_FETCH_USER, \
+											META_FETCH_SHARD, \
 											META_FETCH_STORAGE_KEYS, \
+											META_INSERT_SHARD, \
 											META_INSERT_STORAGE_KEYS
 
 #define STMTS_INIT							**select_domains, \
@@ -354,7 +357,6 @@
 											**update_signature_flags_remove, \
 											**delete_signature, \
 											**register_check_username, \
-											**register_insert_user, \
 											**register_insert_stacie_user, \
 											**register_insert_stacie_realms, \
 											**register_insert_profile, \
@@ -380,8 +382,11 @@
 											**auth_get_by_address, \
 											**auth_update_legacy_to_stacie, \
 											**meta_fetch_user, \
+											**meta_fetch_shard, \
 											**meta_fetch_storage_keys, \
+											**meta_insert_shard, \
 											**meta_insert_storage_keys
+
 
 extern chr_t *queries[];
 struct { MYSQL_STMT STMTS_INIT; } stmts __attribute__ ((common));

@@ -13,9 +13,9 @@
 #include "magma.h"
 
 /**
- * @brief	Free a meta object.
+ * @brief	Free a meta user object.
  *
- * @param	user	a pointer to the meta object to be destroyed.
+ * @param	user	a pointer to the meta user object to be destroyed.
  *
  * @return	This function returns no value.
  */
@@ -31,6 +31,7 @@ void meta_free(meta_user_t *user) {
 
 		st_cleanup(user->username, user->verification);
 		st_cleanup(user->keys.signet, user->keys.private);
+		st_cleanup(user->realms.mail.tag, user->realms.mail.vector, user->realms.mail.cipher);
 
 		// When read/write locking issues have been fixed, this line can be used once again.
 		rwlock_destroy(&(user->lock));
@@ -52,7 +53,7 @@ meta_user_t * meta_alloc(void) {
 	meta_user_t *user;
 	pthread_rwlockattr_t attr;
 
-	// Configure the rwlock attributes to prefer write lock requests.
+	// Configure the rwlock attributes structure to prefer write lock requests.
 	if (rwlock_attr_init(&attr)) {
 		log_pedantic("Unable to initialize the read/write lock attributes.");
 		return NULL;
@@ -63,15 +64,24 @@ meta_user_t * meta_alloc(void) {
 		return NULL;
 	}
 
+	// Allocate the meta user object.
 	if (!(user = mm_alloc(sizeof(meta_user_t)))) {
 		log_pedantic("Unable to allocate %zu bytes for a user meta information structure.", sizeof(meta_user_t));
 		rwlock_attr_destroy(&attr);
 		return NULL;
 	}
-	else if (rwlock_init(&(user->lock), &attr) != 0) {
+
+	// Wipe the meta user object and set all of the pointers to NULL.
+	mm_wipe(user, sizeof(meta_user_t));
+
+	// Initialize the rwlock.
+	if (rwlock_init(&(user->lock), &attr) != 0) {
 		log_pedantic("Unable to initialize the read/write lock.");
 		rwlock_attr_destroy(&attr);
+		mm_free(user);
+		return NULL;
 	}
+	// Initialize the mutex.
 	else if (mutex_init(&(user->refs.lock), NULL) != 0) {
 		log_pedantic("Unable to initialize the user reference lock.");
 		rwlock_destroy(&(user->lock));
@@ -135,7 +145,14 @@ int_t meta_get(uint64_t usernum, stringer_t *username, stringer_t *master, strin
 		return 1;
 	}
 
-	// Are we supposed to get the mailbox aliases.
+	// Are we supposed to get the realm keys.
+	if ((get & META_GET_KEYS) && meta_update_realms(user, master, META_LOCKED) < 0) {
+		meta_user_unlock(user);
+		meta_inx_remove(usernum, protocol);
+		return -1;
+	}
+
+	// Are we supposed to get the mailbox keys.
 	if ((get & META_GET_KEYS) && meta_update_keys(user, master, META_LOCKED) < 0) {
 		meta_user_unlock(user);
 		meta_inx_remove(usernum, protocol);

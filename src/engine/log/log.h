@@ -47,14 +47,12 @@ void     log_enable(void);
 void     log_rotate(void);
 bool_t   log_start(void);
 
-#define log_enum(expr) ( M_LOG_OPTIONS.##expr )
-
-#undef log_pedantic(...) printf(__VA_ARGS__)
-#undef log_check(expr) do {} while (0)
-#undef log_info(...) printf(__VA_ARGS__)
-#undef log_error(...) printf(__VA_ARGS__)
-#undef log_critical(...) printf(__VA_ARGS__)
-#undef log_options(options, ...) printf(__VA_ARGS__)
+#undef log_pedantic
+#undef log_check
+#undef log_info
+#undef log_error
+#undef log_critical
+#undef log_options
 
 #ifdef MAGMA_PEDANTIC
 

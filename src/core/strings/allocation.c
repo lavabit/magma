@@ -38,7 +38,6 @@ void st_free(stringer_t *s) {
 
 #ifdef MAGMA_PEDANTIC
 	if (!st_valid_free(opts)) {
-		debug_hook();
 		log_pedantic("Invalid string options. { opt = %u = %s }", opts, st_info_opts(opts, MEMORYBUF(128), 128));
 		return;
 	}

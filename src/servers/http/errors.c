@@ -142,7 +142,6 @@ void http_print_500(connection_t *con) {
 
 	// If we've encountered an internal issue, we probably want to log it.
 	log_options(M_LOG_CRITICAL | M_LOG_STACK_TRACE, "HTTP server logged a 500 internal service error.");
-	debug_hook();
 
 	con->http.response.connection = HTTP_CONNECTION_CLOSE;
 	http_response_header(con, 500, PLACER("text/plain", 10), 24);

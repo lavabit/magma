@@ -46,7 +46,6 @@ void     log_disable(void);
 void     log_enable(void);
 void     log_rotate(void);
 bool_t   log_start(void);
-void     debug_hook(void);
 
 #ifdef MAGMA_PEDANTIC
 

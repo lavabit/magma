@@ -161,7 +161,6 @@ void * st_data_get(stringer_t *s) {
 
 #ifdef MAGMA_PEDANTIC
 	else if (!st_valid_opts(opts)) {
-		debug_hook();
 		log_pedantic("Invalid string options. { opt = %u = %s }", opts, st_info_opts(opts, MEMORYBUF(128), 128));
 		return NULL;
 	}

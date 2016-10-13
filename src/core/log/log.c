@@ -275,13 +275,3 @@ bool_t log_start(void) {
 	return true;
 }
 
-/**
- * @brief	A stub routine where it is convenient to set a breakpoint in a debugger.
- * @note	This function should be called by code paths that detect sanity check failures, but that are not fatal.
- * @return	This function returns no value.
- */
-void debug_hook(void) {
-
-	log_pedantic("Triggered debug hook.");
-	return;
-}

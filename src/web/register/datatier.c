@@ -161,7 +161,7 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 	}
 
 	// We start by generating all of the values we'll need to complete the registration process. The STACIE values are first.
-	if (!(salt = stacie_salt_create()) || !(b64_salt = base64_encode_mod(salt, NULL)) ||
+	if (!(salt = stacie_salt_create(NULL)) || !(b64_salt = base64_encode_mod(salt, NULL)) ||
 		!(shard = stacie_shard_create(NULL)) || !(b64_shard = base64_encode_mod(shard, NULL)) ||
 		!(stacie = auth_stacie(bonus,  username,  password,  salt,  NULL, NULL)) ||
 		!(b64_verification = base64_encode_mod(stacie->tokens.verification, NULL))) {

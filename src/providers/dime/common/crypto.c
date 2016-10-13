@@ -253,6 +253,9 @@ _ec_sign_sha_data(
     return (_ec_sign_data(hashbuf, shabits / 8, key, siglen));
 }
 
+
+unsigned char * ecies_key_public_bin(EC_KEY *key, size_t *olen);
+
 /**
  * @brief
  *  Serialize an EC public key to be shared.

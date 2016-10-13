@@ -132,7 +132,6 @@ stringer_t *  ecies_key_public_hex(EC_KEY *key);
 bool_t        ecies_start(void);
 void          ecies_stop(void);
 
-
 /// hash.c
 stringer_t *  hash_digest(digest_t *digest, stringer_t *s, stringer_t *output);
 stringer_t *  hash_md4(stringer_t *s, stringer_t *output);
@@ -214,7 +213,7 @@ uint64_t      scramble_vector_length(scramble_t *buffer);
 stringer_t *  stacie_entropy_seed_derive(uint32_t rounds, stringer_t *password, stringer_t *salt);
 stringer_t *  stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt);
 stringer_t *  stacie_hashed_token_derive(stringer_t *base, stringer_t *username, stringer_t *salt, stringer_t *nonce);
-stringer_t *  stacie_nonce_create(void);
+stringer_t *  stacie_nonce_create(stringer_t *output);
 stringer_t *  stacie_realm_cipher_key(stringer_t *realm_key);
 stringer_t *  stacie_realm_decrypt(stringer_t *vector_key, stringer_t *tag_key, stringer_t *cipher_key, stringer_t *buffer);
 stringer_t *  stacie_realm_encrypt(uint16_t serial, stringer_t *vector_key, stringer_t *tag_key, stringer_t *cipher_key, stringer_t *buffer);
@@ -222,7 +221,7 @@ stringer_t *  stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm,
 stringer_t *  stacie_realm_tag_key(stringer_t *realm_key);
 stringer_t *  stacie_realm_vector_key(stringer_t *realm_key);
 uint32_t      stacie_rounds_calculate(stringer_t *password, uint32_t bonus);
-stringer_t *  stacie_salt_create(void);
+stringer_t *  stacie_salt_create(stringer_t *output);
 stringer_t *  stacie_shard_create(stringer_t *output);
 
 /// symmetric.c

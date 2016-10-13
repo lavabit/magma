@@ -22,7 +22,6 @@
  * @param	output	a managed string to receive the output; if passed as NULL, an output buffer will be allocated.
  *
  * @return	A managed string holding the freshly generated shard in binary form. If NULL was passed in then the result must be freed by the caller.
- *
  */
 stringer_t * stacie_shard_create(stringer_t *output) {
 
@@ -56,21 +55,34 @@ stringer_t * stacie_shard_create(stringer_t *output) {
  * @note	While the salt and nonce creation functions are nearly identical, they remain seperated so they can use distinct
  * 			preprocessor definitions for the result length.
  *
- * @return	A managed string holding the freshly generated salt in binary form. The result must be freed by the caller.
+ * @param	output	a managed string to receive the output; if passed as NULL, an output buffer will be allocated.
  *
+ * @return	A managed string holding the freshly generated salt in binary form. If NULL was passed in then the result must be freed by the caller.
  */
-stringer_t * stacie_salt_create(void) {
+stringer_t * stacie_salt_create(stringer_t *output) {
 
 	stringer_t *result = NULL;
 
-	// We call cleanup on the result pointer just in case the allocation succeeds but the random write operation fails.
-	if (!(result = st_alloc(STACIE_SALT_LENGTH)) || rand_write(result) != STACIE_SALT_LENGTH) {
+	// If an output buffer was passed in make sure it's a valid destination with length tracking.
+	if (output && (!st_valid_destination(st_opt_get(output)) || !st_valid_tracked(st_opt_get(output)) || st_avail_get(output) < STACIE_SALT_LENGTH)) {
+		log_pedantic("An output string was supplied but is not a valid destination for the salt value.");
+		return NULL;
+	}
+	// Otherwise allocate an output buffer.
+	else if (!output && !(output = result = st_alloc(STACIE_SALT_LENGTH))) {
+		log_pedantic("Failed to allocate an output buffer for the salt value.");
+		return NULL;
+	}
+
+	// Attempt to write the random bytes into the output buffer.
+	if (rand_write(PLACER(st_data_get(output), STACIE_SALT_LENGTH)) != STACIE_SALT_LENGTH) {
 		log_pedantic("Failed to create a random salt value.");
 		st_cleanup(result);
 		return NULL;
 	}
 
-	return result;
+	st_length_set(output, STACIE_SALT_LENGTH);
+	return output;
 }
 
 /**
@@ -79,21 +91,34 @@ stringer_t * stacie_salt_create(void) {
  * @note	While the salt and nonce creation functions are nearly identical, they remain seperated so they can use distinct
  * 			preprocessor definitions for the result length.
  *
- * @return	A managed string holding the freshly generated nonce in binary form. The result must be freed by the caller.
+ * @param	output	a managed string to receive the output; if passed as NULL, an output buffer will be allocated.
  *
+ * @return	A managed string holding the freshly generated nonce in binary form. If NULL was passed in then the result must be freed by the caller.
  */
-stringer_t * stacie_nonce_create(void) {
+stringer_t * stacie_nonce_create(stringer_t *output) {
 
 	stringer_t *result = NULL;
 
-	// We call cleanup on the result pointer just in case the allocation succeeds but the random write operation fails.
-	if (!(result = st_alloc(STACIE_NONCE_LENGTH)) || rand_write(result) != STACIE_NONCE_LENGTH) {
+	// If an output buffer was passed in make sure it's a valid destination with length tracking.
+	if (output && (!st_valid_destination(st_opt_get(output)) || !st_valid_tracked(st_opt_get(output)) || st_avail_get(output) < STACIE_NONCE_LENGTH)) {
+		log_pedantic("An output string was supplied but is not a valid destination for the nonce value.");
+		return NULL;
+	}
+	// Otherwise allocate an output buffer.
+	else if (!output && !(output = result = st_alloc(STACIE_NONCE_LENGTH))) {
+		log_pedantic("Failed to allocate an output buffer for the nonce value.");
+		return NULL;
+	}
+
+	// Attempt to write the random bytes into the output buffer.
+	if (rand_write(PLACER(st_data_get(output), STACIE_NONCE_LENGTH)) != STACIE_NONCE_LENGTH) {
 		log_pedantic("Failed to create a random nonce value.");
 		st_cleanup(result);
 		return NULL;
 	}
 
-	return result;
+	st_length_set(output, STACIE_NONCE_LENGTH);
+	return output;
 }
 
 /**

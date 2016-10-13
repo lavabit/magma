@@ -83,7 +83,7 @@ auth_t * auth_challenge(stringer_t *username) {
 	}
 
 	// Setup the nonce value if we're dealing with a STACIE authentication challenge.
-	if (auth->tokens.verification && (st_empty(auth->seasoning.nonce = stacie_nonce_create()) ||
+	if (auth->tokens.verification && (st_empty(auth->seasoning.nonce = stacie_nonce_create(NULL)) ||
 		st_length_get(auth->seasoning.nonce) != STACIE_NONCE_LENGTH)) {
 		log_pedantic("Failed to generate a valid nonce value.");
 		auth_free(auth);
@@ -123,7 +123,7 @@ int_t auth_response(auth_t *auth, stringer_t *ephemeral) {
 	}
 	// If this fails, we return an error, but preserve the original nonce value. If it works we are guranteed to return a new nonce
 	// value regardless of what happens below. We just need to cleanup the original nonce value before returning.
-	else if (!(nonce = stacie_nonce_create())) {
+	else if (!(nonce = stacie_nonce_create(NULL))) {
 		log_pedantic("Failed to generate a valid replacement nonce.");
 		return -1;
 	}
@@ -219,7 +219,7 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 	else if (auth->legacy.token && !st_cmp_cs_eq(auth->legacy.token, legacy->token)) {
 
 		// Assign a random salt to the user account, and use the plain text password to generate STACIE tokens before proceeding.
-		if (!(auth->seasoning.salt = stacie_salt_create()) ||
+		if (!(auth->seasoning.salt = stacie_salt_create(NULL)) ||
 			!(stacie = auth_stacie(0, auth->username, password, auth->seasoning.salt, NULL, NULL))) {
 			log_pedantic("Unable to calculate the STACIE credentials.");
 			auth_legacy_free(legacy);

@@ -221,7 +221,7 @@ typedef struct {
 		double dbl;
 	} val;
 } multi_t;
-/************ TYPES ******#define st_cleanup(...) st_cleanup_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)******/
+/************ TYPES ************/
 
 /// multi.c
 int32_t    cmp_mt_mt(multi_t one, multi_t two);

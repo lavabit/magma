@@ -13,6 +13,28 @@
 #include "magma.h"
 
 /**
+ * @brief	Free a secp256k1 key structure.
+ * @see		EC_KEY_free()
+ *
+ * @param	key	the managed string to be freed.
+ * @return	This function returns no value.
+ */
+void secp256k1_free(EC_KEY *key) {
+
+#ifdef MAGMA_PEDANTIC
+	if (!key) {
+		log_pedantic("Attempted to free a NULL secp256k1 key pointer.");
+	}
+#endif
+
+	if (key) {
+		EC_KEY_free_d(key);
+	}
+
+	return;
+}
+
+/**
  * @brief	Allocate a new key pair using the secp256k1 curve.
  * @see		NID_secp256k1
  * @return	NULL on failure, or a pointer to the newly allocated key pair.
@@ -36,19 +58,38 @@ EC_KEY * secp256k1_alloc(void) {
 	}
 
 	// If an error occurs above, or the PRIME module wasn't initialized, so we attempt key creation from scratch.
-	if (!key) {
-
-		if (!(key = EC_KEY_new_by_curve_name_d(NID_secp256k1))) {
-			log_info("An error occurred while trying to create a new key using the secp256k1 curve. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
-			return NULL;
-		}
-
-		EC_KEY_set_conv_form_d(key, POINT_CONVERSION_COMPRESSED);
+	if (!key && !(key = EC_KEY_new_by_curve_name_d(NID_secp256k1))) {
+		log_info("An error occurred while trying to create a new key using the secp256k1 curve. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		return NULL;
 	}
+
+	EC_KEY_set_conv_form_d(key, POINT_CONVERSION_COMPRESSED);
 
 	return key;
 }
 
+/**
+ * @brief	Generate a random secp256k1 key pair.
+ * @return	NULL on failure, or a new, randomly generated secp256k1 key pair on success.
+ */
+EC_KEY * secp256k1_generate(void) {
+
+	EC_KEY *key = NULL;
+
+	if (!(key = secp256k1_alloc())) {
+		log_info("Unable to allocate an empty secp256k1 key context.");
+		return NULL;
+	}
+
+	// This should generate a random key pair.
+	if (EC_KEY_generate_key_d(key) != 1) {
+		log_info("An error occurred while trying to generate a random secp256k1 key pair. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		EC_KEY_free_d(key);
+		return NULL;
+	}
+
+	return key;
+}
 
 /**
  * @brief	Return a secp256k1 public key as a compressed point ecoded as a big endian integer.
@@ -74,6 +115,8 @@ stringer_t *secp256k1_public_get(EC_KEY *key, stringer_t *output) {
 	}
 
 	// Confirm the compressed point will result in 33 bytes of data, then write out the public key as a compressed point.
+	EC_POINT_point2oct(a->group, a->pub_key, a->conv_form, NULL, 0, NULL)
+	// memleak
 	if (i2o_ECPublicKey_d(key, NULL) != 33 || (len = i2o_ECPublicKey_d(key, st_data_get(output))) != 33) {
 		log_pedantic("MPI conversion failed. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
 		st_cleanup(result);
@@ -83,29 +126,6 @@ stringer_t *secp256k1_public_get(EC_KEY *key, stringer_t *output) {
 	// Update the output buffer length.
 	st_length_set(output, len);
 	return output;
-}
-
-/**
- * @brief	Generate a random secp256k1 key pair.
- * @return	NULL on failure, or a new, randomly generated secp256k1 key pair on success.
- */
-EC_KEY * secp256k1_generate(void) {
-
-	EC_KEY *key = NULL;
-
-	if (!(key = secp256k1_alloc())) {
-		log_info("Unable to allocate an empty secp256k1 key context.");
-		return NULL;
-	}
-
-	// This should generate a random key pair.
-	if (EC_KEY_generate_key_d(key) != 1) {
-		log_info("An error occurred while trying to generate a random secp256k1 key pair. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
-		EC_KEY_free_d(key);
-		return NULL;
-	}
-
-	return key;
 }
 
 /**

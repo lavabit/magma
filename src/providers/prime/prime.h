@@ -21,6 +21,7 @@ void     prime_stop(void);
 
 /// secp256k1.c
 EC_KEY *      secp256k1_alloc(void);
+void          secp256k1_free(EC_KEY *key);
 EC_KEY *      secp256k1_generate(void);
 stringer_t *  secp256k1_private_get(EC_KEY *key, stringer_t *output);
 EC_KEY *      secp256k1_private_set(stringer_t *key);

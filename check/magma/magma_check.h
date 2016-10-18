@@ -39,7 +39,7 @@ void __testname (int _i CK_ATTRIBUTE_UNUSED)\
 
 extern int case_timeout;
 
-void     log_test(chr_t *test, stringer_t *error);
+void	log_test(chr_t *test, stringer_t *error);
 #define log_unit(...) log_internal (__FILE__, __FUNCTION__, __LINE__, M_LOG_LINE_FEED_DISABLE | M_LOG_TIME_DISABLE | M_LOG_FILE_DISABLE | M_LOG_LINE_DISABLE | M_LOG_FUNCTION_DISABLE | M_LOG_STACK_TRACE_DISABLE, __VA_ARGS__)
 #define testcase(s, tc, name, func) tcase_add_test((tc = tcase_create(name)), func); tcase_set_timeout(tc, case_timeout); suite_add_tcase(s, tc)
 
@@ -112,6 +112,10 @@ void     log_test(chr_t *test, stringer_t *error);
 #define ECIES_CHECK_SIZE_MAX (2 * 1024) // 2 kilobytes
 #define ECIES_CHECK_ITERATIONS 16
 
+#define PRIME_CHECK_SIZE_MIN (1024) // 1 kilobyte
+#define PRIME_CHECK_SIZE_MAX (2 * 1024) // 2 kilobytes
+#define PRIME_CHECK_ITERATIONS 16
+
 #define OBJECT_CHECK_ITERATIONS 16
 
 //! Exhaustive Test
@@ -176,6 +180,11 @@ void     log_test(chr_t *test, stringer_t *error);
 #define ECIES_CHECK_SIZE_MIN 1024 // 1 kilobyte
 #define ECIES_CHECK_SIZE_MAX (16 * 1024)
 //#define ECIES_CHECK_SIZE_MAX (1 * 1024 * 1024) // 1 megabyte
+
+#define PRIME_CHECK_ITERATIONS 256
+#define PRIME_CHECK_SIZE_MIN (1024) // 1 kilobyte
+#define PRIME_CHECK_SIZE_MAX (16 * 1024)
+//#define PRIME_CHECK_SIZE_MAX (1 * 1024 * 1024) // 1 megabyte
 
 #define SCRAMBLE_CHECK_ITERATIONS 256
 #define SCRAMBLE_CHECK_SIZE_MIN 1024 // 1 kilobyte

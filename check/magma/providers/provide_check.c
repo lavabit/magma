@@ -380,6 +380,21 @@ START_TEST (check_stacie_s) {
 }
 END_TEST
 
+//! PRIME Tests
+START_TEST (check_prime_secp256k1_s)
+	{
+		stringer_t *errmsg = NULL;
+
+		if (status()) errmsg = check_prime_secp256k1_sthread();
+		//if (status() && !errmsg)  errmsg = check_prime_secp256k1_test2_sthread();
+
+		log_test("PROVIDERS / PRIME / SECP256K1 / SINGLE THREADED:", errmsg);
+		fail_unless(!errmsg, st_char_get(errmsg));
+		st_cleanup(errmsg);
+
+	}
+END_TEST
+
 //! SPF Tests
 START_TEST (check_spf_s) {
 
@@ -541,6 +556,8 @@ Suite * suite_check_provide(void) {
 	testcase(s, tc, "Cryptography SYMMETRIC/S", check_symmetric_s);
 	testcase(s, tc, "Cryptography SCRAMBLE/S", check_scramble_s);
 	testcase(s, tc, "Cryptography STACIE/S", check_stacie_s);
+
+	testcase(s, tc, "Cryptography STACIE/S", check_prime_secp256k1_s);
 
 	// Tank functionality is temporarily disabled.
 	if (do_tank_check) {

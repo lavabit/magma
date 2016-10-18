@@ -79,6 +79,9 @@ bool_t   check_stacie_rounds(void);
 bool_t   check_stacie_determinism(void);
 bool_t check_stacie_bitflip(void);
 
+/// prime_check.c
+stringer_t *  check_prime_secp256k1_sthread(void);
+
 /// unicode_check.c
 chr_t * check_unicode_valid(void);
 chr_t * check_unicode_invalid(void);

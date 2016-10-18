@@ -339,16 +339,22 @@ stringer_t *secp256k1_private_hex(EC_KEY *key) {
 
 	chr_t *hex;
 	const BIGNUM *bn;
-	stringer_t *result = NULL;
+	//stringer_t *result = NULL;
+
+	//EC_KEY_set_conv_form_d(key, POINT_CONVERSION_COMPRESSED);
+
 
 	if (!(bn = EC_KEY_get0_private_key_d(key))) {
 		log_pedantic("No private key available. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
 		return NULL;
 	}
 
-	int to_len = BN_bn2mpi_d(bn, NULL);
-	unsigned char *to = malloc(to_len);
-	if (BN_bn2mpi_d(bn, to) != to_len) {
+	char *s = BN_bn2hex_d(bn);
+	log_pedantic("privkey (%zu) = %s\n", strlen(s), s);
+
+	int to_len; // = BN_bn2mpi_d(bn, NULL);
+	unsigned char *to = malloc(32);
+	if ((to_len = BN_bn2bin_d(bn, to)) != 32) {
 		log_pedantic("MPI conversion failed.");
 		return NULL;
 	}
@@ -357,7 +363,7 @@ stringer_t *secp256k1_private_hex(EC_KEY *key) {
 		return NULL;
 	}
 
-	else if (!(result = st_import_opts(MANAGED_T | CONTIGUOUS | SECURE, hex, ns_length_get(hex) + 1))) {
+	/*else if (!(result = st_import_opts(MANAGED_T | CONTIGUOUS | SECURE, hex, ns_length_get(hex) + 1))) {
 		log_pedantic("Unable to allocate secure buffer for hex string.");
 		ns_wipe(hex, ns_length_get(hex));
 		OPENSSL_free_d(hex);
@@ -365,11 +371,25 @@ stringer_t *secp256k1_private_hex(EC_KEY *key) {
 	}
 
 	ns_wipe(hex, ns_length_get(hex));
-	OPENSSL_free_d(hex);
+	OPENSSL_free_d(hex);*/
 
-	return result;
+	return hex;
 }
 
+
+const char *byte_to_binary(unsigned char x)
+{
+    static char b[9];
+    b[0] = '\0';
+
+    int z;
+    for (z = 128; z > 0; z >>= 1)
+    {
+        strcat(b, ((x & z) == z) ? "1" : "0");
+    }
+
+    return b;
+}
 
 static int keys_generate(keys_type_t type, char **signet_pem, char **key_pem) {
 
@@ -438,8 +458,8 @@ static int keys_generate(keys_type_t type, char **signet_pem, char **key_pem) {
 	result = NULL;
 
 	serial_enc = _serialize_ec_pubkey(enc_key, &enc_size);
-	stringer_t *h_pub = hex_encode_st(PLACER(serial_enc, enc_size), MANAGEDBUF(1024));
-	log_pedantic("\npubkey (%zu) = %.*s\n", st_length_get(h_pub), st_length_int(h_pub), st_char_get(h_pub));
+	//stringer_t *h_pub = hex_encode_st(PLACER(serial_enc, enc_size), MANAGEDBUF(1024));
+	//log_pedantic("\npubkey (%zu) = %.*s\n", st_length_get(h_pub), st_length_int(h_pub), st_char_get(h_pub));
 	free(serial_enc);
 	enc_size = 0;
 
@@ -452,11 +472,15 @@ static int keys_generate(keys_type_t type, char **signet_pem, char **key_pem) {
 
 
 
-	stringer_t *h_priv = hex_encode_st(PLACER(serial_enc, enc_size), MANAGEDBUF(1024));
-	stringer_t *h_priv2 = ecies_key_private_hex(enc_key);
-	log_pedantic("privkey (%zu) = %.*s\n", st_length_get(h_priv), st_length_int(h_priv), st_char_get(h_priv));
-	log_pedantic("privkey (%zu) = %.*s\n\n", st_length_get(h_priv2), st_length_int(h_priv2), st_char_get(h_priv2));
+	//stringer_t *h_priv = hex_encode_st(PLACER(serial_enc, enc_size), MANAGEDBUF(1024));
+	stringer_t *h_priv2 = secp256k1_private_hex(enc_key);
+	stringer_t *h_priv3 = ecies_key_private_hex(enc_key);
+	//log_pedantic("privkey (%zu) = %.*s\n", st_length_get(h_priv), st_length_int(h_priv), st_char_get(h_priv));
+	log_pedantic("privkey (%zu) = %.*s\n", st_length_get(h_priv2), st_length_int(h_priv2), st_char_get(h_priv2));
+	log_pedantic("privkey (%zu) = %.*s\n", st_length_get(h_priv3), st_length_int(h_priv3), st_char_get(h_priv3));
 
+	stringer_t *raw = hex_decode_st(h_priv3, NULL);
+	log_pedantic("bits = %02x = %s\n\n", *((unsigned char *)(st_data_get(raw) + st_length_get(raw) - 1)), byte_to_binary(*((unsigned char *)(st_char_get(raw) + st_length_get(raw) - 1))));
 
 	serial_size = KEYS_HEADER_SIZE + 1 + 1 + ED25519_KEY_SIZE + 1 + 2 + enc_size;
 	if (!(serial_keys = malloc(serial_size))) {

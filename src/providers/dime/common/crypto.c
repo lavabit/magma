@@ -253,9 +253,6 @@ _ec_sign_sha_data(
     return (_ec_sign_data(hashbuf, shabits / 8, key, siglen));
 }
 
-
-unsigned char * ecies_key_public_bin(EC_KEY *key, size_t *olen);
-
 /**
  * @brief
  *  Serialize an EC public key to be shared.
@@ -277,6 +274,7 @@ _serialize_ec_pubkey(EC_KEY *key, size_t *outsize)
         RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
     }
 
+    EC_KEY_set_conv_form_d(key, POINT_CONVERSION_COMPRESSED);
     if ((bsize = i2o_ECPublicKey_d(key, &buf)) < 0) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(ERR_UNSPEC, "unable to serialize EC public key");

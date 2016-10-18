@@ -132,7 +132,7 @@ int_t meta_update_keys(meta_user_t *user, stringer_t *master, META_LOCK_STATUS l
 	crypto_init();
 	char *signet, *key;
 	dime_keys_generate(KEYS_TYPE_USER, &signet, &key);
-	log_pedantic("%s\n%s\n", signet, key);
+	//log_pedantic("%s\n%s\n", signet, key);
 	/***************************/
 
 	// We only need to fetch and decrypt the user keys if they aren't already stored in the structure.

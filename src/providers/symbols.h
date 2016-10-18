@@ -255,6 +255,7 @@ extern my_bool (*mysql_stmt_bind_result_d)(MYSQL_STMT *stmt, MYSQL_BIND *bind);
 extern MYSQL * (*mysql_real_connect_d)(MYSQL * mysql, const char *name, const char *user, const char *passwd, const char *db, unsigned int port, const char *unix_socket, unsigned long client_flag);
 
 //! OPENSSL
+extern char * (*BN_bn2dec_d)(const BIGNUM *a);
 extern DH * (*DH_new_d)(void);
 extern char **SSL_version_str_d;
 extern RSA * (*RSA_new_d)(void);

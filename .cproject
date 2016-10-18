@@ -17,7 +17,7 @@
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.base.1042491499.748127844" name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.base.1001352989" name="Linux GCC" resourceTypeBasedDiscovery="false" superClass="cdt.managedbuild.toolchain.gnu.base">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.base.374151761" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
-							<builder arguments="VERBOSE=yes" autoBuildTarget="magmad" command="make" enableAutoBuild="true" enabledIncrementalBuild="true" id="cdt.managedbuild.target.gnu.builder.base.22697443" incrementalBuildTarget="magmad" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="8" stopOnErr="false" superClass="cdt.managedbuild.target.gnu.builder.base">
+							<builder arguments="VERBOSE=yes" autoBuildTarget="magmad" command="make" enableAutoBuild="true" enabledIncrementalBuild="true" id="cdt.managedbuild.target.gnu.builder.base.22697443" incrementalBuildTarget="magmad" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="8" stopOnErr="true" superClass="cdt.managedbuild.target.gnu.builder.base">
 								<outputEntries>
 									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name=""/>
 								</outputEntries>
@@ -25,11 +25,11 @@
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1445563090" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.1861641414" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.404305589" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
-								<option id="gnu.c.compiler.option.include.files.205075807" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" valueType="includeFiles">
+								<option id="gnu.c.compiler.option.include.files.205075807" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" useByScannerDiscovery="false" valueType="includeFiles">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/magma.h}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/providers/dime/common/misc.h}&quot;"/>
 								</option>
-								<option id="gnu.c.compiler.option.include.paths.490644488" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+								<option id="gnu.c.compiler.option.include.paths.490644488" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/freetype/include/}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/jpeg}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/png}&quot;"/>
@@ -59,7 +59,7 @@
 									<listOptionValue builtIn="false" value="/usr/local/include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src}&quot;"/>
 								</option>
-								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1926738496" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1926738496" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="MAGMA_PEDANTIC"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.102438972" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
@@ -167,16 +167,16 @@
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.base.1042491499.1834931754." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.base.426512203" name="Linux GCC" resourceTypeBasedDiscovery="false" superClass="cdt.managedbuild.toolchain.gnu.base">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.base.1652552868" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
-							<builder arguments="VERBOSE=yes" autoBuildTarget="magmad.check" command="make" enableAutoBuild="true" enabledIncrementalBuild="true" id="cdt.managedbuild.target.gnu.builder.base.956624493" incrementalBuildTarget="magmad.check" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="8" stopOnErr="false" superClass="cdt.managedbuild.target.gnu.builder.base"/>
+							<builder arguments="VERBOSE=yes" autoBuildTarget="magmad.check" command="make" enableAutoBuild="true" enabledIncrementalBuild="true" id="cdt.managedbuild.target.gnu.builder.base.956624493" incrementalBuildTarget="magmad.check" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="8" stopOnErr="true" superClass="cdt.managedbuild.target.gnu.builder.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1668166124" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.566685175" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.450779271" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
-								<option id="gnu.c.compiler.option.include.files.903229593" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" valueType="includeFiles">
+								<option id="gnu.c.compiler.option.include.files.903229593" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" useByScannerDiscovery="false" valueType="includeFiles">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/magma.h}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma/magma_check.h}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/providers/dime/common/misc.h}&quot;"/>
 								</option>
-								<option id="gnu.c.compiler.option.include.paths.142183936" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+								<option id="gnu.c.compiler.option.include.paths.142183936" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/freetype/include/}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/jpeg}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/png}&quot;"/>
@@ -206,7 +206,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src}&quot;"/>
 								</option>
-								<option id="gnu.c.compiler.option.preprocessor.def.symbols.2117180584" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.2117180584" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="MAGMA_PEDANTIC"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.208862389" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
@@ -313,7 +313,7 @@
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.base.1042491499.540148943." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.base.193801907" name="Linux GCC" resourceTypeBasedDiscovery="false" superClass="cdt.managedbuild.toolchain.gnu.base">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.base.982852828" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
-							<builder arguments="VERBOSE=yes" autoBuildTarget="all" command="make" enableAutoBuild="true" enabledIncrementalBuild="true" id="cdt.managedbuild.target.gnu.builder.base.1104755030" incrementalBuildTarget="all" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="8" stopOnErr="false" superClass="cdt.managedbuild.target.gnu.builder.base">
+							<builder arguments="VERBOSE=yes" autoBuildTarget="all" command="make" enableAutoBuild="true" enabledIncrementalBuild="true" id="cdt.managedbuild.target.gnu.builder.base.1104755030" incrementalBuildTarget="all" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="8" stopOnErr="true" superClass="cdt.managedbuild.target.gnu.builder.base">
 								<outputEntries>
 									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name=""/>
 								</outputEntries>
@@ -321,12 +321,12 @@
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.998886331" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.587691846" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.832138411" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
-								<option id="gnu.c.compiler.option.include.files.930683726" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" valueType="includeFiles">
+								<option id="gnu.c.compiler.option.include.files.930683726" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" useByScannerDiscovery="false" valueType="includeFiles">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/magma.h}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma/magma_check.h}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/providers/dime/common/misc.h}&quot;"/>
 								</option>
-								<option id="gnu.c.compiler.option.include.paths.1638267230" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+								<option id="gnu.c.compiler.option.include.paths.1638267230" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/freetype/include/}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/jpeg}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/png}&quot;"/>
@@ -357,7 +357,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src}&quot;"/>
 								</option>
-								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1369843614" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1369843614" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="MAGMA_PEDANTIC=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1278104211" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
@@ -464,16 +464,16 @@
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.base.1042491499.1834931754.853698006." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.base.1763378170" name="Linux GCC" resourceTypeBasedDiscovery="false" superClass="cdt.managedbuild.toolchain.gnu.base">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.base.970900108" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
-							<builder arguments="VERBOSE=yes" autoBuildTarget="dime.check" command="make" enableAutoBuild="true" enabledIncrementalBuild="true" id="cdt.managedbuild.target.gnu.builder.base.1117536447" incrementalBuildTarget="dime.check" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="8" stopOnErr="false" superClass="cdt.managedbuild.target.gnu.builder.base"/>
+							<builder arguments="VERBOSE=yes" autoBuildTarget="dime.check" command="make" enableAutoBuild="true" enabledIncrementalBuild="true" id="cdt.managedbuild.target.gnu.builder.base.1117536447" incrementalBuildTarget="dime.check" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="8" stopOnErr="true" superClass="cdt.managedbuild.target.gnu.builder.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1239144236" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.308986739" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.759786511" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
-								<option id="gnu.c.compiler.option.include.files.1183183271" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" valueType="includeFiles">
+								<option id="gnu.c.compiler.option.include.files.1183183271" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" useByScannerDiscovery="false" valueType="includeFiles">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/magma.h}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/dime/dime_check_params.h}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/providers/dime/common/misc.h}&quot;"/>
 								</option>
-								<option id="gnu.c.compiler.option.include.paths.718257223" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+								<option id="gnu.c.compiler.option.include.paths.718257223" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/freetype/include/}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/jpeg}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/png}&quot;"/>
@@ -503,7 +503,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/dime}&quot;"/>
 								</option>
-								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1452029528" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1452029528" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="MAGMA_PEDANTIC"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1220022755" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>

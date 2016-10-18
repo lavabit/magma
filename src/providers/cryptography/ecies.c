@@ -85,7 +85,7 @@ EC_KEY * ecies_key_alloc(void) {
 			return NULL;
 		}
 
-		EC_GROUP_set_point_conversion_form_d((EC_GROUP *)EC_KEY_get0_group_d(key), POINT_CONVERSION_COMPRESSED);
+		EC_KEY_set_conv_form_d(key, POINT_CONVERSION_COMPRESSED);
 	}
 
 	return key;

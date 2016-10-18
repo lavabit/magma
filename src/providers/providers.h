@@ -28,6 +28,7 @@ bool_t lib_symbols(size_t count, symbol_t symbols[]);
 #include "checkers/checkers.h"
 #include "compress/compress.h"
 #include "cryptography/cryptography.h"
+#include "prime/prime.h"
 #include "parsers/parsers.h"
 #include "storage/storage.h"
 #include "images/images.h"

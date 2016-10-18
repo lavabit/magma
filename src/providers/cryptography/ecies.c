@@ -316,7 +316,7 @@ uchr_t * ecies_key_public_bin(EC_KEY *key, size_t *olen) {
 		*olen = rlen;
 	}
 
-//	char * (*EC_POINT_point2hex_d)(const EC_GROUP *, const EC_POINT *, point_conversion_form_t form, BN_CTX *) __attribute__ ((common)) = NULL;
+	//	char * (*EC_POINT_point2hex_d)(const EC_GROUP *, const EC_POINT *, point_conversion_form_t form, BN_CTX *) __attribute__ ((common)) = NULL;
 	//size_t (*EC_POINT_point2oct_d)(const EC_GROUP *, const EC_POINT *, point_conversion_form_t form, unsigned char *buf, size_t len, BN_CTX *ctx) __attribute__ ((common)) = NULL;
 
 	return result;

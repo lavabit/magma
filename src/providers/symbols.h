@@ -433,6 +433,7 @@ extern void (*CRYPTO_set_id_callback_d)(unsigned long(*id_function)(void));
 extern int (*SHA256_Update_d)(SHA256_CTX *c, const void *data, size_t len);
 extern int (*SHA512_Update_d)(SHA512_CTX *c, const void *data, size_t len);
 extern int (*X509_STORE_set_flags_d)(X509_STORE *ctx, unsigned long flags);
+extern point_conversion_form_t (*EC_KEY_get_conv_form_d)(const EC_KEY *key);
 extern long (*SSL_CTX_ctrl_d)(SSL_CTX *ctx, int cmd, long larg, void *parg);
 extern void (*ERR_error_string_n_d)(unsigned long e, char *buf, size_t len);
 extern BIGNUM * (*ASN1_INTEGER_to_BN_d)(const ASN1_INTEGER *ai, BIGNUM *bn);
@@ -446,6 +447,7 @@ extern int (*HMAC_Update_d)(HMAC_CTX *ctx, const unsigned char *data, size_t len
 extern int (*X509_NAME_get_index_by_NID_d)(X509_NAME *name, int nid, int lastpos);
 extern int (*SSL_CTX_use_certificate_chain_file_d)(SSL_CTX *ctx, const char *file);
 extern int (*ASN1_GENERALIZEDTIME_print_d)(BIO *fp, const ASN1_GENERALIZEDTIME *a);
+extern void (*EC_KEY_set_conv_form_d)(EC_KEY *eckey, point_conversion_form_t cform);
 extern int (*OCSP_RESPONSE_print_d)(BIO *bp, OCSP_RESPONSE *o, unsigned long flags);
 extern void * (*OCSP_cert_to_id_d)(const EVP_MD *dgst, X509 *subject, X509 *issuer);
 extern int (*EVP_DigestFinal_d)(EVP_MD_CTX *ctx, unsigned char *md, unsigned int *s);

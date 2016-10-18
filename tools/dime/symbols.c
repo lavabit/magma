@@ -138,6 +138,7 @@ X509_EXTENSION * (*X509_get_ext_d) (X509 *x, int loc) = NULL;
 SSL_CTX * (*SSL_CTX_new_d)(const SSL_METHOD * method) = NULL;
 void (*SSL_set_bio_d)(SSL *ssl, BIO *rbio, BIO *wbio) = NULL;
 unsigned char * (*ASN1_STRING_data_d)(ASN1_STRING *x) = NULL;
+int (*BN_bn2mpi_d)(const BIGNUM *a, unsigned char *to) = NULL;
 int (*SSL_CTX_check_private_key_d)(const SSL_CTX *ctx) = NULL;
 int (*SSL_write_d)(SSL *ssl, const void *buf, int num) = NULL;
 void (*sk_pop_free_d)(_STACK *st, void(*func)(void *)) = NULL;
@@ -175,6 +176,7 @@ const BIGNUM * (*EC_KEY_get0_private_key_d)(const EC_KEY *key) = NULL;
 const EVP_CIPHER * (*EVP_get_cipherbyname_d)(const char *name) = NULL;
 int (*EVP_PKEY_set1_RSA_d)(EVP_PKEY *pkey, struct rsa_st *key) = NULL;
 int (*SHA1_Update_d)(SHA_CTX *c, const void *data, size_t len) = NULL;
+BIGNUM * (*BN_mpi2bn_d)(unsigned char *s, int len, BIGNUM *ret) = NULL;
 const EC_POINT * (*EC_KEY_get0_public_key_d)(const EC_KEY *key) = NULL;
 int (*EC_GROUP_precompute_mult_d)(EC_GROUP *group, BN_CTX *ctx) = NULL;
 int (*EC_KEY_set_private_key_d)(EC_KEY *key, const BIGNUM *prv) = NULL;
@@ -381,7 +383,8 @@ bool_t lib_load_openssl(void) {
 		M_BIND(SSL_CTX_set_verify), M_BIND(X509_email_free), M_BIND(X509_STORE_CTX_free), M_BIND(X509_STORE_CTX_set_chain), M_BIND(X509_STORE_free),
 		M_BIND(OCSP_cert_to_id), M_BIND(OCSP_request_add0_id), M_BIND(OCSP_response_get1_basic), M_BIND(sk_value), M_BIND(X509_STORE_CTX_get_current_cert),
 		M_BIND(X509_STORE_add_lookup), M_BIND(X509_LOOKUP_file), M_BIND(X509_NAME_get_entry), M_BIND(X509_STORE_new), M_BIND(ERR_clear_error),
-		M_BIND(ERR_put_error), M_BIND(EVP_aes_256_gcm), M_BIND(EC_KEY_get_conv_form), M_BIND(EC_KEY_set_conv_form)
+		M_BIND(ERR_put_error), M_BIND(EVP_aes_256_gcm), M_BIND(EC_KEY_get_conv_form), M_BIND(EC_KEY_set_conv_form), M_BIND(BN_bn2mpi),
+		M_BIND(BN_mpi2bn)
 	};
 
 	if (!lib_symbols(sizeof(openssl) / sizeof(symbol_t), openssl)) {

@@ -28,6 +28,7 @@
 
 // UTF8
 #include <utf8proc.h>
+
 //! OPENSSL
 extern DH * (*DH_new_d)(void);
 extern char **SSL_version_str_d;
@@ -149,6 +150,7 @@ extern X509_EXTENSION * (*X509_get_ext_d) (X509 *x, int loc);
 extern SSL_CTX * (*SSL_CTX_new_d)(const SSL_METHOD * method);
 extern void (*SSL_set_bio_d)(SSL *ssl, BIO *rbio, BIO *wbio);
 extern unsigned char * (*ASN1_STRING_data_d)(ASN1_STRING *x);
+extern int (*BN_bn2mpi_d)(const BIGNUM *a, unsigned char *to);
 extern int (*SSL_CTX_check_private_key_d)(const SSL_CTX *ctx);
 extern int (*SSL_write_d)(SSL *ssl, const void *buf, int num);
 extern void (*sk_pop_free_d)(_STACK *st, void(*func)(void *));
@@ -186,6 +188,7 @@ extern const BIGNUM * (*EC_KEY_get0_private_key_d)(const EC_KEY *key);
 extern const EVP_CIPHER * (*EVP_get_cipherbyname_d)(const char *name);
 extern int (*EVP_PKEY_set1_RSA_d)(EVP_PKEY *pkey, struct rsa_st *key);
 extern int (*SHA1_Update_d)(SHA_CTX *c, const void *data, size_t len);
+extern BIGNUM * (*BN_mpi2bn_d)(unsigned char *s, int len, BIGNUM *ret);
 extern const EC_POINT * (*EC_KEY_get0_public_key_d)(const EC_KEY *key);
 extern int (*EC_GROUP_precompute_mult_d)(EC_GROUP *group, BN_CTX *ctx);
 extern int (*EC_KEY_set_private_key_d)(EC_KEY *key, const BIGNUM *prv);

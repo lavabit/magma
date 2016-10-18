@@ -13,6 +13,31 @@
 #ifndef MAGMA_CORE_H
 #define MAGMA_CORE_H
 
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stddef.h>
+#include <unistd.h>
+#include <signal.h>
+#include <stdint.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <pthread.h>
+#include <fcntl.h>
+#include <math.h>
+#include <semaphore.h>
+#include <dirent.h>
+#include <limits.h>
+#include <ftw.h>
+#include <time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <sys/utsname.h>
+#include <sys/resource.h>
+
 /**
  * The type definitions used by Magma that are not defined by the system headers.
  * The bool type requires the inclusion of stdbool.h and the use of the C99.

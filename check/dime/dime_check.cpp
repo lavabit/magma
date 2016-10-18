@@ -1,13 +1,15 @@
 
-#include <unistd.h>
-#include <libgen.h>
-
 extern "C" {
 #include "symbols.h"
 }
 
+#include <unistd.h>
+#include <libgen.h>
+
+
 #include "gtest/gtest.h"
 #include "tap.h"
+
 
 GTEST_API_ int main(int argc, char **argv) {
 

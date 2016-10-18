@@ -1,7 +1,12 @@
 
+#include "core/core.h"
+
 #include "dime/common/misc.h"
 #include "dime/signet/keys.h"
 #include "dime/signet/signet.h"
+#include "providers/cryptography/cryptography.h"
+
+#include "providers/symbols.h"
 
 static EC_KEY * keys_enckey_fetch(char const *filename);
 
@@ -324,6 +329,48 @@ static int keys_file_create(keys_type_t type, ED25519_KEY *sign_key, EC_KEY *enc
 	return 0;
 }
 
+
+/**
+ * @brief	Return an ECIES private key as a hex string.
+ * @param	key	the input ECIES key pair.
+ * @return	NULL on failure, or the hex-formatted private key as a managed string.
+ */
+stringer_t *secp256k1_private_hex(EC_KEY *key) {
+
+	chr_t *hex;
+	const BIGNUM *bn;
+	stringer_t *result = NULL;
+
+	if (!(bn = EC_KEY_get0_private_key_d(key))) {
+		log_pedantic("No private key available. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		return NULL;
+	}
+
+	int to_len = BN_bn2mpi_d(bn, NULL);
+	unsigned char *to = malloc(to_len);
+	if (BN_bn2mpi_d(bn, to) != to_len) {
+		log_pedantic("MPI conversion failed.");
+		return NULL;
+	}
+	else if (!(hex = hex_encode_st(PLACER(to, to_len), NULL))) {
+		log_pedantic("Unable to serialize the private key into hex. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		return NULL;
+	}
+
+	else if (!(result = st_import_opts(MANAGED_T | CONTIGUOUS | SECURE, hex, ns_length_get(hex) + 1))) {
+		log_pedantic("Unable to allocate secure buffer for hex string.");
+		ns_wipe(hex, ns_length_get(hex));
+		OPENSSL_free_d(hex);
+		return NULL;
+	}
+
+	ns_wipe(hex, ns_length_get(hex));
+	OPENSSL_free_d(hex);
+
+	return result;
+}
+
+
 static int keys_generate(keys_type_t type, char **signet_pem, char **key_pem) {
 
 	int res;
@@ -390,11 +437,27 @@ static int keys_generate(keys_type_t type, char **signet_pem, char **key_pem) {
 	*signet_pem = result;
 	result = NULL;
 
+	serial_enc = _serialize_ec_pubkey(enc_key, &enc_size);
+	stringer_t *h_pub = hex_encode_st(PLACER(serial_enc, enc_size), MANAGEDBUF(1024));
+	log_pedantic("\npubkey (%zu) = %.*s\n", st_length_get(h_pub), st_length_int(h_pub), st_char_get(h_pub));
+	free(serial_enc);
+	enc_size = 0;
+
+
 	memcpy(serial_sign, sign_key->private_key, ED25519_KEY_SIZE);
 	if (!(serial_enc = _serialize_ec_privkey(enc_key, &enc_size))) {
 		_secure_wipe(serial_sign, ED25519_KEY_SIZE);
 		RET_ERROR_INT(ERR_UNSPEC, "could not serialize private key");
 	}
+
+
+
+	stringer_t *h_priv = hex_encode_st(PLACER(serial_enc, enc_size), MANAGEDBUF(1024));
+	stringer_t *h_priv2 = ecies_key_private_hex(enc_key);
+	log_pedantic("privkey (%zu) = %.*s\n", st_length_get(h_priv), st_length_int(h_priv), st_char_get(h_priv));
+	log_pedantic("privkey (%zu) = %.*s\n\n", st_length_get(h_priv2), st_length_int(h_priv2), st_char_get(h_priv2));
+
+
 	serial_size = KEYS_HEADER_SIZE + 1 + 1 + ED25519_KEY_SIZE + 1 + 2 + enc_size;
 	if (!(serial_keys = malloc(serial_size))) {
 		PUSH_ERROR_SYSCALL("malloc");

@@ -37,24 +37,24 @@ MAGMA_CHECK_DYNAMIC				= $(MAGMA_DYNAMIC) -lm
 MAGMA_CHECK_SRCDIRS				= $(shell find check/magma -type d -print)
 MAGMA_CHECK_SRCFILES			= $(foreach dir, $(MAGMA_CHECK_SRCDIRS), $(wildcard $(dir)/*.c))
 
-DIME_SRCDIRS					= $(shell  find src/providers/dime tools/dime -type d -print)
+DIME_SRCDIRS					= $(shell  find src/ tools/dime -type d -print)
 DIME_SRCFILES					= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(DIME_SRCDIRS), $(wildcard $(dir)/*.c)))
 DIME_STATIC						= $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) \
                                   $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libutf8proc$(STATLIBEXT)
 
-SIGNET_SRCDIRS					= $(shell find src/providers/dime tools/signet -type d -print)
+SIGNET_SRCDIRS					= $(shell find src/ tools/signet -type d -print)
 SIGNET_SRCFILES					= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(SIGNET_SRCDIRS), $(wildcard $(dir)/*.c)))
 SIGNET_STATIC					= $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) \
                                   $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libutf8proc$(STATLIBEXT)
 
-GENREC_SRCDIRS					= $(shell find src/providers/dime tools/genrec -type d -print)
+GENREC_SRCDIRS					= $(shell find src/ tools/genrec -type d -print)
 GENREC_SRCFILES					= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(GENREC_SRCDIRS), $(wildcard $(dir)/*.c)))
 GENREC_STATIC					= $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) \
                                   $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libutf8proc$(STATLIBEXT)
                                   
 DIME_CHECK_DYNAMIC				= $(MAGMA_DYNAMIC) -lstdc++
 DIME_CHECK_CPPDIRS				= $(shell find check/dime -type d -print)
-DIME_CHECK_SRCDIRS				= $(shell find src/providers/dime check/dime -type d -print)
+DIME_CHECK_SRCDIRS				= $(shell find src/ check/dime -type d -print)
 DIME_CHECK_CPPFILES				= $(foreach dir, $(DIME_CHECK_CPPDIRS), $(wildcard $(dir)/*.cpp))
 DIME_CHECK_SRCFILES				= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(DIME_CHECK_SRCDIRS), $(wildcard $(dir)/*.c)))
 DIME_CHECK_STATIC				= $(MAGMA_STATIC) $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) \
@@ -101,12 +101,13 @@ DIME_CHECK_DEPFILES				+= $(patsubst %.cpp,$(DEPDIR)/%.d,$(DIME_CHECK_CPPFILES))
 
 # Hidden Directory for Object Files
 OBJDIR							= .objs
-DIME_OBJFILES					= $(patsubst %.c,$(OBJDIR)/%.o,$(DIME_SRCFILES))
 MAGMA_OBJFILES					= $(patsubst %.c,$(OBJDIR)/%.o,$(MAGMA_SRCFILES))
-SIGNET_OBJFILES					= $(patsubst %.c,$(OBJDIR)/%.o,$(SIGNET_SRCFILES))
-GENREC_OBJFILES					= $(patsubst %.c,$(OBJDIR)/%.o,$(GENREC_SRCFILES))
 MAGMA_CHECK_OBJFILES			= $(patsubst %.c,$(OBJDIR)/%.o,$(MAGMA_CHECK_SRCFILES))
-DIME_CHECK_OBJFILES				= $(patsubst %.c,$(OBJDIR)/%.o,$(DIME_CHECK_SRCFILES))
+
+DIME_OBJFILES					= $(filter-out .objs/src//magma.o, $(patsubst %.c,$(OBJDIR)/%.o,$(DIME_SRCFILES)))
+SIGNET_OBJFILES					= $(filter-out .objs/src//magma.o, $(patsubst %.c,$(OBJDIR)/%.o,$(SIGNET_SRCFILES)))
+GENREC_OBJFILES					= $(filter-out .objs/src//magma.o, $(patsubst %.c,$(OBJDIR)/%.o,$(GENREC_SRCFILES)))
+DIME_CHECK_OBJFILES				= $(filter-out .objs/src//magma.o, $(patsubst %.c,$(OBJDIR)/%.o,$(DIME_CHECK_SRCFILES)))
 DIME_CHECK_OBJFILES				+= $(patsubst %.cc,$(OBJDIR)/%.o,$(DIME_CHECK_CCFILES))
 DIME_CHECK_OBJFILES				+= $(patsubst %.cpp,$(OBJDIR)/%.o,$(DIME_CHECK_CPPFILES))
 

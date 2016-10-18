@@ -24,6 +24,7 @@ EC_KEY *      secp256k1_alloc(void);
 EC_KEY *      secp256k1_generate(void);
 stringer_t *  secp256k1_private_get(EC_KEY *key, stringer_t *output);
 EC_KEY *      secp256k1_private_set(stringer_t *key);
+stringer_t *  secp256k1_public_get(EC_KEY *key, stringer_t *output);
 
 #endif
 

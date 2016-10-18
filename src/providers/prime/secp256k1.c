@@ -49,6 +49,42 @@ EC_KEY * secp256k1_alloc(void) {
 	return key;
 }
 
+
+/**
+ * @brief	Return a secp256k1 public key as a compressed point ecoded as a big endian integer.
+ * @param	key	the input secp256k1 key pair.
+ * @return	NULL on failure, or the public key as a big endian integer.
+ */
+stringer_t *secp256k1_public_get(EC_KEY *key, stringer_t *output) {
+
+	int len;
+	stringer_t *result = NULL;
+
+	// See if we have a valid output buffer, or if output is NULL, allocate a buffer to hold the output.
+	if (output && (!st_valid_destination(st_opt_get(output)) || st_avail_get(output) < 33)) {
+		log_pedantic("An output string was supplied but it does not represent a buffer capable of holding the output.");
+		return NULL;
+	}
+	else if (!output && !(result = st_alloc(33))) {
+		log_pedantic("Could not allocate a buffer large enough to hold encoded result. { requested = 33 }");
+		return NULL;
+	}
+	else if (result) {
+		output = result;
+	}
+
+	// Confirm the compressed point will result in 33 bytes of data, then write out the public key as a compressed point.
+	if (i2o_ECPublicKey_d(key, NULL) != 33 || (len = i2o_ECPublicKey_d(key, st_data_get(output))) != 33) {
+		log_pedantic("MPI conversion failed. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		st_cleanup(result);
+		return NULL;
+	}
+
+	// Update the output buffer length.
+	st_length_set(output, len);
+	return output;
+}
+
 /**
  * @brief	Generate a random secp256k1 key pair.
  * @return	NULL on failure, or a new, randomly generated secp256k1 key pair on success.
@@ -79,7 +115,7 @@ EC_KEY * secp256k1_generate(void) {
  */
 stringer_t *secp256k1_private_get(EC_KEY *key, stringer_t *output) {
 
-	int to_len;
+	int len;
 	const BIGNUM *bn;
 	stringer_t *result = NULL;
 
@@ -104,14 +140,14 @@ stringer_t *secp256k1_private_get(EC_KEY *key, stringer_t *output) {
 	}
 	// Confirm the private key component will fit inside the 32 bytes provided, then write the BIGNUM out as
 	// a big endian integer.
-	else if (BN_num_bits_d(bn) > 256 || (to_len = BN_bn2bin_d(bn, st_data_get(output))) != 32) {
+	else if (BN_num_bits_d(bn) > 256 || (len = BN_bn2bin_d(bn, st_data_get(output))) != 32) {
 		log_pedantic("MPI conversion failed. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
 		st_cleanup(result);
 		return NULL;
 	}
 
 	// Update the output buffer length.
-	st_length_set(output, to_len);
+	st_length_set(output, len);
 	return output;
 }
 

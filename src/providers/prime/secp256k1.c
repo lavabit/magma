@@ -98,8 +98,13 @@ EC_KEY * secp256k1_generate(void) {
  */
 stringer_t *secp256k1_public_get(EC_KEY *key, stringer_t *output) {
 
-	int len;
+	size_t len = 0;
 	stringer_t *result = NULL;
+
+	if (!key) {
+		log_pedantic("An invalid key pointer was passed in.");
+		return NULL;
+	}
 
 	// See if we have a valid output buffer, or if output is NULL, allocate a buffer to hold the output.
 	if (output && (!st_valid_destination(st_opt_get(output)) || st_avail_get(output) < 33)) {
@@ -115,10 +120,9 @@ stringer_t *secp256k1_public_get(EC_KEY *key, stringer_t *output) {
 	}
 
 	// Confirm the compressed point will result in 33 bytes of data, then write out the public key as a compressed point.
-	EC_POINT_point2oct(a->group, a->pub_key, a->conv_form, NULL, 0, NULL)
-	// memleak
-	if (i2o_ECPublicKey_d(key, NULL) != 33 || (len = i2o_ECPublicKey_d(key, st_data_get(output))) != 33) {
-		log_pedantic("MPI conversion failed. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+	if (EC_POINT_point2oct_d(EC_KEY_get0_group_d(key), EC_KEY_get0_public_key_d(key), EC_KEY_get_conv_form_d(key), NULL, 0, NULL) != 33 ||
+		(len = EC_POINT_point2oct_d(EC_KEY_get0_group_d(key), EC_KEY_get0_public_key_d(key), EC_KEY_get_conv_form_d(key), st_data_get(output), 33, NULL)) != 33) {
+		log_pedantic("Serialization of the public key into a multiprecision integer failed. { len = %zu / error = %s }", len, ERR_error_string_d(ERR_get_error_d(), NULL));
 		st_cleanup(result);
 		return NULL;
 	}
@@ -135,7 +139,7 @@ stringer_t *secp256k1_public_get(EC_KEY *key, stringer_t *output) {
  */
 stringer_t *secp256k1_private_get(EC_KEY *key, stringer_t *output) {
 
-	int len;
+	size_t len = 0;
 	const BIGNUM *bn;
 	stringer_t *result = NULL;
 
@@ -161,7 +165,8 @@ stringer_t *secp256k1_private_get(EC_KEY *key, stringer_t *output) {
 	// Confirm the private key component will fit inside the 32 bytes provided, then write the BIGNUM out as
 	// a big endian integer.
 	else if (BN_num_bits_d(bn) > 256 || (len = BN_bn2bin_d(bn, st_data_get(output))) != 32) {
-		log_pedantic("MPI conversion failed. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_pedantic("Serialization of the private key into a multiprecision integer failed. { len = %zu / bits = %i / error = %s }",
+			len, BN_num_bits_d(bn), ERR_error_string_d(ERR_get_error_d(), NULL));
 		st_cleanup(result);
 		return NULL;
 	}

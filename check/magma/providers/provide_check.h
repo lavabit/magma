@@ -77,14 +77,14 @@ bool_t   check_stacie_simple(void);
 bool_t   check_stacie_parameters(void);
 bool_t   check_stacie_rounds(void);
 bool_t   check_stacie_determinism(void);
-bool_t check_stacie_bitflip(void);
+bool_t   check_stacie_bitflip(void);
 
 /// prime_check.c
-stringer_t *  check_prime_secp256k1_sthread(void);
+bool_t   check_prime_secp256k1_sthread(stringer_t *);
 
 /// unicode_check.c
-chr_t * check_unicode_valid(void);
-chr_t * check_unicode_invalid(void);
-chr_t * check_unicode_length(void);
+bool_t   check_unicode_invalid(stringer_t *errmsg);
+bool_t   check_unicode_length(stringer_t *errmsg);
+bool_t   check_unicode_valid(stringer_t *errmsg);
 
 #endif

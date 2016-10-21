@@ -39,7 +39,7 @@ void log_test(chr_t *test, stringer_t *error) {
 	}
 
 	log_enable();
-	log_unit("%-64.64s%s%10.10s%s\n", test, color, (!status() ? "SKIPPED" : !error ? "PASSED" : "FAILED"), color_reset());
+	log_unit("%-64.64s%s%10.10s%s\n", test, color, (!status() ? "SKIPPED" : !st_populated(error) ? "PASSED" : "FAILED"), color_reset());
 	return;
 }
 

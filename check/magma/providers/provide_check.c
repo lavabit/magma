@@ -383,14 +383,14 @@ END_TEST
 //! PRIME Tests
 START_TEST (check_prime_secp256k1_s)
 	{
-		stringer_t *errmsg = NULL;
+		bool_t result = true;
+		stringer_t *errmsg = MANAGEDBUF(1024);
 
-		if (status()) errmsg = check_prime_secp256k1_sthread();
-		//if (status() && !errmsg)  errmsg = check_prime_secp256k1_test2_sthread();
+		if (status()) result = check_prime_secp256k1_sthread(errmsg);
+		//if (status() && result) result = check_prime_secp256k1_test2_sthread();
 
 		log_test("PROVIDERS / PRIME / SECP256K1 / SINGLE THREADED:", errmsg);
-		fail_unless(!errmsg, st_char_get(errmsg));
-		st_cleanup(errmsg);
+		ck_assert_msg(result, st_char_get(errmsg));
 
 	}
 END_TEST
@@ -416,7 +416,6 @@ START_TEST (check_spf_s) {
 
 	if (status()) {
 
-
 		for (uint32_t i = 0; !errmsg && i < magma.iface.spf.pool.connections; i++) {
 
 			// Pull the SPF server object from the pool and append a DNS zone to it.
@@ -436,21 +435,24 @@ START_TEST (check_spf_s) {
 		}
 
 		// Pass
-		if (!errmsg && spf_check(&ip[0], NULLER("mx.lavabit.com"), NULLER("support@pass.lavabit.com")) != 1)
+		if (!errmsg && spf_check(&ip[0], NULLER("mx.lavabit.com"), NULLER("support@pass.lavabit.com")) != 1) {
 			errmsg = "Valid SPF record check failed. {support@pass.lavabit.com / 1.1.1.1}";
+		}
 
 		// Neutral
-		if (!errmsg && spf_check(&ip[0], NULLER("mx.lavabit.com"), NULLER("support@neutral.lavabit.com")) != -1)
+		if (!errmsg && spf_check(&ip[0], NULLER("mx.lavabit.com"), NULLER("support@neutral.lavabit.com")) != -1) {
 			errmsg = "Neutral SPF record check failed. {support@neutral.lavabit.com / 1.1.1.1}";
+		}
 
 		// Fail
-		if (!errmsg && spf_check(&ip[0], NULLER("mx.lavabit.com"), NULLER("support@fail.lavabit.com")) != -2)
+		if (!errmsg && spf_check(&ip[0], NULLER("mx.lavabit.com"), NULLER("support@fail.lavabit.com")) != -2) {
 			errmsg = "Invalid SPF record check failed. {support@fail.lavabit.com / 1.1.1.1}";
+		}
 
 		// Ensure the localhost always gets through
-		if (!errmsg && spf_check(&ip[1], NULLER("mx.lavabit.com"), NULLER("support@fail.lavabit.com")) != 1)
+		if (!errmsg && spf_check(&ip[1], NULLER("mx.lavabit.com"), NULLER("support@fail.lavabit.com")) != 1) {
 			errmsg = "The localhost address matched a failure record instead of being whitelisted. {support@fail.lavabit.com / 127.0.0.1}";
-
+		}
 	}
 
 	log_unit("%10.10s\n", (!errmsg ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
@@ -513,24 +515,20 @@ END_TEST
 //! Encoding/Parser Tests
 START_TEST (check_unicode_s) {
 
-	chr_t *errmsg = NULL;
-
-	log_unit("%-64.64s", "PARSERS / UNICODE / SINGLE THREADED:");
+	bool_t result = true;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	log_disable();
 
-	if (status()) {
-		errmsg = check_unicode_valid();
-		if (status() && !errmsg) errmsg = check_unicode_invalid();
-		if (status() && !errmsg) errmsg = check_unicode_length();
-	}
+	if (status()) result = check_unicode_valid(errmsg);
+	if (status() && result) result = check_unicode_invalid(errmsg);
+	if (status() && result) result = check_unicode_length(errmsg);
 
 	log_enable();
 
-	log_unit("%10.10s\n", (errmsg ? "FAILED" : (status() ? "PASSED" : "SKIPPED")));
+	log_test("PARSERS / UNICODE / SINGLE THREADED:", errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
 
-	fail_if(errmsg, errmsg);
-	ns_cleanup(errmsg);
 }
 END_TEST
 

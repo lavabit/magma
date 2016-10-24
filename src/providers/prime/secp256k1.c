@@ -191,7 +191,7 @@ stringer_t *secp256k1_private_get(EC_KEY *key, stringer_t *output) {
  * @param key
  * @return
  */
-EC_KEY *secp256k1_public_set(stringer_t *key) {
+EC_KEY * secp256k1_public_set(stringer_t *key) {
 
 	BN_CTX *ctx = NULL;
 	EC_POINT *pub = NULL;
@@ -241,7 +241,7 @@ EC_KEY *secp256k1_public_set(stringer_t *key) {
  * @param key
  * @return
  */
-EC_KEY *secp256k1_private_set(stringer_t *key) {
+EC_KEY * secp256k1_private_set(stringer_t *key) {
 
 	BN_CTX *ctx = NULL;
 	EC_POINT *pub = NULL;
@@ -292,3 +292,44 @@ EC_KEY *secp256k1_private_set(stringer_t *key) {
 	return output;
 }
 
+/**
+ * @brief
+ * @param private
+ * @param public
+ * @param output
+ * @return
+ */
+stringer_t * secp256k1_compute_kek(EC_KEY *private, EC_KEY *public, stringer_t *output) {
+
+	int len;
+	stringer_t *result = NULL;
+
+	if (!private || !public) {
+		log_pedantic("An invalid secp256k1 key was provided.");
+		return NULL;
+	}
+
+	// See if we have a valid output buffer, or if output is NULL, allocate a buffer to hold the output.
+	else if (output && (!st_valid_destination(st_opt_get(output)) || st_avail_get(output) < 32)) {
+		log_pedantic("An output string was supplied but it does not represent a buffer capable of holding the output.");
+		return NULL;
+	}
+	else if (!output && !(result = st_alloc(32))) {
+		log_pedantic("Could not allocate a buffer large enough to hold encoded result. { requested = 32 }");
+		return NULL;
+	}
+	else if (result) {
+		output = result;
+	}
+
+	// Attempt the KEK calculation. The output length will be 32 if the process worked.
+	if ((len = ECDH_compute_key_d(st_data_get(output), 32, EC_KEY_get0_public_key_d(public), private, NULL)) != 32) {
+		log_info("An error occurred while trying to compute the key encryption key. { result = %i / error = %s}",
+			len, ERR_error_string_d(ERR_get_error_d(), NULL));
+		st_cleanup(result);
+		return NULL;
+	}
+
+	st_length_set(output, 32);
+	return output;
+}

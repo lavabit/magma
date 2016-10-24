@@ -19,8 +19,9 @@ extern EC_GROUP *prime_curve_group;
 bool_t   prime_start(void);
 void     prime_stop(void);
 
-/// secp256k1.c
+//// secp256k1.c
 EC_KEY *      secp256k1_alloc(void);
+stringer_t *  secp256k1_compute_kek(EC_KEY *private, EC_KEY *public, stringer_t *output);
 void          secp256k1_free(EC_KEY *key);
 EC_KEY *      secp256k1_generate(void);
 stringer_t *  secp256k1_private_get(EC_KEY *key, stringer_t *output);

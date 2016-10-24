@@ -20,7 +20,7 @@ bool_t check_prime_secp256k1_sthread(stringer_t *errmsg) {
 	EC_KEY *key = NULL;
 	stringer_t *priv = NULL, *pub = NULL;
 
-	for (uint64_t i = 0; status() && i < PRIME_CHECK_ITERATIONS; i++) {
+	for (uint64_t i = 0; status() && i < PRIME_CHECK_ITERATIONS + 100; i++) {
 
 		// Generate a new key pair.
 		if (!(key = secp256k1_generate())) {
@@ -51,6 +51,7 @@ bool_t check_prime_secp256k1_sthread(stringer_t *errmsg) {
 		}
 
 		//more checks
+
 		check_prime_secp256k1_cleanup(key, pub, priv);
 	}
 

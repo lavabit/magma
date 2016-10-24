@@ -32,9 +32,9 @@ bool_t check_unicode_valid(stringer_t *errmsg) {
 }
 
 /**
- * @brief Checks whether an invalid UTF8 string results in anything but false from the validity function, or zero
+ * @brief Checks whether an invalid UTF8 string results in anything other than false from the validity function, or zero
  * 		from the length function.
- * @return Returns an error message in an allocated buffer.
+ * @return Returns an error message the provided buffer if the test fails.
  */
 bool_t check_unicode_invalid(stringer_t *errmsg) {
 

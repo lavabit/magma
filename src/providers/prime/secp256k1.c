@@ -156,6 +156,9 @@ stringer_t *secp256k1_private_get(EC_KEY *key, stringer_t *output) {
 		output = result;
 	}
 
+	// Wipe the buffer so any leading bytes we don't use will be zero'ed out for padding purposes.
+	st_wipe(output);
+
 	// Get the secret component as a BIGNUM structure.
 	if (!(bn = EC_KEY_get0_private_key_d(key))) {
 		log_pedantic("No private key available. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
@@ -164,7 +167,14 @@ stringer_t *secp256k1_private_get(EC_KEY *key, stringer_t *output) {
 	}
 	// Confirm the private key component will fit inside the 32 bytes provided, then write the BIGNUM out as
 	// a big endian integer.
-	else if (BN_num_bits_d(bn) > 256 || (len = BN_bn2bin_d(bn, st_data_get(output))) != 32) {
+	if (BN_num_bits_d(bn) > 256 || (len = BN_num_bytes_d(bn)) > 32) {
+		log_pedantic("Serialization of the private key failed because the size was larger then expected. { len = %zu / bits = %i / error = %s }",
+			len, BN_num_bits_d(bn), ERR_error_string_d(ERR_get_error_d(), NULL));
+		st_cleanup(result);
+		return NULL;
+	}
+	// Write the key into the output buffer. Advance the pointer to account for any padding that might be needed.
+	else if (BN_bn2bin_d(bn, st_data_get(output) + (32 - len)) != len) {
 		log_pedantic("Serialization of the private key into a multiprecision integer failed. { len = %zu / bits = %i / error = %s }",
 			len, BN_num_bits_d(bn), ERR_error_string_d(ERR_get_error_d(), NULL));
 		st_cleanup(result);
@@ -172,7 +182,7 @@ stringer_t *secp256k1_private_get(EC_KEY *key, stringer_t *output) {
 	}
 
 	// Update the output buffer length.
-	st_length_set(output, len);
+	st_length_set(output, 32);
 	return output;
 }
 

@@ -191,6 +191,56 @@ stringer_t *secp256k1_private_get(EC_KEY *key, stringer_t *output) {
  * @param key
  * @return
  */
+EC_KEY *secp256k1_public_set(stringer_t *key) {
+
+	BN_CTX *ctx = NULL;
+	EC_POINT *pub = NULL;
+	EC_KEY *output = NULL;
+
+	if (st_empty(key) || st_length_get(key) != 33) {
+		log_info("An invalid key was passed in.");
+		return NULL;
+	}
+	else if (!(output = secp256k1_alloc()) || !(ctx = BN_CTX_new_d()) || !(pub = EC_POINT_new_d(EC_KEY_get0_group_d(output)))) {
+		log_info("An error occurred while trying to create a new key using the secp256k1 curve. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		if (output) EC_KEY_free_d(output);
+		if (pub) EC_POINT_free_d(pub);
+		if (ctx) BN_CTX_free_d(ctx);
+		return NULL;
+	}
+
+	BN_CTX_start_d(ctx);
+
+	// Decode a big endian integer into a BIGNUM structure.
+	if (EC_POINT_oct2point_d(EC_KEY_get0_group_d(output), pub, st_data_get(key), st_length_get(key), ctx) != 1) {
+		log_info("An error occurred while parsing the binary elliptical curve point data used to represent the public key. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		EC_KEY_free_d(output);
+		EC_POINT_free_d(pub);
+		BN_CTX_free_d(ctx);
+		return NULL;
+	}
+	// Set the resulting point as the public component of the key object.
+	else if (EC_KEY_set_public_key_d(output, pub) != 1) {
+
+		log_info("The provided public key data could not be translated into a valid key structure. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		EC_KEY_free_d(output);
+		EC_POINT_free_d(pub);
+		BN_CTX_free_d(ctx);
+		return NULL;
+	}
+
+	// The above function call duplicates the point strcuture, so the local copy is no longer needed.
+	EC_POINT_free_d(pub);
+	BN_CTX_free_d(ctx);
+
+	return output;
+}
+
+/**
+ * @brief
+ * @param key
+ * @return
+ */
 EC_KEY *secp256k1_private_set(stringer_t *key) {
 
 	BN_CTX *ctx = NULL;
@@ -223,7 +273,7 @@ EC_KEY *secp256k1_private_set(stringer_t *key) {
 
 	// Set the decoded BIGNUM as the private exponent of the key object, then compute the public key point on the curve, and finally
 	// set the result of the calculation up as the public component of the key object.
-	if (EC_KEY_set_private_key_d(output, number) != 1 || EC_POINT_mul_d(EC_KEY_get0_group_d(output), pub, number, NULL, NULL, ctx) != 1 ||
+	else if (EC_KEY_set_private_key_d(output, number) != 1 || EC_POINT_mul_d(EC_KEY_get0_group_d(output), pub, number, NULL, NULL, ctx) != 1 ||
 		EC_KEY_set_public_key_d(output, pub) != 1) {
 
 		log_info("The provided private key data could not be translated into a valid key structure. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));

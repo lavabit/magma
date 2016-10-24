@@ -158,6 +158,9 @@ my_bool (*mysql_stmt_bind_result_d)(MYSQL_STMT *stmt, MYSQL_BIND *bind) = NULL;
 MYSQL * (*mysql_real_connect_d)(MYSQL * mysql, const char *name, const char *user, const char *passwd, const char *db, unsigned int port, const char *unix_socket, unsigned long client_flag) = NULL;
 
 //! OPENSSL
+int (*EC_POINT_cmp_d)(const EC_GROUP *group, const EC_POINT *a, const EC_POINT *b, BN_CTX *ctx) = NULL;
+int (*BN_cmp_d)(const BIGNUM *a, const BIGNUM *b) = NULL;
+
 DH * (*DH_new_d)(void) = NULL;
 char **SSL_version_str_d = NULL;
 RSA * (*RSA_new_d)(void) = NULL;

@@ -289,6 +289,12 @@ EC_KEY * secp256k1_private_set(stringer_t *key) {
 	BN_CTX_free_d(ctx);
 	BN_free_d(number);
 
+	if (EC_KEY_check_key_d(output) != 1) {
+		log_info("The provided private key data does not represent a valid private key. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		EC_KEY_free_d(output);
+		return NULL;
+	}
+
 	return output;
 }
 

@@ -174,7 +174,7 @@ stringer_t *secp256k1_private_get(EC_KEY *key, stringer_t *output) {
 		return NULL;
 	}
 	// Write the key into the output buffer. Advance the pointer to account for any padding that might be needed.
-	else if (BN_bn2bin_d(bn, st_data_get(output) + (32 - len)) != len) {
+	else if ((size_t)BN_bn2bin_d(bn, st_data_get(output) + (32 - len)) != len) {
 		log_pedantic("Serialization of the private key into a multiprecision integer failed. { len = %zu / bits = %i / error = %s }",
 			len, BN_num_bits_d(bn), ssl_error_string(MEMORYBUF(256), 256));
 		st_cleanup(result);

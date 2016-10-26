@@ -14,7 +14,6 @@
 
 EC_GROUP *prime_curve_group = NULL;
 
-
 /**
  * @brief	Initialize the PRIME structures.
  * @return	returns true if everything initializes properly, or false if an error occurrs.

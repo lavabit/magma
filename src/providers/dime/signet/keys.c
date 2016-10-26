@@ -430,10 +430,8 @@ static int keys_generate(keys_type_t type, char **signet_pem, char **key_pem) {
 
 	//stringer_t *h_priv = hex_encode_st(PLACER(serial_enc, enc_size), MANAGEDBUF(1024));
 	stringer_t *h_priv2 = hex_encode_st(secp256k1_private_get(enc_key, NULL), MANAGEDBUF(128));
-	stringer_t *h_priv3 = ecies_key_private_hex(enc_key);
 	//log_pedantic("privkey (%zu) = %.*s\n", st_length_get(h_priv), st_length_int(h_priv), st_char_get(h_priv));
 	log_pedantic("privkey (%zu) = %.*s\n", st_length_get(h_priv2), st_length_int(h_priv2), st_char_get(h_priv2));
-	log_pedantic("privkey (%zu) = %.*s\n", st_length_get(h_priv3), st_length_int(h_priv3), st_char_get(h_priv3));
 
 	serial_size = KEYS_HEADER_SIZE + 1 + 1 + ED25519_KEY_SIZE + 1 + 2 + enc_size;
 	if (!(serial_keys = malloc(serial_size))) {

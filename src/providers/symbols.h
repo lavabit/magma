@@ -255,9 +255,6 @@ extern my_bool (*mysql_stmt_bind_result_d)(MYSQL_STMT *stmt, MYSQL_BIND *bind);
 extern MYSQL * (*mysql_real_connect_d)(MYSQL * mysql, const char *name, const char *user, const char *passwd, const char *db, unsigned int port, const char *unix_socket, unsigned long client_flag);
 
 //! OPENSSL
-extern int (*EC_POINT_cmp_d)(const EC_GROUP *group, const EC_POINT *a, const EC_POINT *b, BN_CTX *ctx);
-extern int (*BN_cmp_d)(const BIGNUM *a, const BIGNUM *b);
-
 extern DH * (*DH_new_d)(void);
 extern char **SSL_version_str_d;
 extern RSA * (*RSA_new_d)(void);
@@ -361,6 +358,7 @@ extern void (*EVP_CIPHER_CTX_init_d)(EVP_CIPHER_CTX *a);
 extern void (*OCSP_BASICRESP_free_d)(OCSP_BASICRESP *a);
 extern void (*EVP_CIPHER_CTX_free_d)(EVP_CIPHER_CTX *a);
 extern X509_LOOKUP_METHOD * (*X509_LOOKUP_file_d)(void);
+extern int (*BN_cmp_d)(const BIGNUM *a, const BIGNUM *b);
 extern const SSL_METHOD * (*TLSv1_server_method_d)(void);
 extern int (*EVP_CIPHER_nid_d)(const EVP_CIPHER *cipher);
 extern void (*OPENSSL_add_all_algorithms_noconf_d)(void);
@@ -485,6 +483,7 @@ extern int (*SSL_CTX_load_verify_locations_d)(SSL_CTX *ctx, const char *CAfile, 
 extern OCSP_RESPONSE * (*d2i_OCSP_RESPONSE_d)(OCSP_RESPONSE **a, const unsigned char **in, long len);
 extern int (*OCSP_parse_url_d)(const char *url, char **phost, char **pport, char **ppath, int *pssl);
 extern int (*HMAC_Init_ex_d)(HMAC_CTX *ctx, const void *key, int len, const EVP_MD *md, ENGINE *impl);
+extern int (*EC_POINT_cmp_d)(const EC_GROUP *group, const EC_POINT *a, const EC_POINT *b, BN_CTX *ctx);
 extern void (*SSL_CTX_set_tmp_dh_callback_d)(SSL_CTX *ctx, DH *(*dh)(SSL *ssl,int is_export, int keylength)) ;
 extern int (*ECDSA_do_verify_d)(const unsigned char *dgst, int dgst_len, const ECDSA_SIG *sig, EC_KEY *eckey);
 extern int (*X509_check_host_d)(X509 *x, const char *chk, size_t chklen, unsigned int flags, char **peername);

@@ -5,11 +5,15 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/rand.h>
+
+#include "core/core.h"
+#include "providers/symbols.h"
+#include "providers/prime/prime.h"
+
 #include "dime/common/dcrypto.h"
 #include "dime/common/misc.h"
 #include "dime/common/error.h"
 
-#include "providers/symbols.h"
 
 static EC_GROUP *_encryption_group = NULL;
 static EVP_MD const *_ecies_envelope_evp = NULL;
@@ -268,19 +272,29 @@ unsigned char *
 _serialize_ec_pubkey(EC_KEY *key, size_t *outsize)
 {
     unsigned char *buf = NULL;
-    int bsize;
 
     if (!key || !outsize) {
         RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
     }
 
-    EC_KEY_set_conv_form_d(key, POINT_CONVERSION_COMPRESSED);
-    if ((bsize = i2o_ECPublicKey_d(key, &buf)) < 0) {
+     stringer_t *pub;
+   if (!(pub = secp256k1_public_get(key, MANAGEDBUF(33)))) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(ERR_UNSPEC, "unable to serialize EC public key");
     }
 
-    *outsize = bsize;
+   buf = mm_alloc(33);
+   memmove(buf, st_data_get(pub), st_length_get(pub));
+
+    *outsize = st_length_get(pub);
+
+//    EC_KEY_set_conv_form_d(key, POINT_CONVERSION_COMPRESSED);
+//    if ((bsize = i2o_ECPublicKey_d(key, &buf)) < 0) {
+//        PUSH_ERROR_OPENSSL();
+//        RET_ERROR_PTR(ERR_UNSPEC, "unable to serialize EC public key");
+//    }
+
+//    *outsize = bsize;
 
     return buf;
 }
@@ -363,18 +377,22 @@ unsigned char *
 _serialize_ec_privkey(EC_KEY *key, size_t *outsize)
 {
     unsigned char *buf = NULL;
-    int bsize;
 
     if (!key || !outsize) {
         RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
     }
 
-    if ((bsize = i2d_ECPrivateKey_d(key, &buf)) < 0) {
+   stringer_t *priv;
+   if (!(priv = secp256k1_private_get(key, MANAGEDBUF(32)))) {
+  //  if ((bsize = i2d_ECPrivateKey_d(key, &buf)) < 0) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(ERR_UNSPEC, "unable to serialize EC private key");
     }
 
-    *outsize = bsize;
+   buf = mm_alloc(32);
+   memmove(buf, st_data_get(priv), st_length_get(priv));
+
+    *outsize = st_length_get(priv);
 
     return buf;
 }
@@ -413,32 +431,7 @@ _deserialize_ec_privkey(
 
     nid = signing ? EC_SIGNING_CURVE : EC_ENCRYPT_CURVE;
 
-    if (!(result = EC_KEY_new_d())) {
-        PUSH_ERROR_OPENSSL();
-        RET_ERROR_PTR(
-            ERR_UNSPEC,
-            "could not generate new EC key for deserialization");
-    }
-
-    if (EC_KEY_set_group_d(
-            result,
-            EC_GROUP_new_by_curve_name_d(nid))
-        != 1)
-    {
-        PUSH_ERROR_OPENSSL();
-        EC_KEY_free_d(result);
-        RET_ERROR_PTR(
-            ERR_UNSPEC,
-            "could not get curve group for deserialization");
-    }
-
-    if (!(result = d2i_ECPrivateKey_d(&result, &bufptr, blen))) {
-        PUSH_ERROR_OPENSSL();
-        EC_KEY_free_d(result);
-        RET_ERROR_PTR(
-            ERR_UNSPEC,
-            "deserialization of EC public key portion failed");
-    }
+   result = secp256k1_private_set(PLACER((unsigned char *)bufptr, blen));
 
     /*
      * At this point, in most cases bufptr == buf + blen. There may be cases
@@ -481,7 +474,8 @@ _load_ec_privkey(char const *filename)
         RET_ERROR_PTR(ERR_UNSPEC, "could not decode b64 data");
     }
 
-    result = _deserialize_ec_privkey(bin, binsize, 0);
+    //result = _deserialize_ec_privkey(bin, binsize, 0);
+    result = secp256k1_private_set(PLACER(bin, binsize));
     _secure_wipe(bin, binsize);
     free(bin);
     if(!result) {
@@ -545,33 +539,35 @@ _load_ec_pubkey(char const *filename)
 EC_KEY *
 _generate_ec_keypair(void)
 {
-    EC_GROUP *group;
-    EC_KEY *result;
 
-    group = _encryption_group;
-
-    if (!group) {
-        RET_ERROR_PTR(ERR_UNSPEC, "could not determine curve group for operation");
-    }
-
-    if (!(result = EC_KEY_new_d())) {
-        PUSH_ERROR_OPENSSL();
-        RET_ERROR_PTR(ERR_UNSPEC, "unable to allocate new EC key pair for generation");
-    }
-
-    if (EC_KEY_set_group_d(result, group) != 1) {
-        PUSH_ERROR_OPENSSL();
-        EC_KEY_free_d(result);
-        RET_ERROR_PTR(ERR_UNSPEC, "unable to associate curve group with new EC key pair");
-    }
-
-    if (EC_KEY_generate_key_d(result) != 1) {
-        PUSH_ERROR_OPENSSL();
-        EC_KEY_free_d(result);
-        RET_ERROR_PTR(ERR_UNSPEC, "unable to generate new EC key pair");
-    }
-
-    return result;
+	return secp256k1_generate();
+//    EC_GROUP *group;
+//    EC_KEY *result;
+//
+//    group = _encryption_group;
+//
+//    if (!group) {
+//        RET_ERROR_PTR(ERR_UNSPEC, "could not determine curve group for operation");
+//    }
+//
+//    if (!(result = EC_KEY_new_d())) {
+//        PUSH_ERROR_OPENSSL();
+//        RET_ERROR_PTR(ERR_UNSPEC, "unable to allocate new EC key pair for generation");
+//    }
+//
+//    if (EC_KEY_set_group_d(result, group) != 1) {
+//        PUSH_ERROR_OPENSSL();
+//        EC_KEY_free_d(result);
+//        RET_ERROR_PTR(ERR_UNSPEC, "unable to associate curve group with new EC key pair");
+//    }
+//
+//    if (EC_KEY_generate_key_d(result) != 1) {
+//        PUSH_ERROR_OPENSSL();
+//        EC_KEY_free_d(result);
+//        RET_ERROR_PTR(ERR_UNSPEC, "unable to generate new EC key pair");
+//    }
+//
+//    return result;
 }
 
 /**

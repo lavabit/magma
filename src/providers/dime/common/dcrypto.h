@@ -20,7 +20,7 @@
 #define ED25519_KEY_B64_SIZE 43
 #define ED25519_SIG_SIZE     64
 #define ED25519_SIG_B64_SIZE 86
-#define EC_PUBKEY_SIZE       65
+#define EC_PUBKEY_SIZE       33
 
 // Wrappers around ED25519 functions
 typedef struct {

@@ -236,7 +236,7 @@ stringer_t * stacie_entropy_seed_derive(uint32_t rounds, stringer_t *password, s
 
 	if (HMAC_Init_ex_d(&ctx, salt_data, salt_len, digest, NULL) != 1) {
 		log_error("The STACIE seed derivation failed because the HMAC function didn't initialize properly. {%s}",
-			ERR_error_string_d(ERR_get_error_d(), NULL));
+			ssl_error_string(MEMORYBUF(256), 256));
 		HMAC_CTX_cleanup_d(&ctx);
 		st_cleanup(seed);
 		return NULL;
@@ -246,7 +246,7 @@ stringer_t * stacie_entropy_seed_derive(uint32_t rounds, stringer_t *password, s
 	for (uint32_t count = 0; count < rounds; count++) {
 		if (HMAC_Update_d(&ctx, password_data, password_len) != 1) {
 			log_error("The STACIE seed derivation failed because the HMAC function context couldn't be updated. {%s}",
-				ERR_error_string_d(ERR_get_error_d(), NULL));
+				ssl_error_string(MEMORYBUF(256), 256));
 			HMAC_CTX_cleanup_d(&ctx);
 			st_cleanup(seed);
 			return NULL;
@@ -255,7 +255,7 @@ stringer_t * stacie_entropy_seed_derive(uint32_t rounds, stringer_t *password, s
 
 	// Finalize the HMAC context and retrieve the digest result as our seed value.
 	if (HMAC_Final_d(&ctx, st_data_get(seed), &seed_len) != 1 || seed_len != 64) {
-		log_error("Failed HMAC_Final_d(). {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_error("Failed HMAC_Final_d(). {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		HMAC_CTX_cleanup_d(&ctx);
 		st_cleanup(seed);
 		return NULL;
@@ -360,7 +360,7 @@ stringer_t * stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringe
 		// Setup the digest algorithm.
 		if (EVP_DigestInit_ex_d(&ctx, (const EVP_MD *)digest, NULL) != 1) {
 			log_pedantic("The STACIE key derivation failed because an error occurred while trying to initialize the hash context. {%s}",
-				ERR_error_string_d(ERR_get_error_d(), NULL));
+				ssl_error_string(MEMORYBUF(256), 256));
 			EVP_MD_CTX_cleanup_d(&ctx);
 			st_cleanup(key);
 			return NULL;
@@ -375,7 +375,7 @@ stringer_t * stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringe
 			EVP_DigestUpdate_d(&ctx, password_data, password_len) != 1 ||
 			EVP_DigestUpdate_d(&ctx, ((uchr_t *)&count_data) + 1, 3) != 1) {
 			log_pedantic("The STACIE key derivation failed because an error occurred while trying to process the input data. {%s}",
-				ERR_error_string_d(ERR_get_error_d(), NULL));
+				ssl_error_string(MEMORYBUF(256), 256));
 			EVP_MD_CTX_cleanup_d(&ctx);
 			st_cleanup(key);
 			return NULL;
@@ -384,7 +384,7 @@ stringer_t * stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringe
 		// Retrieve the hash output.
 		else if (EVP_DigestFinal_d(&ctx, key_data, &key_len) != 1 || key_len != 64) {
 			log_pedantic("The STACIE key derivation failed because an error occurred while trying to retrieve the hash result. {%s}",
-				ERR_error_string_d(ERR_get_error_d(), NULL));
+				ssl_error_string(MEMORYBUF(256), 256));
 			EVP_MD_CTX_cleanup_d(&ctx);
 			st_cleanup(key);
 			return NULL;
@@ -491,7 +491,7 @@ stringer_t * stacie_hashed_token_derive(stringer_t *base, stringer_t *username, 
 		// Setup the digest algorithm.
 		if (EVP_DigestInit_ex_d(&ctx, (const EVP_MD *)digest, NULL) != 1) {
 			log_pedantic("The STACIE token derivation failed because an error occurred while trying to initialize the hash context. {%s}",
-				ERR_error_string_d(ERR_get_error_d(), NULL));
+				ssl_error_string(MEMORYBUF(256), 256));
 			EVP_MD_CTX_cleanup_d(&ctx);
 			st_cleanup(token);
 			return NULL;
@@ -506,7 +506,7 @@ stringer_t * stacie_hashed_token_derive(stringer_t *base, stringer_t *username, 
 			(nonce_data && EVP_DigestUpdate_d(&ctx, nonce_data, nonce_len) != 1) ||
 			EVP_DigestUpdate_d(&ctx, ((uchr_t *)&count_data) + 1, 3) != 1) {
 			log_pedantic("The STACIE token derivation failed because an error occurred while trying to process the input data. {%s}",
-				ERR_error_string_d(ERR_get_error_d(), NULL));
+				ssl_error_string(MEMORYBUF(256), 256));
 			EVP_MD_CTX_cleanup_d(&ctx);
 			st_cleanup(token);
 			return NULL;
@@ -515,7 +515,7 @@ stringer_t * stacie_hashed_token_derive(stringer_t *base, stringer_t *username, 
 		// Retrieve the hash output.
 		else if (EVP_DigestFinal_d(&ctx, token_data, &token_len) != 1 || token_len != 64) {
 			log_pedantic("The STACIE token derivation failed because an error occurred while trying to retrieve the hash result. {%s}",
-				ERR_error_string_d(ERR_get_error_d(), NULL));
+				ssl_error_string(MEMORYBUF(256), 256));
 			EVP_MD_CTX_cleanup_d(&ctx);
 			st_cleanup(token);
 			return NULL;
@@ -593,7 +593,7 @@ stringer_t * stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, 
 	// Setup the digest algorithm.
 	if (EVP_DigestInit_ex_d(&ctx, (const EVP_MD *)digest, NULL) != 1) {
 		log_pedantic("The STACIE realm key derivation failed because an error occurred while trying to initialize the hash context. {%s}",
-			ERR_error_string_d(ERR_get_error_d(), NULL));
+			ssl_error_string(MEMORYBUF(256), 256));
 		EVP_MD_CTX_cleanup_d(&ctx);
 		st_cleanup(result);
 		return NULL;
@@ -604,7 +604,7 @@ stringer_t * stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, 
 		EVP_DigestUpdate_d(&ctx, realm_data, realm_len) != 1 ||
 		EVP_DigestUpdate_d(&ctx, shard_data, shard_len) != 1) {
 		log_pedantic("The STACIE realm key derivation failed because an error occurred while trying to process the input data. {%s}",
-			ERR_error_string_d(ERR_get_error_d(), NULL));
+			ssl_error_string(MEMORYBUF(256), 256));
 		EVP_MD_CTX_cleanup_d(&ctx);
 		st_cleanup(result);
 		return NULL;
@@ -613,7 +613,7 @@ stringer_t * stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, 
 	// Retrieve the hash output.
 	else if (EVP_DigestFinal_d(&ctx, hash_data, &hash_len) != 1 || hash_len != 64) {
 		log_pedantic("The STACIE realm key derivation failed because an error occurred while trying to retrieve the hash result. {%s}",
-			ERR_error_string_d(ERR_get_error_d(), NULL));
+			ssl_error_string(MEMORYBUF(256), 256));
 		EVP_MD_CTX_cleanup_d(&ctx);
 		st_cleanup(result);
 		return NULL;
@@ -961,7 +961,7 @@ stringer_t * stacie_realm_decrypt(stringer_t *vector_key, stringer_t *tag_key, s
 	}
 
 	if (EVP_DecryptFinal_ex_d(&ctx, st_data_get(output) + used_len, &avail_len) != 1) {
-		log_pedantic("An error occurred while trying to complete decryption process. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_pedantic("An error occurred while trying to complete decryption process. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EVP_CIPHER_CTX_cleanup_d(&ctx);
 		st_free(output);
 		return NULL;

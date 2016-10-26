@@ -228,7 +228,7 @@ stringer_t * symmetric_decrypt(cipher_t *cipher, stringer_t *vector, stringer_t 
 	if ((EVP_CIPHER_flags_d((const EVP_CIPHER *)cipher) & EVP_CIPH_MODE) != EVP_CIPH_CCM_MODE &&
 		EVP_DecryptFinal_ex_d(&ctx, st_data_get(output) + used_len, &avail_len) != 1) {
 
-		log_pedantic("An error occurred while trying to complete decryption process. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_pedantic("An error occurred while trying to complete decryption process. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EVP_CIPHER_CTX_cleanup_d(&ctx);
 		st_free(output);
 		return NULL;

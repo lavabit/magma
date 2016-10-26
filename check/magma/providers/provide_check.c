@@ -24,6 +24,21 @@ extern pool_t *spf_pool;
 extern bool_t do_tank_check, do_virus_check, do_dspam_check, do_spf_check;
 extern chr_t *virus_check_data_path;
 
+//! Generic Provider Symbol Tests
+START_TEST (check_symbols_s)
+	{
+		stringer_t *errmsg = NULL;
+
+		if (status() && dlsym(NULL, "ERR_error_string_d")) {
+			errmsg = NULLER("Found a reference to ERR_error_string() which isn't thread-safe. Use ssl_error_string() instead.");
+		}
+
+		log_test("PROVIDERS / SYMBOLS / SINGLE THREADED:", errmsg);
+		ck_assert_msg(errmsg, st_char_get(errmsg));
+
+	}
+END_TEST
+
 //! Compression Engine Tests
 START_TEST (check_compress_lzo_s)
 	{
@@ -538,6 +553,8 @@ Suite * suite_check_provide(void) {
 	TCase *tc;
 	Suite *s = suite_create("\tProviders");
 
+	testcase(s, tc, "Provider Symbols/S", check_symbols_s);
+
 	testcase(s, tc, "Parsers Unicode/S", check_unicode_s);
 
 	testcase(s, tc, "Compression LZO/S", check_compress_lzo_s);
@@ -556,7 +573,7 @@ Suite * suite_check_provide(void) {
 	testcase(s, tc, "Cryptography SCRAMBLE/S", check_scramble_s);
 	testcase(s, tc, "Cryptography STACIE/S", check_stacie_s);
 
-	testcase(s, tc, "Cryptography STACIE/S", check_prime_secp256k1_s);
+	testcase(s, tc, "Cryptography PRIME/S", check_prime_secp256k1_s);
 
 	// Tank functionality is temporarily disabled.
 	if (do_tank_check) {

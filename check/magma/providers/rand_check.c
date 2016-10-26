@@ -87,7 +87,7 @@ stringer_t * check_rand_mthread(void) {
 		return NULL;
 	}
 	else if (!(threads = mm_alloc(sizeof(pthread_t) * RAND_CHECK_MTHREADS))) {
-		return st_dupe(NULLER("Thread allocation error."));;
+		return st_dupe(NULLER("Thread allocation error."));
 	}
 
 	for (uint64_t counter = 0; counter < RAND_CHECK_MTHREADS; counter++) {

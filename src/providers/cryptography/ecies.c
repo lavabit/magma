@@ -68,9 +68,9 @@ EC_KEY * ecies_key_alloc(void) {
 	if (ecies_curve_group) {
 
 		if (!(key = EC_KEY_new_d())) {
-			log_info("An error occurred while initializing an empty ECIES key context. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+			log_info("An error occurred while initializing an empty ECIES key context. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		} else if (EC_KEY_set_group_d(key, ecies_curve_group) != 1) {
-			log_info("Unable to assign the default group to our empty key context.. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+			log_info("Unable to assign the default group to our empty key context.. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 			EC_KEY_free_d(key);
 			key = NULL;
 		}
@@ -81,7 +81,7 @@ EC_KEY * ecies_key_alloc(void) {
 	if (!key) {
 
 		if (!(key = EC_KEY_new_by_curve_name_d(ECIES_CURVE))) {
-			log_info("An error occurred while trying to create a new ECIES key using the default curve. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+			log_info("An error occurred while trying to create a new ECIES key using the default curve. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 			return NULL;
 		}
 
@@ -97,10 +97,10 @@ EC_GROUP * ecies_group(uint64_t curve, bool_t precompute) {
 
 	if (!(group = EC_GROUP_new_by_curve_name_d(curve))) {
 		log_error("An error occurred while trying to create the elliptical group. {%s}",
-				ERR_error_string_d(ERR_get_error_d(), NULL));
+				ssl_error_string(MEMORYBUF(256), 256));
 		return NULL;
 	} else if (precompute && EC_GROUP_precompute_mult_d(group, NULL) != 1) {
-		log_error("Unable to precompute the required elliptical curve point data. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_error("Unable to precompute the required elliptical curve point data. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EC_GROUP_free_d(group);
 		return NULL;
 	}
@@ -125,7 +125,7 @@ EC_KEY * ecies_key_create(void) {
 
 	// This should generate a random key pair.
 	if (EC_KEY_generate_key_d(key) != 1) {
-		log_info("An error occurred while trying to generate a random ECIES key pair. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_info("An error occurred while trying to generate a random ECIES key pair. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EC_KEY_free_d(key);
 		return NULL;
 	}
@@ -148,13 +148,13 @@ EC_KEY * ecies_key_public(uint64_t format, placer_t data) {
 
 		// Generate the empty point context we'll be assigning to below.
 		if (!(point = EC_POINT_new_d(EC_KEY_get0_group_d(key)))) {
-			log_info("An error occurred while allocate the elliptical curve point. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+			log_info("An error occurred while allocate the elliptical curve point. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 			EC_KEY_free_d(key);
 			return NULL;
 		}
 		else if (EC_POINT_oct2point_d(EC_KEY_get0_group_d(key), point, pl_data_get(data), pl_length_get(data), NULL) != 1) {
 			log_info("An error occurred while parsing the binary elliptical curve point data used to represent the public key. {%s}",
-					ERR_error_string_d(ERR_get_error_d(), NULL));
+					ssl_error_string(MEMORYBUF(256), 256));
 			EC_POINT_free_d(point);
 			EC_KEY_free_d(key);
 			return NULL;
@@ -166,7 +166,7 @@ EC_KEY * ecies_key_public(uint64_t format, placer_t data) {
 
 		if (!(point = EC_POINT_hex2point_d(EC_KEY_get0_group_d(key), pl_char_get(data), NULL, NULL))) {
 			log_info("An error occurred while parsing the binary elliptical curve point data used to represent the public key. {%s}",
-					ERR_error_string_d(ERR_get_error_d(), NULL));
+					ssl_error_string(MEMORYBUF(256), 256));
 			EC_KEY_free_d(key);
 			return NULL;
 		}
@@ -182,7 +182,7 @@ EC_KEY * ecies_key_public(uint64_t format, placer_t data) {
 
 	// Assign the point to our empty key instance.
 	if (EC_KEY_set_public_key_d(key, point) != 1) {
-		log_info("The provided point data does not represent a valid public key. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_info("The provided point data does not represent a valid public key. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EC_POINT_free_d(point);
 		EC_KEY_free_d(key);
 		return NULL;
@@ -193,7 +193,7 @@ EC_KEY * ecies_key_public(uint64_t format, placer_t data) {
 
 	// Ensures the provided point is along the active elliptical curve and therefore represents a valid public key.
 	if (EC_KEY_check_key_d(key) != 1) {
-		log_info("The provided point data does not represent a valid public key. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_info("The provided point data does not represent a valid public key. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EC_KEY_free_d(key);
 		return NULL;
 	}
@@ -215,7 +215,7 @@ EC_KEY * ecies_key_private(uint64_t format, placer_t data) {
 	if (format & ECIES_PRIVATE_BINARY) {
 
 		if (!(number = BN_bin2bn_d(pl_data_get(data), pl_length_get(data), NULL))) {
-			log_info("An error occurred while parsing the binary elliptical curve point data used to represent the private key. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+			log_info("An error occurred while parsing the binary elliptical curve point data used to represent the private key. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 			EC_KEY_free_d(key);
 			return NULL;
 		}
@@ -225,7 +225,7 @@ EC_KEY * ecies_key_private(uint64_t format, placer_t data) {
 	else if (format & ECIES_PRIVATE_HEX) {
 
 		if (!(BN_hex2bn_d(&number, pl_char_get(data)))) {
-			log_info("An error occurred while parsing the binary elliptical curve point data used to represent the private key. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+			log_info("An error occurred while parsing the binary elliptical curve point data used to represent the private key. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 			EC_KEY_free_d(key);
 			return NULL;
 		}
@@ -240,7 +240,7 @@ EC_KEY * ecies_key_private(uint64_t format, placer_t data) {
 
 	// Assign the point to our empty key instance.
 	if (EC_KEY_set_private_key_d(key, number) != 1) {
-		log_info("The provided point data does not represent a valid public key. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_info("The provided point data does not represent a valid public key. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EC_KEY_free_d(key);
 		BN_free_d(number);
 		return NULL;
@@ -265,13 +265,13 @@ stringer_t * ecies_key_public_hex(EC_KEY *key) {
 	stringer_t *result = NULL;
 
 	if (!(point = EC_KEY_get0_public_key_d(key))) {
-		log_info("No public key available. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_info("No public key available. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		return NULL;
 	} else if (!(group = EC_KEY_get0_group_d(key))) {
-		log_info("No group available. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_info("No group available. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		return NULL;
 	} else if (!(hex = EC_POINT_point2hex_d(group, point, POINT_CONVERSION_COMPRESSED, NULL))) {
-		log_info("Unable to serialize the public key into hex. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_info("Unable to serialize the public key into hex. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		return NULL;
 	}
 
@@ -298,16 +298,16 @@ uchr_t * ecies_key_public_bin(EC_KEY *key, size_t *olen) {
 	const EC_GROUP *group;
 
 	if (!(point = EC_KEY_get0_public_key_d(key))) {
-		log_info("No public key available. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_info("No public key available. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		return NULL;
 	} else if (!(group = EC_KEY_get0_group_d(key))) {
-		log_info("No group available. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_info("No group available. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		return NULL;
 	} else if (!(result = mm_alloc(blen))) {
 		log_info("Error allocating space for ECIES public key.");
 		return NULL;
 	} else if ((rlen = EC_POINT_point2oct_d(group, point, POINT_CONVERSION_COMPRESSED, result, blen, NULL)) <= 0) {
-		log_info("Unable to extract the public key. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_info("Unable to extract the public key. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		mm_free(result);
 		return NULL;
 	}
@@ -334,11 +334,11 @@ stringer_t *ecies_key_private_hex(EC_KEY *key) {
 	stringer_t *result = NULL;
 
 	if (!(bn = EC_KEY_get0_private_key_d(key))) {
-		log_pedantic("No private key available. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_pedantic("No private key available. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		return NULL;
 	}
 	else if (!(hex = BN_bn2hex_d(bn))) {
-		log_pedantic("Unable to serialize the private key into hex. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_pedantic("Unable to serialize the private key into hex. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		return NULL;
 	}
 
@@ -368,7 +368,7 @@ uchr_t * ecies_key_private_bin(EC_KEY *key, size_t *olen) {
 	uchr_t *result;
 
 	if (!(bn = EC_KEY_get0_private_key_d(key))) {
-		log_info("No private key available. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_info("No private key available. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		return NULL;
 	} else if (!(bn_len = BN_num_bytes_d(bn))) {
 		log_info("Error determining size of ECIES private key.");
@@ -455,7 +455,7 @@ cryptex_t * ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned cha
 	// Use the intersection of the provided keys to generate the envelope data used by the ciphers below. The ecies_key_derivation() function uses
 	// SHA 512 to ensure we have a sufficient amount of envelope key material and that the material created is sufficiently secure.
 	else if (ECDH_compute_key_d(envelope_key, SHA512_DIGEST_LENGTH, EC_KEY_get0_public_key_d(user), ephemeral, ecies_envelope_derivation) != SHA512_DIGEST_LENGTH) {
-		log_info("An error occurred while trying to compute the envelope key. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_info("An error occurred while trying to compute the envelope key. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EC_KEY_free_d(ephemeral);
 		EC_KEY_free_d(user);
 		return NULL;
@@ -477,7 +477,7 @@ cryptex_t * ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned cha
 	}
 	// Store the public key portion of the ephemeral key.
 	else if (EC_POINT_point2oct_d(EC_KEY_get0_group_d(ephemeral), EC_KEY_get0_public_key_d(ephemeral), POINT_CONVERSION_COMPRESSED, cryptex_envelope_data(cryptex), envelope_length, NULL) != envelope_length) {
-		log_info("An error occurred while trying to record the public portion of the envelope key. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_info("An error occurred while trying to record the public portion of the envelope key. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EC_KEY_free_d(ephemeral);
 		EC_KEY_free_d(user);
 		cryptex_free(cryptex);
@@ -499,7 +499,7 @@ cryptex_t * ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned cha
 	// Initialize the cipher with the envelope key.
 	if (EVP_EncryptInit_ex_d(&cipher, EVP_get_cipherbyname_d(OBJ_nid2sn_d(ECIES_CIPHER)), NULL, envelope_key, iv) != 1 || EVP_CIPHER_CTX_set_padding_d(&cipher, 0) != 1 ||
 			EVP_EncryptUpdate_d(&cipher, body, &body_length, data, length - (length % block_length)) != 1) {
-		log_info("An error occurred while trying to secure the data using the chosen symmetric cipher. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_info("An error occurred while trying to secure the data using the chosen symmetric cipher. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EVP_CIPHER_CTX_cleanup_d(&cipher);
 		cryptex_free(cryptex);
 		return NULL;
@@ -509,7 +509,7 @@ cryptex_t * ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned cha
 
 		// Make sure all that remains is a partial block, and their wasn't an error.
 		if (length - body_length >= block_length) {
-			log_info("Unable to secure the data using the chosen symmetric cipher. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+			log_info("Unable to secure the data using the chosen symmetric cipher. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 			EVP_CIPHER_CTX_cleanup_d(&cipher);
 			cryptex_free(cryptex);
 			return NULL;
@@ -529,7 +529,7 @@ cryptex_t * ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned cha
 		}
 		// Pass the final partially filled data block into the cipher as a complete block. The padding will be removed during the decryption process.
 		else if (EVP_EncryptUpdate_d(&cipher, body, &body_length, block, block_length) != 1) {
-			log_info("Unable to secure the data using the chosen symmetric cipher. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+			log_info("Unable to secure the data using the chosen symmetric cipher. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 			EVP_CIPHER_CTX_cleanup_d(&cipher);
 			cryptex_free(cryptex);
 			return NULL;
@@ -546,7 +546,7 @@ cryptex_t * ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned cha
 		cryptex_free(cryptex);
 		return NULL;
 	} else if (EVP_EncryptFinal_ex_d(&cipher, body, &body_length) != 1) {
-		log_info("Unable to secure the data using the chosen symmetric cipher. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_info("Unable to secure the data using the chosen symmetric cipher. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EVP_CIPHER_CTX_cleanup_d(&cipher);
 		cryptex_free(cryptex);
 		return NULL;
@@ -561,7 +561,7 @@ cryptex_t * ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned cha
 	// At the moment we are generating the hash using encrypted data. At some point we may want to validate the original text instead.
 	if (HMAC_Init_ex_d(&hmac, envelope_key + key_length, key_length, EVP_get_digestbyname_d(OBJ_nid2sn_d(ECIES_HMAC)), NULL) != 1 || HMAC_Update_d(&hmac, cryptex_body_data(cryptex), cryptex_body_length(cryptex)) != 1 || HMAC_Final_d(&hmac, cryptex_hmac_data(
 			cryptex), &mac_length) != 1) {
-		log_info("Unable to generate a data authentication code. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_info("Unable to generate a data authentication code. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		HMAC_CTX_cleanup_d(&hmac);
 		cryptex_free(cryptex);
 		return NULL;
@@ -624,7 +624,7 @@ uchr_t * ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryptex_t *cryp
 	// Use the intersection of the provided keys to generate the envelope data used by the ciphers below. The ecies_key_derivation() function uses
 	// SHA 512 to ensure we have a sufficient amount of envelope key material and that the material created is sufficiently secure.
 	else if (ECDH_compute_key_d(envelope_key, SHA512_DIGEST_LENGTH, EC_KEY_get0_public_key_d(ephemeral), user, ecies_envelope_derivation) != SHA512_DIGEST_LENGTH) {
-		log_info("An error occurred while trying to compute the envelope key. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_info("An error occurred while trying to compute the envelope key. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EC_KEY_free_d(ephemeral);
 		EC_KEY_free_d(user);
 		return NULL;
@@ -639,7 +639,7 @@ uchr_t * ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryptex_t *cryp
 
 	// At the moment we are generating the hash using encrypted data. At some point we may want to validate the original text instead.
 	if (HMAC_Init_ex_d(&hmac, envelope_key + key_length, key_length, EVP_get_digestbyname_d(OBJ_nid2sn_d(ECIES_HMAC)), NULL) != 1 || HMAC_Update_d(&hmac, cryptex_body_data(cryptex), cryptex_body_length(cryptex)) != 1 || HMAC_Final_d(&hmac, md, &mac_length) != 1) {
-		log_info("Unable to generate the authentication code needed for validation. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_info("Unable to generate the authentication code needed for validation. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		HMAC_CTX_cleanup_d(&hmac);
 		return NULL;
 	}
@@ -669,7 +669,7 @@ uchr_t * ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryptex_t *cryp
 	// Decrypt the data using the chosen symmetric cipher.
 	if (EVP_DecryptInit_ex_d(&cipher, EVP_get_cipherbyname_d(OBJ_nid2sn_d(ECIES_CIPHER)), NULL, envelope_key, iv) != 1 || EVP_CIPHER_CTX_set_padding_d(&cipher, 0) != 1 || EVP_DecryptUpdate_d(&cipher, block, &output_length, cryptex_body_data(cryptex),
 			cryptex_body_length(cryptex)) != 1) {
-		log_info("Unable to decrypt the data using the chosen symmetric cipher. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_info("Unable to decrypt the data using the chosen symmetric cipher. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EVP_CIPHER_CTX_cleanup_d(&cipher);
 		free(output);
 		return NULL;
@@ -685,7 +685,7 @@ uchr_t * ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryptex_t *cryp
 	}
 
 	if (EVP_DecryptFinal_ex_d(&cipher, block, &output_length) != 1) {
-		log_info("Unable to decrypt the data using the chosen symmetric cipher. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_info("Unable to decrypt the data using the chosen symmetric cipher. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EVP_CIPHER_CTX_cleanup_d(&cipher);
 		free(output);
 		return NULL;

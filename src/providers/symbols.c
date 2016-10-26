@@ -296,7 +296,6 @@ const char * (*X509_verify_cert_error_string_d)(long n) = NULL;
 int (*SHA256_Final_d)(unsigned char *md, SHA256_CTX *c) = NULL;
 int (*SHA512_Final_d)(unsigned char *md, SHA512_CTX *c) = NULL;
 int (*X509_check_issued_d)(X509 *issuer, X509 *subject) = NULL;
-char * (*ERR_error_string_d)(unsigned long e, char *buf) = NULL;
 int (*EVP_CIPHER_block_size_d)(const EVP_CIPHER *cipher) = NULL;
 int (*EVP_CIPHER_key_length_d)(const EVP_CIPHER *cipher) = NULL;
 void * (*OCSP_response_get1_basic_d)(OCSP_RESPONSE *resp) = NULL;

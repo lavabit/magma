@@ -22,11 +22,11 @@ EC_GROUP *prime_curve_group = NULL;
 bool_t prime_start(void) {
 
 	if (!(prime_curve_group = EC_GROUP_new_by_curve_name_d(NID_secp256k1))) {
-		log_error("An error occurred while trying to create the elliptical group. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_error("An error occurred while trying to create the elliptical group. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		return false;
 	}
 	else if (EC_GROUP_precompute_mult_d(prime_curve_group, NULL) != 1) {
-		log_error("Unable to precompute the required elliptical curve point data. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_error("Unable to precompute the required elliptical curve point data. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EC_GROUP_free_d(prime_curve_group);
 		prime_curve_group = NULL;
 		return false;

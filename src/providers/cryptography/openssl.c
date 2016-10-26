@@ -41,7 +41,7 @@ bool_t lib_load_openssl(void) {
 		M_BIND(EC_KEY_get0_group),M_BIND(EC_KEY_get0_private_key), M_BIND(EC_KEY_get0_public_key), M_BIND(EC_KEY_new),
 		M_BIND(EC_KEY_new_by_curve_name), M_BIND(EC_KEY_set_group), M_BIND(EC_KEY_set_private_key), M_BIND(EC_KEY_set_public_key),
 		M_BIND(EC_POINT_free), M_BIND(EC_POINT_hex2point), M_BIND(EC_POINT_new), M_BIND(EC_POINT_oct2point), M_BIND(EC_POINT_point2hex),
-		M_BIND(EC_POINT_point2oct),	M_BIND(ENGINE_cleanup),	M_BIND(ERR_error_string), M_BIND(ERR_error_string_n), M_BIND(ERR_free_strings),
+		M_BIND(EC_POINT_point2oct),	M_BIND(ENGINE_cleanup), M_BIND(ERR_error_string_n), M_BIND(ERR_free_strings),
 		M_BIND(ERR_get_error), M_BIND(ERR_remove_thread_state), M_BIND(EVP_CIPHER_block_size),	M_BIND(EVP_CIPHER_CTX_block_size),
 		M_BIND(EVP_CIPHER_CTX_cleanup),	M_BIND(EVP_CIPHER_CTX_init), M_BIND(EVP_CIPHER_CTX_iv_length), M_BIND(EVP_CIPHER_CTX_key_length),
 		M_BIND(EVP_CIPHER_CTX_set_padding),	M_BIND(EVP_CIPHER_iv_length), M_BIND(EVP_CIPHER_key_length), M_BIND(EVP_CIPHER_nid),

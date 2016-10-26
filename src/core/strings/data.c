@@ -198,7 +198,6 @@ void * st_data_get(stringer_t *s) {
  * @return	NULL on failure or for an improperly constructed string; otherwise, a pointer to the string's data.
  */
 chr_t * st_char_get(stringer_t *s) {
-
 	return (chr_t *)st_data_get(s);
 }
 

@@ -29,6 +29,7 @@ bool_t check_component_test1_sthread(stringer_t *errmsg) {
 			st_sprint(errmsg, "String check failed.");
 			return false;
 		}
+		st_free(s);
 	}
 
 	return true;

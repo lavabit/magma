@@ -27,14 +27,23 @@ extern chr_t *virus_check_data_path;
 //! Generic Provider Symbol Tests
 START_TEST (check_symbols_s)
 	{
-		stringer_t *errmsg = NULL;
+		void *local = NULL;
+		chr_t *errmsg = NULL, *liberr = NULL;
 
-		if (status() && dlsym(NULL, "ERR_error_string_d")) {
-			errmsg = NULLER("Found a reference to ERR_error_string() which isn't thread-safe. Use ssl_error_string() instead.");
+		if (status() && !(local = dlopen(NULL, RTLD_NOW | RTLD_LOCAL)))  {
+			errmsg = "Library handle creation failed.";
+		}
+		else if (status() && (liberr = dlerror())) {
+			errmsg = liberr;
+		}
+		else if (status() && !liberr && dlsym(NULL, "ERR_error_string_d")) {
+			errmsg = "Found a reference to ERR_error_string() which isn't thread-safe. Use ssl_error_string() instead.";
 		}
 
-		log_test("PROVIDERS / SYMBOLS / SINGLE THREADED:", errmsg);
-		ck_assert_msg(errmsg, st_char_get(errmsg));
+		if (local) dlclose(local);
+
+		log_test("PROVIDERS / SYMBOLS / SINGLE THREADED:", NULLER(errmsg));
+		if (errmsg) ck_abort_msg(errmsg);
 
 	}
 END_TEST
@@ -417,16 +426,15 @@ START_TEST (check_spf_s) {
 	chr_t *errmsg = NULL;
 	SPF_server_t *object;
 	SPF_dns_server_t *spf_dns_zone = NULL;
-	ip_t ip[] = {
+	ip_t ip[2] = {
 			{ .family = AF_INET, { .ip4.s_addr = 0x01010101 }},
 			{ .family = AF_INET, { .ip4.s_addr = 0x0100007f }}
 	};
-	SPF_dns_test_data_t spf_test_data[] = {
+	SPF_dns_test_data_t spf_test_data[3] = {
 			{ "pass.lavabit.com", ns_t_txt, NETDB_SUCCESS, "v=spf1 ip4:1.1.1.1 -all" },
 			{ "fail.lavabit.com", ns_t_txt, NETDB_SUCCESS, "v=spf1 -all" },
 			{ "neutral.lavabit.com", ns_t_txt, NETDB_SUCCESS, "v=spf1 ~all" }
 	};
-
 
 	log_unit("%-64.64s", "CHECKERS / SPF / SINGLE THREADED:");
 

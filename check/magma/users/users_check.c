@@ -12,25 +12,19 @@
 
 #include "magma_check.h"
 
-START_TEST (check_users_register_s)
-	{
+START_TEST (check_users_register_s) {
 
-		uint16_t plan;
-		connection_t con;
-		uint64_t usernum = 0;
-		int64_t transaction = -1;
-		stringer_t *errmsg = NULL, *username = NULL, *password = NULL;
+	uint16_t plan;
+	connection_t con;
+	uint64_t usernum = 0;
+	int64_t transaction = -1;
+	stringer_t *errmsg = MANAGEDBUF(128), *username = NULL, *password = NULL;
 
-		// Register new user account with a randomly generated userid.
-		log_unit("%-64.64s", "USERS / REGISTER / SINGLE THREADED:");
+	// If the check process hasn't been aborted, register new user account using a randomly generated userid/password.
+	if (status()) {
+
+		// To prevent the creation of user storage keys, an event which is normally logged, from disrupting the output.
 		log_disable();
-
-		// Check to make sure the check process hasn't been aborted.
-		if (!status()) {
-			log_enable();
-			log_unit("%10.10s\n", "SKIPPED");
-			return;
-		}
 
 		// Pass in a blank connection structure. This will be used to store the registration IP address.
 		mm_wipe(&con, sizeof(connection_t));
@@ -41,17 +35,17 @@ START_TEST (check_users_register_s)
 		// Generate a random string of numbers as the password and then append the string of numbers to the username
 		// pattern check_user_XYZ to create a username that should always be unique.
 		if (!(password = rand_choices("0123456789", 20)) || !(username = st_aprint("check_user_%.*s", st_length_int(password), st_char_get(password)))) {
-			errmsg = st_aprint("An internal error occurred. Unable to generate a random username and password for registration.");
+			st_sprint(errmsg, "An internal error occurred. Unable to generate a random username and password for registration.");
 		}
 
 		// Start the transaction.
 		else if ((transaction = tran_start()) == -1) {
-			errmsg = st_aprint("An internal error occurred. Unable to start the transaction.");
+			st_sprint(errmsg, "An internal error occurred. Unable to start the transaction.");
 		}
 
 		// Database insert.
 		else if (!register_data_insert_user(&con, plan, username, password, transaction, &usernum)) {
-			errmsg = st_aprint("User registration failed!.");
+			st_sprint(errmsg, "User registration failed!.");
 			tran_rollback(transaction);
 		}
 
@@ -62,12 +56,11 @@ START_TEST (check_users_register_s)
 
 		st_cleanup(username);
 		st_cleanup(password);
-
-		log_enable();
-		log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
-		fail_unless(!errmsg, st_char_get(errmsg));
-		st_cleanup(errmsg);
 	}
+
+	log_test("USERS / REGISTER / SINGLE THREADED:", errmsg);
+	if (st_populated(errmsg)) ck_abort_msg(st_char_get(errmsg));
+}
 END_TEST
 
 /*
@@ -417,34 +410,18 @@ START_TEST (check_users_credentials_invalid_s)
 END_TEST
 */
 
-START_TEST (check_users_inbox_s)
-	{
-
-		char *errmsg = NULL;
-
-		log_unit("%-64.64s", "USERS / INBOX / SINGLE THREADED:");
-		errmsg = "User inbox test incomplete.";
-		log_unit("%10.10s\n", "SKIPPED");
-		return;
-
-		log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
-		fail_unless(!errmsg, errmsg);
-	}
+START_TEST (check_users_inbox_s) {
+	/// TODO: This test is supposed to be creating a meta_user_t object and then using it to load a user's inbox.
+	log_test("USERS / INBOX / SINGLE THREADED:", NULLER("SKIPPED"));
+	ck_assert_msg(true, NULL);
+}
 END_TEST
 
-START_TEST (check_users_message_s)
-	{
-
-		char *errmsg = NULL;
-
-		log_unit("%-64.64s", "USERS / MESSAGE / SINGLE THREADED:");
-		errmsg = "User message test incomplete.";
-		log_unit("%10.10s\n", "SKIPPED");
-
-		return;
-		log_unit("%10.10s\n", (!status() ? "SKIPPED" : !errmsg ? "PASSED" : "FAILED"));
-		fail_unless(!errmsg, errmsg);
-	}
+START_TEST (check_users_message_s) {
+	/// TODO: This test is supposed to be creating a meta_user_t object and then using it to access a user's messages.
+	log_test("USERS / MESSAGE / SINGLE THREADED:", NULLER("SKIPPED"));
+	ck_assert_msg(true, NULL);
+}
 END_TEST
 
 Suite * suite_check_users(void) {

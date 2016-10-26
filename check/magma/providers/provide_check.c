@@ -12,8 +12,7 @@
 
 #include "magma_check.h"
 
-typedef struct
-{
+typedef struct {
 	const char		*domain;
 	int				 rr_type;
 	SPF_dns_stat_t	 herrno;
@@ -369,38 +368,28 @@ END_TEST
 //! STACIE Tests
 START_TEST (check_stacie_s) {
 
-	bool_t outcome = true;
-
-	bool_t (*checks[])(void) = {
-		&check_stacie_parameters,
-		&check_stacie_determinism,
-		&check_stacie_rounds,
-		&check_stacie_simple,
-		&check_stacie_bitflip
-	};
-
-	stringer_t *err = NULL;
-
-	stringer_t *errors[] = {
-		NULLER("check_stacie_parameters failed"),
-		NULLER("check_stacie_determinism failed"),
-		NULLER("check_stacie_rounds failed"),
-		NULLER("check_stacie_simple failed"),
-		NULLER("check_stacie_bitflip failed")
-	};
-
-	log_unit("%-64.64s", "CRYPTOGRAPHY / STACIE / SINGLE THREADED:");
-
 	log_disable();
-	for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof((checks)[0]); ++i) {
-		if(!(outcome = checks[i]())) {
-			err = errors[i];
-		}
-	}
-	log_enable();
+	bool_t result = true;
+	stringer_t *errmsg = NULL;
 
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, st_data_get(err));
+	if (status() && !(result = check_stacie_parameters())) {
+		errmsg = NULLER("STACIE parameter checks failed.");
+	}
+	else if (status() && result && !(result = check_stacie_determinism())) {
+		errmsg = NULLER("STACIE checks to ensure a deterministic outcome failed.");
+	}
+	else if (status() && result && !(result = check_stacie_rounds())) {
+		errmsg = NULLER("STACIE round calculation checks failed.");
+	}
+	else if (status() && result && !(result = check_stacie_simple())) {
+		errmsg = NULLER("STACIE failed to produce the expected result using the hard coded input values.");
+	}
+	else if (status() && result && !(result = check_stacie_bitflip())) {
+		errmsg = NULLER("The STACIE encryption scheme failed to detect tampering of an encrypted buffer.");
+	}
+
+	log_test("CRYPTOGRAPHY / STACIE / SINGLE THREADED:", errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
 }
 END_TEST
 

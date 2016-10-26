@@ -26,20 +26,18 @@ int_t case_timeout = RUN_TEST_CASE_TIMEOUT;
  */
 void log_test(chr_t *test, stringer_t *error) {
 
-	const chr_t *color = "";
+	log_enable();
 
-	if (!status() || (error && !st_cmp_ci_eq(NULLER("SKIPPED"), error))) {
-		color = color_yellow_bold();
+	if (!status() || (st_populated(error) && !st_cmp_ci_eq(NULLER("SKIPPED"), error))) {
+		log_unit("%-64.64s%s%10.10s%s\n", test, color_yellow_bold(), "SKIPPED", color_reset());
 	}
 	else if (st_populated(error)) {
-		color = color_red_bold();
+		log_unit("%-64.64s%s%10.10s%s\n", test, color_red_bold(), "FAILED", color_reset());
 	}
 	else {
-		color = color_green();
+		log_unit("%-64.64s%s%10.10s%s\n", test, color_green(), "PASSED", color_reset());
 	}
 
-	log_enable();
-	log_unit("%-64.64s%s%10.10s%s\n", test, color, (!status() ? "SKIPPED" : !st_populated(error) ? "PASSED" : "FAILED"), color_reset());
 	return;
 }
 

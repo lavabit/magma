@@ -297,6 +297,7 @@ int main(int argc, char *argv[]) {
 	}
 	// Otherwise add all of the unit tests to the suite runner.
 	else {
+		srunner_add_suite(sr, suite_check_sample());
 		srunner_add_suite(sr, suite_check_core());
 		srunner_add_suite(sr, suite_check_provide());
 		srunner_add_suite(sr, suite_check_network());

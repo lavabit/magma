@@ -401,9 +401,9 @@ START_TEST (check_prime_secp256k1_s)
 		bool_t result = true;
 		stringer_t *errmsg = MANAGEDBUF(1024);
 
-		if (status()) result = check_prime_secp256k1_fixed_sthread(errmsg);
+		if (status()) result = check_prime_secp256k1_parameters_sthread(errmsg);
+		if (status() && result) result = check_prime_secp256k1_fixed_sthread(errmsg);
 		if (status() && result) result = check_prime_secp256k1_keys_sthread(errmsg);
-		if (status() && result) result = check_prime_secp256k1_parameters_sthread(errmsg);
 
 		log_test("PROVIDERS / PRIME / SECP256K1 / SINGLE THREADED:", errmsg);
 		ck_assert_msg(result, st_char_get(errmsg));

@@ -238,8 +238,10 @@ bool_t check_prime_secp256k1_keys_sthread(stringer_t *errmsg) {
 
 bool_t check_prime_secp256k1_parameters_sthread(stringer_t *errmsg) {
 
-	EC_KEY *key = NULL;
+	EC_POINT *uncompressed = NULL;
+	EC_KEY *key = NULL, *ephemeral = NULL;
 
+	// These tests will produce error messages we don't need to see because they were expected.
 	log_disable();
 
 	// Test a NULL input.
@@ -272,18 +274,166 @@ bool_t check_prime_secp256k1_parameters_sthread(stringer_t *errmsg) {
 		secp256k1_free(key);
 		return false;
 	}
-	// Try with a value that is only one bit higher than allowed.
+	// Try with a value that is only two bits higher than allowed.
 	else if ((key = secp256k1_private_set(hex_decode_st(NULLER("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364142"), MANAGEDBUF(32))))) {
+		st_sprint(errmsg, "The secp256k1 private key setup function accepted a private key value two bits higher than allowed.");
+		secp256k1_free(key);
+		return false;
+	}
+	// Try with a value that is only two bits higher than allowed.
+	else if ((key = secp256k1_private_set(hex_decode_st(NULLER("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141"), MANAGEDBUF(32))))) {
 		st_sprint(errmsg, "The secp256k1 private key setup function accepted a private key value one bit higher than allowed.");
 		secp256k1_free(key);
 		return false;
 	}
 	// Try with a value that is precisely equal to the maximum legal value.
-	else if ((key = secp256k1_private_set(hex_decode_st(NULLER("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141"), MANAGEDBUF(32))))) {
-		st_sprint(errmsg, "The secp256k1 private key setup function did not accept the maximum allowable value.");
+	else if (!(key = secp256k1_private_set(hex_decode_st(NULLER("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140"), MANAGEDBUF(32))))) {
+		st_sprint(errmsg, "The secp256k1 private key setup function did not accept the maximum value for a private key.");
 		return false;
 	}
 
+	secp256k1_free(key);
+
+	// Try with a value that is precisely equal to the minimum legal value.
+	if (!(key = secp256k1_private_set(hex_decode_st(NULLER("0000000000000000000000000000000000000000000000000000000000000001"), MANAGEDBUF(32))))) {
+		st_sprint(errmsg, "The secp256k1 private key setup function did not accept the maximum value for a private key.");
+		return false;
+	}
+
+	secp256k1_free(key);
+
+	// Test a NULL input.
+	if ((key = secp256k1_public_set(NULL))) {
+		st_sprint(errmsg, "The secp256k1 public key setup function accepted a NULL input value.");
+		secp256k1_free(key);
+		return false;
+	}
+	// Try with a value of the wrong length.
+	else if ((key = secp256k1_public_set(hex_decode_st(NULLER("0200"), MANAGEDBUF(2))))) {
+		st_sprint(errmsg, "The secp256k1 public key setup function accepted a public key value that wasn't long enough.");
+		secp256k1_free(key);
+		return false;
+	}
+	// Try a value with an invalid prefix.
+	else if ((key = secp256k1_public_set(hex_decode_st(NULLER("000000000000000000000000000000000000000000000000000000000000000000"), MANAGEDBUF(33))))) {
+		st_sprint(errmsg, "The secp256k1 public key setup function accepted a public key value with an invalid prefix.");
+		secp256k1_free(key);
+		return false;
+	}
+	// Try a valid uncompressed point using the appropriate uncomressed prefix. This should fail, as we require compressed points.
+	else if ((key = secp256k1_public_set(hex_decode_st(NULLER("0479be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8"), MANAGEDBUF(65))))) {
+		st_sprint(errmsg, "The secp256k1 public key setup function accepted a public key value with an invalid prefix.");
+		secp256k1_free(key);
+		return false;
+	}
+	// Try a value with a valid prefix, but invalid value for X.
+	else if ((key = secp256k1_public_set(hex_decode_st(NULLER("020000000000000000000000000000000000000000000000000000000000000000"), MANAGEDBUF(33))))) {
+		st_sprint(errmsg, "The secp256k1 public key setup function accepted a public key value that was invalid.");
+		secp256k1_free(key);
+		return false;
+	}
+	// Try a value with a valid prefix, but invalid value for X.
+	else if ((key = secp256k1_public_set(hex_decode_st(NULLER("030000000000000000000000000000000000000000000000000000000000000000"), MANAGEDBUF(33))))) {
+		st_sprint(errmsg, "The secp256k1 public key setup function accepted a public key value that was invalid.");
+		secp256k1_free(key);
+		return false;
+	}
+	// Try a value with a valid prefix, but invalid value for X.
+	else if ((key = secp256k1_public_set(hex_decode_st(NULLER("02ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), MANAGEDBUF(33))))) {
+		st_sprint(errmsg, "The secp256k1 public key setup function accepted a public key value that was invalid.");
+		secp256k1_free(key);
+		return false;
+	}
+	// Try a value with a valid prefix, but invalid value for X.
+	else if ((key = secp256k1_public_set(hex_decode_st(NULLER("03ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), MANAGEDBUF(33))))) {
+		st_sprint(errmsg, "The secp256k1 public key setup function accepted a public key value that was invalid.");
+		secp256k1_free(key);
+		return false;
+	}
+	// Take a valid value, and padd the X value with 1 extra padding octet thus making the representation of the value too long.
+	else if ((key = secp256k1_public_set(hex_decode_st(NULLER("020079be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"), MANAGEDBUF(34))))) {
+		st_sprint(errmsg, "The secp256k1 public key setup function accepted a public key value that was too long.");
+		secp256k1_free(key);
+		return false;
+	}
+
+	// Take the public key value corresponding to a private key value of 0x01, and create a valid key object for further testing.
+	else if (!(key = secp256k1_public_set(hex_decode_st(NULLER("0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"), MANAGEDBUF(33))))) {
+		st_sprint(errmsg, "The secp256k1 public key setup function accepted a public key value that was too long.");
+		return false;
+	}
+
+	// Create a point object using the uncompressed form so we can compare the uncompressed point with the public key point created using the compressed form.
+	else if (!(uncompressed = EC_POINT_hex2point_d(EC_KEY_get0_group_d(key), "0479be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8", NULL, NULL))) {
+		st_sprint(errmsg, "The secp256k1 public key expressed in uncompressed form could not be converted into a point object for comparison purposes.");
+		secp256k1_free(key);
+		return false;
+
+	}
+
+	// Compare the uncompressed point with the public key point we created using the compressed format above.
+	else if (EC_POINT_cmp_d(EC_KEY_get0_group_d(key), EC_KEY_get0_public_key_d(key), uncompressed, NULL)) {
+		st_sprint(errmsg, "The secp256k1 public key expressed in uncompressed form could not be converted into a point object for comparison purposes.");
+		EC_POINT_free_d(uncompressed);
+		secp256k1_free(key);
+		return false;
+	}
+
+	EC_POINT_free_d(uncompressed);
+
+	// Try and fetch a private key from an object that only has a public key.
+	if (secp256k1_private_get(key, MANAGEDBUF(32))) {
+		st_sprint(errmsg, "A secp256k1 private key was returned when only a public key should have been available.");
+		secp256k1_free(key);
+		return false;
+	}
+
+	// Try and get a public key but provide an output buffer that is too small.
+	else if (secp256k1_public_get(key, MANAGEDBUF(32))) {
+		st_sprint(errmsg, "A secp256k1 public key was returned in an output buffer that wasn't large enough to hold the value.");
+		secp256k1_free(key);
+		return false;
+	}
+
+	// Try and get a public key using a valid output buffer.
+	else if (!secp256k1_public_get(key, MANAGEDBUF(33))) {
+		st_sprint(errmsg, "A secp256k1 public key wasn't returned even though a valid output buffer was provided.");
+		secp256k1_free(key);
+		return false;
+	}
+
+	// Generate an ephemeral key for further testing.
+	else if (!(ephemeral = secp256k1_generate())) {
+		st_sprint(errmsg, "The secp256k1 ephemeral key couldn't be generated.");
+		secp256k1_free(key);
+		return false;
+	}
+
+	// Try computing a KEK value but flip the EC values so the object with only a public key is provided where the epemeral value should have been.
+	else if (secp256k1_compute_kek(key, ephemeral, MANAGEDBUF(32))) {
+		st_sprint(errmsg, "The secp256k1 key encryption key computation worked when no private key was available.");
+		secp256k1_free(ephemeral);
+		secp256k1_free(key);
+		return false;
+	}
+
+	// Try computing a KEK with the values in the correct order, but supply an output buffer that is 1 byte too small.
+	else if (secp256k1_compute_kek(ephemeral, key, MANAGEDBUF(31))) {
+		st_sprint(errmsg, "The secp256k1 key encryption key computation worked even though the output buffer was too small.");
+		secp256k1_free(ephemeral);
+		secp256k1_free(key);
+		return false;
+	}
+
+	// Finally try the computation with valid values.
+	else if (!secp256k1_compute_kek(ephemeral, key, MANAGEDBUF(32))) {
+		st_sprint(errmsg, "The secp256k1 key encryption key computation didn't work even though all of the input should have been correct.");
+		secp256k1_free(ephemeral);
+		secp256k1_free(key);
+		return false;
+	}
+
+	secp256k1_free(ephemeral);
 	secp256k1_free(key);
 	return true;
 

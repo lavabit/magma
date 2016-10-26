@@ -197,7 +197,9 @@ EC_KEY * secp256k1_public_set(stringer_t *key) {
 	EC_POINT *pub = NULL;
 	EC_KEY *output = NULL;
 
-	if (st_empty(key) || st_length_get(key) != 33) {
+	// Valid compressed points begin with 0x02 or 0x03 to indicate whether the point is greater than, or less than the midpoint of the curve, and
+	// and the prefix byte must be followed by a 32 byte scalar value.
+	if (st_empty(key) || st_length_get(key) != 33 || (*(st_char_get(key)) != 2 && *(st_char_get(key)) != 3)) {
 		log_info("An invalid key was passed in.");
 		return NULL;
 	}

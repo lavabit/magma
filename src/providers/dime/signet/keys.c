@@ -101,7 +101,7 @@ static keys_type_t keys_type_get(unsigned char const *bin_keys, size_t len) {
  */
 static EC_KEY * keys_enckey_from_binary(unsigned char const *bin_keys, size_t len) {
 	unsigned char enc_fid;
-	size_t at = 0, privkeylen;
+	size_t at = 0, privkeylen = 32;
 	EC_KEY *enc_key = NULL;
 
 	if (!bin_keys) {
@@ -123,17 +123,32 @@ static EC_KEY * keys_enckey_from_binary(unsigned char const *bin_keys, size_t le
 		break;
 
 	}
-	at = KEYS_HEADER_SIZE;
 
-	while (bin_keys[at++] != enc_fid) {
-		at += bin_keys[at] + 1;
-		if (len <= at) {
-			RET_ERROR_PTR(ERR_UNSPEC, "no private encryption key in keys file");
-		}
+	// Skip the object header.
+	at += KEYS_HEADER_SIZE;
+
+	// The first field id should always be 1.
+	if (bin_keys[at++] != 1) {
+		RET_ERROR_PTR(ERR_UNSPEC, "no signing key was found");
+	}
+	// And its size should always be 32.
+	if (bin_keys[at++] != ED25519_KEY_SIZE) {
+		RET_ERROR_PTR(ERR_UNSPEC, "invalid size of signing key");
 	}
 
-	privkeylen = _int_no_get_2b(bin_keys + at);
-	at += 2;
+	// Skip over the key data.
+	at += ED25519_KEY_SIZE;
+
+	// The encryption field ID depends on whether this is an org, or user key file.
+	if (bin_keys[at++] != enc_fid) {
+		RET_ERROR_PTR(ERR_UNSPEC, "no encryption key was found");
+	}
+	// And its size should also, always be 32.
+	if (bin_keys[at++] != privkeylen) {
+		RET_ERROR_PTR(ERR_UNSPEC, "invalid size of encryption key");
+	}
+
+	// Ensure the buffer holds at least 32 more bytes.
 	if (at + privkeylen > len) {
 		RET_ERROR_PTR(ERR_UNSPEC, "invalid encryption key size");
 	}
@@ -275,7 +290,7 @@ static int keys_file_create(keys_type_t type, ED25519_KEY *sign_key, EC_KEY *enc
 		_secure_wipe(serial_sign, ED25519_KEY_SIZE);
 		RET_ERROR_INT(ERR_UNSPEC, "could not serialize private key");
 	}
-	serial_size = KEYS_HEADER_SIZE + 1 + 1 + ED25519_KEY_SIZE + 1 + 2 + enc_size;
+	serial_size = KEYS_HEADER_SIZE + 1 + 1 + ED25519_KEY_SIZE + 1 + 1 + enc_size;
 	if (!(serial_keys = malloc(serial_size))) {
 		PUSH_ERROR_SYSCALL("malloc");
 		_secure_wipe(serial_sign, ED25519_KEY_SIZE);
@@ -293,8 +308,7 @@ static int keys_file_create(keys_type_t type, ED25519_KEY *sign_key, EC_KEY *enc
 	at += ED25519_KEY_SIZE;
 	_secure_wipe(serial_sign, ED25519_KEY_SIZE);
 	serial_keys[at++] = enc_fid;
-	_int_no_put_2b(serial_keys + at, (uint16_t)enc_size);
-	at += 2;
+	serial_keys[at++] = enc_size;
 	memcpy(serial_keys + at, serial_enc, enc_size);
 	_secure_wipe(serial_enc, enc_size);
 	free(serial_enc);
@@ -366,7 +380,6 @@ static int keys_generate(keys_type_t type, char **signet_pem, char **key_pem) {
 	default:
 		RET_ERROR_INT(ERR_BAD_PARAM, NULL);
 		break;
-
 	}
 
 	if (!(signet = dime_sgnt_signet_create(type))) {
@@ -451,8 +464,7 @@ static int keys_generate(keys_type_t type, char **signet_pem, char **key_pem) {
 	at += ED25519_KEY_SIZE;
 	_secure_wipe(serial_sign, ED25519_KEY_SIZE);
 	serial_keys[at++] = enc_fid;
-	_int_no_put_2b(serial_keys + at, (uint16_t)enc_size);
-	at += 2;
+	serial_keys[at++] = enc_size;
 	memcpy(serial_keys + at, serial_enc, enc_size);
 	_secure_wipe(serial_enc, enc_size);
 	free(serial_enc);

@@ -383,16 +383,15 @@ _serialize_ec_privkey(EC_KEY *key, size_t *outsize)
     }
 
    stringer_t *priv;
-   if (!(priv = secp256k1_private_get(key, MANAGEDBUF(32)))) {
+   buf = mm_alloc(32);
+
+   if (!(priv = secp256k1_private_get(key, PLACER(buf, 32)))) {
   //  if ((bsize = i2d_ECPrivateKey_d(key, &buf)) < 0) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(ERR_UNSPEC, "unable to serialize EC private key");
     }
 
-   buf = mm_alloc(32);
-   memmove(buf, st_data_get(priv), st_length_get(priv));
-
-    *outsize = st_length_get(priv);
+    *outsize = 32;
 
     return buf;
 }

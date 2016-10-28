@@ -19,7 +19,7 @@ enum {
 	COMPRESS_ENGINE_BZIP = 4
 } COMPRESS_ENGINE;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 
 	uint8_t engine;
 
@@ -33,7 +33,7 @@ typedef struct {
 		uint64_t compressed;
 	} hash;
 
-} __attribute__ ((packed)) compress_head_t;
+} compress_head_t;
 
 typedef stringer_t compress_t;
 

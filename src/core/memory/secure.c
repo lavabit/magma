@@ -17,10 +17,10 @@ enum {
 	MM_SEC_CHUNK_ALLOCATED = 1
 };
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	uint32_t flags;
 	size_t length;
-} __attribute__ ((packed)) secured_t;
+} secured_t;
 
 static struct {
 

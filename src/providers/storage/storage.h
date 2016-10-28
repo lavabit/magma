@@ -29,7 +29,7 @@ enum {
 	TANK_COMPRESS_BZIP = 4
 } TANK_FLAGS_E;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 
 	uint8_t ver; /*!< Number indicating the entry version, which also tells us the layout of the data. */
 	uint8_t rec; /*!< The length of the record data. */
@@ -49,9 +49,9 @@ typedef struct {
 		uint64_t encrypted; /*!< The length of the encrypted data block, if applicable. */
 	} data;
 
-} __attribute__ ((packed)) record_t;
+} record_t;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 
 	uint8_t ver; /*!< Number indicating the entry version, which also tells us the layout of the data. */
 
@@ -70,7 +70,7 @@ typedef struct {
 			uint64_t expiration; /*!< When archived/deleted objects can be permanently purged. */
 		} stamps;
 
-} __attribute__ ((packed)) entry_t;
+} entry_t;
 
 
 bool_t lib_load_tokyo(void);

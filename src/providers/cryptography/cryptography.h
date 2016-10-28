@@ -60,16 +60,16 @@ typedef enum {
 	ECIES_PUBLIC_BINARY = 8
 } ECIES_KEY_TYPE;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	struct {
 		uint64_t envelope;
 		uint64_t hmac;
 		uint64_t original;
 		uint64_t body;
 	} length;
-} __attribute__ ((packed)) cryptex_head_t;
+} cryptex_head_t;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 
 	uint32_t engine;
 
@@ -84,7 +84,7 @@ typedef struct {
 		uint32_t scrambled;
 	} hash;
 
-} __attribute__ ((packed)) scramble_head_t;
+} scramble_head_t;
 
 typedef void * digest_t;
 typedef void * cipher_t;

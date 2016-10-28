@@ -247,7 +247,7 @@ TEST(DIME, check_ec_serialization)
         sbuf = _serialize_ec_privkey(pair, &ssize);
         ASSERT_TRUE(sbuf != NULL) << "EC serialization check failed: pubkey serialization error.";
 
-        pair2 = _deserialize_ec_privkey(sbuf, ssize, 0);
+        pair2 = _deserialize_ec_privkey(sbuf, ssize);
         ASSERT_TRUE(pair2 != NULL) << "EC serialization check failed: pubkey deserialization error.";
 
         sbuf2 = _serialize_ec_privkey(pair, &ssize2);

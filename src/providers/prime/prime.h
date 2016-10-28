@@ -17,10 +17,6 @@
 #define SECP256K1_KEY_PRIV_LEN 32
 #define SECP256K1_SHARED_SECRET_LEN 32
 
-#define ED25519_KEY_PUB_LEN 32
-#define ED25519_KEY_PRIV_LEN 32
-#define ED25519_SIGNATURE_LEN 64
-
 // This allows code to include the PRIME header without first including the OpenSSL headers.
 #ifdef HEADER_EC_H
 typedef EC_KEY secp256k1_key_t;
@@ -28,9 +24,32 @@ typedef EC_KEY secp256k1_key_t;
 typedef void secp256k1_key_t;
 #endif
 
-// This allows code to include the PRIME header without first including the OpenSSL headers.
-#ifdef MAGMA_CORE_STRINGS_H
-typedef stringer_t ed25519_key_t;
+
+#define ED25519_KEY_PUB_LEN 32
+#define ED25519_KEY_PRIV_LEN 32
+#define ED25519_SIGNATURE_LEN 64
+
+typedef enum {
+	ED25519_PUB,
+	ED25519_PRIV
+} ed25519_key_type_t;
+
+#ifdef _STDINT_H
+typedef struct {
+
+	ed25519_key_type_t type;
+
+	union {
+		struct {
+			uint8_t public[ED25519_KEY_PUB_LEN];
+		};
+
+		struct {
+			uint8_t public[ED25519_KEY_PUB_LEN];
+			uint8_t private[ED25519_KEY_PRIV_LEN];
+		};
+	};
+} ed25519_key_t;
 #else
 typedef void ed25519_key_t;
 #endif

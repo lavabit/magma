@@ -32,28 +32,6 @@ void user_key_free(prime_user_key_t *user) {
 	return;
 }
 
-void prime_key_free(prime_key_t *key) {
-
-	if (key) {
-
-		switch (key->type) {
-			case PRIME_ORG_KEY:
-				if (key->org) org_key_free(key->org);
-				break;
-			case PRIME_USER_KEY:
-				if (key->user) user_key_free(key->user);
-				break;
-			default:
-				log_pedantic("Unrecognized key type.");
-				return;
-		}
-
-		mm_free(key);
-	}
-
-	return;
-}
-
 prime_org_key_t * org_key_alloc(void) {
 
 	prime_org_key_t *org = NULL;
@@ -82,6 +60,28 @@ prime_user_key_t * user_key_alloc(void) {
 	return user;
 }
 
+void prime_key_free(prime_key_t *key) {
+
+	if (key) {
+
+		switch (key->type) {
+			case PRIME_ORG_KEY:
+				if (key->org) org_key_free(key->org);
+				break;
+			case PRIME_USER_KEY:
+				if (key->user) user_key_free(key->user);
+				break;
+			default:
+				log_pedantic("Unrecognized key type.");
+				return;
+		}
+
+		mm_free(key);
+	}
+
+	return;
+}
+
 prime_key_t * prime_key_alloc(prime_type_t type) {
 
 	prime_key_t *result = NULL;
@@ -95,7 +95,33 @@ prime_key_t * prime_key_alloc(prime_type_t type) {
 
 		case PRIME_ORG_KEY:
 			result->type = PRIME_ORG_KEY;
-			result->org = org_key_alloc();
+			break;
+		case PRIME_USER_KEY:
+			result->type = PRIME_USER_KEY;
+			break;
+
+		default:
+			log_pedantic("Unrecognized key type.");
+			mm_free(result);
+			return NULL;
+	}
+
+	return result;
+}
+
+prime_key_t * prime_key_generate(prime_type_t type) {
+
+	prime_key_t *result = NULL;
+
+	if (!(result = prime_key_generate(type))) {
+		log_pedantic("Allocation of the PRIME key failed.");
+		return NULL;
+	}
+
+	switch (type) {
+
+		case PRIME_ORG_KEY:
+			//result->org->signing = ed25519_publickey(sk, pk)();
 			break;
 		case PRIME_USER_KEY:
 			result->type = PRIME_USER_KEY;
@@ -109,4 +135,6 @@ prime_key_t * prime_key_alloc(prime_type_t type) {
 	}
 
 	return result;
+
+
 }

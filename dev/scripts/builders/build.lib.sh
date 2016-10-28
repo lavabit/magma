@@ -1292,6 +1292,9 @@ openssl() {
 		;;
 		openssl-prep)
 			cd "$M_SOURCES/openssl"; error
+			if [[ $OPENSSL =~ "openssl-1.0.2" ]]; then
+				cat "$M_PATCHES/openssl/"1.0.2_curve25519_ed25519.patch | patch -p1 --verbose &>> "$M_LOGS/openssl.txt"; error
+			fi
 		;;
 		openssl-build)
 			# OpenSSL does not use environment variables to pickup additional compiler flags
@@ -1658,7 +1661,7 @@ utf8proc() {
 		;;
 		utf8proc-prep)
 			cd "$M_SOURCES/utf8proc"; error
-			if [[ $UTF8PROC == "1.3.1" ]]; then
+			if [[ $UTF8PROC =~ "utf8proc-1.3.1" ]]; then
 				cat "$M_PATCHES/utf8proc/"utf8proc.release.version.patch | patch -p1 --verbose &>> "$M_LOGS/utf8proc.txt"; error
 			fi
 		;;

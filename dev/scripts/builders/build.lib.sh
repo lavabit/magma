@@ -757,7 +757,7 @@ bzip2() {
 		bzip2-build)
 			cd "$M_SOURCES/bzip2"; error
 			make CC=gcc AR=ar RANLIB=ranlib 'CFLAGS=-O2 -g3 -fPIC -rdynamic -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -D_FILE_OFFSET_BITS=64' &>> "$M_LOGS/bzip2.txt"; error
-			make PREFIX="$M_SOURCES" install &>> "$M_LOGS/bzip2.txt"; error
+			make PREFIX="$M_LOCAL" install &>> "$M_LOGS/bzip2.txt"; error
 		;;
 		bzip2-check)
 			cd "$M_SOURCES/bzip2"; error
@@ -1224,7 +1224,7 @@ checker() {
 			cat "$M_PATCHES/checker/"checker-automake-version.patch | patch -p1 --verbose &>> "$M_LOGS/checker.txt"; error
 			# Valgrind will complain about uninitialized bytes if we don't memset the timer variable before using it.
 			cat "$M_PATCHES/checker/"checker-timer-memset.patch | patch -p1 --verbose &>> "$M_LOGS/checker.txt"; error
-			
+
 		;;
 		checker-build)
 			cd "$M_SOURCES/checker"; error
@@ -2136,9 +2136,9 @@ generate() {
 
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"; error
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem"; error
-	
-	# Tell git to skip checking for changes to the key files, but only if git is on the system and the files 
-	# are stored inside a repo. 
+
+	# Tell git to skip checking for changes to the key files, but only if git is on the system and the files
+	# are stored inside a repo.
 	GIT_IS_AVAILABLE=`which git &> /dev/null && git log &> /dev/null && echo 1`
 	if [[ "$GIT_IS_AVAILABLE" == "1" ]]; then
 		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"
@@ -2153,9 +2153,9 @@ keys() {
 
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"; error
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem"; error
-	
-	# Tell git to skip checking for changes to the key files, but only if git is on the system and the files 
-	# are stored inside a repo. 
+
+	# Tell git to skip checking for changes to the key files, but only if git is on the system and the files
+	# are stored inside a repo.
 	GIT_IS_AVAILABLE=`which git &> /dev/null && git log &> /dev/null && echo 1`
 	if [[ "$GIT_IS_AVAILABLE" == "1" ]]; then
 		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"

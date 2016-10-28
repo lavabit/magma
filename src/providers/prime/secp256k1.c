@@ -107,12 +107,12 @@ stringer_t *secp256k1_public_get(EC_KEY *key, stringer_t *output) {
 	}
 
 	// See if we have a valid output buffer, or if output is NULL, allocate a buffer to hold the output.
-	if (output && (!st_valid_destination(st_opt_get(output)) || st_avail_get(output) < 33)) {
+	if (output && (!st_valid_destination(st_opt_get(output)) || st_avail_get(output) < SECP256K1_PUBLIC_KEY_LEN)) {
 		log_pedantic("An output string was supplied but it does not represent a buffer capable of holding the output.");
 		return NULL;
 	}
-	else if (!output && !(result = st_alloc(33))) {
-		log_pedantic("Could not allocate a buffer large enough to hold encoded result. { requested = 33 }");
+	else if (!output && !(result = st_alloc(SECP256K1_PUBLIC_KEY_LEN))) {
+		log_pedantic("Could not allocate a buffer large enough to hold encoded result. { requested = %i }", SECP256K1_PUBLIC_KEY_LEN);
 		return NULL;
 	}
 	else if (result) {
@@ -121,14 +121,14 @@ stringer_t *secp256k1_public_get(EC_KEY *key, stringer_t *output) {
 
 	// Confirm the compressed point will result in 33 bytes of data, then write out the public key as a compressed point.
 	if (EC_POINT_point2oct_d(EC_KEY_get0_group_d(key), EC_KEY_get0_public_key_d(key), EC_KEY_get_conv_form_d(key), NULL, 0, NULL) != 33 ||
-		(len = EC_POINT_point2oct_d(EC_KEY_get0_group_d(key), EC_KEY_get0_public_key_d(key), EC_KEY_get_conv_form_d(key), st_data_get(output), 33, NULL)) != 33) {
+		(len = EC_POINT_point2oct_d(EC_KEY_get0_group_d(key), EC_KEY_get0_public_key_d(key), EC_KEY_get_conv_form_d(key), st_data_get(output), SECP256K1_PUBLIC_KEY_LEN, NULL)) != SECP256K1_PUBLIC_KEY_LEN) {
 		log_pedantic("Serialization of the public key into a multiprecision integer failed. { len = %zu / error = %s }", len, ssl_error_string(MEMORYBUF(256), 256));
 		st_cleanup(result);
 		return NULL;
 	}
 
 	// Update the output buffer length.
-	st_length_set(output, len);
+	st_length_set(output, SECP256K1_PUBLIC_KEY_LEN);
 	return output;
 }
 
@@ -144,12 +144,12 @@ stringer_t *secp256k1_private_get(EC_KEY *key, stringer_t *output) {
 	stringer_t *result = NULL;
 
 	// See if we have a valid output buffer, or if output is NULL, allocate a buffer to hold the output.
-	if (output && (!st_valid_destination(st_opt_get(output)) || st_avail_get(output) < 32)) {
+	if (output && (!st_valid_destination(st_opt_get(output)) || st_avail_get(output) < SECP256K1_PRIVATE_KEY_LEN)) {
 		log_pedantic("An output string was supplied but it does not represent a buffer capable of holding the output.");
 		return NULL;
 	}
-	else if (!output && !(result = st_alloc(32))) {
-		log_pedantic("Could not allocate a buffer large enough to hold encoded result. { requested = 32 }");
+	else if (!output && !(result = st_alloc(SECP256K1_PRIVATE_KEY_LEN))) {
+		log_pedantic("Could not allocate a buffer large enough to hold encoded result. { requested = %i }", SECP256K1_PRIVATE_KEY_LEN);
 		return NULL;
 	}
 	else if (result) {
@@ -167,14 +167,14 @@ stringer_t *secp256k1_private_get(EC_KEY *key, stringer_t *output) {
 	}
 	// Confirm the private key component will fit inside the 32 bytes provided, then write the BIGNUM out as
 	// a big endian integer.
-	if (BN_num_bits_d(bn) > 256 || (len = BN_num_bytes_d(bn)) > 32) {
+	if (BN_num_bits_d(bn) > 256 || (len = BN_num_bytes_d(bn)) > SECP256K1_PRIVATE_KEY_LEN) {
 		log_pedantic("Serialization of the private key failed because the size was larger then expected. { len = %zu / bits = %i / error = %s }",
 			len, BN_num_bits_d(bn), ssl_error_string(MEMORYBUF(256), 256));
 		st_cleanup(result);
 		return NULL;
 	}
 	// Write the key into the output buffer. Advance the pointer to account for any padding that might be needed.
-	else if ((size_t)BN_bn2bin_d(bn, st_data_get(output) + (32 - len)) != len) {
+	else if ((size_t)BN_bn2bin_d(bn, st_data_get(output) + (SECP256K1_PRIVATE_KEY_LEN - len)) != len) {
 		log_pedantic("Serialization of the private key into a multiprecision integer failed. { len = %zu / bits = %i / error = %s }",
 			len, BN_num_bits_d(bn), ssl_error_string(MEMORYBUF(256), 256));
 		st_cleanup(result);
@@ -182,7 +182,7 @@ stringer_t *secp256k1_private_get(EC_KEY *key, stringer_t *output) {
 	}
 
 	// Update the output buffer length.
-	st_length_set(output, 32);
+	st_length_set(output, SECP256K1_PRIVATE_KEY_LEN);
 	return output;
 }
 
@@ -199,7 +199,7 @@ EC_KEY * secp256k1_public_set(stringer_t *key) {
 
 	// Valid compressed points begin with 0x02 or 0x03 to indicate whether the point is greater than, or less than the midpoint of the curve, and
 	// and the prefix byte must be followed by a 32 byte scalar value.
-	if (st_empty(key) || st_length_get(key) != 33 || (*(st_char_get(key)) != 2 && *(st_char_get(key)) != 3)) {
+	if (st_empty(key) || st_length_get(key) != SECP256K1_PUBLIC_KEY_LEN || (*(st_char_get(key)) != 2 && *(st_char_get(key)) != 3)) {
 		log_info("An invalid key was passed in.");
 		return NULL;
 	}
@@ -214,7 +214,7 @@ EC_KEY * secp256k1_public_set(stringer_t *key) {
 	BN_CTX_start_d(ctx);
 
 	// Decode a big endian integer into a BIGNUM structure.
-	if (EC_POINT_oct2point_d(EC_KEY_get0_group_d(output), pub, st_data_get(key), st_length_get(key), ctx) != 1) {
+	if (EC_POINT_oct2point_d(EC_KEY_get0_group_d(output), pub, st_data_get(key), SECP256K1_PUBLIC_KEY_LEN, ctx) != 1) {
 		log_info("An error occurred while parsing the binary elliptical curve point data used to represent the public key. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EC_KEY_free_d(output);
 		EC_POINT_free_d(pub);
@@ -250,7 +250,7 @@ EC_KEY * secp256k1_private_set(stringer_t *key) {
 	EC_KEY *output = NULL;
 	BIGNUM *number = NULL;
 
-	if (st_empty(key) || st_length_get(key) != 32) {
+	if (st_empty(key) || st_length_get(key) != SECP256K1_PRIVATE_KEY_LEN) {
 		log_info("An invalid key was passed in.");
 		return NULL;
 	}
@@ -265,7 +265,7 @@ EC_KEY * secp256k1_private_set(stringer_t *key) {
 	BN_CTX_start_d(ctx);
 
 	// Decode a big endian integer into a BIGNUM structure.
-	if (!(number = BN_bin2bn_d(st_data_get(key), st_length_get(key), NULL))) {
+	if (!(number = BN_bin2bn_d(st_data_get(key), SECP256K1_PRIVATE_KEY_LEN, NULL))) {
 		log_info("An error occurred while parsing the binary elliptical curve point data used to represent the private key. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EC_KEY_free_d(output);
 		EC_POINT_free_d(pub);
@@ -318,12 +318,12 @@ stringer_t * secp256k1_compute_kek(EC_KEY *private, EC_KEY *public, stringer_t *
 	}
 
 	// See if we have a valid output buffer, or if output is NULL, allocate a buffer to hold the output.
-	else if (output && (!st_valid_destination(st_opt_get(output)) || st_avail_get(output) < 32)) {
+	else if (output && (!st_valid_destination(st_opt_get(output)) || st_avail_get(output) < SECP256K1_KEY_ENCRYPTION_KEY_LEN)) {
 		log_pedantic("An output string was supplied but it does not represent a buffer capable of holding the output.");
 		return NULL;
 	}
-	else if (!output && !(result = st_alloc(32))) {
-		log_pedantic("Could not allocate a buffer large enough to hold encoded result. { requested = 32 }");
+	else if (!output && !(result = st_alloc(SECP256K1_KEY_ENCRYPTION_KEY_LEN))) {
+		log_pedantic("Could not allocate a buffer large enough to hold encoded result. { requested = %i }", SECP256K1_KEY_ENCRYPTION_KEY_LEN);
 		return NULL;
 	}
 	else if (result) {
@@ -331,13 +331,13 @@ stringer_t * secp256k1_compute_kek(EC_KEY *private, EC_KEY *public, stringer_t *
 	}
 
 	// Attempt the KEK calculation. The output length will be 32 if the process worked.
-	if ((len = ECDH_compute_key_d(st_data_get(output), 32, EC_KEY_get0_public_key_d(public), private, NULL)) != 32) {
+	if ((len = ECDH_compute_key_d(st_data_get(output), SECP256K1_KEY_ENCRYPTION_KEY_LEN, EC_KEY_get0_public_key_d(public), private, NULL)) != SECP256K1_KEY_ENCRYPTION_KEY_LEN) {
 		log_info("An error occurred while trying to compute the key encryption key. { result = %i / error = %s}",
 			len, ssl_error_string(MEMORYBUF(256), 256));
 		st_cleanup(result);
 		return NULL;
 	}
 
-	st_length_set(output, 32);
+	st_length_set(output, SECP256K1_KEY_ENCRYPTION_KEY_LEN);
 	return output;
 }

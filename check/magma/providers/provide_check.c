@@ -136,7 +136,7 @@ START_TEST (check_tank_lzo_s)
 		check_tank_opt_t opts = {
 			.engine = TANK_COMPRESS_LZO
 		};
-		log_unit("%-64.64s", "STORAGE / LZO / SINGLE THREADED:");
+		log_unit("%-64.64s", "TANK / LZO / SINGLE THREADED:");
 		outcome = check_tokyo_tank_sthread(&opts);
 		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
 		fail_unless(outcome, "check_tokyo_tank_sthread failed");
@@ -150,7 +150,7 @@ START_TEST (check_tank_lzo_m)
 		check_tank_opt_t opts = {
 			.engine = TANK_COMPRESS_LZO
 		};
-		log_unit("%-64.64s", "STORAGE / LZO / MULTITHREADED:");
+		log_unit("%-64.64s", "TANK / LZO / MULTITHREADED:");
 		outcome = check_tokyo_tank_mthread(&opts);
 		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
 		fail_unless(outcome, "check_tokyo_tank_mthread failed");
@@ -164,7 +164,7 @@ START_TEST (check_tank_zlib_s)
 		check_tank_opt_t opts = {
 			.engine = TANK_COMPRESS_ZLIB
 		};
-		log_unit("%-64.64s", "STORAGE / ZLIB / SINGLE THREADED:");
+		log_unit("%-64.64s", "TANK / ZLIB / SINGLE THREADED:");
 		outcome = check_tokyo_tank_sthread(&opts);
 		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
 		fail_unless(outcome, "check_tokyo_tank_sthread failed");
@@ -178,7 +178,7 @@ START_TEST (check_tank_zlib_m)
 		check_tank_opt_t opts = {
 			.engine = TANK_COMPRESS_ZLIB
 		};
-		log_unit("%-64.64s", "STORAGE / ZLIB / MULTITHREADED:");
+		log_unit("%-64.64s", "TANK / ZLIB / MULTITHREADED:");
 		outcome = check_tokyo_tank_mthread(&opts);
 		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
 		fail_unless(outcome, "check_tokyo_tank_mthread failed");
@@ -192,7 +192,7 @@ START_TEST (check_tank_bzip_s)
 		check_tank_opt_t opts = {
 			.engine = TANK_COMPRESS_BZIP
 		};
-		log_unit("%-64.64s", "STORAGE / BZIP / SINGLE THREADED:");
+		log_unit("%-64.64s", "TANK / BZIP / SINGLE THREADED:");
 		outcome = check_tokyo_tank_sthread(&opts);
 		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
 		fail_unless(outcome, "check_tokyo_tank_sthread failed");
@@ -206,7 +206,7 @@ START_TEST (check_tank_bzip_m)
 		check_tank_opt_t opts = {
 			.engine = TANK_COMPRESS_BZIP
 		};
-		log_unit("%-64.64s", "STORAGE / BZIP / MULTITHREADED:");
+		log_unit("%-64.64s", "TANK / BZIP / MULTITHREADED:");
 		outcome = check_tokyo_tank_mthread(&opts);
 		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
 		fail_unless(outcome, "check_tokyo_tank_mthread failed");
@@ -394,19 +394,34 @@ START_TEST (check_stacie_s) {
 END_TEST
 
 //! PRIME Tests
-START_TEST (check_prime_secp256k1_s)
-	{
-		bool_t result = true;
-		stringer_t *errmsg = MANAGEDBUF(1024);
+START_TEST (check_prime_secp256k1_s) {
 
-		if (status()) result = check_prime_secp256k1_parameters_sthread(errmsg);
-		if (status() && result) result = check_prime_secp256k1_fixed_sthread(errmsg);
-		if (status() && result) result = check_prime_secp256k1_keys_sthread(errmsg);
+	log_disable();
+	bool_t result = true;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 
-		log_test("PROVIDERS / PRIME / SECP256K1 / SINGLE THREADED:", errmsg);
-		ck_assert_msg(result, st_char_get(errmsg));
+	if (status()) result = check_prime_secp256k1_parameters_sthread(errmsg);
+	if (status() && result) result = check_prime_secp256k1_fixed_sthread(errmsg);
+	if (status() && result) result = check_prime_secp256k1_keys_sthread(errmsg);
 
-	}
+	log_test("PRIME / SECP256K1 / SINGLE THREADED:", errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
+
+}
+END_TEST
+
+START_TEST (check_prime_keys_s) {
+
+	log_disable();
+	bool_t result = true;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	if (status()) result = check_prime_keys_sthread(errmsg);
+
+	log_test("PRIME / KEYS / SINGLE THREADED:", errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
+
+}
 END_TEST
 
 //! SPF Tests
@@ -570,7 +585,8 @@ Suite * suite_check_provide(void) {
 	testcase(s, tc, "Cryptography SCRAMBLE/S", check_scramble_s);
 	testcase(s, tc, "Cryptography STACIE/S", check_stacie_s);
 
-	testcase(s, tc, "Cryptography PRIME/S", check_prime_secp256k1_s);
+	testcase(s, tc, "PRIME SECP256k1/S", check_prime_secp256k1_s);
+	testcase(s, tc, "PRIME KEYS/S", check_prime_keys_s);
 
 	// Tank functionality is temporarily disabled.
 	if (do_tank_check) {
@@ -580,26 +596,30 @@ Suite * suite_check_provide(void) {
 		testcase(s, tc, "Tank ZLIB/M", check_tank_zlib_m);
 		testcase(s, tc, "Tank BZIP/S", check_tank_bzip_s);
 		testcase(s, tc, "Tank BZIP/M", check_tank_bzip_m);
-	} else {
+	}
+	else {
 		log_unit("Skipping tank checks...\n");
 	}
 
 	if (do_spf_check) {
 		testcase(s, tc, "SPF/S", check_spf_s);
-	} else {
+	}
+	else {
 		log_unit("Skipping SPF checks...\n");
 	}
 
 	if (do_virus_check) {
 		testcase(s, tc, "Virus/S", check_virus_s);
-	} else {
+	}
+	else {
 		log_unit("Skipping virus checks...\n");
 	}
 
 	if (do_dspam_check) {
 		testcase(s, tc, "DSPAM Mail/S", check_dspam_mail_s);
 		testcase(s, tc, "DSPAM Binary/S", check_dspam_bin_s);
-	} else {
+	}
+	else {
 		log_unit("Skipping DSPAM checks...\n");
 	}
 

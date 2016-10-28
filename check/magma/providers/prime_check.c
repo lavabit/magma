@@ -12,6 +12,38 @@
 
 #include "magma_check.h"
 
+bool_t check_prime_keys_sthread(stringer_t *errmsg) {
+
+	prime_key_t *holder = NULL;
+
+	// Allocate an org key.
+	if (!(holder = prime_key_alloc(PRIME_ORG_KEY))) {
+		st_sprint(errmsg, "Org key allocation failed.");
+		return false;
+	}
+	else {
+		prime_key_free(holder);
+	}
+
+	// Allocate a user key.
+	if (!(holder = prime_key_alloc(PRIME_USER_KEY))) {
+		st_sprint(errmsg, "User key allocation failed.");
+		return false;
+	}
+	else {
+		prime_key_free(holder);
+	}
+
+	// Attempt allocation of a non-key type using the key allocation function.
+	if ((holder = prime_key_alloc(PRIME_ORG_SIGNET)) || (holder = prime_key_alloc(PRIME_USER_SIGNET)) || (holder = prime_key_alloc(PRIME_USER_SIGNING_REQUEST))) {
+		st_sprint(errmsg, "User key allocation failed.");
+		prime_key_free(holder);
+		return false;
+	}
+
+	return true;
+}
+
 bool_t check_prime_secp256k1_fixed_sthread(stringer_t *errmsg) {
 
 	int len;
@@ -241,9 +273,6 @@ bool_t check_prime_secp256k1_parameters_sthread(stringer_t *errmsg) {
 	EC_POINT *uncompressed = NULL;
 	EC_KEY *key = NULL, *ephemeral = NULL;
 
-	// These tests will produce error messages we don't need to see because they were expected.
-	log_disable();
-
 	// Test a NULL input.
 	if ((key = secp256k1_private_set(NULL))) {
 		st_sprint(errmsg, "The secp256k1 private key setup function accepted a NULL input value.");
@@ -438,3 +467,4 @@ bool_t check_prime_secp256k1_parameters_sthread(stringer_t *errmsg) {
 	return true;
 
 }
+

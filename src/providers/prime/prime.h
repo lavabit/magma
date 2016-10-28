@@ -17,6 +17,10 @@
 #define SECP256K1_KEY_PRIV_LEN 32
 #define SECP256K1_SHARED_SECRET_LEN 32
 
+#define ED25519_KEY_PUB_LEN 32
+#define ED25519_KEY_PRIV_LEN 32
+#define ED25519_SIGNATURE_LEN 64
+
 // This allows code to include the PRIME header without first including the OpenSSL headers.
 #ifdef HEADER_EC_H
 typedef EC_KEY secp256k1_key_t;
@@ -24,17 +28,25 @@ typedef EC_KEY secp256k1_key_t;
 typedef void secp256k1_key_t;
 #endif
 
-
-#define ED25519_KEY_PUB_LEN 32
-#define ED25519_KEY_PRIV_LEN 32
-#define ED25519_SIGNATURE_LEN 64
-
 typedef enum {
 	ED25519_PUB,
 	ED25519_PRIV
 } ed25519_key_type_t;
 
-#ifdef _STDINT_H
+typedef enum {
+
+    PRIME_ORG_SIGNET = 1776,             /**< File contains an organizational signet */
+	PRIME_ORG_KEY = 1952,               /**< File contains organizational keys*/
+	PRIME_ORG_KEY_ENCRYPTED = 1947,     /**< File contains an encrypted organizational key. */
+
+	PRIME_USER_SIGNING_REQUEST = 1215,    /**< File contains an ssr*/
+    PRIME_USER_SIGNET = 1789,            /**< File contains a user signet */
+	PRIME_USER_KEY = 2013,              /**< File contains user keys*/
+	PRIME_USER_KEY_ENCRYPTED = 1976,    /**< File contains an encrypted user key. */
+
+    PRIME_MESSAGE_ENCRYPTED = 1847
+} prime_type_t;
+
 typedef struct {
 
 	ed25519_key_type_t type;
@@ -50,23 +62,6 @@ typedef struct {
 		};
 	};
 } ed25519_key_t;
-#else
-typedef void ed25519_key_t;
-#endif
-
-typedef enum {
-
-    PRIME_ORG_SIGNET = 1776,             /**< File contains an organizational signet */
-	PRIME_ORG_KEY = 1952,               /**< File contains organizational keys*/
-	PRIME_ORG_KEY_ENCRYPTED = 1947,     /**< File contains an encrypted organizational key. */
-
-	PRIME_USER_SIGNING_REQUEST = 1215,    /**< File contains an ssr*/
-    PRIME_USER_SIGNET = 1789,            /**< File contains a user signet */
-	PRIME_USER_KEY = 2013,              /**< File contains user keys*/
-	PRIME_USER_KEY_ENCRYPTED = 1976,    /**< File contains an encrypted user key. */
-
-    PRIME_MESSAGE_ENCRYPTED = 1847
-} prime_type_t;
 
 typedef struct {
 	ed25519_key_t *signing;
@@ -86,17 +81,20 @@ typedef struct {
 	};
 } prime_key_t;
 
+#include "keys/keys.h"
+
+/// keys.c
+prime_key_t *  prime_key_alloc(prime_type_t type);
+void           prime_key_free(prime_key_t *key);
+prime_key_t *  prime_key_generate(prime_type_t type);
+stringer_t *   prime_key_get(prime_key_t *key, stringer_t *output);
+
 /// prime.c
 bool_t   prime_start(void);
 void     prime_stop(void);
 
-/// keys.c
-prime_org_key_t *   org_key_alloc(void);
-void                org_key_free(prime_org_key_t *org);
-prime_key_t *       prime_key_alloc(prime_type_t type);
-void                prime_key_free(prime_key_t *key);
-prime_user_key_t *  user_key_alloc(void);
-void                user_key_free(prime_user_key_t *user);
+/// ed25519.c
+ed25519_key_t *  ed25519_key_generate(void);
 
 /// secp256k1.c
 secp256k1_key_t *  secp256k1_alloc(void);

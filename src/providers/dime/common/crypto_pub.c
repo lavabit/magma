@@ -29,16 +29,16 @@ unsigned char *serialize_ec_pubkey(EC_KEY *key, size_t *outsize) {
     PUBLIC_FUNC_IMPL(serialize_ec_pubkey, key, outsize);
 }
 
-EC_KEY *deserialize_ec_pubkey(const unsigned char *buf, size_t blen, int signing) {
-    PUBLIC_FUNC_IMPL(deserialize_ec_pubkey, buf, blen, signing);
+EC_KEY *deserialize_ec_pubkey(const unsigned char *buf, size_t blen) {
+    PUBLIC_FUNC_IMPL(deserialize_ec_pubkey, buf, blen);
 }
 
 unsigned char *serialize_ec_privkey(EC_KEY *key, size_t *outsize) {
     PUBLIC_FUNC_IMPL(serialize_ec_privkey, key, outsize);
 }
 
-EC_KEY *deserialize_ec_privkey(const unsigned char *buf, size_t blen, int signing) {
-    PUBLIC_FUNC_IMPL(deserialize_ec_privkey, buf, blen, signing);
+EC_KEY *deserialize_ec_privkey(const unsigned char *buf, size_t blen) {
+    PUBLIC_FUNC_IMPL(deserialize_ec_privkey, buf, blen);
 }
 
 EC_KEY *load_ec_privkey(const char *filename) {

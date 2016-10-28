@@ -2047,7 +2047,7 @@ static EC_KEY *sgnt_enckey_fetch(const signet_t *signet) {
 		RET_ERROR_PTR(ERR_UNSPEC, "could not retrieve signing key");
 	}
 
-	if (!(key = _deserialize_ec_pubkey(serial_key, key_size, 0))) {
+	if (!(key = _deserialize_ec_pubkey(serial_key, key_size))) {
 		free(serial_key);
 		RET_ERROR_PTR(ERR_UNSPEC, "could not deserialize signing key");
 	}

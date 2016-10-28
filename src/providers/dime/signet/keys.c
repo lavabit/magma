@@ -101,7 +101,7 @@ static keys_type_t keys_type_get(unsigned char const *bin_keys, size_t len) {
  */
 static EC_KEY * keys_enckey_from_binary(unsigned char const *bin_keys, size_t len) {
 	unsigned char enc_fid;
-	size_t at = 0, privkeylen = 32;
+	size_t at = 0;
 	EC_KEY *enc_key = NULL;
 
 	if (!bin_keys) {
@@ -144,15 +144,15 @@ static EC_KEY * keys_enckey_from_binary(unsigned char const *bin_keys, size_t le
 		RET_ERROR_PTR(ERR_UNSPEC, "no encryption key was found");
 	}
 	// And its size should also, always be 32.
-	if (bin_keys[at++] != privkeylen) {
+	if (bin_keys[at++] != SECP256K1_KEY_PRIV_LEN) {
 		RET_ERROR_PTR(ERR_UNSPEC, "invalid size of encryption key");
 	}
 
 	// Ensure the buffer holds at least 32 more bytes.
-	if (at + privkeylen > len) {
+	if (at + SECP256K1_KEY_PRIV_LEN > len) {
 		RET_ERROR_PTR(ERR_UNSPEC, "invalid encryption key size");
 	}
-	if (!(enc_key = _deserialize_ec_privkey(bin_keys + at, privkeylen, 0))) {
+	if (!(enc_key = _deserialize_ec_privkey(bin_keys + at, SECP256K1_KEY_PRIV_LEN))) {
 		RET_ERROR_PTR(ERR_UNSPEC, "could not deserialize private EC encryption key");
 	}
 	return enc_key;

@@ -228,7 +228,7 @@ TEST(DIME, check_ec_serialization)
         sbuf = _serialize_ec_pubkey(pair, &ssize);
         ASSERT_TRUE(sbuf != NULL) << "EC serialization check failed: pubkey serialization error.";
 
-        pair2 = _deserialize_ec_pubkey(sbuf, ssize, 0);
+        pair2 = _deserialize_ec_pubkey(sbuf, ssize);
         ASSERT_TRUE(pair2 != NULL) << "EC serialization check failed: pubkey deserialization error.";
 
         sbuf2 = _serialize_ec_pubkey(pair, &ssize2);
@@ -287,7 +287,7 @@ TEST(DIME, check_ecdh_kdf)
 
     ASSERT_TRUE(serial_temp != NULL) << "could not serialize public key.";
 
-    pub1 = _deserialize_ec_pubkey(serial_temp, serial_size, 0);
+    pub1 = _deserialize_ec_pubkey(serial_temp, serial_size);
 
     res = _compute_aes256_kek(pub1, ec2, key1);
 
@@ -299,7 +299,7 @@ TEST(DIME, check_ecdh_kdf)
 
     ASSERT_TRUE(serial_temp != NULL) << "could not serialize public key.";
 
-    pub2 = _deserialize_ec_pubkey(serial_temp, serial_size, 0);
+    pub2 = _deserialize_ec_pubkey(serial_temp, serial_size);
 
     res = _compute_aes256_kek(pub2, ec1, key2);
 

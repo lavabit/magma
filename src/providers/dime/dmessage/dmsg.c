@@ -3157,8 +3157,7 @@ dmsg_kek_in_derive(
     if (!(ephemeral =
             _deserialize_ec_pubkey(
                 *payload,
-                EC_PUBKEY_SIZE,
-                0)))
+                EC_PUBKEY_SIZE)))
     {
         RET_ERROR_INT(
             ERR_UNSPEC,

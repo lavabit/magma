@@ -28,7 +28,7 @@ signet_field_key_t signet_org_field_keys[256] = {
 	},
 	// field 3
 	{
-		1, 1, 0, 2, 0, B64, "Encryption-Key", "The ECC public key used to encrypt data sent to the holder "
+		1, 1, 0, 1, 0, B64, "Encryption-Key", "The ECC public key used to encrypt data sent to the holder "
 			"of organizational SIGNET holder."
 	},
 	// field 4
@@ -410,12 +410,12 @@ signet_field_key_t signet_user_field_keys[256] = {
 	},
 	// field 2
 	{
-		1, 1, 0, 2, 0, B64, "Encryption-Key", "User encryption key which is used to encrypt messages to the "
+		1, 1, 0, 1, 0, B64, "Encryption-Key", "User encryption key which is used to encrypt messages to the "
 			"holder of the user signet."
 	},
 	// field 3
 	{
-		0, 0, 0, 2, 0, B64, "Alternate-Encryption-Key", "Alternative user encryption keys."
+		0, 0, 0, 1, 0, B64, "Alternate-Encryption-Key", "Alternative user encryption keys."
 	},
 	// field 4
 	{
@@ -790,7 +790,7 @@ signet_field_key_t signet_ssr_field_keys[256] = {
 	},
 	// field 2
 	{
-		1, 1, 0, 2, 0, B64, "User-Encryption-Key", "User encryption key which is used to encrypt messages to the "
+		1, 1, 0, 1, 0, B64, "User-Encryption-Key", "User encryption key which is used to encrypt messages to the "
 			"holder of the user signet."
 	},
 	// field 3

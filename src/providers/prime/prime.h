@@ -27,7 +27,6 @@ typedef enum {
     PRIME_MESSAGE_ENCRYPTED = 1847
 } prime_type_t;
 
-
 #include "cryptography/cryptography.h"
 #include "primitives/primitives.h"
 #include "signets/signets.h"

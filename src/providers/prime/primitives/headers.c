@@ -50,8 +50,8 @@ size_t prime_header_length(prime_type_t type) {
 stringer_t * prime_header_write(prime_type_t type, size_t size, stringer_t *output) {
 
 	stringer_t *result = NULL;
-	uint16_t magic = htobe16(type);
 	size_t length = 0, written = 0;
+	uint16_t big_endian_type = htobe16(type);
 	uint32_t big_endian_size = htobe32(size);
 
 	// Figure out how big this header will be.
@@ -87,12 +87,12 @@ stringer_t * prime_header_write(prime_type_t type, size_t size, stringer_t *outp
 		case (PRIME_USER_KEY):
 		case (PRIME_USER_KEY_ENCRYPTED):
 			written = 5;
-			mm_copy(st_data_get(result), ((uchr_t *)&magic), 2);
+			mm_copy(st_data_get(result), ((uchr_t *)&big_endian_type), 2);
 			mm_copy(st_data_get(result) + 2, ((uchr_t *)&big_endian_size) + 1, 3);
 			break;
 		case (PRIME_MESSAGE_ENCRYPTED):
 			written = 6;
-			mm_copy(st_data_get(result), ((uchr_t *)&magic), 2);
+			mm_copy(st_data_get(result), ((uchr_t *)&big_endian_type), 2);
 			mm_copy(st_data_get(result) + 2, ((uchr_t *)&big_endian_size), 4);
 			break;
 		default:

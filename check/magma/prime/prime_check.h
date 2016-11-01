@@ -15,7 +15,8 @@
 
 /// ed25519_check.c
 bool_t   check_prime_ed25519_fixed_sthread(stringer_t *errmsg);
-bool_t   check_prime_ed25519_keys_sthread(stringer_t *errmsg);
+bool_t   check_prime_ed25519_fuzz_sthread(stringer_t *errmsg);
+bool_t   check_prime_ed25519_parameters_sthread(stringer_t *errmsg);
 
 /// prime_objects.c
 bool_t   check_prime_keys_sthread(stringer_t *errmsg);

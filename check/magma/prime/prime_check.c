@@ -47,7 +47,9 @@ START_TEST (check_prime_ed25519_s) {
 	bool_t result = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
-	if (status()) result = check_prime_ed25519_keys_sthread(errmsg);
+	if (status()) result = check_prime_ed25519_parameters_sthread(errmsg);
+	else if (status() && result) result = check_prime_ed25519_fixed_sthread(errmsg);
+	else if (status() && result) result = check_prime_ed25519_fuzz_sthread(errmsg);
 
 	log_test("PRIME / ED25519 / SINGLE THREADED:", errmsg);
 	ck_assert_msg(result, st_char_get(errmsg));

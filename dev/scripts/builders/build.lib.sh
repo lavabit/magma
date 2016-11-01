@@ -1307,7 +1307,7 @@ openssl() {
                 	export CONFIGOPTS='-fno-merge-debug-strings '
         	fi
 		    ./config \
-		        -d shared zlib no-asm --openssldir="$M_LOCAL" \
+		        -d shared zlib no-asm --openssldir="$M_LOCAL" --libdir="lib" \
 				-I"$M_SOURCES/zlib" -O $CONFIGOPTS -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
 				-L"$M_SOURCES/openssl" -Wl,-rpath,"$M_SOURCES/openssl" \
 				-L"$M_SOURCES/zlib" -Wl,-rpath,"$M_SOURCES/zlib" \

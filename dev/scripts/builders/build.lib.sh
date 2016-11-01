@@ -1124,7 +1124,7 @@ clamav() {
 			./configure  \
 				--disable-llvm --with--disable-xml --enable-check --enable-static --disable-silent-rules --disable-libcurl \
 				--with-openssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" --with-libcheck-prefix="$M_LOCAL" \
-				--with-libbz2-prefix="$M_SOURCES/bzip2" --prefix="$M_LOCAL" \
+				--with-libbz2-prefix="$M_SOURCES/bzip2" --prefix="$M_LOCAL"  --exec-prefix="$M_LOCAL"  --libdir="$M_LOCAL/lib" \
 				&>> "$M_LOGS/clamav.txt"; error
 
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS

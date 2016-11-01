@@ -2070,8 +2070,7 @@ static ED25519_KEY **sgnt_signkey_fetch_by_perm(const signet_t *signet, sok_perm
 	int res;
 	ED25519_KEY **keys;
 	signet_field_t *field, *list = NULL;
-	size_t
-	buflen, list_count = 1, key_count = 1;
+	size_t buffer_len, list_count = 1, key_count = 1;
 	unsigned char bin_perm;
 	unsigned int num_keys = 1;
 
@@ -2110,15 +2109,15 @@ static ED25519_KEY **sgnt_signkey_fetch_by_perm(const signet_t *signet, sok_perm
 
 	}
 
-	buflen = sizeof(ED25519_KEY *) * (num_keys + 1);
+	buffer_len = sizeof(ED25519_KEY *) * (num_keys + 1);
 
-	if (!(keys = malloc(buflen))) {
+	if (!(keys = malloc(buffer_len))) {
 		PUSH_ERROR_SYSCALL("malloc");
 		sgnt_fieldlist_destroy(list);
 		RET_ERROR_PTR(ERR_NOMEM, "could not allocate memory for array of keys");
 	}
 
-	memset(keys, 0, buflen);
+	memset(keys, 0, buffer_len);
 	field = list;
 
 	if (!(keys[0] = sgnt_signkey_fetch(signet))) {

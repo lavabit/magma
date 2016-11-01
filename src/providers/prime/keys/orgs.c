@@ -63,7 +63,7 @@ size_t org_key_length(prime_org_key_t *org) {
 	return result;
 }
 
-size_t org_key_get(prime_org_key_t *org, stringer_t *output) {
-	#error Unfinished.
+stringer_t * org_key_get(prime_org_key_t *org, stringer_t *output) {
+//	#error Unfinished.
 	return 0;
 }

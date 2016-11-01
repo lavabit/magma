@@ -10,28 +10,8 @@
  *
  */
 
-#ifndef MAGMA_PROVIDERS_PRIME_H
-#define MAGMA_PROVIDERS_PRIME_H
-
-#define SECP256K1_KEY_PUB_LEN 33
-#define SECP256K1_KEY_PRIV_LEN 32
-#define SECP256K1_SHARED_SECRET_LEN 32
-
-#define ED25519_KEY_PUB_LEN 32
-#define ED25519_KEY_PRIV_LEN 32
-#define ED25519_SIGNATURE_LEN 64
-
-// This allows code to include the PRIME header without first including the OpenSSL headers.
-#ifdef HEADER_EC_H
-typedef EC_KEY secp256k1_key_t;
-#else
-typedef void secp256k1_key_t;
-#endif
-
-typedef enum {
-	ED25519_PUB,
-	ED25519_PRIV
-} ed25519_key_type_t;
+#ifndef PRIME_H
+#define PRIME_H
 
 typedef enum {
 
@@ -47,64 +27,15 @@ typedef enum {
     PRIME_MESSAGE_ENCRYPTED = 1847
 } prime_type_t;
 
-typedef struct {
 
-	ed25519_key_type_t type;
-
-	union {
-		struct {
-			uint8_t public[ED25519_KEY_PUB_LEN];
-		};
-
-		struct {
-			uint8_t public[ED25519_KEY_PUB_LEN];
-			uint8_t private[ED25519_KEY_PRIV_LEN];
-		};
-	};
-} ed25519_key_t;
-
-typedef struct {
-	ed25519_key_t *signing;
-	secp256k1_key_t *encryption;
-} prime_user_key_t;
-
-typedef struct {
-	ed25519_key_t *signing;
-	secp256k1_key_t *encryption;
-} prime_org_key_t;
-
-typedef struct {
-	prime_type_t type;
-	union {
-		prime_org_key_t *org;
-		prime_user_key_t *user;
-	};
-} prime_key_t;
-
+#include "cryptography/cryptography.h"
+#include "primitives/primitives.h"
+#include "signets/signets.h"
 #include "keys/keys.h"
-
-/// keys.c
-prime_key_t *  prime_key_alloc(prime_type_t type);
-void           prime_key_free(prime_key_t *key);
-prime_key_t *  prime_key_generate(prime_type_t type);
-stringer_t *   prime_key_get(prime_key_t *key, stringer_t *output);
 
 /// prime.c
 bool_t   prime_start(void);
 void     prime_stop(void);
-
-/// ed25519.c
-ed25519_key_t *  ed25519_key_generate(void);
-
-/// secp256k1.c
-secp256k1_key_t *  secp256k1_alloc(void);
-stringer_t *       secp256k1_compute_kek(secp256k1_key_t *private, secp256k1_key_t *public, stringer_t *output);
-void               secp256k1_free(secp256k1_key_t *key);
-secp256k1_key_t *  secp256k1_generate(void);
-stringer_t *       secp256k1_private_get(secp256k1_key_t *key, stringer_t *output);
-secp256k1_key_t *  secp256k1_private_set(stringer_t *key);
-stringer_t *       secp256k1_public_get(secp256k1_key_t *key, stringer_t *output);
-secp256k1_key_t *  secp256k1_public_set(stringer_t *key);
 
 #endif
 

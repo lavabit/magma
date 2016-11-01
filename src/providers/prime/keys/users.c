@@ -63,7 +63,30 @@ size_t user_key_length(prime_user_key_t *user) {
 	return result;
 }
 
-size_t user_key_get(prime_user_key_t *user, stringer_t *output) {
-	#error Unfinished.
-	return 0;
+stringer_t * user_key_get(prime_user_key_t *user, stringer_t *output) {
+
+	size_t length;
+	stringer_t *result = NULL;
+
+	if (!user || !(length = user_key_length(user))) {
+		log_pedantic("An invalid user key was supplied for serialization.");
+		return NULL;
+	}
+
+	// See if we have a valid output buffer, or if output is NULL, allocate a buffer to hold the output.
+	else if (output && (!st_valid_destination(st_opt_get(output)) || st_avail_get(output) < length)) {
+		log_pedantic("An output string was supplied but it does not represent a buffer capable of holding the output.");
+		return NULL;
+	}
+	else if (!output && !(result = st_alloc(length))) {
+		log_pedantic("Could not allocate a buffer large enough to hold encoded result. { requested = %zu }", length);
+		return NULL;
+	}
+	else if (result) {
+		output = result;
+	}
+
+	// Wipe the buffer so any leading bytes we don't use will be zero'ed out for padding purposes.
+	st_wipe(output);
+	return output;
 }

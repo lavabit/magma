@@ -424,6 +424,20 @@ START_TEST (check_prime_keys_s) {
 }
 END_TEST
 
+START_TEST (check_prime_writers_s) {
+
+	log_disable();
+	bool_t result = true;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	if (status()) result = check_prime_writers_sthread(errmsg);
+
+	log_test("PRIME / WRITERS / SINGLE THREADED:", errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
+
+}
+END_TEST
+
 //! SPF Tests
 START_TEST (check_spf_s) {
 
@@ -585,8 +599,9 @@ Suite * suite_check_provide(void) {
 	testcase(s, tc, "Cryptography SCRAMBLE/S", check_scramble_s);
 	testcase(s, tc, "Cryptography STACIE/S", check_stacie_s);
 
-	testcase(s, tc, "PRIME SECP256k1/S", check_prime_secp256k1_s);
-	testcase(s, tc, "PRIME KEYS/S", check_prime_keys_s);
+	testcase(s, tc, "PRIME secp256k1/S", check_prime_secp256k1_s);
+	testcase(s, tc, "PRIME Writers/S", check_prime_writers_s);
+	testcase(s, tc, "PRIME Keys/S", check_prime_keys_s);
 
 	// Tank functionality is temporarily disabled.
 	if (do_tank_check) {

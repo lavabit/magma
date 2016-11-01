@@ -256,6 +256,7 @@ stringer_t * symmetric_decrypt(cipher_t *cipher, stringer_t *vector, stringer_t 
 stringer_t * symmetric_vector(cipher_t *cipher, stringer_t *output) {
 
 	size_t len;
+	stringer_t *result = NULL;
 
 	// Find out how big a the initialization vector should be.
 	if (!cipher || !(len = cipher_vector_length(cipher))) {
@@ -263,20 +264,21 @@ stringer_t * symmetric_vector(cipher_t *cipher, stringer_t *output) {
 	}
 
 	// Checks whether the provided buffer is sufficient, or if NULL was passed in allocates a buffer.
-	else if (!(output = st_output(output, len))) {
+	else if (!(result = st_output(output, len))) {
 		return NULL;
 	}
 
-	if (rand_write(PLACER(st_data_get(output), len)) != len) {
+	if (rand_write(PLACER(st_data_get(result), len)) != len) {
 		log_pedantic("Unable to fill the initialization vector buffer with %zu bytes of random data.", len);
+		if (!output) st_free(result);
 		return NULL;
 	}
 
-	if (st_valid_tracked(*((uint32_t *)output))) {
-		st_length_set(output, len);
+	if (st_valid_tracked(*((uint32_t *)result))) {
+		st_length_set(result, len);
 	}
 
-	return output;
+	return result;
 }
 
 /**
@@ -286,38 +288,40 @@ stringer_t * symmetric_vector(cipher_t *cipher, stringer_t *output) {
  * @param	cipher	the specified cipher type.
  * @param	key		the user's password, as a managed string.
  * @param	output	the output managed string to receive the digested password. Can be NULL.
- * @return	NULL on failure, or a pointer to the managed string containing the digested password.
+ * @return	NULL on failure, or a pointer to the managed string containing the key.
  */
 stringer_t * symmetric_key(cipher_t *cipher, stringer_t *key, stringer_t *output) {
 
 	size_t len;
+	stringer_t *result = NULL;
 
 	// Find out how big the initialization vector should be.
 	if (!cipher || !(len = cipher_key_length(cipher))) {
-		return output;
+
+		return NULL;
 	}
 
 	// Checks whether the provided buffer is sufficient, or if NULL was passed in, we allocate a buffer.
-	else if (!(output = st_output(output, EVP_MAX_KEY_LENGTH))) {
+	else if (!(result = st_output(output, EVP_MAX_KEY_LENGTH))) {
 		return NULL;
 	}
 
 	if (len <= 20) {
-		hash_sha1(key, output);
+		hash_sha1(key, result);
 	}
 	else if (len <= 24) {
-		hash_sha224(key, output);
+		hash_sha224(key, result);
 	}
 	else if (len <= 32) {
-		hash_sha256(key, output);
+		hash_sha256(key, result);
 	}
 
 	// If the hash isn't the correct length, trim the output.
-	if (st_valid_tracked(*((uint32_t *)output)) && st_length_get(output) != len) {
-		st_length_set(output, len);
+	if (st_valid_tracked(*((uint32_t *)result)) && st_length_get(result) != len) {
+		st_length_set(result, len);
 	}
 
-	return output;
+	return result;
 }
 
 

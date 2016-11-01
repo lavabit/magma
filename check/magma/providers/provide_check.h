@@ -84,6 +84,7 @@ bool_t   check_prime_keys_sthread(stringer_t *errmsg);
 bool_t   check_prime_secp256k1_fixed_sthread(stringer_t *errmsg);
 bool_t   check_prime_secp256k1_keys_sthread(stringer_t *errmsg);
 bool_t   check_prime_secp256k1_parameters_sthread(stringer_t *errmsg);
+bool_t   check_prime_writers_sthread(stringer_t *errmsg);
 
 /// unicode_check.c
 bool_t   check_unicode_invalid(stringer_t *errmsg);

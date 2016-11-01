@@ -72,20 +72,6 @@ bool_t   check_compress_mthread(check_compress_opt_t *opts);
 void     check_compress_mthread_cnv(check_compress_opt_t *opts);
 bool_t   check_compress_sthread(check_compress_opt_t *opts);
 
-/// stacie_check.c
-bool_t   check_stacie_simple(void);
-bool_t   check_stacie_parameters(void);
-bool_t   check_stacie_rounds(void);
-bool_t   check_stacie_determinism(void);
-bool_t   check_stacie_bitflip(void);
-
-/// prime_check.c
-bool_t   check_prime_keys_sthread(stringer_t *errmsg);
-bool_t   check_prime_secp256k1_fixed_sthread(stringer_t *errmsg);
-bool_t   check_prime_secp256k1_keys_sthread(stringer_t *errmsg);
-bool_t   check_prime_secp256k1_parameters_sthread(stringer_t *errmsg);
-bool_t   check_prime_writers_sthread(stringer_t *errmsg);
-
 /// unicode_check.c
 bool_t   check_unicode_invalid(stringer_t *errmsg);
 bool_t   check_unicode_length(stringer_t *errmsg);

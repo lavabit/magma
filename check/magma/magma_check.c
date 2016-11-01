@@ -298,6 +298,7 @@ int main(int argc, char *argv[]) {
 		srunner_add_suite(sr, suite_check_sample());
 		srunner_add_suite(sr, suite_check_core());
 		srunner_add_suite(sr, suite_check_provide());
+		srunner_add_suite(sr, suite_check_prime());
 		srunner_add_suite(sr, suite_check_network());
 		srunner_add_suite(sr, suite_check_objects());
 		srunner_add_suite(sr, suite_check_users());

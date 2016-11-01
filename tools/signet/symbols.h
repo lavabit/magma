@@ -33,7 +33,7 @@
 extern void (*ED25519_keypair_d)(uint8_t out_public_key[32], uint8_t out_private_key[64]);
 extern int (*ED25519_sign_d)(uint8_t *out_sig, const uint8_t *message, size_t message_len, const uint8_t private_key[64]);
 extern int (*ED25519_verify_d)(const uint8_t *message, size_t message_len, const uint8_t signature[64], const uint8_t public_key[32]);
-extern void (*X25519_public_from_private_d)(uint8_t out_public_value[32], const uint8_t private_key[32]);
+extern void (*ED25519_public_from_private_d)(uint8_t out_public_key[32], const uint8_t private_key[32]);
 extern DH * (*DH_new_d)(void);
 extern char **SSL_version_str_d;
 extern RSA * (*RSA_new_d)(void);

@@ -32,6 +32,7 @@ void __testname (int _i CK_ATTRIBUTE_UNUSED)\
 
 #include "core/core_check.h"
 #include "providers/provide_check.h"
+#include "prime/prime_check.h"
 #include "network/network_check.h"
 #include "objects/objects_check.h"
 #include "users/users_check.h"
@@ -107,14 +108,14 @@ Suite * suite_check_sample(void);
 #define DIGEST_CHECK_ITERATIONS 16
 
 #define SYMMETRIC_CHECK_SIZE_MIN 64
-#define SYMMETRIC_CHECK_SIZE_MAX 8192
+#define SYMMETRIC_CHECK_SIZE_MAX (2 * 1024) // 2 kilobytes
 #define SYMMETRIC_CHECK_ITERATIONS 16
 
-#define ECIES_CHECK_SIZE_MIN (1024) // 1 kilobyte
+#define ECIES_CHECK_SIZE_MIN 64
 #define ECIES_CHECK_SIZE_MAX (2 * 1024) // 2 kilobytes
 #define ECIES_CHECK_ITERATIONS 16
 
-#define PRIME_CHECK_SIZE_MIN (1024) // 1 kilobyte
+#define PRIME_CHECK_SIZE_MIN 64
 #define PRIME_CHECK_SIZE_MAX (2 * 1024) // 2 kilobytes
 #define PRIME_CHECK_ITERATIONS 16
 

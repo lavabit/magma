@@ -578,7 +578,6 @@ stringer_t * st_alloc(size_t len) {
 
 }
 
-
 /**
  * @brief	Reallocate a managed string to a specified size.
  * @note	The caller can request a new size that is either smaller (truncated) or larger than the original string.

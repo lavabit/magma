@@ -51,6 +51,7 @@ typedef struct {
 
 /// ed25519.c
 ed25519_key_t *  ed25519_key_generate(void);
+stringer_t *     ed25519_private_get(ed25519_key_t *key, stringer_t *output);
 
 /// secp256k1.c
 secp256k1_key_t *  secp256k1_alloc(void);

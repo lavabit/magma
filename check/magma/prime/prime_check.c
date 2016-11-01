@@ -35,7 +35,7 @@ START_TEST (check_stacie_s) {
 		errmsg = NULLER("The STACIE encryption scheme failed to detect tampering of an encrypted buffer.");
 	}
 
-	log_test("STACIE / SINGLE THREADED:", errmsg);
+	log_test("PRIME / STACIE / SINGLE THREADED:", errmsg);
 	ck_assert_msg(result, st_char_get(errmsg));
 }
 END_TEST

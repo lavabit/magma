@@ -45,7 +45,7 @@ prime_user_key_t * user_key_generate(void) {
 		return NULL;
 	}
 
-	if (!(user->signing = ed25519_key_generate()) || !(user->encryption = secp256k1_generate())) {
+	if (!(user->signing = ed25519_generate()) || !(user->encryption = secp256k1_generate())) {
 		log_pedantic("PRIME user key generation failed.");
 		user_key_free(user);
 		return NULL;
@@ -73,9 +73,41 @@ stringer_t * user_key_get(prime_user_key_t *user, stringer_t *output) {
 		return NULL;
 	}
 
+	// This is very primitive serialization logic.
 	result = st_append(output, prime_header_user_key_write(length, MANAGEDBUF(5)));
 	result = st_append(result, prime_field_write(PRIME_USER_KEY, 1, ED25519_KEY_PRIV_LEN, ed25519_private_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)));
 	result = st_append(result, prime_field_write(PRIME_USER_KEY, 2, SECP256K1_KEY_PRIV_LEN, secp256k1_private_get(user->encryption, MANAGEDBUF(32)), MANAGEDBUF(34)));
 
 	return result;
+}
+
+prime_user_key_t * user_key_set(stringer_t *key) {
+
+	uint16_t type = 0;
+	uint32_t size = 0;
+	prime_user_key_t *result = NULL;
+
+	if (prime_header_read(key,  &type,  &size) || type != PRIME_USER_KEY) {
+		log_pedantic("An invalid PRIME object was passed in for parsing.");
+		return NULL;
+	}
+
+	else if (!(result = user_key_alloc())) {
+		log_pedantic("Unable to allocate a PRIME user key structure.");
+		return NULL;
+	}
+
+
+	result->signing = NULL;
+	return NULL;
+}
+
+prime_user_key_t * user_key_encrypted_get(prime_user_key_t *user, stringer_t *output) {
+
+	return NULL;
+}
+
+prime_user_key_t * user_key_encrypted_set(stringer_t *key) {
+
+	return NULL;
 }

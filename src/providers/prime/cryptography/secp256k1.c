@@ -130,7 +130,7 @@ stringer_t *secp256k1_public_get(secp256k1_key_t *key, stringer_t *output) {
 	}
 
 	// Update the output buffer length.
-	st_length_set(output, SECP256K1_KEY_PUB_LEN);
+	if (st_valid_tracked(st_opt_get(output))) st_length_set(output, SECP256K1_KEY_PUB_LEN);
 	return output;
 }
 
@@ -184,7 +184,7 @@ stringer_t *secp256k1_private_get(secp256k1_key_t *key, stringer_t *output) {
 	}
 
 	// Update the output buffer length.
-	st_length_set(output, SECP256K1_KEY_PRIV_LEN);
+	if (st_valid_tracked(st_opt_get(output))) st_length_set(output, SECP256K1_KEY_PRIV_LEN);
 	return output;
 }
 
@@ -334,12 +334,12 @@ stringer_t * secp256k1_compute_kek(secp256k1_key_t *private, secp256k1_key_t *pu
 
 	// Attempt the KEK calculation. The output length will be 32 if the process worked.
 	if ((len = ECDH_compute_key_d(st_data_get(output), SECP256K1_SHARED_SECRET_LEN, EC_KEY_get0_public_key_d(public), private, NULL)) != SECP256K1_SHARED_SECRET_LEN) {
-		log_info("An error occurred while trying to compute the key encryption key. { result = %i / error = %s}",
+		log_info("An error occurred while trying to compute the key encryption key. { result = %i / curve = secp256k1 / error = %s}",
 			len, ssl_error_string(MEMORYBUF(256), 256));
 		st_cleanup(result);
 		return NULL;
 	}
 
-	st_length_set(output, SECP256K1_SHARED_SECRET_LEN);
+	if (st_valid_tracked(st_opt_get(output))) st_length_set(output, SECP256K1_SHARED_SECRET_LEN);
 	return output;
 }

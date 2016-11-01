@@ -14,7 +14,6 @@
 #define PRIME_H
 
 typedef enum {
-
     PRIME_ORG_SIGNET = 1776,             /**< File contains an organizational signet */
 	PRIME_ORG_KEY = 1952,               /**< File contains organizational keys*/
 	PRIME_ORG_KEY_ENCRYPTED = 1947,     /**< File contains an encrypted organizational key. */

@@ -513,7 +513,7 @@ ED25519_KEY * _generate_ed25519_keypair(void) {
 		RET_ERROR_PTR(ERR_UNSPEC, "could not generate ed25519 secret key");
 	}
 
-	ed25519_publickey(result->private_key, result->public_key);
+	ed25519_publickey_donna(result->private_key, result->public_key);
 
 	return result;
 }
@@ -529,7 +529,7 @@ int _ed25519_sign_data(unsigned char const *data, size_t dlen, ED25519_KEY *key,
 		RET_ERROR_INT(ERR_BAD_PARAM, NULL);
 	}
 
-	ed25519_sign(data, dlen, key->private_key, key->public_key, sigbuf);
+	ed25519_sign_donna(data, dlen, key->private_key, key->public_key, sigbuf);
 
 	return 0;
 }
@@ -547,7 +547,7 @@ int _ed25519_verify_sig(unsigned char const *data, size_t dlen, ED25519_KEY *key
 		RET_ERROR_INT(ERR_BAD_PARAM, NULL);
 	}
 
-	result = ed25519_sign_open(data, dlen, key->public_key, sigbuf);
+	result = ed25519_sign_open_donna(data, dlen, key->public_key, sigbuf);
 
 	if (!result) {
 		return 1;
@@ -638,7 +638,7 @@ ED25519_KEY * _load_ed25519_privkey(char const *filename) {
 	memcpy(result->private_key, keydata, sizeof(result->private_key));
 	_secure_wipe(keydata, klen);
 	free(keydata);
-	ed25519_publickey(result->private_key, result->public_key);
+	ed25519_publickey_donna(result->private_key, result->public_key);
 
 	return result;
 }
@@ -692,7 +692,7 @@ ED25519_KEY * _deserialize_ed25519_privkey(unsigned char const *serial_privkey) 
 
 	memset(key, 0, sizeof(ED25519_KEY));
 	memcpy(key->private_key, serial_privkey, ED25519_KEY_SIZE);
-	ed25519_publickey(key->private_key, key->public_key);
+	ed25519_publickey_donna(key->private_key, key->public_key);
 
 	return key;
 }

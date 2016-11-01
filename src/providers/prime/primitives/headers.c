@@ -41,6 +41,78 @@ size_t prime_header_length(prime_type_t type) {
 }
 
 /**
+ * @brief			Read the first few bytes of a serialized PRIME object and return the magic
+ * 					number and object size in native form.
+ * @param data		The serialized object buffer.
+ * @param type		A pointer where the type will be stored, if sucessful.
+ * @param size		A pointer to where the parsed size will be stored, if the read is sucessful.
+ * @return			0 if sucessful, negative values if the object data is invalid, or postive numbers if a programmatic error occurs.
+ * 					2 = The object buffer was empty.
+ * 					1 = A null pointer was supplied.
+ * 					0 = Success.
+ * 					-1 = The buffer is too short for a valid PRIME object header.
+ *					-2 = The size in the header doesn't match the amount of data supplied. (size = header_len + object_len).
+ *					-3 = The header indicates an unrecognized PRIME type.
+ */
+int_t prime_header_read(stringer_t *object, uint16_t *type, uint32_t *size) {
+
+	uchr_t *object_data = NULL;
+	uint32_t big_endian_size = 0;
+	size_t object_len = 0, header_len = 0;
+
+	if (!object || !type || !size) {
+		log_pedantic("A NULL pointer was supplied to the PRIME read function.");
+		return 1;
+	}
+	else if (st_empty_out(object, &object_data, &object_len)) {
+		log_pedantic("An PRIME object buffer was empty.");
+		return 2;
+	}
+
+	if(object_len < 2) {
+		log_pedantic("The PRIME object buffer is too short to hold a valid header.");
+		return -1;
+	}
+
+	// Read the type and convert from big endian into the native host format.
+	*type = be16toh(*((uint16_t *)object_data));
+
+	switch (*type) {
+		case (PRIME_ORG_SIGNET):
+		case (PRIME_ORG_KEY):
+		case (PRIME_ORG_KEY_ENCRYPTED):
+		case (PRIME_USER_SIGNING_REQUEST):
+		case (PRIME_USER_SIGNET):
+		case (PRIME_USER_KEY):
+		case (PRIME_USER_KEY_ENCRYPTED):
+			// The buffer wasn't long enough to hold the type and size parameters.
+			if (object_len < 5) return -1;
+			mm_copy(((uchr_t *)&big_endian_size) + 1, ((uchr_t *)object_data) + 2, 3);
+			*size = be32toh(big_endian_size);
+			header_len = 5;
+			break;
+		case (PRIME_MESSAGE_ENCRYPTED):
+			// The buffer wasn't long enough to hold the type and size parameters, note that messages use a
+			// 6 byte header.
+			if (object_len < 6) return -1;
+			mm_copy(((uchr_t *)&big_endian_size), ((uchr_t *)object_data) + 2, 4);
+			*size = be32toh(big_endian_size);
+			header_len = 6;
+			break;
+		default:
+			log_pedantic("Unrecognized PRIME type.");
+			return -3;
+	}
+
+	// Invalid PRIME object! The provided size doesn't match the amount of data in the buffer.
+	if (*size + header_len != object_len) {
+		return -2;
+	}
+
+	return 0;
+}
+
+/**
  * @brief
  * @param type
  * @param size

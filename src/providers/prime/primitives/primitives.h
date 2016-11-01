@@ -26,16 +26,17 @@ size_t   prime_object_size_min(prime_type_t type);
 chr_t *  prime_object_type(prime_type_t type);
 
 /// headers.c
-size_t        prime_header_length(prime_type_t type);
+stringer_t *  prime_header_encrypted_message_write(size_t size, stringer_t *output);
 stringer_t *  prime_header_encrypted_org_key_write(size_t size, stringer_t *output);
+stringer_t *  prime_header_encrypted_user_key_write(size_t size, stringer_t *output);
+size_t        prime_header_length(prime_type_t type);
 stringer_t *  prime_header_org_key_write(size_t size, stringer_t *output);
 stringer_t *  prime_header_org_signet_write(size_t size, stringer_t *output);
-stringer_t *  prime_header_encrypted_user_key_write(size_t size, stringer_t *output);
+int_t         prime_header_read(stringer_t *object, uint16_t *type, uint32_t *size);
 stringer_t *  prime_header_user_key_write(size_t size, stringer_t *output);
 stringer_t *  prime_header_user_signet_write(size_t size, stringer_t *output);
 stringer_t *  prime_header_user_signing_request_write(size_t size, stringer_t *output);
 stringer_t *  prime_header_write(prime_type_t type, size_t size, stringer_t *output);
-stringer_t *  prime_header_encrypted_message_write(size_t size, stringer_t *output);
 
 /// fields.c
 size_t        prime_field_size_length(prime_type_t type, prime_field_type_t field);

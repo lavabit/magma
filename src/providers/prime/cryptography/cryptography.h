@@ -33,25 +33,25 @@ typedef enum {
 	ED25519_PRIV
 } ed25519_key_type_t;
 
-typedef struct {
+typedef struct  __attribute__ ((packed)) {
 
 	ed25519_key_type_t type;
-
-	union {
-		struct {
-			uint8_t public[ED25519_KEY_PUB_LEN];
-		};
-
-		struct {
-			uint8_t public[ED25519_KEY_PUB_LEN];
-			uint8_t private[ED25519_KEY_PRIV_LEN];
-		};
+	struct __attribute__ ((packed)) {
+		uint8_t private[ED25519_KEY_PRIV_LEN];
+		uint8_t public[ED25519_KEY_PUB_LEN];
 	};
 } ed25519_key_t;
 
 /// ed25519.c
-ed25519_key_t *  ed25519_key_generate(void);
+ed25519_key_t *  ed25519_alloc(void);
+void             ed25519_free(ed25519_key_t *key);
+ed25519_key_t *  ed25519_generate(void);
 stringer_t *     ed25519_private_get(ed25519_key_t *key, stringer_t *output);
+ed25519_key_t *  ed25519_private_set(stringer_t *key);
+stringer_t *     ed25519_public_get(ed25519_key_t *key, stringer_t *output);
+ed25519_key_t *  ed25519_public_set(stringer_t *key);
+stringer_t *     ed25519_sign(ed25519_key_t *key, stringer_t *data, stringer_t *output);
+int_t            ed25519_verify(ed25519_key_t *key, stringer_t *data, stringer_t *signature);
 
 /// secp256k1.c
 secp256k1_key_t *  secp256k1_alloc(void);
@@ -64,4 +64,3 @@ stringer_t *       secp256k1_public_get(secp256k1_key_t *key, stringer_t *output
 secp256k1_key_t *  secp256k1_public_set(stringer_t *key);
 
 #endif
-

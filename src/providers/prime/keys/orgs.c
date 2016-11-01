@@ -45,7 +45,7 @@ prime_org_key_t * org_key_generate(void) {
 		return NULL;
 	}
 
-	if (!(org->signing = ed25519_key_generate()) || !(org->encryption = secp256k1_generate())) {
+	if (!(org->signing = ed25519_generate()) || !(org->encryption = secp256k1_generate())) {
 		log_pedantic("PRIME org key generation failed.");
 		org_key_free(org);
 		return NULL;

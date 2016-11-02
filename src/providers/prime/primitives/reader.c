@@ -61,17 +61,18 @@ int_t prime_reader_size(prime_reader_t *reader, int_t bytes) {
 /**
  * @brief 		Read in the field payload and return the result wrapped up by a place holder.
  * @param reader
- * @return		-1 if an error occurs, or a field type between 1 and 255 if the reader contained data.
+ * @return		-1 if an error occurs, or a 0 if the payload is packaged and returned sucessfully.
  */
-int_t prime_reader_payload(prime_reader_t *reader, int_t bytes, placer_t payload) {
+int_t prime_reader_payload(prime_reader_t *reader, int_t bytes, placer_t *payload) {
 
 	int_t result = -1;
 
 	// Setup a place holder for the field payload and then advance the reader.
-	if (reader && reader->remaining >= bytes) {
-		reader->cursor = ((uchr_t *)reader->cursor) + bytes;
+	if (payload && reader && reader->remaining >= bytes) {
+		*payload = pl_init(reader->cursor, bytes);
 		reader->remaining = (reader->remaining - bytes);
-		payload = pl_init(reader->cursor, bytes);
+		reader->cursor = ((uchr_t *)reader->cursor) + bytes;
+		result = 0;
 	}
 
 	return result;

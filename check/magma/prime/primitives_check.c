@@ -96,3 +96,15 @@ bool_t check_prime_writers_sthread(stringer_t *errmsg) {
 
 	return true;
 }
+
+bool_t check_prime_unpacker_sthread(stringer_t *errmsg) {
+
+	log_enable();
+	stringer_t *key = base64_decode(NULLER("B90AAEQBIAzFqb5wsMLLwJV1uUfVecHirAQVnHZbvlDqDqkwGZwzAiAk/epj8HtmvA/VUnMC9TfWwh1veCK9Bp+uExSfeuHCug=="), MANAGEDBUF(76));
+
+
+	prime_unpack(key);
+
+
+	return true;
+}

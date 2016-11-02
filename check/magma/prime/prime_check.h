@@ -18,8 +18,9 @@ bool_t   check_prime_ed25519_fixed_sthread(stringer_t *errmsg);
 bool_t   check_prime_ed25519_fuzz_sthread(stringer_t *errmsg);
 bool_t   check_prime_ed25519_parameters_sthread(stringer_t *errmsg);
 
-/// prime_objects.c
+/// primitives_check.c
 bool_t   check_prime_keys_sthread(stringer_t *errmsg);
+bool_t   check_prime_unpacker_sthread(stringer_t *errmsg);
 bool_t   check_prime_writers_sthread(stringer_t *errmsg);
 
 /// secp256k1_check.c

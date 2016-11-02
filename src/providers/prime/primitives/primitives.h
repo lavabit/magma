@@ -59,9 +59,13 @@ typedef struct __attribute__ ((packed)) {
 	placer_t buffer;
 } prime_reader_t;
 
+/// unpack.c
+prime_size_t      prime_count(stringer_t *fields);
+prime_object_t *  prime_unpack(stringer_t *data);
+
 /// reader.c
 int_t   prime_reader_open(stringer_t *data, prime_reader_t *reader);
-int_t   prime_reader_payload(prime_reader_t *reader, int_t bytes, placer_t payload);
+int_t   prime_reader_payload(prime_reader_t *reader, int_t bytes, placer_t *payload);
 int_t   prime_reader_size(prime_reader_t *reader, int_t bytes);
 int_t   prime_reader_type(prime_reader_t *reader);
 

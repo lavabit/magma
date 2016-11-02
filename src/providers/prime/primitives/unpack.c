@@ -38,7 +38,7 @@ prime_size_t prime_count(stringer_t *fields) {
 		}
 
 		// Read in a fixed length signature field.
-		else if (prime_reader_payload(&reader, (!bytes ? ED25519_SIGNATURE_LEN : size) , payload)) {
+		else if (prime_reader_payload(&reader, (!bytes ? ED25519_SIGNATURE_LEN : size), &payload)) {
 			return 0;
 		}
 
@@ -57,12 +57,18 @@ prime_object_t * prime_unpack(stringer_t *data) {
 
 	uint16_t type = 0;
 	uint32_t size = 0;
+	prime_size_t count = 0;
 
 	// Unpack the object header. For now, we won't worry about message objects,
 	// which means we can assume the header is only 5 bytes.
-	if (prime_header_read(data, &type, &size) || type == PRIME_MESSAGE_ENCRYPTED) {
+	if (prime_header_read(data, &type, &size) || type == PRIME_ORG_KEY_ENCRYPTED ||
+		type == PRIME_USER_KEY_ENCRYPTED || type == PRIME_MESSAGE_ENCRYPTED) {
 		return NULL;
 	}
+
+	count = prime_count(PLACER(st_data_get(data)  + 5, st_length_get(data) - 5));
+	log_pedantic("count = %u", count);
+
 
 	// CHeck to ensure the header size, matches the size of the binary object data (minus the header).
 	// Count the fields.

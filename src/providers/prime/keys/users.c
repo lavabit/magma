@@ -104,10 +104,12 @@ prime_user_key_t * user_key_set(stringer_t *key) {
 
 prime_user_key_t * user_key_encrypted_get(prime_user_key_t *user, stringer_t *output) {
 
+//	#error
 	return NULL;
 }
 
 prime_user_key_t * user_key_encrypted_set(stringer_t *key) {
 
+//	#error
 	return NULL;
 }

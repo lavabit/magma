@@ -64,6 +64,19 @@ size_t org_key_length(prime_org_key_t *org) {
 }
 
 stringer_t * org_key_get(prime_org_key_t *org, stringer_t *output) {
-//	#error Unfinished.
-	return 0;
+
+	size_t length;
+	stringer_t *result = NULL;
+
+	if (!org || !(length = org_key_length(org))) {
+		log_pedantic("An invalid org key was supplied for serialization.");
+		return NULL;
+	}
+
+	// This is very primitive serialization logic.
+	result = st_append(output, prime_header_org_key_write(length, MANAGEDBUF(5)));
+	result = st_append(result, prime_field_write(PRIME_ORG_KEY, 1, ED25519_KEY_PRIV_LEN, ed25519_private_get(org->signing, MANAGEDBUF(32)), MANAGEDBUF(34)));
+	result = st_append(result, prime_field_write(PRIME_ORG_KEY, 3, SECP256K1_KEY_PRIV_LEN, secp256k1_private_get(org->encryption, MANAGEDBUF(32)), MANAGEDBUF(34)));
+
+	return result;
 }

@@ -12,27 +12,14 @@
 
 #include "magma.h"
 
-size_t prime_field_size_length(prime_type_t type, prime_field_type_t field) {
+int_t prime_field_size_length(prime_field_type_t field) {
 
-	size_t result = 0;
+	int_t result = -1;
 
-	switch (type) {
-		case (PRIME_ORG_KEY):
-		case (PRIME_ORG_SIGNET):
-		case (PRIME_USER_SIGNING_REQUEST):
-		case (PRIME_USER_SIGNET):
-		case (PRIME_USER_KEY):
-			if ((field >= 1 && field <= 3) || (field >= 16 && field <= 159) || field == 254) result = 1;
-			else if (field >= 160 && field <= 250) result = 2;
-			else if (field == 252) result = 3;
-			break;
-		case (PRIME_ORG_KEY_ENCRYPTED):
-		case (PRIME_USER_KEY_ENCRYPTED):
-		case (PRIME_MESSAGE_ENCRYPTED):
-			break;
-		default:
-			log_pedantic("Unrecognized PRIME type.");
-	}
+	if (field == 0 || (field >= 4 && field <= 15) || field == 253 || field == 255) result = 0;
+	else if ((field >= 1 && field <= 3) || (field >= 16 && field <= 159) || field == 254) result = 1;
+	else if (field >= 160 && field <= 250) result = 2;
+	else if (field == 252) result = 3;
 
 	return result;
 }
@@ -70,7 +57,7 @@ stringer_t * prime_field_write(prime_type_t type, prime_field_type_t field, size
 	size_t total = 0, size_len = 0, payload_len = 0;
 
 	// Figure out how big the field heading is.
-	if (!(size_len = prime_field_size_length(type, field)) || st_empty_out(data, &payload, &payload_len)) {
+	if (!(size_len = prime_field_size_length(field)) || st_empty_out(data, &payload, &payload_len)) {
 		log_pedantic("Invalid variables were provided to the PRIME heading writer.");
 		return NULL;
 	}

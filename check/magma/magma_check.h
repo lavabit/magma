@@ -13,7 +13,7 @@
 #ifndef MAGMA_CHECK_H
 #define MAGMA_CHECK_H
 
-#include <magma.h>
+#include "magma.h"
 
 #include <ctype.h>
 #include <sys/ptrace.h>

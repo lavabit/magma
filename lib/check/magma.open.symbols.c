@@ -126,7 +126,7 @@ MYSQL * (*mysql_real_connect_d)(MYSQL * mysql, const char *name, const char *use
 void (*ED25519_keypair_d)(uint8_t out_public_key[32], uint8_t out_private_key[64]) = NULL;
 int (*ED25519_sign_d)(uint8_t *out_sig, const uint8_t *message, size_t message_len, const uint8_t private_key[64]) = NULL;
 int (*ED25519_verify_d)(const uint8_t *message, size_t message_len, const uint8_t signature[64], const uint8_t public_key[32]) = NULL;
-void (*X25519_public_from_private_d)(uint8_t out_public_value[32], const uint8_t private_key[32]) = NULL;
+void (*ED25519_public_from_private_d)(uint8_t out_public_key[32], const uint8_t private_key[32]) = NULL;
 DH * (*DH_new_d)(void) = NULL;
 char **SSL_version_str_d = NULL;
 RSA * (*RSA_new_d)(void) = NULL;
@@ -659,7 +659,7 @@ if ((*(void **)&(mysql_real_connect_d) = dlsym(magma, "mysql_real_connect")) == 
 if ((*(void **)&(ED25519_keypair_d) = dlsym(magma, "ED25519_keypair")) == NULL) return "ED25519_keypair";
 if ((*(void **)&(ED25519_sign_d) = dlsym(magma, "ED25519_sign")) == NULL) return "ED25519_sign";
 if ((*(void **)&(ED25519_verify_d) = dlsym(magma, "ED25519_verify")) == NULL) return "ED25519_verify";
-if ((*(void **)&(X25519_public_from_private_d) = dlsym(magma, "X25519_public_from_private")) == NULL) return "X25519_public_from_private";
+if ((*(void **)&(ED25519_public_from_private_d) = dlsym(magma, "ED25519_public_from_private")) == NULL) return "ED25519_public_from_private";
 if ((*(void **)&(DH_new_d) = dlsym(magma, "DH_new")) == NULL) return "DH_new";
 if ((*(void **)&(RSA_new_d) = dlsym(magma, "RSA_new")) == NULL) return "RSA_new";
 if ((*(void **)&(DH_free_d) = dlsym(magma, "DH_free")) == NULL) return "DH_free";

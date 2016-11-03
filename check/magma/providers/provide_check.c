@@ -24,142 +24,146 @@ extern bool_t do_tank_check, do_virus_check, do_dspam_check, do_spf_check;
 extern chr_t *virus_check_data_path;
 
 //! Generic Provider Symbol Tests
-START_TEST (check_symbols_s)
-	{
-		void *local = NULL;
-		chr_t *errmsg = NULL, *liberr = NULL;
+START_TEST (check_symbols_s) {
+	void *local = NULL;
+	chr_t *errmsg = NULL, *liberr = NULL;
 
-		if (status() && !(local = dlopen(NULL, RTLD_NOW | RTLD_LOCAL)))  {
-			errmsg = "Library handle creation failed.";
-		}
-		else if (status() && (liberr = dlerror())) {
-			errmsg = liberr;
-		}
-		else if (status() && !liberr && dlsym(NULL, "ERR_error_string_d")) {
-			errmsg = "Found a reference to ERR_error_string() which isn't thread-safe. Use ssl_error_string() instead.";
-		}
-
-		if (local) dlclose(local);
-
-		log_test("PROVIDERS / SYMBOLS / SINGLE THREADED:", NULLER(errmsg));
-		if (errmsg) ck_abort_msg(errmsg);
-
+	if (status() && !(local = dlopen(NULL, RTLD_NOW | RTLD_LOCAL)))  {
+		errmsg = "Library handle creation failed.";
 	}
+	else if (status() && (liberr = dlerror())) {
+		errmsg = liberr;
+	}
+	else if (status() && !liberr && dlsym(NULL, "ERR_error_string_d")) {
+		errmsg = "Found a reference to ERR_error_string() which isn't thread-safe. Use ssl_error_string() instead.";
+	}
+
+	if (local) dlclose(local);
+
+	log_test("PROVIDERS / SYMBOLS / SINGLE THREADED:", NULLER(errmsg));
+	if (errmsg) ck_abort_msg(errmsg);
+
+}
 END_TEST
 
 //! Compression Engine Tests
-START_TEST (check_compress_lzo_s)
-	{
-		bool_t outcome;
-		check_compress_opt_t opts = {
-			.engine = COMPRESS_ENGINE_LZO
-		};
+START_TEST (check_compress_lzo_s) {
 
-		log_unit("%-64.64s", "COMPRESSION / LZO / SINGLE THREADED:");
-		if (status()) {
-			outcome = check_compress_sthread(&opts);
-		}
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_compress_sthread failed");
-	}
-END_TEST
+	bool_t outcome;
+	check_compress_opt_t opts = {
+		.engine = COMPRESS_ENGINE_LZO
+	};
 
-START_TEST (check_compress_lzo_m)
-	{
-		bool_t outcome;
-		check_compress_opt_t opts = {
-			.engine = COMPRESS_ENGINE_LZO
-		};
-		log_unit("%-64.64s", "COMPRESSION / LZO / MULTITHREADED:");
-		outcome = check_compress_mthread(&opts);
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_compress_mthread failed");
-	}
-END_TEST
-
-START_TEST (check_compress_zlib_s)
-	{
-		bool_t outcome;
-		check_compress_opt_t opts = {
-			.engine = COMPRESS_ENGINE_ZLIB
-		};
-		log_unit("%-64.64s", "COMPRESSION / ZLIB / SINGLE THREADED:");
+	log_unit("%-64.64s", "COMPRESSION / LZO / SINGLE THREADED:");
+	if (status()) {
 		outcome = check_compress_sthread(&opts);
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_compress_sthread failed");
 	}
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, "check_compress_sthread failed");
+
+}
 END_TEST
 
-START_TEST (check_compress_zlib_m)
-	{
-		bool_t outcome;
-		check_compress_opt_t opts = {
-			.engine = COMPRESS_ENGINE_ZLIB
-		};
-		log_unit("%-64.64s", "COMPRESSION / ZLIB / MULTITHREADED:");
-		outcome = check_compress_mthread(&opts);
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_compress_mthread failed");
-	}
+START_TEST (check_compress_lzo_m) {
+
+	bool_t outcome;
+	check_compress_opt_t opts = {
+		.engine = COMPRESS_ENGINE_LZO
+	};
+	log_unit("%-64.64s", "COMPRESSION / LZO / MULTITHREADED:");
+	outcome = check_compress_mthread(&opts);
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, "check_compress_mthread failed");
+}
 END_TEST
 
-START_TEST (check_compress_bzip_s)
-	{
-		bool_t outcome;
-		check_compress_opt_t opts = {
-			.engine = COMPRESS_ENGINE_BZIP
-		};
-		log_unit("%-64.64s", "COMPRESSION / BZIP / SINGLE THREADED:");
-		outcome = check_compress_sthread(&opts);
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_compress_sthread failed");
-	}
+START_TEST (check_compress_zlib_s) {
+
+	bool_t outcome;
+	check_compress_opt_t opts = {
+		.engine = COMPRESS_ENGINE_ZLIB
+	};
+	log_unit("%-64.64s", "COMPRESSION / ZLIB / SINGLE THREADED:");
+	outcome = check_compress_sthread(&opts);
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, "check_compress_sthread failed");
+
+}
 END_TEST
 
-START_TEST (check_compress_bzip_m)
-	{
-		bool_t outcome;
-		check_compress_opt_t opts = {
-			.engine = COMPRESS_ENGINE_BZIP
-		};
-		log_unit("%-64.64s", "COMPRESSION / BZIP / MULTITHREADED:");
-		outcome = check_compress_mthread(&opts);
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_compress_mthread failed");
-	}
+START_TEST (check_compress_zlib_m) {
+
+	bool_t outcome;
+	check_compress_opt_t opts = {
+		.engine = COMPRESS_ENGINE_ZLIB
+	};
+	log_unit("%-64.64s", "COMPRESSION / ZLIB / MULTITHREADED:");
+	outcome = check_compress_mthread(&opts);
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, "check_compress_mthread failed");
+
+}
+END_TEST
+
+START_TEST (check_compress_bzip_s) {
+
+	bool_t outcome;
+	check_compress_opt_t opts = {
+		.engine = COMPRESS_ENGINE_BZIP
+	};
+	log_unit("%-64.64s", "COMPRESSION / BZIP / SINGLE THREADED:");
+	outcome = check_compress_sthread(&opts);
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, "check_compress_sthread failed");
+}
+END_TEST
+
+START_TEST (check_compress_bzip_m) {
+
+	bool_t outcome;
+	check_compress_opt_t opts = {
+		.engine = COMPRESS_ENGINE_BZIP
+	};
+	log_unit("%-64.64s", "COMPRESSION / BZIP / MULTITHREADED:");
+	outcome = check_compress_mthread(&opts);
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, "check_compress_mthread failed");
+
+}
 END_TEST
 
 //! Storage Tank Tests
-START_TEST (check_tank_lzo_s)
-	{
-		bool_t outcome;
-		check_tank_opt_t opts = {
-			.engine = TANK_COMPRESS_LZO
-		};
-		log_unit("%-64.64s", "TANK / LZO / SINGLE THREADED:");
-		outcome = check_tokyo_tank_sthread(&opts);
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_tokyo_tank_sthread failed");
-		tank_maintain();
-	}
+START_TEST (check_tank_lzo_s) {
+
+	bool_t outcome;
+	check_tank_opt_t opts = {
+		.engine = TANK_COMPRESS_LZO
+	};
+	log_unit("%-64.64s", "TANK / LZO / SINGLE THREADED:");
+	outcome = check_tokyo_tank_sthread(&opts);
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, "check_tokyo_tank_sthread failed");
+	tank_maintain();
+
+}
 END_TEST
 
-START_TEST (check_tank_lzo_m)
-	{
-		bool_t outcome;
-		check_tank_opt_t opts = {
-			.engine = TANK_COMPRESS_LZO
-		};
-		log_unit("%-64.64s", "TANK / LZO / MULTITHREADED:");
-		outcome = check_tokyo_tank_mthread(&opts);
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_tokyo_tank_mthread failed");
-		tank_maintain();
-	}
+START_TEST (check_tank_lzo_m) {
+
+	bool_t outcome;
+	check_tank_opt_t opts = {
+		.engine = TANK_COMPRESS_LZO
+	};
+	log_unit("%-64.64s", "TANK / LZO / MULTITHREADED:");
+	outcome = check_tokyo_tank_mthread(&opts);
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, "check_tokyo_tank_mthread failed");
+	tank_maintain();
+}
 END_TEST
 
-START_TEST (check_tank_zlib_s)
-	{
+START_TEST (check_tank_zlib_s) {
+
 		bool_t outcome;
 		check_tank_opt_t opts = {
 			.engine = TANK_COMPRESS_ZLIB
@@ -169,88 +173,89 @@ START_TEST (check_tank_zlib_s)
 		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
 		fail_unless(outcome, "check_tokyo_tank_sthread failed");
 		tank_maintain();
+
 	}
 END_TEST
 
-START_TEST (check_tank_zlib_m)
-	{
-		bool_t outcome;
-		check_tank_opt_t opts = {
-			.engine = TANK_COMPRESS_ZLIB
-		};
-		log_unit("%-64.64s", "TANK / ZLIB / MULTITHREADED:");
-		outcome = check_tokyo_tank_mthread(&opts);
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_tokyo_tank_mthread failed");
-		tank_maintain();
-	}
+START_TEST (check_tank_zlib_m) {
+
+	bool_t outcome;
+	check_tank_opt_t opts = {
+		.engine = TANK_COMPRESS_ZLIB
+	};
+	log_unit("%-64.64s", "TANK / ZLIB / MULTITHREADED:");
+	outcome = check_tokyo_tank_mthread(&opts);
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, "check_tokyo_tank_mthread failed");
+	tank_maintain();
+}
 END_TEST
 
-START_TEST (check_tank_bzip_s)
-	{
-		bool_t outcome;
-		check_tank_opt_t opts = {
-			.engine = TANK_COMPRESS_BZIP
-		};
-		log_unit("%-64.64s", "TANK / BZIP / SINGLE THREADED:");
-		outcome = check_tokyo_tank_sthread(&opts);
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_tokyo_tank_sthread failed");
-		tank_maintain();
-	}
+START_TEST (check_tank_bzip_s) {
+
+	bool_t outcome;
+	check_tank_opt_t opts = {
+		.engine = TANK_COMPRESS_BZIP
+	};
+	log_unit("%-64.64s", "TANK / BZIP / SINGLE THREADED:");
+	outcome = check_tokyo_tank_sthread(&opts);
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, "check_tokyo_tank_sthread failed");
+	tank_maintain();
+
+}
 END_TEST
 
-START_TEST (check_tank_bzip_m)
-	{
-		bool_t outcome;
-		check_tank_opt_t opts = {
-			.engine = TANK_COMPRESS_BZIP
-		};
-		log_unit("%-64.64s", "TANK / BZIP / MULTITHREADED:");
-		outcome = check_tokyo_tank_mthread(&opts);
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_tokyo_tank_mthread failed");
-		tank_maintain();
-	}
+START_TEST (check_tank_bzip_m) {
+
+	bool_t outcome;
+	check_tank_opt_t opts = {
+		.engine = TANK_COMPRESS_BZIP
+	};
+	log_unit("%-64.64s", "TANK / BZIP / MULTITHREADED:");
+	outcome = check_tokyo_tank_mthread(&opts);
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, "check_tokyo_tank_mthread failed");
+	tank_maintain();
+
+}
 END_TEST
 
 //! Cryptography Tests
-START_TEST (check_ecies_s)
-	{
-		bool_t outcome;
-		log_unit("%-64.64s", "CRYPTOGRAPHY / ECIES / SINGLE THREADED:");
-		outcome = check_ecies_sthread();
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_ecies_sthread failed");
-	}
+START_TEST (check_ecies_s) {
+	bool_t outcome;
+	log_unit("%-64.64s", "CRYPTOGRAPHY / ECIES / SINGLE THREADED:");
+	outcome = check_ecies_sthread();
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, "check_ecies_sthread failed");
+}
 END_TEST
 
-START_TEST (check_hash_s)
-	{
-		bool_t outcome = true;
-		chr_t errmsg[1024];
+START_TEST (check_hash_s) {
+	bool_t outcome = true;
+	chr_t errmsg[1024];
 
-		// Note that MD2 and WHIRLPOOL are not available. Although WHIRLPOOL may be available as whirlpool.
-		chr_t *digest_list[] = {
-			"MD4", "MD5", "SHA", "SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "RIPEMD160"
-		};
+	// Note that MD2 and WHIRLPOOL are not available. Although WHIRLPOOL may be available as whirlpool.
+	chr_t *digest_list[] = {
+		"MD4", "MD5", "SHA", "SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "RIPEMD160"
+	};
 
-		mm_wipe(errmsg, sizeof(errmsg));
+	mm_wipe(errmsg, sizeof(errmsg));
 
-		log_unit("%-64.64s", "CRYPTOGRAPHY / HASH / SINGLE THREADED:");
+	log_unit("%-64.64s", "CRYPTOGRAPHY / HASH / SINGLE THREADED:");
 
-		if (status() && !(outcome = check_hash_simple())) {
-			snprintf(errmsg, 1024, "digest methods failed to return the expected result...");
-		}
-
-		for (uint64_t i = 0; status() && outcome == true && i < (sizeof(digest_list) / sizeof(chr_t *)); i++) {
-			if (!(outcome = check_hash_sthread(digest_list[i]))) {
-				snprintf(errmsg, 1024, "%s failed...", digest_list[i]);
-			}
-		}
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, errmsg);
+	if (status() && !(outcome = check_hash_simple())) {
+		snprintf(errmsg, 1024, "digest methods failed to return the expected result...");
 	}
+
+	for (uint64_t i = 0; status() && outcome == true && i < (sizeof(digest_list) / sizeof(chr_t *)); i++) {
+		if (!(outcome = check_hash_sthread(digest_list[i]))) {
+			snprintf(errmsg, 1024, "%s failed...", digest_list[i]);
+		}
+	}
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, errmsg);
+}
 END_TEST
 
 START_TEST (check_hmac_s) {
@@ -284,23 +289,22 @@ START_TEST (check_hmac_s) {
 }
 END_TEST
 
-START_TEST (check_symmetric_s)
-{
+START_TEST (check_symmetric_s) {
 
 	stringer_t *errmsg = NULL, *failed = NULL;
 	chr_t *cipher_list[] = {
-			"aes-128-cbc", "aes-128-ccm", "aes-128-cfb", "aes-128-cfb1", "aes-128-cfb8", "aes-128-ctr", "aes-128-ecb", "aes-128-gcm",
-			"aes-128-ofb", "aes-128-xts", "aes-192-cbc", "aes-192-ccm", "aes-192-cfb", "aes-192-cfb1", "aes-192-cfb8", "aes-192-ctr",
-			"aes-192-ecb", "aes-192-gcm", "aes-192-ofb", "aes-256-cbc", "aes-256-ccm", "aes-256-cfb", "aes-256-cfb1", "aes-256-cfb8",
-			"aes-256-ctr", "aes-256-ecb", "aes-256-gcm", "aes-256-ofb", "aes-256-xts", "aes128", "aes192", "aes256", "camellia-128-cbc",
-			"camellia-128-cfb", "camellia-128-cfb1", "camellia-128-cfb8", "camellia-128-ecb", "camellia-128-ofb", "camellia-192-cbc",
-			"camellia-192-cfb", "camellia-192-cfb1", "camellia-192-cfb8", "camellia-192-ecb", "camellia-192-ofb", "camellia-256-cbc",
-			"camellia-256-cfb", "camellia-256-cfb1", "camellia-256-cfb8", "camellia-256-ecb", "camellia-256-ofb", "camellia128",
-			"camellia192", "camellia256", "idea", "idea-cbc", "idea-cfb", "idea-ecb", "idea-ofb", "rc2-40-cbc", "rc2-64-cbc", "rc2-cbc",
-			"rc2-cfb", "rc2-ecb", "rc2-ofb", "rc4-40", "seed-cbc", "seed-cfb", "seed-ecb", "seed-ofb", "des", "des-cbc", "des-cfb",
-			"des-cfb1", "des-cfb8", "des-ecb", "des-ede", "des-ede-cbc", "des-ede-cfb", "des-ede-ofb", "des-ede3", "des-ede3-cbc",
-			"des-ede3-cfb", "des-ede3-cfb8", "des-ede3-ofb", "des-ofb", "des3", "desx", "desx-cbc", "bf", "bf-cbc",
-			"bf-cfb", "bf-ecb", "bf-ofb", "id-aes128-GCM", "id-aes192-GCM", "id-aes256-GCM"
+		"aes-128-cbc", "aes-128-ccm", "aes-128-cfb", "aes-128-cfb1", "aes-128-cfb8", "aes-128-ctr", "aes-128-ecb", "aes-128-gcm",
+		"aes-128-ofb", "aes-128-xts", "aes-192-cbc", "aes-192-ccm", "aes-192-cfb", "aes-192-cfb1", "aes-192-cfb8", "aes-192-ctr",
+		"aes-192-ecb", "aes-192-gcm", "aes-192-ofb", "aes-256-cbc", "aes-256-ccm", "aes-256-cfb", "aes-256-cfb1", "aes-256-cfb8",
+		"aes-256-ctr", "aes-256-ecb", "aes-256-gcm", "aes-256-ofb", "aes-256-xts", "aes128", "aes192", "aes256", "camellia-128-cbc",
+		"camellia-128-cfb", "camellia-128-cfb1", "camellia-128-cfb8", "camellia-128-ecb", "camellia-128-ofb", "camellia-192-cbc",
+		"camellia-192-cfb", "camellia-192-cfb1", "camellia-192-cfb8", "camellia-192-ecb", "camellia-192-ofb", "camellia-256-cbc",
+		"camellia-256-cfb", "camellia-256-cfb1", "camellia-256-cfb8", "camellia-256-ecb", "camellia-256-ofb", "camellia128",
+		"camellia192", "camellia256", "idea", "idea-cbc", "idea-cfb", "idea-ecb", "idea-ofb", "rc2-40-cbc", "rc2-64-cbc", "rc2-cbc",
+		"rc2-cfb", "rc2-ecb", "rc2-ofb", "rc4-40", "seed-cbc", "seed-cfb", "seed-ecb", "seed-ofb", "des", "des-cbc", "des-cfb",
+		"des-cfb1", "des-cfb8", "des-ecb", "des-ede", "des-ede-cbc", "des-ede-cfb", "des-ede-ofb", "des-ede3", "des-ede3-cbc",
+		"des-ede3-cfb", "des-ede3-cfb8", "des-ede3-ofb", "des-ofb", "des3", "desx", "desx-cbc", "bf", "bf-cbc",
+		"bf-cfb", "bf-ecb", "bf-ofb", "id-aes128-GCM", "id-aes192-GCM", "id-aes256-GCM"
 	};
 
 	log_disable();
@@ -321,18 +325,18 @@ START_TEST (check_symmetric_s)
 	log_test("CRYPTOGRAPHY / SYMMETRIC / SINGLE THREADED:", errmsg);
 	fail_unless(!errmsg, st_char_get(errmsg));
 	st_cleanup(failed, errmsg);
+
 }
 END_TEST
 
-START_TEST (check_scramble_s)
-	{
-		bool_t outcome;
+START_TEST (check_scramble_s) {
+	bool_t outcome;
 
-		log_unit("%-64.64s", "CRYPTOGRAPHY / SCRAMBLE / SINGLE THREADED:");
-		outcome = check_scramble_sthread();
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_scramble_sthread failed");
-	}
+	log_unit("%-64.64s", "CRYPTOGRAPHY / SCRAMBLE / SINGLE THREADED:");
+	outcome = check_scramble_sthread();
+	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	fail_unless(outcome, "check_scramble_sthread failed");
+}
 END_TEST
 
 START_TEST (check_rand_s) {
@@ -427,7 +431,8 @@ START_TEST (check_spf_s) {
 	log_unit("%10.10s\n", (!errmsg ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
 	fail_unless(!errmsg, errmsg);
 
-} END_TEST
+}
+END_TEST
 
 //! Virus Checker Tests
 START_TEST (check_virus_s) {

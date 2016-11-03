@@ -354,7 +354,21 @@ spf2() {
 		;;
 		spf2-prep)
 			cd "$M_SOURCES/spf2"; error
-			cat "$M_PATCHES/spf2/"fix_variadic_macro_logging.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			cat "$M_PATCHES/spf2/"fix_formatting_issues.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			cat "$M_PATCHES/spf2/"fix_variadic_logging_macros.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			cat "$M_PATCHES/spf2/"expand_hostname_buffer.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			cat "$M_PATCHES/spf2/"fix_use_after_free.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			cat "$M_PATCHES/spf2/"handle_redirect_mechanism.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			cat "$M_PATCHES/spf2/"return_reason_for_dns_failure.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			cat "$M_PATCHES/spf2/"fix_formatting_issues_again.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+
+			# Rejected patch, because it requires an autoreconf to work.
+			# cat "$M_PATCHES/spf2/"fix_spf_lib_version.h_generator.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+
+			# Consolidated into a single patch above.
+			# cat "$M_PATCHES/spf2/"fix_variadic_macro_logging.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			# cat "$M_PATCHES/spf2/"swap_gnu_macro_for_c99_syntax.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			# cat "$M_PATCHES/spf2/"update_log_macros_for_non_c99_compiler.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
 		;;
 		spf2-build)
 			cd "$M_SOURCES/spf2"; error

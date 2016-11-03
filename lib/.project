@@ -80,7 +80,7 @@
 	</natures>
 	<filteredResources>
 		<filter>
-			<id>1450921591828</id>
+			<id>1478167495173</id>
 			<name></name>
 			<type>30</type>
 			<matcher>
@@ -89,7 +89,7 @@
 			</matcher>
 		</filter>
 		<filter>
-			<id>1450921591832</id>
+			<id>1478167495175</id>
 			<name></name>
 			<type>30</type>
 			<matcher>
@@ -98,12 +98,21 @@
 			</matcher>
 		</filter>
 		<filter>
-			<id>1450921591849</id>
+			<id>1478167495178</id>
 			<name></name>
 			<type>30</type>
 			<matcher>
 				<id>org.eclipse.ui.ide.multiFilter</id>
 				<arguments>1.0-projectRelativePath-matches-false-true-sources/.*/.*\.xml$</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1478167495181</id>
+			<name></name>
+			<type>30</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-local/include/spf2</arguments>
 			</matcher>
 		</filter>
 	</filteredResources>

@@ -1,0 +1,18 @@
+diff -r 9eddb253d2c8 src/include/spf_log.h
+--- a/src/include/spf_log.h	Thu Nov 03 01:16:31 2016 -0500
++++ b/src/include/spf_log.h	Thu Nov 03 01:20:46 2016 -0500
+@@ -67,10 +67,10 @@
+ 
+ #elif defined( __GNUC__ )
+ 
+-#define SPF_errorf(format... ) SPF_errorx( __FILE__, __LINE__, format )
+-#define SPF_warningf(format... ) SPF_warningx( __FILE__, __LINE__, format )
+-#define SPF_infof(format... ) SPF_infox( __FILE__, __LINE__, format )
+-#define SPF_debugf(format... ) SPF_debugx( __FILE__, __LINE__, format )
++#define SPF_errorf(format, ...) SPF_errorx( __FILE__, __LINE__, format, ##__VA_ARGS__ )
++#define SPF_warningf(format, ...) SPF_warningx( __FILE__, __LINE__, format, ##__VA_ARGS__ )
++#define SPF_infof(format, ...) SPF_infox( __FILE__, __LINE__, format, ##__VA_ARGS__ )
++#define SPF_debugf(format, ...) SPF_debugx( __FILE__, __LINE__, format, ##__VA_ARGS__ )
+ 
+ #else
+ 

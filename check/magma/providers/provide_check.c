@@ -55,9 +55,11 @@ START_TEST (check_compress_lzo_s) {
 	};
 
 	log_unit("%-64.64s", "COMPRESSION / LZO / SINGLE THREADED:");
+
 	if (status()) {
 		outcome = check_compress_sthread(&opts);
 	}
+
 	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
 	fail_unless(outcome, "check_compress_sthread failed");
 

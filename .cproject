@@ -200,9 +200,9 @@
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.998886331" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool errorParsers="org.eclipse.cdt.core.GCCErrorParser" id="cdt.managedbuild.tool.gnu.cpp.compiler.base.587691846" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<option id="gnu.cpp.compiler.option.include.paths.2074039768" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/local/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/local/include}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.639012882" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="HAVE_NS_TYPE"/>
@@ -223,9 +223,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma/magma_check.h}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.1638267230" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/local/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/local/include}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1369843614" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="HAVE_NS_TYPE"/>
@@ -254,8 +254,8 @@
 							</tool>
 							<tool errorParsers="org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.tool.gnu.assembler.base.2125045416" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base">
 								<option id="gnu.both.asm.option.include.paths.1115481090" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/local/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/local/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.891186153" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
@@ -495,7 +495,7 @@
 			</profile>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.1042491499.540148943">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerFileProfile"/>
 			<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
 				<buildOutputProvider>
 					<openAction enabled="true" filePath=""/>

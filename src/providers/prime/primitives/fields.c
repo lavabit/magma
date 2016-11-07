@@ -12,6 +12,26 @@
 
 #include "magma.h"
 
+prime_field_t * prime_field_get(prime_object_t *object, prime_field_type_t type) {
+
+	prime_field_t *result = NULL;
+
+	if (!object) {
+		return NULL;
+	}
+
+	for (int_t i = 0; i < object->count; i++) {
+
+		if (object->fields[i].type == type) {
+			result = &(object->fields[i]);
+			i = object->count;
+		}
+
+	}
+
+	return result;
+}
+
 int_t prime_field_size_length(prime_field_type_t field) {
 
 	int_t result = -1;
@@ -63,7 +83,7 @@ stringer_t * prime_field_write(prime_type_t type, prime_field_type_t field, size
 	}
 
 	// Ensure the data will fit given the field type.
-	else if (payload_len < prime_field_size_max(type, field)) {
+	else if (payload_len > prime_field_size_max(type, field)) {
 		log_error("The size provided is too small for the specified PRIME field type. { field = %hhu / max = %zu / size = %zu }",
 			field, prime_field_size_max(type, field), payload_len);
 		return NULL;

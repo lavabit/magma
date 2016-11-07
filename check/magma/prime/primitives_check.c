@@ -14,29 +14,62 @@
 
 bool_t check_prime_keys_sthread(stringer_t *errmsg) {
 
+	log_enable();
+	stringer_t *packed = NULL;
 	prime_key_t *holder = NULL;
 
 	// Allocate an org key.
 	if (!(holder = prime_key_alloc(PRIME_ORG_KEY))) {
-		st_sprint(errmsg, "Org key allocation failed.");
+		st_sprint(errmsg, "Organizational key allocation failed.");
 		return false;
 	}
-	else {
-		prime_key_free(holder);
+
+	prime_key_free(holder);
+
+	// Generate an org key and serialize it.
+	if (!(holder = prime_key_generate(PRIME_ORG_KEY)) || !(packed = prime_key_get(holder, MANAGEDBUF(256)))) {
+		st_sprint(errmsg, "Organizational key generation failed.");
+		return false;
 	}
+
+	prime_key_free(holder);
+
+	// Now try unpacking the org key.
+	if (!(holder = prime_key_set(packed))) {
+		st_sprint(errmsg, "Organizational key parsing failed.");
+		return false;
+	}
+
+	prime_key_free(holder);
 
 	// Allocate a user key.
 	if (!(holder = prime_key_alloc(PRIME_USER_KEY))) {
 		st_sprint(errmsg, "User key allocation failed.");
 		return false;
 	}
-	else {
-		prime_key_free(holder);
+
+	prime_key_free(holder);
+
+	// Generate a user key and serialize it.
+	if (!(holder = prime_key_generate(PRIME_USER_KEY)) || !(packed = prime_key_get(holder, MANAGEDBUF(256)))) {
+		st_sprint(errmsg, "User key generation failed.");
+		return false;
 	}
+
+	prime_key_free(holder);
+
+	// Now try unpacking the user key.
+	if (!(holder = prime_key_set(packed))) {
+		st_sprint(errmsg, "User key parsing failed.");
+		st_free(packed);
+		return false;
+	}
+
+	prime_key_free(holder);
 
 	// Attempt allocation of a non-key type using the key allocation function.
 	if ((holder = prime_key_alloc(PRIME_ORG_SIGNET)) || (holder = prime_key_alloc(PRIME_USER_SIGNET)) || (holder = prime_key_alloc(PRIME_USER_SIGNING_REQUEST))) {
-		st_sprint(errmsg, "User key allocation failed.");
+		st_sprint(errmsg, "Key parameter checks failed.");
 		prime_key_free(holder);
 		return false;
 	}
@@ -119,17 +152,17 @@ bool_t check_prime_unpacker_sthread(stringer_t *errmsg) {
 		return false;
 	}
 
-	log_unit("Type [%i] = %s\n", object->type, prime_object_type(object->type));
-
-	for (int i = 0; i < object->count; i++) {
-		if (object->fields[i].type < 16 || object->fields[i].type == 253 || object->fields[i].type == 255) {
-			stringer_t *payload_b64 = base64_encode_mod(&(object->fields[i].payload), MANAGEDBUF(1024));
-			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(payload_b64), st_char_get(payload_b64));
-		}
-		else {
-			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(&(object->fields[i].payload)), st_char_get(&(object->fields[i].payload)));
-		}
-	}
+//	log_unit("Type [%i] = %s\n", object->type, prime_object_type(object->type));
+//
+//	for (int i = 0; i < object->count; i++) {
+//		if (object->fields[i].type < 16 || object->fields[i].type == 253 || object->fields[i].type == 255) {
+//			stringer_t *payload_b64 = base64_encode_mod(&(object->fields[i].payload), MANAGEDBUF(1024));
+//			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(payload_b64), st_char_get(payload_b64));
+//		}
+//		else {
+//			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(&(object->fields[i].payload)), st_char_get(&(object->fields[i].payload)));
+//		}
+//	}
 
 	prime_object_free(object);
 
@@ -138,18 +171,18 @@ bool_t check_prime_unpacker_sthread(stringer_t *errmsg) {
 		return false;
 	}
 
-	log_unit("Type [%i] = %s\n", object->type, prime_object_type(object->type));
-
-	for (int i = 0; i < object->count; i++) {
-		if (object->fields[i].type < 16 || object->fields[i].type == 253 || object->fields[i].type == 255) {
-			stringer_t *payload_b64 = base64_encode_mod(&(object->fields[i].payload), MANAGEDBUF(1024));
-			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(payload_b64), st_char_get(payload_b64));
-		}
-		else {
-			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(&(object->fields[i].payload)), st_char_get(&(object->fields[i].payload)));
-		}
-	}
-
+//	log_unit("Type [%i] = %s\n", object->type, prime_object_type(object->type));
+//
+//	for (int i = 0; i < object->count; i++) {
+//		if (object->fields[i].type < 16 || object->fields[i].type == 253 || object->fields[i].type == 255) {
+//			stringer_t *payload_b64 = base64_encode_mod(&(object->fields[i].payload), MANAGEDBUF(1024));
+//			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(payload_b64), st_char_get(payload_b64));
+//		}
+//		else {
+//			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(&(object->fields[i].payload)), st_char_get(&(object->fields[i].payload)));
+//		}
+//	}
+//
 	prime_object_free(object);
 
 	if (!(object = prime_unpack(org_signet))) {
@@ -157,17 +190,17 @@ bool_t check_prime_unpacker_sthread(stringer_t *errmsg) {
 		return false;
 	}
 
-	log_unit("Type [%i] = %s\n", object->type, prime_object_type(object->type));
-
-	for (int i = 0; i < object->count; i++) {
-		if (object->fields[i].type < 16 || object->fields[i].type == 253 || object->fields[i].type == 255) {
-			stringer_t *payload_b64 = base64_encode_mod(&(object->fields[i].payload), MANAGEDBUF(1024));
-			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(payload_b64), st_char_get(payload_b64));
-		}
-		else {
-			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(&(object->fields[i].payload)), st_char_get(&(object->fields[i].payload)));
-		}
-	}
+//	log_unit("Type [%i] = %s\n", object->type, prime_object_type(object->type));
+//
+//	for (int i = 0; i < object->count; i++) {
+//		if (object->fields[i].type < 16 || object->fields[i].type == 253 || object->fields[i].type == 255) {
+//			stringer_t *payload_b64 = base64_encode_mod(&(object->fields[i].payload), MANAGEDBUF(1024));
+//			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(payload_b64), st_char_get(payload_b64));
+//		}
+//		else {
+//			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(&(object->fields[i].payload)), st_char_get(&(object->fields[i].payload)));
+//		}
+//	}
 
 	prime_object_free(object);
 
@@ -176,17 +209,17 @@ bool_t check_prime_unpacker_sthread(stringer_t *errmsg) {
 		return false;
 	}
 
-	log_unit("Type [%i] = %s\n", object->type, prime_object_type(object->type));
-
-	for (int i = 0; i < object->count; i++) {
-		if (object->fields[i].type < 16 || object->fields[i].type == 253 || object->fields[i].type == 255) {
-			stringer_t *payload_b64 = base64_encode_mod(&(object->fields[i].payload), MANAGEDBUF(1024));
-			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(payload_b64), st_char_get(payload_b64));
-		}
-		else {
-			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(&(object->fields[i].payload)), st_char_get(&(object->fields[i].payload)));
-		}
-	}
+//	log_unit("Type [%i] = %s\n", object->type, prime_object_type(object->type));
+//
+//	for (int i = 0; i < object->count; i++) {
+//		if (object->fields[i].type < 16 || object->fields[i].type == 253 || object->fields[i].type == 255) {
+//			stringer_t *payload_b64 = base64_encode_mod(&(object->fields[i].payload), MANAGEDBUF(1024));
+//			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(payload_b64), st_char_get(payload_b64));
+//		}
+//		else {
+//			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(&(object->fields[i].payload)), st_char_get(&(object->fields[i].payload)));
+//		}
+//	}
 
 	prime_object_free(object);
 
@@ -195,17 +228,17 @@ bool_t check_prime_unpacker_sthread(stringer_t *errmsg) {
 		return false;
 	}
 
-	log_unit("Type [%i] = %s\n", object->type, prime_object_type(object->type));
-
-	for (int i = 0; i < object->count; i++) {
-		if (object->fields[i].type < 16 || object->fields[i].type == 253 || object->fields[i].type == 255) {
-			stringer_t *payload_b64 = base64_encode_mod(&(object->fields[i].payload), MANAGEDBUF(1024));
-			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(payload_b64), st_char_get(payload_b64));
-		}
-		else {
-			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(&(object->fields[i].payload)), st_char_get(&(object->fields[i].payload)));
-		}
-	}
+//	log_unit("Type [%i] = %s\n", object->type, prime_object_type(object->type));
+//
+//	for (int i = 0; i < object->count; i++) {
+//		if (object->fields[i].type < 16 || object->fields[i].type == 253 || object->fields[i].type == 255) {
+//			stringer_t *payload_b64 = base64_encode_mod(&(object->fields[i].payload), MANAGEDBUF(1024));
+//			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(payload_b64), st_char_get(payload_b64));
+//		}
+//		else {
+//			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(&(object->fields[i].payload)), st_char_get(&(object->fields[i].payload)));
+//		}
+//	}
 
 	prime_object_free(object);
 

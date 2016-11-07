@@ -12,7 +12,7 @@
 
 #include "magma.h"
 
-prime_size_t prime_count(stringer_t *fields) {
+prime_size_t prime_unpack_validate(stringer_t *fields) {
 
 	placer_t payload;
 	int_t type, bytes, size;
@@ -129,9 +129,8 @@ int_t prime_unpack_fields(prime_object_t *object, stringer_t *fields) {
 prime_object_t * prime_unpack(stringer_t *data) {
 
 	uint16_t type = 0;
-	uint32_t size = 0;
-	prime_size_t count = 0;
 	prime_object_t *result = NULL;
+	prime_size_t size = 0, count = 0;
 
 	// Unpack the object header. For now, we won't worry about message objects,
 	// which means we can assume the header is only 5 bytes.
@@ -140,7 +139,7 @@ prime_object_t * prime_unpack(stringer_t *data) {
 		return NULL;
 	}
 
-	if (!(count = prime_count(PLACER(st_data_get(data)  + 5, st_length_get(data) - 5))) || !(result = prime_object_alloc(type, size, count))) {
+	if (!(count = prime_unpack_validate(PLACER(st_data_get(data)  + 5, st_length_get(data) - 5))) || !(result = prime_object_alloc(type, size, count))) {
 		return NULL;
 	}
 
@@ -151,10 +150,8 @@ prime_object_t * prime_unpack(stringer_t *data) {
 
 	return result;
 
-
-//	#error
-
-	// CHeck to ensure the header size, matches the size of the binary object data (minus the header).
+	// TODO: The following checks need to be added.
+	// Check to ensure the header size, matches the size of the binary object data (minus the header).
 	// Count the fields.
 	// Ensure the field types appear in sequentially.
 	// Check that each field only appears once (with the few notable exceptions taken into account).
@@ -162,7 +159,4 @@ prime_object_t * prime_unpack(stringer_t *data) {
 	// Iterate through and setup each field structure with:
 	//		the field type,
 	//		a place holder wrapped around the payload (and its size).
-
-
-	return NULL;
 }

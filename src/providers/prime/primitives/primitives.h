@@ -60,8 +60,9 @@ typedef struct __attribute__ ((packed)) {
 } prime_reader_t;
 
 /// unpack.c
-prime_size_t      prime_count(stringer_t *fields);
 prime_object_t *  prime_unpack(stringer_t *data);
+int_t             prime_unpack_fields(prime_object_t *object, stringer_t *fields);
+prime_size_t      prime_unpack_validate(stringer_t *fields);
 
 /// reader.c
 int_t   prime_reader_open(stringer_t *data, prime_reader_t *reader);
@@ -90,9 +91,10 @@ stringer_t *  prime_header_user_signing_request_write(size_t size, stringer_t *o
 stringer_t *  prime_header_write(prime_type_t type, size_t size, stringer_t *output);
 
 /// fields.c
-int_t         prime_field_size_length(prime_field_type_t field);
-size_t        prime_field_size_max(prime_type_t type, prime_field_type_t field);
-stringer_t *  prime_field_write(prime_type_t type, prime_field_type_t field, size_t size, stringer_t *data, stringer_t *output);
+prime_field_t *  prime_field_get(prime_object_t *object, prime_field_type_t type);
+int_t            prime_field_size_length(prime_field_type_t field);
+size_t           prime_field_size_max(prime_type_t type, prime_field_type_t field);
+stringer_t *     prime_field_write(prime_type_t type, prime_field_type_t field, size_t size, stringer_t *data, stringer_t *output);
 
 #endif
 

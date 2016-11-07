@@ -15,7 +15,7 @@
 void user_key_free(prime_user_key_t *user) {
 
 	if (user) {
-		if (user->signing) st_free(user->signing);
+		if (user->signing) ed25519_free(user->signing);
 		if (user->encryption) secp256k1_free(user->encryption);
 		mm_free(user);
 	}
@@ -73,44 +73,76 @@ stringer_t * user_key_get(prime_user_key_t *user, stringer_t *output) {
 		return NULL;
 	}
 
-	// This is very primitive serialization logic.
-	result = st_append(output, prime_header_user_key_write(length, MANAGEDBUF(5)));
-	result = st_append(result, prime_field_write(PRIME_USER_KEY, 1, ED25519_KEY_PRIV_LEN, ed25519_private_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)));
-	result = st_append(result, prime_field_write(PRIME_USER_KEY, 2, SECP256K1_KEY_PRIV_LEN, secp256k1_private_get(user->encryption, MANAGEDBUF(32)), MANAGEDBUF(34)));
+	// See if we have a valid output buffer, or if output is NULL, allocate a buffer to hold the output.
+	else if (output && (!st_valid_destination(st_opt_get(output)) || st_avail_get(output) < length)) {
+		log_pedantic("An output string was supplied but it does not represent a buffer capable of holding the output.");
+		return NULL;
+	}
+	else if (!output && !(result = st_alloc(length))) {
+		log_pedantic("Could not allocate a buffer large enough to hold encoded result. { requested = %zu }", length);
+		return NULL;
+	}
+	else if (!output) {
+		output = result;
+	}
 
-	return result;
+	// Wipe the buffer so any leading bytes we don't use will be zero'ed out for padding purposes.
+	st_wipe(output);
+
+	// This is very primitive serialization logic.
+	st_write(output, prime_header_user_key_write(length, MANAGEDBUF(5)),
+		prime_field_write(PRIME_USER_KEY, 1, ED25519_KEY_PRIV_LEN, ed25519_private_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+		prime_field_write(PRIME_USER_KEY, 2, SECP256K1_KEY_PRIV_LEN, secp256k1_private_get(user->encryption, MANAGEDBUF(32)), MANAGEDBUF(34)));
+
+	// If things fail, and result !NULL then we'll need to free result.
+	return output;
 }
 
 prime_user_key_t * user_key_set(stringer_t *key) {
 
-	uint16_t type = 0;
-	uint32_t size = 0;
+	prime_field_t *field = NULL;
+	prime_object_t *object = NULL;
 	prime_user_key_t *result = NULL;
 
-	if (prime_header_read(key,  &type,  &size) || type != PRIME_USER_KEY) {
-		log_pedantic("An invalid PRIME object was passed in for parsing.");
+	if (!(object = prime_unpack(key))) {
+		log_pedantic("Unable to unpack a PRIME user key.");
+		return NULL;
+	}
+	else if (object->type != PRIME_USER_KEY) {
+		log_pedantic("The object passed in was not a user key.");
+		prime_object_free(object);
 		return NULL;
 	}
 
 	else if (!(result = user_key_alloc())) {
-		log_pedantic("Unable to allocate a PRIME user key structure.");
+		log_pedantic("Unable to allocate a PRIME user key.");
+		prime_object_free(object);
 		return NULL;
 	}
 
-//#error
+	else if (!(field = prime_field_get(object, 1)) || !(result->signing = ed25519_private_set(&(field->payload)))) {
+		log_pedantic("Unable to parse the PRIME user signing key.");
+		prime_object_free(object);
+		user_key_free(result);
+		return NULL;
+	}
 
-	result->signing = NULL;
+	else if (!(field = prime_field_get(object, 2)) || !(result->encryption = secp256k1_private_set(&(field->payload)))) {
+		log_pedantic("Unable to parse the PRIME user encryption key.");
+		prime_object_free(object);
+		user_key_free(result);
+		return NULL;
+	}
+
 	return NULL;
 }
 
+/*
 prime_user_key_t * user_key_encrypted_get(prime_user_key_t *user, stringer_t *output) {
-
-//	#error
 	return NULL;
 }
 
 prime_user_key_t * user_key_encrypted_set(stringer_t *key) {
-
-//	#error
 	return NULL;
 }
+*/

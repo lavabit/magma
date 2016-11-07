@@ -128,3 +128,47 @@ stringer_t * prime_key_get(prime_key_t *key, stringer_t *output) {
 
 	return output;
 }
+
+prime_key_t * prime_key_set(stringer_t *key) {
+
+	uint16_t type = 0;
+	prime_size_t size = 0;
+	prime_key_t *result = NULL;
+
+	// Unpack the object header. For now, we won't worry about message objects,
+	// which means we can assume the header is only 5 bytes.
+	if (prime_header_read(key, &type, &size)) {
+		return NULL;
+	}
+
+	if (!(result = mm_alloc(sizeof(prime_key_t)))) {
+		log_pedantic("PRIME key allocation failed.");
+		return NULL;
+	}
+
+	mm_wipe(result, sizeof(prime_key_t));
+
+	// Switch statement to call the appropriate allocator.
+	switch (type) {
+		case (PRIME_ORG_KEY):
+			result->type = PRIME_ORG_KEY;
+			result->org = org_key_set(key);
+			break;
+		case (PRIME_USER_KEY):
+			result->type = PRIME_USER_KEY;
+			result->user = user_key_set(key);
+			break;
+		default:
+			log_pedantic("Unrecognized PRIME key type.");
+			mm_free(result);
+			return NULL;
+	}
+
+	// Check that whichever key type was requrested, it actually succeeded.
+	if ((type == PRIME_ORG_KEY && !result->org) || (type == PRIME_USER_KEY && !result->user)) {
+		mm_free(result);
+		return NULL;
+	}
+
+	return result;
+}

@@ -23,36 +23,6 @@ chr_t * prime_types[] = {
 	"ENCRYPTED MESSAGE"
 };
 
-void prime_object_free(prime_object_t *object) {
-
-	if (object) {
-		mm_free(object);
-	}
-
-	return;
-}
-
-prime_object_t * prime_object_alloc(prime_type_t type, prime_size_t size, prime_size_t fields) {
-
-	prime_object_t *result = NULL;
-
-	if (!(result = mm_alloc(sizeof(prime_object_t) + (fields * sizeof(prime_field_t))))) {
-		log_pedantic("PRIME object allocation failed.");
-		return NULL;
-	}
-
-	mm_wipe(result, sizeof(prime_object_t) + (fields * sizeof(prime_field_t)));
-	result->type = type;
-	result->size = size;
-	result->count = fields;
-
-	for (int_t i = 0; i < fields; i++) {
-		mm_wipe(&(result->fields[i]), sizeof(prime_field_t));
-	}
-
-	return result;
-}
-
 chr_t * prime_object_type(prime_type_t type) {
 
 	chr_t *result = NULL;
@@ -85,6 +55,36 @@ chr_t * prime_object_type(prime_type_t type) {
 		default:
 			log_pedantic("Unrecognized PRIME type.");
 	}
+	return result;
+}
+
+void prime_object_free(prime_object_t *object) {
+
+	if (object) {
+		mm_free(object);
+	}
+
+	return;
+}
+
+prime_object_t * prime_object_alloc(prime_type_t type, prime_size_t size, prime_size_t fields) {
+
+	prime_object_t *result = NULL;
+
+	if (!(result = mm_alloc(sizeof(prime_object_t) + (fields * sizeof(prime_field_t))))) {
+		log_pedantic("PRIME object allocation failed.");
+		return NULL;
+	}
+
+	mm_wipe(result, sizeof(prime_object_t) + (fields * sizeof(prime_field_t)));
+	result->type = type;
+	result->size = size;
+	result->count = fields;
+
+	for (int_t i = 0; i < fields; i++) {
+		mm_wipe(&(result->fields[i]), sizeof(prime_field_t));
+	}
+
 	return result;
 }
 

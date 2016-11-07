@@ -97,6 +97,7 @@ prime_user_key_t * user_key_set(stringer_t *key) {
 		return NULL;
 	}
 
+//#error
 
 	result->signing = NULL;
 	return NULL;

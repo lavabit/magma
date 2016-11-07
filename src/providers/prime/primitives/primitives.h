@@ -70,9 +70,11 @@ int_t   prime_reader_size(prime_reader_t *reader, int_t bytes);
 int_t   prime_reader_type(prime_reader_t *reader);
 
 /// objects.c
-size_t   prime_object_size_max(prime_type_t type);
-size_t   prime_object_size_min(prime_type_t type);
-chr_t *  prime_object_type(prime_type_t type);
+prime_object_t *  prime_object_alloc(prime_type_t type, prime_size_t size, prime_size_t fields);
+void              prime_object_free(prime_object_t *object);
+size_t            prime_object_size_max(prime_type_t type);
+size_t            prime_object_size_min(prime_type_t type);
+chr_t *           prime_object_type(prime_type_t type);
 
 /// headers.c
 stringer_t *  prime_header_encrypted_message_write(size_t size, stringer_t *output);

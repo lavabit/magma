@@ -23,6 +23,33 @@ chr_t * prime_types[] = {
 	"ENCRYPTED MESSAGE"
 };
 
+void prime_object_free(prime_object_t *object) {
+
+	if (object) {
+		if (object->fields) mm_free(object->fields);
+		mm_free(object);
+	}
+
+	return;
+}
+
+prime_object_t * prime_object_alloc(prime_type_t type, prime_size_t size, prime_size_t fields) {
+
+	prime_object_t *result = NULL;
+
+	if (!(result = mm_alloc(sizeof(prime_object_t) + (fields * sizeof(prime_field_t))))) {
+		log_pedantic("PRIME object allocation failed.");
+		return NULL;
+	}
+
+	mm_wipe(result, sizeof(prime_object_t) + (fields * sizeof(prime_field_t)));
+	result->type = type;
+	result->size = size;
+	result->count = fields;
+
+	return result;
+}
+
 chr_t * prime_object_type(prime_type_t type) {
 
 	chr_t *result = NULL;
@@ -103,3 +130,4 @@ size_t prime_object_size_min(prime_type_t type) {
 	}
 	return min;
 }
+

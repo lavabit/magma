@@ -26,7 +26,6 @@ chr_t * prime_types[] = {
 void prime_object_free(prime_object_t *object) {
 
 	if (object) {
-		if (object->fields) mm_free(object->fields);
 		mm_free(object);
 	}
 
@@ -46,6 +45,10 @@ prime_object_t * prime_object_alloc(prime_type_t type, prime_size_t size, prime_
 	result->type = type;
 	result->size = size;
 	result->count = fields;
+
+	for (int_t i = 0; i < fields; i++) {
+		mm_wipe(&(result->fields[i]), sizeof(prime_field_t));
+	}
 
 	return result;
 }

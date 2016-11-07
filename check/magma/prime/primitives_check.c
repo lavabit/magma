@@ -100,12 +100,114 @@ bool_t check_prime_writers_sthread(stringer_t *errmsg) {
 bool_t check_prime_unpacker_sthread(stringer_t *errmsg) {
 
 	log_enable();
-	stringer_t *key = base64_decode(NULLER("B90AAEQBIAzFqb5wsMLLwJV1uUfVecHirAQVnHZbvlDqDqkwGZwzAiAk/epj8HtmvA/VUnMC9TfWwh1veCK9Bp+uExSfeuHCug=="), MANAGEDBUF(76));
+	prime_object_t *object = NULL;
+	stringer_t *user_key = base64_decode(NULLER("B90AAEQBIAzFqb5wsMLLwJV1uUfVecHirAQVnHZbvlDqDqkwGZwzAiAk/epj8HtmvA/VUnMC9TfWwh1veCK9Bp+uExSfeuHCug=="), MANAGEDBUF(76)),
+		*org_key = base64_decode(NULLER("B6AAAEQBIJw2BXyqCKDFsosdWHuGxUpD7CDNyYCCjtjKuS1zHUOAAyD0I69V/DkTLv/g9Maesc9Vs2Ssef8ao4ZTzDk7e+Nf1g=="), MANAGEDBUF(128)),
+		*user_signing_request = base64_decode(NULLER("BL8AAIcBIUCrKVU0/tyKEetnxfXBVdYlws1cof0DJ/obRCg/QPT2pAIhA8SQ44pss9J5vxHp4jbCS9poZv0JlFSCQxH2t"
+			"aDhfsMnBcU1Wa162o4FpEqAzcxETbD71HO27lRlzE8/Yd+RZT7KNROA4e/TAmphORiH7KK3yS6DnuSoSt7w/oFeYq180Aw="), MANAGEDBUF(1024)),
+		*user_signet = base64_decode(NULLER("Bv0AAW4BIUCrKVU0/tyKEetnxfXBVdYlws1cof0DJ/obRCg/QPT2pAIhA8SQ44pss9J5vxHp4jbCS9poZv0JlFSCQxH2taDhfsMnBcU1Wa162o4FpEqAzcxETbD71HO2"
+			"7lRlzE8/Yd+RZT7KNROA4e/TAmphORiH7KK3yS6DnuSoSt7w/oFeYq180AwGUtVYvtAR4szKkh3QHNSJ/Sqh1xvWmSEdm9RxDxcxf+bxS8G79PwJDHiFV+rW+5uetx+W"
+			"sQTfhHDZQBZTNPdQARAQdXNlckBleGFtcGxlLmNvbf0HkBxZvkoQG6rwhGZTxd6LUZNiJ6aAfu9cxw3kaceoG5F3Mcz4WoNSwTOK76Z7a7pujX5eoOSKZgLvt7QPMCIA"
+			"/hB1c2VyQGV4YW1wbGUuY29t//OjJlv2ra+bT+cE37Aoufn8ThUrIVaCEnb47JRITh3zs72KESap140Jr0vKzAm80NtLEqgQ0IGYH4NkCf5GsQw="), MANAGEDBUF(1024)),
+		*org_signet = base64_decode(NULLER("BvAAAWMBIUA84E+XlnQm2rf/xArwWRYoCWRHKfLYnR1epjfGHSLeawMhA48f04SsJOtgZvIAaAMHb0lAU6JGmKWQBYZRdFuIOOtkBHsafjgMKnfEfasVTBpjbnon81tt"
+			"nuJNYxIioSBbXMHoouchSKOm9elbyB7W8hva2ONjByYvGI/dgHU3+OgrrAgQC0V4YW1wbGUgTExDERgxNjAwIFBlbm5zeWx2YW5pYSBBdmUgTlcTDVVuaXRlZCBTdGF0"
+			"ZXMUBTIwNTAwFQ4oMjAyKSA0NTYtMTExMf107N0qlZxpbixIWPYfWcKrk82Ma6jxFCKsU2Om8p3P7uXRDxXOsKjl+exCMLdWcCQf7Za4t+0qmidb3LsobAAO/gtleGFt"
+			"cGxlLmNvbf9w6PnxWe+gVy8HeK2hyyKVMVd57LXbmYlmqsRegg2FAI8su/QqYyPoogxRXKjOaeKExRhPe+L1onefH3JBA0IK"), MANAGEDBUF(1024));
 
+	if (!(object = prime_unpack(user_key))) {
+		st_sprint(errmsg, "Failed to unpack the user key.");
+		return false;
+	}
 
-	prime_unpack(key);
+	log_unit("Type [%i] = %s\n", object->type, prime_object_type(object->type));
 
-//	#error;
+	for (int i = 0; i < object->count; i++) {
+		if (object->fields[i].type < 16 || object->fields[i].type == 253 || object->fields[i].type == 255) {
+			stringer_t *payload_b64 = base64_encode_mod(&(object->fields[i].payload), MANAGEDBUF(1024));
+			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(payload_b64), st_char_get(payload_b64));
+		}
+		else {
+			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(&(object->fields[i].payload)), st_char_get(&(object->fields[i].payload)));
+		}
+	}
+
+	prime_object_free(object);
+
+	if (!(object = prime_unpack(org_key))) {
+		st_sprint(errmsg, "Failed to unpack the organizational key.");
+		return false;
+	}
+
+	log_unit("Type [%i] = %s\n", object->type, prime_object_type(object->type));
+
+	for (int i = 0; i < object->count; i++) {
+		if (object->fields[i].type < 16 || object->fields[i].type == 253 || object->fields[i].type == 255) {
+			stringer_t *payload_b64 = base64_encode_mod(&(object->fields[i].payload), MANAGEDBUF(1024));
+			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(payload_b64), st_char_get(payload_b64));
+		}
+		else {
+			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(&(object->fields[i].payload)), st_char_get(&(object->fields[i].payload)));
+		}
+	}
+
+	prime_object_free(object);
+
+	if (!(object = prime_unpack(org_signet))) {
+		st_sprint(errmsg, "Failed to unpack the org signet.");
+		return false;
+	}
+
+	log_unit("Type [%i] = %s\n", object->type, prime_object_type(object->type));
+
+	for (int i = 0; i < object->count; i++) {
+		if (object->fields[i].type < 16 || object->fields[i].type == 253 || object->fields[i].type == 255) {
+			stringer_t *payload_b64 = base64_encode_mod(&(object->fields[i].payload), MANAGEDBUF(1024));
+			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(payload_b64), st_char_get(payload_b64));
+		}
+		else {
+			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(&(object->fields[i].payload)), st_char_get(&(object->fields[i].payload)));
+		}
+	}
+
+	prime_object_free(object);
+
+	if (!(object = prime_unpack(user_signing_request))) {
+		st_sprint(errmsg, "Failed to unpack the user signing request.");
+		return false;
+	}
+
+	log_unit("Type [%i] = %s\n", object->type, prime_object_type(object->type));
+
+	for (int i = 0; i < object->count; i++) {
+		if (object->fields[i].type < 16 || object->fields[i].type == 253 || object->fields[i].type == 255) {
+			stringer_t *payload_b64 = base64_encode_mod(&(object->fields[i].payload), MANAGEDBUF(1024));
+			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(payload_b64), st_char_get(payload_b64));
+		}
+		else {
+			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(&(object->fields[i].payload)), st_char_get(&(object->fields[i].payload)));
+		}
+	}
+
+	prime_object_free(object);
+
+	if (!(object = prime_unpack(user_signet))) {
+		st_sprint(errmsg, "Failed to unpack the user signet.");
+		return false;
+	}
+
+	log_unit("Type [%i] = %s\n", object->type, prime_object_type(object->type));
+
+	for (int i = 0; i < object->count; i++) {
+		if (object->fields[i].type < 16 || object->fields[i].type == 253 || object->fields[i].type == 255) {
+			stringer_t *payload_b64 = base64_encode_mod(&(object->fields[i].payload), MANAGEDBUF(1024));
+			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(payload_b64), st_char_get(payload_b64));
+		}
+		else {
+			log_unit("Field [%i] = %.*s\n", object->fields[i].type, st_length_int(&(object->fields[i].payload)), st_char_get(&(object->fields[i].payload)));
+		}
+	}
+
+	prime_object_free(object);
 
 	return true;
 }

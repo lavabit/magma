@@ -26,8 +26,21 @@ prime_size_t prime_count(stringer_t *fields) {
 	// Read in the field type first. We'll get a 0 result if we've reached the end of the field data.
 	while ((type = prime_reader_type(&reader)) > 0) {
 
+		// TODO: Handle undefined fields properly.
+		// For now, we'll skip over undefined fields.
+		if (type == 251) {
+
+			// Read the undefined field name.
+			size = prime_reader_size(&reader, 1);
+			prime_reader_payload(&reader, size, &payload);
+
+			// Read the undefined field payload.
+			size = prime_reader_size(&reader, 2);
+			prime_reader_payload(&reader, size, &payload);
+		}
+
 		// Figure out how many bytes are used to hold the payload size.
-		if ((bytes = prime_field_size_length(type)) < 0) {
+		else if ((bytes = prime_field_size_length(type)) < 0) {
 			return 0;
 		}
 		// Read in the payload size if bytes is positive. If bytes is zero then we have a fixed length
@@ -41,8 +54,9 @@ prime_size_t prime_count(stringer_t *fields) {
 		else if (prime_reader_payload(&reader, (!bytes ? ED25519_SIGNATURE_LEN : size), &payload)) {
 			return 0;
 		}
-
-		count++;
+		else {
+			count++;
+		}
 	}
 
 	// An error occurred.
@@ -67,8 +81,21 @@ int_t prime_unpack_fields(prime_object_t *object, stringer_t *fields) {
 	// Read in the field type first. We'll get a 0 result if we've reached the end of the field data.
 	while (count < object->count && (type = prime_reader_type(&reader)) > 0) {
 
+		// TODO: Handle undefined fields properly.
+		// For now, we'll skip over undefined fields.
+		if (type == 251) {
+
+			// Read the undefined field name.
+			size = prime_reader_size(&reader, 1);
+			prime_reader_payload(&reader, size, &payload);
+
+			// Read the undefined field payload.
+			size = prime_reader_size(&reader, 2);
+			prime_reader_payload(&reader, size, &payload);
+		}
+
 		// Figure out how many bytes are used to hold the payload size.
-		if ((bytes = prime_field_size_length(type)) < 0) {
+		else if ((bytes = prime_field_size_length(type)) < 0) {
 			return -1;
 		}
 		// Read in the payload size if bytes is positive. If bytes is zero then we have a fixed length
@@ -83,14 +110,16 @@ int_t prime_unpack_fields(prime_object_t *object, stringer_t *fields) {
 			return -1;
 		}
 
-		object->fields[count].type = type;
-		object->fields[count].payload = payload;
+		else {
+			object->fields[count].type = type;
+			object->fields[count].payload = payload;
 
-		count++;
+			count++;
+		}
 	}
 
 	// An error occurred.
-	if (type < 0) {
+	if (type < 0 || count != object->count) {
 		return -1;
 	}
 
@@ -111,14 +140,11 @@ prime_object_t * prime_unpack(stringer_t *data) {
 		return NULL;
 	}
 
-	count = prime_count(PLACER(st_data_get(data)  + 5, st_length_get(data) - 5));
-	log_pedantic("count = %u", count);
-
-	if (!(result = prime_object_alloc(type, size, count))) {
+	if (!(count = prime_count(PLACER(st_data_get(data)  + 5, st_length_get(data) - 5))) || !(result = prime_object_alloc(type, size, count))) {
 		return NULL;
 	}
 
-	if (prime_unpack_fields(result, PLACER(st_data_get(data)  + 5, st_length_get(data) - 5))) {
+	else if (prime_unpack_fields(result, PLACER(st_data_get(data)  + 5, st_length_get(data) - 5))) {
 		prime_object_free(result);
 		return NULL;
 	}

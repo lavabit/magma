@@ -53,8 +53,8 @@ ed25519_key_t * ed25519_generate(void) {
 	}
 
 	result->type = ED25519_PRIV;
-	memcpy(result->private, priv, ED25519_KEY_PRIV_LEN);
-	memcpy(result->public, pub, ED25519_KEY_PUB_LEN);
+	mm_copy(result->private, priv, ED25519_KEY_PRIV_LEN);
+	mm_copy(result->public, pub, ED25519_KEY_PUB_LEN);
 	return result;
 }
 

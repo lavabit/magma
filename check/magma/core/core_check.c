@@ -483,6 +483,22 @@ START_TEST (check_print)
 	}
 END_TEST
 
+START_TEST (check_write)
+	{
+		char *errmsg = NULL;
+		bool_t outcome = true;
+
+		log_unit("%-64.64s", "CORE / STRINGS / WRITE / SINGLE THREADED:");
+
+		if (!check_string_write()) errmsg = "The stringer write function failed.";
+
+		outcome = errmsg ? false : true;
+		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
+		fail_unless(outcome, errmsg);
+
+	}
+END_TEST
+
 START_TEST (check_digits)
 	{
 
@@ -914,6 +930,7 @@ Suite * suite_check_core(void) {
 	testcase(s, tc, "Strings / Duplication", check_duplication);
 	testcase(s, tc, "Strings / Merge", check_merge);
 	testcase(s, tc, "Strings / Print", check_print);
+	testcase(s, tc, "Strings / Write", check_write);
 	testcase(s, tc, "Strings / Compare", check_compare);
 	testcase(s, tc, "Strings / Binary Search", check_bsearch);
 	testcase(s, tc, "Strings / Bitwise Operations", check_bitwise);

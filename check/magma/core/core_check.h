@@ -38,6 +38,7 @@ bool_t   check_string_dupe(uint32_t check);
 bool_t   check_string_import(void);
 bool_t   check_string_merge(void);
 bool_t   check_string_print(void);
+bool_t   check_string_write(void);
 bool_t   check_string_realloc(uint32_t check);
 
 /// qp_check.c

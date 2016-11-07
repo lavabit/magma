@@ -297,3 +297,23 @@ bool_t check_string_print(void) {
 	return result;
 
 }
+
+bool_t check_string_write(void) {
+
+	stringer_t *output = MANAGEDBUF(1024), *strings[3] = { MANAGEDBUF(32), MANAGEDBUF(64), MANAGEDBUF(128) };
+
+	for (int i = 0; i < 3; i++) {
+		rand_write(strings[i]);
+	}
+
+	if (st_write(NULL, strings[0], strings[1], strings[2]) != 224) {
+		return false;
+	}
+
+	if (st_write(output, strings[0], strings[1], strings[2]) != 224) {
+		return false;
+	}
+
+	return true;
+
+}

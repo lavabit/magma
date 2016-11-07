@@ -175,6 +175,7 @@ stringer_t * st_quick(stringer_t *s, chr_t *format, ...) __attribute__((format (
 size_t st_sprint(stringer_t *s, chr_t *format, ...) __attribute__((format (printf, 2, 3)));
 stringer_t * st_vaprint_opts(uint32_t opts, chr_t *format, va_list args);
 size_t st_vsprint(stringer_t *s, chr_t *format, va_list args);
+int_t st_write_variadic(stringer_t *output, ssize_t count, ...);
 
 /// replace.c
 int_t         st_replace(stringer_t **target, stringer_t *pattern, stringer_t *replacement);
@@ -245,8 +246,12 @@ multi_t    mt_set_type(multi_t multi, M_TYPE target);
 // Macros are used to allow a variable number of strings to be tested for emptiness, or freed with a single call.
 #define st_empty(...) st_empty_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
 #define st_populated(...) st_populated_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
+
 #define st_cleanup(...) st_cleanup_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
 #define ns_cleanup(...) ns_cleanup_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
+
+#define st_write(output, ...) st_write_variadic(output, va_narg(__VA_ARGS__), ##__VA_ARGS__)
+
 
 // Macro for counting the number of arguments in a variadic list function call.
 #define va_narg(...) (__VA_NARG__(_0, ##__VA_ARGS__, __VA_NARG_SEQ_N()) - 1)

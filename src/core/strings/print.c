@@ -178,3 +178,50 @@ stringer_t * st_aprint_opts(uint32_t opts, chr_t *format, ...) {
 	return result;
 }
 
+int_t st_write_variadic(stringer_t *output, ssize_t count, ...) {
+
+	va_list list;
+	stringer_t *s;
+	int_t written = 0;
+	uchr_t *cursor = NULL, *data = NULL;
+	size_t remaining = 0, len = 0;
+
+	if (output && st_valid_tracked(st_opt_get(output))) {
+		cursor = st_data_get(output);
+		remaining = st_avail_get(output);
+	}
+
+	va_start(list, count);
+
+	for (ssize_t i = 0; i < count; i++) {
+
+		len = 0;
+		data = NULL;
+		s = va_arg(list, stringer_t *);
+		st_empty_out(s, &data, &len);
+
+		// If we have a valid cursor, and we have space remaining, then copy the raw bytes over.
+		if (cursor && remaining && data && len) {
+
+			// Ensure the length parameter doesn't overflow the amount of space remaining.
+			len = (remaining < len ? remaining : len);
+			mm_copy(cursor, data, len);
+			cursor += len;
+			written += len;
+			remaining -= len;
+		}
+
+		// Otherwise if output was NULL then we'll count how many bytes we would have written.
+		else if (!output) {
+			written += len;
+		}
+
+	}
+	va_end(list);
+
+	if (output && st_valid_tracked(st_opt_get(output))) {
+		st_length_set(output, written);
+	}
+
+	return written;
+}

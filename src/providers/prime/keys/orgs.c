@@ -66,6 +66,7 @@ size_t org_key_length(prime_org_key_t *org) {
 stringer_t * org_key_get(prime_org_key_t *org, stringer_t *output) {
 
 	size_t length;
+	int_t written = 0;
 	stringer_t *result = NULL;
 
 	if (!org || !(length = org_key_length(org))) {
@@ -86,7 +87,6 @@ stringer_t * org_key_get(prime_org_key_t *org, stringer_t *output) {
 		output = result;
 	}
 
-	// Wipe the buffer so any leading bytes we don't use will be zero'ed out for padding purposes.
 	st_wipe(output);
 
 	// Calculate the size, by writing out all the fields (minus the header) using a NULL output.
@@ -94,21 +94,24 @@ stringer_t * org_key_get(prime_org_key_t *org, stringer_t *output) {
 		prime_field_write(PRIME_ORG_KEY, 3, SECP256K1_KEY_PRIV_LEN, secp256k1_private_get(org->encryption, MANAGEDBUF(32)), MANAGEDBUF(34)));
 
 	// Then output them again into the actual output buffer, but this time include the header. This is very primitive serialization logic.
-	st_write(output, prime_header_org_key_write(length, MANAGEDBUF(5)),
+	if ((written = st_write(output, prime_header_org_key_write(length, MANAGEDBUF(5)),
 		prime_field_write(PRIME_ORG_KEY, 1, ED25519_KEY_PRIV_LEN, ed25519_private_get(org->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
-		prime_field_write(PRIME_ORG_KEY, 3, SECP256K1_KEY_PRIV_LEN, secp256k1_private_get(org->encryption, MANAGEDBUF(32)), MANAGEDBUF(34)));
+		prime_field_write(PRIME_ORG_KEY, 3, SECP256K1_KEY_PRIV_LEN, secp256k1_private_get(org->encryption, MANAGEDBUF(32)), MANAGEDBUF(34)))) != (length + 5)) {
+		log_pedantic("The organizational key didn't serialize to the expected length. { written = %i }", written);
+		st_cleanup(result);
+		return NULL;
+	}
 
-	// If things fail, and result !NULL then we'll need to free result.
 	return output;
 }
 
-prime_org_key_t * org_key_set(stringer_t *key) {
+prime_org_key_t * org_key_set(stringer_t *org) {
 
 	prime_field_t *field = NULL;
 	prime_object_t *object = NULL;
 	prime_org_key_t *result = NULL;
 
-	if (!(object = prime_unpack(key))) {
+	if (!(object = prime_unpack(org))) {
 		log_pedantic("Unable to unpack a PRIME organizational key.");
 		return NULL;
 	}
@@ -139,4 +142,12 @@ prime_org_key_t * org_key_set(stringer_t *key) {
 	}
 
 	return result;
+}
+
+prime_org_key_t * org_encrypted_key_get(stringer_t *key, prime_org_key_t *org, stringer_t *output) {
+	return NULL;
+}
+
+prime_org_key_t * org_encrypted_key_set(stringer_t *key, stringer_t *org) {
+	return NULL;
 }

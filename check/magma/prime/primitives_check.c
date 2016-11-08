@@ -14,8 +14,11 @@
 
 bool_t check_prime_keys_sthread(stringer_t *errmsg) {
 
-	stringer_t *packed = NULL;
 	prime_key_t *holder = NULL;
+	stringer_t *packed = NULL, *key = MANAGEDBUF(64);
+
+	// Create a stacie realm key.
+	rand_write(key);
 
 	// Allocate an org key.
 	if (!(holder = prime_key_alloc(PRIME_ORG_KEY))) {
@@ -25,17 +28,39 @@ bool_t check_prime_keys_sthread(stringer_t *errmsg) {
 
 	prime_key_free(holder);
 
-	// Generate an org key and serialize it.
-	if (!(holder = prime_key_generate(PRIME_ORG_KEY)) || !(packed = prime_key_get(holder, MANAGEDBUF(256)))) {
+	// Generate an org key.
+	if (!(holder = prime_key_generate(PRIME_ORG_KEY))) {
 		st_sprint(errmsg, "Organizational key generation failed.");
+		return false;
+	}
+
+	// Serialize the org key.
+	else if (!(packed = prime_key_get(holder, MANAGEDBUF(256)))) {
+		st_sprint(errmsg, "Organizational key serialization failed.");
+		prime_key_free(holder);
 		return false;
 	}
 
 	prime_key_free(holder);
 
-	// Now try unpacking the org key.
+	// Unpack the serialized org key.
 	if (!(holder = prime_key_set(packed))) {
 		st_sprint(errmsg, "Organizational key parsing failed.");
+		return false;
+	}
+
+	// Encrypt the org key.
+	else if (!(packed = prime_encrypted_key_get(key, holder, MANAGEDBUF(256)))) {
+		st_sprint(errmsg, "Organizational key encryption failed.");
+		prime_key_free(holder);
+		return false;
+	}
+
+	prime_key_free(holder);
+
+	// Decrypt the org key.
+	if (!(holder = prime_encrypted_key_set(key, packed))) {
+		st_sprint(errmsg, "Encrypted organizational key parsing failed.");
 		return false;
 	}
 
@@ -49,18 +74,39 @@ bool_t check_prime_keys_sthread(stringer_t *errmsg) {
 
 	prime_key_free(holder);
 
-	// Generate a user key and serialize it.
-	if (!(holder = prime_key_generate(PRIME_USER_KEY)) || !(packed = prime_key_get(holder, MANAGEDBUF(256)))) {
+	// Generate a user key.
+	if (!(holder = prime_key_generate(PRIME_USER_KEY))) {
 		st_sprint(errmsg, "User key generation failed.");
+		return false;
+	}
+
+	// Serialize the user key.
+	else if (!(packed = prime_key_get(holder, MANAGEDBUF(256)))) {
+		st_sprint(errmsg, "User key serialization failed.");
+		prime_key_free(holder);
 		return false;
 	}
 
 	prime_key_free(holder);
 
-	// Now try unpacking the user key.
+	// Unpack the serialized user key.
 	if (!(holder = prime_key_set(packed))) {
 		st_sprint(errmsg, "User key parsing failed.");
-		st_free(packed);
+		return false;
+	}
+
+	// Encrypt the user key.
+	else if (!(packed = prime_encrypted_key_get(key, holder, MANAGEDBUF(256)))) {
+		st_sprint(errmsg, "User key encryption failed.");
+		prime_key_free(holder);
+		return false;
+	}
+
+	prime_key_free(holder);
+
+	// Decrypt the user key.
+	if (!(holder = prime_encrypted_key_set(key, packed))) {
+		st_sprint(errmsg, "Encrypted user key parsing failed.");
 		return false;
 	}
 

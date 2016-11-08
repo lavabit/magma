@@ -119,6 +119,9 @@ INCLUDE_DIR_SEARCH 				= $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(
 MAGMA_INCLUDE_ABSPATHS			+= $(foreach target,$(MAGMA_INCDIRS), $(call INCLUDE_DIR_SEARCH,$(target)))
 MAGMA_CHECK_INCLUDE_ABSPATHS	+= $(foreach target,$(MAGMA_CHECK_INCDIRS), $(call INCLUDE_DIR_SEARCH,$(target)))
 
+# Magma Incremental Builds
+# MAGMA_INCREMENTAL_BUILD		= $(patsubst %.c, $(OBJDIR)/%.o, $(shell find src/ tools/ check/ -type f -mtime -1 -print))
+
 # Compiler Parameters
 CC								= gcc
 CFLAGS							= -std=gnu99 -O0 -fPIC -fmessage-length=0 -ggdb3 -rdynamic -c $(CFLAGS_WARNINGS) -MMD 
@@ -242,6 +245,8 @@ ifeq ($(VERBOSE),no)
 	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
 endif
 
+#incremental: $(MAGMA_INCREMENTAL_BUILD)
+
 # Delete the compiled program along with the generated object and dependency files
 clean:
 	@$(RM) $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM)
@@ -341,6 +346,7 @@ endif
 # Special Make Directives
 .SUFFIXES: .c .cc .cpp .o 
 #.NOTPARALLEL: warning conifg $(PACKAGE_DEPENDENCIES)
-.PHONY: all warning config finished check setup
+.PHONY: all warning config finished check setup 
+#incremental
 
 # vim:set softtabstop=4 shiftwidth=4 tabstop=4:

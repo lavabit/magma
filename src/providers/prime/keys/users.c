@@ -66,6 +66,7 @@ size_t user_key_length(prime_user_key_t *user) {
 stringer_t * user_key_get(prime_user_key_t *user, stringer_t *output) {
 
 	size_t length;
+	int_t written = 0;
 	stringer_t *result = NULL;
 
 	if (!user || !(length = user_key_length(user))) {
@@ -86,7 +87,6 @@ stringer_t * user_key_get(prime_user_key_t *user, stringer_t *output) {
 		output = result;
 	}
 
-	// Wipe the buffer so any leading bytes we don't use will be zero'ed out for padding purposes.
 	st_wipe(output);
 
 	// Calculate the size, by writing out all the fields (minus the header) using a NULL output.
@@ -94,21 +94,24 @@ stringer_t * user_key_get(prime_user_key_t *user, stringer_t *output) {
 		prime_field_write(PRIME_USER_KEY, 2, SECP256K1_KEY_PRIV_LEN, secp256k1_private_get(user->encryption, MANAGEDBUF(32)), MANAGEDBUF(34)));
 
 	// Then output them again into the actual output buffer, but this time include the header. This is very primitive serialization logic.
-	st_write(output, prime_header_user_key_write(length, MANAGEDBUF(5)),
+	if ((written = st_write(output, prime_header_user_key_write(length, MANAGEDBUF(5)),
 		prime_field_write(PRIME_USER_KEY, 1, ED25519_KEY_PRIV_LEN, ed25519_private_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
-		prime_field_write(PRIME_USER_KEY, 2, SECP256K1_KEY_PRIV_LEN, secp256k1_private_get(user->encryption, MANAGEDBUF(32)), MANAGEDBUF(34)));
+		prime_field_write(PRIME_USER_KEY, 2, SECP256K1_KEY_PRIV_LEN, secp256k1_private_get(user->encryption, MANAGEDBUF(32)), MANAGEDBUF(34)))) != (length + 5)) {
+		log_pedantic("The user key didn't serialize to the expected length. { written = %i }", written);
+		st_cleanup(result);
+		return NULL;
+	}
 
-	// If things fail, and result !NULL then we'll need to free result.
 	return output;
 }
 
-prime_user_key_t * user_key_set(stringer_t *key) {
+prime_user_key_t * user_key_set(stringer_t *user) {
 
 	prime_field_t *field = NULL;
 	prime_object_t *object = NULL;
 	prime_user_key_t *result = NULL;
 
-	if (!(object = prime_unpack(key))) {
+	if (!(object = prime_unpack(user))) {
 		log_pedantic("Unable to unpack a PRIME user key.");
 		return NULL;
 	}
@@ -141,12 +144,10 @@ prime_user_key_t * user_key_set(stringer_t *key) {
 	return result;
 }
 
-/*
-prime_user_key_t * user_key_encrypted_get(prime_user_key_t *user, stringer_t *output) {
+prime_user_key_t * user_encrypted_key_get(stringer_t *key, prime_user_key_t *user, stringer_t *output) {
 	return NULL;
 }
 
-prime_user_key_t * user_key_encrypted_set(stringer_t *key) {
+prime_user_key_t * user_encrypted_key_set(stringer_t *key, stringer_t *user) {
 	return NULL;
 }
-*/

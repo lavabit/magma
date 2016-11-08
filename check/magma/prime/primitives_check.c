@@ -14,7 +14,6 @@
 
 bool_t check_prime_keys_sthread(stringer_t *errmsg) {
 
-	log_enable();
 	stringer_t *packed = NULL;
 	prime_key_t *holder = NULL;
 

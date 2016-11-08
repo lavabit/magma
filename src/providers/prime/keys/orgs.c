@@ -89,7 +89,11 @@ stringer_t * org_key_get(prime_org_key_t *org, stringer_t *output) {
 	// Wipe the buffer so any leading bytes we don't use will be zero'ed out for padding purposes.
 	st_wipe(output);
 
-	// This is very primitive serialization logic.
+	// Calculate the size, by writing out all the fields (minus the header) using a NULL output.
+	length = st_write(NULL, prime_field_write(PRIME_ORG_KEY, 1, ED25519_KEY_PRIV_LEN, ed25519_private_get(org->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+		prime_field_write(PRIME_ORG_KEY, 3, SECP256K1_KEY_PRIV_LEN, secp256k1_private_get(org->encryption, MANAGEDBUF(32)), MANAGEDBUF(34)));
+
+	// Then output them again into the actual output buffer, but this time include the header. This is very primitive serialization logic.
 	st_write(output, prime_header_org_key_write(length, MANAGEDBUF(5)),
 		prime_field_write(PRIME_ORG_KEY, 1, ED25519_KEY_PRIV_LEN, ed25519_private_get(org->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
 		prime_field_write(PRIME_ORG_KEY, 3, SECP256K1_KEY_PRIV_LEN, secp256k1_private_get(org->encryption, MANAGEDBUF(32)), MANAGEDBUF(34)));
@@ -134,5 +138,5 @@ prime_org_key_t * org_key_set(stringer_t *key) {
 		return NULL;
 	}
 
-	return NULL;
+	return result;
 }

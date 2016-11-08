@@ -89,7 +89,11 @@ stringer_t * user_key_get(prime_user_key_t *user, stringer_t *output) {
 	// Wipe the buffer so any leading bytes we don't use will be zero'ed out for padding purposes.
 	st_wipe(output);
 
-	// This is very primitive serialization logic.
+	// Calculate the size, by writing out all the fields (minus the header) using a NULL output.
+	length = st_write(output, prime_field_write(PRIME_USER_KEY, 1, ED25519_KEY_PRIV_LEN, ed25519_private_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+		prime_field_write(PRIME_USER_KEY, 2, SECP256K1_KEY_PRIV_LEN, secp256k1_private_get(user->encryption, MANAGEDBUF(32)), MANAGEDBUF(34)));
+
+	// Then output them again into the actual output buffer, but this time include the header. This is very primitive serialization logic.
 	st_write(output, prime_header_user_key_write(length, MANAGEDBUF(5)),
 		prime_field_write(PRIME_USER_KEY, 1, ED25519_KEY_PRIV_LEN, ed25519_private_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
 		prime_field_write(PRIME_USER_KEY, 2, SECP256K1_KEY_PRIV_LEN, secp256k1_private_get(user->encryption, MANAGEDBUF(32)), MANAGEDBUF(34)));
@@ -134,7 +138,7 @@ prime_user_key_t * user_key_set(stringer_t *key) {
 		return NULL;
 	}
 
-	return NULL;
+	return result;
 }
 
 /*

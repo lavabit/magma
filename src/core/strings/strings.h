@@ -252,7 +252,6 @@ multi_t    mt_set_type(multi_t multi, M_TYPE target);
 
 #define st_write(output, ...) st_write_variadic(output, va_narg(__VA_ARGS__), ##__VA_ARGS__)
 
-
 // Macro for counting the number of arguments in a variadic list function call.
 #define va_narg(...) (__VA_NARG__(_0, ##__VA_ARGS__, __VA_NARG_SEQ_N()) - 1)
 

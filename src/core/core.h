@@ -42,12 +42,84 @@
  * The type definitions used by Magma that are not defined by the system headers.
  * The bool type requires the inclusion of stdbool.h and the use of the C99.
  */
-typedef char chr_t;
+
+/// @typedef bool_t
+#ifndef __bool_t_defined
+#ifdef __bool_true_false_are_defined
 typedef bool bool_t;
-typedef int32_t int_t;
-typedef uint32_t uint_t;
+#else
+typedef char bool_t;
+#endif
+#define __bool_t_defined
+#endif
+
+/// @typedef chr_t
+#ifndef __chr_t_defined
+typedef char chr_t;
+#define __chr_t_defined
+#endif
+
+/// @typedef uchr_t
+#ifndef __u_chr_t_defined
 typedef unsigned char uchr_t;
+#define __u_chr_t_defined
+#endif
+
+/// @typedef byte_t
+#ifndef __byte_t_defined
 typedef unsigned char byte_t;
+#define __byte_t_defined
+#endif
+
+/// @typedef int_t
+#ifndef __int_t_defined
+typedef int32_t int_t;
+#define __int_t_defined
+#endif
+
+/// @typedef uint_t
+#ifndef __uint_t_defined
+typedef uint32_t uint_t;
+#define __uint_t_defined
+#endif
+
+/// @typedef int24_t
+#ifndef __int24_t_defined
+typedef struct __attribute__ ((packed)) {
+	uint8_t byte0;
+	uint8_t byte1;
+	int8_t byte2;
+} __int24_t;
+typedef __int24_t int24_t;
+#define __int24_t_defined
+#endif
+
+/// @typedef uint24_t
+#ifndef __uint24_t_defined
+typedef struct __attribute__ ((packed)) {
+	uint8_t byte0;
+	uint8_t byte1;
+	uint8_t byte2;
+} __uint24_t;
+typedef __uint24_t uint24_t;
+#define __uint24_t_defined
+#endif
+
+#ifndef INT24_MIN
+#define INT24_MIN (-8388607)
+#endif
+
+#ifndef INT24_MAX
+#define INT24_MAX (8388607)
+#endif
+
+#ifndef UINT24_MIN
+#define UINT24_MIN (0)
+#endif
+
+#ifndef UINT24_MAX
+#define UINT24_MAX (16777215)
+#endif
 
 /*
 

@@ -21,6 +21,11 @@
 #define ED25519_KEY_PRIV_LEN 32
 #define ED25519_SIGNATURE_LEN 64
 
+#define AES_TAG_LEN 16
+#define AES_KEY_LEN 32
+#define AES_BLOCK_LEN 16
+#define AES_VECTOR_LEN 16
+
 // This allows code to include the PRIME header without first including the OpenSSL headers.
 #ifdef HEADER_EC_H
 typedef EC_KEY secp256k1_key_t;
@@ -41,6 +46,12 @@ typedef struct  __attribute__ ((packed)) {
 		uint8_t public[ED25519_KEY_PUB_LEN];
 	};
 } ed25519_key_t;
+
+/// aes.c
+placer_t      aes_cipher_key(stringer_t *key);
+stringer_t *  aes_object_encrypt(stringer_t *key, uint16_t type, stringer_t *object, stringer_t *output);
+placer_t      aes_tag_shard(stringer_t *key);
+placer_t      aes_vector_shard(stringer_t *key);
 
 /// ed25519.c
 ed25519_key_t *  ed25519_alloc(void);

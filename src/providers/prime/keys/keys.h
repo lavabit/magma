@@ -31,7 +31,6 @@ typedef struct {
 	};
 } prime_key_t;
 
-
 /// keys.c
 stringer_t *   prime_encrypted_key_get(stringer_t *key, prime_key_t *object, stringer_t *output);
 prime_key_t *  prime_encrypted_key_set(stringer_t *key, stringer_t *object);

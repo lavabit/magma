@@ -47,9 +47,11 @@ typedef struct  __attribute__ ((packed)) {
 	};
 } ed25519_key_t;
 
+
 /// aes.c
 placer_t      aes_cipher_key(stringer_t *key);
-stringer_t *  aes_object_encrypt(stringer_t *key, uint16_t type, stringer_t *object, stringer_t *output);
+stringer_t *  aes_object_decrypt(stringer_t *key, stringer_t *object, stringer_t *output);
+stringer_t *  aes_object_encrypt(stringer_t *key, stringer_t *object, stringer_t *output);
 placer_t      aes_tag_shard(stringer_t *key);
 placer_t      aes_vector_shard(stringer_t *key);
 

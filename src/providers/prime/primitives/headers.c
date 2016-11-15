@@ -80,20 +80,19 @@ int_t prime_header_read(stringer_t *object, uint16_t *type, uint32_t *size) {
 	switch (*type) {
 		case (PRIME_ORG_SIGNET):
 		case (PRIME_ORG_KEY):
-		case (PRIME_ORG_KEY_ENCRYPTED):
 		case (PRIME_USER_SIGNING_REQUEST):
 		case (PRIME_USER_SIGNET):
 		case (PRIME_USER_KEY):
-		case (PRIME_USER_KEY_ENCRYPTED):
-			// The buffer wasn't long enough to hold the type and size parameters.
+			// The buffer wasn't long enough, signets and keys use a 5 byte header.
 			if (object_len < 5) return -1;
 			mm_copy(((uchr_t *)&big_endian_size) + 1, ((uchr_t *)object_data) + 2, 3);
 			*size = be32toh(big_endian_size);
 			header_len = 5;
 			break;
+		case (PRIME_ORG_KEY_ENCRYPTED):
+		case (PRIME_USER_KEY_ENCRYPTED):
 		case (PRIME_MESSAGE_ENCRYPTED):
-			// The buffer wasn't long enough to hold the type and size parameters, note that messages use a
-			// 6 byte header.
+			// The buffer wasn't long enough. Encrypted objects use a 6 byte header.
 			if (object_len < 6) return -1;
 			mm_copy(((uchr_t *)&big_endian_size), ((uchr_t *)object_data) + 2, 4);
 			*size = be32toh(big_endian_size);

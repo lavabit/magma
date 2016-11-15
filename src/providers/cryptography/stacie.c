@@ -922,7 +922,6 @@ stringer_t * stacie_realm_decrypt(stringer_t *vector_key, stringer_t *tag_key, s
 		return NULL;
 	}
 
-
 	// Validate the key length.
 	else if (EVP_CIPHER_CTX_key_length_d(&ctx) != 32) {
 		log_pedantic("The encryption key length does not match the selected cipher key length. { key = %i / expected = %i }", 32, EVP_CIPHER_CTX_key_length_d(&ctx));
@@ -973,7 +972,7 @@ stringer_t * stacie_realm_decrypt(stringer_t *vector_key, stringer_t *tag_key, s
 	mm_move((uchr_t *)&pad, st_data_get(output) + 3, 1);
 	buffer_len = be32toh(buffer_len_be);
 
-	if (((buffer_len + pad + 4) % 16) != 0 || (buffer_len + pad + 4) !=  (size_t)used_len) {
+	if (((buffer_len + pad + 4) % 16) != 0 || (buffer_len + pad + 4) != (size_t)used_len) {
 		log_pedantic("An invalid length or pad value was found inside the decrypted buffer.");
 		st_free(output);
 		return NULL;

@@ -145,14 +145,20 @@ prime_org_key_t * org_key_set(stringer_t *org) {
 }
 
 prime_org_key_t * org_encrypted_key_get(stringer_t *key, prime_org_key_t *org, stringer_t *output) {
-
-	/// HIGH: We should be omitting the object header.
+	//#error
 	stringer_t *t = org_key_get(org, NULL);
-	return aes_object_encrypt(key, PRIME_ORG_KEY_ENCRYPTED, t, NULL);
+	return aes_object_encrypt(key, t, NULL);
 }
 
 prime_org_key_t * org_encrypted_key_set(stringer_t *key, stringer_t *org) {
+	//#error
+	stringer_t *packed = NULL;
+	prime_org_key_t *result = NULL;
 
-	// Next.
-	return NULL;
+	if ((packed = aes_object_decrypt(key, org, NULL))) {
+		result = org_key_set(packed);
+		st_free(packed);
+	}
+
+	return result;
 }

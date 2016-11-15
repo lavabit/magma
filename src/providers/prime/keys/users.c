@@ -145,9 +145,20 @@ prime_user_key_t * user_key_set(stringer_t *user) {
 }
 
 prime_user_key_t * user_encrypted_key_get(stringer_t *key, prime_user_key_t *user, stringer_t *output) {
-	return NULL;
+	//#error
+	stringer_t *t = user_key_get(user, NULL);
+	return aes_object_encrypt(key, t, NULL);
 }
 
 prime_user_key_t * user_encrypted_key_set(stringer_t *key, stringer_t *user) {
-	return NULL;
+	//#error
+	stringer_t *packed = NULL;
+	prime_user_key_t *result = NULL;
+
+	if ((packed = aes_object_decrypt(key, user, NULL))) {
+		result = user_key_set(packed);
+		st_free(packed);
+	}
+
+	return result;
 }

@@ -217,11 +217,11 @@ prime_key_t * prime_encrypted_key_set(stringer_t *key, stringer_t *object) {
 
 	// Switch statement to call the appropriate allocator.
 	switch (type) {
-		case (PRIME_ORG_KEY):
+		case (PRIME_ORG_KEY_ENCRYPTED):
 			result->type = PRIME_ORG_KEY;
 			result->org = org_encrypted_key_set(key, object);
 			break;
-		case (PRIME_USER_KEY):
+		case (PRIME_USER_KEY_ENCRYPTED):
 			result->type = PRIME_USER_KEY;
 			result->user = user_encrypted_key_set(key, object);
 			break;

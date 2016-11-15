@@ -66,7 +66,7 @@ int_t            ed25519_verify(ed25519_key_t *key, stringer_t *data, stringer_t
 
 /// secp256k1.c
 secp256k1_key_t *  secp256k1_alloc(void);
-stringer_t *       secp256k1_compute_kek(secp256k1_key_t *private, secp256k1_key_t *public, stringer_t *output);
+stringer_t *       secp256k1_compute_kek(secp256k1_key_t *priv, secp256k1_key_t *pub, stringer_t *output);
 void               secp256k1_free(secp256k1_key_t *key);
 secp256k1_key_t *  secp256k1_generate(void);
 stringer_t *       secp256k1_private_get(secp256k1_key_t *key, stringer_t *output);

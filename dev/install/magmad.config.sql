@@ -31,8 +31,8 @@ INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad'
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[4].protocol', 'IMAP', NOW());
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[4].network.port', '143', NOW());
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[4].tls.certificate', '/etc/pki/tls/private/$DOMAIN.pem', NOW());
-INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[5].name', 'HTTPS', NOW());
-INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[5].protocol', 'HTTPS', NOW());
+INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[5].name', 'HTTP', NOW());
+INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[5].protocol', 'HTTP', NOW());
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[5].network.type', 'TLS', NOW());
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[5].network.port', '443', NOW());
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[5].tls.certificate', '/etc/pki/tls/private/$DOMAIN.pem', NOW());
@@ -59,3 +59,12 @@ INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad'
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[10].protocol', 'MOLTEN', NOW());
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[10].network.port', '1776', NOW());
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[10].tls.certificate', '/etc/pki/tls/private/$DOMAIN.pem', NOW());
+
+INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.secure.salt', '$PSALT', NOW());
+INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.secure.sessions', '$PSESS', NOW());
+INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.iface.cryptography.seed_length', '1024', NOW());
+INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.system.daemonize', 'true', NOW());
+
+-- INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.system.impersonate_user', 'magma', NOW());
+--INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.system.root_directory', '/var/lib/magma/', NOW());
+

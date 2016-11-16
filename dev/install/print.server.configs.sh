@@ -14,7 +14,7 @@ print_server_conf 1 25 TCP SMTP
 print_server_conf 2 80 TCP HTTP
 print_server_conf 3 110 TCP POP
 print_server_conf 4 143 TCP IMAP
-print_server_conf 5 443 TLS HTTPS
+print_server_conf 5 443 TLS HTTP
 print_server_conf 6 465 TLS SUBMISSION
 print_server_conf 7 587 TCP SUBMISSION
 print_server_conf 8 993 TLS IMAP

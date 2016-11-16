@@ -6,6 +6,13 @@ DOMAIN="example.com"
 # Where can we find the [combined] TLS cert (including intermediate chain) and key file.
 TLSKEY="/root/example.com.pem"
 
+# Update the system.
+yum --assumeyes update
+
+# Override the default run levels for the entropy gathering daemon. We'd like it to start before 
+# OpenSSH and magmad, so those processes don't spend as much time waiting for randomness.
+printf "# chkconfig: - 54 25\n" > /etc/chkconfig.d/haveged
+
 # Install the EPEL repo.
 yum --assumeyes --enablerepo=extras install epel-release
 
@@ -17,10 +24,10 @@ perl-Pod-Simple perl-libs perl-version patch sysstat perl-Time-HiRes cmake \
 libbsd libbsd-devel inotify-tools haveged libarchive libevent memcached mysql \
 mysql-server perl-DBI perl-DBD-MySQL git rsync perl-Git perl-Error
 
-# Create the magma user, so magmad can drop its root privileges and suid to this account.
-useradd magma
-usermod --home /var/lib/magma/ magma
-usermod --shell /sbin/nologin magma
+# Configure the entropy gathering daemon to autostart, then launch it. Extra entropy will 
+# speed a number of randomness intensive operations. 
+/sbin/chkconfig haveged on
+/sbin/service haveged start
 
 # Create the following user to avoid spurious errors when compiling clamav.
 useradd clamav
@@ -47,11 +54,6 @@ cp /etc/cron.daily/freshclam /etc/cron.hourly/
 # Update the database.
 /etc/cron.hourly/freshclam
 
-# Configure these daemons to autostart at boot, then launch them manually. 
-/sbin/chkconfig haveged on
-/sbin/service haveged start
-/sbin/service memcached start
-
 # The commands, just in case you need to wipe an existing MySQL configuration and then initialize a virgin instance.
 # rm -rf /var/lib/mysql/
 # mkdir -p /var/lib/mysql/
@@ -73,10 +75,9 @@ mysqladmin --force=true --user=root create Magma
 # Configure the mysql root password to be a random base64 string, which will be at least 40 characters in length.
 PROOT=`openssl rand -base64 30 | sed -e "s/\//@-/g" | sed -e "s/\+/_\?/g"`
 mysqladmin --user=root password "$PROOT"
-#mysqladmin --user=root --password="$PROOT" -h `hostname` password "$PROOT"
 
 # Save the password so the root user can login without having to type it in.
-printf "\n\n[mysql]\nuser=root\npassword=$PROOT\n\n" >> /root/.my.cnf 
+printf "\n\n[mysql]\nuser=root\npassword=$PROOT\ndatabase=Magma\n\n" >> /root/.my.cnf 
 
 # Find out how much RAM is installed, and what 50% would be in KB.
 TOTALMEM=`free -k | grep -E "^Mem:" | awk -F' ' '{print $2}'`
@@ -134,21 +135,26 @@ sed -i -e "s/CACHESIZE=\"[0-9]*\"/CACHESIZE=\"$QUARTERMEM\"/g" /etc/sysconfig/me
 /sbin/service memcached stop
 /sbin/service memcached start
 
-##############################################
-# Compile magmad (if necessary).             #
-##############################################
+#############################################################################
+# Compile magmad (if necessary).                                            #
+#                                                                           #
+# git clone https://github.com/lavabit/magma magma-develop                  #
+# cd magma-develop                                                          #
+# dev/scripts/builders/build.lib.sh all                                     #
+# make all                                                                  #
+#                                                                           #
+#############################################################################
 
-git clone https://github.com/lavabit/magma magma-develop
-cd magma-develop
-dev/scripts/builders/build.lib.sh all
-make all
+#############################################################################
+# Install magmad.                                                           #
+#############################################################################
 
+# Create the magma user, so magmad can drop privileges and switch to this unprivileged.
+useradd magma
+usermod --home /var/lib/magma/ magma
+usermod --shell /sbin/nologin magma
 
-##############################################
-# Install magmad.                            #
-##############################################
-
-# Copy the magmad and magmad.so files to /usr/libexec
+# Copy the magmad and magmad.so files to /usr/libexec.
 cp magmad magmad.so /usr/libexec
 chmod 755 /usr/libexec/magmad
 chmod 755 /usr/libexec/magmad.so
@@ -210,18 +216,37 @@ THREADCOUNT=`echo $(($CPUCORES*16))`
 
 # Write the database config information out to the magmad config file.
 printf "magma.library.file = /usr/libexec/magmad.so\n" >> /etc/magmad.config
-printf "magma.iface.database.user = mytool\n" > /etc/magmad.config
+printf "magma.iface.database.user = magma\n" > /etc/magmad.config
 printf "magma.iface.database.host = localhost\n" >> /etc/magmad.config
 printf "magma.iface.database.schema = Magma\n" >> /etc/magmad.config
 printf "magma.iface.database.password = $PMAGMA\n" >> /etc/magmad.config
 printf "magma.iface.database.socket_path = /var/lib/mysql/mysql.sock\n\n" >> /etc/magmad.config
-printf "magma.iface.cache.host[1].name = localhost\n" >> /etc/magmad.config
-printf "magma.iface.cache.host[1].port = 11211\n" >> /etc/magmad.config
-printf "magma.relay[1].name = localhost\n" >> /etc/magmad.config
 printf "magma.relay[1].port = 2525\n" >> /etc/magmad.config
+printf "magma.relay[1].name = localhost\n" >> /etc/magmad.config
+printf "magma.iface.cache.host[1].port = 11211\n" >> /etc/magmad.config
+printf "magma.iface.cache.host[1].name = localhost\n\n" >> /etc/magmad.config
 printf "magma.library.file = /usr/libexec/magmad.so\n" >> /etc/magmad.config
 printf "magma.system.worker_threads = $THREADCOUNT\n" >> /etc/magmad.config
 printf "magma.secure.memory.length = 268435456\n" >> /etc/magmad.config
 
+# Generate another a random site specific salt value to protect legacy password hashes, and session tokens.
+PSALT=`openssl rand -base64 42 | sed -e "s/\//@-/g" | sed -e "s/\+/_\?/g"`
+PSESS=`openssl rand -base64 42 | sed -e "s/\//@-/g" | sed -e "s/\+/_\?/g"`
+
 # Insert the global config options.
-cat magmad.config.sql | sed -e "s/\$DOMAIN/$DOMAIN/g" | mysql -u root Magma
+cat magmad.config.sql | sed -e "s/\$DOMAIN/$DOMAIN/g" |  sed -e "s/\$PSALT/$PSALT/g" | sed -e "s/\$PSESS/$PSESS/g" | mysql -u root Magma
+
+# Install the Sys V init script.
+cp magmad.sysv.init.sh /etc/init.d/magmad
+chmod 755 /etc/init.d/magmad
+chcon system_u:object_r:initrc_exec_t:s0 /etc/init.d/magmad
+
+# Setup the run director used by the init script.
+mkdir -p /var/run/magmad/
+chown magma:magma /var/run/magmad/
+chcon system_u:object_r:var_run_t:s0 /var/run/magmad/
+
+# Add the magmad init script to the system configuration.
+chkconfig --add magmad
+chkconfig magmad on
+

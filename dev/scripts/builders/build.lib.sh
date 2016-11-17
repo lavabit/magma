@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Name: build.lib.sh
+# Author: Ladar Levison
+#
+# Description: Used to compile the external dependencies required by magma, and combine them into the magmad.so shared object file. 
+
+
 # Install Sphinx (python-sphinx package) to build Jansson HTML docs
 # Install LTDL and create the clamav user/group so ClamAV will build correctly
 # DSPAM will require the MySQL development (lib/headers) for a parallel build to complete
@@ -1316,7 +1322,7 @@ openssl() {
 			# See here for reasoning behind openssl-specific linker flags:
 			# https://mta.openssl.org/pipermail/openssl-users/2015-April/001053.html
 			cd "$M_SOURCES/openssl"; error
-        	grep "CentOS Linux release 7" /etc/system-release >& /dev/null
+        	grep -E "CentOS Linux release 7|Red Hat Enterprise.*release 7" /etc/system-release >& /dev/null
         	if [ $? == 0 ]; then
                 	export CONFIGOPTS='-fno-merge-debug-strings '
         	fi
@@ -2160,7 +2166,7 @@ generate() {
 	if [[ "$GIT_IS_AVAILABLE" == "1" ]]; then
 		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"
 		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
-		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
+		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem"
 	fi
 }
 
@@ -2177,7 +2183,7 @@ keys() {
 	if [[ "$GIT_IS_AVAILABLE" == "1" ]]; then
 		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"
 		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
-		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
+		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem"
 	fi
 }
 

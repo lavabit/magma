@@ -1,0 +1,11 @@
+module local 1.0;
+
+require {
+    type postfix_master_t;
+    type port_t;
+    class tcp_socket name_bind;
+}
+
+#============= postfix_master_t ==============
+
+allow postfix_master_t port_t:tcp_socket name_bind;

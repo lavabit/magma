@@ -129,7 +129,7 @@ void api_endpoint_register(connection_t *con) {
 	}
 
 	// Database insert.
-	if (!register_data_insert_user(con, 1, NULLER(username), NULLER(password), transaction, &usernum)) {
+	if (!register_data_insert_user(con, 1, lower_st(NULLER(username)), NULLER(password), transaction, &usernum)) {
 		tran_rollback(transaction);
 		api_error(con, HTTP_ERROR_500, JSON_RPC_2_ERROR_SERVER_INTERNAL, "Internal server error.");
 		goto out;

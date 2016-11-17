@@ -116,7 +116,7 @@ chr_t * register_business_step1(connection_t *con, register_session_t *reg) {
 
 	// Store the username in the con so the user doesn't need to reenter it.
 	if ((data = http_data_get(con, HTTP_DATA_POST, "username"))) {
-		reg->username = st_dupe(data->value);
+		reg->username = lower_st(st_dupe(data->value));
 	}
 
 	if ((data = http_data_get(con, HTTP_DATA_POST, "human"))) {

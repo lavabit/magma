@@ -1,0 +1,18 @@
+Description: Fix Bug226 (Bad signature of From:\r\n wrapped field)
+             solve validation problems with amazon messages
+Author: A.Schulze
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+Index: dv-opendkim-2.10.3/libopendkim/dkim-canon.c
+===================================================================
+--- dv-opendkim-2.10.3.orig/libopendkim/dkim-canon.c
++++ dv-opendkim-2.10.3/libopendkim/dkim-canon.c
+@@ -388,7 +388,7 @@ dkim_canon_header_string(struct dkim_dst
+ 		}
+ 
+ 		/* skip all spaces before first word */
+-		while (*p != '\0' && DKIM_ISWSP(*p))
++		while (*p != '\0' && DKIM_ISLWSP(*p))
+ 			p++;
+ 
+ 		space = FALSE;				/* just saw a space */

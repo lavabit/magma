@@ -623,6 +623,7 @@ dkim() {
 		;;
 		dkim-prep)
 			cd "$M_SOURCES/dkim"; error
+			cat "$M_PATCHES/dkim/"opendkim.ticket226.patch | patch -p1 --verbose &>> "$M_LOGS/dkim.txt"; error
 		;;
 		dkim-build)
 			cd "$M_SOURCES/dkim"; error

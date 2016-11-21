@@ -161,13 +161,12 @@ bool_t http_load_file(int_t template, chr_t *filename) {
 
 	// First skip over stale vi leftovers.
 	if (!st_cmp_cs_ends(NULLER(filename), PLACER(".swp", 4))) {
-
 		log_pedantic("HTTP resource loading phase skipped over .swp file { filename = %s }", filename);
 		return true;
 	}
 
 	// Open and read the file.
-	if ((fd = open(filename, O_RDONLY)) == -1) {
+	else if ((fd = open(filename, O_RDONLY)) == -1) {
 		log_pedantic("Unable to open a file. { file = \"%s\" / error = %s }", filename, strerror_r(errno, MEMORYBUF(1024), 1024));
 		return false;
 	}
@@ -175,11 +174,13 @@ bool_t http_load_file(int_t template, chr_t *filename) {
 		log_pedantic("Unable to fstat a file. { file = \"%s\" / error = %s }", filename, strerror_r(errno, MEMORYBUF(1024), 1024));
 		close(fd);
 		return false;
-	} else if (!st_cmp_cs_eq(NULLER(basename(filename)), PLACER(".empty", 6)) && !file_info.st_size) {
+	}
+	else if (!st_cmp_cs_eq(NULLER(basename(filename)), PLACER(".empty", 6)) && !file_info.st_size) {
 		log_pedantic("HTTP resource loading phase skipped over .empty file { filename = %s }", filename);
 		close(fd);
 		return true;
-	} else if ((data = st_alloc(file_info.st_size + 1)) == NULL) {
+	}
+	else if ((data = st_alloc(file_info.st_size + 1)) == NULL) {
 		log_pedantic("Unable to allocate %li bytes for a file. { file = %s }", file_info.st_size + 1, filename);
 		close(fd);
 		return false;
@@ -198,7 +199,8 @@ bool_t http_load_file(int_t template, chr_t *filename) {
 		log_pedantic("Unable to allocate memory for a resource structure. { file = %s }", filename);
 		st_free(data);
 		return false;
-	} else {
+	}
+	else {
 		resource->resource = data;
 	}
 
@@ -218,7 +220,7 @@ bool_t http_load_file(int_t template, chr_t *filename) {
 
 	// TODO: We have a table that stores these mime types now!
 	// Set the mime type.
-	if (!st_cmp_ci_ends(NULLER(filename), PLACER(".html", 5)) || !st_cmp_ci_ends(NULLER(filename), PLACER(".template", 9))) {
+	else if (!st_cmp_ci_ends(NULLER(filename), PLACER(".html", 5)) || !st_cmp_ci_ends(NULLER(filename), PLACER(".template", 9))) {
 		resource->type = st_dupe_opts(MANAGED_T | HEAP | CONTIGUOUS, NULLER("text/html"));
 	}
 	else if (!st_cmp_ci_ends(NULLER(filename), PLACER(".json", 5))) {
@@ -248,11 +250,10 @@ bool_t http_load_file(int_t template, chr_t *filename) {
 	else if (!st_cmp_ci_ends(NULLER(filename), PLACER(".ico", 4))) {
 		resource->type = st_dupe_opts(MANAGED_T | HEAP | CONTIGUOUS, NULLER("image/x-icon"));
 	}
-
+	// If the file extension isn't recognized use a generic MIME type.
 	else {
-		log_pedantic("Unknown file type. { file = %s }", filename);
-		http_free_content(resource);
-		return false;
+		log_pedantic("Unknown file type, using a generic octet-stream MIME type. { file = %s }", filename);
+		resource->type = st_dupe_opts(MANAGED_T | HEAP | CONTIGUOUS, NULLER("application/octet-stream"));
 	}
 
 	if (!resource->type) {

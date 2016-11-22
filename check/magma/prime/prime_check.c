@@ -79,7 +79,9 @@ START_TEST (check_prime_keys_s) {
 	bool_t result = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
-	if (status()) result = check_prime_keys_sthread(errmsg);
+	if (status()) result = check_prime_org_keys_sthread(errmsg);
+	if (status() && result) result = check_prime_user_keys_sthread(errmsg);
+	if (status() && result) result = check_prime_parameters_sthread(errmsg);
 
 	log_test("PRIME / KEYS / SINGLE THREADED:", errmsg);
 	ck_assert_msg(result, st_char_get(errmsg));

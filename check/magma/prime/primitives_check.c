@@ -12,12 +12,12 @@
 
 #include "magma_check.h"
 
-bool_t check_prime_keys_sthread(stringer_t *errmsg) {
+bool_t check_prime_org_keys_sthread(stringer_t *errmsg) {
 
 	prime_key_t *holder = NULL;
 	stringer_t *packed = NULL, *key = MANAGEDBUF(64);
 
-	// Create a stacie realm key.
+	// Create a STACIE realm key.
 	rand_write(key);
 
 	// Allocate an org key.
@@ -66,6 +66,17 @@ bool_t check_prime_keys_sthread(stringer_t *errmsg) {
 
 	prime_key_free(holder);
 
+	return true;
+}
+
+bool_t check_prime_user_keys_sthread(stringer_t *errmsg) {
+
+	prime_key_t *holder = NULL;
+	stringer_t *packed = NULL, *key = MANAGEDBUF(64);
+
+	// Create a STACIE realm key.
+	rand_write(key);
+
 	// Allocate a user key.
 	if (!(holder = prime_key_alloc(PRIME_USER_KEY))) {
 		st_sprint(errmsg, "User key allocation failed.");
@@ -112,6 +123,13 @@ bool_t check_prime_keys_sthread(stringer_t *errmsg) {
 
 	prime_key_free(holder);
 
+	return true;
+}
+
+bool_t check_prime_parameters_sthread(stringer_t *errmsg) {
+
+	prime_key_t *holder = NULL;
+
 	// Attempt allocation of a non-key type using the key allocation function.
 	if ((holder = prime_key_alloc(PRIME_ORG_SIGNET)) || (holder = prime_key_alloc(PRIME_USER_SIGNET)) || (holder = prime_key_alloc(PRIME_USER_SIGNING_REQUEST))) {
 		st_sprint(errmsg, "Key parameter checks failed.");
@@ -120,6 +138,7 @@ bool_t check_prime_keys_sthread(stringer_t *errmsg) {
 	}
 
 	return true;
+
 }
 
 bool_t check_prime_writers_sthread(stringer_t *errmsg) {

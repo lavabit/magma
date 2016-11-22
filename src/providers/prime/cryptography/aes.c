@@ -141,7 +141,7 @@ stringer_t * aes_object_encrypt(stringer_t *key, stringer_t *object, stringer_t 
 		return NULL;
 	}
 
-	// Get the type and confirm the header size.
+	// Get the type and confirm the header size matches the size of the object provided for encryption.
 	else if (prime_header_read(object, &type, &object_size) || (object_size + 5) != overall_size || !object_size) {
 		log_pedantic("PRIME object encryption failed because an invalid object was supplied.");
 		return NULL;
@@ -154,14 +154,16 @@ stringer_t * aes_object_encrypt(stringer_t *key, stringer_t *object, stringer_t 
 		big_endian_type = htobe16(PRIME_USER_KEY_ENCRYPTED);
 	}
 	else {
-		log_pedantic("PRIME object encryption failed because an unrecognized object was supplied.");
+		log_pedantic("PRIME object encryption failed because an unrecognized object was supplied. { type = %hu }", type);
 		return NULL;
 	}
 
+	log_enable();
+	stringer_t *bhex = hex_encode_st(PLACER(object_data, object_size + 5), MANAGEDBUF(256));
+	log_pedantic("object = %zu = %.*s", st_length_get(bhex), st_length_int(bhex), st_char_get(bhex));
+
 	// Skip the object header.
 	object_data += 5;
-
-//	stringer_t *bhex = hex_encode_st(PLACER(object_data, object_size), MANAGEDBUF(256));
 
 	// Calculate the number of padding bytes required, and then the overall payload length.
 	pad = AES_BLOCK_LEN - ((PRIME_OBJECT_PAYLOAD_PREFIX_LEN + object_size) % AES_BLOCK_LEN);
@@ -309,7 +311,6 @@ stringer_t * aes_object_encrypt(stringer_t *key, stringer_t *object, stringer_t 
 //	log_pedantic("vector = %.*s", st_length_int(vhex), st_char_get(vhex));
 //	log_pedantic("cipher = %.*s", st_length_int(chex), st_char_get(chex));
 //
-//	log_pedantic("object = %zu = %.*s", st_length_get(bhex), st_length_int(bhex), st_char_get(bhex));
 //	stringer_t *phex = hex_encode_st(PLACER(st_data_get(output) + PRIME_OBJECT_HEAD_LEN, written), MANAGEDBUF(300));
 //	log_pedantic("payload = %zu = %.*s\n\n", st_length_get(phex), st_length_int(phex), st_char_get(phex));
 

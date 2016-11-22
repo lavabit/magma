@@ -145,13 +145,13 @@ prime_org_key_t * org_key_set(stringer_t *org) {
 }
 
 prime_org_key_t * org_encrypted_key_get(stringer_t *key, prime_org_key_t *org, stringer_t *output) {
-	#error
+	//#error
 	stringer_t *t = org_key_get(org, NULL);
 	return aes_object_encrypt(key, t, NULL);
 }
 
 prime_org_key_t * org_encrypted_key_set(stringer_t *key, stringer_t *org) {
-	#error
+	//#error
 	stringer_t *packed = NULL;
 	prime_org_key_t *result = NULL;
 

@@ -488,6 +488,29 @@ START_TEST (check_dspam_bin_s) {
 }
 END_TEST
 
+//! DKIM Tests
+START_TEST (check_dkim_s) {
+
+	bool_t result = true;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	log_disable();
+
+	// If the DKIM engine isn't enabled, then we'll skip the unit test.
+	if ((result = magma.dkim.enabled)) st_sprint(errmsg, "SKIPPED");
+
+	// Otherwise, we'll perform the checks... unless the status variable indicates we shouldn't.
+	if (status() && result) result = check_dkim_sign_sthread(errmsg);
+	if (status() && result) result = check_dkim_verify_sthread(errmsg);
+
+	log_enable();
+
+	log_test("CHECKERS / DKIM / SINGLE THREADED:", errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
+
+}
+END_TEST
+
 //! Encoding/Parser Tests
 START_TEST (check_unicode_s) {
 
@@ -551,6 +574,8 @@ Suite * suite_check_provide(void) {
 	else {
 		log_unit("Skipping SPF checks...\n");
 	}
+
+	testcase(s, tc, "DKIM/S", check_dkim_s);
 
 	if (do_virus_check) {
 		testcase(s, tc, "Virus/S", check_virus_s);

@@ -30,6 +30,7 @@ void __testname (int _i CK_ATTRIBUTE_UNUSED)\
 {\
   tcase_fn_start (""# __testname, __FILE__, __LINE__);
 
+#include <data/data_check.h>
 #include "core/core_check.h"
 #include "providers/provide_check.h"
 #include "prime/prime_check.h"

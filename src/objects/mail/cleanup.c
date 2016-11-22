@@ -198,19 +198,19 @@ bool_t mail_message_cleanup(stringer_t **message) {
 			}
 
 			// Detect when we've reached the maximum line length and insert a new line. If in header mode also add a tab.
-/*			if (header == 3 && line == magma.smtp.wrap_line_length) {
+			/*if (header == 3 && line == magma.smtp.wrap_line_length) {
 				*new++ = '\r';
 				*new++ = '\n';
 				used += 2;
 				line = 0;
 			}
-			else */if ((header != 3) && (line == magma.smtp.wrap_line_length)) {
+			else if ((header != 3) && (line == magma.smtp.wrap_line_length)) {
 				*new++ = '\r';
 				*new++ = '\n';
 				*new++ = '\t';
 				used += 3;
 				line = 0;
-			}
+			}*/
 
 		}
 		else if (skip == 2) {

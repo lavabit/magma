@@ -36,11 +36,12 @@ start () {
         chown -R $user /var/run/magmad
     fi
     cd /var/lib/magma
-    daemon "${prog} ${configfile} > /var/log/magma/magma.init.log"
+    daemon "${prog} ${configfile} > /var/log/magma/magmad.init.log"
     RETVAL=$?
     echo
     [ $RETVAL -eq 0 ] && touch ${lockfile}
     [ $RETVAL -eq 0 ] && pidof ${prog} > ${pidfile}
+    [ $RETVAL -ne 0 ] && cat /var/log/magma/magmad.init.log
 }
 
 stop () {
@@ -48,9 +49,16 @@ stop () {
     killproc -p ${pidfile} ${prog}
     RETVAL=$?
     echo
-    if [ $RETVAL -eq 0 ] ; then
+    if [ $RETVAL -eq 0 ]; then
         rm -f ${lockfile} ${pidfile}
     fi
+}
+
+reload () {
+    echo -n $"Reloading `basename $prog`: "
+    killproc -p ${pidfile} ${prog} -HUP
+    RETVAL=$?
+    echo
 }
 
 restart () {
@@ -70,7 +78,10 @@ case "$1" in
     status -p ${pidfile} magmad
     RETVAL=$?
     ;;
-  restart|reload|force-reload)
+  reload)
+    reload
+    ;;
+  restart|force-reload)
     restart
     ;;
   condrestart|try-restart)

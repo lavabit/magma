@@ -171,16 +171,25 @@ sed -i -e "s/CACHESIZE=\"[0-9]*\"/CACHESIZE=\"$QUARTERMEM\"/g" /etc/sysconfig/me
 yum --assumeyes install postfix
 
 # Modify the selinux rules so that postfix may bind to port 2525.
-checkmodule -M -m -o magmad.selinux.mod magmad.selinux.te
-semodule_package -o magmad.selinux.pp -m magmad.selinux.mod
-semodule -i magmad.selinux.pp
+checkmodule -M -m -o postfix.selinux.mod postfix.selinux.te
+semodule_package -o postfix.selinux.pp -m postfix.selinux.mod
+semodule -i postfix.selinux.pp
+
+# Setup logrotate so it only stores 7 days worth of logs.
+printf "/var/log/maillog {\n\tdaily\n\trotate 7\n\tmissingok\n}\n" > /etc/logrotate.d/postfix
+
+# Fix the SELinux context for the postfix logrotate config.
+chcon system_u:object_r:etc_t:s0 /etc/logrotate.d/postfix
 
 # Configure postfix to listen for relays on port 2525 so it doesn't conflict with magma.
 sed -i -e "s/^smtp\([ ]*inet\)/127.0.0.1:2525\1/" /etc/postfix/master.cf 
 
-# Ensure postfix auto-starts and then restart the daemon
+# Configure the postfix hostname and origin parameters.
+printf "\nmyhostname = relay.$DOMAIN\nmyorigin = $DOMAIN\n" >> /etc/postfix/main.cf 
+
+# Ensure postfix auto-starts during boot, and then launch the daemon.
 /sbin/chkconfig postfix on
-/sbin/service postfix stop
+/sbin/service postfix stop 
 /sbin/service postfix start
 
 #############################################################################
@@ -231,6 +240,11 @@ cp -R res/templates /var/lib/magma/resources
 # Create the magmad storage directories.
 mkdir -p /var/lib/magma/storage/tanks/
 mkdir -p /var/lib/magma/storage/local/
+
+# Setup a cron job for purging stale magmad logs. Currently we purge anything older than 7 days.
+printf "32 0 * * * root find /var/log/magma/ -name magmad.[0-9]*.log -mmin +8639 -exec rm --force {} \;\n" > /etc/cron.d/magma-log-cleanup
+chmod 600 /etc/cron.d/magma-log-cleanup
+chcon system_u:object_r:system_cron_spool_t:s0 /etc/cron.d/magma-log-cleanup
 
 # Set magma as the owner, and fix the SELinux context for the magma directory.
 chown -R magma:magma /var/lib/magma

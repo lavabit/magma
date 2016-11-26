@@ -1,7 +1,7 @@
 
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.system.domain', '$DOMAIN', NOW());
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.admin.abuse', 'abuse@$DOMAIN', NOW());
-INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.system.domain', 'contact@$DOMAIN', NOW());
+INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.admin.contact', 'admin@$DOMAIN', NOW());
 
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.storage.default', 'local', NOW());
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.storage.root', '/var/lib/magma/storage/', NOW());

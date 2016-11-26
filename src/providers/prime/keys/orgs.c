@@ -141,22 +141,41 @@ prime_org_key_t * org_key_set(stringer_t *org) {
 		return NULL;
 	}
 
+	// We don't need the packed object context any more.
+	prime_object_free(object);
+
 	return result;
 }
 
-prime_org_key_t * org_encrypted_key_get(stringer_t *key, prime_org_key_t *org, stringer_t *output) {
-	//#error
-	stringer_t *t = org_key_get(org, NULL);
-	return aes_object_encrypt(key, t, NULL);
+stringer_t * org_encrypted_key_get(stringer_t *key, prime_org_key_t *org, stringer_t *output) {
+
+	stringer_t *holder = NULL, *result = NULL;
+
+	// Pack the org key before encrypting it.
+	if ((holder = org_key_get(org, NULL))) {
+
+		// Encrypt the key.
+		result = aes_object_encrypt(key, holder, output);
+
+		// Free the packed representation of the key.
+		st_free(holder);
+	}
+
+	return result;
 }
 
 prime_org_key_t * org_encrypted_key_set(stringer_t *key, stringer_t *org) {
-	//#error
+
 	stringer_t *packed = NULL;
 	prime_org_key_t *result = NULL;
 
+	// Decrypt the key.
 	if ((packed = aes_object_decrypt(key, org, NULL))) {
+
+		// Unpack the data into a key structure.
 		result = org_key_set(packed);
+
+		// Free the packed key data.
 		st_free(packed);
 	}
 

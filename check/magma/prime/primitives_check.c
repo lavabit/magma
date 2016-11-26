@@ -66,6 +66,50 @@ bool_t check_prime_org_keys_sthread(stringer_t *errmsg) {
 
 	prime_key_free(holder);
 
+	// Perform the same checks, but this time make the functions
+	// allocate memory for the output. Generate an org key.
+	if (!(holder = prime_key_generate(PRIME_ORG_KEY))) {
+		st_sprint(errmsg, "Organizational key generation failed.");
+		return false;
+	}
+
+	// Serialize the org key.
+	else if (!(packed = prime_key_get(holder, NULL))) {
+		st_sprint(errmsg, "Organizational key serialization failed.");
+		prime_key_free(holder);
+		return false;
+	}
+
+	prime_key_free(holder);
+
+	// Unpack the serialized org key.
+	if (!(holder = prime_key_set(packed))) {
+		st_sprint(errmsg, "Organizational key parsing failed.");
+		st_free(packed);
+		return false;
+	}
+
+	st_free(packed);
+
+	// Encrypt the org key.
+	if (!(packed = prime_encrypted_key_get(key, holder, NULL))) {
+		st_sprint(errmsg, "Organizational key encryption failed.");
+		prime_key_free(holder);
+		return false;
+	}
+
+	prime_key_free(holder);
+
+	// Decrypt the org key.
+	if (!(holder = prime_encrypted_key_set(key, packed))) {
+		st_sprint(errmsg, "Encrypted organizational key parsing failed.");
+		st_free(packed);
+		return false;
+	}
+
+	prime_key_free(holder);
+	st_free(packed);
+
 	return true;
 }
 
@@ -122,6 +166,50 @@ bool_t check_prime_user_keys_sthread(stringer_t *errmsg) {
 	}
 
 	prime_key_free(holder);
+
+	// Perform the same checks, but this time make the functions
+	// allocate memory for the output. Generate a new user key.
+	if (!(holder = prime_key_generate(PRIME_USER_KEY))) {
+		st_sprint(errmsg, "User key generation failed.");
+		return false;
+	}
+
+	// Serialize the user key.
+	else if (!(packed = prime_key_get(holder, NULL))) {
+		st_sprint(errmsg, "User key serialization failed.");
+		prime_key_free(holder);
+		return false;
+	}
+
+	prime_key_free(holder);
+
+	// Unpack the serialized user key.
+	if (!(holder = prime_key_set(packed))) {
+		st_sprint(errmsg, "User key parsing failed.");
+		st_free(packed);
+		return false;
+	}
+
+	st_free(packed);
+
+	// Encrypt the user key.
+	if (!(packed = prime_encrypted_key_get(key, holder, NULL))) {
+		st_sprint(errmsg, "User key encryption failed.");
+		prime_key_free(holder);
+		return false;
+	}
+
+	prime_key_free(holder);
+
+	// Decrypt the user key.
+	if (!(holder = prime_encrypted_key_set(key, packed))) {
+		st_sprint(errmsg, "Encrypted user key parsing failed.");
+		st_free(packed);
+		return false;
+	}
+
+	prime_key_free(holder);
+	st_free(packed);
 
 	return true;
 }

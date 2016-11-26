@@ -158,10 +158,6 @@ stringer_t * aes_object_encrypt(stringer_t *key, stringer_t *object, stringer_t 
 		return NULL;
 	}
 
-	log_enable();
-	stringer_t *bhex = hex_encode_st(PLACER(object_data, object_size + 5), MANAGEDBUF(256));
-	log_pedantic("object = %zu = %.*s", st_length_get(bhex), st_length_int(bhex), st_char_get(bhex));
-
 	// Skip the object header.
 	object_data += 5;
 
@@ -303,17 +299,6 @@ stringer_t * aes_object_encrypt(stringer_t *key, stringer_t *object, stringer_t 
 
 	EVP_CIPHER_CTX_cleanup_d(&ctx);
 
-//	log_enable();
-//
-//	stringer_t *thex = hex_encode_st(PLACER(&tag[0], AES_TAG_LEN), MANAGEDBUF(32)), *vhex = hex_encode_st(vector, MANAGEDBUF(32)),
-//		*chex = hex_encode_st(&cipher_key, MANAGEDBUF(64));
-//	log_pedantic("tag = %.*s", st_length_int(thex), st_char_get(thex));
-//	log_pedantic("vector = %.*s", st_length_int(vhex), st_char_get(vhex));
-//	log_pedantic("cipher = %.*s", st_length_int(chex), st_char_get(chex));
-//
-//	stringer_t *phex = hex_encode_st(PLACER(st_data_get(output) + PRIME_OBJECT_HEAD_LEN, written), MANAGEDBUF(300));
-//	log_pedantic("payload = %zu = %.*s\n\n", st_length_get(phex), st_length_int(phex), st_char_get(phex));
-
 	mm_copy(&(header->tag), st_data_get(tag_shard), AES_TAG_LEN);
 
 	if (st_valid_tracked(st_opt_get(output))) {
@@ -373,13 +358,6 @@ stringer_t * aes_object_decrypt(stringer_t *key, stringer_t *object, stringer_t 
 	// Compute the vector and tag values by combining the key shards, with the header shards.
 	vector = st_xor(PLACER(&(header->vector[0]), AES_VECTOR_LEN), &vector_key_shard, MANAGEDBUF(AES_VECTOR_LEN));
 	tag = st_xor(PLACER(&(header->tag[0]), AES_TAG_LEN), &tag_key_shard, MANAGEDBUF(AES_TAG_LEN));
-
-//	log_enable();
-//	stringer_t *thex = hex_encode_st(tag, MANAGEDBUF(32)), *vhex = hex_encode_st(vector, MANAGEDBUF(32)),
-//		*chex = hex_encode_st(&cipher_key, MANAGEDBUF(64));
-//	log_pedantic("tag = %.*s", st_length_int(thex), st_char_get(thex));
-//	log_pedantic("vector = %.*s", st_length_int(vhex), st_char_get(vhex));
-//	log_pedantic("cipher = %.*s", st_length_int(chex), st_char_get(chex));
 
 	// Map the encrypted object type to the decrypted object type.
 	if (be16toh(header->type) == PRIME_ORG_KEY_ENCRYPTED) {
@@ -448,17 +426,6 @@ stringer_t * aes_object_decrypt(stringer_t *key, stringer_t *object, stringer_t 
 
 	written += available;
 	available = payload_len - written;
-
-//	mm_move((uchr_t *)&pad, st_data_get(output) + 1 + 3, 1);
-//	mm_move(((uchr_t *)&big_endian_payload_size) + 1, st_data_get(output) + 1, 3);
-//	stringer_t *bhex = hex_encode_st(PLACER(st_data_get(output) + 1 + PRIME_OBJECT_PAYLOAD_PREFIX_LEN, written - PRIME_OBJECT_PAYLOAD_PREFIX_LEN - pad), MANAGEDBUF(256));
-//
-//	stringer_t *phex = hex_encode_st(PLACER(object_data + PRIME_OBJECT_HEAD_LEN, object_size - PRIME_OBJECT_HEAD_LEN), MANAGEDBUF(300));
-//	log_pedantic("payload = %zu = %.*s", st_length_get(phex), st_length_int(phex), st_char_get(phex));
-//
-//
-//	log_pedantic("prefix_size = %i / object_size = %u / object_pad = %hhu", PRIME_OBJECT_PAYLOAD_PREFIX_LEN, be32toh(big_endian_payload_size), pad);
-//	log_pedantic("object = %zu = %.*s", st_length_get(bhex), st_length_int(bhex), st_char_get(bhex));
 
 	// Set the Galois verification tag, which provides protection against tampering by an attacker.
 	if (EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_GCM_SET_TAG, 16, st_data_get(tag)) != 1) {

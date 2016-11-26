@@ -107,7 +107,7 @@ stringer_t * prime_field_write(prime_type_t type, prime_field_type_t field, size
 		case (PRIME_USER_KEY):
 			mm_copy(st_data_get(result), ((uchr_t *)&field), 1);
 			mm_copy(st_data_get(result) + 1, ((uchr_t *)&big_endian_size) + (4 - size_len), size_len);
-			mm_copy(st_data_get(result) + 1 + size_len, ((uchr_t *)&payload), payload_len);
+			mm_copy(st_data_get(result) + 1 + size_len, payload, payload_len);
 			break;
 		case (PRIME_MESSAGE_ENCRYPTED):
 		case (PRIME_ORG_KEY_ENCRYPTED):

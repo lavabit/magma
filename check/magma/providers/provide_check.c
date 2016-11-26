@@ -497,7 +497,7 @@ START_TEST (check_dkim_s) {
 	log_disable();
 
 	// If the DKIM engine isn't enabled, then we'll skip the unit test.
-	if ((result = magma.dkim.enabled)) st_sprint(errmsg, "SKIPPED");
+	if (!(result = magma.dkim.enabled)) st_sprint(errmsg, "SKIPPED");
 
 	// Otherwise, we'll perform the checks... unless the status variable indicates we shouldn't.
 	if (status() && result) result = check_dkim_sign_sthread(errmsg);

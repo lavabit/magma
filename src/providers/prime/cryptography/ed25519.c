@@ -140,7 +140,7 @@ ed25519_key_t * ed25519_private_set(stringer_t *key) {
 
 	output->type = ED25519_PRIV;
 	mm_copy(output->private, st_data_get(key), ED25519_KEY_PRIV_LEN);
-	ED25519_public_from_private_d(output->public, output->private);
+	ED25519_keypair_from_seed_d(output->public, output->private, output->private);
 	return output;
 }
 

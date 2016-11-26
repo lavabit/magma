@@ -1,6 +1,6 @@
-diff -r 736dfa545f37 -r ba2ad9b337cd Makefile
---- a/Makefile	Tue Nov 01 15:57:05 2016 -0500
-+++ b/Makefile	Tue Nov 01 16:01:21 2016 -0500
+diff -r 5504a985a4e0 -r f59397568d2b Makefile
+--- a/Makefile	Sat Nov 26 00:47:32 2016 -0600
++++ b/Makefile	Sat Nov 26 01:03:59 2016 -0600
 @@ -11,11 +11,11 @@
  SHLIB_VERSION_HISTORY=
  SHLIB_MAJOR=1
@@ -73,9 +73,9 @@ diff -r 736dfa545f37 -r ba2ad9b337cd Makefile
  
  GENERAL=        Makefile
  BASENAME=       openssl
-diff -r 736dfa545f37 -r ba2ad9b337cd Makefile.bak
---- a/Makefile.bak	Tue Nov 01 15:57:05 2016 -0500
-+++ b/Makefile.bak	Tue Nov 01 16:01:21 2016 -0500
+diff -r 5504a985a4e0 -r f59397568d2b Makefile.bak
+--- a/Makefile.bak	Sat Nov 26 00:47:32 2016 -0600
++++ b/Makefile.bak	Sat Nov 26 01:03:59 2016 -0600
 @@ -26,10 +26,10 @@
  # for, say, /usr/ and yet have everything installed to /tmp/somedir/usr/.
  # Normally it is left empty.
@@ -98,9 +98,9 @@ diff -r 736dfa545f37 -r ba2ad9b337cd Makefile.bak
  	buffer bio stack lhash rand err \
  	evp asn1 pem x509 x509v3 conf txt_db pkcs7 pkcs12 comp ocsp ui krb5 \
  	cms pqueue ts srp cmac
-diff -r 736dfa545f37 -r ba2ad9b337cd Makefile.org
---- a/Makefile.org	Tue Nov 01 15:57:05 2016 -0500
-+++ b/Makefile.org	Tue Nov 01 16:01:21 2016 -0500
+diff -r 5504a985a4e0 -r f59397568d2b Makefile.org
+--- a/Makefile.org	Sat Nov 26 00:47:32 2016 -0600
++++ b/Makefile.org	Sat Nov 26 01:03:59 2016 -0600
 @@ -146,7 +146,7 @@
  	objects \
  	md2 md4 md5 sha mdc2 hmac ripemd whrlpool \
@@ -110,9 +110,9 @@ diff -r 736dfa545f37 -r ba2ad9b337cd Makefile.org
  	buffer bio stack lhash rand err \
  	evp asn1 pem x509 x509v3 conf txt_db pkcs7 pkcs12 comp ocsp ui krb5 \
  	cms pqueue ts jpake srp store cmac
-diff -r 736dfa545f37 -r ba2ad9b337cd config
---- a/config	Tue Nov 01 15:57:05 2016 -0500
-+++ b/config	Tue Nov 01 16:01:21 2016 -0500
+diff -r 5504a985a4e0 -r f59397568d2b config
+--- a/config	Sat Nov 26 00:47:32 2016 -0600
++++ b/config	Sat Nov 26 01:03:59 2016 -0600
 @@ -903,7 +903,7 @@
    i386-*) options="$options 386" ;;
  esac
@@ -122,9 +122,9 @@ diff -r 736dfa545f37 -r ba2ad9b337cd config
  do
    if [ ! -d crypto/$i ]
    then
-diff -r 736dfa545f37 -r ba2ad9b337cd crypto/Makefile
---- a/crypto/Makefile	Tue Nov 01 15:57:05 2016 -0500
-+++ b/crypto/Makefile	Tue Nov 01 16:01:21 2016 -0500
+diff -r 5504a985a4e0 -r f59397568d2b crypto/Makefile
+--- a/crypto/Makefile	Sat Nov 26 00:47:32 2016 -0600
++++ b/crypto/Makefile	Sat Nov 26 01:03:59 2016 -0600
 @@ -148,74 +148,3 @@
  	@target=dclean; $(RECURSIVE_MAKE)
  
@@ -200,9 +200,9 @@ diff -r 736dfa545f37 -r ba2ad9b337cd crypto/Makefile
 -uid.o: ../include/openssl/opensslconf.h ../include/openssl/opensslv.h
 -uid.o: ../include/openssl/ossl_typ.h ../include/openssl/safestack.h
 -uid.o: ../include/openssl/stack.h ../include/openssl/symhacks.h uid.c
-diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/Makefile
+diff -r 5504a985a4e0 -r f59397568d2b crypto/curve25519/Makefile
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/crypto/curve25519/Makefile	Tue Nov 01 16:01:21 2016 -0500
++++ b/crypto/curve25519/Makefile	Sat Nov 26 01:03:59 2016 -0600
 @@ -0,0 +1,82 @@
 +#
 +# crypto/curve25519/Makefile
@@ -286,10 +286,10 @@ diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/Makefile
 +	rm -f *.s *.o */*.o *.obj lib tags core .pure .nfs* *.old *.bak fluff
 +
 +# DO NOT DELETE THIS LINE -- make depend depends on it.
-diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/curve25519.c
+diff -r 5504a985a4e0 -r f59397568d2b crypto/curve25519/curve25519.c
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/crypto/curve25519/curve25519.c	Tue Nov 01 16:01:21 2016 -0500
-@@ -0,0 +1,4821 @@
++++ b/crypto/curve25519/curve25519.c	Sat Nov 26 01:03:59 2016 -0600
+@@ -0,0 +1,4823 @@
 +/* Copyright (c) 2015, Google Inc.
 + *
 + * Permission to use, copy, modify, and/or distribute this software for any
@@ -4817,8 +4817,7 @@ diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/curve25519.c
 +  uint8_t seed[32];
 +
 +  RAND_bytes(seed, 32);
-+  ED25519_public_from_private(out_public_key, seed);
-+  memmove(out_private_key + 32, out_public_key, 32);
++  ED25519_keypair_from_seed(out_public_key, out_private_key, seed);
 +}
 +
 +int ED25519_sign(uint8_t *out_sig, const uint8_t *message, size_t message_len,
@@ -4892,12 +4891,13 @@ diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/curve25519.c
 +  return CRYPTO_memcmp(rcheck, rcopy, sizeof(rcheck)) == 0;
 +}
 +
-+void ED25519_public_from_private(uint8_t out_public_key[32], const uint8_t private_key[32]) {
++void ED25519_keypair_from_seed(uint8_t out_public_key[32], uint8_t out_private_key[64],
++                               const uint8_t seed[32]) {
 +
 +  ge_p3 A;
 +  uint8_t az[SHA512_DIGEST_LENGTH];
 +
-+  SHA512(private_key, 32, az);
++  SHA512(seed, 32, az);
 +
 +  az[0] &= 248;
 +  az[31] &= 63;
@@ -4906,6 +4906,8 @@ diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/curve25519.c
 +  x25519_ge_scalarmult_base(&A, az);
 +  ge_p3_tobytes(out_public_key, &A);
 +
++  memcpy(out_private_key, seed, 32);
++  memcpy(out_private_key + 32, out_public_key, 32);
 +}
 +
 +/* Replace (f,g) with (g,f) if b == 1;
@@ -5111,10 +5113,10 @@ diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/curve25519.c
 +  fe_tobytes(out_public_value, zplusy);
 +}
 +
-diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/curve25519.h
+diff -r 5504a985a4e0 -r f59397568d2b crypto/curve25519/curve25519.h
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/crypto/curve25519/curve25519.h	Tue Nov 01 16:01:21 2016 -0500
-@@ -0,0 +1,103 @@
++++ b/crypto/curve25519/curve25519.h	Sat Nov 26 01:03:59 2016 -0600
+@@ -0,0 +1,107 @@
 +/* Copyright (c) 2015, Google Inc.
 + *
 + * Permission to use, copy, modify, and/or distribute this software for any
@@ -5192,10 +5194,14 @@ diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/curve25519.h
 +OPENSSL_EXPORT void ED25519_keypair(uint8_t out_public_key[32],
 +                                    uint8_t out_private_key[64]);
 +
-+/* ED25519_public_from_private calculates a public key value from the
-+ * given private key and writes it to |out_public_value|. */
-+OPENSSL_EXPORT void ED25519_public_from_private(uint8_t out_public_key[32],
-+                                                const uint8_t private_key[32]);
++/* ED25519_keypair_from_seed calculates a public and private key from an
++ * Ed25519 “seed”. Seed values are not exposed by this API (although they
++ * happen to be the first 32 bytes of a private key) so this function is for
++ * interoperating with systems that may store just a seed instead of a full
++ * private key. */
++OPENSSL_EXPORT void ED25519_keypair_from_seed(uint8_t out_public_key[32],
++                               uint8_t out_private_key[64],
++                               const uint8_t seed[32]);
 +
 +/* ED25519_sign sets |out_sig| to be a signature of |message_len| bytes from
 + * |message| using |private_key|. It returns one on success or zero on
@@ -5218,9 +5224,9 @@ diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/curve25519.h
 +#endif
 +
 +#endif  /* OPENSSL_HEADER_CURVE25519_H */
-diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/ed25519_test.cc
+diff -r 5504a985a4e0 -r f59397568d2b crypto/curve25519/ed25519_test.cc
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/crypto/curve25519/ed25519_test.cc	Tue Nov 01 16:01:21 2016 -0500
++++ b/crypto/curve25519/ed25519_test.cc	Sat Nov 26 01:03:59 2016 -0600
 @@ -0,0 +1,63 @@
 +/* Copyright (c) 2015, Google Inc.
 + *
@@ -5285,9 +5291,9 @@ diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/ed25519_test.cc
 +
 +  return FileTestMain(TestSignature, NULL, argv[1]);
 +}
-diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/ed25519_tests.txt
+diff -r 5504a985a4e0 -r f59397568d2b crypto/curve25519/ed25519_tests.txt
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/crypto/curve25519/ed25519_tests.txt	Tue Nov 01 16:01:21 2016 -0500
++++ b/crypto/curve25519/ed25519_tests.txt	Sat Nov 26 01:03:59 2016 -0600
 @@ -0,0 +1,2577 @@
 +# The contents of this file were generated from
 +# http://ed25519.cr.yp.to/python/sign.input using the following Python script:
@@ -7866,9 +7872,9 @@ diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/ed25519_tests.txt
 +PUB: c94576641f4a893cdfcee7b39fc21929b86b349976d7b0a46d39a588bcfe4357
 +MESSAGE: db8ef02e3033e6b96a56cab05082fb4695f4a1c916250dd75173f430a10c9468817709d37623346ae8245b42bda0da6b60462ccfdfc75a9ab994e66c9ab9fecdd8599610910affe4f10215cb280bf8f9f2700a444796dae93e06c6bea7d8b4fe1301baa79ccec769368feb2442c7de84f095e6b3bff63d388cbafb2b9809dc38e9b12ebd039c0a57f4d522e91ec8d1f2b8d23a4a0ae059af85393bb0a15f749110f6774a1fd731a6ec213e4ff435daab546d31ed9ec3b6d8cc2edacebf4facc5566556eea92e5b3f2542239b25e28012dd4ef40072eebf83ed2a255181f3a442189d68c6c609f4dfdf3db7d67d087a2fcd6d2dc50bbfed8bfbbfcb74d3c41f02a87865b13b8efcf5c3581257be0aa913f60c370527bde11a475c136a17c5eefeb03f5bff28693ed841e8ed1f7c29102f5599dd444009bcea6a92d5574152458e0caf8a36aa72b5dc4908a6461c9b741453005c8fbcc68113ae184208ee14b835480c6efafed18a76000b38e5858290f4d51f52f096cbe490e1eb5cacb226ec495a55a7fa457843d57fab67f8be7e209334785bdd665d7b63e4daf57b6e78928b603c8c0f9bc85464733b61273ef9e2b8a0cd7c3bf8ee0a6872e34d5a27a625e35eaf7ff5440b8b141af704df70c9c18623bd11209513192505105cd7bcfa5f0d919da706948fbe1f761f315846aa3b4813dd9ba3d81b9204e5409c0382b6eb
 +SIG: 0f80ff5d17488fe26f93c543b04ed959b5f0643fc61c7f2c3bc60132ba9c6210c8b250ea5e84d07b01de68bc174414eeeb31fdc2ba6823e231e312a91ededd02
-diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/file_test.cc
+diff -r 5504a985a4e0 -r f59397568d2b crypto/curve25519/file_test.cc
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/crypto/curve25519/file_test.cc	Tue Nov 01 16:01:21 2016 -0500
++++ b/crypto/curve25519/file_test.cc	Sat Nov 26 01:03:59 2016 -0600
 @@ -0,0 +1,303 @@
 +/* Copyright (c) 2015, Google Inc.
 + *
@@ -8173,9 +8179,9 @@ diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/file_test.cc
 +  printf("PASS\n");
 +  return 0;
 +}
-diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/file_test.h
+diff -r 5504a985a4e0 -r f59397568d2b crypto/curve25519/file_test.h
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/crypto/curve25519/file_test.h	Tue Nov 01 16:01:21 2016 -0500
++++ b/crypto/curve25519/file_test.h	Sat Nov 26 01:03:59 2016 -0600
 @@ -0,0 +1,161 @@
 +/* Copyright (c) 2015, Google Inc.
 + *
@@ -8338,9 +8344,9 @@ diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/file_test.h
 +
 +
 +#endif /* OPENSSL_HEADER_CRYPTO_TEST_FILE_TEST_H */
-diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/internal.h
+diff -r 5504a985a4e0 -r f59397568d2b crypto/curve25519/internal.h
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/crypto/curve25519/internal.h	Tue Nov 01 16:01:21 2016 -0500
++++ b/crypto/curve25519/internal.h	Sat Nov 26 01:03:59 2016 -0600
 @@ -0,0 +1,91 @@
 +/* Copyright (c) 2015, Google Inc.
 + *
@@ -8433,9 +8439,9 @@ diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/internal.h
 +#endif
 +
 +#endif  /* OPENSSL_HEADER_CURVE25519_INTERNAL_H */
-diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/x25519_test.cc
+diff -r 5504a985a4e0 -r f59397568d2b crypto/curve25519/x25519_test.cc
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/crypto/curve25519/x25519_test.cc	Tue Nov 01 16:01:21 2016 -0500
++++ b/crypto/curve25519/x25519_test.cc	Sat Nov 26 01:03:59 2016 -0600
 @@ -0,0 +1,126 @@
 +/* Copyright (c) 2015, Google Inc.
 + *
@@ -8563,9 +8569,9 @@ diff -r 736dfa545f37 -r ba2ad9b337cd crypto/curve25519/x25519_test.cc
 +  printf("PASS\n");
 +  return 0;
 +}
-diff -r 736dfa545f37 -r ba2ad9b337cd crypto/install-crypto.com
---- a/crypto/install-crypto.com	Tue Nov 01 15:57:05 2016 -0500
-+++ b/crypto/install-crypto.com	Tue Nov 01 16:01:21 2016 -0500
+diff -r 5504a985a4e0 -r f59397568d2b crypto/install-crypto.com
+--- a/crypto/install-crypto.com	Sat Nov 26 00:47:32 2016 -0600
++++ b/crypto/install-crypto.com	Sat Nov 26 01:03:59 2016 -0600
 @@ -77,7 +77,7 @@
     objects, -
     md4, md5, sha, mdc2, hmac, ripemd, whrlpool, -
@@ -8583,27 +8589,9 @@ diff -r 736dfa545f37 -r ba2ad9b337cd crypto/install-crypto.com
  $ exheader_rsa := rsa.h
  $ exheader_dsa := dsa.h
  $ exheader_ecdsa := ecdsa.h
-@@ -146,7 +147,7 @@
- $! Header files.
- $!
- $ i = 0
--$ loop_sdirs: 
-+$ loop_sdirs:
- $   d = f$edit( f$element( i, ",", sdirs), "trim")
- $   i = i + 1
- $   if d .eqs. "," then goto loop_sdirs_end
-@@ -159,7 +160,7 @@
- $! Object libraries, shareable images.
- $!
- $ i = 0
--$ loop_lib: 
-+$ loop_lib:
- $   e = f$edit( f$element( i, ",", libs), "trim")
- $   i = i + 1
- $   if e .eqs. "," then goto loop_lib_end
-diff -r 736dfa545f37 -r ba2ad9b337cd makevms.com
---- a/makevms.com	Tue Nov 01 15:57:05 2016 -0500
-+++ b/makevms.com	Tue Nov 01 16:01:21 2016 -0500
+diff -r 5504a985a4e0 -r f59397568d2b makevms.com
+--- a/makevms.com	Sat Nov 26 00:47:32 2016 -0600
++++ b/makevms.com	Sat Nov 26 01:03:59 2016 -0600
 @@ -720,7 +720,7 @@
     OBJECTS, -
     MD4, MD5, SHA, MDC2, HMAC, RIPEMD, WHRLPOOL, -
@@ -8621,9 +8609,9 @@ diff -r 736dfa545f37 -r ba2ad9b337cd makevms.com
  $ EXHEADER_RSA := rsa.h
  $ EXHEADER_DSA := dsa.h
  $ EXHEADER_ECDSA := ecdsa.h
-diff -r 736dfa545f37 -r ba2ad9b337cd test/Makefile
---- a/test/Makefile	Tue Nov 01 15:57:05 2016 -0500
-+++ b/test/Makefile	Tue Nov 01 16:01:21 2016 -0500
+diff -r 5504a985a4e0 -r f59397568d2b test/Makefile
+--- a/test/Makefile	Sat Nov 26 00:47:32 2016 -0600
++++ b/test/Makefile	Sat Nov 26 01:03:59 2016 -0600
 @@ -30,6 +30,9 @@
  LIBSSL= -L.. -lssl
  
@@ -8694,19 +8682,19 @@ diff -r 736dfa545f37 -r ba2ad9b337cd test/Makefile
  			testreq.pem
  
  clean:
-@@ -442,6 +453,12 @@
- 
+@@ -443,6 +454,12 @@
  $(ECTEST)$(EXE_EXT): $(ECTEST).o $(DLIBCRYPTO)
  	@target=$(ECTEST); $(BUILD_CMD)
-+	
+ 
 +$(ED25519_TEST)$(EXE_EXT): $(DLIBCRYPTO)
 +	g++ -std=gnu++0x -I../include ed25519_test.cc file_test.cc ../libcrypto.a ../../zlib/libz.a  -ldl -o ed25519_test
 +	
 +$(X25519_TEST)$(EXE_EXT): $(DLIBCRYPTO)
 +	g++ -std=gnu++0x -I../include x25519_test.cc ../libcrypto.a ../../zlib/libz.a  -ldl -o x25519_test
- 
++
  $(EXPTEST)$(EXE_EXT): $(EXPTEST).o $(DLIBCRYPTO)
  	@target=$(EXPTEST); $(BUILD_CMD)
+ 
 @@ -581,406 +598,3 @@
  
  # DO NOT DELETE THIS LINE -- make depend depends on it.

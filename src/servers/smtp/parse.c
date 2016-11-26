@@ -286,10 +286,10 @@ stringer_t * smtp_parse_mail_from_path(connection_t *con) {
 #endif
 			}
 			// The SIZE parameter provided by RFCs 1870.
-			else if (!st_cmp_ci_starts(&token, CONSTANT("SIZE=")) && !(tok_get_pl(token, '=', 1, &token) >= 0)) {
+			else if (!st_cmp_ci_starts(&token, CONSTANT("SIZE=")) && tok_get_pl(token, '=', 1, &token) >= 0) {
 				if (!uint64_conv_pl(token, &(con->smtp.suggested_length))) {
 					tok_get_bl(input, length, ' ', i, &token);
-					log_pedantic("Invalid SIZE parameter, so were ignoring it. {%s PARAM = %.*s}", con->command->string, pl_length_int(token), pl_char_get(token));
+					log_pedantic("Invalid SIZE parameter, so we're ignoring it. {%s PARAM = %.*s}", con->command->string, pl_length_int(token), pl_char_get(token));
 					con->smtp.suggested_length = 0;
 				}
 			}
@@ -349,7 +349,7 @@ stringer_t * smtp_parse_helo_domain(connection_t *con) {
 
 	// Cleanup the input. The rules say a domain name can only contain letters, numbers, periods and hyphens.
 	// We also lower case the string.
-	while (length && ((*input >= 'A' && *input <= 'Z') || (*input >= 'a' && *input <= 'z') || 
+	while (length && ((*input >= 'A' && *input <= 'Z') || (*input >= 'a' && *input <= 'z') ||
 		(*input >= '0' && *input <= '9') || *input == '-' || *input == '.')) {
 		*input = lower_chr(*input);
 		input++;

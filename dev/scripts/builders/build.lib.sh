@@ -2184,7 +2184,8 @@ combo() {
 
 	date +"%nStarting $1 at %r on %x%n" &>> "$M_LOGS/build.txt"
 
-	if [[ $1 != "check" ]] && [[ $1 != "check-full" ]]; then
+	# If compiling, then proceed sequentially to ensure dependencies are compiled in order.
+	if [[ $1 == "build" ]]; then
 
 		($M_BUILD "zlib-$1") & ZLIB_PID=$!
 		wait $ZLIB_PID; error
@@ -2233,22 +2234,21 @@ combo() {
 		($M_BUILD "googtap-$1") & GOOGTAP_PID=$!
 		wait $GOOGTAP_PID; error
 
+	# Otherwise do everything in parallel.
 	else
 
 		# The ClamAV unit tests will timeout if the system is under heavy load so they run alone.
 		($M_BUILD "clamav-$1") & CLAMAV_PID=$!
-		wait $CLAMAV_PID; error
-
+		($M_BUILD "curl-$1") & CURL_PID=$!
+		($M_BUILD "mysql-$1") & MYSQL_PID=$!
 		($M_BUILD "gd-$1") & GD_PID=$!
 		($M_BUILD "png-$1") & PNG_PID=$!
 		($M_BUILD "lzo-$1") & LZO_PID=$!
-		($M_BUILD "curl-$1") & CURL_PID=$!
 		($M_BUILD "jpeg-$1") & JPEG_PID=$!
 		($M_BUILD "spf2-$1") & SPF2_PID=$!
 		($M_BUILD "xml2-$1") & XML2_PID=$!
 		($M_BUILD "dkim-$1") & DKIM_PID=$!
 		($M_BUILD "zlib-$1") & ZLIB_PID=$!
-		($M_BUILD "mysql-$1") & MYSQL_PID=$!
 		($M_BUILD "bzip2-$1") & BZIP2_PID=$!
 		($M_BUILD "dspam-$1") & DSPAM_PID=$!
 		($M_BUILD "geoip-$1") & GEOIP_PID=$!
@@ -2275,6 +2275,7 @@ combo() {
 		wait $DSPAM_PID; error
 		wait $MYSQL_PID; error
 		wait $GEOIP_PID; error
+		wait $CLAMAV_PID; error
 		wait $CHECKER_PID; error
 		wait $OPENSSL_PID; error
 		wait $GOOGTEST_PID; error

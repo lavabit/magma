@@ -113,7 +113,7 @@ void dkim_stop(void) {
  * @return	NULL on failure or if magma.dkim.enabled is false; otherwise, a managed string containing a DKIM-Signature header
  * 			built using the dkim signature that was generated for the input message.
  */
-stringer_t * dkim_create(stringer_t *id, stringer_t *message) {
+stringer_t * dkim_signature_create(stringer_t *id, stringer_t *message) {
 
 	DKIM *context;
 	DKIM_STAT status;
@@ -180,7 +180,7 @@ stringer_t * dkim_create(stringer_t *id, stringer_t *message) {
  *         -1:	General internal or dkim-related failure occurred, or no signature was present.
  *         -2:	The signature was bad or the signing key was revoked or key retrieval failed (try again later).
  */
-int_t dkim_check(stringer_t *id, stringer_t *message) {
+int_t dkim_signature_verify(stringer_t *id, stringer_t *message) {
 
 	DKIM *context;
 	DKIM_STAT status;
@@ -189,7 +189,7 @@ int_t dkim_check(stringer_t *id, stringer_t *message) {
 
 	// Create a new handle to verify the signed message.
 	if (!(context = dkim_verify_d(dkim_engine, st_data_get(id), NULL, &status)) || status != DKIM_STAT_OK) {
-		log_pedantic("Allocation of the DKIM verification context failed. { %status = %s }", context ? "" : "dkim_verify = NULL / ",
+		log_pedantic("Allocation of the DKIM verification context failed. { %sstatus = %s }", context ? "" : "dkim_verify = NULL / ",
 			dkim_getresultstr_d(status));
 		stats_adjust_by_name("provider.dkim.errors", 1);
 
@@ -209,7 +209,7 @@ int_t dkim_check(stringer_t *id, stringer_t *message) {
 	dkim_free_d(context);
 
 	if (status == DKIM_STAT_BADSIG || status == DKIM_STAT_REVOKED || status == DKIM_STAT_KEYFAIL) {
-		//log_pedantic("The DKIM signature found but it does not validate.");
+		log_pedantic("Found a DKIM signature but verification of its validity failed. { status = %s }", dkim_getresultstr_d(status));
 		stats_adjust_by_name("provider.dkim.fail", 1);
 		return -2;
 	}

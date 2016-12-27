@@ -27,28 +27,62 @@
 #include "message.14.h"
 #include "message.15.h"
 #include "message.16.h"
+#include "message.17.h"
 
-stringer_t *messages[] = {
-	NULLER(MESSAGE_1),
-	NULLER(MESSAGE_2),
-	NULLER(MESSAGE_3),
-	NULLER(MESSAGE_4),
-	NULLER(MESSAGE_5),
-	NULLER(MESSAGE_6),
-	NULLER(MESSAGE_7),
-	NULLER(MESSAGE_8),
-	NULLER(MESSAGE_9),
-	NULLER(MESSAGE_10),
-	NULLER(MESSAGE_11),
-	NULLER(MESSAGE_12),
-	NULLER(MESSAGE_13),
-	NULLER(MESSAGE_14),
-	NULLER(MESSAGE_15),
-	NULLER(MESSAGE_16)
+#define DKIM_TEST_NONE 0x00000000
+#define DKIM_TEST_VERIFY 0x00000001
+#define DKIM_TEST_SIGNING 0x00000010
+
+typedef struct {
+	uint32_t flags;
+	stringer_t *data;
+} check_message_data_t;
+
+check_message_data_t messages[] = {
+	{ DKIM_TEST_SIGNING, NULLER(MESSAGE_1) },
+	{ DKIM_TEST_SIGNING, NULLER(MESSAGE_2) },
+	{ DKIM_TEST_NONE, NULLER(MESSAGE_3) },
+	{ DKIM_TEST_SIGNING, NULLER(MESSAGE_4) },
+	{ DKIM_TEST_SIGNING, NULLER(MESSAGE_5) },
+	{ DKIM_TEST_SIGNING, NULLER(MESSAGE_6) },
+	{ DKIM_TEST_NONE, NULLER(MESSAGE_7) },
+	{ DKIM_TEST_SIGNING, NULLER(MESSAGE_8) },
+	{ DKIM_TEST_SIGNING, NULLER(MESSAGE_9) },
+	{ DKIM_TEST_SIGNING, NULLER(MESSAGE_10) },
+	{ DKIM_TEST_NONE, NULLER(MESSAGE_11) },
+	{ DKIM_TEST_SIGNING, NULLER(MESSAGE_12) },
+	{ DKIM_TEST_SIGNING, NULLER(MESSAGE_13) },
+	{ DKIM_TEST_SIGNING, NULLER(MESSAGE_14) },
+	{ DKIM_TEST_SIGNING, NULLER(MESSAGE_15) },
+	{ DKIM_TEST_SIGNING, NULLER(MESSAGE_16) },
+	{ DKIM_TEST_VERIFY, NULLER(MESSAGE_17) }
+
 };
 
 uint32_t check_message_max(void) {
-	return sizeof(messages) / sizeof(stringer_t *);
+	return sizeof(messages) / sizeof(check_message_data_t);
+}
+
+bool_t check_message_dkim_sign(uint32_t index) {
+
+	bool_t result = false;
+
+	if (index < check_message_max()) {
+		result = (messages[index].flags & DKIM_TEST_SIGNING) == DKIM_TEST_SIGNING;
+	}
+
+	return result;
+}
+
+bool_t check_message_dkim_verify(uint32_t index) {
+
+	bool_t result = false;
+
+	if (index < check_message_max()) {
+		result = (messages[index].flags & DKIM_TEST_VERIFY) == DKIM_TEST_VERIFY;
+	}
+
+	return result;
 }
 
 stringer_t *check_message_get(uint32_t index) {
@@ -56,7 +90,7 @@ stringer_t *check_message_get(uint32_t index) {
 	stringer_t *result = NULL;
 
 	if (index < check_message_max()) {
-		result = base64_decode(messages[index], NULL);
+		result = base64_decode(messages[index].data, NULL);
 	}
 
 	return result;

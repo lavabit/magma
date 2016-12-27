@@ -303,7 +303,7 @@ int_t smtp_accept_message(connection_t *con, smtp_inbound_prefs_t *prefs) {
 
 		// This message hasn't been checked yet.
 		if (con->smtp.checked.dkim == 0) {
-			con->smtp.checked.dkim = dkim_check(con->smtp.message->id, con->smtp.message->text);
+			con->smtp.checked.dkim = dkim_signature_verify(con->smtp.message->id, con->smtp.message->text);
 		}
 
 		// What action.

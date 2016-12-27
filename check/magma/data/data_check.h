@@ -13,7 +13,9 @@
 #ifndef CHECK_DATA_H
 #define CHECK_DATA_H
 
-/// data.c
+/// data_check.c
+bool_t        check_message_dkim_sign(uint32_t index);
+bool_t        check_message_dkim_verify(uint32_t index);
 stringer_t *  check_message_get(uint32_t index);
 uint32_t      check_message_max(void);
 

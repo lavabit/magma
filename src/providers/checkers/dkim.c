@@ -35,7 +35,9 @@ bool_t lib_load_dkim(void) {
 	symbol_t dkim[] = {
 		M_BIND(dkim_body), M_BIND(dkim_chunk), M_BIND(dkim_close), M_BIND(dkim_eoh), M_BIND(dkim_eom), M_BIND(dkim_free),
 		M_BIND(dkim_getresultstr), M_BIND(dkim_header),	M_BIND(dkim_init),	M_BIND(dkim_libversion),
-		M_BIND(dkim_sign), M_BIND(dkim_verify), M_BIND(dkim_geterror), // yes there is one anomaly because of a name clash:
+		M_BIND(dkim_sign), M_BIND(dkim_verify), M_BIND(dkim_geterror), M_BIND(dkim_test_dns_put),
+
+		// This value structure is setup manually to avoid singular anomaly in our naming convetntion.
 		{ .name = "dkim_getsighdr", .pointer = (void *)&dkim_getsighdrx_d },
 	};
 
@@ -140,7 +142,8 @@ stringer_t * dkim_signature_create(stringer_t *id, stringer_t *message) {
 		return NULL;
 	}
 
-	// Handle the message as a chunk, then finalize input by processing a NULL chunk and signal end-of-message.
+	// Handle the message as a chunk, then signal the end by passing in a NULL chunk and calling the end-of-message
+	// function.
 	if ((status = dkim_chunk_d(context, st_data_get(message), st_length_get(message))) == DKIM_STAT_OK &&
 		(status = dkim_chunk_d(context, NULL, 0)) == DKIM_STAT_OK &&
 		(status = dkim_eom_d(context, NULL)) == DKIM_STAT_OK &&
@@ -200,7 +203,8 @@ int_t dkim_signature_verify(stringer_t *id, stringer_t *message) {
 		return -1;
 	}
 
-	// Handle the message as a chunk, then finalize input by processing a NULL chunk and signal end-of-message.
+	// Handle the message as a chunk, then finalize the input by passing in a NULL chunk and calling the
+	// end-of-message function.
 	if ((status = dkim_chunk_d(context, st_data_get(message), st_length_get(message))) == DKIM_STAT_OK &&
 		(status = dkim_chunk_d(context, NULL, 0)) == DKIM_STAT_OK) {
 		status = dkim_eom_d(context, NULL);

@@ -70,18 +70,19 @@ DSPAM_CTX * (*dspam_create_d)(const char *username, const char *group, const cha
 /// @note that dkim_getsighdr_d is used by the library, so were using dkim_getsighdrx_d.
 DKIM_STAT (*dkim_eoh_d)(DKIM *dkim) = NULL;
 void (*dkim_close_d)(DKIM_LIB *lib) = NULL;
-DKIM_STAT (*dkim_free_d)(DKIM *dkim) = NULL;
 uint32_t (*dkim_libversion_d)(void) = NULL;
+DKIM_STAT (*dkim_free_d)(DKIM *dkim) = NULL;
+char * (*dkim_geterror_d)(DKIM *dkim) = NULL;
 DKIM_STAT (*dkim_eom_d)(DKIM *dkim, _Bool *testkey) = NULL;
 const char * (*dkim_getresultstr_d)(DKIM_STAT result) = NULL;
 DKIM_STAT (*dkim_body_d)(DKIM *dkim, u_char *buf, size_t len) = NULL;
 DKIM_STAT (*dkim_header_d)(DKIM *dkim, u_char *hdr, size_t len) = NULL;
+DKIM_STAT (*dkim_chunk_d)(DKIM *dkim, unsigned char *chunkp, size_t len) = NULL;
 DKIM_STAT (*dkim_getsighdrx_d)(DKIM *dkim, u_char *buf, size_t len, size_t initial) = NULL;
+int (*dkim_test_dns_put_d)(DKIM *dkim, int class, int type, int prec, u_char *name, u_char *data) = NULL;
 DKIM * (*dkim_verify_d)(DKIM_LIB *libhandle, const unsigned char *id, void *memclosure, DKIM_STAT *statp) = NULL;
 DKIM_LIB * (*dkim_init_d)(void *(*mallocf)(void *closure, size_t nbytes), void (*freef)(void *closure, void *p)) = NULL;
 DKIM * (*dkim_sign_d)(DKIM_LIB *libhandle, const unsigned char *id, void *memclosure, const dkim_sigkey_t secretkey, const unsigned char *selector, const unsigned char *domain, dkim_canon_t hdr_canon_alg, dkim_canon_t body_canon_alg, dkim_alg_t sign_alg,	off_t length, DKIM_STAT *statp) = NULL;
-DKIM_STAT (*dkim_chunk_d)(DKIM *dkim, unsigned char *chunkp, size_t len) = NULL;
-char * (*dkim_geterror_d)(DKIM *dkim) = NULL;
 
 //! FreeType
 FT_Error (*FT_Done_FreeType_d)(FT_Library library) = NULL;

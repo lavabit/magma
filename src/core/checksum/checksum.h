@@ -13,11 +13,23 @@
 #ifndef MAGMA_CORE_CHECKSUM_H
 #define MAGMA_CORE_CHECKSUM_H
 
-uint32_t hash_crc24(void *buffer, size_t length);
-uint32_t hash_crc32(void *buffer, size_t length);
-uint64_t hash_crc64(void *buffer, size_t length);
-uint32_t hash_crc32_update(void *buffer, size_t length, uint32_t crc);
-uint64_t hash_crc64_update(void *buffer, size_t length, uint64_t crc);
+/// crc.c
+uint32_t   crc24_init(void);
+uint32_t   crc24_final(uint32_t crc);
+
+uint32_t   crc24_checksum(void *buffer, size_t length);
+uint32_t   crc32_checksum(void *buffer, size_t length);
+uint64_t   crc64_checksum(void *buffer, size_t length);
+
+uint32_t   crc24_update(void *buffer, size_t length, uint32_t crc);
+uint32_t   crc32_update(void *buffer, size_t length, uint32_t crc);
+uint64_t   crc64_update(void *buffer, size_t length, uint64_t crc);
+
+uint32_t crc24_checksum(void *buffer, size_t length);
+uint32_t crc32_checksum(void *buffer, size_t length);
+uint64_t crc64_checksum(void *buffer, size_t length);
+uint32_t crc32_update(void *buffer, size_t length, uint32_t crc);
+uint64_t crc64_update(void *buffer, size_t length, uint64_t crc);
 
 uint32_t hash_adler32(void *buffer, size_t length);
 uint32_t hash_murmur32(void *buffer, size_t length);

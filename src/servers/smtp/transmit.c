@@ -206,7 +206,7 @@ int_t smtp_bounce(connection_t *con) {
 		holder = NULL;
 	}
 	else {
-		st_sprint(id, "%lu", hash_crc64(&utime, sizeof(time_t)));
+		st_sprint(id, "%lu", crc64_checksum(&utime, sizeof(time_t)));
 	}
 
 	// Open the connection to the SMTP server. Always use the default servers for forwards.
@@ -414,7 +414,7 @@ int_t smtp_reply(stringer_t *from, stringer_t *to, uint64_t usernum, uint64_t au
 		st_free(holder);
 	}
 	else {
-		st_sprint(id, "%lu", hash_crc64(&utime, sizeof(time_t)));
+		st_sprint(id, "%lu", crc64_checksum(&utime, sizeof(time_t)));
 	}
 
 	// Open the connection to the SMTP server. Always use the default servers for forwards.

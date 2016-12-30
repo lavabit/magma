@@ -14,10 +14,8 @@
 #define PRIME_AMORED_H
 
 /// pem.c
-stringer_t *   prime_pem_get(prime_t *object);
-prime_t *  prime_pem_set(stringer_t *pem);
-
-
+stringer_t *  prime_pem_unwrap(stringer_t *pem);
+stringer_t *  prime_pem_wrap(stringer_t *object);
 
 
 

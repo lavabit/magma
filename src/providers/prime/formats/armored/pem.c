@@ -12,12 +12,20 @@
 
 #include "magma.h"
 
-stringer_t * prime_pem_get(prime_t *object) {
+stringer_t * prime_pem_wrap(stringer_t *object) {
+
+	long crc;
+
+	if (st_empty(object)) {
+		return NULL;
+	}
+
+	crc = 0;
 
 	return NULL;
 }
 
-prime_t * prime_pem_set(stringer_t *pem) {
+stringer_t * prime_pem_unwrap(stringer_t *pem) {
 
 	return NULL;
 }

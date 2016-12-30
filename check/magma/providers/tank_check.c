@@ -81,14 +81,14 @@ bool_t check_tokyo_tank_verify(inx_t *check_collection) {
 			return false;
 		}
 
-		if (obj->crc32 != hash_crc32(st_data_get(data), st_length_get(data))) {
+		if (obj->crc32 != crc32_checksum(st_data_get(data), st_length_get(data))) {
 			log_info("%lu - crc32 error", obj->onum);
 			inx_cursor_free(cursor);
 			st_free(data);
 			return false;
 		}
 
-		if (obj->crc64 != hash_crc64(st_data_get(data), st_length_get(data))) {
+		if (obj->crc64 != crc64_checksum(st_data_get(data), st_length_get(data))) {
 			log_info("%lu - crc64 error", obj->onum);
 			inx_cursor_free(cursor);
 			st_free(data);
@@ -203,8 +203,8 @@ bool_t check_tokyo_tank_load(char *location, inx_t *check_collection, check_tank
 
 			obj->adler32 = hash_adler32(buffer, info.st_size);
 			obj->fletcher32 = hash_fletcher32(buffer, info.st_size);
-			obj->crc32 = hash_crc32(buffer, info.st_size);
-			obj->crc64 = hash_crc64(buffer, info.st_size);
+			obj->crc32 = crc32_checksum(buffer, info.st_size);
+			obj->crc64 = crc64_checksum(buffer, info.st_size);
 			obj->murmur32 = hash_murmur32(buffer, info.st_size);
 			obj->murmur64 = hash_murmur64(buffer, info.st_size);
 

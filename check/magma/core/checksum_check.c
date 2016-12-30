@@ -28,11 +28,11 @@ bool_t check_checksum_fuzz_sthread(void) {
 			return false;
 		}
 
-		hash_crc24(buffer, len);
-		hash_crc32(buffer, len);
-		hash_crc64(buffer, len);
-		hash_crc32_update(buffer, len, 0);
-		hash_crc64_update(buffer, len, 0);
+		crc24_checksum(buffer, len);
+		crc32_checksum(buffer, len);
+		crc64_checksum(buffer, len);
+		crc32_update(buffer, len, 0);
+		crc64_update(buffer, len, 0);
 		hash_adler32(buffer, len);
 		hash_murmur32(buffer, len);
 		hash_murmur64(buffer, len);
@@ -64,22 +64,24 @@ bool_t check_checksum_fixed_sthread(void) {
 			"T/uh2x2K0Lg1ooQXLEec+Bw9/zPB4Q=="), NULL),
 	};
 
-	if (hash_crc24(st_data_get(inputs[0]), st_length_get(inputs[0])) != 10368269 ||
-		hash_crc32(st_data_get(inputs[0]), st_length_get(inputs[0])) != 3909602454 ||
-		hash_crc64(st_data_get(inputs[0]), st_length_get(inputs[0])) != 14166404413710800030ULL ||
-		hash_crc32_update(st_data_get(inputs[0]), st_length_get(inputs[0]), 0) != 3909602454 ||
-		hash_crc64_update(st_data_get(inputs[0]), st_length_get(inputs[0]), 0) != 14166404413710800030ULL ||
+	if (crc24_checksum(st_data_get(inputs[0]), st_length_get(inputs[0])) != 10368269 ||
+		crc24_final(crc24_update(st_data_get(inputs[0]), st_length_get(inputs[0]), crc24_init())) != 10368269 ||
+		crc32_checksum(st_data_get(inputs[0]), st_length_get(inputs[0])) != 3909602454 ||
+		crc64_checksum(st_data_get(inputs[0]), st_length_get(inputs[0])) != 14166404413710800030ULL ||
+		crc32_update(st_data_get(inputs[0]), st_length_get(inputs[0]), 0) != 3909602454 ||
+		crc64_update(st_data_get(inputs[0]), st_length_get(inputs[0]), 0) != 14166404413710800030ULL ||
 		hash_adler32(st_data_get(inputs[0]), st_length_get(inputs[0])) != 4294966238 ||
 		hash_murmur32(st_data_get(inputs[0]), st_length_get(inputs[0])) != 1024266973 ||
 		hash_murmur64(st_data_get(inputs[0]), st_length_get(inputs[0])) != 2394673536925871334ULL ||
 		hash_fletcher32(st_data_get(inputs[0]), st_length_get(inputs[0])) != 2177786754) {
 		result = false;
 	}
-	else if (hash_crc24(st_data_get(inputs[1]), st_length_get(inputs[1])) != 2790188 ||
-		hash_crc32(st_data_get(inputs[1]), st_length_get(inputs[1])) != 3782771493 ||
-		hash_crc64(st_data_get(inputs[1]), st_length_get(inputs[1])) != 7822313678304244707ULL ||
-		hash_crc32_update(st_data_get(inputs[1]), st_length_get(inputs[1]), 0) != 3782771493 ||
-		hash_crc64_update(st_data_get(inputs[1]), st_length_get(inputs[1]), 0) != 7822313678304244707ULL ||
+	else if (crc24_checksum(st_data_get(inputs[1]), st_length_get(inputs[1])) != 2790188 ||
+		crc24_final(crc24_update(st_data_get(inputs[1]), st_length_get(inputs[1]), crc24_init())) != 2790188 ||
+		crc32_checksum(st_data_get(inputs[1]), st_length_get(inputs[1])) != 3782771493 ||
+		crc64_checksum(st_data_get(inputs[1]), st_length_get(inputs[1])) != 7822313678304244707ULL ||
+		crc32_update(st_data_get(inputs[1]), st_length_get(inputs[1]), 0) != 3782771493 ||
+		crc64_update(st_data_get(inputs[1]), st_length_get(inputs[1]), 0) != 7822313678304244707ULL ||
 		hash_adler32(st_data_get(inputs[1]), st_length_get(inputs[1])) != 4294965559 ||
 		hash_murmur32(st_data_get(inputs[1]), st_length_get(inputs[1])) != 1965527769 ||
 		hash_murmur64(st_data_get(inputs[1]), st_length_get(inputs[1])) != 17223540775224389486ULL ||
@@ -89,6 +91,20 @@ bool_t check_checksum_fixed_sthread(void) {
 
 	st_cleanup(inputs[0]);
 	st_cleanup(inputs[1]);
+
+	if (crc24_final(crc24_update("", 0, crc24_init())) != 0xb704ce ||
+		crc24_final(crc24_update("foo", 3, crc24_init())) != 0x4fc255 ||
+		crc24_final(crc24_update("123456789", 9, crc24_init())) != 0x21cf02 ||
+		crc24_final(crc24_update("!", 1, crc24_init())) != 0xa5cb6b || // Why?
+		crc24_final(crc24_update("?", 1, crc24_init())) != 0x7f6703 || // Why?
+		crc24_checksum("", 0) != 0xb704ce ||
+		crc24_checksum("foo", 3) != 0x4fc255 ||
+		crc24_checksum("123456789", 9) != 0x21cf02 ||
+		crc24_checksum("!", 1) != 0xa5cb6b || // Why?
+		crc24_checksum("?", 1) != 0x7f6703) { // Why?
+
+		result = false;
+	}
 
 	return result;
 }
@@ -112,6 +128,8 @@ bool_t check_checksum_fixed_sthread(void) {
 	//log_unit("{ KpMs = %.*s = %.*s }", st_length_int(p), st_char_get(p), st_length_int(q), st_char_get(q));
 	log_unit("{ njUN = %.*s = %.*s }", st_length_int(p), st_char_get(p), st_length_int(q), st_char_get(q));
 	st_free(p);
-	st_free(q);*/
+	st_free(q);
+
+*/
 
 

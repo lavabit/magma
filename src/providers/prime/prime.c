@@ -53,7 +53,7 @@ void prime_stop(void) {
 	return;
 }
 
-void prime_key_free(prime_t *key) {
+void prime_free(prime_t *key) {
 
 	if (key) {
 
@@ -75,7 +75,7 @@ void prime_key_free(prime_t *key) {
 	return;
 }
 
-prime_t * prime_key_alloc(prime_type_t type) {
+prime_t * prime_alloc(prime_type_t type) {
 
 	prime_t *result = NULL;
 
@@ -111,43 +111,7 @@ prime_t * prime_key_alloc(prime_type_t type) {
 	return result;
 }
 
-prime_t * prime_key_generate(prime_type_t type) {
-
-	prime_t *result = NULL;
-
-	if (!(result = mm_alloc(sizeof(prime_t)))) {
-		log_pedantic("PRIME key allocation failed.");
-		return NULL;
-	}
-
-	mm_wipe(result, sizeof(prime_t));
-
-	// Switch statement to call the appropriate allocator.
-	switch (type) {
-		case (PRIME_ORG_KEY):
-			result->type = PRIME_ORG_KEY;
-			result->org = org_key_generate();
-			break;
-		case (PRIME_USER_KEY):
-			result->type = PRIME_USER_KEY;
-			result->user = user_key_generate();
-			break;
-		default:
-			log_pedantic("Unrecognized PRIME key type.");
-			mm_free(result);
-			return NULL;
-	}
-
-	// Check that whichever key type was requrested, it actually succeeded.
-	if ((type == PRIME_ORG_KEY && !result->org) || (type == PRIME_USER_KEY && !result->user)) {
-		mm_free(result);
-		return NULL;
-	}
-
-	return result;
-}
-
-stringer_t * prime_key_get(prime_t *key, stringer_t *output) {
+stringer_t * prime_binary_get(prime_t *key, stringer_t *output) {
 
 	if (!key) {
 		log_pedantic("An invalid key object was provided for serialization.");
@@ -170,7 +134,7 @@ stringer_t * prime_key_get(prime_t *key, stringer_t *output) {
 	return output;
 }
 
-prime_t * prime_key_set(stringer_t *key) {
+prime_t * prime_binary_set(stringer_t *key) {
 
 	uint16_t type = 0;
 	prime_size_t size = 0;
@@ -214,7 +178,53 @@ prime_t * prime_key_set(stringer_t *key) {
 	return result;
 }
 
-stringer_t * prime_encrypted_key_get(stringer_t *key, prime_t *object, stringer_t *output) {
+stringer_t * prime_armored_get(prime_t *object, stringer_t *output) {
+
+	return NULL;
+}
+
+prime_t * prime_armored_set(prime_t *object) {
+
+	return NULL;
+}
+
+prime_t * prime_key_generate(prime_type_t type) {
+
+	prime_t *result = NULL;
+
+	if (!(result = mm_alloc(sizeof(prime_t)))) {
+		log_pedantic("PRIME key allocation failed.");
+		return NULL;
+	}
+
+	mm_wipe(result, sizeof(prime_t));
+
+	// Switch statement to call the appropriate allocator.
+	switch (type) {
+		case (PRIME_ORG_KEY):
+			result->type = PRIME_ORG_KEY;
+			result->org = org_key_generate();
+			break;
+		case (PRIME_USER_KEY):
+			result->type = PRIME_USER_KEY;
+			result->user = user_key_generate();
+			break;
+		default:
+			log_pedantic("Unrecognized PRIME key type.");
+			mm_free(result);
+			return NULL;
+	}
+
+	// Check that whichever key type was requrested, it actually succeeded.
+	if ((type == PRIME_ORG_KEY && !result->org) || (type == PRIME_USER_KEY && !result->user)) {
+		mm_free(result);
+		return NULL;
+	}
+
+	return result;
+}
+
+stringer_t * prime_key_encrypted_get(stringer_t *key, prime_t *object, stringer_t *output) {
 
 	if (!object) {
 		log_pedantic("An invalid key object was provided for serialization.");
@@ -237,7 +247,7 @@ stringer_t * prime_encrypted_key_get(stringer_t *key, prime_t *object, stringer_
 	return output;
 }
 
-prime_t * prime_encrypted_key_set(stringer_t *key, stringer_t *object) {
+prime_t * prime_key_encrypted_set(stringer_t *key, stringer_t *object) {
 
 	uint16_t type = 0;
 	prime_size_t size = 0;

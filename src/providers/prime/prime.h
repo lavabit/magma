@@ -83,13 +83,13 @@ typedef struct {
 #include "keys/keys.h"
 
 /// prime.c
-stringer_t *  prime_encrypted_key_get(stringer_t *key, prime_t *object, stringer_t *output);
-prime_t *     prime_encrypted_key_set(stringer_t *key, stringer_t *object);
-prime_t *     prime_key_alloc(prime_type_t type);
-void          prime_key_free(prime_t *key);
+stringer_t *  prime_key_encrypted_get(stringer_t *key, prime_t *object, stringer_t *output);
+prime_t *     prime_key_encrypted_set(stringer_t *key, stringer_t *object);
+prime_t *     prime_alloc(prime_type_t type);
+void          prime_free(prime_t *key);
 prime_t *     prime_key_generate(prime_type_t type);
-stringer_t *  prime_key_get(prime_t *key, stringer_t *output);
-prime_t *     prime_key_set(stringer_t *key);
+stringer_t *  prime_binary_get(prime_t *key, stringer_t *output);
+prime_t *     prime_binary_set(stringer_t *key);
 bool_t        prime_start(void);
 void          prime_stop(void);
 

@@ -20,14 +20,15 @@
 #include <arpa/nameser.h>
 
 // SPF
-#include <spf.h>
-#include <spf_dns_zone.h>
+#include <spf2/spf.h>
+#include <spf2/spf_dns_zone.h>
 
 // ClamAV
 #include <clamav.h>
 
 // MySQL
-#include <mysql.h>
+#include <mysql/mysql.h>
+#include <mysql/errmsg.h>
 
 // OpenSSL
 #include <openssl/conf.h>
@@ -75,14 +76,14 @@
 
 // DKIM
 #define lint
-#include <dkim.h>
+#include <opendkim/dkim.h>
 #undef lint
 
 // DSPAM
 #define CONFIG_DEFAULT ""
 #define LOGDIR "~/"
-#include <libdspam.h>
-#include <mysql_drv.h>
+#include <dspam/libdspam.h>
+#include <dspam/mysql_drv.h>
 
 // Jansson
 #include <jansson.h>
@@ -97,7 +98,7 @@
 #include <jpeglib.h>
 
 // FreeType
-#include <ft2build.h>
+#include <freetype2/ft2build.h>
 #include FT_FREETYPE_H
 
 // UTF8

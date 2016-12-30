@@ -103,8 +103,8 @@ gd() {
 				&>> "$M_LOGS/gd.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
-			make &>> "$M_LOGS/gd.txt"; error
 			make --jobs=4 &>> "$M_LOGS/gd.txt"; error
+			make install &>> "$M_LOGS/gd.txt"; error
 		;;
 		gd-check)
 			cd "$M_SOURCES/gd"; error
@@ -624,6 +624,7 @@ dkim() {
 		dkim-prep)
 			cd "$M_SOURCES/dkim"; error
 			cat "$M_PATCHES/dkim/"opendkim.ticket226.patch | patch -p1 --verbose &>> "$M_LOGS/dkim.txt"; error
+			cat "$M_PATCHES/dkim/"opendkim_headers_2.10.3.patch | patch -p1 --verbose &>> "$M_LOGS/dkim.txt"; error
 		;;
 		dkim-build)
 			cd "$M_SOURCES/dkim"; error
@@ -842,6 +843,7 @@ dspam() {
 			fi
 
 			cat "$M_PATCHES/dspam/"dspam_version.patch | patch -p1 --verbose &>> "$M_LOGS/dspam.txt"; error
+			cat "$M_PATCHES/dspam/"dspam_headers_3.10.2.patch | patch -p1 --verbose &>> "$M_LOGS/dspam.txt"; error
 		;;
 		dspam-build)
 			cd "$M_SOURCES/dspam"; error

@@ -69,14 +69,16 @@ FILTERED_SRCFILES				= src/providers/dime/ed25519/test.c src/providers/dime/ed25
 PACKAGE_DEPENDENCIES			=  $(TOPDIR)/magmad.so $(MAGMA_STATIC) $(filter-out $(MAGMA_STATIC), $(MAGMA_CHECK_STATIC))
 
 # Bundled Dependency Include Paths
-INCDIR							= $(TOPDIR)/lib/sources
-MAGMA_INCDIRS					= spf2/src/include clamav/libclamav mysql/include openssl/include lzo/include xml2/include \
-                                  zlib bzip2 tokyocabinet memcached dkim/libopendkim dspam/src jansson/src gd png jpeg freetype/include \
-                                  utf8proc
+#INCDIR							= $(TOPDIR)/lib/sources
+#MAGMA_INCDIRS					= spf2/src/include clamav/libclamav mysql/include openssl/include lzo/include xml2/include \
+#                                  zlib bzip2 tokyocabinet memcached dkim/libopendkim dspam/src jansson/src gd png jpeg freetype/include \
+#                                  utf8proc
+INCDIR							= $(TOPDIR)/lib/local/include
+MAGMA_INCDIRS					= spf2/ mysql/ openssl/ lzo/ libxml2/ libmemcached/ opendkim/ dspam/ freetype2/
 
 MAGMA_CHECK_INCDIRS				= 
 
-MAGMA_CINCLUDES					= -Isrc -Isrc/providers $(addprefix -I,$(MAGMA_INCLUDE_ABSPATHS))
+MAGMA_CINCLUDES					= -Isrc -Isrc/providers -I$(INCDIR) $(addprefix -I,$(MAGMA_INCLUDE_ABSPATHS))
 DIME_CHECK_CINCLUDES			= $(MAGMA_CINCLUDES)
 MAGMA_CHECK_CINCLUDES			= -Icheck/magma -Ilib/local/include/ $(MAGMA_CINCLUDES) $(addprefix -I,$(MAGMA_CHECK_INCLUDE_ABSPATHS))
 DIME_CHECK_CPPINCLUDES			= -Icheck/dime -Ilib/sources/googtest/include/ -Ilib/sources/googtest/ -Ilib/sources/googtap/src/ $(MAGMA_CINCLUDES)

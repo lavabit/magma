@@ -7,7 +7,7 @@ index b105eef..4308111 100644
  endif
  libopendkim_includedir = $(includedir)/opendkim
 -libopendkim_include_HEADERS = dkim.h
-+libopendkim_include_HEADERS = dkim-internal.h dkim-types.h dkim-keys.h dkim-util.h dkim-test.h dkim.h
++libopendkim_include_HEADERS = ../build-config.h dkim-internal.h dkim-types.h dkim-keys.h dkim-util.h dkim-test.h dkim.h
  
  pkgconfigdir = $(libdir)/pkgconfig
  pkgconfig_DATA = opendkim.pc
@@ -20,7 +20,7 @@ index c2959e4..b839b11 100644
  @ALL_SYMBOLS_FALSE@libopendkim_la_DEPENDENCIES = symbols.map
  libopendkim_includedir = $(includedir)/opendkim
 -libopendkim_include_HEADERS = dkim.h
-+libopendkim_include_HEADERS = dkim-internal.h dkim-types.h dkim-keys.h dkim-util.h dkim-test.h dkim.h
++libopendkim_include_HEADERS = ../build-config.h dkim-internal.h dkim-types.h dkim-keys.h dkim-util.h dkim-test.h dkim.h
  pkgconfigdir = $(libdir)/pkgconfig
  pkgconfig_DATA = opendkim.pc
  DISTCLEANFILES = symbols.map *.gcno *.gcda

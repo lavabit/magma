@@ -20,14 +20,15 @@
 #include <arpa/nameser.h>
 
 // SPF
-#include <spf.h>
-#include <spf_dns_zone.h>
+#include <spf2/spf.h>
+#include <spf2/spf_dns_zone.h>
 
 // ClamAV
 #include <clamav.h>
 
 // MySQL
-#include <mysql.h>
+#include <mysql/mysql.h>
+#include <mysql/errmsg.h>
 
 // OpenSSL
 #include <openssl/conf.h>
@@ -75,14 +76,14 @@
 
 // DKIM
 #define lint
-#include <dkim.h>
+#include <opendkim/dkim.h>
 #undef lint
 
 // DSPAM
 #define CONFIG_DEFAULT ""
 #define LOGDIR "~/"
-#include <libdspam.h>
-#include <mysql_drv.h>
+#include <dspam/libdspam.h>
+#include <dspam/mysql_drv.h>
 
 // Jansson
 #include <jansson.h>
@@ -97,7 +98,7 @@
 #include <jpeglib.h>
 
 // FreeType
-#include <ft2build.h>
+#include <freetype2/ft2build.h>
 #include FT_FREETYPE_H
 
 // UTF8
@@ -164,20 +165,24 @@ extern DSPAM_CTX * (*dspam_create_d)(const char *username, const char *group, co
 
 //! DKIM
 /// Note that dkim_getsighdr_d is used by the library, so were using dkim_getsighdrx_d.
+/// Note that dkim_test_dns_put_d is only used by the verification unit test, to load public keys which may no
+/// longer be available on the public internet.
 extern DKIM_STAT (*dkim_eoh_d)(DKIM *dkim);
 extern void (*dkim_close_d)(DKIM_LIB *lib);
-extern DKIM_STAT (*dkim_free_d)(DKIM *dkim);
 extern uint32_t (*dkim_libversion_d)(void);
+extern DKIM_STAT (*dkim_free_d)(DKIM *dkim);
+extern char * (*dkim_geterror_d)(DKIM *dkim);
 extern DKIM_STAT (*dkim_eom_d)(DKIM *dkim, _Bool *testkey);
 extern const char * (*dkim_getresultstr_d)(DKIM_STAT result);
 extern DKIM_STAT (*dkim_body_d)(DKIM *dkim, u_char *buf, size_t len);
 extern DKIM_STAT (*dkim_header_d)(DKIM *dkim, u_char *hdr, size_t len);
+extern void (*dkim_mfree_d)(DKIM_LIB *libhandle, void *closure, void *ptr);
+extern DKIM_STAT (*dkim_chunk_d)(DKIM *dkim, unsigned char *chunkp, size_t len);
 extern DKIM_STAT (*dkim_getsighdrx_d)(DKIM *dkim, u_char *buf, size_t len, size_t initial);
+extern int (*dkim_test_dns_put_d)(DKIM *dkim, int class, int type, int prec, u_char *name, u_char *data);
 extern DKIM * (*dkim_verify_d)(DKIM_LIB *libhandle, const unsigned char *id, void *memclosure, DKIM_STAT *statp);
 extern DKIM_LIB * (*dkim_init_d)(void *(*mallocf)(void *closure, size_t nbytes), void (*freef)(void *closure, void *p));
 extern DKIM * (*dkim_sign_d)(DKIM_LIB *libhandle, const unsigned char *id, void *memclosure, const dkim_sigkey_t secretkey, const unsigned char *selector, const unsigned char *domain, dkim_canon_t hdr_canon_alg, dkim_canon_t body_canon_alg, dkim_alg_t sign_alg,	off_t length, DKIM_STAT *statp);
-extern DKIM_STAT (*dkim_chunk_d)(DKIM *dkim, unsigned char *chunkp, size_t len);
-extern char * (*dkim_geterror_d)(DKIM *dkim);
 
 //! FreeType
 extern FT_Error (*FT_Done_FreeType_d)(FT_Library library);

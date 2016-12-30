@@ -105,19 +105,15 @@ typedef struct {
 	stringer_t *username, *verification;
 	inx_t *aliases, *messages, *message_folders, *folders, *contacts;
 
+	// The symmetric realm keys.
+	struct {
+		stringer_t *mail;
+	} realm;
+
 	// The uesr signet and private keys.
 	struct {
-		stringer_t *signet, *private;
+		stringer_t *signet, *secret;
 	} keys;
-
-	// The different realms.
-	struct {
-
-		// The mail realm keys.
-		struct {
-			stringer_t *tag, *vector, *cipher;
-		} mail;
-	} realms;
 
 	struct {
 		uint64_t user, messages, folders, contacts, aliases;

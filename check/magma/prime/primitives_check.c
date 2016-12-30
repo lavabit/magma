@@ -14,7 +14,7 @@
 
 bool_t check_prime_org_keys_sthread(stringer_t *errmsg) {
 
-	prime_key_t *holder = NULL;
+	prime_t *holder = NULL;
 	stringer_t *packed = NULL, *key = MANAGEDBUF(64);
 
 	// Create a STACIE realm key.
@@ -115,7 +115,7 @@ bool_t check_prime_org_keys_sthread(stringer_t *errmsg) {
 
 bool_t check_prime_user_keys_sthread(stringer_t *errmsg) {
 
-	prime_key_t *holder = NULL;
+	prime_t *holder = NULL;
 	stringer_t *packed = NULL, *key = MANAGEDBUF(64);
 
 	// Create a STACIE realm key.
@@ -216,7 +216,7 @@ bool_t check_prime_user_keys_sthread(stringer_t *errmsg) {
 
 bool_t check_prime_parameters_sthread(stringer_t *errmsg) {
 
-	prime_key_t *holder = NULL;
+	prime_t *holder = NULL;
 
 	// Attempt allocation of a non-key type using the key allocation function.
 	if ((holder = prime_key_alloc(PRIME_ORG_SIGNET)) || (holder = prime_key_alloc(PRIME_USER_SIGNET)) || (holder = prime_key_alloc(PRIME_USER_SIGNING_REQUEST))) {

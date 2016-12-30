@@ -10,8 +10,8 @@
  *
  */
 
-#ifndef PRIME_PRIMITIVES_H
-#define PRIME_PRIMITIVES_H
+#ifndef PRIME_FORMATS_H
+#define PRIME_FORMATS_H
 
 #define PRIME_MAX_1_BYTE 255
 #define PRIME_MAX_2_BYTE 65535
@@ -58,6 +58,9 @@ typedef struct __attribute__ ((packed)) {
 	size_t remaining;
 	placer_t buffer;
 } prime_reader_t;
+
+#include "binary/binary.h"
+#include "armored/armored.h"
 
 /// unpack.c
 prime_object_t *  prime_unpack(stringer_t *data);

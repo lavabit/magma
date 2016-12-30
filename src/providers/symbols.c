@@ -77,6 +77,7 @@ DKIM_STAT (*dkim_eom_d)(DKIM *dkim, _Bool *testkey) = NULL;
 const char * (*dkim_getresultstr_d)(DKIM_STAT result) = NULL;
 DKIM_STAT (*dkim_body_d)(DKIM *dkim, u_char *buf, size_t len) = NULL;
 DKIM_STAT (*dkim_header_d)(DKIM *dkim, u_char *hdr, size_t len) = NULL;
+void (*dkim_mfree_d)(DKIM_LIB *libhandle, void *closure, void *ptr) = NULL;
 DKIM_STAT (*dkim_chunk_d)(DKIM *dkim, unsigned char *chunkp, size_t len) = NULL;
 DKIM_STAT (*dkim_getsighdrx_d)(DKIM *dkim, u_char *buf, size_t len, size_t initial) = NULL;
 int (*dkim_test_dns_put_d)(DKIM *dkim, int class, int type, int prec, u_char *name, u_char *data) = NULL;

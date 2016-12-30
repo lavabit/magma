@@ -10,6 +10,11 @@
  *
  */
 
+#include <opendkim/dkim-types.h>
+#include <opendkim/dkim-util.h>
+
+#undef __USE_GNU
+
 #include "magma_check.h"
 
 extern DKIM_LIB *dkim_engine;
@@ -22,8 +27,8 @@ bool_t check_dkim_verify_sthread(stringer_t *errmsg) {
 
 	DKIM *context;
 	DKIM_STAT status;
-	struct dkim_test_dns_data *td;
 	stringer_t *id = NULL, *data = NULL;
+	u_char *dns_query = NULL, *dns_reply = NULL;
 	uint32_t checked = 0, max = check_message_max();
 
 	//bazinga._domainkey.magmadaemon.com descriptive text
@@ -73,21 +78,24 @@ bool_t check_dkim_verify_sthread(stringer_t *errmsg) {
 
 				return false;
 			}
+			// Store a pointer to the test DNS record so we can clean it up later.
+			else if (context->dkim_dnstestt) {
+				dns_query = context->dkim_dnstestt->dns_query;
+				dns_reply = context->dkim_dnstestt->dns_reply;
+			}
 
 			// Handle the message as a chunk, then finalize the input by passing in a NULL chunk and calling the
 			// end-of-message function.
 			if ((status = dkim_chunk_d(context, st_data_get(data), st_length_get(data))) == DKIM_STAT_OK
 				&& (status = dkim_chunk_d(context, NULL, 0)) == DKIM_STAT_OK) {
-				status = dkim_eom(context, NULL);
+				status = dkim_eom_d(context, NULL);
 			}
 
-
-//			if (context->dkim_dnstestt->dns_query) {
-//				DKIM_FREE(context, context->dkim_dnstestt->dns_query);
-//				context->dkim_dnstestt->dns_query = NULL;
-//			}
-
+			// Cleanup the DKIM context.
 			dkim_free_d(context);
+
+			// Manually free the dns_query to avoid a memory leak when using hard coded public keys.
+			mm_cleanup(dns_query, dns_reply);
 
 			if (status != DKIM_STAT_OK) {
 				st_sprint(errmsg, "Found a DKIM signature but verification of its validity failed. { status = %s }",

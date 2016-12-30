@@ -177,6 +177,7 @@ extern DKIM_STAT (*dkim_eom_d)(DKIM *dkim, _Bool *testkey);
 extern const char * (*dkim_getresultstr_d)(DKIM_STAT result);
 extern DKIM_STAT (*dkim_body_d)(DKIM *dkim, u_char *buf, size_t len);
 extern DKIM_STAT (*dkim_header_d)(DKIM *dkim, u_char *hdr, size_t len);
+extern void (*dkim_mfree_d)(DKIM_LIB *libhandle, void *closure, void *ptr);
 extern DKIM_STAT (*dkim_chunk_d)(DKIM *dkim, unsigned char *chunkp, size_t len);
 extern DKIM_STAT (*dkim_getsighdrx_d)(DKIM *dkim, u_char *buf, size_t len, size_t initial);
 extern int (*dkim_test_dns_put_d)(DKIM *dkim, int class, int type, int prec, u_char *name, u_char *data);

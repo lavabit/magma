@@ -34,7 +34,7 @@ bool_t mm_sec_stats(size_t *total, size_t *bytes, size_t *items) __attribute__ (
 
 /// memory.c
 void *   mm_alloc(size_t len);
-void     mm_cleanup(void *block);
+void     mm_cleanup_variadic(ssize_t len, ...);
 void *   mm_copy(void *dst, const void *src, size_t len);
 void *   mm_dupe(void *block, size_t len);
 bool_t   mm_empty(void *block, size_t len);
@@ -54,5 +54,7 @@ void *   mm_wipe(void *block, size_t len);
 
 // Usage: void *buffer = MEMORYBUF(length);
 #define MEMORYBUF(l) (void *)&((chr_t []){ [ 0 ... l ] = 0 })
+
+#define mm_cleanup(...) mm_cleanup_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
 
 #endif

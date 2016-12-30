@@ -13,16 +13,25 @@
 #include "magma.h"
 
 /**
- * @brief	Performed a checked memory free.
+ * @brief	A checked cleanup function which can be used free a variable number memory buffers.
  * @see		mm_free
+ *
  * @param	block	the block of memory to be freed.
+ *
  * @return	This function returns no value.
  */
-void mm_cleanup(void *block) {
+void mm_cleanup_variadic(ssize_t len, ...) {
 
-	if (block) {
-		mm_free(block);
+	va_list list;
+	void *block = NULL;
+
+	va_start(list, len);
+
+	for (ssize_t i = 0; i < len; i++) {
+		block = va_arg(list, void *);
+		if (block) mm_free(block);
 	}
+	va_end(list);
 
 	return;
 }

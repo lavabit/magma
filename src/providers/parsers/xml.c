@@ -864,13 +864,16 @@ void xml_error(void *ctx, const chr_t *format, ...) {
 	if (ctx == NULL) { }
 
 	va_start(args, format);
-	mutex_lock(&log_mutex);
-
-	printf("(%s - %s - %i) = XML Library Error: ", __FILE__, __FUNCTION__, __LINE__);
-	vprintf(format, args);
-	fflush(stdout);
-
-	mutex_unlock(&log_mutex);
+	log_internal (__FILE__, __FUNCTION__, __LINE__, M_LOG_LINE_FEED_DISABLE | M_LOG_TIME_DISABLE | M_LOG_FILE_DISABLE |
+		M_LOG_LINE_DISABLE | M_LOG_FUNCTION_DISABLE | M_LOG_STACK_TRACE_DISABLE, "(%s - %s - %i) = XML Library Error: ",
+		__FILE__, __FUNCTION__, __LINE__);
+	log_internal (__FILE__, __FUNCTION__, __LINE__, M_LOG_LINE_FEED_DISABLE | M_LOG_TIME_DISABLE | M_LOG_FILE_DISABLE |
+		M_LOG_LINE_DISABLE | M_LOG_FUNCTION_DISABLE | M_LOG_STACK_TRACE_DISABLE, format, args);
+//	mutex_lock(&log_mutex);
+//	printf("(%s - %s - %i) = XML Library Error: ", __FILE__, __FUNCTION__, __LINE__);
+//	vprintf(format, args);
+//	fflush(stdout);
+//	mutex_unlock(&log_mutex);
 
 	va_end(args);
 

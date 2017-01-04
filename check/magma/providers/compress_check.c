@@ -83,7 +83,7 @@ void check_compress_mthread_cnv(check_compress_opt_t *opts) {
 	bool_t *result;
 
 	if (!thread_start() || !(result = mm_alloc(sizeof(bool_t)))) {
-		log_error("Unable to setup the thread context.");
+		log_unit("Unable to setup the thread context.");
 		pthread_exit(NULL);
 		return;
 	}

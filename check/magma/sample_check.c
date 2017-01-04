@@ -40,7 +40,7 @@ void check_component_test2_wrap(void) {
 	stringer_t *errmsg = MANAGEDBUF(128);
 
 	if (!thread_start()) {
-		log_error("Unable to setup the thread context.");
+		log_unit("Unable to setup the thread context.");
 		pthread_exit(st_dupe_opts(MANAGED_T | CONTIGUOUS | HEAP, NULLER("Thread startup error.")));
 		return;
 	}

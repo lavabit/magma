@@ -65,7 +65,7 @@ void check_rand_mthread_wrap(void) {
 	stringer_t *result = NULL;
 
 	if (!thread_start()) {
-		log_error("Unable to setup the thread context.");
+		log_unit("Unable to setup the thread context.");
 		pthread_exit(st_dupe(NULLER("Thread startup error.")));
 		return;
 	}

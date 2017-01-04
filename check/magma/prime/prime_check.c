@@ -97,6 +97,7 @@ START_TEST (check_prime_primitives_s) {
 
 	if (status()) result = check_prime_writers_sthread(errmsg);
 	if (status() && result) result = check_prime_unpacker_sthread(errmsg);
+	if (status() && result) result = check_prime_armor_sthread(errmsg);
 
 	log_test("PRIME / PRIMITIVES / SINGLE THREADED:", errmsg);
 	ck_assert_msg(result, st_char_get(errmsg));

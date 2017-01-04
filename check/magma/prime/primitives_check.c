@@ -396,3 +396,42 @@ bool_t check_prime_unpacker_sthread(stringer_t *errmsg) {
 
 	return true;
 }
+
+bool_t check_prime_armor_sthread(stringer_t *errmsg) {
+
+	prime_t *object = NULL;
+	stringer_t *binary = NULL, *encrypted = NULL, *pem_plain = NULL, *pem_encrypted = NULL, *protect = MANAGEDBUF(64);
+
+	log_enable();
+
+	// Create a random STACIE realm key.
+	rand_write(protect);
+
+	// Generate an org key.
+	if (!(object = prime_key_generate(PRIME_ORG_KEY)) || !(binary = prime_binary_get(object, MANAGEDBUF(256))) ||
+		!(pem_plain = prime_pem_wrap(binary, MANAGEDBUF(512))) || !(encrypted = prime_key_encrypted_get(protect, object, MANAGEDBUF(512))) ||
+		!(pem_encrypted = prime_pem_wrap(encrypted, MANAGEDBUF(512)))) {
+		st_sprint(errmsg, "Failed to encode an organizational key into the privacy enhanced message format.");
+		prime_free(object);
+		return false;
+	}
+	log_unit("%.*s", st_length_int(pem_plain), st_char_get(pem_plain));
+	log_unit("%.*s", st_length_int(pem_encrypted), st_char_get(pem_encrypted));
+
+	prime_free(object);
+
+	// Generate a user key.
+	if (!(object = prime_key_generate(PRIME_USER_KEY)) || !(binary = prime_binary_get(object, MANAGEDBUF(256))) ||
+		!(pem_plain = prime_pem_wrap(binary, MANAGEDBUF(512))) || !(encrypted = prime_key_encrypted_get(protect, object, MANAGEDBUF(512))) ||
+		!(pem_encrypted = prime_pem_wrap(encrypted, MANAGEDBUF(512)))) {
+		st_sprint(errmsg, "Failed to encode a user key into the privacy enhanced message format.");
+		prime_free(object);
+		return false;
+	}
+	log_unit("%.*s", st_length_int(pem_plain), st_char_get(pem_plain));
+	log_unit("%.*s", st_length_int(pem_encrypted), st_char_get(pem_encrypted));
+
+	prime_free(object);
+
+	return true;
+}

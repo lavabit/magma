@@ -14,9 +14,10 @@
 #define PRIME_AMORED_H
 
 /// pem.c
-stringer_t *  prime_pem_unwrap(stringer_t *pem);
-stringer_t *  prime_pem_wrap(stringer_t *object);
-
+stringer_t *  prime_pem_begin(prime_type_t type);
+stringer_t *  prime_pem_end(prime_type_t type);
+stringer_t *  prime_pem_unwrap(stringer_t *pem, stringer_t *output);
+stringer_t *  prime_pem_wrap(stringer_t *object, stringer_t *output);
 
 
 

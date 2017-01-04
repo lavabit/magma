@@ -400,7 +400,8 @@ bool_t check_prime_unpacker_sthread(stringer_t *errmsg) {
 bool_t check_prime_armor_sthread(stringer_t *errmsg) {
 
 	prime_t *object = NULL;
-	stringer_t *binary = NULL, *encrypted = NULL, *pem_plain = NULL, *pem_encrypted = NULL, *protect = MANAGEDBUF(64);
+	stringer_t *pem_plain = NULL, *pem_encrypted = NULL, *object_encrypted1 = NULL, *object_encrypted2 = NULL,
+		*binary1 = NULL, *binary2 = NULL, *protect = MANAGEDBUF(64);
 
 	log_enable();
 
@@ -408,9 +409,16 @@ bool_t check_prime_armor_sthread(stringer_t *errmsg) {
 	rand_write(protect);
 
 	// Generate an org key.
-	if (!(object = prime_key_generate(PRIME_ORG_KEY)) || !(binary = prime_binary_get(object, MANAGEDBUF(256))) ||
-		!(pem_plain = prime_pem_wrap(binary, MANAGEDBUF(512))) || !(encrypted = prime_key_encrypted_get(protect, object, MANAGEDBUF(512))) ||
-		!(pem_encrypted = prime_pem_wrap(encrypted, MANAGEDBUF(512)))) {
+	if (!(object = prime_key_generate(PRIME_ORG_KEY)) ||
+		!(binary1 = prime_binary_get(object, MANAGEDBUF(256))) ||
+		!(pem_plain = prime_pem_wrap(binary1, MANAGEDBUF(512))) ||
+		!(binary2 = prime_pem_unwrap(pem_plain, MANAGEDBUF(512))) ||
+		st_cmp_cs_eq(binary1, binary2) ||
+		!(object_encrypted1 = prime_key_encrypted_get(protect, object, MANAGEDBUF(512))) ||
+		!(pem_encrypted = prime_pem_wrap(object_encrypted1, MANAGEDBUF(512))) ||
+		!(object_encrypted2 =  prime_pem_unwrap(pem_encrypted, MANAGEDBUF(512))) ||
+		st_cmp_cs_eq(object_encrypted1, object_encrypted2)) {
+
 		st_sprint(errmsg, "Failed to encode an organizational key into the privacy enhanced message format.");
 		prime_free(object);
 		return false;
@@ -421,9 +429,16 @@ bool_t check_prime_armor_sthread(stringer_t *errmsg) {
 	prime_free(object);
 
 	// Generate a user key.
-	if (!(object = prime_key_generate(PRIME_USER_KEY)) || !(binary = prime_binary_get(object, MANAGEDBUF(256))) ||
-		!(pem_plain = prime_pem_wrap(binary, MANAGEDBUF(512))) || !(encrypted = prime_key_encrypted_get(protect, object, MANAGEDBUF(512))) ||
-		!(pem_encrypted = prime_pem_wrap(encrypted, MANAGEDBUF(512)))) {
+	if (!(object = prime_key_generate(PRIME_USER_KEY)) ||
+		!(binary1 = prime_binary_get(object, MANAGEDBUF(256))) ||
+		!(pem_plain = prime_pem_wrap(binary1, MANAGEDBUF(512))) ||
+		!(binary2 = prime_pem_unwrap(pem_plain, MANAGEDBUF(512))) ||
+		st_cmp_cs_eq(binary1, binary2) ||
+		!(object_encrypted1 = prime_key_encrypted_get(protect, object, MANAGEDBUF(512))) ||
+		!(pem_encrypted = prime_pem_wrap(object_encrypted1, MANAGEDBUF(512))) ||
+		!(object_encrypted2 =  prime_pem_unwrap(pem_encrypted, MANAGEDBUF(512))) ||
+		st_cmp_cs_eq(object_encrypted1, object_encrypted2)) {
+
 		st_sprint(errmsg, "Failed to encode a user key into the privacy enhanced message format.");
 		prime_free(object);
 		return false;

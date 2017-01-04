@@ -194,5 +194,76 @@ stringer_t * prime_pem_wrap(stringer_t *object, stringer_t *output) {
 
 stringer_t * prime_pem_unwrap(stringer_t *pem, stringer_t *output) {
 
-	return NULL;
+	int_t type = 0;
+	uint32_t crc = 0;
+	tok_state_t state;
+	stringer_t *big_endian_crc = NULL, *result = NULL;
+	placer_t line, body, checksum, begin = pl_null(), end = pl_null(), previous = pl_null();
+
+	tok_pop_init_st(&state, pem, '\n');
+
+	// Find the PEM heading, or "BEGIN" line. If the line starts with a "-" compare it against the list of known headings.
+	while (pl_empty(begin) && tok_pop(&state, &line) != -1 && !pl_empty(line)) {
+		line = pl_trim(line);
+		if (pl_starts_with_char(line, '-')) {
+			for (int_t i = 0; pl_empty(begin) && i < (sizeof(prime_pem_headings) / sizeof(stringer_t *)); i++) {
+				if (!st_cmp_cs_eq(prime_pem_headings[i], &line)) {
+					begin = pl_clone(line);
+					type = i;
+				}
+			}
+		}
+	}
+
+	// If we found a beginning line, search for the corresponding end line. Track the previous line so we can look for
+	// a checksum when we find the ending.
+	while (pl_empty(end) && !pl_empty(begin) && tok_pop(&state, &line) != -1 && !pl_empty(line)) {
+		line = pl_trim(line);
+		if (!st_cmp_cs_eq(prime_pem_endings[type], &line)) {
+			end = pl_clone(line);
+		}
+		else {
+			previous = pl_clone(line);
+		}
+	}
+
+	// If we don't find all the required pieces (BEGIN/END/Checksum)
+	if (pl_empty(begin) || pl_empty(end) || pl_empty(previous)) {
+		return NULL;
+	}
+	// Ensure the checksum line is syntactically valid.
+	/// LOW: We check the length, but we don't confirm that the 4 chars following the = are valid base64 chars.
+	else if (!pl_starts_with_char(previous, '=') || pl_length_get(previous) != 5) {
+		return NULL;
+	}
+
+	// Extract the checksum bytes.
+	checksum = pl_init(pl_data_get(previous) + 1, 4);
+
+	// Convert the checksum back into binary.
+	if (!(big_endian_crc = base64_decode(&checksum, MANAGEDBUF(4))) || !st_data_get(big_endian_crc)) {
+		return NULL;
+	}
+
+	// If necessary swap the crc byte order.
+#ifdef LITTLE_ENDIAN
+	((uchr_t *)&crc)[0] = st_uchar_get(big_endian_crc)[2];
+	((uchr_t *)&crc)[1] = st_uchar_get(big_endian_crc)[1];
+	((uchr_t *)&crc)[2] = st_uchar_get(big_endian_crc)[0];
+#else
+	((uchr_t *)&crc)[0] = st_uchar_get(big_endian_crc)[0];
+	((uchr_t *)&crc)[1] = st_uchar_get(big_endian_crc)[1];
+	((uchr_t *)&crc)[2] = st_uchar_get(big_endian_crc)[2];
+#endif
+
+	body = pl_init(pl_data_get(begin) + pl_length_get(begin), pl_data_get(previous) - (pl_data_get(begin) + pl_length_get(begin)));
+	if (!(result = base64_decode(&body, output))) {
+		return NULL;
+	}
+	else if (crc24_checksum(st_data_get(result), st_length_get(result)) != crc) {
+		if (!output) st_free(result);
+		return NULL;
+	}
+
+	return result;
 }

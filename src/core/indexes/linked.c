@@ -38,9 +38,9 @@ typedef struct {
  */
 void * linked_record_get_data(linked_record_t *record, size_t element) {
 
-	#ifdef MAGMA_PEDANTIC
+#ifdef MAGMA_PEDANTIC
 	if (!record) log_pedantic("The index pointer is invalid.");
-	#endif
+#endif
 
 	if (element != 0)	return NULL;
 	return record->data;
@@ -53,9 +53,9 @@ void * linked_record_get_data(linked_record_t *record, size_t element) {
  */
 multi_t linked_record_get_key(linked_record_t *record) {
 
-	#ifdef MAGMA_PEDANTIC
+#ifdef MAGMA_PEDANTIC
 	if (!record) log_pedantic("The index pointer is invalid.");
-	#endif
+#endif
 
 	if (!record)
 		return mt_get_null();
@@ -71,11 +71,11 @@ multi_t linked_record_get_key(linked_record_t *record) {
  */
 void linked_record_free(inx_t *index, linked_record_t *record) {
 
-	#ifdef MAGMA_PEDANTIC
+#ifdef MAGMA_PEDANTIC
 	if (!index) log_pedantic("The index pointer is invalid.");
 	if (!record) log_pedantic("The record pointer is invalid.");
 	//if (!(index->data_free))	log_pedantic("The function pointer is invalid.");
-	#endif
+#endif
 
 	if (!record) return;
 	if (index && index->data_free) index->data_free(record->data);

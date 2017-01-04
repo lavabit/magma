@@ -12,6 +12,8 @@
 
 #include "magma.h"
 
+/// TODO: Switch to always using the "_wrap" length function, which can then become base64_(en|de)coded_length().
+
 size_t base64_encoded_length_mod(size_t length) {
 
 	size_t result = 0, remainder = 0;
@@ -58,6 +60,57 @@ size_t base64_encoded_length(size_t length) {
 
 	// Finally return the output length, with one additional byte for the terminating NULL character, just in case.
     return result + 1;
+}
+
+/**
+ * @brief	Calculate the length of a binary buffer after being encoded with using base64.
+ *
+ * @note	If line wrapping is enabled, the output will assume a trailing end of line sequence.
+ *
+ * @param 	length	the length of the binary buffer.
+ * @param 	wrap	the maximum length of each line, or 0 to disable line wrapping.
+ * @param 	type	the line delimiter sequence being used.
+ *
+ * @return	the length of the encoded output.
+ */
+size_t base64_encoded_length_wrap(size_t length, size_t wrap, base64_wrap_t type) {
+
+	size_t result = 0, remainder = 0;
+
+	if (length <= 0) {
+		return 0;
+	}
+#ifdef MAGMA_PEDANTIC
+	else if (!wrap && type != BASE64_LINE_WRAP_NONE) {
+		log_pedantic("The line wrap length is 0, indicating that line wrapping is disabled, but the end of line type was still set.");
+	}
+	else if (wrap && type == BASE64_LINE_WRAP_NONE) {
+		log_pedantic("The line wrap length limiter is greater than 0, but the end of line type is none.");
+	}
+#endif
+
+	// If the input lenght isn't divisible by 3, find out how many extra bytes we have (potentially 1 or 2).
+	remainder = length % 3;
+
+	// This is the length of the base64 encoded data
+	result = (((length - remainder) / 3) * 4);
+
+	// We could have 1 or 2 extra bytes. If so, we'll need 4 extra bytes, 2 or 3 for the data, plus 1 or 2 for the padding. If we also
+	// end every base64 encoding with a new line, we'll need to add extra bytes.
+	result = remainder ? result + 4 : result;
+
+	// If the output will be wrapped, and the line feed type isn't set to none, add extra bytes for the new line characters.
+	if (wrap && type) {
+
+		// We'll add a trailing line wrap to the end, but only if the result isn't perfectly divisible by the line wrap length.
+		result = result % wrap ? result + type : result;
+
+		// Divide the output by the line wrap length, and then multiply the result by the length of the line wrap sequence.
+		result = result + (((result) / wrap) * type);
+	}
+
+	// Finally return the output length.
+    return result;
 }
 
 size_t base64_decoded_length_mod(size_t length) {
@@ -207,6 +260,148 @@ stringer_t * base64_encode(stringer_t *s, stringer_t *output) {
 	if (!output || st_valid_tracked(opts)) {
 		st_length_set(result, written);
 	}
+
+	return result;
+}
+
+/**
+ * @brief			Encode a binary buffer using base64, with a configurable line length, and terminating character.
+ *
+ * @param	s		the managed string to be base64 encoded.
+ * @param 	wrap	the maximum length of each line, or 0 to disable line wrapping.
+ * @param 	type	the line delimiter sequence being used.
+ *
+ * @param	output	a managed string to receive the encoded output; if passed as NULL, one will be allocated to the caller. * @return
+ */
+stringer_t * base64_encode_wrap(stringer_t *s, size_t wrap, base64_wrap_t type, stringer_t *output) {
+
+	uchr_t *p, *o;
+	int_t c1, c2, c3;
+	uint32_t opts = 0;
+	stringer_t *result;
+	size_t len, new_len, written = 0,  cur_line = 0;
+
+	if (output && !st_valid_destination((opts = *((uint32_t *)output)))) {
+		log_pedantic("An output string was supplied but it does not represent a buffer capable of holding the output.");
+		return NULL;
+	}
+	else if (st_empty_out(s, &p, &len)) {
+		log_pedantic("An empty string was passed in for encoding.");
+		return NULL;
+	}
+
+	new_len = base64_encoded_length_wrap(len, wrap, type);
+
+	// Make sure the output buffer is large enough or if output was passed in as NULL we'll attempt the allocation of our own buffer.
+	if ((result = output) && ((st_valid_avail(opts) && st_avail_get(output) < new_len) ||
+			(!st_valid_avail(opts) && st_length_get(output) < new_len))) {
+		log_pedantic("The output buffer supplied is not large enough to hold the result. {avail = %zu / required = %zu}",
+				st_valid_avail(opts) ? st_avail_get(output) : st_length_get(output), new_len);
+		return NULL;
+	}
+	else if (!output && !(result = st_alloc(new_len))) {
+		log_pedantic("Could not allocate a buffer large enough to hold encoded result. {requested = %zu}", new_len);
+		return NULL;
+	}
+
+	// Lets get setup.
+	o = st_data_get(result);
+
+	// This will process three bytes at a time.
+	for (size_t i = 0; i < len / 3; ++i) {
+
+		c1 = (*p++) & 0xff;
+		c2 = (*p++) & 0xff;
+		c3 = (*p++) & 0xff;
+
+		*o++ = mappings.base64.characters[c1 >> 2];
+		*o++ = mappings.base64.characters[((c1 << 4) | (c2 >> 4)) & 0x3f];
+		*o++ = mappings.base64.characters[((c2 << 2) | (c3 >> 6)) & 0x3f];
+		*o++ = mappings.base64.characters[c3 & 0x3f];
+
+		cur_line += 4;
+		written += 4;
+
+		// If we go over the line length.
+		if (wrap && type && cur_line >= wrap) {
+			if (type == BASE64_LINE_WRAP_LF) {
+				*o++ = '\n';
+				written += 1;
+			}
+			else if (type == BASE64_LINE_WRAP_CRLF) {
+				*o++ = '\r';
+				*o++ = '\n';
+				written += 2;
+			}
+			cur_line = 0;
+		}
+	}
+
+	// If necessary encode the remaining (1 or 2) characters.
+	if (len % 3) {
+		switch (len % 3) {
+			case 2:
+				c1 = (*p++) & 0xff;
+				c2 = (*p++) & 0xff;
+				*o++ = mappings.base64.characters[(c1 & 0xfc) >> 2];
+				*o++ = mappings.base64.characters[((c1 & 0x03) << 4) | ((c2 & 0xf0) >> 4)];
+				*o++ = mappings.base64.characters[((c2 & 0x0f) << 2)];
+				*o++ = '=';
+				written += 4;
+				break;
+			case 1:
+				c1 = (*p++) & 0xff;
+				*o++ = mappings.base64.characters[(c1 & 0xfc) >> 2];
+				*o++ = mappings.base64.characters[((c1 & 0x03) << 4)];
+				*o++ = '=';
+				*o++ = '=';
+				written += 4;
+				break;
+			default:
+				log_error("Switch statement did not execute correctly. This should never happen.");
+				break;
+		}
+
+		// If line wrapping is enabled, we'll add a trailing line feed.
+		if (wrap && type) {
+			if (type == BASE64_LINE_WRAP_LF) {
+				*o++ = '\n';
+				written += 1;
+			}
+			else if (type == BASE64_LINE_WRAP_CRLF) {
+				*o++ = '\r';
+				*o++ = '\n';
+				written += 2;
+			}
+		}
+	}
+
+	// If line wrapping is enabled, and the input is evenly divisible by 3, and the output isn't evenly divisible by the line
+	// wrap length, add a terminating line wrap.
+	else if (wrap && type && cur_line) {
+		if (type == BASE64_LINE_WRAP_LF) {
+			*o++ = '\n';
+			written += 1;
+		}
+		else if (type == BASE64_LINE_WRAP_CRLF) {
+			*o++ = '\r';
+			*o++ = '\n';
+			written += 2;
+		}
+	}
+
+	// If an output buffer was supplied that is capable of tracking the data length, or a managed string buffer was allocated
+	// update the length param.
+	if (!output || st_valid_tracked(opts)) {
+		st_length_set(result, written);
+	}
+
+#ifdef MAGMA_PEDANTIC
+	if (written != new_len) {
+		log_pedantic("The base64 encoded buffer length did not match the expected output length. { expected = %zu / actual = %zu }",
+			new_len, written);
+	}
+#endif
 
 	return result;
 }

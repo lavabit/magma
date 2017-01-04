@@ -779,9 +779,9 @@ int_t imap_parse_arguments(connection_t *con, chr_t **start, size_t *length) {
 		}
 		else {
 			for (inner = 0; inner < recursion; inner++) {
-				printf("\t");
+				log_internal (__FILE__, __FUNCTION__, __LINE__, M_LOG_LINE_FEED_DISABLE | M_LOG_TIME_DISABLE | M_LOG_FILE_DISABLE | M_LOG_LINE_DISABLE | M_LOG_FUNCTION_DISABLE | M_LOG_STACK_TRACE_DISABLE, "\t");
 			}
-			printf("%.*s\n", st_length_int(imap_get_st_ar(array, increment)), st_char_get(imap_get_st_ar(array, increment)));
+			log_internal (__FILE__, __FUNCTION__, __LINE__, M_LOG_LINE_FEED_DISABLE | M_LOG_TIME_DISABLE | M_LOG_FILE_DISABLE | M_LOG_LINE_DISABLE | M_LOG_FUNCTION_DISABLE | M_LOG_STACK_TRACE_DISABLE, "%.*s\n", st_length_int(imap_get_st_ar(array, increment)), st_char_get(imap_get_st_ar(array, increment)));
 		}
 	}
 
@@ -831,7 +831,7 @@ void imap_command_log_safe(stringer_t *line) {
 			log_info("%.*s", st_length_int(line), st_char_get(line));
 			return;
 		}
-			
+
 		i--;
 	}
 

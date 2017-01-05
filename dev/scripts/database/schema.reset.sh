@@ -13,6 +13,8 @@ BASE=`dirname $LINK`
 cd $BASE/../../../
 
 MAGMA_RES_SQL="res/sql/" 
+MAGMA_RES_TANKS="sandbox/storage/tanks/"
+MAGMA_RES_STORAGE="sandbox/storage/local/0/"
 
 case $# in
 	0) 
@@ -63,6 +65,16 @@ if [ ! -d $MAGMA_RES_SQL ]; then
 	exit 1
 fi
 
+if [ ! -d $MAGMA_RES_TANKS ]; then
+	echo "The storage tank directory appears to be missing. { path = $MAGMA_RES_TANKS }"
+	exit 1
+fi
+
+if [ ! -d $MAGMA_RES_STORAGE ]; then
+	echo "The local storage directory appears to be missing. { path = $MAGMA_RES_STORAGE }"
+	exit 1
+fi
+
 # Generate Start.sql from the user-provided Schema
 echo "DROP DATABASE IF EXISTS \`${MYSQL_SCHEMA}\`;
 CREATE DATABASE IF NOT EXISTS \`${MYSQL_SCHEMA}\`;
@@ -85,3 +97,15 @@ cat $MAGMA_RES_SQL/Start.sql \
 	$MAGMA_RES_SQL/Finish.sql \
 	$MAGMA_RES_SQL/Hostname.sql \
 | mysql --batch -u "${MYSQL_USER}" --password="${MYSQL_PASSWORD}"
+
+# Remove the storage tanks.
+rm --force "$MAGMA_RES_TANKS/system.data"
+rm --force "$MAGMA_RES_TANKS/tank.1.data"
+rm --force "$MAGMA_RES_TANKS/tank.2.data"
+rm --force "$MAGMA_RES_TANKS/tank.3.data"
+rm --force "$MAGMA_RES_TANKS/tank.4.data"
+
+# Remove the local storage folder.
+rm --recursive --force "$MAGMA_RES_STORAGE"
+
+

@@ -79,7 +79,7 @@ uint32_t crc24_final(uint32_t crc) {
 }
 
 /**
- * @brief	Update a 64-bit CRC value with a check of additional data.
+ * @brief	Update a 32-bit CRC value with a check of additional data.
  * @param	buffer	a pointer to the data to be checked.
  * @param	length	the length, in bytes, of the input buffer.
  * @param	crc		the previously computed CRC value, or 0 if this is the initial pass.
@@ -162,8 +162,7 @@ uint64_t crc64_checksum(void *buffer, size_t length) {
 	return crc64_update(buffer, length, 0);
 }
 
-const uint32_t crc24_table[1024] =
-{
+const uint32_t crc24_table[1024] = {
   0x00000000, 0x00fb4c86, 0x000dd58a, 0x00f6990c,
   0x00e1e693, 0x001aaa15, 0x00ec3319, 0x00177f9f,
   0x003981a1, 0x00c2cd27, 0x0034542b, 0x00cf18ad,

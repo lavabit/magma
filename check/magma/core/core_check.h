@@ -103,5 +103,6 @@ bool_t   check_bitwise_simple(void);
 /// checksum_check.c
 bool_t check_checksum_fuzz_sthread(void);
 bool_t check_checksum_fixed_sthread(void);
+bool_t check_checksum_loop_sthread(void);
 
 #endif

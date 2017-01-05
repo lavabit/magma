@@ -12,6 +12,13 @@
 
 #include "magma_check.h"
 
+void check_checksum_fillbuf(uchr_t *buf, size_t len, uchr_t pos) {
+  while (len--) {
+    *((uchr_t *)(buf++)) = pos++;
+  }
+  return;
+}
+
 bool_t check_checksum_fuzz_sthread(void) {
 
 	size_t len;
@@ -41,6 +48,81 @@ bool_t check_checksum_fuzz_sthread(void) {
 	}
 
 	return result;
+}
+
+/**
+ * @brief	Looped input checks using the crc24 and crc32 functions. Inspired by similar checks in libgcrypt.
+ * @return
+ */
+bool_t check_checksum_loop_sthread(void) {
+
+	uint32_t crc;
+	uchr_t buf[1000];
+	size_t left, startlen, piecelen;
+
+	// Loop test for crc32 using 1m "a" chars.
+	crc = 0;
+	for (int_t i = 0; i < 1000000; i++) crc = crc32_update("a", 1, crc);
+	if (crc != 0xdc25bfbc) return false;
+
+	// Loop test for crc24 using 1m "a" chars.
+	crc = crc24_init();
+	for (int_t i = 0; i < 1000000; i++) crc = crc24_update("a", 1, crc);
+	if (crc24_final(crc) != 0xa5cb6b) return false;
+
+	// Loop test for crc32 using 1m chars in an ascending sequence.
+	crc = 0;
+	startlen = 1;
+	left = 1000 * 1000;
+	piecelen = startlen;
+	for (int_t i = 1; i <= 1000 && left > 0; i++) {
+		piecelen = i;
+		if (piecelen > sizeof(buf)) piecelen = sizeof(buf);
+		if (piecelen > left) piecelen = left;
+		check_checksum_fillbuf(buf, piecelen, 1000 * 1000 - left);
+		crc = crc32_update(buf, piecelen, crc);
+		left -= piecelen;
+	}
+
+	while (left > 0) {
+		if (piecelen > sizeof(buf)) piecelen = sizeof(buf);
+		if (piecelen > left) piecelen = left;
+		check_checksum_fillbuf(buf, piecelen, 1000 * 1000 - left);
+		crc = crc32_update(buf, piecelen, crc);
+		left -= piecelen;
+		if (piecelen == sizeof(buf)) piecelen = ++startlen;
+		else piecelen = piecelen * 2 - ((piecelen != startlen) ? startlen : 0);
+	}
+
+	if (crc != 0x6182291b) return false;
+
+	// Loop test for crc24 using 1m chars in an ascending sequence.
+	startlen = 1;
+	crc = crc24_init();
+	left = 1000 * 1000;
+	piecelen = startlen;
+	for (int_t i = 1; i <= 1000 && left > 0; i++) {
+		piecelen = i;
+		if (piecelen > sizeof(buf)) piecelen = sizeof(buf);
+		if (piecelen > left) piecelen = left;
+		check_checksum_fillbuf(buf, piecelen, 1000 * 1000 - left);
+		crc = crc24_update(buf, piecelen, crc);
+		left -= piecelen;
+	}
+
+	while (left > 0) {
+		if (piecelen > sizeof(buf)) piecelen = sizeof(buf);
+		if (piecelen > left) piecelen = left;
+		check_checksum_fillbuf(buf, piecelen, 1000 * 1000 - left);
+		crc = crc24_update(buf, piecelen, crc);
+		left -= piecelen;
+		if (piecelen == sizeof(buf)) piecelen = ++startlen;
+		else piecelen = piecelen * 2 - ((piecelen != startlen) ? startlen : 0);
+	}
+
+	if (crc24_final(crc) != 0x7f6703) return false;
+
+	return true;
 }
 
 bool_t check_checksum_fixed_sthread(void) {
@@ -92,44 +174,20 @@ bool_t check_checksum_fixed_sthread(void) {
 	st_cleanup(inputs[0]);
 	st_cleanup(inputs[1]);
 
+	if (crc32_checksum("", 0) != 0x00000000 ||
+		crc32_checksum("foo", 3) != 0x8c736521 ||
+		crc32_checksum("123456789", 9) != 0xcbf43926) {
+		result = false;
+	}
+
 	if (crc24_final(crc24_update("", 0, crc24_init())) != 0xb704ce ||
 		crc24_final(crc24_update("foo", 3, crc24_init())) != 0x4fc255 ||
 		crc24_final(crc24_update("123456789", 9, crc24_init())) != 0x21cf02 ||
-		crc24_final(crc24_update("!", 1, crc24_init())) != 0xa5cb6b || // Why?
-		crc24_final(crc24_update("?", 1, crc24_init())) != 0x7f6703 || // Why?
 		crc24_checksum("", 0) != 0xb704ce ||
 		crc24_checksum("foo", 3) != 0x4fc255 ||
-		crc24_checksum("123456789", 9) != 0x21cf02 ||
-		crc24_checksum("!", 1) != 0xa5cb6b || // Why?
-		crc24_checksum("?", 1) != 0x7f6703) { // Why?
-
+		crc24_checksum("123456789", 9) != 0x21cf02) {
 		result = false;
 	}
 
 	return result;
 }
-
-
-
-/*
-		char c[3];
-		c[0] = ((uchr_t *)&comp)[2];
-		c[1] = ((uchr_t *)&comp)[1];
-		c[2] = ((uchr_t *)&comp)[0];
-
-		stringer_t *p = base64_encode(PLACER(&c, 3), NULL);
-		log_unit("{ njUN = %.*s }\n", st_length_int(p) - 2, st_char_get(p));
-
-	crc24 ref = crc_octets(st_data_get(input), st_length_get(input));
-	uint32_t comp = hash_crc24(st_data_get(input), st_length_get(input));
-	stringer_t *p = base64_encode(PLACER((unsigned char *)&ref + 1, 3), NULL),
-		*q = base64_encode(PLACER((unsigned char *)&comp, 3), NULL);
-
-	//log_unit("{ KpMs = %.*s = %.*s }", st_length_int(p), st_char_get(p), st_length_int(q), st_char_get(q));
-	log_unit("{ njUN = %.*s = %.*s }", st_length_int(p), st_char_get(p), st_length_int(q), st_char_get(q));
-	st_free(p);
-	st_free(q);
-
-*/
-
-

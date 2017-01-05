@@ -758,6 +758,9 @@ START_TEST (check_checksum)
 		else if (status() && !check_checksum_fixed_sthread()) {
 			errmsg = NULLER("Checksum output failed to match the expected value.");
 		}
+		else if (status() && !check_checksum_loop_sthread()) {
+			errmsg = NULLER("Checksum output failed to match the expected value.");
+		}
 
 		log_test("CORE / MEMORY / CHECKSUMS / SINGLE THREADED:", errmsg);
 		fail_unless(!errmsg, st_char_get(errmsg));

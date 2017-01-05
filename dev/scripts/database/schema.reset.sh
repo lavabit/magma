@@ -17,9 +17,9 @@ MAGMA_RES_SQL="res/sql/"
 case $# in
 	0) 
     	echo "Using the default sandbox values for the MySQL username, password and schema name."
-		MYSQL_USER="mytool"
-		MYSQL_PASSWORD="aComplex1"
-		MYSQL_SCHEMA="Lavabit"
+		MYSQL_USER=${MYSQL_USER:-"mytool"}
+		MYSQL_PASSWORD=${MYSQL_PASSWORD:-"aComplex1"}
+		MYSQL_SCHEMA=${MYSQL_SCHEMA:-"Lavabit"}
 	;;
 	*!3*)
 		echo "Initialize the MySQL database used by the magma daemon."
@@ -84,4 +84,4 @@ cat $MAGMA_RES_SQL/Start.sql \
 	$MAGMA_RES_SQL/Migration.sql \
 	$MAGMA_RES_SQL/Finish.sql \
 	$MAGMA_RES_SQL/Hostname.sql \
-	| mysql --batch -u ${MYSQL_USER} --password=${MYSQL_PASSWORD}
+| mysql --batch -u "${MYSQL_USER}" --password="${MYSQL_PASSWORD}"

@@ -95,6 +95,7 @@ typedef struct {
 
 /// prime.c
 prime_t *     prime_alloc(prime_type_t type, prime_flags_t flags);
+void          prime_cleanup(prime_t *object);
 void          prime_free(prime_t *object);
 stringer_t *  prime_get(prime_t *object, prime_encoding_t encoding, stringer_t *output);
 prime_t *     prime_key_decrypt(stringer_t *key, stringer_t *object, prime_encoding_t encoding, prime_flags_t flags);

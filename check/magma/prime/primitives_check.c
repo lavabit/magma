@@ -16,7 +16,7 @@ bool_t check_prime_org_keys_sthread(stringer_t *errmsg) {
 
 	prime_t *holder = NULL;
 	stringer_t *packed = NULL, *key = MANAGEDBUF(64);
-log_enable();
+
 	// Create a STACIE realm key.
 	rand_write(key);
 
@@ -401,54 +401,124 @@ bool_t check_prime_unpacker_sthread(stringer_t *errmsg) {
 
 bool_t check_prime_armor_sthread(stringer_t *errmsg) {
 
-	prime_t *object = NULL;
-	stringer_t *pem_plain = NULL, *pem_encrypted = NULL, *object_encrypted1 = NULL, *object_encrypted2 = NULL,
-		*binary1 = NULL, *binary2 = NULL, *protect = MANAGEDBUF(64);
-
-	log_enable();
+	prime_t *object1 = NULL, *object2 = NULL, *object3 = NULL;
+	stringer_t *pem1 = NULL, *pem2 = NULL, *pem_encrypted1 = NULL, *pem_encrypted2 = NULL,
+		*object_encrypted1 = NULL, *object_encrypted2 = NULL, *object_encrypted3 = NULL,
+		*binary1 = NULL, *binary2 = NULL, *binary3 = NULL,
+		*protect = MANAGEDBUF(64);
 
 	// Create a random STACIE realm key.
 	rand_write(protect);
 
 	// Generate an org key.
-	if (!(object = prime_key_generate(PRIME_ORG_KEY)) ||
-		!(binary1 = prime_get(object, BINARY, MANAGEDBUF(256))) ||
-		!(pem_plain = prime_pem_wrap(binary1, MANAGEDBUF(512))) ||
-		!(binary2 = prime_pem_unwrap(pem_plain, MANAGEDBUF(512))) ||
+	if (!(object1 = prime_key_generate(PRIME_ORG_KEY)) ||
+		!(binary1 = prime_get(object1, BINARY, MANAGEDBUF(256))) ||
+		!(pem1 = prime_get(object1, ARMORED, MANAGEDBUF(512))) ||
+		!(pem2 = prime_pem_wrap(binary1, MANAGEDBUF(512))) ||
+		!(binary2 = prime_pem_unwrap(pem1, MANAGEDBUF(512))) ||
+		!(object2 = prime_set(pem2, ARMORED, NONE)) ||
+		!(binary3 = prime_get(object2, BINARY, MANAGEDBUF(256))) ||
+		st_cmp_cs_eq(pem1, pem2) ||
 		st_cmp_cs_eq(binary1, binary2) ||
-		!(object_encrypted1 = prime_key_encrypt(protect, object, BINARY, MANAGEDBUF(512))) ||
-		!(pem_encrypted = prime_pem_wrap(object_encrypted1, MANAGEDBUF(512))) ||
-		!(object_encrypted2 =  prime_pem_unwrap(pem_encrypted, MANAGEDBUF(512))) ||
-		st_cmp_cs_eq(object_encrypted1, object_encrypted2)) {
+		st_cmp_cs_eq(binary1, binary3)) {
 
-		st_sprint(errmsg, "Failed to encode an organizational key into the privacy enhanced message format.");
-		prime_free(object);
+		st_sprint(errmsg, "An error occurred while trying to armor an organizational key.");
+		prime_cleanup(object1);
+		prime_cleanup(object2);
 		return false;
 	}
-	log_unit("%.*s", st_length_int(pem_plain), st_char_get(pem_plain));
-	log_unit("%.*s", st_length_int(pem_encrypted), st_char_get(pem_encrypted));
 
-	prime_free(object);
+	prime_free(object2);
+	object2 = NULL;
+
+	if (!(object_encrypted1 = prime_key_encrypt(protect, object1, BINARY, MANAGEDBUF(512))) ||
+		!(pem_encrypted1 = prime_pem_wrap(object_encrypted1, MANAGEDBUF(512))) ||
+		!(object_encrypted2 =  prime_pem_unwrap(pem_encrypted1, MANAGEDBUF(512))) ||
+
+		!(pem_encrypted2 = prime_key_encrypt(protect, object1, ARMORED, MANAGEDBUF(512))) ||
+		!(object2 = prime_key_decrypt(protect, pem_encrypted2, ARMORED, NONE)) ||
+		!(binary2 = prime_get(object2, BINARY, MANAGEDBUF(256))) ||
+
+		!(object_encrypted3 =  prime_pem_unwrap(pem_encrypted2, MANAGEDBUF(512))) ||
+		!(object3 = prime_key_decrypt(protect, object_encrypted3, BINARY, NONE)) ||
+		!(binary3 = prime_get(object3, BINARY, MANAGEDBUF(256))) ||
+
+		st_cmp_cs_eq(object_encrypted1, object_encrypted2) ||
+		st_cmp_cs_eq(binary1, binary2) ||
+		st_cmp_cs_eq(binary1, binary3)) {
+
+		st_sprint(errmsg, "An error occurred while trying to armor an encrypted organizational key.");
+		prime_free(object1);
+		prime_cleanup(object2);
+		prime_cleanup(object3);
+		return false;
+	}
+
+	prime_free(object1);
+	prime_free(object2);
+	prime_free(object3);
+
+	object1 = NULL;
+	object2 = NULL;
+	object3 = NULL;
+
+//	log_unit("%.*s", st_length_int(pem1), st_char_get(pem1));
+//	log_unit("%.*s", st_length_int(pem_encrypted1), st_char_get(pem_encrypted1));
 
 	// Generate a user key.
-	if (!(object = prime_key_generate(PRIME_USER_KEY)) ||
-		!(binary1 = prime_get(object, BINARY, MANAGEDBUF(256))) ||
-		!(pem_plain = prime_pem_wrap(binary1, MANAGEDBUF(512))) ||
-		!(binary2 = prime_pem_unwrap(pem_plain, MANAGEDBUF(512))) ||
+	if (!(object1 = prime_key_generate(PRIME_USER_KEY)) ||
+		!(binary1 = prime_get(object1, BINARY, MANAGEDBUF(256))) ||
+		!(pem1 = prime_get(object1, ARMORED, MANAGEDBUF(512))) ||
+		!(pem2 = prime_pem_wrap(binary1, MANAGEDBUF(512))) ||
+		!(binary2 = prime_pem_unwrap(pem1, MANAGEDBUF(512))) ||
+		!(object2 = prime_set(pem2, ARMORED, NONE)) ||
+		!(binary3 = prime_get(object2, BINARY, MANAGEDBUF(256))) ||
+		st_cmp_cs_eq(pem1, pem2) ||
 		st_cmp_cs_eq(binary1, binary2) ||
-		!(object_encrypted1 = prime_key_encrypt(protect, object, BINARY, MANAGEDBUF(512))) ||
-		!(pem_encrypted = prime_pem_wrap(object_encrypted1, MANAGEDBUF(512))) ||
-		!(object_encrypted2 =  prime_pem_unwrap(pem_encrypted, MANAGEDBUF(512))) ||
-		st_cmp_cs_eq(object_encrypted1, object_encrypted2)) {
+		st_cmp_cs_eq(binary1, binary3)) {
 
-		st_sprint(errmsg, "Failed to encode a user key into the privacy enhanced message format.");
-		prime_free(object);
+		st_sprint(errmsg, "An error occurred while trying to armor a user key.");
+		prime_cleanup(object1);
+		prime_cleanup(object2);
 		return false;
 	}
-	log_unit("%.*s", st_length_int(pem_plain), st_char_get(pem_plain));
-	log_unit("%.*s", st_length_int(pem_encrypted), st_char_get(pem_encrypted));
 
-	prime_free(object);
+	prime_free(object2);
+	object2 = NULL;
+
+	if (!(object_encrypted1 = prime_key_encrypt(protect, object1, BINARY, MANAGEDBUF(512))) ||
+		!(pem_encrypted1 = prime_pem_wrap(object_encrypted1, MANAGEDBUF(512))) ||
+		!(object_encrypted2 =  prime_pem_unwrap(pem_encrypted1, MANAGEDBUF(512))) ||
+
+		!(pem_encrypted2 = prime_key_encrypt(protect, object1, ARMORED, MANAGEDBUF(512))) ||
+		!(object2 = prime_key_decrypt(protect, pem_encrypted2, ARMORED, NONE)) ||
+		!(binary2 = prime_get(object2, BINARY, MANAGEDBUF(256))) ||
+
+		!(object_encrypted3 =  prime_pem_unwrap(pem_encrypted2, MANAGEDBUF(512))) ||
+		!(object3 = prime_key_decrypt(protect, object_encrypted3, BINARY, NONE)) ||
+		!(binary3 = prime_get(object3, BINARY, MANAGEDBUF(256))) ||
+
+		st_cmp_cs_eq(object_encrypted1, object_encrypted2) ||
+		st_cmp_cs_eq(binary1, binary2) ||
+		st_cmp_cs_eq(binary1, binary3)) {
+
+		st_sprint(errmsg, "An error occurred while trying to armor an encrypted user key.");
+		prime_free(object1);
+		prime_cleanup(object2);
+		prime_cleanup(object3);
+		return false;
+	}
+
+	prime_free(object1);
+	prime_free(object2);
+	prime_free(object3);
+
+	object1 = NULL;
+	object2 = NULL;
+	object3 = NULL;
+
+//	log_unit("%.*s", st_length_int(pem1), st_char_get(pem1));
+//	log_unit("%.*s", st_length_int(pem_encrypted1), st_char_get(pem_encrypted1));
 
 	return true;
 }

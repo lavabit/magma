@@ -86,7 +86,19 @@ void prime_free(prime_t *object) {
 			mm_free(object);
 		}
 	}
+#ifdef MAGMA_PEDANTIC
+	else {
+		log_pedantic("An invalid PRIME object pointer was passed to the free function.");
+	}
+#endif
 
+	return;
+}
+
+void prime_cleanup(prime_t *object) {
+	if (object) {
+		prime_free(object);
+	}
 	return;
 }
 
@@ -148,10 +160,10 @@ stringer_t * prime_get(prime_t *object, prime_encoding_t encoding, stringer_t *o
 
 	// Switch statement to call the appropriate allocator.
 	switch (object->type) {
-		case (PRIME_ORG_KEY):
+		case PRIME_ORG_KEY:
 			result = org_key_get(object->org, output);
 			break;
-		case (PRIME_USER_KEY):
+		case PRIME_USER_KEY:
 			result = user_key_get(object->user, output);
 			break;
 		default:
@@ -239,10 +251,10 @@ prime_t * prime_set(stringer_t *object, prime_encoding_t encoding, prime_flags_t
 
 	// Switch statement to call the appropriate allocator.
 	switch (type) {
-		case (PRIME_ORG_KEY):
+		case PRIME_ORG_KEY:
 			result->org = org_key_set(binary);
 			break;
-		case (PRIME_USER_KEY):
+		case PRIME_USER_KEY:
 			result->user = user_key_set(binary);
 			break;
 		default:
@@ -277,11 +289,11 @@ prime_t * prime_key_generate(prime_type_t type) {
 
 	// Switch statement to call the appropriate allocator.
 	switch (type) {
-		case (PRIME_ORG_KEY):
+		case PRIME_ORG_KEY:
 			result->type = PRIME_ORG_KEY;
 			result->org = org_key_generate();
 			break;
-		case (PRIME_USER_KEY):
+		case PRIME_USER_KEY:
 			result->type = PRIME_USER_KEY;
 			result->user = user_key_generate();
 			break;
@@ -311,10 +323,10 @@ stringer_t * prime_key_encrypt(stringer_t *key, prime_t *object, prime_encoding_
 
 	// Switch statement to call the appropriate allocator.
 	switch (object->type) {
-		case (PRIME_ORG_KEY):
+		case PRIME_ORG_KEY:
 			result = org_encrypted_key_get(key, object->org, output);
 			break;
-		case (PRIME_USER_KEY):
+		case PRIME_USER_KEY:
 			result = user_encrypted_key_get(key, object->user, output);
 			break;
 		default:
@@ -395,10 +407,10 @@ prime_t * prime_key_decrypt(stringer_t *key, stringer_t *object, prime_encoding_
 
 	// Translate the support encrypted object types into their unencrypted equivalent.
 	switch (type) {
-		case (PRIME_ORG_KEY_ENCRYPTED):
+		case PRIME_ORG_KEY_ENCRYPTED:
 			type = PRIME_ORG_KEY;
 			break;
-		case (PRIME_USER_KEY_ENCRYPTED):
+		case PRIME_USER_KEY_ENCRYPTED:
 			type = PRIME_USER_KEY;
 			break;
 		default:
@@ -418,10 +430,10 @@ prime_t * prime_key_decrypt(stringer_t *key, stringer_t *object, prime_encoding_
 
 	// Switch statement to call the appropriate allocator.
 	switch (type) {
-		case (PRIME_ORG_KEY):
+		case PRIME_ORG_KEY:
 			result->org = org_encrypted_key_set(key, binary);
 			break;
-		case (PRIME_USER_KEY):
+		case PRIME_USER_KEY:
 			result->user = user_encrypted_key_set(key, binary);
 			break;
 		default:

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>magma.distribution</name>
+	<name>magma</name>
 	<comment></comment>
 	<projects>
 		<project>magma.so</project>

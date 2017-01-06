@@ -431,18 +431,16 @@ bool_t check_prime_armor_sthread(stringer_t *errmsg) {
 	prime_free(object2);
 	object2 = NULL;
 
+	// Encrypt/decrypt armor/dearmor an org key.
 	if (!(object_encrypted1 = prime_key_encrypt(protect, object1, BINARY, MANAGEDBUF(512))) ||
 		!(pem_encrypted1 = prime_pem_wrap(object_encrypted1, MANAGEDBUF(512))) ||
 		!(object_encrypted2 =  prime_pem_unwrap(pem_encrypted1, MANAGEDBUF(512))) ||
-
 		!(pem_encrypted2 = prime_key_encrypt(protect, object1, ARMORED, MANAGEDBUF(512))) ||
 		!(object2 = prime_key_decrypt(protect, pem_encrypted2, ARMORED, NONE)) ||
 		!(binary2 = prime_get(object2, BINARY, MANAGEDBUF(256))) ||
-
 		!(object_encrypted3 =  prime_pem_unwrap(pem_encrypted2, MANAGEDBUF(512))) ||
 		!(object3 = prime_key_decrypt(protect, object_encrypted3, BINARY, NONE)) ||
 		!(binary3 = prime_get(object3, BINARY, MANAGEDBUF(256))) ||
-
 		st_cmp_cs_eq(object_encrypted1, object_encrypted2) ||
 		st_cmp_cs_eq(binary1, binary2) ||
 		st_cmp_cs_eq(binary1, binary3)) {
@@ -486,18 +484,16 @@ bool_t check_prime_armor_sthread(stringer_t *errmsg) {
 	prime_free(object2);
 	object2 = NULL;
 
+	// Encrypt/decrypt armor/dearmor a user key.
 	if (!(object_encrypted1 = prime_key_encrypt(protect, object1, BINARY, MANAGEDBUF(512))) ||
 		!(pem_encrypted1 = prime_pem_wrap(object_encrypted1, MANAGEDBUF(512))) ||
 		!(object_encrypted2 =  prime_pem_unwrap(pem_encrypted1, MANAGEDBUF(512))) ||
-
 		!(pem_encrypted2 = prime_key_encrypt(protect, object1, ARMORED, MANAGEDBUF(512))) ||
 		!(object2 = prime_key_decrypt(protect, pem_encrypted2, ARMORED, NONE)) ||
 		!(binary2 = prime_get(object2, BINARY, MANAGEDBUF(256))) ||
-
 		!(object_encrypted3 =  prime_pem_unwrap(pem_encrypted2, MANAGEDBUF(512))) ||
 		!(object3 = prime_key_decrypt(protect, object_encrypted3, BINARY, NONE)) ||
 		!(binary3 = prime_get(object3, BINARY, MANAGEDBUF(256))) ||
-
 		st_cmp_cs_eq(object_encrypted1, object_encrypted2) ||
 		st_cmp_cs_eq(binary1, binary2) ||
 		st_cmp_cs_eq(binary1, binary3)) {

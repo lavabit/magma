@@ -50,7 +50,7 @@ bool_t check_prime_org_keys_sthread(stringer_t *errmsg) {
 	}
 
 	// Encrypt the org key.
-	else if (!(packed = prime_key_encrypted_get(key, holder, MANAGEDBUF(256)))) {
+	else if (!(packed = prime_key_encrypt(key, holder, BINARY, MANAGEDBUF(256)))) {
 		st_sprint(errmsg, "Organizational key encryption failed.");
 		prime_free(holder);
 		return false;
@@ -59,7 +59,7 @@ bool_t check_prime_org_keys_sthread(stringer_t *errmsg) {
 	prime_free(holder);
 
 	// Decrypt the org key.
-	if (!(holder = prime_key_encrypted_set(key, packed))) {
+	if (!(holder = prime_key_decrypt(key, packed, BINARY, NONE))) {
 		st_sprint(errmsg, "Encrypted organizational key parsing failed.");
 		return false;
 	}
@@ -92,7 +92,7 @@ bool_t check_prime_org_keys_sthread(stringer_t *errmsg) {
 	st_free(packed);
 
 	// Encrypt the org key.
-	if (!(packed = prime_key_encrypted_get(key, holder, NULL))) {
+	if (!(packed = prime_key_encrypt(key, holder, BINARY, NULL))) {
 		st_sprint(errmsg, "Organizational key encryption failed.");
 		prime_free(holder);
 		return false;
@@ -101,7 +101,7 @@ bool_t check_prime_org_keys_sthread(stringer_t *errmsg) {
 	prime_free(holder);
 
 	// Decrypt the org key.
-	if (!(holder = prime_key_encrypted_set(key, packed))) {
+	if (!(holder = prime_key_decrypt(key, packed, BINARY, NONE))) {
 		st_sprint(errmsg, "Encrypted organizational key parsing failed.");
 		st_free(packed);
 		return false;
@@ -151,7 +151,7 @@ bool_t check_prime_user_keys_sthread(stringer_t *errmsg) {
 	}
 
 	// Encrypt the user key.
-	else if (!(packed = prime_key_encrypted_get(key, holder, MANAGEDBUF(256)))) {
+	else if (!(packed = prime_key_encrypt(key, holder, BINARY, MANAGEDBUF(256)))) {
 		st_sprint(errmsg, "User key encryption failed.");
 		prime_free(holder);
 		return false;
@@ -160,7 +160,7 @@ bool_t check_prime_user_keys_sthread(stringer_t *errmsg) {
 	prime_free(holder);
 
 	// Decrypt the user key.
-	if (!(holder = prime_key_encrypted_set(key, packed))) {
+	if (!(holder = prime_key_decrypt(key, packed, BINARY, NONE))) {
 		st_sprint(errmsg, "Encrypted user key parsing failed.");
 		return false;
 	}
@@ -193,7 +193,7 @@ bool_t check_prime_user_keys_sthread(stringer_t *errmsg) {
 	st_free(packed);
 
 	// Encrypt the user key.
-	if (!(packed = prime_key_encrypted_get(key, holder, NULL))) {
+	if (!(packed = prime_key_encrypt(key, holder, BINARY, NULL))) {
 		st_sprint(errmsg, "User key encryption failed.");
 		prime_free(holder);
 		return false;
@@ -202,7 +202,7 @@ bool_t check_prime_user_keys_sthread(stringer_t *errmsg) {
 	prime_free(holder);
 
 	// Decrypt the user key.
-	if (!(holder = prime_key_encrypted_set(key, packed))) {
+	if (!(holder = prime_key_decrypt(key, packed, BINARY, NONE))) {
 		st_sprint(errmsg, "Encrypted user key parsing failed.");
 		st_free(packed);
 		return false;
@@ -416,7 +416,7 @@ bool_t check_prime_armor_sthread(stringer_t *errmsg) {
 		!(pem_plain = prime_pem_wrap(binary1, MANAGEDBUF(512))) ||
 		!(binary2 = prime_pem_unwrap(pem_plain, MANAGEDBUF(512))) ||
 		st_cmp_cs_eq(binary1, binary2) ||
-		!(object_encrypted1 = prime_key_encrypted_get(protect, object, MANAGEDBUF(512))) ||
+		!(object_encrypted1 = prime_key_encrypt(protect, object, BINARY, MANAGEDBUF(512))) ||
 		!(pem_encrypted = prime_pem_wrap(object_encrypted1, MANAGEDBUF(512))) ||
 		!(object_encrypted2 =  prime_pem_unwrap(pem_encrypted, MANAGEDBUF(512))) ||
 		st_cmp_cs_eq(object_encrypted1, object_encrypted2)) {
@@ -436,7 +436,7 @@ bool_t check_prime_armor_sthread(stringer_t *errmsg) {
 		!(pem_plain = prime_pem_wrap(binary1, MANAGEDBUF(512))) ||
 		!(binary2 = prime_pem_unwrap(pem_plain, MANAGEDBUF(512))) ||
 		st_cmp_cs_eq(binary1, binary2) ||
-		!(object_encrypted1 = prime_key_encrypted_get(protect, object, MANAGEDBUF(512))) ||
+		!(object_encrypted1 = prime_key_encrypt(protect, object, BINARY, MANAGEDBUF(512))) ||
 		!(pem_encrypted = prime_pem_wrap(object_encrypted1, MANAGEDBUF(512))) ||
 		!(object_encrypted2 =  prime_pem_unwrap(pem_encrypted, MANAGEDBUF(512))) ||
 		st_cmp_cs_eq(object_encrypted1, object_encrypted2)) {

@@ -97,8 +97,8 @@ typedef struct {
 prime_t *     prime_alloc(prime_type_t type, prime_flags_t flags);
 void          prime_free(prime_t *object);
 stringer_t *  prime_get(prime_t *object, prime_encoding_t encoding, stringer_t *output);
-stringer_t *  prime_key_encrypted_get(stringer_t *key, prime_t *object, stringer_t *output);
-prime_t *     prime_key_encrypted_set(stringer_t *key, stringer_t *object);
+prime_t *     prime_key_decrypt(stringer_t *key, stringer_t *object, prime_encoding_t encoding, prime_flags_t flags);
+stringer_t *  prime_key_encrypt(stringer_t *key, prime_t *object, prime_encoding_t encoding, stringer_t *output);
 prime_t *     prime_key_generate(prime_type_t type);
 prime_t *     prime_set(stringer_t *object, prime_encoding_t encoding, prime_flags_t flags);
 bool_t        prime_start(void);

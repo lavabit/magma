@@ -27,6 +27,21 @@
 #define AES_VECTOR_LEN 16
 
 typedef enum {
+	ED25519_PUB,
+	ED25519_PRIV
+} ed25519_key_type_t;
+
+typedef enum {
+	BINARY,
+	ARMORED
+} prime_encoding_t;
+
+typedef enum {
+	NONE,
+	SECURITY
+} prime_flags_t;
+
+typedef enum {
     PRIME_ORG_SIGNET = 1776,             /**< File contains an organizational signet */
 	PRIME_ORG_KEY = 1952,               /**< File contains organizational keys*/
 	PRIME_ORG_KEY_ENCRYPTED = 1947,     /**< File contains an encrypted organizational key. */
@@ -45,11 +60,6 @@ typedef EC_KEY secp256k1_key_t;
 #else
 typedef void secp256k1_key_t;
 #endif
-
-typedef enum {
-	ED25519_PUB,
-	ED25519_PRIV
-} ed25519_key_type_t;
 
 typedef struct  __attribute__ ((packed)) {
 	ed25519_key_type_t type;
@@ -71,6 +81,7 @@ typedef struct {
 
 typedef struct {
 	prime_type_t type;
+	prime_flags_t flags;
 	union {
 		prime_org_key_t *org;
 		prime_user_key_t *user;
@@ -83,13 +94,13 @@ typedef struct {
 #include "keys/keys.h"
 
 /// prime.c
+prime_t *     prime_alloc(prime_type_t type, prime_flags_t flags);
+void          prime_free(prime_t *object);
+stringer_t *  prime_get(prime_t *object, prime_encoding_t encoding, stringer_t *output);
 stringer_t *  prime_key_encrypted_get(stringer_t *key, prime_t *object, stringer_t *output);
 prime_t *     prime_key_encrypted_set(stringer_t *key, stringer_t *object);
-prime_t *     prime_alloc(prime_type_t type);
-void          prime_free(prime_t *key);
 prime_t *     prime_key_generate(prime_type_t type);
-stringer_t *  prime_binary_get(prime_t *key, stringer_t *output);
-prime_t *     prime_binary_set(stringer_t *key);
+prime_t *     prime_set(stringer_t *object, prime_encoding_t encoding, prime_flags_t flags);
 bool_t        prime_start(void);
 void          prime_stop(void);
 

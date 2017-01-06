@@ -21,7 +21,7 @@ bool_t check_prime_org_keys_sthread(stringer_t *errmsg) {
 	rand_write(key);
 
 	// Allocate an org key.
-	if (!(holder = prime_alloc(PRIME_ORG_KEY))) {
+	if (!(holder = prime_alloc(PRIME_ORG_KEY, NONE))) {
 		st_sprint(errmsg, "Organizational key allocation failed.");
 		return false;
 	}
@@ -35,7 +35,7 @@ bool_t check_prime_org_keys_sthread(stringer_t *errmsg) {
 	}
 
 	// Serialize the org key.
-	else if (!(packed = prime_binary_get(holder, MANAGEDBUF(256)))) {
+	else if (!(packed = prime_get(holder, BINARY, MANAGEDBUF(256)))) {
 		st_sprint(errmsg, "Organizational key serialization failed.");
 		prime_free(holder);
 		return false;
@@ -44,7 +44,7 @@ bool_t check_prime_org_keys_sthread(stringer_t *errmsg) {
 	prime_free(holder);
 
 	// Unpack the serialized org key.
-	if (!(holder = prime_binary_set(packed))) {
+	if (!(holder = prime_set(packed, BINARY, NONE))) {
 		st_sprint(errmsg, "Organizational key parsing failed.");
 		return false;
 	}
@@ -74,7 +74,7 @@ bool_t check_prime_org_keys_sthread(stringer_t *errmsg) {
 	}
 
 	// Serialize the org key.
-	else if (!(packed = prime_binary_get(holder, NULL))) {
+	else if (!(packed = prime_get(holder, BINARY, NULL))) {
 		st_sprint(errmsg, "Organizational key serialization failed.");
 		prime_free(holder);
 		return false;
@@ -83,7 +83,7 @@ bool_t check_prime_org_keys_sthread(stringer_t *errmsg) {
 	prime_free(holder);
 
 	// Unpack the serialized org key.
-	if (!(holder = prime_binary_set(packed))) {
+	if (!(holder = prime_set(packed, BINARY, NONE))) {
 		st_sprint(errmsg, "Organizational key parsing failed.");
 		st_free(packed);
 		return false;
@@ -122,7 +122,7 @@ bool_t check_prime_user_keys_sthread(stringer_t *errmsg) {
 	rand_write(key);
 
 	// Allocate a user key.
-	if (!(holder = prime_alloc(PRIME_USER_KEY))) {
+	if (!(holder = prime_alloc(PRIME_USER_KEY, NONE))) {
 		st_sprint(errmsg, "User key allocation failed.");
 		return false;
 	}
@@ -136,7 +136,7 @@ bool_t check_prime_user_keys_sthread(stringer_t *errmsg) {
 	}
 
 	// Serialize the user key.
-	else if (!(packed = prime_binary_get(holder, MANAGEDBUF(256)))) {
+	else if (!(packed = prime_get(holder, BINARY, MANAGEDBUF(256)))) {
 		st_sprint(errmsg, "User key serialization failed.");
 		prime_free(holder);
 		return false;
@@ -145,7 +145,7 @@ bool_t check_prime_user_keys_sthread(stringer_t *errmsg) {
 	prime_free(holder);
 
 	// Unpack the serialized user key.
-	if (!(holder = prime_binary_set(packed))) {
+	if (!(holder = prime_set(packed, BINARY, NONE))) {
 		st_sprint(errmsg, "User key parsing failed.");
 		return false;
 	}
@@ -175,7 +175,7 @@ bool_t check_prime_user_keys_sthread(stringer_t *errmsg) {
 	}
 
 	// Serialize the user key.
-	else if (!(packed = prime_binary_get(holder, NULL))) {
+	else if (!(packed = prime_get(holder, BINARY, NULL))) {
 		st_sprint(errmsg, "User key serialization failed.");
 		prime_free(holder);
 		return false;
@@ -184,7 +184,7 @@ bool_t check_prime_user_keys_sthread(stringer_t *errmsg) {
 	prime_free(holder);
 
 	// Unpack the serialized user key.
-	if (!(holder = prime_binary_set(packed))) {
+	if (!(holder = prime_set(packed, BINARY, NONE))) {
 		st_sprint(errmsg, "User key parsing failed.");
 		st_free(packed);
 		return false;
@@ -219,8 +219,10 @@ bool_t check_prime_parameters_sthread(stringer_t *errmsg) {
 	prime_t *holder = NULL;
 
 	// Attempt allocation of a non-key type using the key allocation function.
-	if ((holder = prime_alloc(PRIME_ORG_SIGNET)) || (holder = prime_alloc(PRIME_USER_SIGNET)) || (holder = prime_alloc(PRIME_USER_SIGNING_REQUEST))) {
-		st_sprint(errmsg, "Key parameter checks failed.");
+	if ((holder = prime_alloc(PRIME_ORG_KEY_ENCRYPTED, NONE)) ||
+		(holder = prime_alloc(PRIME_USER_KEY_ENCRYPTED, NONE)) ||
+		(holder = prime_alloc(PRIME_MESSAGE_ENCRYPTED, NONE))) {
+		st_sprint(errmsg, "Allocation parameter checks failed.");
 		prime_free(holder);
 		return false;
 	}
@@ -410,7 +412,7 @@ bool_t check_prime_armor_sthread(stringer_t *errmsg) {
 
 	// Generate an org key.
 	if (!(object = prime_key_generate(PRIME_ORG_KEY)) ||
-		!(binary1 = prime_binary_get(object, MANAGEDBUF(256))) ||
+		!(binary1 = prime_get(object, BINARY, MANAGEDBUF(256))) ||
 		!(pem_plain = prime_pem_wrap(binary1, MANAGEDBUF(512))) ||
 		!(binary2 = prime_pem_unwrap(pem_plain, MANAGEDBUF(512))) ||
 		st_cmp_cs_eq(binary1, binary2) ||
@@ -430,7 +432,7 @@ bool_t check_prime_armor_sthread(stringer_t *errmsg) {
 
 	// Generate a user key.
 	if (!(object = prime_key_generate(PRIME_USER_KEY)) ||
-		!(binary1 = prime_binary_get(object, MANAGEDBUF(256))) ||
+		!(binary1 = prime_get(object, BINARY, MANAGEDBUF(256))) ||
 		!(pem_plain = prime_pem_wrap(binary1, MANAGEDBUF(512))) ||
 		!(binary2 = prime_pem_unwrap(pem_plain, MANAGEDBUF(512))) ||
 		st_cmp_cs_eq(binary1, binary2) ||

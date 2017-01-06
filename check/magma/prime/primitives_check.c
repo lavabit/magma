@@ -16,7 +16,7 @@ bool_t check_prime_org_keys_sthread(stringer_t *errmsg) {
 
 	prime_t *holder = NULL;
 	stringer_t *packed = NULL, *key = MANAGEDBUF(64);
-
+log_enable();
 	// Create a STACIE realm key.
 	rand_write(key);
 

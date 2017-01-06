@@ -393,6 +393,22 @@ prime_t * prime_key_decrypt(stringer_t *key, stringer_t *object, prime_encoding_
 		return NULL;
 	}
 
+	// Translate the support encrypted object types into their unencrypted equivalent.
+	switch (type) {
+		case (PRIME_ORG_KEY_ENCRYPTED):
+			type = PRIME_ORG_KEY;
+			break;
+		case (PRIME_USER_KEY_ENCRYPTED):
+			type = PRIME_USER_KEY;
+			break;
+		default:
+			log_pedantic("Unrecognized PRIME type.");
+			st_cleanup(output);
+			prime_free(result);
+			return NULL;
+	}
+
+
 	// Allocation.
 	if (!(result = prime_alloc(type, flags))) {
 		log_pedantic("PRIME object allocation failed.");
@@ -402,13 +418,11 @@ prime_t * prime_key_decrypt(stringer_t *key, stringer_t *object, prime_encoding_
 
 	// Switch statement to call the appropriate allocator.
 	switch (type) {
-		case (PRIME_ORG_KEY_ENCRYPTED):
-			result->type = PRIME_ORG_KEY;
-			result->org = org_encrypted_key_set(key, object);
+		case (PRIME_ORG_KEY):
+			result->org = org_encrypted_key_set(key, binary);
 			break;
-		case (PRIME_USER_KEY_ENCRYPTED):
-			result->type = PRIME_USER_KEY;
-			result->user = user_encrypted_key_set(key, object);
+		case (PRIME_USER_KEY):
+			result->user = user_encrypted_key_set(key, binary);
 			break;
 		default:
 			log_pedantic("Unrecognized PRIME type.");

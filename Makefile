@@ -127,12 +127,12 @@ MAGMA_CHECK_INCLUDE_ABSPATHS	+= $(foreach target,$(MAGMA_CHECK_INCDIRS), $(call 
 # Compiler Parameters
 CC								= gcc
 CFLAGS							= -std=gnu99 -O0 -fPIC -fmessage-length=0 -ggdb3 -rdynamic -c $(CFLAGS_WARNINGS) -MMD 
-CFLAGS_WARNINGS					= -Wall -Werror -Winline -Wformat-security -Warray-bounds -Wfatal-errors
+CFLAGS_WARNINGS					= -Wall -Werror -Winline -Wformat-security -Warray-bounds #-Wfatal-errors
 CFLAGS_PEDANTIC					= -Wextra -Wpacked -Wunreachable-code -Wformat=2
 
 CPP								= g++
 CPPFLAGS						= -std=c++0x $(CPPFLAGS_WARNINGS) -Wno-unused-parameter -pthread -g3 
-CPPFLAGS_WARNINGS				= -Wfatal-errors -Werror -Wall -Wextra  -Wformat=2 -Wwrite-strings -Wno-format-nonliteral 
+CPPFLAGS_WARNINGS				= -Werror -Wall -Wextra  -Wformat=2 -Wwrite-strings -Wno-format-nonliteral #-Wfatal-errors
 
 # Linker Parameters
 LD								= gcc

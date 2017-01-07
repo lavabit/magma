@@ -28,7 +28,7 @@ prime_org_key_t * org_key_alloc(void) {
 	prime_org_key_t *org = NULL;
 
 	if (!(org = mm_alloc(sizeof(prime_org_key_t)))) {
-		log_pedantic("PRIME org key allocation failed.");
+		log_pedantic("PRIME organizational key allocation failed.");
 		return NULL;
 	}
 

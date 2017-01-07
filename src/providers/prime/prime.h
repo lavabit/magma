@@ -32,26 +32,26 @@ typedef enum {
 } ed25519_key_type_t;
 
 typedef enum {
-	BINARY,
-	ARMORED
+	BINARY,                              /**< Serialized object in binary form. >*/
+	ARMORED                              /**< Armor the object using the Privacy Enhanced Message format. >*/
 } prime_encoding_t;
 
 typedef enum {
 	NONE,
-	SECURITY
+	SECURITY                             /**< Store the object in secure memory. >*/
 } prime_flags_t;
 
 typedef enum {
-    PRIME_ORG_SIGNET = 1776,             /**< File contains an organizational signet */
-	PRIME_ORG_KEY = 1952,               /**< File contains organizational keys*/
-	PRIME_ORG_KEY_ENCRYPTED = 1947,     /**< File contains an encrypted organizational key. */
+    PRIME_ORG_SIGNET = 1776,             /**< Organizational signet. >*/
+	PRIME_ORG_KEY = 1952,                /**< Organizational key. >*/
+	PRIME_ORG_KEY_ENCRYPTED = 1947,      /**< Encrypted organizational key. >*/
 
-	PRIME_USER_SIGNING_REQUEST = 1215,    /**< File contains an ssr*/
-    PRIME_USER_SIGNET = 1789,            /**< File contains a user signet */
-	PRIME_USER_KEY = 2013,              /**< File contains user keys*/
-	PRIME_USER_KEY_ENCRYPTED = 1976,    /**< File contains an encrypted user key. */
+	PRIME_USER_SIGNING_REQUEST = 1215,    /**< User signing request. >*/
+    PRIME_USER_SIGNET = 1789,             /**< User signet. >*/
+	PRIME_USER_KEY = 2013,                /**< User key. >*/
+	PRIME_USER_KEY_ENCRYPTED = 1976,      /**< Encrypted user key. >*/
 
-    PRIME_MESSAGE_ENCRYPTED = 1847
+    PRIME_MESSAGE_ENCRYPTED = 1847        /**< Encrypted message. >*/
 } prime_type_t;
 
 // This allows code to include the PRIME header without first including the OpenSSL headers.
@@ -61,7 +61,7 @@ typedef EC_KEY secp256k1_key_t;
 typedef void secp256k1_key_t;
 #endif
 
-typedef struct  __attribute__ ((packed)) {
+typedef struct __attribute__ ((packed)) {
 	ed25519_key_type_t type;
 	struct __attribute__ ((packed)) {
 		uint8_t private[ED25519_KEY_PRIV_LEN];
@@ -69,22 +69,36 @@ typedef struct  __attribute__ ((packed)) {
 	};
 } ed25519_key_t;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	ed25519_key_t *signing;
 	secp256k1_key_t *encryption;
 } prime_user_key_t;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	ed25519_key_t *signing;
 	secp256k1_key_t *encryption;
 } prime_org_key_t;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
+	ed25519_key_t *signing;
+	secp256k1_key_t *encryption;
+} prime_user_signet_t;
+
+typedef struct __attribute__ ((packed)) {
+	ed25519_key_t *signing;
+	secp256k1_key_t *encryption;
+} prime_org_signet_t;
+
+typedef struct __attribute__ ((packed)) {
 	prime_type_t type;
 	prime_flags_t flags;
-	union {
+	union key {
 		prime_org_key_t *org;
 		prime_user_key_t *user;
+	};
+	union signet {
+		prime_org_signet_t *org;
+		prime_user_signet_t *user;
 	};
 } prime_t;
 

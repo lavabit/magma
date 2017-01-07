@@ -28,7 +28,7 @@ prime_user_key_t * user_key_alloc(void) {
 	prime_user_key_t *user = NULL;
 
 	if (!(user = mm_alloc(sizeof(prime_user_key_t)))) {
-		log_pedantic("Allocation of the PRIME user key failed.");
+		log_pedantic("PRIME user key allocation failed.");
 		return NULL;
 	}
 

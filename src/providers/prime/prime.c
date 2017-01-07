@@ -149,6 +149,9 @@ prime_t * prime_alloc(prime_type_t type, prime_flags_t flags) {
 	return result;
 }
 
+/**
+ * @brief	Serializes a PRIME object and returns it in binary form, or with an ASCII armor encoding.
+ */
 stringer_t * prime_get(prime_t *object, prime_encoding_t encoding, stringer_t *output) {
 
 	stringer_t *result = NULL, *binary = NULL;
@@ -199,6 +202,9 @@ stringer_t * prime_get(prime_t *object, prime_encoding_t encoding, stringer_t *o
 	return result;
 }
 
+/**
+ * @brief	Parses a serialized PRIME object into a working context.
+ */
 prime_t * prime_set(stringer_t *object, prime_encoding_t encoding, prime_flags_t flags) {
 
 	uint16_t type = 0;
@@ -310,6 +316,23 @@ prime_t * prime_key_generate(prime_type_t type) {
 	}
 
 	return result;
+}
+
+/**
+ * @brief	Takes an organizational key, and generates the corresponding signet.
+ */
+prime_t * prime_signet_generate(prime_t key) {
+
+
+	return NULL;
+}
+
+/**
+ * @brief	Takes a user key, and generates a signet signing request.
+ */
+prime_t * prime_signing_request_generate(prime_t key) {
+
+	return NULL;
 }
 
 stringer_t * prime_key_encrypt(stringer_t *key, prime_t *object, prime_encoding_t encoding, stringer_t *output) {

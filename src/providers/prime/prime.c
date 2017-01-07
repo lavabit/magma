@@ -61,14 +61,14 @@ void prime_free(prime_t *object) {
 
 		switch (object->type) {
 			case PRIME_USER_KEY:
-				if (object->user) user_key_free(object->user);
+				if (object->key.user) user_key_free(object->key.user);
 				break;
 			case PRIME_USER_SIGNET:
 				break;
 			case PRIME_USER_SIGNING_REQUEST:
 				break;
 			case PRIME_ORG_KEY:
-				if (object->org) org_key_free(object->org);
+				if (object->key.org) org_key_free(object->key.org);
 				break;
 			case PRIME_ORG_SIGNET:
 				break;
@@ -164,10 +164,10 @@ stringer_t * prime_get(prime_t *object, prime_encoding_t encoding, stringer_t *o
 	// Switch statement to call the appropriate allocator.
 	switch (object->type) {
 		case PRIME_ORG_KEY:
-			result = org_key_get(object->org, output);
+			result = org_key_get(object->key.org, output);
 			break;
 		case PRIME_USER_KEY:
-			result = user_key_get(object->user, output);
+			result = user_key_get(object->key.user, output);
 			break;
 		default:
 			log_pedantic("Unrecognized PRIME type.");
@@ -258,10 +258,10 @@ prime_t * prime_set(stringer_t *object, prime_encoding_t encoding, prime_flags_t
 	// Switch statement to call the appropriate allocator.
 	switch (type) {
 		case PRIME_ORG_KEY:
-			result->org = org_key_set(binary);
+			result->key.org = org_key_set(binary);
 			break;
 		case PRIME_USER_KEY:
-			result->user = user_key_set(binary);
+			result->key.user = user_key_set(binary);
 			break;
 		default:
 			log_pedantic("Unrecognized PRIME type.");
@@ -274,7 +274,7 @@ prime_t * prime_set(stringer_t *object, prime_encoding_t encoding, prime_flags_t
 	st_cleanup(output);
 
 	// Check object type being parsed was sucessfully setup.
-	if ((type == PRIME_ORG_KEY && !result->org) || (type == PRIME_USER_KEY && !result->user)) {
+	if ((type == PRIME_ORG_KEY && !result->key.org) || (type == PRIME_USER_KEY && !result->key.user)) {
 		prime_free(result);
 		return NULL;
 	}
@@ -297,11 +297,11 @@ prime_t * prime_key_generate(prime_type_t type) {
 	switch (type) {
 		case PRIME_ORG_KEY:
 			result->type = PRIME_ORG_KEY;
-			result->org = org_key_generate();
+			result->key.org = org_key_generate();
 			break;
 		case PRIME_USER_KEY:
 			result->type = PRIME_USER_KEY;
-			result->user = user_key_generate();
+			result->key.user = user_key_generate();
 			break;
 		default:
 			log_pedantic("Unrecognized PRIME key type.");
@@ -310,7 +310,7 @@ prime_t * prime_key_generate(prime_type_t type) {
 	}
 
 	// Check that whichever key type was requrested, it actually succeeded.
-	if ((type == PRIME_ORG_KEY && !result->org) || (type == PRIME_USER_KEY && !result->user)) {
+	if ((type == PRIME_ORG_KEY && !result->key.org) || (type == PRIME_USER_KEY && !result->key.user)) {
 		mm_free(result);
 		return NULL;
 	}
@@ -347,10 +347,10 @@ stringer_t * prime_key_encrypt(stringer_t *key, prime_t *object, prime_encoding_
 	// Switch statement to call the appropriate allocator.
 	switch (object->type) {
 		case PRIME_ORG_KEY:
-			result = org_encrypted_key_get(key, object->org, output);
+			result = org_encrypted_key_get(key, object->key.org, output);
 			break;
 		case PRIME_USER_KEY:
-			result = user_encrypted_key_get(key, object->user, output);
+			result = user_encrypted_key_get(key, object->key.user, output);
 			break;
 		default:
 			log_pedantic("Unrecognized PRIME key type.");
@@ -454,10 +454,10 @@ prime_t * prime_key_decrypt(stringer_t *key, stringer_t *object, prime_encoding_
 	// Switch statement to call the appropriate allocator.
 	switch (type) {
 		case PRIME_ORG_KEY:
-			result->org = org_encrypted_key_set(key, binary);
+			result->key.org = org_encrypted_key_set(key, binary);
 			break;
 		case PRIME_USER_KEY:
-			result->user = user_encrypted_key_set(key, binary);
+			result->key.user = user_encrypted_key_set(key, binary);
 			break;
 		default:
 			log_pedantic("Unrecognized PRIME type.");
@@ -470,7 +470,7 @@ prime_t * prime_key_decrypt(stringer_t *key, stringer_t *object, prime_encoding_
 	st_cleanup(output);
 
 	// Check that whichever key type was requrested, it actually succeeded.
-	if ((type == PRIME_ORG_KEY && !result->org) || (type == PRIME_USER_KEY && !result->user)) {
+	if ((type == PRIME_ORG_KEY && !result->key.org) || (type == PRIME_USER_KEY && !result->key.user)) {
 		prime_free(result);
 		return NULL;
 	}

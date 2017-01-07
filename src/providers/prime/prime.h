@@ -82,24 +82,31 @@ typedef struct __attribute__ ((packed)) {
 typedef struct __attribute__ ((packed)) {
 	ed25519_key_t *signing;
 	secp256k1_key_t *encryption;
+	stringer_t *signature;
 } prime_user_signet_t;
 
 typedef struct __attribute__ ((packed)) {
 	ed25519_key_t *signing;
 	secp256k1_key_t *encryption;
+	stringer_t *signature;
 } prime_org_signet_t;
 
 typedef struct __attribute__ ((packed)) {
 	prime_type_t type;
 	prime_flags_t flags;
-	union key {
-		prime_org_key_t *org;
-		prime_user_key_t *user;
-	};
-	union signet {
-		prime_org_signet_t *org;
-		prime_user_signet_t *user;
-	};
+	struct {
+		union {
+			prime_org_key_t *org;
+			prime_user_key_t *user;
+		};
+	} key;
+
+	struct {
+		union {
+			prime_org_signet_t *org;
+			prime_user_signet_t *user;
+		};
+	} signet;
 } prime_t;
 
 #include "cryptography/cryptography.h"

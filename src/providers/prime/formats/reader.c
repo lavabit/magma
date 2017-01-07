@@ -69,7 +69,12 @@ int_t prime_reader_payload(prime_reader_t *reader, int_t bytes, placer_t *payloa
 
 	// Setup a place holder for the field payload and then advance the reader.
 	if (payload && reader && reader->remaining >= bytes) {
-		*payload = pl_init(reader->cursor, bytes);
+
+		// Initialize the placer with the field payload, or if the payload length is 0, simply setup the placer as a NULL. We
+		// track fields with 0 length payloads, as required by the specification.
+		*payload = (bytes ? pl_init(reader->cursor, bytes) : pl_null());
+
+		// Update the reader parameters.
 		reader->remaining = (reader->remaining - bytes);
 		reader->cursor = ((uchr_t *)reader->cursor) + bytes;
 		result = 0;

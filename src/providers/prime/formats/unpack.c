@@ -44,7 +44,7 @@ prime_size_t prime_unpack_validate(stringer_t *fields) {
 			return 0;
 		}
 		// Read in the payload size if bytes is positive. If bytes is zero then we have a fixed length
-		// signature field.
+		// signature field. Note that we accept length parameters of 0, as required by the specification.
 		else if (bytes && (size = prime_reader_size(&reader, bytes)) < 0) {
 			return 0;
 		}
@@ -99,7 +99,7 @@ int_t prime_unpack_fields(prime_object_t *object, stringer_t *fields) {
 			return -1;
 		}
 		// Read in the payload size if bytes is positive. If bytes is zero then we have a fixed length
-		// signature field.
+		// signature field. Note that we accept length parameters of 0, as required by the specification.
 		else if (bytes && (size = prime_reader_size(&reader, bytes)) < 0) {
 			return -1;
 		}
@@ -139,7 +139,9 @@ prime_object_t * prime_unpack(stringer_t *data) {
 		return NULL;
 	}
 
-	if (!(count = prime_unpack_validate(PLACER(st_data_get(data)  + 5, st_length_get(data) - 5))) || !(result = prime_object_alloc(type, size, count))) {
+	// Validate the structure, and allocate a binary object context to hold the field meta information.
+	if (!(count = prime_unpack_validate(PLACER(st_data_get(data)  + 5, st_length_get(data) - 5))) ||
+		!(result = prime_object_alloc(type, size, count))) {
 		return NULL;
 	}
 

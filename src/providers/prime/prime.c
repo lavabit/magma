@@ -322,7 +322,7 @@ prime_t * prime_key_generate(prime_type_t type) {
  * @brief	Takes an organizational key, and generates the corresponding signet.
  */
 prime_t * prime_signet_generate(prime_t *object) {
-
+//#error Check to make sure it's an org priv key. Write unit tests.
 	return NULL;
 }
 
@@ -330,7 +330,7 @@ prime_t * prime_signet_generate(prime_t *object) {
  * @brief	Takes a user key, and generates a signet signing request.
  */
 prime_t * prime_request_generate(prime_t *object) {
-
+//#error "Should we handle rotation requests here as well? Write unit tests."
 	return NULL;
 }
 
@@ -338,7 +338,8 @@ prime_t * prime_request_generate(prime_t *object) {
  * @brief	Takes a user signing request, and an organizational key, and returns a signed user signet.
  */
 prime_t * prime_request_sign(prime_t *request, prime_t *org) {
-
+//#error	"Check that we're passed an org priv, and user request. Write unit tests."
+//#error	"Should we verify the self-signature in the request before signing it?"
 	return NULL;
 }
 stringer_t * prime_key_encrypt(stringer_t *key, prime_t *object, prime_encoding_t encoding, stringer_t *output) {

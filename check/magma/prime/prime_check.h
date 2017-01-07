@@ -18,12 +18,19 @@ bool_t   check_prime_ed25519_fixed_sthread(stringer_t *errmsg);
 bool_t   check_prime_ed25519_fuzz_sthread(stringer_t *errmsg);
 bool_t   check_prime_ed25519_parameters_sthread(stringer_t *errmsg);
 
+/// signets_check.c
+bool_t   check_prime_signets_org_sthread(stringer_t *errmsg);
+bool_t   check_prime_signets_parameters_sthread(stringer_t *errmsg);
+bool_t   check_prime_signets_user_sthread(stringer_t *errmsg);
+
+/// keys_check.c
+bool_t   check_prime_keys_org_sthread(stringer_t *errmsg);
+bool_t   check_prime_keys_parameters_sthread(stringer_t *errmsg);
+bool_t   check_prime_keys_user_sthread(stringer_t *errmsg);
+
 /// primitives_check.c
 bool_t   check_prime_armor_sthread(stringer_t *errmsg);
-bool_t   check_prime_org_keys_sthread(stringer_t *errmsg);
-bool_t   check_prime_parameters_sthread(stringer_t *errmsg);
 bool_t   check_prime_unpacker_sthread(stringer_t *errmsg);
-bool_t   check_prime_user_keys_sthread(stringer_t *errmsg);
 bool_t   check_prime_writers_sthread(stringer_t *errmsg);
 
 /// secp256k1_check.c

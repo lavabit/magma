@@ -73,15 +73,31 @@ START_TEST (check_prime_secp256k1_s) {
 }
 END_TEST
 
+START_TEST (check_prime_signets_s) {
+
+	log_disable();
+	bool_t result = true;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	if (status()) result = check_prime_signets_org_sthread(errmsg);
+	if (status() && result) result = check_prime_signets_user_sthread(errmsg);
+	if (status() && result) result = check_prime_signets_parameters_sthread(errmsg);
+
+	log_test("PRIME / SIGNETS / SINGLE THREADED:", errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
+
+}
+END_TEST
+
 START_TEST (check_prime_keys_s) {
 
 	log_disable();
 	bool_t result = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
-	if (status()) result = check_prime_org_keys_sthread(errmsg);
-	if (status() && result) result = check_prime_user_keys_sthread(errmsg);
-	if (status() && result) result = check_prime_parameters_sthread(errmsg);
+	if (status()) result = check_prime_keys_org_sthread(errmsg);
+	if (status() && result) result = check_prime_keys_user_sthread(errmsg);
+	if (status() && result) result = check_prime_keys_parameters_sthread(errmsg);
 
 	log_test("PRIME / KEYS / SINGLE THREADED:", errmsg);
 	ck_assert_msg(result, st_char_get(errmsg));
@@ -116,6 +132,8 @@ Suite * suite_check_prime(void) {
 	testcase(s, tc, "PRIME secp256k1/S", check_prime_secp256k1_s);
 	testcase(s, tc, "PRIME Primitives/S", check_prime_primitives_s);
 	testcase(s, tc, "PRIME Keys/S", check_prime_keys_s);
+	testcase(s, tc, "PRIME Signets/S", check_prime_signets_s);
+
 
 	tcase_set_timeout(tc, 120);
 

@@ -22,6 +22,7 @@ prime_org_signet_t *  org_signet_generate(prime_org_key_t *org);
 prime_user_signet_t *  user_signet_alloc(void);
 void                   user_signet_free(prime_user_signet_t *user);
 prime_user_signet_t *  user_signet_request_generate(prime_user_key_t *user);
+prime_user_signet_t *  user_signet_request_rotation(prime_user_key_t *previous, prime_user_key_t *user);
 prime_user_signet_t *  user_signet_request_sign(prime_user_signet_t *request, prime_org_key_t *org);
 
 #endif

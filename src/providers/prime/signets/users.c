@@ -81,7 +81,7 @@ prime_user_signet_t * user_signet_request_sign(prime_user_signet_t *request, pri
 		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, encryption, MANAGEDBUF(35)),
 		prime_field_write(PRIME_USER_SIGNET, 4, ED25519_SIGNATURE_LEN, request->signatures.custody, MANAGEDBUF(65)),
 		prime_field_write(PRIME_USER_SIGNET, 5, ED25519_SIGNATURE_LEN, request->signatures.user, MANAGEDBUF(65))) != 199)) {
-		log_pedantic("PRIME user signet generation failed, the serialized signing request could not be generated for signing.");
+		log_pedantic("PRIME user signet generation failed, the cryptographic fields could not be serialized for signing.");
 		user_signet_free(signet);
 		return NULL;
 	}
@@ -138,7 +138,77 @@ prime_user_signet_t * user_signet_request_generate(prime_user_key_t *user) {
 	// Generate a serialized signet with the cryptographic fields.
 	else if (st_write(cryptographic, prime_field_write(PRIME_USER_SIGNING_REQUEST, 1, ED25519_KEY_PUB_LEN, signing, MANAGEDBUF(34)),
 		prime_field_write(PRIME_USER_SIGNING_REQUEST, 2, SECP256K1_KEY_PUB_LEN, encryption, MANAGEDBUF(35))) != 69) {
-		log_pedantic("PRIME user signet generation failed, the serialized cryptographic fields could not be generated for signing.");
+		log_pedantic("PRIME user signet generation failed, the cryptographic fields could not be serialized for signing.");
+		user_signet_free(request);
+		return NULL;
+	}
+
+	// Generate a signature using the serialized cryptographic fields.
+	else if (!(request->signatures.user = ed25519_sign(user->signing, cryptographic, NULL))) {
+		log_pedantic("PRIME user signet generation failed, the cryptographic signet signature could not be derived.");
+		user_signet_free(request);
+		return NULL;
+	}
+
+	// Finally, convert the serialized public keys into usable structures.
+	else if (!(request->signing = ed25519_public_set(signing)) || !(request->encryption = secp256k1_public_set(encryption))) {
+		log_pedantic("PRIME user signet generation failed, the serialized public keys could not be parsed.");
+		user_signet_free(request);
+		return NULL;
+	}
+
+	return request;
+}
+
+/**
+ * @brief	Generate a user signet signing rotation request using the previous, and new user private key structures.
+ */
+prime_user_signet_t * user_signet_request_rotation(prime_user_key_t *previous, prime_user_key_t *user) {
+
+	prime_user_signet_t *request = NULL;
+	stringer_t *signing = NULL, *encryption = NULL, *cryptographic = MANAGEDBUF(134);
+
+	// Ensure the user structure contains the necessary private keys.
+	if (!user || !user->encryption || !user->signing || !user->signing->type == ED25519_PRIV) {
+		return NULL;
+	}
+	// Ensure we have the previous user private signing key. We don't need the previous encryption key so we don't
+	// bother checking for it.
+	else if (!previous || !previous->signing || !previous->signing->type == ED25519_PRIV) {
+		return NULL;
+	}
+	else if (!(request = mm_alloc(sizeof(prime_user_signet_t)))) {
+		return NULL;
+	}
+
+	// Store the public singing, and encryption keys.
+	else if (!(signing = ed25519_public_get(user->signing, MANAGEDBUF(ED25519_KEY_PUB_LEN))) ||
+		!(encryption = secp256k1_public_get(user->encryption, MANAGEDBUF(SECP256K1_KEY_PUB_LEN)))) {
+		log_pedantic("PRIME user signet generation failed, the public keys could not be derived from the provided private keys.");
+		user_signet_free(request);
+		return NULL;
+	}
+
+	// Generate a serialized signet with the cryptographic fields.
+	else if (st_write(cryptographic, prime_field_write(PRIME_USER_SIGNING_REQUEST, 1, ED25519_KEY_PUB_LEN, signing, MANAGEDBUF(34)),
+		prime_field_write(PRIME_USER_SIGNING_REQUEST, 2, SECP256K1_KEY_PUB_LEN, encryption, MANAGEDBUF(35))) != 69) {
+		log_pedantic("PRIME user signet generation failed, the cryptographic fields could not be serialized for signing.");
+		user_signet_free(request);
+		return NULL;
+	}
+
+	// Generate a chain of custody signature using the serialized cryptographic fields.
+	else if (!(request->signatures.custody = ed25519_sign(previous->signing, cryptographic, NULL))) {
+		log_pedantic("PRIME user signet generation failed, the cryptographic signet signature could not be derived.");
+		user_signet_free(request);
+		return NULL;
+	}
+
+	// Generate a serialized signet with the cryptographic fields, plus the chain of custody signature we just created.
+	else if (st_write(cryptographic, prime_field_write(PRIME_USER_SIGNING_REQUEST, 1, ED25519_KEY_PUB_LEN, signing, MANAGEDBUF(34)),
+		prime_field_write(PRIME_USER_SIGNING_REQUEST, 2, SECP256K1_KEY_PUB_LEN, encryption, MANAGEDBUF(35)),
+		prime_field_write(PRIME_USER_SIGNING_REQUEST, 4, ED25519_SIGNATURE_LEN, request->signatures.custody, MANAGEDBUF(65))) != 134) {
+		log_pedantic("PRIME user signet generation failed, the cryptographic fields could not be serialized for signing.");
 		user_signet_free(request);
 		return NULL;
 	}

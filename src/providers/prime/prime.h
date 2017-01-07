@@ -84,6 +84,7 @@ typedef struct __attribute__ ((packed)) {
 	secp256k1_key_t *encryption;         /**< User encryption key, field 2. >*/
 
 	struct {
+		stringer_t *custody;             /**< User chain of custody signature, field 4. >*/
 		stringer_t *user;                /**< User signature, field 5. >*/
 		stringer_t *org;                 /**< Organizational signature, field 6. >*/
 	} signatures;

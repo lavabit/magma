@@ -80,15 +80,19 @@ typedef struct __attribute__ ((packed)) {
 } prime_org_key_t;
 
 typedef struct __attribute__ ((packed)) {
-	ed25519_key_t *signing;
-	secp256k1_key_t *encryption;
-	stringer_t *signature;
+	ed25519_key_t *signing;              /**< User signing key, field 1. >*/
+	secp256k1_key_t *encryption;         /**< User encryption key, field 2. >*/
+
+	struct {
+		stringer_t *user;                /**< User signature, field 5. >*/
+		stringer_t *org;                 /**< Organizational signature, field 6. >*/
+	} signatures;
 } prime_user_signet_t;
 
 typedef struct __attribute__ ((packed)) {
-	ed25519_key_t *signing;
-	secp256k1_key_t *encryption;
-	stringer_t *signature;
+	ed25519_key_t *signing;              /**< Organizational signing key, field 1. >*/
+	secp256k1_key_t *encryption;         /**< Organizational encryption key, field 3. >*/
+	stringer_t *signature;               /**< Organizational signature, field 4. >*/
 } prime_org_signet_t;
 
 typedef struct __attribute__ ((packed)) {

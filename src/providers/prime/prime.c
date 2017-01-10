@@ -169,6 +169,15 @@ stringer_t * prime_get(prime_t *object, prime_encoding_t encoding, stringer_t *o
 		case PRIME_USER_KEY:
 			result = user_key_get(object->key.user, output);
 			break;
+		case PRIME_ORG_SIGNET:
+			result = org_signet_get(object->signet.org, output);
+			break;
+		case PRIME_USER_SIGNET:
+			result = user_signet_get(object->signet.user, output);
+			break;
+		case PRIME_USER_SIGNING_REQUEST:
+			result = user_signet_get(object->signet.user, output);
+			break;
 		default:
 			log_pedantic("Unrecognized PRIME type.");
 			break;
@@ -322,26 +331,79 @@ prime_t * prime_key_generate(prime_type_t type) {
  * @brief	Takes an organizational key, and generates the corresponding signet.
  */
 prime_t * prime_signet_generate(prime_t *object) {
-//#error Check to make sure it's an org priv key. Write unit tests.
-	return NULL;
+
+	prime_t *result = NULL;
+
+	if (!object || object->type != PRIME_ORG_KEY) {
+		log_pedantic("Invalid PRIME organizational key passed in for signet generation.");
+		return NULL;
+	}
+	else if (!(result = prime_alloc(PRIME_ORG_SIGNET, NONE))) {
+		log_pedantic("PRIME signet allocation failed.");
+		return NULL;
+	}
+	else if (!(result->signet.org = org_signet_generate(object->key.org))) {
+		log_pedantic("PRIME signet generation failed.");
+		prime_free(result);
+		return NULL;
+	}
+
+	return result;
 }
 
 /**
- * @brief	Takes a user key, and generates a signet signing request.
+ * @brief	Takes a user key, and possibly the previous user key, and generate a signet signing request.
  */
-prime_t * prime_request_generate(prime_t *object) {
-//#error "Should we handle rotation requests here as well? Write unit tests."
-	return NULL;
+prime_t * prime_request_generate(prime_t *object, prime_t *previous) {
+
+		prime_t *result = NULL;
+
+		// If the previous object isn't NULL, confirm that it is also a user key.
+		if (!object || object->type != PRIME_USER_KEY || (previous && previous->type != PRIME_USER_KEY)) {
+			log_pedantic("Invalid PRIME user key passed in for signet generation.");
+			return NULL;
+		}
+		else if (!(result = prime_alloc(PRIME_USER_SIGNET, NONE))) {
+			log_pedantic("PRIME signet allocation failed.");
+			return NULL;
+		}
+		// If a previous key was provided, generate a rotation request, otherwise generate a new signing request.
+		else if ((!previous && !(result->signet.user = user_signet_request_generate(object->key.user))) ||
+			(previous && !(result->signet.user = user_signet_request_rotation(object->key.user, previous->key.user)))) {
+			log_pedantic("PRIME signet generation failed.");
+			prime_free(result);
+			return NULL;
+		}
+
+		return result;
 }
 
 /**
  * @brief	Takes a user signing request, and an organizational key, and returns a signed user signet.
  */
 prime_t * prime_request_sign(prime_t *request, prime_t *org) {
-//#error	"Check that we're passed an org priv, and user request. Write unit tests."
-//#error	"Should we verify the self-signature in the request before signing it?"
-	return NULL;
+
+	prime_t *result = NULL;
+
+	// If the previous object isn't NULL, confirm that it is also a user key.
+	if (!request || request->type != PRIME_USER_SIGNING_REQUEST || !org || org->type != PRIME_ORG_KEY) {
+		log_pedantic("Invalid PRIME signing request passed in for signet generation.");
+		return NULL;
+	}
+	else if (!(result = prime_alloc(PRIME_USER_SIGNET, NONE))) {
+		log_pedantic("PRIME signet allocation failed.");
+		return NULL;
+	}
+	// If a previous key was provided, generate a rotation request, otherwise generate a new signing request.
+	else if (!(result->signet.user = user_signet_request_sign(request->signet.user, org->key.org))) {
+		log_pedantic("PRIME signet generation failed.");
+		prime_free(result);
+		return NULL;
+	}
+
+	return result;
 }
+
 stringer_t * prime_key_encrypt(stringer_t *key, prime_t *object, prime_encoding_t encoding, stringer_t *output) {
 
 	stringer_t *result = NULL, *binary = NULL;

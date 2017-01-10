@@ -229,3 +229,208 @@ prime_user_signet_t * user_signet_request_rotation(prime_user_key_t *previous, p
 
 	return request;
 }
+
+size_t user_signet_length(prime_user_signet_t *user) {
+
+	// We know the user signets will be 199 or 264 bytes, at least for now. The larger size will be used for signets
+	// with a chain of custody signature. The layout is a 5 byte header, 4x (or 5x) 1 byte field identifiers,
+	// 2x 1 byte field lengths, and 1x 33 byte public key, 1x 32 byte public key, and 2x (or 3x) 64 byte signature.
+	size_t result = 0;
+
+	if (user && user->signing && user->encryption && user->signatures.custody && user->signatures.user && user->signatures.org) result = 199;
+	else if (user && user->signing && user->encryption && user->signatures.user && user->signatures.org) result = 264;
+
+	return result;
+}
+
+stringer_t * user_signet_get(prime_user_signet_t *user, stringer_t *output) {
+#error
+	size_t length;
+	int_t written = 0;
+	stringer_t *result = NULL;
+
+	if (!user || !(length = user_signet_length(user))) {
+		log_pedantic("An invalid user signet was supplied for serialization.");
+		return NULL;
+	}
+
+	// See if we have a valid output buffer, or if output is NULL, allocate a buffer to hold the output.
+	else if (output && (!st_valid_destination(st_opt_get(output)) || st_avail_get(output) < length)) {
+		log_pedantic("An output string was supplied but it does not represent a buffer capable of holding the output.");
+		return NULL;
+	}
+	else if (!output && !(result = st_alloc(length))) {
+		log_pedantic("Could not allocate a buffer large enough to hold encoded result. { requested = %zu }", length);
+		return NULL;
+	}
+	else if (!output) {
+		output = result;
+	}
+
+	st_wipe(output);
+
+	// Calculate the size, by writing out all the fields (minus the header) using a NULL output.
+	length = st_write(NULL, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+		prime_field_write(PRIME_USER_SIGNET, 3, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
+		prime_field_write(PRIME_USER_SIGNET, 4, ED25519_SIGNATURE_LEN, user->signature, MANAGEDBUF(65)));
+
+	// Then output them again into the actual output buffer, but this time include the header. This is very primitive serialization logic.
+	if ((written = st_write(output, prime_header_user_signet_write(length, MANAGEDBUF(5)),
+		prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+		prime_field_write(PRIME_USER_SIGNET, 3, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
+		prime_field_write(PRIME_USER_SIGNET, 4, ED25519_SIGNATURE_LEN, user->signature, MANAGEDBUF(65)))) != (length + 5)) {
+		log_pedantic("The useranizational signet didn't serialize to the expected length. { written = %i }", written);
+		st_cleanup(result);
+		return NULL;
+	}
+
+	return output;
+}
+
+prime_user_signet_t * user_signet_set(stringer_t *user) {
+
+	prime_field_t *field = NULL;
+	prime_object_t *object = NULL;
+	prime_user_signet_t *result = NULL;
+
+	if (!(object = prime_unpack(user))) {
+		log_pedantic("Unable to parse the PRIME user signet.");
+		return NULL;
+	}
+	else if (object->type != PRIME_USER_SIGNET) {
+		log_pedantic("The object passed in was not a user signet.");
+		prime_object_free(object);
+		return NULL;
+	}
+
+	else if (!(result = user_signet_alloc())) {
+		log_pedantic("Unable to allocate a PRIME user signet.");
+		prime_object_free(object);
+		return NULL;
+	}
+
+	// Public signing key, verify the length and import the ed25519 public key.
+	else if (!(field = prime_field_get(object, 1)) || st_length_get(&(field->payload)) != 32 ||
+		!(result->signing = ed25519_public_set(&(field->payload)))) {
+		log_pedantic("Unable to parse the PRIME user signing key.");
+		prime_object_free(object);
+		user_signet_free(result);
+		return NULL;
+	}
+
+	// Public encryption key, verify the length and import the compressed secp256k1 public key.
+	else if (!(field = prime_field_get(object, 2)) || st_length_get(&(field->payload)) != 33 ||
+		!(result->encryption = secp256k1_public_set(&(field->payload)))) {
+		log_pedantic("Unable to parse the PRIME user encryption key.");
+		prime_object_free(object);
+		user_signet_free(result);
+		return NULL;
+	}
+
+	// Chain of custody signature taken over the cryptographic fields, verify the length and import the ed25519 signature.
+	else if (!(field = prime_field_get(object, 4)) || st_length_get(&(field->payload)) != 64 ||
+		!(result->signatures.custody = st_import(pl_data_get(field->payload), pl_length_get(field->payload)))) {
+		log_pedantic("Unable to parse the PRIME user signet chain of custody signature.");
+		prime_object_free(object);
+		user_signet_free(result);
+		return NULL;
+	}
+
+	// Self signature taken over the cryptographic fields, and if present, the custody signature. Verify the length and
+	// then import the ed25519 signature.
+	else if (!(field = prime_field_get(object, 5)) || st_length_get(&(field->payload)) != 64 ||
+		!(result->signatures.user = st_import(pl_data_get(field->payload), pl_length_get(field->payload)))) {
+		log_pedantic("Unable to parse the PRIME user signet self signature.");
+		prime_object_free(object);
+		user_signet_free(result);
+		return NULL;
+	}
+
+	// Organizational signature taken over the cryptographic and user signature fields. Verify the length and then
+	// import the ed25519 signature.
+	else if (!(field = prime_field_get(object, 6)) || st_length_get(&(field->payload)) != 64 ||
+		!(result->signatures.org = st_import(pl_data_get(field->payload), pl_length_get(field->payload)))) {
+		log_pedantic("Unable to parse the PRIME user signet organizational signature.");
+		prime_object_free(object);
+		user_signet_free(result);
+		return NULL;
+	}
+
+	// We don't need the packed object context any more.
+	prime_object_free(object);
+
+	// Verify the signature.
+	if (!user_signet_verify(result)) {
+		log_pedantic("The PRIME user signet signature is invalid.");
+		user_signet_free(result);
+		return NULL;
+	}
+
+	return result;
+}
+
+bool_t user_request_verify(prime_user_signet_t *user) {
+
+	return false;
+}
+
+bool_t user_signet_verify(prime_user_signet_t *user, prime_org_signet_t *org) {
+
+	stringer_t *holder = MANAGEDBUF(199);
+
+	if (!user || !user->signing || !user->encryption || !user->signatures.user || st_length_get(user->signatures.user) != 64 ||
+		 !user->signatures.org || st_length_get(user->signatures.org) != 64 || !org || !org->signing ||
+		 (user->signatures.custody && st_length_get(user->signatures.custody) != 64)) {
+		return false;
+	}
+
+	// Verify the self signature first... by generating a serialized signet to verify.
+	else if ((!user->signatures.custody && st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35))) != 69) ||
+		(user->signatures.custody && st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
+		prime_field_write(PRIME_USER_SIGNET, 4, ED25519_SIGNATURE_LEN, user->signatures.custody, MANAGEDBUF(65))) != 264) ||
+		ed25519_verify(user->signing, holder, user->signatures.user)) {
+		log_pedantic("PRIME user signet verification failed. The self signature was invalid.");
+		return false;
+	}
+
+
+	else if ((!user->signatures.custody && st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
+		prime_field_write(PRIME_USER_SIGNET, 5, ED25519_SIGNATURE_LEN, user->signatures.user, MANAGEDBUF(65))) != 134) ||
+		(user->signatures.custody && st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
+		prime_field_write(PRIME_USER_SIGNET, 4, ED25519_SIGNATURE_LEN, user->signatures.custody, MANAGEDBUF(65)),
+		prime_field_write(PRIME_USER_SIGNET, 5, ED25519_SIGNATURE_LEN, user->signatures.user, MANAGEDBUF(65))) != 199) ||
+		ed25519_verify(org->signing, holder, user->signatures.org)) {
+		log_pedantic("PRIME user signet verification failed. The organizational signature was invalid.");
+		return false;
+	}
+
+	return true;
+}
+
+stringer_t * user_signet_fingerprint(prime_user_signet_t *user, stringer_t *output) {
+
+	stringer_t *holder = MANAGEDBUF(264);
+
+	if (!user || !user->signing || !user->encryption || !user->signatures.user || !user->signatures.org ||
+		st_length_get(user->signatures.user) != 64 || st_length_get(user->signatures.org) != 64 ||
+		(!user->signatures.custody && st_length_get(user->signatures.custody) != 64)) {
+		return NULL;
+	}
+	else if ((!user->signatures.custody && st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
+		prime_field_write(PRIME_USER_SIGNET, 5, ED25519_SIGNATURE_LEN, user->signatures.user, MANAGEDBUF(65)),
+		prime_field_write(PRIME_USER_SIGNET, 6, ED25519_SIGNATURE_LEN, user->signatures.org, MANAGEDBUF(65))) != 199) ||
+		(user->signatures.custody && st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
+		prime_field_write(PRIME_USER_SIGNET, 4, ED25519_SIGNATURE_LEN, user->signatures.custody, MANAGEDBUF(65)),
+		prime_field_write(PRIME_USER_SIGNET, 5, ED25519_SIGNATURE_LEN, user->signatures.user, MANAGEDBUF(65)),
+		prime_field_write(PRIME_USER_SIGNET, 6, ED25519_SIGNATURE_LEN, user->signatures.org, MANAGEDBUF(65))) != 264)) {
+		return NULL;
+	}
+
+	return hash_sha512(holder, output);
+}

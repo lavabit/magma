@@ -112,11 +112,11 @@ prime_org_key_t * org_key_set(stringer_t *org) {
 	prime_org_key_t *result = NULL;
 
 	if (!(object = prime_unpack(org))) {
-		log_pedantic("Unable to unpack a PRIME organizational key.");
+		log_pedantic("Unable to parse the PRIME organizational key.");
 		return NULL;
 	}
 	else if (object->type != PRIME_ORG_KEY) {
-		log_pedantic("The object passed in was not a organizational key.");
+		log_pedantic("The object passed in was not an organizational key.");
 		prime_object_free(object);
 		return NULL;
 	}
@@ -135,7 +135,7 @@ prime_org_key_t * org_key_set(stringer_t *org) {
 	}
 
 	else if (!(field = prime_field_get(object, 3)) || !(result->encryption = secp256k1_private_set(&(field->payload)))) {
-		log_pedantic("Unable to parse the PRIME organizational signing key.");
+		log_pedantic("Unable to parse the PRIME organizational encryption key.");
 		prime_object_free(object);
 		org_key_free(result);
 		return NULL;

@@ -12,19 +12,6 @@
 
 #include "magma_check.h"
 
-/**
- * @file /magma/check/magma/prime/keys_check.c
- *
- * @brief DESCRIPTIONxxxGOESxxxHERE
- *
- * $Author$
- * $Date$
- * $Revision$
- *
- */
-
-#include "magma_check.h"
-
 bool_t check_prime_signets_org_sthread(stringer_t *errmsg) {
 
 	prime_t *org = NULL, *signet = NULL, *binary = NULL, *armored = NULL;

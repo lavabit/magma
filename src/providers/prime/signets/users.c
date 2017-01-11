@@ -42,209 +42,21 @@ prime_user_signet_t * user_signet_alloc(void) {
 	return user;
 }
 
-/**
- * @brief	Accepts a user signet signing request and signs it using the provided org key, returning a valid signet.
- */
-prime_user_signet_t * user_signet_request_sign(prime_user_signet_t *request, prime_org_key_t *org) {
-
-	prime_user_signet_t *signet = NULL;
-	stringer_t *signing = NULL, *encryption = NULL, *cryptographic = MANAGEDBUF(199);
-
-	// Ensure a valid signing request was provided.
-	if (!request || !request->encryption || !request->signing || !request->signing->type == ED25519_PUB ||
-		st_empty(request->signatures.user) || st_length_get(request->signatures.user) != 64 ||
-		(st_populated(request->signatures.custody) && st_length_get(request->signatures.custody) != 64)) {
-		return NULL;
-	}
-	// Ensure the user structure contains the necessary organizational private key.
-	if (!org || !org->signing || !org->signing->type == ED25519_PRIV) {
-		return NULL;
-	}
-	else if (!(signet = mm_alloc(sizeof(prime_user_signet_t)))) {
-		return NULL;
-	}
-
-	// Store the public singing, and encryption keys.
-	else if (!(signing = ed25519_public_get(request->signing, MANAGEDBUF(ED25519_KEY_PUB_LEN))) ||
-		!(encryption = secp256k1_public_get(request->encryption, MANAGEDBUF(SECP256K1_KEY_PUB_LEN)))) {
-		log_pedantic("PRIME user signet generation failed, the public keys could not be derived from the provided signing request.");
-		user_signet_free(signet);
-		return NULL;
-	}
-
-	// Generate a serialized signet with the cryptographic fields for signing. Note the branching based on whether a chain
-	// of custody signature is available.
-	else if ((!request->signatures.custody && st_write(cryptographic, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, signing, MANAGEDBUF(34)),
-		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, encryption, MANAGEDBUF(35)),
-		prime_field_write(PRIME_USER_SIGNET, 5, ED25519_SIGNATURE_LEN, request->signatures.user, MANAGEDBUF(65))) != 134) ||
-		(request->signatures.custody && st_write(cryptographic, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, signing, MANAGEDBUF(34)),
-		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, encryption, MANAGEDBUF(35)),
-		prime_field_write(PRIME_USER_SIGNET, 4, ED25519_SIGNATURE_LEN, request->signatures.custody, MANAGEDBUF(65)),
-		prime_field_write(PRIME_USER_SIGNET, 5, ED25519_SIGNATURE_LEN, request->signatures.user, MANAGEDBUF(65))) != 199)) {
-		log_pedantic("PRIME user signet generation failed, the cryptographic fields could not be serialized for signing.");
-		user_signet_free(signet);
-		return NULL;
-	}
-
-	// Generate a signature using the serialized cryptographic fields.
-	else if (!(signet->signatures.org = ed25519_sign(org->signing, cryptographic, NULL))) {
-		log_pedantic("PRIME user signet generation failed, the cryptographic signet signature could not be derived.");
-		user_signet_free(signet);
-		return NULL;
-	}
-
-	// Convert the serialized public keys into usable structures.
-	else if (!(signet->signing = ed25519_public_set(signing)) || !(signet->encryption = secp256k1_public_set(encryption))) {
-		log_pedantic("PRIME user signet generation failed, the serialized public keys could not be parsed.");
-		user_signet_free(signet);
-		return NULL;
-	}
-
-	// Duplicate the user signature, and if available, duplicate the chain of custody signature.
-	else if (!(signet->signatures.user = st_dupe(request->signatures.user)) ||
-		(request->signatures.custody && !(signet->signatures.user = st_dupe(request->signatures.user)))) {
-		log_pedantic("PRIME user signet generation failed, the signatures could note be duplicated.");
-		user_signet_free(signet);
-		return NULL;
-	}
-
-	return signet;
-}
-
-/**
- * @brief	Derive a user signet signing request from the corresponding private key structures.
- */
-prime_user_signet_t * user_signet_request_generate(prime_user_key_t *user) {
-
-	prime_user_signet_t *request = NULL;
-	stringer_t *signing = NULL, *encryption = NULL, *cryptographic = MANAGEDBUF(69);
-
-	// Ensure the user structure contains the necessary private keys.
-	if (!user || !user->encryption || !user->signing || !user->signing->type == ED25519_PRIV) {
-		return NULL;
-	}
-	else if (!(request = mm_alloc(sizeof(prime_user_signet_t)))) {
-		return NULL;
-	}
-
-	// Store the public singing, and encryption keys.
-	else if (!(signing = ed25519_public_get(user->signing, MANAGEDBUF(ED25519_KEY_PUB_LEN))) ||
-		!(encryption = secp256k1_public_get(user->encryption, MANAGEDBUF(SECP256K1_KEY_PUB_LEN)))) {
-		log_pedantic("PRIME user signet generation failed, the public keys could not be derived from the provided private keys.");
-		user_signet_free(request);
-		return NULL;
-	}
-
-	// Generate a serialized signet with the cryptographic fields.
-	else if (st_write(cryptographic, prime_field_write(PRIME_USER_SIGNING_REQUEST, 1, ED25519_KEY_PUB_LEN, signing, MANAGEDBUF(34)),
-		prime_field_write(PRIME_USER_SIGNING_REQUEST, 2, SECP256K1_KEY_PUB_LEN, encryption, MANAGEDBUF(35))) != 69) {
-		log_pedantic("PRIME user signet generation failed, the cryptographic fields could not be serialized for signing.");
-		user_signet_free(request);
-		return NULL;
-	}
-
-	// Generate a signature using the serialized cryptographic fields.
-	else if (!(request->signatures.user = ed25519_sign(user->signing, cryptographic, NULL))) {
-		log_pedantic("PRIME user signet generation failed, the cryptographic signet signature could not be derived.");
-		user_signet_free(request);
-		return NULL;
-	}
-
-	// Finally, convert the serialized public keys into usable structures.
-	else if (!(request->signing = ed25519_public_set(signing)) || !(request->encryption = secp256k1_public_set(encryption))) {
-		log_pedantic("PRIME user signet generation failed, the serialized public keys could not be parsed.");
-		user_signet_free(request);
-		return NULL;
-	}
-
-	return request;
-}
-
-/**
- * @brief	Generate a user signet signing rotation request using the previous, and new user private key structures.
- */
-prime_user_signet_t * user_signet_request_rotation(prime_user_key_t *previous, prime_user_key_t *user) {
-
-	prime_user_signet_t *request = NULL;
-	stringer_t *signing = NULL, *encryption = NULL, *cryptographic = MANAGEDBUF(134);
-
-	// Ensure the user structure contains the necessary private keys.
-	if (!user || !user->encryption || !user->signing || !user->signing->type == ED25519_PRIV) {
-		return NULL;
-	}
-	// Ensure we have the previous user private signing key. We don't need the previous encryption key so we don't
-	// bother checking for it.
-	else if (!previous || !previous->signing || !previous->signing->type == ED25519_PRIV) {
-		return NULL;
-	}
-	else if (!(request = mm_alloc(sizeof(prime_user_signet_t)))) {
-		return NULL;
-	}
-
-	// Store the public singing, and encryption keys.
-	else if (!(signing = ed25519_public_get(user->signing, MANAGEDBUF(ED25519_KEY_PUB_LEN))) ||
-		!(encryption = secp256k1_public_get(user->encryption, MANAGEDBUF(SECP256K1_KEY_PUB_LEN)))) {
-		log_pedantic("PRIME user signet generation failed, the public keys could not be derived from the provided private keys.");
-		user_signet_free(request);
-		return NULL;
-	}
-
-	// Generate a serialized signet with the cryptographic fields.
-	else if (st_write(cryptographic, prime_field_write(PRIME_USER_SIGNING_REQUEST, 1, ED25519_KEY_PUB_LEN, signing, MANAGEDBUF(34)),
-		prime_field_write(PRIME_USER_SIGNING_REQUEST, 2, SECP256K1_KEY_PUB_LEN, encryption, MANAGEDBUF(35))) != 69) {
-		log_pedantic("PRIME user signet generation failed, the cryptographic fields could not be serialized for signing.");
-		user_signet_free(request);
-		return NULL;
-	}
-
-	// Generate a chain of custody signature using the serialized cryptographic fields.
-	else if (!(request->signatures.custody = ed25519_sign(previous->signing, cryptographic, NULL))) {
-		log_pedantic("PRIME user signet generation failed, the cryptographic signet signature could not be derived.");
-		user_signet_free(request);
-		return NULL;
-	}
-
-	// Generate a serialized signet with the cryptographic fields, plus the chain of custody signature we just created.
-	else if (st_write(cryptographic, prime_field_write(PRIME_USER_SIGNING_REQUEST, 1, ED25519_KEY_PUB_LEN, signing, MANAGEDBUF(34)),
-		prime_field_write(PRIME_USER_SIGNING_REQUEST, 2, SECP256K1_KEY_PUB_LEN, encryption, MANAGEDBUF(35)),
-		prime_field_write(PRIME_USER_SIGNING_REQUEST, 4, ED25519_SIGNATURE_LEN, request->signatures.custody, MANAGEDBUF(65))) != 134) {
-		log_pedantic("PRIME user signet generation failed, the cryptographic fields could not be serialized for signing.");
-		user_signet_free(request);
-		return NULL;
-	}
-
-	// Generate a signature using the serialized cryptographic fields.
-	else if (!(request->signatures.user = ed25519_sign(user->signing, cryptographic, NULL))) {
-		log_pedantic("PRIME user signet generation failed, the cryptographic signet signature could not be derived.");
-		user_signet_free(request);
-		return NULL;
-	}
-
-	// Finally, convert the serialized public keys into usable structures.
-	else if (!(request->signing = ed25519_public_set(signing)) || !(request->encryption = secp256k1_public_set(encryption))) {
-		log_pedantic("PRIME user signet generation failed, the serialized public keys could not be parsed.");
-		user_signet_free(request);
-		return NULL;
-	}
-
-	return request;
-}
-
 size_t user_signet_length(prime_user_signet_t *user) {
 
 	// We know the user signets will be 199 or 264 bytes, at least for now. The larger size will be used for signets
 	// with a chain of custody signature. The layout is a 5 byte header, 4x (or 5x) 1 byte field identifiers,
-	// 2x 1 byte field lengths, and 1x 33 byte public key, 1x 32 byte public key, and 2x (or 3x) 64 byte signature.
+	// 2x 1 byte field lengths, and 1x 33 byte public key, 1x 32 byte public key, and 2x (or 3x) 64 byte signatures.
 	size_t result = 0;
 
-	if (user && user->signing && user->encryption && user->signatures.custody && user->signatures.user && user->signatures.org) result = 199;
-	else if (user && user->signing && user->encryption && user->signatures.user && user->signatures.org) result = 264;
+	if (user && user->signing && user->encryption && user->signatures.custody && user->signatures.user && user->signatures.org) result = 204;
+	else if (user && user->signing && user->encryption && user->signatures.user && user->signatures.org) result = 269;
 
 	return result;
 }
 
 stringer_t * user_signet_get(prime_user_signet_t *user, stringer_t *output) {
-#error
+
 	size_t length;
 	int_t written = 0;
 	stringer_t *result = NULL;
@@ -269,17 +81,34 @@ stringer_t * user_signet_get(prime_user_signet_t *user, stringer_t *output) {
 
 	st_wipe(output);
 
-	// Calculate the size, by writing out all the fields (minus the header) using a NULL output.
-	length = st_write(NULL, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
-		prime_field_write(PRIME_USER_SIGNET, 3, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
-		prime_field_write(PRIME_USER_SIGNET, 4, ED25519_SIGNATURE_LEN, user->signature, MANAGEDBUF(65)));
+	// Find out the signet payload length.
+	if (!user->signatures.custody) {
+		length = st_write(NULL, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+			prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
+			prime_field_write(PRIME_USER_SIGNET, 5, ED25519_SIGNATURE_LEN, user->signatures.user, MANAGEDBUF(65)),
+			prime_field_write(PRIME_USER_SIGNET, 6, ED25519_SIGNATURE_LEN, user->signatures.org, MANAGEDBUF(65)));
+	}
+	else {
+		length = st_write(NULL, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+			prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
+			prime_field_write(PRIME_USER_SIGNET, 4, ED25519_SIGNATURE_LEN, user->signatures.custody, MANAGEDBUF(65)),
+			prime_field_write(PRIME_USER_SIGNET, 5, ED25519_SIGNATURE_LEN, user->signatures.user, MANAGEDBUF(65)),
+			prime_field_write(PRIME_USER_SIGNET, 6, ED25519_SIGNATURE_LEN, user->signatures.org, MANAGEDBUF(65)));
+	}
 
-	// Then output them again into the actual output buffer, but this time include the header. This is very primitive serialization logic.
-	if ((written = st_write(output, prime_header_user_signet_write(length, MANAGEDBUF(5)),
+	// Write the signet into the buffer.
+	if ((!user->signatures.custody && (written = st_write(output, prime_header_user_signet_write(length, MANAGEDBUF(5)),
 		prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
-		prime_field_write(PRIME_USER_SIGNET, 3, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
-		prime_field_write(PRIME_USER_SIGNET, 4, ED25519_SIGNATURE_LEN, user->signature, MANAGEDBUF(65)))) != (length + 5)) {
-		log_pedantic("The useranizational signet didn't serialize to the expected length. { written = %i }", written);
+		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
+		prime_field_write(PRIME_USER_SIGNET, 5, ED25519_SIGNATURE_LEN, user->signatures.user, MANAGEDBUF(65)),
+		prime_field_write(PRIME_USER_SIGNET, 6, ED25519_SIGNATURE_LEN, user->signatures.org, MANAGEDBUF(65)))) != (length + 5)) ||
+		(user->signatures.custody && (written = st_write(output, prime_header_user_signet_write(length, MANAGEDBUF(5)),
+		prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
+		prime_field_write(PRIME_USER_SIGNET, 4, ED25519_SIGNATURE_LEN, user->signatures.custody, MANAGEDBUF(65)),
+		prime_field_write(PRIME_USER_SIGNET, 5, ED25519_SIGNATURE_LEN, user->signatures.user, MANAGEDBUF(65)),
+		prime_field_write(PRIME_USER_SIGNET, 6, ED25519_SIGNATURE_LEN, user->signatures.org, MANAGEDBUF(65)))) != (length + 5))) {
+		log_pedantic("The user signet didn't serialize to the expected length. { written = %i }", written);
 		st_cleanup(result);
 		return NULL;
 	}
@@ -369,17 +198,41 @@ prime_user_signet_t * user_signet_set(stringer_t *user) {
 	return result;
 }
 
-bool_t user_request_verify(prime_user_signet_t *user) {
+bool_t user_signet_certify(prime_user_signet_t *user, prime_org_signet_t *org) {
 
-	return false;
-}
-
-bool_t user_signet_verify(prime_user_signet_t *user, prime_org_signet_t *org) {
-
-	stringer_t *holder = MANAGEDBUF(199);
+	stringer_t *holder = MANAGEDBUF(264);
 
 	if (!user || !user->signing || !user->encryption || !user->signatures.user || st_length_get(user->signatures.user) != 64 ||
 		 !user->signatures.org || st_length_get(user->signatures.org) != 64 || !org || !org->signing ||
+		 (user->signatures.custody && st_length_get(user->signatures.custody) != 64)) {
+		return false;
+	}
+
+	else if ((!user->signatures.custody && st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
+		prime_field_write(PRIME_USER_SIGNET, 5, ED25519_SIGNATURE_LEN, user->signatures.user, MANAGEDBUF(65))) != 134) ||
+		(user->signatures.custody && st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
+		prime_field_write(PRIME_USER_SIGNET, 4, ED25519_SIGNATURE_LEN, user->signatures.custody, MANAGEDBUF(65)),
+		prime_field_write(PRIME_USER_SIGNET, 5, ED25519_SIGNATURE_LEN, user->signatures.user, MANAGEDBUF(65))) != 199)) {
+		log_pedantic("PRIME user signet certification failed. The signet could not be serialized.");
+		return false;
+	}
+
+	else if (ed25519_verify(org->signing, holder, user->signatures.org)) {
+		log_pedantic("PRIME user signet certification failed. The organizational signature failed validation.");
+		return false;
+	}
+
+	return true;
+}
+
+bool_t user_signet_verify(prime_user_signet_t *user) {
+
+	stringer_t *holder = MANAGEDBUF(264);
+
+	if (!user || !user->signing || !user->encryption || !user->signatures.user || st_length_get(user->signatures.user) != 64 ||
+		 !user->signatures.org || st_length_get(user->signatures.org) != 64 ||
 		 (user->signatures.custody && st_length_get(user->signatures.custody) != 64)) {
 		return false;
 	}
@@ -389,24 +242,16 @@ bool_t user_signet_verify(prime_user_signet_t *user, prime_org_signet_t *org) {
 		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35))) != 69) ||
 		(user->signatures.custody && st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
 		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
-		prime_field_write(PRIME_USER_SIGNET, 4, ED25519_SIGNATURE_LEN, user->signatures.custody, MANAGEDBUF(65))) != 264) ||
-		ed25519_verify(user->signing, holder, user->signatures.user)) {
-		log_pedantic("PRIME user signet verification failed. The self signature was invalid.");
+		prime_field_write(PRIME_USER_SIGNET, 4, ED25519_SIGNATURE_LEN, user->signatures.custody, MANAGEDBUF(65))) != 134)) {
+		log_pedantic("PRIME user signet verification failed. The signet could not be serialized.");
 		return false;
 	}
 
-
-	else if ((!user->signatures.custody && st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
-		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
-		prime_field_write(PRIME_USER_SIGNET, 5, ED25519_SIGNATURE_LEN, user->signatures.user, MANAGEDBUF(65))) != 134) ||
-		(user->signatures.custody && st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
-		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
-		prime_field_write(PRIME_USER_SIGNET, 4, ED25519_SIGNATURE_LEN, user->signatures.custody, MANAGEDBUF(65)),
-		prime_field_write(PRIME_USER_SIGNET, 5, ED25519_SIGNATURE_LEN, user->signatures.user, MANAGEDBUF(65))) != 199) ||
-		ed25519_verify(org->signing, holder, user->signatures.org)) {
-		log_pedantic("PRIME user signet verification failed. The organizational signature was invalid.");
+	else if (ed25519_verify(user->signing, holder, user->signatures.user)) {
+		log_pedantic("PRIME user signet verification failed. The user self signature failed validation.");
 		return false;
 	}
+
 
 	return true;
 }

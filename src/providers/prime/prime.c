@@ -176,7 +176,7 @@ stringer_t * prime_get(prime_t *object, prime_encoding_t encoding, stringer_t *o
 			result = user_signet_get(object->signet.user, output);
 			break;
 		case PRIME_USER_SIGNING_REQUEST:
-			result = user_signet_get(object->signet.user, output);
+			result = user_request_get(object->signet.user, output);
 			break;
 		default:
 			log_pedantic("Unrecognized PRIME type.");
@@ -271,6 +271,15 @@ prime_t * prime_set(stringer_t *object, prime_encoding_t encoding, prime_flags_t
 			break;
 		case PRIME_USER_KEY:
 			result->key.user = user_key_set(binary);
+			break;
+		case PRIME_ORG_SIGNET:
+			result->signet.org = org_signet_set(binary);
+			break;
+		case PRIME_USER_SIGNET:
+			result->signet.user = user_signet_set(binary);
+			break;
+		case PRIME_USER_SIGNING_REQUEST:
+			result->signet.user = user_request_set(binary);
 			break;
 		default:
 			log_pedantic("Unrecognized PRIME type.");
@@ -368,8 +377,8 @@ prime_t * prime_request_generate(prime_t *object, prime_t *previous) {
 			return NULL;
 		}
 		// If a previous key was provided, generate a rotation request, otherwise generate a new signing request.
-		else if ((!previous && !(result->signet.user = user_signet_request_generate(object->key.user))) ||
-			(previous && !(result->signet.user = user_signet_request_rotation(object->key.user, previous->key.user)))) {
+		else if ((!previous && !(result->signet.user = user_request_generate(object->key.user))) ||
+			(previous && !(result->signet.user = user_request_rotation(object->key.user, previous->key.user)))) {
 			log_pedantic("PRIME signet generation failed.");
 			prime_free(result);
 			return NULL;
@@ -395,7 +404,7 @@ prime_t * prime_request_sign(prime_t *request, prime_t *org) {
 		return NULL;
 	}
 	// If a previous key was provided, generate a rotation request, otherwise generate a new signing request.
-	else if (!(result->signet.user = user_signet_request_sign(request->signet.user, org->key.org))) {
+	else if (!(result->signet.user = user_request_sign(request->signet.user, org->key.org))) {
 		log_pedantic("PRIME signet generation failed.");
 		prime_free(result);
 		return NULL;

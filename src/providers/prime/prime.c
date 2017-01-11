@@ -60,17 +60,20 @@ void prime_free(prime_t *object) {
 	if (object) {
 
 		switch (object->type) {
-			case PRIME_USER_KEY:
-				if (object->key.user) user_key_free(object->key.user);
-				break;
-			case PRIME_USER_SIGNET:
-				break;
-			case PRIME_USER_SIGNING_REQUEST:
-				break;
 			case PRIME_ORG_KEY:
 				if (object->key.org) org_key_free(object->key.org);
 				break;
+			case PRIME_USER_KEY:
+				if (object->key.user) user_key_free(object->key.user);
+				break;
 			case PRIME_ORG_SIGNET:
+				if (object->signet.org) org_signet_free(object->signet.org);
+				break;
+			case PRIME_USER_SIGNET:
+				if (object->signet.user) user_signet_free(object->signet.user);
+				break;
+			case PRIME_USER_SIGNING_REQUEST:
+				if (object->signet.user) user_signet_free(object->signet.user);
 				break;
 			default:
 				log_pedantic("Unrecognized PRIME object type.");

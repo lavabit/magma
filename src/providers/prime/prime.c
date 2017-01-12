@@ -500,6 +500,15 @@ prime_t * prime_request_sign(prime_t *request, prime_t *org) {
 }
 
 /**
+ * @brief	Encrypt a message.
+ */
+ prime_t * prime_message_encrypt(stringer_t *message, prime_t *author, prime_t *origin, prime_t *destination, prime_t *recipient) {
+
+
+	 return NULL;
+ }
+
+/**
  * @brief	Encrypt an organizational or user key using a STACIE realm key.
  */
 stringer_t * prime_key_encrypt(stringer_t *key, prime_t *object, prime_encoding_t encoding, stringer_t *output) {

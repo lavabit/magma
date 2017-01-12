@@ -33,7 +33,7 @@ typedef enum {
 
 typedef enum {
 	BINARY,                              /**< Serialized object in binary form. >*/
-	ARMORED                              /**< Armor the object using the Privacy Enhanced Message format. >*/
+	ARMORED                              /**< An object that has been aromored using the Privacy Enhanced Message format. >*/
 } prime_encoding_t;
 
 typedef enum {
@@ -42,19 +42,29 @@ typedef enum {
 } prime_flags_t;
 
 typedef enum {
-    PRIME_ORG_SIGNET = 1776,             /**< Organizational signet. >*/
-	PRIME_ORG_KEY = 1952,                /**< Organizational key. >*/
-	PRIME_ORG_KEY_ENCRYPTED = 1947,      /**< Encrypted organizational key. >*/
+    PRIME_ORG_SIGNET = 1776,               /**< Organizational signet. >*/
+	PRIME_ORG_KEY = 1952,                  /**< Organizational key. >*/
+	PRIME_ORG_KEY_ENCRYPTED = 1947,        /**< Encrypted organizational key. >*/
 
-	PRIME_USER_SIGNING_REQUEST = 1215,    /**< User signing request. >*/
-    PRIME_USER_SIGNET = 1789,             /**< User signet. >*/
-	PRIME_USER_KEY = 2013,                /**< User key. >*/
-	PRIME_USER_KEY_ENCRYPTED = 1976,      /**< Encrypted user key. >*/
+	PRIME_USER_SIGNING_REQUEST = 1215,     /**< User signing request. >*/
+    PRIME_USER_SIGNET = 1789,              /**< User signet. >*/
+	PRIME_USER_KEY = 2013,                 /**< User key. >*/
+	PRIME_USER_KEY_ENCRYPTED = 1976,       /**< Encrypted user key. >*/
 
-    PRIME_MESSAGE_ENCRYPTED = 1847        /**< Encrypted message. >*/
+    PRIME_MESSAGE_ENCRYPTED = 1847,        /**< An encrypted message. >*/
+    PRIME_MESSAGE_SENT = 1851,             /**< An encrypted, appended, sent message. >*/
+    PRIME_MESSAGE_DRAFT = 1861,            /**< An encrypted, appended, message draft. >*/
+    PRIME_MESSAGE_NAKED = 1908,            /**< An encrypted, imported, unstructured, naked message. >*/
+
+    PRIME_MESSAGE_BOUNCE = 1931,           /**< An encapsulated, encrypted message, that has bounced. >*/
+    PRIME_MESSAGE_FORWARD = 1948,          /**< An encapsulated, encrypted message, that has been forwarded. >*/
+    PRIME_MESSAGE_ABUSE = 2001,            /**< An encapsulated, encrypted message, sent as an abuse complaint. >*/
+
+    PRIME_BINARY_OBJECT = 1837,            /**< A binary object. >*/
+    PRIME_PROTOCOL_TICKET = 1841           /**< An encrypted protocol ticket. >*/
 } prime_type_t;
 
-// This allows code to include the PRIME header without first including the OpenSSL headers.
+// Allows the inclusion of this PRIME header without having to include the OpenSSL headers.
 #ifdef HEADER_EC_H
 typedef EC_KEY secp256k1_key_t;
 #else
@@ -97,6 +107,10 @@ typedef struct __attribute__ ((packed)) {
 } prime_org_signet_t;
 
 typedef struct __attribute__ ((packed)) {
+	secp256k1_key_t *ephemeral;
+} prime_message_t;
+
+typedef struct __attribute__ ((packed)) {
 	prime_type_t type;
 	prime_flags_t flags;
 	struct {
@@ -112,6 +126,13 @@ typedef struct __attribute__ ((packed)) {
 			prime_user_signet_t *user;
 		};
 	} signet;
+
+	struct {
+		union {
+			prime_message_t *naked;
+			prime_message_t *native;
+		};
+	} message;
 } prime_t;
 
 /// prime.c
@@ -131,8 +152,9 @@ bool_t        prime_signet_validate(prime_t *object, prime_t *validator);
 bool_t        prime_start(void);
 void          prime_stop(void);
 
+#include "transposition/transposition.h"
 #include "cryptography/cryptography.h"
-#include "formats/formats.h"
+#include "messages/messages.h"
 #include "signets/signets.h"
 #include "keys/keys.h"
 

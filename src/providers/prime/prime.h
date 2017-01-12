@@ -64,6 +64,62 @@ typedef enum {
     PRIME_PROTOCOL_TICKET = 1841           /**< An encrypted protocol ticket. >*/
 } prime_type_t;
 
+typedef enum {
+    PRIME_CHUNK_ENVELOPE = 1,              /**< Envelope block. >*/
+	PRIME_CHUNK_EPHEMERAL = 2,             /**< Ephemeral chunk. >*/
+	PRIME_CHUNK_ORIGIN = 3,                /**< Origin chunk. >*/
+	PRIME_CHUNK_DESTINATION = 4,           /**< Destination chunk. >*/
+
+	PRIME_CHUNK_METADATA = 32,             /**< Metadata block. >*/
+	PRIME_CHUNK_COMMON = 33,               /**< Common headers chunk. >*/
+	PRIME_CHUNK_HEADERS = 34,              /**< Remaining headers chunk. >*/
+
+	PRIME_CHUNK_BODY = 34,                 /**< Body block. >*/
+	PRIME_CHUNK_GENERIC = 35               /**< Generic chunk type. >*/
+} prime_message_chunks_t;
+
+typedef enum {
+	ORG_PRIMARY_KEY = 1,
+	ORG_SECONDARY_KEY = 2,
+	ORG_ENCRYPTION_KEY = 3
+} prime_org_key_fields_t;
+
+typedef enum {
+	ORG_PRIMARY_KEY = 1,
+	ORG_SECONDARY_KEY = 2,
+	ORG_ENCRYPTION_KEY = 3,
+	ORG_SELF_SIGNATURE = 4,
+	ORG_FULL_SIGNATURE = 253,
+	ORG_IDENTIFIER = 254,
+	ORG_IDENTIFIABLE_SIGNATURE = 255
+} prime_org_signet_fields_t;
+
+typedef enum {
+	USER_SIGNING_KEY = 1,
+	USER_ENCRYPTION_KEY = 2,
+	USER_ALTERNATE_ENCRYPTION_KEY = 3,
+} prime_user_key_fields_t;
+
+typedef enum {
+	USER_SIGNING_KEY = 1,
+	USER_ENCRYPTION_KEY = 2,
+	USER_ALTERNATE_ENCRYPTION_KEY = 3,
+	USER_CUSTODY_SIGNATURE = 4,
+	USER_SELF_SIGNATURE = 5,
+	USER_CRYPTO_SIGNATURE = 6,
+	USER_FULL_SIGNATURE = 253,
+	USER_IDENTIFIER = 254,
+	USER_IDENTIFIABLE_SIGNATURE = 255
+} prime_user_signet_fields_t;
+
+typedef enum {
+	USER_SIGNING_KEY = 1,
+	USER_ENCRYPTION_KEY = 2,
+	USER_ALTERNATE_ENCRYPTION_KEY = 3,
+	USER_CUSTODY_SIGNATURE = 4,
+	USER_SELF_SIGNATURE = 5
+} prime_user_signing_request_fields_t;
+
 // Allows the inclusion of this PRIME header without having to include the OpenSSL headers.
 #ifdef HEADER_EC_H
 typedef EC_KEY secp256k1_key_t;
@@ -164,7 +220,7 @@ typedef struct __attribute__ ((packed)) {
 	} envelope;
 	struct {
 		prime_encrypted_chunk_t *common;
-		prime_encrypted_chunk_t *headers;
+		prime_encrypted_chunk_t *other;
 	} metadata;
 	struct {
 		prime_encrypted_chunk_t *body;

@@ -90,24 +90,90 @@ typedef struct __attribute__ ((packed)) {
 } prime_org_key_t;
 
 typedef struct __attribute__ ((packed)) {
-	ed25519_key_t *signing;              /**< User signing key, field 1. >*/
-	secp256k1_key_t *encryption;         /**< User encryption key, field 2. >*/
-
+	ed25519_key_t *signing;                /**< User signing key, field 1. >*/
+	secp256k1_key_t *encryption;           /**< User encryption key, field 2. >*/
 	struct {
-		stringer_t *custody;             /**< User chain of custody signature, field 4. >*/
-		stringer_t *user;                /**< User signature, field 5. >*/
-		stringer_t *org;                 /**< Organizational signature, field 6. >*/
+		stringer_t *custody;               /**< User chain of custody signature, field 4. >*/
+		stringer_t *user;                  /**< User signature, field 5. >*/
+		stringer_t *org;                   /**< Organizational signature, field 6. >*/
 	} signatures;
 } prime_user_signet_t;
 
 typedef struct __attribute__ ((packed)) {
-	ed25519_key_t *signing;              /**< Organizational signing key, field 1. >*/
-	secp256k1_key_t *encryption;         /**< Organizational encryption key, field 3. >*/
-	stringer_t *signature;               /**< Organizational signature, field 4. >*/
+	ed25519_key_t *signing;                /**< Organizational signing key, field 1. >*/
+	secp256k1_key_t *encryption;           /**< Organizational encryption key, field 3. >*/
+	stringer_t *signature;                 /**< Organizational signature, field 4. >*/
 } prime_org_signet_t;
 
 typedef struct __attribute__ ((packed)) {
-	secp256k1_key_t *ephemeral;
+	uint8_t type;
+	stringer_t *buffer;
+} prime_ephemeral_chunk_t;
+
+typedef struct __attribute__ ((packed)) {
+	struct {
+		uint8_t type;                      /**< Chunk type, 1 through 255. >*/
+		uint32_t length;                   /**< Payload length, must be divisible by 16. >*/
+		uint32_t serialized;               /**< Serialized form, a 1 byte type, and 3 byte big endian length. >*/
+	} header;
+	struct {
+		struct {
+			placer_t signature;
+			uint32_t length;
+			uint8_t flags;
+			uint8_t pad;
+			placer_t data;
+			placer_t trailing;
+			stringer_t *buffer;
+		} plain;
+		struct {
+			stringer_t *buffer;
+		} encrypted;
+	} payload;
+	struct {
+		stringer_t *author;
+		stringer_t *origin;
+		stringer_t *destination;
+		stringer_t *recipient;
+	} slots;
+} prime_encrypted_chunk_t;
+
+typedef struct __attribute__ ((packed)) {
+	stringer_t *signature;
+	struct {
+		stringer_t *author;
+		stringer_t *origin;
+		stringer_t *destination;
+		stringer_t *recipient;
+	} slots;
+} prime_signature_chunk_t;
+
+typedef struct __attribute__ ((packed)) {
+	struct {
+		stringer_t *kek;
+		secp256k1_key_t *ephemeral;
+		secp256k1_key_t *author;
+		secp256k1_key_t *origin;
+		secp256k1_key_t *destination;
+		secp256k1_key_t *recipient;
+	} keys;
+	struct {
+		prime_ephemeral_chunk_t *ephemeral;
+		prime_encrypted_chunk_t *origin;
+		prime_encrypted_chunk_t *destination;
+	} envelope;
+	struct {
+		prime_encrypted_chunk_t *common;
+		prime_encrypted_chunk_t *other;
+	} metadata;
+	struct {
+		prime_encrypted_chunk_t *body;
+	} content;
+	struct {
+		prime_signature_chunk_t *tree;
+		prime_signature_chunk_t *author;
+		prime_signature_chunk_t *org;
+	} signatures;
 } prime_message_t;
 
 typedef struct __attribute__ ((packed)) {
@@ -119,14 +185,12 @@ typedef struct __attribute__ ((packed)) {
 			prime_user_key_t *user;
 		};
 	} key;
-
 	struct {
 		union {
 			prime_org_signet_t *org;
 			prime_user_signet_t *user;
 		};
 	} signet;
-
 	struct {
 		union {
 			prime_message_t *naked;

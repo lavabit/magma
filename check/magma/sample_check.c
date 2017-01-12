@@ -72,7 +72,7 @@ bool_t check_component_test2_mthread(stringer_t *errmsg) {
 	}
 
 	// Launch the threads.
-	for (uint64_t counter = 0; counter < RAND_CHECK_MTHREADS; counter++) {
+	for (uint64_t counter = 0; counter < COMPONENT_CHECK_MTHREADS; counter++) {
 		if (thread_launch(threads + counter, &check_component_test2_wrap, NULL)) {
 			st_sprint(errmsg, "Thread launch failed.");
 			result = false;
@@ -80,8 +80,8 @@ bool_t check_component_test2_mthread(stringer_t *errmsg) {
 	}
 
 	// Wait for the threads to finish and check the output value for an error indication.
-	for (uint64_t counter = 0; counter < RAND_CHECK_MTHREADS; counter++) {
-		if ((threads + counter) && thread_result(*(threads + counter), &outcome)) {
+	for (uint64_t counter = 0; counter < COMPONENT_CHECK_MTHREADS; counter++) {
+		if (thread_result(*(threads + counter), &outcome)) {
 			if (!errmsg) st_sprint(errmsg, "Thread join error.");
 			result = false;
 		}
@@ -96,30 +96,28 @@ bool_t check_component_test2_mthread(stringer_t *errmsg) {
 	return result;
 }
 
-START_TEST (check_component_s)
-	{
-		bool_t result = true;
-		stringer_t *errmsg = MANAGEDBUF(1024);
+START_TEST (check_component_s) {
+	bool_t result = true;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 
-		if (status()) result = check_component_test1_sthread(errmsg);
-		//if (status() && result) result = check_component_test2_sthread(errmsg);
+	if (status()) result = check_component_test1_sthread(errmsg);
+	//if (status() && result) result = check_component_test2_sthread(errmsg);
 
-		log_test("COMPONENT / INTERFACE / SINGLE THREADED:", errmsg);
-		ck_assert_msg(result, st_char_get(errmsg));
-	}
+	log_test("COMPONENT / INTERFACE / SINGLE THREADED:", errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
+}
 END_TEST
 
-START_TEST (check_component_m)
-	{
-		bool_t result = true;
-		stringer_t *errmsg = MANAGEDBUF(1024);
+START_TEST (check_component_m) {
+	bool_t result = true;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 
-		if (status()) result = check_component_test2_mthread(errmsg);
-		//if (status() && result) result = check_component_test2_mthread(errmsg);
+	if (status()) result = check_component_test2_mthread(errmsg);
+	//if (status() && result) result = check_component_test2_mthread(errmsg);
 
-		log_test("COMPONENT / INTERFACE / MILTITHREADED:", errmsg);
-		ck_assert_msg(result, st_char_get(errmsg));
-	}
+	log_test("COMPONENT / INTERFACE / MILTITHREADED:", errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
+}
 END_TEST
 
 Suite * suite_check_sample(void) {

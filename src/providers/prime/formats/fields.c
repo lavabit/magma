@@ -118,13 +118,19 @@ stringer_t * prime_field_write(prime_type_t type, prime_field_type_t field, size
 	}
 
 	// Figure out how big the field heading is.
-	if (!(size_len = prime_field_size_length(field)) || st_empty_out(data, &payload, &payload_len)) {
+	if (!(size_len = prime_field_size_length(field)) < 0 || st_empty_out(data, &payload, &payload_len)) {
 		log_pedantic("Invalid variables were provided to the PRIME heading writer.");
 		return NULL;
 	}
 
-	// Ensure the data will fit given the field type.
-	else if (payload_len > prime_field_size_max(type, field)) {
+	// Ensure fixed length fields always use a 64 byte payload.
+	else if (size_len == 0 && payload_len != 64) {
+		log_error("The payload length provided does not match the size specified for fixed length PRIME fields. { field = %hhu / size = %zu }",
+			field, payload_len);
+		return NULL;
+	}
+	// Ensure the data will fit the payload for the given field type.
+	else if (size_len > 0 && prime_field_size_max(type, field) < payload_len) {
 		log_error("The size provided is too small for the specified PRIME field type. { field = %hhu / max = %zu / size = %zu }",
 			field, prime_field_size_max(type, field), payload_len);
 		return NULL;

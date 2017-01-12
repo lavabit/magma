@@ -411,22 +411,22 @@ START_TEST (check_spf_s) {
 
 		// Pass
 		if (!errmsg && spf_check(&ip[0], NULLER("mx.lavabit.com"), NULLER("support@pass.lavabit.com")) != 1) {
-			errmsg = "Valid SPF record check failed. {support@pass.lavabit.com / 1.1.1.1}";
+			errmsg = "Valid SPF record check failed. { support@pass.lavabit.com / 1.1.1.1 }";
 		}
 
 		// Neutral
 		if (!errmsg && spf_check(&ip[0], NULLER("mx.lavabit.com"), NULLER("support@neutral.lavabit.com")) != -1) {
-			errmsg = "Neutral SPF record check failed. {support@neutral.lavabit.com / 1.1.1.1}";
+			errmsg = "Neutral SPF record check failed. { support@neutral.lavabit.com / 1.1.1.1 }";
 		}
 
 		// Fail
 		if (!errmsg && spf_check(&ip[0], NULLER("mx.lavabit.com"), NULLER("support@fail.lavabit.com")) != -2) {
-			errmsg = "Invalid SPF record check failed. {support@fail.lavabit.com / 1.1.1.1}";
+			errmsg = "Invalid SPF record check failed. { support@fail.lavabit.com / 1.1.1.1 }";
 		}
 
 		// Ensure the localhost always gets through
 		if (!errmsg && spf_check(&ip[1], NULLER("mx.lavabit.com"), NULLER("support@fail.lavabit.com")) != 1) {
-			errmsg = "The localhost address matched a failure record instead of being whitelisted. {support@fail.lavabit.com / 127.0.0.1}";
+			errmsg = "The localhost address matched a failure record instead of being whitelisted. { support@fail.lavabit.com / 127.0.0.1 }";
 		}
 	}
 

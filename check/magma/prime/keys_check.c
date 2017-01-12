@@ -29,7 +29,7 @@ bool_t check_prime_keys_org_sthread(stringer_t *errmsg) {
 	prime_free(holder);
 
 	// Generate an org key.
-	if (!(holder = prime_key_generate(PRIME_ORG_KEY))) {
+	if (!(holder = prime_key_generate(PRIME_ORG_KEY, NONE))) {
 		st_sprint(errmsg, "Organizational key generation failed.");
 		return false;
 	}
@@ -68,7 +68,7 @@ bool_t check_prime_keys_org_sthread(stringer_t *errmsg) {
 
 	// Perform the same checks, but this time make the functions
 	// allocate memory for the output. Generate an org key.
-	if (!(holder = prime_key_generate(PRIME_ORG_KEY))) {
+	if (!(holder = prime_key_generate(PRIME_ORG_KEY, NONE))) {
 		st_sprint(errmsg, "Organizational key generation failed.");
 		return false;
 	}
@@ -130,7 +130,7 @@ bool_t check_prime_keys_user_sthread(stringer_t *errmsg) {
 	prime_free(holder);
 
 	// Generate a user key.
-	if (!(holder = prime_key_generate(PRIME_USER_KEY))) {
+	if (!(holder = prime_key_generate(PRIME_USER_KEY, NONE))) {
 		st_sprint(errmsg, "User key generation failed.");
 		return false;
 	}
@@ -169,7 +169,7 @@ bool_t check_prime_keys_user_sthread(stringer_t *errmsg) {
 
 	// Perform the same checks, but this time make the functions
 	// allocate memory for the output. Generate a new user key.
-	if (!(holder = prime_key_generate(PRIME_USER_KEY))) {
+	if (!(holder = prime_key_generate(PRIME_USER_KEY, NONE))) {
 		st_sprint(errmsg, "User key generation failed.");
 		return false;
 	}

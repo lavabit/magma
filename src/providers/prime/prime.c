@@ -109,13 +109,7 @@ prime_t * prime_alloc(prime_type_t type, prime_flags_t flags) {
 
 	prime_t *result = NULL;
 
-	// Secure allocation.
-	if ((flags & SECURITY) == SECURITY && !(result = mm_sec_alloc(sizeof(prime_t)))) {
-		log_pedantic("PRIME object allocation failed.");
-		return NULL;
-	}
-	// Regular allocation.
-	else if ((flags & SECURITY) != SECURITY && !(result = mm_alloc(sizeof(prime_t)))) {
+	if (!(result = mm_alloc(sizeof(prime_t)))) {
 		log_pedantic("PRIME object allocation failed.");
 		return NULL;
 	}
@@ -128,20 +122,20 @@ prime_t * prime_alloc(prime_type_t type, prime_flags_t flags) {
 
 	// Switch statement so we can perform any type specific allocation tasks.
 	switch (type) {
+		case PRIME_ORG_KEY:
+			result->type = PRIME_ORG_KEY;
+			break;
 		case PRIME_USER_KEY:
 			result->type = PRIME_USER_KEY;
+			break;
+		case PRIME_ORG_SIGNET:
+			result->type = PRIME_ORG_SIGNET;
 			break;
 		case PRIME_USER_SIGNET:
 			result->type = PRIME_USER_SIGNET;
 			break;
 		case PRIME_USER_SIGNING_REQUEST:
 			result->type = PRIME_USER_SIGNING_REQUEST;
-			break;
-		case PRIME_ORG_KEY:
-			result->type = PRIME_ORG_KEY;
-			break;
-		case PRIME_ORG_SIGNET:
-			result->type = PRIME_ORG_SIGNET;
 			break;
 		default:
 			log_pedantic("Unrecognized PRIME type.");
@@ -295,7 +289,9 @@ prime_t * prime_set(stringer_t *object, prime_encoding_t encoding, prime_flags_t
 	st_cleanup(output);
 
 	// Check object type being parsed was sucessfully setup.
-	if ((type == PRIME_ORG_KEY && !result->key.org) || (type == PRIME_USER_KEY && !result->key.user)) {
+	if ((type == PRIME_ORG_KEY && !result->key.org) || (type == PRIME_USER_KEY && !result->key.user) ||
+		(type == PRIME_ORG_SIGNET && !result->signet.org) || (type == PRIME_USER_SIGNET && !result->signet.user) ||
+		(type == PRIME_USER_SIGNING_REQUEST && !result->signet.user)) {
 		prime_free(result);
 		return NULL;
 	}
@@ -303,16 +299,14 @@ prime_t * prime_set(stringer_t *object, prime_encoding_t encoding, prime_flags_t
 	return result;
 }
 
-prime_t * prime_key_generate(prime_type_t type) {
+prime_t * prime_key_generate(prime_type_t type, prime_flags_t flags) {
 
 	prime_t *result = NULL;
 
-	if (!(result = mm_alloc(sizeof(prime_t)))) {
+	if (!(result = prime_alloc(type, flags))) {
 		log_pedantic("PRIME key allocation failed.");
 		return NULL;
 	}
-
-	mm_wipe(result, sizeof(prime_t));
 
 	// Switch statement to call the appropriate allocator.
 	switch (type) {
@@ -375,7 +369,7 @@ prime_t * prime_request_generate(prime_t *object, prime_t *previous) {
 			log_pedantic("Invalid PRIME user key passed in for signet generation.");
 			return NULL;
 		}
-		else if (!(result = prime_alloc(PRIME_USER_SIGNET, NONE))) {
+		else if (!(result = prime_alloc(PRIME_USER_SIGNING_REQUEST, NONE))) {
 			log_pedantic("PRIME signet allocation failed.");
 			return NULL;
 		}
@@ -396,7 +390,8 @@ prime_t * prime_request_generate(prime_t *object, prime_t *previous) {
 prime_t * prime_request_sign(prime_t *request, prime_t *org) {
 
 	prime_t *result = NULL;
-
+log_enable();
+//#error
 	// If the previous object isn't NULL, confirm that it is also a user key.
 	if (!request || request->type != PRIME_USER_SIGNING_REQUEST || !org || org->type != PRIME_ORG_KEY) {
 		log_pedantic("Invalid PRIME signing request passed in for signet generation.");

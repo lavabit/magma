@@ -17,7 +17,7 @@ bool_t check_prime_signets_org_sthread(stringer_t *errmsg) {
 	prime_t *org = NULL, *signet = NULL, *binary = NULL, *armored = NULL;
 
 	// Create an org key and then generate the corresponding signet.
-	if (!(org = prime_key_generate(PRIME_ORG_KEY)) || !(signet = prime_signet_generate(org))) {
+	if (!(org = prime_key_generate(PRIME_ORG_KEY, NONE)) || !(signet = prime_signet_generate(org))) {
 		st_sprint(errmsg, "Organizational signet/key creation failed.");
 		prime_cleanup(org);
 		return false;
@@ -53,14 +53,14 @@ bool_t check_prime_signets_user_sthread(stringer_t *errmsg) {
 		*signet1 = NULL, *signet2 = NULL, *binary = NULL, *armored = NULL;
 
 	// Create an org key.
-	if (!(org = prime_key_generate(PRIME_ORG_KEY)) || !(verify = prime_signet_generate(org))) {
+	if (!(org = prime_key_generate(PRIME_ORG_KEY, NONE)) || !(verify = prime_signet_generate(org))) {
 		st_sprint(errmsg, "Organizational signet/key for user signing failed.");
 		prime_cleanup(org);
 		return false;
 	}
 
 	// Create a user key and then generate the corresponding signing request.
-	else if (!(user1 = prime_key_generate(PRIME_USER_KEY)) || !(request1 = prime_request_generate(user1, NULL))) {
+	else if (!(user1 = prime_key_generate(PRIME_USER_KEY, NONE)) || !(request1 = prime_request_generate(user1, NULL))) {
 		st_sprint(errmsg, "User key/signing request creation failed.");
 		prime_cleanup(user1);
 		prime_free(verify);
@@ -80,7 +80,7 @@ bool_t check_prime_signets_user_sthread(stringer_t *errmsg) {
 
 
 	// Serialize the org signet.
-	else if (!(binary = prime_get(signet1, BINARY, MANAGEDBUF(256)))) {
+	else if (!(binary = prime_get(signet1, BINARY, MANAGEDBUF(512)))) {
 		st_sprint(errmsg, "User signet serialization failed.");
 		prime_free(request1);
 		prime_free(signet1);
@@ -101,7 +101,7 @@ bool_t check_prime_signets_user_sthread(stringer_t *errmsg) {
 		return false;
 	}
 
-	else if (!(user2 = prime_key_generate(PRIME_USER_KEY)) || !(request2 = prime_request_generate(user2, user1)) ||
+	else if (!(user2 = prime_key_generate(PRIME_USER_KEY, NONE)) || !(request2 = prime_request_generate(user2, user1)) ||
 		!(signet2 = prime_request_sign(request2, org))) {
 		st_sprint(errmsg, "User signet/key rotation failed.");
 		prime_cleanup(request2);

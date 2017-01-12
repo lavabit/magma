@@ -192,7 +192,7 @@ bool_t check_prime_armor_sthread(stringer_t *errmsg) {
 	rand_write(protect);
 
 	// Generate an org key.
-	if (!(object1 = prime_key_generate(PRIME_ORG_KEY)) ||
+	if (!(object1 = prime_key_generate(PRIME_ORG_KEY, NONE)) ||
 		!(binary1 = prime_get(object1, BINARY, MANAGEDBUF(256))) ||
 		!(pem1 = prime_get(object1, ARMORED, MANAGEDBUF(512))) ||
 		!(pem2 = prime_pem_wrap(binary1, MANAGEDBUF(512))) ||
@@ -245,7 +245,7 @@ bool_t check_prime_armor_sthread(stringer_t *errmsg) {
 //	log_unit("%.*s", st_length_int(pem_encrypted1), st_char_get(pem_encrypted1));
 
 	// Generate a user key.
-	if (!(object1 = prime_key_generate(PRIME_USER_KEY)) ||
+	if (!(object1 = prime_key_generate(PRIME_USER_KEY, NONE)) ||
 		!(binary1 = prime_get(object1, BINARY, MANAGEDBUF(256))) ||
 		!(pem1 = prime_get(object1, ARMORED, MANAGEDBUF(512))) ||
 		!(pem2 = prime_pem_wrap(binary1, MANAGEDBUF(512))) ||

@@ -343,7 +343,7 @@ prime_t * prime_signet_generate(prime_t *object) {
 
 	prime_t *result = NULL;
 
-	if (!object || object->type != PRIME_ORG_KEY) {
+	if (!object || object->type != PRIME_ORG_KEY || !object->key.org) {
 		log_pedantic("Invalid PRIME organizational key passed in for signet generation.");
 		return NULL;
 	}
@@ -386,6 +386,64 @@ stringer_t * prime_signet_fingerprint(prime_t *object, stringer_t *output) {
 	}
 
 	return result;
+}
+
+/**
+ * @brief	Takes a signet, and validates the self signature. If the object is a user signet, and the validator is a user signet,
+ * 			then the custody signature is verified. If the validator is an organizational signet, then the organizational signature
+ * 			is validated. If the object is a signing request, then the validator must be a user signet, and the chain of custody
+ * 			signature is verified.
+ */
+bool_t prime_signet_validate(prime_t *object, prime_t *validator) {
+
+	// The object can be an org, or user signet. If it's an org signet, then the validator signet must be NULL. Otherwise, if a user
+	// signet was was passed in, then the validator can be NULL, an org signet, or the previous user signet.
+	if (!object || (object->type != PRIME_ORG_SIGNET && object->type != PRIME_USER_SIGNET && object->type != PRIME_USER_SIGNING_REQUEST) ||
+		(object->type == PRIME_ORG_SIGNET && validator) ||
+		(object->type == PRIME_ORG_SIGNET && !object->signet.org) ||
+		((object->type == PRIME_USER_SIGNET || object->type == PRIME_USER_SIGNING_REQUEST) && !object->signet.user) ||
+		(object->type == PRIME_USER_SIGNING_REQUEST && validator && validator->type != PRIME_USER_SIGNET) ||
+		(validator && validator->type != PRIME_ORG_SIGNET && validator->type != PRIME_USER_SIGNET) ||
+		(validator && validator->type == PRIME_ORG_SIGNET && !validator->signet.org) ||
+		(validator && validator->type == PRIME_USER_SIGNET && !validator->signet.user)) {
+		log_pedantic("Invalid PRIME signet passed in for validation.");
+		return false;
+	}
+
+	// The self-signatures should have been validated when the signet object was created, but we check it again here just to be sure.
+	else if (object->type == PRIME_ORG_SIGNET && !org_signet_verify(object->signet.org)) {
+		log_pedantic("The PRIME organizational signet provided an invalid self-signature.");
+		return false;
+	}
+	else if (object->type == PRIME_USER_SIGNET && !user_signet_verify_self(object->signet.user)) {
+		log_pedantic("The PRIME user signet provided an invalid self-signature.");
+		return false;
+	}
+	else if (object->type == PRIME_USER_SIGNING_REQUEST && !user_request_verify_self(object->signet.user)) {
+		log_pedantic("The PRIME user signing request provided an invalid self-signature.");
+		return false;
+	}
+
+	// The org signature should be validated.
+	else if (object->type == PRIME_USER_SIGNET && validator && validator->type == PRIME_ORG_SIGNET &&
+		!user_signet_verify_org(object->signet.user, validator->signet.org)) {
+		log_pedantic("The PRIME user signet provided an invalid organizational signature.");
+		return false;
+	}
+
+	// The chain of custody should be validated.
+	else if (object->type == PRIME_USER_SIGNET && validator && validator->type == PRIME_USER_SIGNET &&
+		!user_signet_verify_chain_of_custody(object->signet.user, validator->signet.user)) {
+		log_pedantic("The PRIME user signet provided an invalid chain of custody signature.");
+		return false;
+	}
+	else if (object->type == PRIME_USER_SIGNING_REQUEST && validator && validator->type == PRIME_USER_SIGNET &&
+		!user_request_verify_chain_of_custody(object->signet.user, validator->signet.user)) {
+		log_pedantic("The PRIME user signing request provided an invalid chain of custody signature.");
+		return false;
+	}
+
+	return true;
 }
 
 /**

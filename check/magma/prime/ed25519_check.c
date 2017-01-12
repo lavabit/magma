@@ -229,16 +229,18 @@ bool_t check_prime_ed25519_fixed_sthread(stringer_t *errmsg) {
 bool_t check_prime_ed25519_fuzz_sthread(stringer_t *errmsg) {
 
 	size_t len = 0;
-	ed25519_key_t *key = NULL;
+	ed25519_key_t *key = NULL, *pub = NULL;
 	uint8_t signature[ED25519_SIGNATURE_LEN];
-	stringer_t *fuzzer = MANAGEDBUF(PRIME_CHECK_SIZE_MAX);
+	stringer_t *fuzzer = MANAGEDBUF(PRIME_CHECK_SIZE_MAX), *managed = NULL, *serialized = NULL;
 	unsigned char ed25519_donna_public_key[ED25519_KEY_PUB_LEN];
 
 	for (uint64_t i = 0; status() && i < PRIME_CHECK_ITERATIONS; i++) {
 
 		// Generate a random ed25519 key pair.
-		if (!(key = ed25519_generate())) {
+		if (!(key = ed25519_generate()) || !(serialized = ed25519_public_get(key, MANAGEDBUF(ED25519_KEY_PUB_LEN))) ||
+			!(pub = ed25519_public_set(serialized))) {
 			st_sprint(errmsg, "Failed to generate an ed25519 key pair.");
+			if (key) ed25519_free(key);
 			return false;
 		}
 
@@ -246,9 +248,12 @@ bool_t check_prime_ed25519_fuzz_sthread(stringer_t *errmsg) {
 		ed25519_publickey_donna(key->private, ed25519_donna_public_key);
 
 		// Compare the values.
-		if (st_cmp_cs_eq(PLACER(ed25519_donna_public_key, ED25519_KEY_PUB_LEN), PLACER(key->public, ED25519_KEY_PUB_LEN))) {
+		if (st_cmp_cs_eq(PLACER(ed25519_donna_public_key, ED25519_KEY_PUB_LEN), PLACER(key->public, ED25519_KEY_PUB_LEN)) ||
+			st_cmp_cs_eq(PLACER(ed25519_donna_public_key, ED25519_KEY_PUB_LEN), PLACER(pub->public, ED25519_KEY_PUB_LEN)) ||
+			st_cmp_cs_eq(PLACER(ed25519_donna_public_key, ED25519_KEY_PUB_LEN), serialized)) {
 			st_sprint(errmsg, "The alternate implementation failed to derive an identical ed25519 public key.");
 			ed25519_free(key);
+			ed25519_free(pub);
 			return false;
 		}
 
@@ -262,12 +267,20 @@ bool_t check_prime_ed25519_fuzz_sthread(stringer_t *errmsg) {
 		if (ED25519_sign_d(&signature[0], st_data_get(fuzzer), len, key->private) != 1) {
 			st_sprint(errmsg, "The ed25519 signature operation failed.");
 			ed25519_free(key);
+			ed25519_free(pub);
+			return false;
+		}
+		else if (ED25519_verify_d(st_data_get(fuzzer), len, &signature[0], st_data_get(pub->public)) != 1) {
+			st_sprint(errmsg, "The ed25519 signature verification failed.");
+			ed25519_free(key);
+			ed25519_free(pub);
 			return false;
 		}
 		// Verify the ed25519 signature using the alternate implementation.
 		else if (ed25519_sign_open_donna(st_data_get(fuzzer), len, key->public, signature)) {
 			st_sprint(errmsg, "The alternate implementation failed to verify the ed25519 signature.");
 			ed25519_free(key);
+			ed25519_free(pub);
 			return false;
 		}
 
@@ -284,11 +297,35 @@ bool_t check_prime_ed25519_fuzz_sthread(stringer_t *errmsg) {
 		if (ED25519_verify_d(st_data_get(fuzzer), len, signature, key->public) != 1) {
 			st_sprint(errmsg, "The ed25519 signature generated using the alternate implementation failed to verify.");
 			ed25519_free(key);
+			ed25519_free(pub);
+			return false;
+		}
+
+		// How much random data will we fuzz with for the third check.
+		len = (rand() % (PRIME_CHECK_SIZE_MAX - PRIME_CHECK_SIZE_MIN)) + PRIME_CHECK_SIZE_MIN;
+
+		// Create a buffer filled with random data to sign.
+		rand_write(PLACER(st_data_get(fuzzer), len));
+
+		// Generate an ed25519 signature using the PRIME interface.
+		if (!(managed = ed25519_sign(key, fuzzer, MANAGEDBUF(ED25519_SIGNATURE_LEN)))) {
+			st_sprint(errmsg, "The ed25519 PRIME interface failed to generate a signature.");
+			ed25519_free(key);
+			ed25519_free(pub);
+			return false;
+		}
+
+
+		// Verify the ed25519 signature using the interface.
+		else if (ed25519_verify(pub, fuzzer, managed)) {
+			st_sprint(errmsg, "The ed25519 signature generated using the PRIME interface failed to verify.");
+			ed25519_free(key);
+			ed25519_free(pub);
 			return false;
 		}
 
 		ed25519_free(key);
-
+		ed25519_free(pub);
 	}
 	return true;
 }

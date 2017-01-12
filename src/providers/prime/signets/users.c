@@ -156,20 +156,21 @@ prime_user_signet_t * user_signet_set(stringer_t *user) {
 		return NULL;
 	}
 
-	// Chain of custody signature taken over the cryptographic fields, verify the length and import the ed25519 signature.
-	else if (!(field = prime_field_get(object, 4)) || st_length_get(&(field->payload)) != 64 ||
-		!(result->signatures.custody = st_import(pl_data_get(field->payload), pl_length_get(field->payload)))) {
+	// Chain of custody signature, if present, is taken over the cryptographic fields. Verify the length and
+	// import the ed25519 signature.
+	else if ((field = prime_field_get(object, 4)) && (st_length_get(&(field->payload)) != 64 ||
+		!(result->signatures.custody = st_import(pl_data_get(field->payload), pl_length_get(field->payload))))) {
 		log_pedantic("Unable to parse the PRIME user signet chain of custody signature.");
 		prime_object_free(object);
 		user_signet_free(result);
 		return NULL;
 	}
 
-	// Self signature taken over the cryptographic fields, and if present, the custody signature. Verify the length and
+	// Self-signature taken over the cryptographic fields, and if present, the custody signature. Verify the length and
 	// then import the ed25519 signature.
 	else if (!(field = prime_field_get(object, 5)) || st_length_get(&(field->payload)) != 64 ||
 		!(result->signatures.user = st_import(pl_data_get(field->payload), pl_length_get(field->payload)))) {
-		log_pedantic("Unable to parse the PRIME user signet self signature.");
+		log_pedantic("Unable to parse the PRIME user signet self-signature.");
 		prime_object_free(object);
 		user_signet_free(result);
 		return NULL;
@@ -189,71 +190,13 @@ prime_user_signet_t * user_signet_set(stringer_t *user) {
 	prime_object_free(object);
 
 	// Verify the signature.
-	if (!user_signet_verify(result)) {
+	if (!user_signet_verify_self(result)) {
 		log_pedantic("The PRIME user signet signature is invalid.");
 		user_signet_free(result);
 		return NULL;
 	}
 
 	return result;
-}
-
-bool_t user_signet_certify(prime_user_signet_t *user, prime_org_signet_t *org) {
-
-	stringer_t *holder = MANAGEDBUF(264);
-
-	if (!user || !user->signing || !user->encryption || !user->signatures.user || st_length_get(user->signatures.user) != 64 ||
-		 !user->signatures.org || st_length_get(user->signatures.org) != 64 || !org || !org->signing ||
-		 (user->signatures.custody && st_length_get(user->signatures.custody) != 64)) {
-		return false;
-	}
-
-	else if ((!user->signatures.custody && st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
-		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
-		prime_field_write(PRIME_USER_SIGNET, 5, ED25519_SIGNATURE_LEN, user->signatures.user, MANAGEDBUF(65))) != 134) ||
-		(user->signatures.custody && st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
-		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
-		prime_field_write(PRIME_USER_SIGNET, 4, ED25519_SIGNATURE_LEN, user->signatures.custody, MANAGEDBUF(65)),
-		prime_field_write(PRIME_USER_SIGNET, 5, ED25519_SIGNATURE_LEN, user->signatures.user, MANAGEDBUF(65))) != 199)) {
-		log_pedantic("PRIME user signet certification failed. The signet could not be serialized.");
-		return false;
-	}
-
-	else if (ed25519_verify(org->signing, holder, user->signatures.org)) {
-		log_pedantic("PRIME user signet certification failed. The organizational signature failed validation.");
-		return false;
-	}
-
-	return true;
-}
-
-bool_t user_signet_verify(prime_user_signet_t *user) {
-
-	stringer_t *holder = MANAGEDBUF(264);
-
-	if (!user || !user->signing || !user->encryption || !user->signatures.user || st_length_get(user->signatures.user) != 64 ||
-		 !user->signatures.org || st_length_get(user->signatures.org) != 64 ||
-		 (user->signatures.custody && st_length_get(user->signatures.custody) != 64)) {
-		return false;
-	}
-
-	// Verify the self signature first... by generating a serialized signet to verify.
-	else if ((!user->signatures.custody && st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
-		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35))) != 69) ||
-		(user->signatures.custody && st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
-		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
-		prime_field_write(PRIME_USER_SIGNET, 4, ED25519_SIGNATURE_LEN, user->signatures.custody, MANAGEDBUF(65))) != 134)) {
-		log_pedantic("PRIME user signet verification failed. The signet could not be serialized.");
-		return false;
-	}
-
-	else if (ed25519_verify(user->signing, holder, user->signatures.user)) {
-		log_pedantic("PRIME user signet verification failed. The user self signature failed validation.");
-		return false;
-	}
-
-
-	return true;
 }
 
 stringer_t * user_signet_fingerprint(prime_user_signet_t *user, stringer_t *output) {
@@ -278,4 +221,91 @@ stringer_t * user_signet_fingerprint(prime_user_signet_t *user, stringer_t *outp
 	}
 
 	return hash_sha512(holder, output);
+}
+
+bool_t user_signet_verify_chain_of_custody(prime_user_signet_t *user, prime_user_signet_t *previous) {
+
+	stringer_t *holder = MANAGEDBUF(69);
+
+	if (!user || !user->signing || !user->encryption || !previous || !previous->signing || !previous->encryption ||
+		!user->signatures.custody || st_length_get(user->signatures.custody) != 64 ||
+		!user->signatures.user || st_length_get(user->signatures.user) != 64 ||
+		!user->signatures.org || st_length_get(user->signatures.org) != 64 ||
+		(previous->signatures.custody && st_length_get(previous->signatures.custody) != 64) ||
+		!previous->signatures.user || st_length_get(previous->signatures.user) != 64 ||
+		!previous->signatures.org || st_length_get(previous->signatures.org) != 64) {
+		return false;
+	}
+
+	else if (st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35))) != 69) {
+		log_pedantic("PRIME user signet verification failed. The signet could not be serialized.");
+		return false;
+	}
+
+	else if (ed25519_verify(previous->signing, holder, user->signatures.custody)) {
+		log_pedantic("PRIME user signet verification failed. The chain of custody signature failed validation.");
+		return false;
+	}
+
+	return true;
+}
+
+bool_t user_signet_verify_org(prime_user_signet_t *user, prime_org_signet_t *org) {
+
+	stringer_t *holder = MANAGEDBUF(199);
+
+	if (!user || !user->signing || !user->encryption || !org || !org->signing ||
+		!user->signatures.user || st_length_get(user->signatures.user) != 64 ||
+		(user->signatures.custody && st_length_get(user->signatures.custody) != 64) ||
+		!user->signatures.org || st_length_get(user->signatures.org) != 64) {
+		return false;
+	}
+
+	else if ((!user->signatures.custody && st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
+		prime_field_write(PRIME_USER_SIGNET, 5, ED25519_SIGNATURE_LEN, user->signatures.user, MANAGEDBUF(65))) != 134) ||
+		(user->signatures.custody && st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
+		prime_field_write(PRIME_USER_SIGNET, 4, ED25519_SIGNATURE_LEN, user->signatures.custody, MANAGEDBUF(65)),
+		prime_field_write(PRIME_USER_SIGNET, 5, ED25519_SIGNATURE_LEN, user->signatures.user, MANAGEDBUF(65))) != 199)) {
+		log_pedantic("PRIME user signet verification failed. The signet could not be serialized.");
+		return false;
+	}
+
+	else if (ed25519_verify(org->signing, holder, user->signatures.org)) {
+		log_pedantic("PRIME user signet verification failed. The organizational signature failed validation.");
+		return false;
+	}
+
+	return true;
+}
+
+bool_t user_signet_verify_self(prime_user_signet_t *user) {
+
+	stringer_t *holder = MANAGEDBUF(134);
+
+	if (!user || !user->signing || !user->encryption || !user->signatures.user || st_length_get(user->signatures.user) != 64 ||
+		 !user->signatures.org || st_length_get(user->signatures.org) != 64 ||
+		 (user->signatures.custody && st_length_get(user->signatures.custody) != 64)) {
+		return false;
+	}
+
+	// Verify the self-signature first... by generating a serialized signet to verify.
+	else if ((!user->signatures.custody && st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35))) != 69) ||
+		(user->signatures.custody && st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),
+		prime_field_write(PRIME_USER_SIGNET, 2, SECP256K1_KEY_PUB_LEN, secp256k1_public_get(user->encryption, MANAGEDBUF(33)), MANAGEDBUF(35)),
+		prime_field_write(PRIME_USER_SIGNET, 4, ED25519_SIGNATURE_LEN, user->signatures.custody, MANAGEDBUF(65))) != 134)) {
+		log_pedantic("PRIME user signet verification failed. The signet could not be serialized.");
+		return false;
+	}
+
+	else if (ed25519_verify(user->signing, holder, user->signatures.user)) {
+		log_pedantic("PRIME user signet verification failed. The user self-signature failed validation.");
+		return false;
+	}
+
+
+	return true;
 }

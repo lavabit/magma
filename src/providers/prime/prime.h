@@ -114,11 +114,6 @@ typedef struct __attribute__ ((packed)) {
 	} signet;
 } prime_t;
 
-#include "cryptography/cryptography.h"
-#include "formats/formats.h"
-#include "signets/signets.h"
-#include "keys/keys.h"
-
 /// prime.c
 prime_t *     prime_alloc(prime_type_t type, prime_flags_t flags);
 void          prime_cleanup(prime_t *object);
@@ -135,6 +130,11 @@ prime_t *     prime_signet_generate(prime_t *object);
 bool_t        prime_signet_validate(prime_t *object, prime_t *validator);
 bool_t        prime_start(void);
 void          prime_stop(void);
+
+#include "cryptography/cryptography.h"
+#include "formats/formats.h"
+#include "signets/signets.h"
+#include "keys/keys.h"
 
 #endif
 

@@ -15,7 +15,8 @@
 
 /// ed25519_check.c
 bool_t   check_prime_ed25519_fixed_sthread(stringer_t *errmsg);
-bool_t   check_prime_ed25519_fuzz_sthread(stringer_t *errmsg);
+bool_t   check_prime_ed25519_fuzz_lib_sthread(stringer_t *errmsg);
+bool_t   check_prime_ed25519_fuzz_provider_sthread(stringer_t *errmsg);
 bool_t   check_prime_ed25519_parameters_sthread(stringer_t *errmsg);
 
 /// signets_check.c

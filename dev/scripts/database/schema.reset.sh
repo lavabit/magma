@@ -107,5 +107,6 @@ rm --force "$MAGMA_RES_TANKS/tank.4.data"
 
 # Remove the local storage folder.
 rm --recursive --force "$MAGMA_RES_STORAGE"
+mkdir "$MAGMA_RES_STORAGE"
 
 

@@ -262,7 +262,7 @@ stringer_t * user_signet_fingerprint(prime_user_signet_t *user, stringer_t *outp
 
 	if (!user || !user->signing || !user->encryption || !user->signatures.user || !user->signatures.org ||
 		st_length_get(user->signatures.user) != 64 || st_length_get(user->signatures.org) != 64 ||
-		(!user->signatures.custody && st_length_get(user->signatures.custody) != 64)) {
+		(user->signatures.custody && st_length_get(user->signatures.custody) != 64)) {
 		return NULL;
 	}
 	else if ((!user->signatures.custody && st_write(holder, prime_field_write(PRIME_USER_SIGNET, 1, ED25519_KEY_PUB_LEN, ed25519_public_get(user->signing, MANAGEDBUF(32)), MANAGEDBUF(34)),

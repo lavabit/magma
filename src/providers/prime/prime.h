@@ -130,6 +130,7 @@ prime_t *     prime_key_generate(prime_type_t type, prime_flags_t flags);
 prime_t *     prime_request_generate(prime_t *object, prime_t *previous);
 prime_t *     prime_request_sign(prime_t *request, prime_t *org);
 prime_t *     prime_set(stringer_t *object, prime_encoding_t encoding, prime_flags_t flags);
+stringer_t *  prime_signet_fingerprint(prime_t *object, stringer_t *output);
 prime_t *     prime_signet_generate(prime_t *object);
 bool_t        prime_start(void);
 void          prime_stop(void);

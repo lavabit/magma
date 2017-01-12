@@ -14,7 +14,8 @@
 
 bool_t check_prime_signets_org_sthread(stringer_t *errmsg) {
 
-	prime_t *org = NULL, *signet = NULL, *binary = NULL, *armored = NULL;
+	prime_t *org = NULL, *signet = NULL;
+	stringer_t *fingerprint = NULL, *binary = NULL, *armored = NULL;
 
 	// Create an org key and then generate the corresponding signet.
 	if (!(org = prime_key_generate(PRIME_ORG_KEY, NONE)) || !(signet = prime_signet_generate(org))) {
@@ -39,7 +40,13 @@ bool_t check_prime_signets_org_sthread(stringer_t *errmsg) {
 		return false;
 	}
 
-	log_unit("%.*s", st_length_int(armored), st_char_get(armored));
+	// Fingerprint the org signet.
+	else if (!(fingerprint = prime_signet_fingerprint(signet, MANAGEDBUF(64)))) {
+		st_sprint(errmsg, "Organizational signet fingerprinting failed.");
+		prime_free(signet);
+		prime_free(org);
+		return false;
+	}
 
 	prime_free(signet);
 	prime_free(org);
@@ -50,7 +57,9 @@ bool_t check_prime_signets_org_sthread(stringer_t *errmsg) {
 bool_t check_prime_signets_user_sthread(stringer_t *errmsg) {
 
 	prime_t *org = NULL, *verify = NULL, *user1 = NULL, *user2 = NULL, *request1 = NULL, *request2 = NULL,
-		*signet1 = NULL, *signet2 = NULL, *binary = NULL, *armored = NULL;
+		*signet1 = NULL, *signet2 = NULL;
+	stringer_t *fingerprint = NULL, *binary = NULL, *armored = NULL;
+
 
 	// Create an org key.
 	if (!(org = prime_key_generate(PRIME_ORG_KEY, NONE)) || !(verify = prime_signet_generate(org))) {
@@ -68,7 +77,7 @@ bool_t check_prime_signets_user_sthread(stringer_t *errmsg) {
 		return false;
 	}
 
-	// Signing the user request.
+	// Sign the user request.
 	else if (!(signet1 = prime_request_sign(request1, org))) {
 		st_sprint(errmsg, "User key/signing request creation failed.");
 		prime_free(request1);
@@ -79,7 +88,7 @@ bool_t check_prime_signets_user_sthread(stringer_t *errmsg) {
 	}
 
 
-	// Serialize the org signet.
+	// Serialize the user signet.
 	else if (!(binary = prime_get(signet1, BINARY, MANAGEDBUF(512)))) {
 		st_sprint(errmsg, "User signet serialization failed.");
 		prime_free(request1);
@@ -90,7 +99,7 @@ bool_t check_prime_signets_user_sthread(stringer_t *errmsg) {
 		return false;
 	}
 
-	// Serialize and armor the org signet.
+	// Serialize and armor the user signet.
 	else if (!(armored = prime_get(signet1, ARMORED, MANAGEDBUF(512)))) {
 		st_sprint(errmsg, "User signet armoring failed.");
 		prime_free(request1);
@@ -114,7 +123,17 @@ bool_t check_prime_signets_user_sthread(stringer_t *errmsg) {
 		return false;
 	}
 
-	log_unit("%.*s", st_length_int(armored), st_char_get(armored));
+	else if (!(fingerprint = prime_signet_fingerprint(signet1, MANAGEDBUF(64))) || !(fingerprint = prime_signet_fingerprint(signet2, MANAGEDBUF(64)))) {
+		st_sprint(errmsg, "User signet fingerprinting failed.");
+		prime_cleanup(request2);
+		prime_cleanup(user2);
+		prime_free(request1);
+		prime_free(signet1);
+		prime_free(verify);
+		prime_free(user1);
+		prime_free(org);
+		return false;
+	}
 
 	prime_free(request2);
 	prime_free(request1);

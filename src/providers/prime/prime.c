@@ -2,7 +2,7 @@
 /**
  * @file /magma/src/providers/prime/prime.c
  *
- * @brief DESCRIPTIONxxxGOESxxxHERE
+ * @brief The public PRIME interface. All of the necessary functionality should be available using these functions.
  *
  * $Author$
  * $Date$
@@ -299,6 +299,9 @@ prime_t * prime_set(stringer_t *object, prime_encoding_t encoding, prime_flags_t
 	return result;
 }
 
+/**
+ * @brief	Generates a new organizational or user key.
+ */
 prime_t * prime_key_generate(prime_type_t type, prime_flags_t flags) {
 
 	prime_t *result = NULL;
@@ -358,6 +361,34 @@ prime_t * prime_signet_generate(prime_t *object) {
 }
 
 /**
+ * @brief	Takes an organizational signet, or a user signet, and returns the corresponding cryptographic fingerprint.
+ */
+stringer_t * prime_signet_fingerprint(prime_t *object, stringer_t *output) {
+
+	stringer_t *result = NULL;
+
+	if (!object) {
+		log_pedantic("Invalid PRIME signet passed in for fingerprinting.");
+		return NULL;
+	}
+
+	// Switch statement to call the appropriate allocator.
+	switch (object->type) {
+		case PRIME_ORG_SIGNET:
+			result = org_signet_fingerprint(object->signet.org, output);
+			break;
+		case PRIME_USER_SIGNET:
+			result = user_signet_fingerprint(object->signet.user, output);
+			break;
+		default:
+			log_pedantic("Unrecognized PRIME signet type.");
+			return NULL;
+	}
+
+	return result;
+}
+
+/**
  * @brief	Takes a user key, and possibly the previous user key, and generate a signet signing request.
  */
 prime_t * prime_request_generate(prime_t *object, prime_t *previous) {
@@ -390,8 +421,7 @@ prime_t * prime_request_generate(prime_t *object, prime_t *previous) {
 prime_t * prime_request_sign(prime_t *request, prime_t *org) {
 
 	prime_t *result = NULL;
-log_enable();
-//#error
+
 	// If the previous object isn't NULL, confirm that it is also a user key.
 	if (!request || request->type != PRIME_USER_SIGNING_REQUEST || !org || org->type != PRIME_ORG_KEY) {
 		log_pedantic("Invalid PRIME signing request passed in for signet generation.");
@@ -411,6 +441,9 @@ log_enable();
 	return result;
 }
 
+/**
+ * @brief	Encrypt an organizational or user key using a STACIE realm key.
+ */
 stringer_t * prime_key_encrypt(stringer_t *key, prime_t *object, prime_encoding_t encoding, stringer_t *output) {
 
 	stringer_t *result = NULL, *binary = NULL;
@@ -461,6 +494,9 @@ stringer_t * prime_key_encrypt(stringer_t *key, prime_t *object, prime_encoding_
 	return result;
 }
 
+/**
+ * @brief	Decrypt an organizational or user key using a STACIE realm key.
+ */
 prime_t * prime_key_decrypt(stringer_t *key, stringer_t *object, prime_encoding_t encoding, prime_flags_t flags) {
 
 	uint16_t type = 0;

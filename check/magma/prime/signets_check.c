@@ -208,7 +208,73 @@ bool_t check_prime_signets_user_sthread(stringer_t *errmsg) {
 
 bool_t check_prime_signets_parameters_sthread(stringer_t *errmsg) {
 
+	stringer_t *holder = NULL, *rand1 = MANAGEDBUF(32), *rand2 = MANAGEDBUF(128), *rand3 = MANAGEDBUF(64),
+		*encrypted_key = NULL;
+	prime_t *org_key = NULL, *org_signet = NULL, *user_key = NULL, *user_request = NULL, *user_signet = NULL,
+		*rotation_key = NULL, *rotation_request = NULL, *rotation_signet = NULL, *check = NULL;
 
+	// Create various PRIME types for use below.
+	if (rand_write(rand1) != 32 || rand_write(rand2) != 128 || rand_write(rand3) != 64 ||
+		!(org_key = prime_key_generate(PRIME_ORG_KEY, NONE)) || !(org_signet = prime_signet_generate(org_key)) ||
+		!(user_key = prime_key_generate(PRIME_USER_KEY, NONE)) || !(user_request = prime_request_generate(user_key, NULL)) ||
+		!(user_signet = prime_request_sign(user_request, org_key)) || !(rotation_key = prime_key_generate(PRIME_USER_KEY, NONE)) ||
+		!(rotation_request = prime_request_generate(rotation_key, user_key)) || !(rotation_signet = prime_request_sign(rotation_request, org_key)) ||
+		!(encrypted_key = prime_key_encrypt(rand3, user_key, ARMORED, MANAGEDBUF(512)))) {
+		st_sprint(errmsg, "Signet/key creation for parameter testing failed.");
+		prime_cleanup(org_key);
+		prime_cleanup(org_signet);
+		prime_cleanup(user_key);
+		prime_cleanup(user_request);
+		prime_cleanup(user_signet);
+		prime_cleanup(rotation_key);
+		prime_cleanup(rotation_request);
+		prime_cleanup(rotation_signet);
+		return false;
+	}
+
+	else if ((check = prime_signet_generate(user_key)) || (check = prime_signet_generate(user_request)) || (check = prime_signet_generate(user_signet)) ||
+		(check = prime_request_generate(org_key, NULL)) || (check = prime_request_generate(org_signet, NULL)) || (check = prime_request_generate(user_request, NULL)) ||
+		(check = prime_request_generate(user_signet, NULL)) || (check = prime_request_sign(org_key, user_key)) || (check = prime_request_sign(org_key, user_request)) ||
+		(check = prime_request_sign(org_key, user_signet)) || (check = prime_request_sign(org_key, org_signet)) || (check = prime_request_sign(user_key, org_key)) ||
+		(check = prime_request_sign(user_signet, org_key)) || prime_signet_validate(user_key, NULL) || prime_signet_validate(org_key, NULL) ||
+		prime_signet_validate(org_signet, org_key) || prime_signet_validate(rotation_request, org_key) || prime_signet_validate(rotation_request, user_key) ||
+		prime_signet_validate(org_signet, user_key) || prime_signet_validate(org_signet, user_signet) || prime_signet_validate(user_request, org_key) ||
+		prime_signet_validate(user_request, user_key) || prime_signet_validate(user_request, org_signet) || prime_signet_validate(user_request, rotation_key) ||
+		prime_signet_validate(user_signet, org_key) || prime_signet_validate(user_signet, user_key) || prime_signet_validate(user_signet, rotation_signet) ||
+		prime_signet_validate(user_signet, user_request) || (check = prime_key_generate(PRIME_USER_SIGNET, NONE)) || (check = prime_key_generate(PRIME_ORG_SIGNET, NONE)) ||
+		(check = prime_key_generate(PRIME_USER_SIGNING_REQUEST, NONE)) || (check = prime_get(NULL, BINARY, NULL)) ||
+		(check = prime_get(NULL, BINARY, MANAGEDBUF(512))) || (check = prime_set(NULL, BINARY, NONE)) || (check = prime_set(NULL, ARMORED, NONE)) ||
+		(holder = prime_signet_fingerprint(org_key, MANAGEDBUF(64))) || (holder = prime_signet_fingerprint(user_key, MANAGEDBUF(64))) ||
+		(holder = prime_signet_fingerprint(user_request, MANAGEDBUF(64))) || (holder = prime_signet_fingerprint(org_signet, CONSTANT("TEST"))) ||
+		(holder = prime_key_encrypt(NULL, org_key, BINARY, MANAGEDBUF(512))) || (holder = prime_key_encrypt(rand1, org_key, BINARY, MANAGEDBUF(512))) ||
+		(holder = prime_key_encrypt(rand2, org_key, BINARY, MANAGEDBUF(512))) || (holder = prime_key_encrypt(rand3, org_signet, BINARY, MANAGEDBUF(512))) ||
+		(holder = prime_key_encrypt(rand3, NULL, BINARY, MANAGEDBUF(512))) || (holder = prime_key_decrypt(NULL, encrypted_key, ARMORED, NONE)) ||
+		(holder = prime_key_decrypt(rand3, NULL, ARMORED, NONE)) || (holder = prime_key_decrypt(rand1, encrypted_key, ARMORED, NONE)) ||
+		(holder = prime_key_decrypt(rand2, encrypted_key, ARMORED, NONE)) || (holder = prime_key_decrypt(rand3, encrypted_key, BINARY, NONE)) ||
+		(holder = prime_key_decrypt(rand3, prime_get(org_signet, BINARY, MANAGEDBUF(512)), BINARY, NONE)) ||
+		(holder = prime_key_decrypt(rand3, prime_get(user_request, BINARY, MANAGEDBUF(512)), BINARY, NONE)) ||
+		(holder = prime_key_decrypt(rand3, prime_get(user_signet, BINARY, MANAGEDBUF(512)), BINARY, NONE))) {
+
+		st_sprint(errmsg, "Signet/key parameter checks failed.");
+		prime_cleanup(check);
+		prime_free(org_key);
+		prime_free(org_signet);
+		prime_free(user_key);
+		prime_free(user_request);
+		prime_free(user_signet);
+		prime_free(rotation_key);
+		prime_free(rotation_request);
+		prime_free(rotation_signet);
+	}
+
+	prime_free(org_key);
+	prime_free(org_signet);
+	prime_free(user_key);
+	prime_free(user_request);
+	prime_free(user_signet);
+	prime_free(rotation_key);
+	prime_free(rotation_request);
+	prime_free(rotation_signet);
 
 	return true;
 }

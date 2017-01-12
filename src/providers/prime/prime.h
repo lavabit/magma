@@ -164,7 +164,7 @@ typedef struct __attribute__ ((packed)) {
 	} envelope;
 	struct {
 		prime_encrypted_chunk_t *common;
-		prime_encrypted_chunk_t *other;
+		prime_encrypted_chunk_t *headers;
 	} metadata;
 	struct {
 		prime_encrypted_chunk_t *body;

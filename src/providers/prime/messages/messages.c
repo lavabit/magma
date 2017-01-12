@@ -25,7 +25,7 @@ void encrypted_message_free(prime_message_t *object) {
 		if (object->envelope.origin) encrypted_chunk_free(object->envelope.origin);
 		if (object->envelope.destination) encrypted_chunk_free(object->envelope.destination);
 		if (object->metadata.common) encrypted_chunk_free(object->metadata.common);
-		if (object->metadata.other) encrypted_chunk_free(object->metadata.other);
+		if (object->metadata.headers) encrypted_chunk_free(object->metadata.headers);
 		if (object->content.body) encrypted_chunk_free(object->content.body);
 		if (object->signatures.tree) signature_chunk_free(object->signatures.tree);
 		if (object->signatures.author) signature_chunk_free(object->signatures.author);

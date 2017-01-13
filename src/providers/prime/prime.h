@@ -65,6 +65,7 @@ typedef enum {
 } prime_type_t;
 
 typedef enum {
+	PRIME_CHUNK_NONE = 0,
     PRIME_CHUNK_ENVELOPE = 1,              /**< Envelope block. >*/
 	PRIME_CHUNK_EPHEMERAL = 2,             /**< Ephemeral chunk. >*/
 	PRIME_CHUNK_ORIGIN = 3,                /**< Origin chunk. >*/
@@ -81,24 +82,12 @@ typedef enum {
 typedef enum {
 	ORG_PRIMARY_KEY = 1,
 	ORG_SECONDARY_KEY = 2,
-	ORG_ENCRYPTION_KEY = 3
-} prime_org_key_fields_t;
-
-typedef enum {
-	ORG_PRIMARY_KEY = 1,
-	ORG_SECONDARY_KEY = 2,
 	ORG_ENCRYPTION_KEY = 3,
 	ORG_SELF_SIGNATURE = 4,
 	ORG_FULL_SIGNATURE = 253,
 	ORG_IDENTIFIER = 254,
 	ORG_IDENTIFIABLE_SIGNATURE = 255
-} prime_org_signet_fields_t;
-
-typedef enum {
-	USER_SIGNING_KEY = 1,
-	USER_ENCRYPTION_KEY = 2,
-	USER_ALTERNATE_ENCRYPTION_KEY = 3,
-} prime_user_key_fields_t;
+} prime_org_artifact_fields_t;
 
 typedef enum {
 	USER_SIGNING_KEY = 1,
@@ -110,15 +99,7 @@ typedef enum {
 	USER_FULL_SIGNATURE = 253,
 	USER_IDENTIFIER = 254,
 	USER_IDENTIFIABLE_SIGNATURE = 255
-} prime_user_signet_fields_t;
-
-typedef enum {
-	USER_SIGNING_KEY = 1,
-	USER_ENCRYPTION_KEY = 2,
-	USER_ALTERNATE_ENCRYPTION_KEY = 3,
-	USER_CUSTODY_SIGNATURE = 4,
-	USER_SELF_SIGNATURE = 5
-} prime_user_signing_request_fields_t;
+} prime_user_artifact_fields_t;
 
 // Allows the inclusion of this PRIME header without having to include the OpenSSL headers.
 #ifdef HEADER_EC_H
@@ -162,7 +143,14 @@ typedef struct __attribute__ ((packed)) {
 } prime_org_signet_t;
 
 typedef struct __attribute__ ((packed)) {
-	uint8_t type;
+	struct {
+		uint8_t type;                      /**< Chunk type, which curently, should always be 1. >*/
+		uint32_t length;                   /**< Payload length. Currently, this should only be 35 or 69. >*/
+	} header;
+	struct {
+		placer_t encryption;
+		placer_t signing;
+	} fields;
 	stringer_t *buffer;
 } prime_ephemeral_chunk_t;
 
@@ -170,7 +158,7 @@ typedef struct __attribute__ ((packed)) {
 	struct {
 		uint8_t type;                      /**< Chunk type, 1 through 255. >*/
 		uint32_t length;                   /**< Payload length, must be divisible by 16. >*/
-		uint32_t serialized;               /**< Serialized form, a 1 byte type, and 3 byte big endian length. >*/
+		uint32_t serialized;               /**< Serialized form, a 1 byte type, and a 3 byte big endian length. >*/
 	} header;
 	struct {
 		struct {
@@ -220,7 +208,7 @@ typedef struct __attribute__ ((packed)) {
 	} envelope;
 	struct {
 		prime_encrypted_chunk_t *common;
-		prime_encrypted_chunk_t *other;
+		prime_encrypted_chunk_t *headers;
 	} metadata;
 	struct {
 		prime_encrypted_chunk_t *body;

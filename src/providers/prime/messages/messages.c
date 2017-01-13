@@ -62,3 +62,11 @@ prime_message_t * encrypted_message_alloc(void) {
 
 	return result;
 }
+
+stringer_t * naked_message_get(void) {
+	return NULL;
+}
+
+prime_message_t * naked_message_set(stringer_t *message, prime_org_key_t *destination, prime_user_signet_t *recipient) {
+	return NULL;
+}

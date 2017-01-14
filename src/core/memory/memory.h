@@ -40,7 +40,7 @@ void *   mm_dupe(void *block, size_t len);
 bool_t   mm_empty(void *block, size_t len);
 void     mm_free(void *block);
 void *   mm_move(void *dst, void *src, size_t len);
-void *   mm_set(void *block, int_t set, size_t len);
+void *   mm_set(void *block, uint8_t set, size_t len);
 void *   mm_wipe(void *block, size_t len);
 
 // Allocation requests are aligned to 12 bytes, which is also the length of the secured_t.

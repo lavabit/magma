@@ -215,23 +215,18 @@ typedef struct __attribute__ ((packed)) {
 typedef struct __attribute__ ((packed)) {
 	struct {
 		uint8_t type;                      /**< Chunk type, 1 through 255. >*/
-		uint32_t length;                   /**< Payload length, must be divisible by 16. >*/
-		uint32_t serialized;               /**< Serialized form, a 1 byte type, and a 3 byte big endian length. >*/
+		uint32_t length;                   /**< Payload length, must be divisible by 16 and less than 2^24 - 1. >*/
 	} header;
-	struct {
-		struct {
-			placer_t signature;
-			uint32_t length;
-			uint8_t flags;
-			uint8_t pad;
-			placer_t data;
-			placer_t trailing;
-			stringer_t *buffer;
-		} plain;
-		struct {
-			stringer_t *buffer;
-		} encrypted;
-	} payload;
+
+	stringer_t *signature;
+	uint32_t length;
+	uint8_t flags;
+	uint8_t pad;
+	stringer_t *data;
+	stringer_t *trailing;
+
+	stringer_t *encrypted;
+
 	struct {
 		stringer_t *author;
 		stringer_t *origin;

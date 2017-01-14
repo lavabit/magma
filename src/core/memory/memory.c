@@ -88,8 +88,7 @@ void * mm_move(void *dst, void *src, size_t len) {
  * @see http://gcc.gnu.org/onlinedocs/gcc-4.4.4/gcc/Function-Attributes.html
  *
  */
-// QUESTION: Why isn't "set" of type unsigned char?
-void * mm_set(void *block, int_t set, size_t len) {
+void * mm_set(void *block, uint8_t set, size_t len) {
 
 	volatile char *ptr = block;
 

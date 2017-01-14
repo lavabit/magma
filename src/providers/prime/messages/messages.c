@@ -15,12 +15,14 @@
 void encrypted_message_free(prime_message_t *object) {
 
 	if (object) {
-		if (object->keys.kek) st_free(object->keys.kek);
-		if (object->keys.ephemeral) secp256k1_free(object->keys.ephemeral);
+		if (object->keys.signing) ed25519_free(object->keys.signing);
+		if (object->keys.encryption) secp256k1_free(object->keys.encryption);
+
 		if (object->keys.author) secp256k1_free(object->keys.author);
 		if (object->keys.origin) secp256k1_free(object->keys.origin);
 		if (object->keys.destination) secp256k1_free(object->keys.destination);
 		if (object->keys.recipient) secp256k1_free(object->keys.recipient);
+
 		if (object->envelope.ephemeral) ephemeral_chunk_free(object->envelope.ephemeral);
 		if (object->envelope.origin) encrypted_chunk_free(object->envelope.origin);
 		if (object->envelope.destination) encrypted_chunk_free(object->envelope.destination);

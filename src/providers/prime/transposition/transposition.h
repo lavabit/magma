@@ -22,6 +22,5 @@
 #include "binary/binary.h"
 #include "armored/armored.h"
 
-
 #endif
 

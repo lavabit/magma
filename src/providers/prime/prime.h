@@ -26,21 +26,34 @@
 #define AES_BLOCK_LEN 16
 #define AES_VECTOR_LEN 16
 
+/**
+ * @typedef ed25519_key_type_t
+ */
 typedef enum {
 	ED25519_PUB,
 	ED25519_PRIV
 } ed25519_key_type_t;
 
+/**
+ * @typedef prime_encoding_t
+ */
 typedef enum {
-	BINARY,                              /**< Serialized object in binary form. >*/
-	ARMORED                              /**< An object that has been aromored using the Privacy Enhanced Message format. >*/
+	BINARY,                               /**< Serialized object in binary form. >*/
+	ARMORED,                              /**< An object that has been aromored using the Privacy Enhanced Message format. >*/
+	DEBUG                                 /**< Printable version of the object, with labels, and binary data encoded using base64. >*/
 } prime_encoding_t;
 
+/**
+ * @typedef prime_flags_t
+ */
 typedef enum {
 	NONE,
-	SECURITY                             /**< Store the object in secure memory. >*/
+	SECURITY                              /**< Store the object in secure memory. >*/
 } prime_flags_t;
 
+/**
+ * @typedef prime_type_t
+ */
 typedef enum {
     PRIME_ORG_SIGNET = 1776,               /**< Organizational signet. >*/
 	PRIME_ORG_KEY = 1952,                  /**< Organizational key. >*/
@@ -64,21 +77,42 @@ typedef enum {
     PRIME_PROTOCOL_TICKET = 1841           /**< An encrypted protocol ticket. >*/
 } prime_type_t;
 
+
+/**
+ * @typedef prime_message_chunks_t
+ */
 typedef enum {
-	PRIME_CHUNK_NONE = 0,
+	PRIME_CHUNK_INVALID = -1,
+
+	// Tracing
+    PRIME_CHUNK_TRACING = 0,               /**< Tracing data. >*/
+
+	// Envelope Block
     PRIME_CHUNK_ENVELOPE = 1,              /**< Envelope block. >*/
 	PRIME_CHUNK_EPHEMERAL = 2,             /**< Ephemeral chunk. >*/
 	PRIME_CHUNK_ORIGIN = 3,                /**< Origin chunk. >*/
 	PRIME_CHUNK_DESTINATION = 4,           /**< Destination chunk. >*/
 
+	// Metadata Block
 	PRIME_CHUNK_METADATA = 32,             /**< Metadata block. >*/
 	PRIME_CHUNK_COMMON = 33,               /**< Common headers chunk. >*/
 	PRIME_CHUNK_HEADERS = 34,              /**< Remaining headers chunk. >*/
 
-	PRIME_CHUNK_BODY = 34,                 /**< Body block. >*/
-	PRIME_CHUNK_GENERIC = 35               /**< Generic chunk type. >*/
+	// Body
+	PRIME_CHUNK_BODY = 48,                 /**< Body block. >*/
+
+	// Signature Block
+	PRIME_CHUNK_SIGNATURES = 224,
+	PRIME_CHUNK_SIGNATURE_TREE = 225,
+	PRIME_CHUNK_SIGNATURE_AUTHOR = 226,
+
+	PRIME_CHUNK_SIGNATURE_ORGIN = 254,
+	PRIME_CHUNK_SIGNATURE_DESTINATION = 255
 } prime_message_chunks_t;
 
+/**
+ * @typedef prime_org_artifact_fields_t
+ */
 typedef enum {
 	ORG_PRIMARY_KEY = 1,
 	ORG_SECONDARY_KEY = 2,
@@ -89,6 +123,9 @@ typedef enum {
 	ORG_IDENTIFIABLE_SIGNATURE = 255
 } prime_org_artifact_fields_t;
 
+/**
+ * @typedef prime_user_artifact_fields_t
+ */
 typedef enum {
 	USER_SIGNING_KEY = 1,
 	USER_ENCRYPTION_KEY = 2,
@@ -108,6 +145,9 @@ typedef EC_KEY secp256k1_key_t;
 typedef void secp256k1_key_t;
 #endif
 
+/**
+ * @typedef ed25519_key_t
+ */
 typedef struct __attribute__ ((packed)) {
 	ed25519_key_type_t type;
 	struct __attribute__ ((packed)) {
@@ -116,16 +156,25 @@ typedef struct __attribute__ ((packed)) {
 	};
 } ed25519_key_t;
 
+/**
+ * @typedef prime_user_key_t
+ */
 typedef struct __attribute__ ((packed)) {
 	ed25519_key_t *signing;
 	secp256k1_key_t *encryption;
 } prime_user_key_t;
 
+/**
+ * @typedef prime_org_key_t
+ */
 typedef struct __attribute__ ((packed)) {
 	ed25519_key_t *signing;
 	secp256k1_key_t *encryption;
 } prime_org_key_t;
 
+/**
+ * @typedef prime_user_signet_t
+ */
 typedef struct __attribute__ ((packed)) {
 	ed25519_key_t *signing;                /**< User signing key, field 1. >*/
 	secp256k1_key_t *encryption;           /**< User encryption key, field 2. >*/
@@ -136,24 +185,33 @@ typedef struct __attribute__ ((packed)) {
 	} signatures;
 } prime_user_signet_t;
 
+/**
+ * @typedef prime_org_signet_t
+ */
 typedef struct __attribute__ ((packed)) {
 	ed25519_key_t *signing;                /**< Organizational signing key, field 1. >*/
 	secp256k1_key_t *encryption;           /**< Organizational encryption key, field 3. >*/
 	stringer_t *signature;                 /**< Organizational signature, field 4. >*/
 } prime_org_signet_t;
 
+/**
+ * @typedef prime_ephemeral_chunk_t
+ */
 typedef struct __attribute__ ((packed)) {
 	struct {
 		uint8_t type;                      /**< Chunk type, which curently, should always be 1. >*/
 		uint32_t length;                   /**< Payload length. Currently, this should only be 35 or 69. >*/
 	} header;
 	struct {
-		placer_t encryption;
-		placer_t signing;
-	} fields;
+		ed25519_key_t *signing;
+		secp256k1_key_t *encryption;
+	} keys;
 	stringer_t *buffer;
 } prime_ephemeral_chunk_t;
 
+/**
+ * @typedef prime_encrypted_chunk_t
+ */
 typedef struct __attribute__ ((packed)) {
 	struct {
 		uint8_t type;                      /**< Chunk type, 1 through 255. >*/
@@ -182,6 +240,9 @@ typedef struct __attribute__ ((packed)) {
 	} slots;
 } prime_encrypted_chunk_t;
 
+/**
+ * @typedef prime_signature_chunk_t
+ */
 typedef struct __attribute__ ((packed)) {
 	stringer_t *signature;
 	struct {
@@ -192,15 +253,27 @@ typedef struct __attribute__ ((packed)) {
 	} slots;
 } prime_signature_chunk_t;
 
+/**
+ * @typedef prime_message_t
+ */
 typedef struct __attribute__ ((packed)) {
 	struct {
-		stringer_t *kek;
-		secp256k1_key_t *ephemeral;
+		// Ephemeral
+		ed25519_key_t *signing;
+		secp256k1_key_t *encryption;
+
+		// Actors
 		secp256k1_key_t *author;
 		secp256k1_key_t *origin;
 		secp256k1_key_t *destination;
 		secp256k1_key_t *recipient;
 	} keys;
+	struct {
+		stringer_t *author;
+		stringer_t *origin;
+		stringer_t *destination;
+		stringer_t *recipient;
+	} kek;
 	struct {
 		prime_ephemeral_chunk_t *ephemeral;
 		prime_encrypted_chunk_t *origin;
@@ -220,6 +293,9 @@ typedef struct __attribute__ ((packed)) {
 	} signatures;
 } prime_message_t;
 
+/**
+ * @typedef prime_t
+ */
 typedef struct __attribute__ ((packed)) {
 	prime_type_t type;
 	prime_flags_t flags;

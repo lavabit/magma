@@ -65,10 +65,25 @@ prime_message_t * encrypted_message_alloc(void) {
 	return result;
 }
 
-stringer_t * naked_message_get(void) {
+stringer_t * naked_message_get(prime_message_t *message) {
 	return NULL;
 }
 
 prime_message_t * naked_message_set(stringer_t *message, prime_org_key_t *destination, prime_user_signet_t *recipient) {
-	return NULL;
+
+	prime_message_t *result = NULL;
+
+	if (!(result = encrypted_message_alloc())) {
+		return NULL;
+	}
+	else if (!(result->keys.signing = ed25519_generate()) || !(result->keys.encryption)) {
+		encrypted_message_free(result);
+		return NULL;
+	}
+	else if (!(result->envelope.ephemeral = ephemeral_chunk_get(result->keys.signing, result->keys.encryption))) {
+		encrypted_message_free(result);
+		return NULL;
+	}
+
+	return result;
 }

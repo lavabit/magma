@@ -163,6 +163,15 @@ prime_ephemeral_chunk_t * ephemeral_chunk_set(stringer_t *chunk) {
 		}
 	}
 
+	// Retain a reference to the original chunk data.
+	if (!(result->buffer = st_alloc_opts(PLACER_T | JOINTED | HEAP | FOREIGNDATA, 0))) {
+		ephemeral_chunk_free(result);
+		return NULL;
+	}
+
+	st_data_set(result->buffer, st_data_get(chunk));
+	st_length_set(result->buffer, st_length_get(chunk));
+
 	return result;
 }
 

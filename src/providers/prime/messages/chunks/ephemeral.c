@@ -110,6 +110,9 @@ prime_ephemeral_chunk_t * ephemeral_chunk_get(ed25519_key_t *signing, secp256k1_
 	return result;
 }
 
+/**
+ * @brief	Parse an ephemeral message chunk. A public encryption key is required, while the ephemeral signing key is optional.
+ */
 prime_ephemeral_chunk_t * ephemeral_chunk_set(stringer_t *chunk) {
 
 	size_t len = 0;

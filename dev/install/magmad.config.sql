@@ -71,5 +71,5 @@ INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad'
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[10].tls.certificate', '/etc/pki/tls/private/$TLSFILE', NOW());
 
 -- INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.system.impersonate_user', 'magma', NOW());
---INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.system.root_directory', '/var/lib/magma/', NOW());
+-- INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.system.root_directory', '/var/lib/magma/', NOW());
 

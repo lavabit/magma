@@ -38,6 +38,8 @@ void                       encrypted_chunk_cleanup(prime_encrypted_chunk_t *chun
 void                       encrypted_chunk_free(prime_encrypted_chunk_t *chunk);
 prime_encrypted_chunk_t *  encrypted_chunk_get(prime_message_chunk_type_t type, ed25519_key_t *signing, secp256k1_key_t *encryption,
 	secp256k1_key_t *author, secp256k1_key_t *origin, secp256k1_key_t *destination, secp256k1_key_t *recipient, stringer_t *data);
+prime_encrypted_chunk_t *  encrypted_chunk_set(ed25519_key_t *signing, secp256k1_key_t *encryption, secp256k1_key_t *author,
+	secp256k1_key_t *origin, secp256k1_key_t *destination, secp256k1_key_t *recipient, stringer_t *chunk);
 
 /// chunks.c
 stringer_t *  chunk_header_write(prime_message_chunk_type_t type, size_t size, stringer_t *output);

@@ -52,32 +52,6 @@ typedef enum {
 } prime_flags_t;
 
 /**
- * @typedef prime_artifact_type_t
- */
-typedef enum {
-    PRIME_ORG_SIGNET = 1776,               /**< Organizational signet. >*/
-	PRIME_ORG_KEY = 1952,                  /**< Organizational key. >*/
-	PRIME_ORG_KEY_ENCRYPTED = 1947,        /**< Encrypted organizational key. >*/
-
-	PRIME_USER_SIGNING_REQUEST = 1215,     /**< User signing request. >*/
-    PRIME_USER_SIGNET = 1789,              /**< User signet. >*/
-	PRIME_USER_KEY = 2013,                 /**< User key. >*/
-	PRIME_USER_KEY_ENCRYPTED = 1976,       /**< Encrypted user key. >*/
-
-//    PRIME_MESSAGE_ENCRYPTED = 1847,        /**< An encrypted message. >*/
-//    PRIME_MESSAGE_SENT = 1851,             /**< An encrypted, appended, sent message. >*/
-//    PRIME_MESSAGE_DRAFT = 1861,            /**< An encrypted, appended, message draft. >*/
-//    PRIME_MESSAGE_NAKED = 1908,            /**< An encrypted, imported, unstructured, naked message. >*/
-//
-//    PRIME_MESSAGE_BOUNCE = 1931,           /**< An encapsulated, encrypted message, that has bounced. >*/
-//    PRIME_MESSAGE_FORWARD = 1948,          /**< An encapsulated, encrypted message, that has been forwarded. >*/
-//    PRIME_MESSAGE_ABUSE = 2001,            /**< An encapsulated, encrypted message, sent as an abuse complaint. >*/
-//
-//    PRIME_BINARY_OBJECT = 1837,            /**< A binary object. >*/
-//    PRIME_PROTOCOL_TICKET = 1841           /**< An encrypted protocol ticket. >*/
-} prime_artifact_type_t;
-
-/**
  * @typedef prime_message_type_t
  */
 typedef enum {
@@ -93,6 +67,21 @@ typedef enum {
     PRIME_BINARY_OBJECT = 1837,            /**< A binary object. >*/
     PRIME_PROTOCOL_TICKET = 1841           /**< An encrypted protocol ticket. >*/
 } prime_message_type_t;
+
+/**
+ * @typedef prime_artifact_type_t
+ */
+typedef enum {
+    PRIME_ORG_SIGNET = 1776,               /**< Organizational signet. >*/
+	PRIME_ORG_KEY = 1952,                  /**< Organizational key. >*/
+	PRIME_ORG_KEY_ENCRYPTED = 1947,        /**< Encrypted organizational key. >*/
+
+	PRIME_USER_SIGNING_REQUEST = 1215,     /**< User signing request. >*/
+    PRIME_USER_SIGNET = 1789,              /**< User signet. >*/
+	PRIME_USER_KEY = 2013,                 /**< User key. >*/
+	PRIME_USER_KEY_ENCRYPTED = 1976,       /**< Encrypted user key. >*/
+
+} prime_artifact_type_t;
 
 /**
  * @typedef prime_message_chunk_type_t

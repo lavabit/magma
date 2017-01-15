@@ -70,6 +70,10 @@ stringer_t * encrypted_chunk_buffer(prime_encrypted_chunk_t *chunk) {
 	return buffer;
 }
 
+/**
+ * @brief	Generate an encrypted message chunk. The signing and encryption keys are required, along with the public encryption
+ * 			key for at least one actor.
+ */
 prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, ed25519_key_t *signing, secp256k1_key_t *encryption,
 	secp256k1_key_t *author, secp256k1_key_t *origin, secp256k1_key_t *destination, secp256k1_key_t *recipient, stringer_t *data) {
 
@@ -84,10 +88,11 @@ prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, e
 	}
 
 	/// HIGH: Add support for payloads that span across multiple chunks.
-	// The maximum chunk payload is 16,777,115 which is limited by the 3 byte length in the chunk header, minus the 32 + 69 required bytes,
-	// and the fact that we don't support split chunks, yet.
-	else if (st_length_get(data) < 1 || st_length_get(data) >= 16777115) {
-		log_pedantic("The chunk payload data must be larger than 1 byte, but smaller than 16,777,115 bytes. { length = %zu }", st_length_get(data));
+	// The maximum chunk plain text data size is 16,777,099. The max is limited by the 3 byte length in the chunk header,
+	// minus the 32 byte needed for the shards, and then accounting for the 69 required encryted bytes, while still resulting
+	// in a total encrypted size that aligns to a 16 byte boundary.
+	else if (st_length_get(data) < 1 || st_length_get(data) >= 16777099) {
+		log_pedantic("The chunk payload data must be larger than 1 byte, but smaller than 16,777,099 bytes. { length = %zu }", st_length_get(data));
 		return NULL;
 	}
 	else if (!(result = encrypted_chunk_alloc())) {
@@ -148,6 +153,8 @@ prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, e
 		return NULL;
 	}
 
+	/// LOW: If we pass in the kek, instead of the secp256k1 key, we won't need to recompute the kek for every chunk.
+
 	// Generate keyslots for any of the actors we recieved keys for, starting with the author.
 	else if (author && (!(result->slots.author = secp256k1_compute_kek(encryption, author, NULL)) ||
 		!(result->slots.author = st_xor(result->slots.author, key, result->slots.author)))) {
@@ -199,3 +206,30 @@ prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, e
 
 	return result;
 }
+
+prime_encrypted_chunk_t * encrypted_chunk_set(ed25519_key_t *signing, secp256k1_key_t *encryption, secp256k1_key_t *author,
+	secp256k1_key_t *origin, secp256k1_key_t *destination, secp256k1_key_t *recipient, stringer_t *chunk) {
+
+	prime_encrypted_chunk_t *result = NULL;
+
+	// We need a signing key, encryption key, and at least one actor.
+	if (!signing || signing->type != ED25519_PRIV || !encryption || !chunk || (!author && !origin && !destination && !recipient)) {
+		log_pedantic("Invalid parameters passed to the encrypted chunk generator.");
+		return NULL;
+	}
+
+	/// HIGH: Add support for payloads that span across multiple chunks.
+	// The minimum legal chunk size would be 4 + 32 + 80 + 64 = 180, while the max would be 4 + 32 + 69 + 128 + 16,777,099 =
+	// 16,777,332, which accounts for the chunk header, and keyslots, which might be included in the buffer, but not in the
+	// chunk header length.
+	else if (st_length_get(chunk) < 84 || st_length_get(chunk) > 16777332) {
+		log_pedantic("The chunk payload data must be larger than 1 byte, but smaller than 16,777,332 bytes. { length = %zu }",
+			st_length_get(chunk));
+		return NULL;
+	}
+	else if (!(result = encrypted_chunk_alloc())) {
+		return NULL;
+	}
+	return result;
+}
+

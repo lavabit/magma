@@ -63,6 +63,7 @@ perl-Text-Unidecode policycoreutils checkpolicy
 useradd clamav
 usermod --home /var/lib/clamav/ clamav
 usermod --shell /sbin/nologin clamav
+passwd -l clamav
 
 # Install the clamav package so we can use a distro version of freshclam.
 yum --assumeyes install clamav clamav-db clamav-lib clamav-data clamav-update clamav-filesystem
@@ -109,7 +110,7 @@ PROOT=`openssl rand -base64 30 | sed -e "s/\//@-/g" | sed -e "s/\+/_\?/g"`
 mysqladmin --user=root password "$PROOT"
 
 # Save the password so the root user can login without having to type it in.
-printf "\n\n[mysql]\nuser=root\npassword=$PROOT\ndatabase=Magma\n\n" >> /root/.my.cnf 
+printf "\n\n[mysql]\nuser=root\npassword=$PROOT\ndatabase=Magma\nsocket=/var/lib/mysql/mysql.sock\n\n" >> /root/.my.cnf 
 
 # Find out how much RAM is installed, and what 50% would be in KB.
 TOTALMEM=`free -k | grep -E "^Mem:" | awk -F' ' '{print $2}'`
@@ -136,12 +137,13 @@ iptables -A INPUT -p icmp -j ACCEPT
 iptables -A INPUT -i lo -j ACCEPT
 iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 22 -j ACCEPT
 iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 25 -j ACCEPT
-iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 53 -j ACCEPT
-iptables -A INPUT -m state --state NEW -m udp -p udp --dport 53 -j ACCEPT
-iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
+iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 26 -j ACCEPT
+#iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 53 -j ACCEPT
+#iptables -A INPUT -m state --state NEW -m udp -p udp --dport 53 -j ACCEPT
+#iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
 iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 110 -j ACCEPT
 iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 143 -j ACCEPT
-iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 443 -j ACCEPT
+#iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 443 -j ACCEPT
 iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 465 -j ACCEPT
 iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 587 -j ACCEPT
 iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 993 -j ACCEPT
@@ -170,11 +172,6 @@ sed -i -e "s/CACHESIZE=\"[0-9]*\"/CACHESIZE=\"$QUARTERMEM\"/g" /etc/sysconfig/me
 # Install postfix for outbound relays.
 yum --assumeyes install postfix
 
-# Modify the selinux rules so that postfix may bind to port 2525.
-checkmodule -M -m -o postfix.selinux.mod postfix.selinux.te
-semodule_package -o postfix.selinux.pp -m postfix.selinux.mod
-semodule -i postfix.selinux.pp
-
 # Setup logrotate so it only stores 7 days worth of logs.
 printf "/var/log/maillog {\n\tdaily\n\trotate 7\n\tmissingok\n}\n" > /etc/logrotate.d/postfix
 
@@ -202,6 +199,27 @@ printf "\nmyhostname = relay.$DOMAIN\nmyorigin = $DOMAIN\n" >> /etc/postfix/main
 #                                                                           #
 #############################################################################
 
+git clone https://github.com/lavabit/magma magma-develop
+cd magma-develop
+
+# Modify the selinux rules so that postfix may bind to port 2525.
+checkmodule -M -m -o dev/install/postfix.selinux.mod postfix.selinux.te
+semodule_package -o postfix.selinux.pp -m postfix.selinux.mod
+semodule -i postfix.selinux.pp
+
+# Ensure postfix auto-starts during boot, and then launch the daemon.
+/sbin/chkconfig postfix on
+/sbin/service postfix stop 
+/sbin/service postfix start
+
+# Build the magma dependencies.
+dev/scripts/builders/build.lib.sh all
+
+# Change the process name, so the init script doesn't conflict.
+sed -i "s/PLACER(\"magmad\", 6)/PLACER\(\"\/usr\/libexec\/magmad\", 19\)/g" src/magma.c
+
+make all
+
 #############################################################################
 # Install magmad.                                                           #
 #############################################################################
@@ -210,6 +228,7 @@ printf "\nmyhostname = relay.$DOMAIN\nmyorigin = $DOMAIN\n" >> /etc/postfix/main
 useradd magma
 usermod --home /var/lib/magma/ magma
 usermod --shell /sbin/nologin magma
+passwd -l magma
 
 # Copy the magmad and magmad.so files to /usr/libexec.
 cp magmad magmad.so /usr/libexec
@@ -335,7 +354,7 @@ PSALT=`openssl rand -base64 42 | sed -e "s/\//@-/g" | sed -e "s/\+/_\?/g"`
 PSESS=`openssl rand -base64 42 | sed -e "s/\//@-/g" | sed -e "s/\+/_\?/g"`
 
 # Insert the global config options.
-cat magmad.config.sql | \
+cat dev/install/magmad.config.sql | \
 sed -e "s/\$PSALT/$PSALT/g" | \
 sed -e "s/\$PSESS/$PSESS/g" | \
 sed -e "s/\$DOMAIN/$DOMAIN/g" | \
@@ -345,7 +364,7 @@ sed -e "s/\$SELECTOR/$SELECTOR/g" | \
 mysql -u root Magma
 
 # Install the Sys V init script.
-cp magmad.sysv.init.sh /etc/init.d/magmad
+cp dev/install/magmad.sysv.init.sh /etc/init.d/magmad
 chmod 755 /etc/init.d/magmad
 chcon system_u:object_r:initrc_exec_t:s0 /etc/init.d/magmad
 
@@ -357,4 +376,6 @@ chcon system_u:object_r:var_run_t:s0 /var/run/magmad/
 # Add the magmad init script to the system configuration.
 chkconfig --add magmad
 chkconfig magmad on
+service magmad start
+
 

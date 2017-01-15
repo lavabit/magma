@@ -30,12 +30,12 @@ int32_t chunk_header_size(stringer_t *chunk) {
 	return result;
 }
 
-prime_message_chunks_t chunk_header_type(stringer_t *chunk) {
+prime_message_chunk_type_t chunk_header_type(stringer_t *chunk) {
 
 	size_t len = 0;
 	uint8_t type = 0;
 	uchr_t *data = NULL;
-	prime_message_chunks_t result = PRIME_CHUNK_INVALID;
+	prime_message_chunk_type_t result = PRIME_CHUNK_INVALID;
 
 	if (st_empty_out(chunk, &data, &len)) {
 		log_pedantic("The chunk buffer is invalid.");
@@ -101,7 +101,7 @@ prime_message_chunks_t chunk_header_type(stringer_t *chunk) {
 	return result;
 }
 
-stringer_t * chunk_header_write(prime_message_chunks_t type, size_t size, stringer_t *output) {
+stringer_t * chunk_header_write(prime_message_chunk_type_t type, size_t size, stringer_t *output) {
 
 	stringer_t *result = NULL;
 	uint32_t big_endian_size = htobe32(size);

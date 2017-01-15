@@ -15,10 +15,12 @@
 
 /// aes.c
 placer_t      aes_cipher_key(stringer_t *key);
-stringer_t *  aes_object_decrypt(stringer_t *key, stringer_t *object, stringer_t *output);
-stringer_t *  aes_object_encrypt(stringer_t *key, stringer_t *object, stringer_t *output);
 placer_t      aes_tag_shard(stringer_t *key);
 placer_t      aes_vector_shard(stringer_t *key);
+stringer_t *  aes_chunk_decrypt(stringer_t *key, stringer_t *chunk, stringer_t *output);
+stringer_t *  aes_chunk_encrypt(uint8_t type, stringer_t *key, stringer_t *chunk, stringer_t *output);
+stringer_t *  aes_artifact_decrypt(stringer_t *key, stringer_t *object, stringer_t *output);
+stringer_t *  aes_artifact_encrypt(stringer_t *key, stringer_t *object, stringer_t *output);
 
 /// ed25519.c
 ed25519_key_t *  ed25519_alloc(void);

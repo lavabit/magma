@@ -56,7 +56,7 @@ int_t prime_field_size_length(prime_field_type_t field) {
 	return result;
 }
 
-size_t prime_field_size_max(prime_type_t type, prime_field_type_t field) {
+size_t prime_field_size_max(prime_artifact_type_t type, prime_field_type_t field) {
 
 	size_t result = 0;
 
@@ -104,7 +104,7 @@ size_t prime_field_size_max(prime_type_t type, prime_field_type_t field) {
 	return result;
 }
 
-stringer_t * prime_field_write(prime_type_t type, prime_field_type_t field, size_t size, stringer_t *data, stringer_t *output) {
+stringer_t * prime_field_write(prime_artifact_type_t type, prime_field_type_t field, size_t size, stringer_t *data, stringer_t *output) {
 
 	uchr_t *payload = NULL;
 	stringer_t *result = NULL;

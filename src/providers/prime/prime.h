@@ -52,7 +52,7 @@ typedef enum {
 } prime_flags_t;
 
 /**
- * @typedef prime_type_t
+ * @typedef prime_artifact_type_t
  */
 typedef enum {
     PRIME_ORG_SIGNET = 1776,               /**< Organizational signet. >*/
@@ -64,6 +64,23 @@ typedef enum {
 	PRIME_USER_KEY = 2013,                 /**< User key. >*/
 	PRIME_USER_KEY_ENCRYPTED = 1976,       /**< Encrypted user key. >*/
 
+//    PRIME_MESSAGE_ENCRYPTED = 1847,        /**< An encrypted message. >*/
+//    PRIME_MESSAGE_SENT = 1851,             /**< An encrypted, appended, sent message. >*/
+//    PRIME_MESSAGE_DRAFT = 1861,            /**< An encrypted, appended, message draft. >*/
+//    PRIME_MESSAGE_NAKED = 1908,            /**< An encrypted, imported, unstructured, naked message. >*/
+//
+//    PRIME_MESSAGE_BOUNCE = 1931,           /**< An encapsulated, encrypted message, that has bounced. >*/
+//    PRIME_MESSAGE_FORWARD = 1948,          /**< An encapsulated, encrypted message, that has been forwarded. >*/
+//    PRIME_MESSAGE_ABUSE = 2001,            /**< An encapsulated, encrypted message, sent as an abuse complaint. >*/
+//
+//    PRIME_BINARY_OBJECT = 1837,            /**< A binary object. >*/
+//    PRIME_PROTOCOL_TICKET = 1841           /**< An encrypted protocol ticket. >*/
+} prime_artifact_type_t;
+
+/**
+ * @typedef prime_message_type_t
+ */
+typedef enum {
     PRIME_MESSAGE_ENCRYPTED = 1847,        /**< An encrypted message. >*/
     PRIME_MESSAGE_SENT = 1851,             /**< An encrypted, appended, sent message. >*/
     PRIME_MESSAGE_DRAFT = 1861,            /**< An encrypted, appended, message draft. >*/
@@ -75,11 +92,10 @@ typedef enum {
 
     PRIME_BINARY_OBJECT = 1837,            /**< A binary object. >*/
     PRIME_PROTOCOL_TICKET = 1841           /**< An encrypted protocol ticket. >*/
-} prime_type_t;
-
+} prime_message_type_t;
 
 /**
- * @typedef prime_message_chunks_t
+ * @typedef prime_message_chunk_type_t
  */
 typedef enum {
 	PRIME_CHUNK_INVALID = -1,
@@ -108,7 +124,7 @@ typedef enum {
 
 	PRIME_CHUNK_SIGNATURE_ORGIN = 254,
 	PRIME_CHUNK_SIGNATURE_DESTINATION = 255
-} prime_message_chunks_t;
+} prime_message_chunk_type_t;
 
 /**
  * @typedef prime_org_artifact_fields_t
@@ -137,6 +153,11 @@ typedef enum {
 	USER_IDENTIFIER = 254,
 	USER_IDENTIFIABLE_SIGNATURE = 255
 } prime_user_artifact_fields_t;
+
+/**
+ * @typedef prime_message_chunk_type_t
+ */
+typedef uint16_t prime_type_t;
 
 // Allows the inclusion of this PRIME header without having to include the OpenSSL headers.
 #ifdef HEADER_EC_H
@@ -321,7 +342,8 @@ void          prime_free(prime_t *object);
 stringer_t *  prime_get(prime_t *object, prime_encoding_t encoding, stringer_t *output);
 prime_t *     prime_key_decrypt(stringer_t *key, stringer_t *object, prime_encoding_t encoding, prime_flags_t flags);
 stringer_t *  prime_key_encrypt(stringer_t *key, prime_t *object, prime_encoding_t encoding, stringer_t *output);
-prime_t *     prime_key_generate(prime_type_t type, prime_flags_t flags);
+prime_t *     prime_key_generate(prime_artifact_type_t type, prime_flags_t flags);
+prime_t *     prime_message_encrypt(stringer_t *message, prime_t *author, prime_t *origin, prime_t *destination, prime_t *recipient);
 prime_t *     prime_request_generate(prime_t *object, prime_t *previous);
 prime_t *     prime_request_sign(prime_t *request, prime_t *org);
 prime_t *     prime_set(stringer_t *object, prime_encoding_t encoding, prime_flags_t flags);

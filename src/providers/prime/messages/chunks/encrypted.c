@@ -70,30 +70,45 @@ stringer_t * encrypted_chunk_buffer(prime_encrypted_chunk_t *chunk) {
 	return buffer;
 }
 
-prime_encrypted_chunk_t * encrypted_chunk_get(ed25519_key_t *signing, secp256k1_key_t *encryption, secp256k1_key_t *author, secp256k1_key_t *origin,
-	secp256k1_key_t *destination, secp256k1_key_t *recipient, stringer_t *data) {
+prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, stringer_t *data,
+	ed25519_key_t *signing, secp256k1_key_t *encryption,
+	secp256k1_key_t *author, secp256k1_key_t *origin,
+	secp256k1_key_t *destination, secp256k1_key_t *recipient) {
 
 	uint32_t big_endian_length = 0;
 	prime_encrypted_chunk_t *result = NULL;
+	stringer_t *key = MANAGEDBUF(32), *stretched = MANAGEDBUF(64);
 
 	// We need a signing key, encryption key, and at least one actor.
 	if (!signing || signing->type != ED25519_PRIV || !encryption || !data || (!author && !origin && !destination && !recipient)) {
 		log_pedantic("Invalid parameters passed to the encrypted chunk generator.");
 		return NULL;
 	}
+	// The maximum chunk payload is 16,777,115 which is limited by the 3 byte length in the chunk header, minus the 32 + 69 required bytes,
+	// and the fact that we don't support split chunks, yet.
+	/// HIGH: Add support for payloads that span across multiple chunks.
+	else if (st_length_get(data) < 1 || st_length_get(data) >= 16777115) {
+		log_pedantic("The chunk payload data must be larger than 1 byte, but smaller than 16,777,115 bytes. { length = %zu }", st_length_get(data));
+		return NULL;
+	}
 	else if (!(result = encrypted_chunk_alloc())) {
 		return NULL;
 	}
-
 
 	// The entire buffer must be evenly divisible by 16. divisible by
 	// 64 signature + 3 data length + 1 flags + 1 padding length = 69
 	result->pad = ((st_length_get(data) + 69) % 16);
 	result->length = st_length_get(data);
-	big_endian_length = htobe32(result->length);
-	result->flags = 0;
 
-	// Allocate a place holder and a buffer to store the padding bytes.
+	// The spec suggests we pad any payload smaller to 256 bytes, to make it a minimum of 256 bytes.
+	if ((result->pad + result->length + 69) < 256) {
+		result->pad += (256 - (result->pad + result->length + 69));
+	}
+
+	result->flags = 0;
+	big_endian_length = htobe32(result->length);
+
+	// Allocate a buffer for the serialized payload, and a buffer to store the padding bytes.
 	if (!(result->data = st_alloc(result->length + result->pad + 69)) || !(result->trailing = st_alloc(result->pad))) {
 		encrypted_chunk_free(result);
 		return NULL;
@@ -119,8 +134,14 @@ prime_encrypted_chunk_t * encrypted_chunk_get(ed25519_key_t *signing, secp256k1_
 	mm_copy(st_data_get(result->data) + result->length + 69, st_data_get(result->trailing), result->pad);
 
 	// Generate the signature.
-	ed25519_sign(signing, PLACER(st_data_get(result->data) + 64, result->length + result->pad + 5), MANAGED(st_data_get(result->data), 64, 64));
-#error unfinished
-	aes_object_encrypt(key, object, output)
-	return NULL;
+	ed25519_sign(signing, PLACER(st_data_get(result->data) + 64, result->length + result->pad + 5), MANAGED(st_data_get(result->data), 0, 64));
+
+	// Create the chunk keys.
+	if (rand_write(key) != 32 || !(stretched = hash_sha512(key, stretched))) {
+		encrypted_chunk_free(result);
+		return NULL;
+	}
+
+	result->encrypted = aes_chunk_encrypt(type, stretched, result->data, NULL);
+	return result;
 }

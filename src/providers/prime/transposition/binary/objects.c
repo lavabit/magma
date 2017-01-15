@@ -23,7 +23,7 @@ chr_t * prime_types[] = {
 	"ENCRYPTED MESSAGE"
 };
 
-chr_t * prime_object_type(prime_type_t type) {
+chr_t * prime_object_type(prime_artifact_type_t type) {
 
 	chr_t *result = NULL;
 
@@ -67,7 +67,7 @@ void prime_object_free(prime_object_t *object) {
 	return;
 }
 
-prime_object_t * prime_object_alloc(prime_type_t type, prime_size_t size, prime_size_t fields) {
+prime_object_t * prime_object_alloc(prime_artifact_type_t type, prime_size_t size, prime_size_t fields) {
 
 	prime_object_t *result = NULL;
 
@@ -88,7 +88,7 @@ prime_object_t * prime_object_alloc(prime_type_t type, prime_size_t size, prime_
 	return result;
 }
 
-size_t prime_object_size_max(prime_type_t type) {
+size_t prime_object_size_max(prime_artifact_type_t type) {
 
 	size_t max = 0;
 
@@ -111,7 +111,7 @@ size_t prime_object_size_max(prime_type_t type) {
 	return max;
 }
 
-size_t prime_object_size_min(prime_type_t type) {
+size_t prime_object_size_min(prime_artifact_type_t type) {
 
 	size_t min = 0;
 

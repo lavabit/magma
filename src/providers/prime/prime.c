@@ -302,7 +302,7 @@ prime_t * prime_set(stringer_t *object, prime_encoding_t encoding, prime_flags_t
 /**
  * @brief	Generates a new organizational or user key.
  */
-prime_t * prime_key_generate(prime_type_t type, prime_flags_t flags) {
+prime_t * prime_key_generate(prime_artifact_type_t type, prime_flags_t flags) {
 
 	prime_t *result = NULL;
 

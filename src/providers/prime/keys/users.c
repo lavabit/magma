@@ -155,7 +155,7 @@ stringer_t * user_encrypted_key_get(stringer_t *key, prime_user_key_t *user, str
 	if ((holder = user_key_get(user, NULL))) {
 
 		// Encrypt the key.
-		result = aes_object_encrypt(key, holder, output);
+		result = aes_artifact_encrypt(key, holder, output);
 
 		// Free the packed representation of the key.
 		st_free(holder);
@@ -170,7 +170,7 @@ prime_user_key_t * user_encrypted_key_set(stringer_t *key, stringer_t *user) {
 	prime_user_key_t *result = NULL;
 
 	// Decrypt the key.
-	if ((packed = aes_object_decrypt(key, user, NULL))) {
+	if ((packed = aes_artifact_decrypt(key, user, NULL))) {
 
 		// Unpack the data into a key structure.
 		result = user_key_set(packed);

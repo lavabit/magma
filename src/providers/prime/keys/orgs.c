@@ -155,7 +155,7 @@ stringer_t * org_encrypted_key_get(stringer_t *key, prime_org_key_t *org, string
 	if ((holder = org_key_get(org, NULL))) {
 
 		// Encrypt the key.
-		result = aes_object_encrypt(key, holder, output);
+		result = aes_artifact_encrypt(key, holder, output);
 
 		// Free the packed representation of the key.
 		st_free(holder);
@@ -170,7 +170,7 @@ prime_org_key_t * org_encrypted_key_set(stringer_t *key, stringer_t *org) {
 	prime_org_key_t *result = NULL;
 
 	// Decrypt the key.
-	if ((packed = aes_object_decrypt(key, org, NULL))) {
+	if ((packed = aes_artifact_decrypt(key, org, NULL))) {
 
 		// Unpack the data into a key structure.
 		result = org_key_set(packed);

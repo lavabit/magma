@@ -15,8 +15,8 @@
 
 /// chunks.c
 int32_t                  chunk_header_size(stringer_t *chunk);
-prime_message_chunks_t   chunk_header_type(stringer_t *chunk);
-stringer_t *             chunk_header_write(prime_message_chunks_t type, size_t size, stringer_t *output);
+prime_message_chunk_type_t   chunk_header_type(stringer_t *chunk);
+stringer_t *             chunk_header_write(prime_message_chunk_type_t type, size_t size, stringer_t *output);
 
 /// signature.c
 prime_signature_chunk_t *  signature_chunk_alloc(void);
@@ -37,7 +37,7 @@ void                       encrypted_chunk_cleanup(prime_encrypted_chunk_t *chun
 void                       encrypted_chunk_free(prime_encrypted_chunk_t *chunk);
 
 /// chunks.c
-stringer_t *  chunk_header_write(prime_message_chunks_t type, size_t size, stringer_t *output);
+stringer_t *  chunk_header_write(prime_message_chunk_type_t type, size_t size, stringer_t *output);
 
 #endif
 

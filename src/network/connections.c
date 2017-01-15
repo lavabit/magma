@@ -109,7 +109,7 @@ void con_destroy(connection_t *con) {
 		}
 
 		if (con->network.tls) {
-			ssl_free(con->network.tls);
+			tls_free(con->network.tls);
 		}
 
 		if (con->network.sockd != -1) {

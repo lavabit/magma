@@ -157,26 +157,29 @@ stringer_t *  hmac_sha384(stringer_t *s, stringer_t *key, stringer_t *output);
 stringer_t *  hmac_sha512(stringer_t *s, stringer_t *key, stringer_t *output);
 
 /// openssl.c
-bool_t   lib_load_openssl(void);
-const    char * lib_version_openssl(void);
-int      ssl_shutdown_get(SSL *ssl);
-SSL *    ssl_alloc(void *server, int sockd, int flags);
-void *   ssl_client_create(int_t sockd);
-char *   ssl_error_string(chr_t *buffer, int_t length);
-void     ssl_free(SSL *ssl);
-void     ssl_locking_callback(int mode, int n, const char *file, int line);
+bool_t           lib_load_openssl(void);
+const char *     lib_version_openssl(void);
+DH *             ssl_dh_exchange_callback(SSL *ssl, int is_export, int keylength);
+int              ssl_dh_generate_callback(int p, int n, BN_GENCB *cb);
+EC_KEY *         ssl_ecdh_exchange_callback(SSL *ssl, int is_export, int keylength);
+char *           ssl_error_string(chr_t *buffer, int_t length);
+void             ssl_locking_callback(int mode, int n, const char *file, int line);
+bool_t           ssl_start(void);
+void             ssl_stop(void);
+unsigned long    ssl_thread_id_callback(void);
+void             ssl_thread_stop(void);
+bool_t           ssl_verify_privkey(const char *keyfile);
+
+/// tls.c
 int      ssl_print(SSL *ssl, const char *format, va_list args);
 int      ssl_read(SSL *ssl, void *buffer, int length, bool_t block);
 bool_t   ssl_server_create(void *server, uint_t security_level);
 void     ssl_server_destroy(void *server);
-bool_t   ssl_start(void);
-void     ssl_stop(void);
-void     ssl_thread_stop(void);
 int      ssl_write(SSL *ssl, const void *buffer, int length);
-bool_t   ssl_verify_privkey(const char *keyfile);
-DH *     ssl_dh_exchange_callback(SSL *ssl, int is_export, int keylength);
-int      ssl_dh_generate_callback(int p, int n, BN_GENCB *cb);
-EC_KEY * ssl_ecdh_exchange_callback(SSL *ssl, int is_export, int keylength);
+void *   tls_client_alloc(int_t sockd);
+void     tls_free(SSL *ssl);
+SSL *    tls_server_alloc(void *server, int sockd, int flags);
+int      tls_status(SSL *ssl);
 
 /// random.c
 bool_t        rand_start(void);

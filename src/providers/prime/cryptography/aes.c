@@ -123,9 +123,9 @@ placer_t aes_tag_shard(stringer_t *key) {
 stringer_t * aes_chunk_encrypt(uint8_t type, stringer_t *key, stringer_t *chunk, stringer_t *output) {
 
 	EVP_CIPHER_CTX ctx;
-	size_t overall_size = 0;
+	size_t chunk_size = 0;
+	uint32_t big_endian_size = 0;
 	uchr_t *chunk_data, tag[AES_TAG_LEN];
-	uint32_t big_endian_size = 0, chunk_size = 0;
 	prime_encrypted_chunk_header_t *header = NULL;
 	int_t payload_len = 0, available = 0, written = 0;
 	placer_t cipher_key = pl_null(), tag_key_shard = pl_null(), vector_key_shard = pl_null();
@@ -136,12 +136,12 @@ stringer_t * aes_chunk_encrypt(uint8_t type, stringer_t *key, stringer_t *chunk,
 		log_pedantic("PRIME chunk encryption requires a %i byte key. { length = %zu }", PRIME_CHUNK_KEY_LEN, st_length_get(key));
 		return NULL;
 	}
-	else if (st_empty_out(chunk, &chunk_data, &overall_size) || (overall_size % AES_BLOCK_LEN) != 0) {
-		log_pedantic("PRIME chunk encryption requires a plain text payload aligned to a block size of %i. { length = %zu }", AES_BLOCK_LEN, overall_size);
+	else if (st_empty_out(chunk, &chunk_data, &chunk_size) || (chunk_size % AES_BLOCK_LEN) != 0) {
+		log_pedantic("PRIME chunk encryption requires a plain text payload aligned to a block size of %i. { length = %zu }", AES_BLOCK_LEN, chunk_size);
 		return NULL;
 	}
-	else if (overall_size < 80) {
-		log_pedantic("The smallest valid encrypted PRIME chunk is 80 bytes. { length = %zu }", overall_size);
+	else if (chunk_size < 80) {
+		log_pedantic("The smallest valid encrypted PRIME chunk is 80 bytes. { length = %zu }", chunk_size);
 		return NULL;
 	}
 	// Extract the key fragments.
@@ -172,8 +172,9 @@ stringer_t * aes_chunk_encrypt(uint8_t type, stringer_t *key, stringer_t *chunk,
 		log_pedantic("An output string was supplied but it does not represent a buffer capable of holding the output.");
 		return NULL;
 	}
-	// If the output buffer is NULL, then we'll allocate a buffer for the result.
-	else if (!output && !(output = result = st_alloc(PRIME_CHUNK_HEAD_LEN + payload_len))) {
+	// If the output buffer is NULL, then we'll allocate a buffer for the result. If we do the allocation, then we add an extra
+	// 128 bytes onto the end of the buffer so the keyslots can be appended without having to reallocate the buffer.
+	else if (!output && !(output = result = st_alloc(PRIME_CHUNK_HEAD_LEN + payload_len + 128))) {
 		log_pedantic("Could not allocate a buffer large enough to hold encrypted result. { requested = %i }", PRIME_CHUNK_HEAD_LEN + payload_len);
 		return NULL;
 	}
@@ -229,8 +230,8 @@ stringer_t * aes_chunk_encrypt(uint8_t type, stringer_t *key, stringer_t *chunk,
 	}
 
 	// Encrypt the payload.
-	if (EVP_EncryptUpdate_d(&ctx, st_data_get(output) + PRIME_CHUNK_HEAD_LEN, &available, chunk_data, overall_size) != 1 ||
-		available != overall_size) {
+	if (EVP_EncryptUpdate_d(&ctx, st_data_get(output) + PRIME_CHUNK_HEAD_LEN, &available, chunk_data, chunk_size) != 1 ||
+		available != chunk_size) {
 
 		log_pedantic("An error occurred while trying to encrypt the input buffer using the chosen symmetric cipher. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));

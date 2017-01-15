@@ -127,6 +127,8 @@ bool_t    st_populated_variadic(ssize_t len, ...);
 bool_t    st_used_variadic(ssize_t len, ...);
 uchr_t *  st_uchar_get(stringer_t *s);
 void      st_wipe(stringer_t *s);
+stringer_t *  st_set(stringer_t *s, uint8_t set, size_t len);
+
 
 // Creation/Destruction
 void st_free(stringer_t *s);
@@ -148,6 +150,7 @@ stringer_t * st_alloc_opts(uint32_t opts, size_t len);
 stringer_t * st_dupe_opts(uint32_t opts, stringer_t *s);
 stringer_t * st_merge_opts(uint32_t opts, chr_t *format, ...);
 stringer_t * st_append_opts(size_t align, stringer_t *s, stringer_t *append);
+int_t st_append_out(size_t align, stringer_t **s, stringer_t *append);
 
 /// shortcuts.c
 placer_t * pl_init_by_addr(placer_t *result, void *data, size_t len);

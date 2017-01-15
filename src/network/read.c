@@ -174,7 +174,7 @@ int64_t con_read(connection_t *con) {
 			bytes = ssl_read(con->network.tls, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
 				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), blocking);
 
-			if (!bytes && ssl_shutdown_get(con->network.tls)) {
+			if (!bytes && tls_status(con->network.tls)) {
 				con->network.status = -1;
 				return -1;
 			}

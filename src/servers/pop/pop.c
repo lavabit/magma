@@ -38,7 +38,7 @@ void pop_starttls(connection_t *con) {
 	// Tell the user that we are ready to start the negotiation.
 	con_write_bl(con, "+OK Ready to start TLS negotiation.\r\n", 37);
 
-	if (!(con->network.tls = ssl_alloc(con->server, con->network.sockd, M_SSL_BIO_NOCLOSE))) {
+	if (!(con->network.tls = tls_server_alloc(con->server, con->network.sockd, M_SSL_BIO_NOCLOSE))) {
 		con_write_bl(con, "-ERR STARTTLS FAILED\r\n", 22);
 		log_pedantic("The TLS connection attempt failed.");
 		return;

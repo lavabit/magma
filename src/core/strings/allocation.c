@@ -425,6 +425,46 @@ stringer_t * st_append_opts(size_t align, stringer_t *s, stringer_t *append) {
 	return s;
 }
 
+int_t st_append_out(size_t align, stringer_t **s, stringer_t *append) {
+
+	size_t alen, slen = 0;
+	stringer_t *holder = NULL;
+
+	// We can only append to mapped strings or jointed managed strings.
+	if (!s || (*s && (!st_valid_destination(*((uint32_t *)*s)) || !(holder = *s)))) {
+		log_pedantic("Invalid string options. {opt = %u}", *((uint32_t *)s));
+		return -1;
+	}
+
+	if (!append || !(alen = st_length_get(append))) {
+		log_pedantic("The append string appears to be empty.");
+		return 0;
+	}
+
+	// Allocate a new string if the existing string pointer is NULL.
+	if (!holder) {
+		holder = st_alloc_opts(MANAGED_T | HEAP | JOINTED, (alen + align - 1) & ~(align - 1));
+	}
+	// Otherwise check the amount of available space in the buffer and if necessary allocate more.
+	else if (st_avail_get(holder) - (slen = st_length_get(holder)) < alen &&
+		!(holder = st_realloc(*s, (slen + alen + align - 1) & ~(align - 1)))) {
+		log_pedantic("Append reallocation failed.");
+		return -1;
+	}
+
+	if (holder) {
+		mm_copy(st_data_get(holder) + slen, st_data_get(append), alen);
+		st_length_set(holder, slen + alen);
+	}
+
+	if (*s && *s != holder) {
+		st_free(*s);
+	}
+	// Return the number of bytes appended.
+	*s = holder;
+	return alen;
+}
+
 /**
  * @brief	Allocate a managed string with a specified options mask.
  * @see		st_valid_options()

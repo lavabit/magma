@@ -34,7 +34,7 @@ void smtp_starttls(connection_t *con) {
 
 	con_write_bl(con, "220 READY\r\n", 11);
 
-	if (!(con->network.tls = ssl_alloc(con->server, con->network.sockd, M_SSL_BIO_NOCLOSE))) {
+	if (!(con->network.tls = tls_server_alloc(con->server, con->network.sockd, M_SSL_BIO_NOCLOSE))) {
 		con_write_bl(con, "454 STARTTLS FAILED\r\n", 21);
 		log_pedantic("The SSL connection attempt failed.");
 		return;

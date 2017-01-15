@@ -240,3 +240,34 @@ void st_wipe(stringer_t *s) {
 
 	return;
 }
+
+/**
+ * @brief	Sets a block of memory to a specified value.
+ * @param	s		the managed string to be overwritten with the value of set.
+ * @param	set		the byte value to be write into the string.
+ * @param	len		the number of bytes to set to the provided value.
+ * @return	a pointer to the block of memory passed to the function. *
+ */
+stringer_t * st_set(stringer_t *s, uint8_t set, size_t len) {
+
+	uint32_t opts;
+
+	if (!s || !(opts = *((uint32_t *)s))) {
+		return NULL;
+	}
+
+#ifdef MAGMA_PEDANTIC
+	if (!st_valid_opts(opts)) {
+		log_pedantic("Invalid string options. { opt = %u = %s }", opts, st_info_opts(opts, MEMORYBUF(128), 128));
+		return NULL;
+	}
+#endif
+
+	mm_set(st_data_get(s), set, (len <= st_avail_get(s) ? len : st_avail_get(s)));
+
+	if (st_valid_tracked(opts)) {
+		st_length_set(s, (len <= st_avail_get(s) ? len : st_avail_get(s)));
+	}
+
+	return s;
+}

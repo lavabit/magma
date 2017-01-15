@@ -199,29 +199,29 @@ START_TEST (check_prime_chunk_encrypted_s) {
 			result = false;
 		}
 
-		// Test chunk operations with just the encryption key.
-//		else if (!(get = ephemeral_chunk_get(NULL, encryption))) {
-//			st_sprint(errmsg, "Ephemeral chunk creation failed.");
+		// Test chunk operations with just a recipient key.
+		else if (!(get = encrypted_chunk_get(PRIME_CHUNK_HEADERS, signing, encryption, NULL, NULL, NULL, recipient, data))) {
+			st_sprint(errmsg, "Encrypted chunk creation failed.");
+			result = false;
+		}
+//		else if (!(set = encrypted_chunk_get(encrypted_chunk_buffer(get)))) {
+//			st_sprint(errmsg, "Encrypted chunk parsing failed.");
 //			result = false;
 //		}
-//		else if (!(set = ephemeral_chunk_set(ephemeral_chunk_buffer(get)))) {
-//			st_sprint(errmsg, "Ephemeral chunk parsing failed.");
-//			result = false;
-//		}
-//
-//		ephemeral_chunk_cleanup(get);
-//		ephemeral_chunk_cleanup(set);
+
+		encrypted_chunk_cleanup(get);
+		encrypted_chunk_cleanup(set);
 //
 //		// Reset.
-//		get = set = NULL;
+		get = set = NULL;
 //
 //		// Test chunk operations with an encryption key and a signing key.
 //		if (result && !(get = ephemeral_chunk_get(signing, encryption))) {
-//			st_sprint(errmsg, "Ephemeral chunk creation failed.");
+//			st_sprint(errmsg, "Encrypted chunk creation failed.");
 //			result = false;
 //		}
 //		else if (result && !(set = ephemeral_chunk_set(ephemeral_chunk_buffer(get)))) {
-//			st_sprint(errmsg, "Ephemeral chunk parsing failed.");
+//			st_sprint(errmsg, "Encrypted chunk parsing failed.");
 //			result = false;
 //		}
 

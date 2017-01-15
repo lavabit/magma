@@ -70,10 +70,8 @@ stringer_t * encrypted_chunk_buffer(prime_encrypted_chunk_t *chunk) {
 	return buffer;
 }
 
-prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, stringer_t *data,
-	ed25519_key_t *signing, secp256k1_key_t *encryption,
-	secp256k1_key_t *author, secp256k1_key_t *origin,
-	secp256k1_key_t *destination, secp256k1_key_t *recipient) {
+prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, ed25519_key_t *signing, secp256k1_key_t *encryption,
+	secp256k1_key_t *author, secp256k1_key_t *origin, secp256k1_key_t *destination, secp256k1_key_t *recipient, stringer_t *data) {
 
 	uint32_t big_endian_length = 0;
 	prime_encrypted_chunk_t *result = NULL;
@@ -84,9 +82,10 @@ prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, s
 		log_pedantic("Invalid parameters passed to the encrypted chunk generator.");
 		return NULL;
 	}
+
+	/// HIGH: Add support for payloads that span across multiple chunks.
 	// The maximum chunk payload is 16,777,115 which is limited by the 3 byte length in the chunk header, minus the 32 + 69 required bytes,
 	// and the fact that we don't support split chunks, yet.
-	/// HIGH: Add support for payloads that span across multiple chunks.
 	else if (st_length_get(data) < 1 || st_length_get(data) >= 16777115) {
 		log_pedantic("The chunk payload data must be larger than 1 byte, but smaller than 16,777,115 bytes. { length = %zu }", st_length_get(data));
 		return NULL;
@@ -97,7 +96,7 @@ prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, s
 
 	// The entire buffer must be evenly divisible by 16. divisible by
 	// 64 signature + 3 data length + 1 flags + 1 padding length = 69
-	result->pad = ((st_length_get(data) + 69) % 16);
+	result->pad = ((st_length_get(data) + 69 + 16 - 1) & ~(16 - 1)) - (st_length_get(data) + 69);
 	result->length = st_length_get(data);
 
 	// The spec suggests we pad any payload smaller to 256 bytes, to make it a minimum of 256 bytes.
@@ -108,15 +107,13 @@ prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, s
 	result->flags = 0;
 	big_endian_length = htobe32(result->length);
 
-	// Allocate a buffer for the serialized payload, and a buffer to store the padding bytes.
-	if (!(result->data = st_alloc(result->length + result->pad + 69)) || !(result->trailing = st_alloc(result->pad))) {
+	// Allocate a buffer for the serialized payload, and a buffer to store the padding bytes, then initialize the padding
+	// bytes to match the padding amount.
+	if (!(result->data = st_alloc(result->length + result->pad + 69)) || !(result->trailing = st_alloc(result->pad)) ||
+		!(st_set(result->trailing, result->pad, result->pad))) {
 		encrypted_chunk_free(result);
 		return NULL;
 	}
-
-	// Create an appropriately sized padding buffer, and initialize the bytes to match the padding amount.
-	mm_set(st_data_get(result->trailing), result->pad, result->pad);
-	st_length_set(result->trailing, result->pad);
 
 	// Copy the big endian length into the buffer.
 	mm_copy(st_data_get(result->data) + 64, ((uchr_t *)&big_endian_length) + 1, 3);
@@ -133,15 +130,72 @@ prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, s
 	// Copy in the trailing bytes.
 	mm_copy(st_data_get(result->data) + result->length + 69, st_data_get(result->trailing), result->pad);
 
-	// Generate the signature.
+	// Generate a signature using the serialized plain text buffer.
 	ed25519_sign(signing, PLACER(st_data_get(result->data) + 64, result->length + result->pad + 5), MANAGED(st_data_get(result->data), 0, 64));
 
-	// Create the chunk keys.
+	// Set the length so the AES function knows how much data needs encrypting.
+	st_length_set(result->data, result->length + result->pad + 69);
+
+	// Create the chunk key, and then stretch the key.
 	if (rand_write(key) != 32 || !(stretched = hash_sha512(key, stretched))) {
 		encrypted_chunk_free(result);
 		return NULL;
 	}
 
-	result->encrypted = aes_chunk_encrypt(type, stretched, result->data, NULL);
+	// Encrypt the buffer.
+	else if (!(result->encrypted = aes_chunk_encrypt(type, stretched, result->data, NULL))) {
+		encrypted_chunk_free(result);
+		return NULL;
+	}
+
+	// Generate keyslots for any of the actors we recieved keys for, starting with the author.
+	else if (author && (!(result->slots.author = secp256k1_compute_kek(encryption, author, NULL)) ||
+		!(result->slots.author = st_xor(result->slots.author, key, result->slots.author)))) {
+		encrypted_chunk_free(result);
+		return NULL;
+	}
+
+	// The author keyslot is always required, so if an author key wasn't provided, set the author slot to all zeros.
+	else if (!author && (!(result->slots.author = st_alloc(64)) || !st_set(result->slots.author, 0, 64))) {
+		encrypted_chunk_free(result);
+		return NULL;
+	}
+
+	// Origin keyslot.
+	else if (origin && (!(result->slots.origin = secp256k1_compute_kek(encryption, origin, NULL)) ||
+		!(result->slots.origin = st_xor(result->slots.origin, key, result->slots.origin)))) {
+		encrypted_chunk_free(result);
+		return NULL;
+	}
+
+	// Destination keyslot.
+	else if (destination && (!(result->slots.destination = secp256k1_compute_kek(encryption, destination, NULL)) ||
+		!(result->slots.destination = st_xor(result->slots.destination, key, result->slots.destination)))) {
+		encrypted_chunk_free(result);
+		return NULL;
+	}
+
+	// Recipient keyslot.
+	else if (recipient && (!(result->slots.recipient = secp256k1_compute_kek(encryption, recipient, NULL)) ||
+		!(result->slots.recipient = st_xor(result->slots.recipient, key, result->slots.recipient)))) {
+		encrypted_chunk_free(result);
+		return NULL;
+	}
+
+	// The recipient keyslot is always required, so if a recipient key wasn't provided, set the recipient slot to all zeros.
+	else if (!recipient && (!(result->slots.recipient = st_alloc(64)) || !st_set(result->slots.recipient, 0, 64))) {
+		encrypted_chunk_free(result);
+		return NULL;
+	}
+
+	// Append the key slots onto the end of the encrypted chunk data.
+	else if ((result->slots.author && st_append_out(128, &(result->encrypted), result->slots.author) < 0)||
+		(result->slots.origin && st_append_out(128, &(result->encrypted), result->slots.origin) < 0) ||
+		(result->slots.destination && st_append_out(128, &(result->encrypted), result->slots.destination) < 0) ||
+		(result->slots.recipient && st_append_out(128, &(result->encrypted), result->slots.recipient) < 0)) {
+		encrypted_chunk_free(result);
+		return NULL;
+	}
+
 	return result;
 }

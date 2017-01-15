@@ -51,7 +51,7 @@ stringer_t * check_rand_sthread(void) {
 		// Pick a random length.
 		len = (rand() % (RAND_CHECK_SIZE_MAX - RAND_CHECK_SIZE_MIN)) + RAND_CHECK_SIZE_MIN;
 
-		if (!(buffer = rand_choices("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", len))) {
+		if (!(buffer = rand_choices("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", len, NULL))) {
 			return st_dupe(NULLER("Unable to fill the buffer with random data."));
 		}
 		st_free(buffer);

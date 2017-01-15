@@ -79,12 +79,9 @@ stringer_t * org_key_get(prime_org_key_t *org, stringer_t *output) {
 		log_pedantic("An output string was supplied but it does not represent a buffer capable of holding the output.");
 		return NULL;
 	}
-	else if (!output && !(result = st_alloc(length))) {
+	else if (!output && !(output = result = st_alloc(length))) {
 		log_pedantic("Could not allocate a buffer large enough to hold encoded result. { requested = %zu }", length);
 		return NULL;
-	}
-	else if (!output) {
-		output = result;
 	}
 
 	st_wipe(output);

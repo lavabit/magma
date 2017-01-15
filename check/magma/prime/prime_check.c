@@ -163,6 +163,67 @@ START_TEST (check_prime_chunk_ephemeral_s) {
 }
 END_TEST
 
+START_TEST (check_prime_chunk_encrypted_s) {
+
+	log_disable();
+	bool_t result = true;
+	ed25519_key_t *signing = NULL;
+	secp256k1_key_t *encryption = NULL, *recipient = NULL;
+//	prime_encrypted_chunk_t *get = NULL, *set = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024), *data = NULL;
+
+	if (status()) {
+
+		// We add spaces between the categories to increase the number of randomly placed whitespace.
+		data = rand_choices("0123456789 abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ " \
+			"+!@#$%^&*()_|\"?><{}>~`<[]/.,;'\\-=\n\t", 1024, MANAGEDBUF(1024));
+
+		if (!(signing = ed25519_generate()) || !(encryption = secp256k1_generate()) || !(recipient = secp256k1_generate())) {
+			st_sprint(errmsg, "Key generation failed.");
+			result = false;
+		}
+
+		// Test chunk operations with just the encryption key.
+//		else if (!(get = ephemeral_chunk_get(NULL, encryption))) {
+//			st_sprint(errmsg, "Ephemeral chunk creation failed.");
+//			result = false;
+//		}
+//		else if (!(set = ephemeral_chunk_set(ephemeral_chunk_buffer(get)))) {
+//			st_sprint(errmsg, "Ephemeral chunk parsing failed.");
+//			result = false;
+//		}
+//
+//		ephemeral_chunk_cleanup(get);
+//		ephemeral_chunk_cleanup(set);
+//
+//		// Reset.
+//		get = set = NULL;
+//
+//		// Test chunk operations with an encryption key and a signing key.
+//		if (result && !(get = ephemeral_chunk_get(signing, encryption))) {
+//			st_sprint(errmsg, "Ephemeral chunk creation failed.");
+//			result = false;
+//		}
+//		else if (result && !(set = ephemeral_chunk_set(ephemeral_chunk_buffer(get)))) {
+//			st_sprint(errmsg, "Ephemeral chunk parsing failed.");
+//			result = false;
+//		}
+
+		if (signing) ed25519_free(signing);
+		if (encryption) secp256k1_free(encryption);
+		if (recipient) secp256k1_free(encryption);
+
+//		ephemeral_chunk_cleanup(get);
+//		ephemeral_chunk_cleanup(set);
+
+	}
+
+	log_test("PRIME / CHUNKS / EPHEMERAL / SINGLE THREADED:", errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
+
+}
+END_TEST
+
 START_TEST (check_prime_primitives_s) {
 
 	log_disable();

@@ -186,7 +186,7 @@ int32_t       rand_get_int32(void);
 int64_t       rand_get_int64(void);
 int8_t        rand_get_int8(void);
 size_t        rand_write(stringer_t *s);
-stringer_t *  rand_choices(chr_t *choices, size_t len);
+stringer_t *  rand_choices(chr_t *choices, size_t len, stringer_t *output);
 uint16_t      rand_get_uint16(void);
 uint32_t      rand_get_uint32(void);
 uint64_t      rand_get_uint64(void);

@@ -36,7 +36,7 @@ bool_t check_dkim_verify_sthread(stringer_t *errmsg) {
 	for (uint32_t i = 0; i < max; i++) {
 
 
-		if (!(id = rand_choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 12))) {
+		if (!(id = rand_choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 12, NULL))) {
 			st_sprint(errmsg, "Failed to generate the message id.");
 			st_free(id);
 			return false;
@@ -131,7 +131,7 @@ bool_t check_dkim_sign_sthread(stringer_t *errmsg) {
 
 	for (uint32_t i = 0; i < max; i++) {
 
-		if (!(id = rand_choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 12))) {
+		if (!(id = rand_choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 12, NULL))) {
 			st_sprint(errmsg, "Failed to generate the message id.");
 			return false;
 		}

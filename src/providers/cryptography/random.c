@@ -25,25 +25,36 @@ __thread uint_t rand_ctx = 0;
  * @param	len			the length, in bytes, of the random string that will be returned to the caller.
  * @return	NULL on failure or a pointer to a managed string containing len bytes of random data on success.
  */
-stringer_t * rand_choices(chr_t *choices, size_t len) {
+stringer_t * rand_choices(chr_t *choices, size_t len, stringer_t *output) {
 
 	size_t clen;
 	uchr_t *holder;
-	stringer_t *result;
+	stringer_t *result = NULL;
 
 	if (len <= 0 || !choices || !(clen = ns_length_get(choices))) {
 		log_pedantic("Passed an invalid parameter.");
 		return NULL;
 	}
 
-	if (!(result = st_alloc(len)) || !(holder = st_data_get(result))) {
-		log_pedantic("Could not allocate %zu bytes for the random string.", len);
+	// See if we have a valid output buffer, and make sure it is large enough to hold the result.
+	else if (output && (!st_valid_destination(st_opt_get(output)) || st_avail_get(output) < len)) {
+		log_pedantic("An output string was supplied but it does not represent a buffer capable of holding the output.");
+		return NULL;
+	}
+	// If the output buffer is NULL, then we'll allocate a buffer for the result.
+	else if (!output && !(output = result = st_alloc(len))) {
+		log_pedantic("Could not allocate a buffer large enough to hold encrypted result. { requested = %zu }", len);
+		return NULL;
+	}
+	else if (!(holder = st_data_get(output))) {
+		log_pedantic("Could not setup the pointer to write the random data.");
+		st_cleanup(result);
 		return NULL;
 	}
 
-	if (!RAND_bytes_d || RAND_bytes_d(holder, len) != 1) {
+	else if (!RAND_bytes_d || RAND_bytes_d(holder, len) != 1) {
 		log_pedantic("Could not generate a random string of bytes.");
-		st_free(result);
+		st_cleanup(result);
 		return NULL;
 	}
 
@@ -53,9 +64,11 @@ stringer_t * rand_choices(chr_t *choices, size_t len) {
 		holder++;
 	}
 
-	st_length_set(result, len);
+	if (st_valid_tracked(st_opt_get(output))) {
+		st_length_set(output, len);
+	}
 
-	return result;
+	return output;
 }
 
 /**

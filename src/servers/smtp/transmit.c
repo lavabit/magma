@@ -200,7 +200,7 @@ int_t smtp_bounce(connection_t *con) {
 	}
 
 		// Generate the ID string. If the random method fails, use a hash of the current time.
-	if ((holder = rand_choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 12))) {
+	if ((holder = rand_choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 12, NULL))) {
 		st_sprint(id, "%.*s", st_length_int(holder), st_char_get(holder));
 		st_free(holder);
 		holder = NULL;
@@ -409,7 +409,7 @@ int_t smtp_reply(stringer_t *from, stringer_t *to, uint64_t usernum, uint64_t au
 	}
 
 	// Generate the ID string. If the random method fails, use a hash of the current time.
-	if ((holder = rand_choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 12))) {
+	if ((holder = rand_choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 12, NULL))) {
 		st_sprint(id, "%.*s", st_length_int(holder), st_char_get(holder));
 		st_free(holder);
 	}

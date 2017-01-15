@@ -53,7 +53,7 @@ void register_print_captcha(connection_t *con, register_session_t *reg) {
 	stringer_t *image;
 
 	// Generate a new human verification field.
-	if (!(reg->hvf_value = rand_choices("23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ%#@&*?+=", 10))) {
+	if (!(reg->hvf_value = rand_choices("23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ%#@&*?+=", 10, NULL))) {
 		http_print_500(con);
 		return;
 	}

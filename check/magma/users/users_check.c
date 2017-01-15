@@ -34,7 +34,7 @@ START_TEST (check_users_register_s) {
 
 		// Generate a random string of numbers as the password and then append the string of numbers to the username
 		// pattern check_user_XYZ to create a username that should always be unique.
-		if (!(password = rand_choices("0123456789", 20)) || !(username = st_aprint("check_user_%.*s", st_length_int(password), st_char_get(password)))) {
+		if (!(password = rand_choices("0123456789", 20, NULL)) || !(username = st_aprint("check_user_%.*s", st_length_int(password), st_char_get(password)))) {
 			st_sprint(errmsg, "An internal error occurred. Unable to generate a random username and password for registration.");
 		}
 

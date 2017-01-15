@@ -106,6 +106,22 @@ START_TEST (check_prime_keys_s) {
 }
 END_TEST
 
+START_TEST (check_prime_primitives_s) {
+
+	log_disable();
+	bool_t result = true;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	if (status()) result = check_prime_writers_sthread(errmsg);
+	if (status() && result) result = check_prime_unpacker_sthread(errmsg);
+	if (status() && result) result = check_prime_armor_sthread(errmsg);
+
+	log_test("PRIME / PRIMITIVES / SINGLE THREADED:", errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
+
+}
+END_TEST
+
 START_TEST (check_prime_chunk_ephemeral_s) {
 
 	log_disable();
@@ -169,7 +185,7 @@ START_TEST (check_prime_chunk_encrypted_s) {
 	bool_t result = true;
 	ed25519_key_t *signing = NULL;
 	secp256k1_key_t *encryption = NULL, *recipient = NULL;
-//	prime_encrypted_chunk_t *get = NULL, *set = NULL;
+	prime_encrypted_chunk_t *get = NULL, *set = NULL;
 	stringer_t *errmsg = MANAGEDBUF(1024), *data = NULL;
 
 	if (status()) {
@@ -211,30 +227,83 @@ START_TEST (check_prime_chunk_encrypted_s) {
 
 		if (signing) ed25519_free(signing);
 		if (encryption) secp256k1_free(encryption);
-		if (recipient) secp256k1_free(encryption);
+		if (recipient) secp256k1_free(recipient);
 
-//		ephemeral_chunk_cleanup(get);
-//		ephemeral_chunk_cleanup(set);
+		encrypted_chunk_cleanup(get);
+		encrypted_chunk_cleanup(set);
 
 	}
 
-	log_test("PRIME / CHUNKS / EPHEMERAL / SINGLE THREADED:", errmsg);
+	log_test("PRIME / CHUNKS / ENCRYPTED / SINGLE THREADED:", errmsg);
 	ck_assert_msg(result, st_char_get(errmsg));
 
 }
 END_TEST
 
-START_TEST (check_prime_primitives_s) {
+START_TEST (check_prime_chunk_signature_s) {
 
 	log_disable();
 	bool_t result = true;
+	ed25519_key_t *signing = NULL;
+	secp256k1_key_t *encryption = NULL;
+	prime_signature_chunk_t *get = NULL, *set = NULL;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
-	if (status()) result = check_prime_writers_sthread(errmsg);
-	if (status() && result) result = check_prime_unpacker_sthread(errmsg);
-	if (status() && result) result = check_prime_armor_sthread(errmsg);
+	if (status()) {
 
-	log_test("PRIME / PRIMITIVES / SINGLE THREADED:", errmsg);
+		if (!(signing = ed25519_generate()) || !(encryption = secp256k1_generate())) {
+			st_sprint(errmsg, "Key generation failed.");
+
+			result = false;
+		}
+
+		if (signing) ed25519_free(signing);
+		if (encryption) secp256k1_free(encryption);
+
+		signature_chunk_cleanup(get);
+		signature_chunk_cleanup(set);
+
+	}
+
+	log_test("PRIME / CHUNKS / SIGNATURE / SINGLE THREADED:", errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
+
+}
+END_TEST
+
+START_TEST (check_prime_message_naked_s) {
+
+	log_disable();
+	bool_t result = true;
+	prime_t *message = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	if (status()) {
+
+		message = prime_message_encrypt(NULL, NULL, NULL, NULL, NULL);
+		prime_cleanup(message);
+	}
+
+	log_test("PRIME / MESSAGES / NAKED / SINGLE THREADED:", errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
+
+}
+END_TEST
+
+START_TEST (check_prime_message_native_s) {
+
+	log_disable();
+	bool_t result = true;
+	prime_t *message = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	if (status()) {
+
+		message = prime_message_encrypt(NULL, NULL, NULL, NULL, NULL);
+		prime_cleanup(message);
+	}
+
+	log_test("PRIME / MESSAGES / NATIVE / SINGLE THREADED:", errmsg);
 	ck_assert_msg(result, st_char_get(errmsg));
 
 }
@@ -254,6 +323,12 @@ Suite * suite_check_prime(void) {
 	testcase(s, tc, "PRIME Signets/S", check_prime_signets_s);
 
 	testcase(s, tc, "PRIME Ephemeral Chunks/S", check_prime_chunk_ephemeral_s);
+	testcase(s, tc, "PRIME Encrypted Chunks/S", check_prime_chunk_encrypted_s);
+	testcase(s, tc, "PRIME Signature Chunks/S", check_prime_chunk_signature_s);
+
+	testcase(s, tc, "PRIME Naked Messages/S", check_prime_message_naked_s);
+	testcase(s, tc, "PRIME Native Messages/S", check_prime_message_native_s);
+
 
 	tcase_set_timeout(tc, 120);
 

@@ -154,7 +154,7 @@ SSL * tls_server_alloc(void *server, int sockd, int flags) {
 	if (!local || !local->tls.context || sockd < 0) {
 		return NULL;
 	} else if (!(tls = SSL_new_d(local->tls.context)) || !(bio = BIO_new_socket_d(sockd, flags))) {
-		log_pedantic("SSL/BIO allocation error. {error = %s}", ssl_error_string(bufptr, buflen));
+		log_pedantic("SSL/BIO allocation error. {error = %s}", ssl_error_string(MEMORYBUF(256), 256));
 
 		if (tls) {
 			SSL_free_d(tls);
@@ -166,8 +166,7 @@ SSL * tls_server_alloc(void *server, int sockd, int flags) {
 	SSL_set_bio_d(tls, bio, bio);
 
 	if ((result = SSL_accept_d(tls)) != 1) {
-		ERR_error_string_n_d(SSL_get_error_d(tls, result), bufptr, buflen);
-		log_pedantic("SSL accept error. { accept = %i / error = %s }", result, bufptr);
+		log_pedantic("SSL accept error. { accept = %i / error = %s }", result, ssl_error_string(MEMORYBUF(256), 256));
 		SSL_free_d(tls);
 		return NULL;
 	}

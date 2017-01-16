@@ -20,8 +20,8 @@ DH *dh2048 = NULL, *dh4096 = NULL;
  */
 int dh_params_generate_callback(int p, int n, BN_GENCB *cb) {
 
-	if (p == 0 && n % 100 == 0) log_pedantic("dh_generate { id = %lu / n = %i }", ssl_thread_id_callback(), n);
-	else if (p == 3) log_pedantic("dh_generate { id = %lu / p = 3 }", ssl_thread_id_callback());
+//	if (p == 0 && n % 100 == 0) log_pedantic("dh_generate { id = %lu / n = %i }", ssl_thread_id_callback(), n);
+//	else if (p == 3) log_pedantic("dh_generate { id = %lu / p = 3 }", ssl_thread_id_callback());
 
 	return (status() ? 1 : 0);
 }
@@ -73,7 +73,7 @@ void dh_params_generate(void) {
 		}
 	}
 
-	if (loop == true) {
+	if (!loop) {
 		mutex_lock(&dhparam_lock);
 		if (!dh2048) {
 			dh2048 = holder;
@@ -90,6 +90,7 @@ void dh_params_generate(void) {
 		return;
 	}
 
+	loop = true;
 	log_pedantic("Generating DH key parameters with a %i bit prime.", 4096);
 
 	if (!(holder = DH_new_d())) {
@@ -121,7 +122,7 @@ void dh_params_generate(void) {
 		}
 	}
 
-	if (loop == true) {
+	if (!loop) {
 		mutex_lock(&dhparam_lock);
 		if (!dh4096) {
 			dh4096 = holder;
@@ -304,7 +305,7 @@ DH * dh_exchange_2048(SSL *ssl, int is_export, int keylength) {
 		}
 	}
 
-	if (loop == true) {
+	if (!loop) {
 		mutex_lock(&dhparam_lock);
 		if (!dh2048) {
 			dh2048 = holder;
@@ -373,7 +374,7 @@ DH * dh_exchange_4096(SSL *ssl, int is_export, int keylength) {
 
 	}
 
-	if (loop == true) {
+	if (!loop) {
 		mutex_lock(&dhparam_lock);
 		if (!dh4096) {
 			dh4096 = holder;

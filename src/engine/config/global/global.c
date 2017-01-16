@@ -695,6 +695,12 @@ bool_t config_load_defaults(void) {
 			config_free();
 			return false;
 		}
+//		else if (magma_keys[i].required && magma_keys[i].norm.type == M_TYPE_BOOLEAN &&
+//			magma_keys[i].norm.val.binary == false && !config_value_set(&magma_keys[i], NULL)) {
+//			log_info("%s has an invalid default value.", magma_keys[i].name);
+//			config_free();
+//			return false;
+//		}
 	}
 
 	return true;

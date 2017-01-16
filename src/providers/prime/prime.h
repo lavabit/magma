@@ -30,9 +30,19 @@
  * @typedef ed25519_key_type_t
  */
 typedef enum {
+	ED25519_ERR,
 	ED25519_PUB,
 	ED25519_PRIV
 } ed25519_key_type_t;
+
+/**
+ * @typedef secp256k1_key_type_t
+ */
+typedef enum {
+	SECP256K1_ERR,
+	SECP256K1_PUB,
+	SECP256K1_PRIV
+} secp256k1_key_type_t;
 
 /**
  * @typedef prime_encoding_t
@@ -104,7 +114,7 @@ typedef enum {
 	PRIME_CHUNK_HEADERS = 34,              /**< Remaining headers chunk. >*/
 
 	// Body
-	PRIME_CHUNK_BODY = 48,                 /**< Body block. >*/
+	PRIME_CHUNK_BODY = 48,                 /**< Naked unstructured message body. >*/
 
 	// Signature Block
 	PRIME_CHUNK_SIGNATURES = 224,
@@ -210,7 +220,7 @@ typedef struct __attribute__ ((packed)) {
 typedef struct __attribute__ ((packed)) {
 
 	ed25519_key_t *signing;
-	secp256k1_key_t *ephemeral;
+	secp256k1_key_t *encryption;
 
 	secp256k1_key_t *author;
 	secp256k1_key_t *origin;
@@ -220,14 +230,24 @@ typedef struct __attribute__ ((packed)) {
 } prime_chunk_keys_t;
 
 /**
- * @typedef prime_chunk_slots_t
+ * @typedef prime_chunk_keks_t
  */
 typedef struct __attribute__ ((packed)) {
 	stringer_t *author;
 	stringer_t *origin;
 	stringer_t *destination;
 	stringer_t *recipient;
-	stringer_t *buffer;
+} prime_chunk_keks_t;
+
+/**
+ * @typedef prime_chunk_slots_t
+ */
+typedef struct __attribute__ ((packed)) {
+	placer_t author;
+	placer_t origin;
+	placer_t destination;
+	placer_t recipient;
+	placer_t buffer;
 } prime_chunk_slots_t;
 
 /**
@@ -262,7 +282,7 @@ typedef struct __attribute__ ((packed)) {
 	stringer_t *trailing;
 
 	stringer_t *encrypted;
-	prime_chunk_slots_t slots;
+	prime_chunk_slots_t *slots;
 
 } prime_encrypted_chunk_t;
 

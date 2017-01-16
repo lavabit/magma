@@ -14,6 +14,20 @@
 
 extern EC_GROUP *prime_curve_group;
 
+secp256k1_key_type_t secp256k1_type(secp256k1_key_t *key) {
+
+	secp256k1_key_type_t result = SECP256K1_ERR;
+
+	if (key && EC_KEY_get0_private_key_d(key)) {
+		result = SECP256K1_PRIV;
+	}
+	else if (key && EC_KEY_get0_public_key_d(key)) {
+		result = SECP256K1_PUB;
+	}
+
+	return result;
+}
+
 /**
  * @brief	Free a secp256k1 key structure.
  * @see		EC_KEY_free()

@@ -12,6 +12,14 @@
 #include "magma.h"
 #include <openssl/curve25519.h>
 
+ed25519_key_type_t ed25519_type(ed25519_key_t *key) {
+	ed25519_key_type_t result = ED25519_ERR;
+	if (key) {
+		result = key->type;
+	}
+	return result;
+}
+
 void ed25519_free(ed25519_key_t *key) {
 
 #ifdef MAGMA_PEDANTIC

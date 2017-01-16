@@ -18,6 +18,8 @@ INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad'
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.secure.salt', '$PSALT', NOW());
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.secure.sessions', '$PSESS', NOW());
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.iface.cryptography.seed_length', '1024', NOW());
+INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.iface.cryptography.dhparams_rotate', 'true', NOW());
+INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.iface.cryptography.dhparams_large_keys', 'true', NOW());
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.system.daemonize', 'true', NOW());
 
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.dkim.enabled', 'true', NOW());

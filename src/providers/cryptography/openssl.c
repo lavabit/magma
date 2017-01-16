@@ -13,7 +13,9 @@
 #include "magma.h"
 
 char ssl_version[16];
+extern DH *dh2048, *dh4096;
 pthread_mutex_t **ssl_locks = NULL;
+extern pthread_mutex_t dhparam_lock;
 
 /**
  * @brief	Return the version string of the OpenSSL library.
@@ -84,7 +86,7 @@ bool_t lib_load_openssl(void) {
 		M_BIND(ERR_put_error), M_BIND(EVP_aes_256_gcm), M_BIND(EC_KEY_get_conv_form), M_BIND(EC_KEY_set_conv_form), M_BIND(BN_bn2mpi),
 		M_BIND(BN_mpi2bn), M_BIND(BN_bn2dec), M_BIND(EC_POINT_mul), M_BIND(BN_CTX_new), M_BIND(BN_CTX_start), M_BIND(BN_CTX_free),
 		M_BIND(EC_POINT_cmp), M_BIND(BN_cmp), M_BIND(ED25519_keypair), M_BIND(ED25519_sign), M_BIND(ED25519_verify), M_BIND(ED25519_keypair_from_seed),
-		M_BIND(CRYPTO_set_mem_functions), M_BIND(CRYPTO_set_locked_mem_functions)
+		M_BIND(CRYPTO_set_mem_functions), M_BIND(CRYPTO_set_locked_mem_functions), M_BIND(DH_check)
 	};
 
 	if (!lib_symbols(sizeof(openssl) / sizeof(symbol_t), openssl)) {
@@ -113,8 +115,14 @@ bool_t ssl_start(void) {
 
 	stringer_t *keyname;
 
+	// DH Parameter Generator Lock
+	if (mutex_init(&dhparam_lock, NULL)) {
+		log_critical("Could not initialize DH parameter mutex.");
+		return false;
+	}
+
 	// Thread locking setup.
-	if (!(ssl_locks = mm_alloc(CRYPTO_num_locks_d() * sizeof(pthread_mutex_t *)))) {
+	else if (!(ssl_locks = mm_alloc(CRYPTO_num_locks_d() * sizeof(pthread_mutex_t *)))) {
 		log_critical("Could not allocate %zu bytes for the TLS library locks.", CRYPTO_num_locks_d() * sizeof(pthread_mutex_t *));
 		return false;
 	}
@@ -204,6 +212,7 @@ void ssl_stop(void) {
 			mm_free(*(ssl_locks + i));
 		}
 
+		mutex_destroy(&dhparam_lock);
 		mm_free(ssl_locks);
 		ssl_locks = NULL;
 	}
@@ -233,7 +242,10 @@ void ssl_thread_stop(void) {
 void ssl_locking_callback(int mode, int n, const char *file, int line) {
 
 	// Do a comparison. This eliminates the compiler warning about unused variables.
-	//if ((int)file == line) {};
+	// if ((int)file == line) {};
+
+	// if (!st_cmp_cs_eq(NULLER((char *)file), PLACER("ex_data.c", 9)))
+	//	log_pedantic("mode = %i, num = %i, file = %s, line = %i", mode, n, file, line);
 
 	// Get a lock.
 	if (mode & CRYPTO_LOCK) {
@@ -255,56 +267,6 @@ void ssl_locking_callback(int mode, int n, const char *file, int line) {
 unsigned long ssl_thread_id_callback(void) {
 
 	return (unsigned long)thread_get_thread_id();
-}
-
-/**
- * @brief	Callback handler for the Diffie-Hellman parameter generation process necessary for PFS.
- * @param	ssl			the SSL session for which the callback was triggered.
- * @param	is_export	LOL. We're definitely ignoring this parameter.
- * @param	keylength	the length, in bits, of the DH key to be generated.
- * @return	a pointer to a Diffie-Hellman key of proper size with parameters generated, or NULL on failure.
- */
-DH * ssl_dh_exchange_callback(SSL *ssl, int is_export, int keylength) {
-
-	BN_GENCB cb;
-	static DH *dh512 = NULL, *dh1024 = NULL, *this_dh;
-
-	if (keylength != 512 && keylength != 1024) {
-		log_error("Diffie-Hellman key generation failed; only 512/1024 bit keys are supported but %u were requested.", (unsigned int)keylength);
-		return NULL;
-	}
-
-	// If the generated key was already cached, simply return it.
-	if ((this_dh = (keylength == 512) ? dh512 : dh1024)) {
-		return this_dh;
-	}
-
-	if (!(this_dh = DH_new_d())) {
-		log_error("Unable to create new DH key.");
-		return NULL;
-	}
-
-	BN_GENCB_set(&cb, ssl_dh_generate_callback, NULL);
-
-	log_pedantic("Generating %u bit DH key parameters.", (unsigned int)keylength);
-
-	if (!DH_generate_parameters_ex_d(this_dh, keylength, 2, &cb)) {
-		log_error("Encountered error while generating Diffie-Hellman parameters.");
-
-		if (this_dh) {
-			DH_free_d(this_dh);
-		}
-
-		return NULL;
-	}
-
-	if (keylength == 512) {
-		dh512 = this_dh;
-	} else {
-		dh1024 = this_dh;
-	}
-
-	return this_dh;
 }
 
 /**
@@ -341,14 +303,6 @@ EC_KEY * ssl_ecdh_exchange_callback(SSL *ssl, int is_export, int keylength) {
 	}
 
 	return this_ecdh;
-}
-
-/**
- * @brief	The DH param generation callback.
- */
-int ssl_dh_generate_callback(int p, int n, BN_GENCB *cb) {
-
-		return 1;
 }
 
 /**

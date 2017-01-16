@@ -233,6 +233,7 @@ BIO * (*SSL_get_wbio_d)(const SSL * ssl) = NULL;
 void (*EC_GROUP_free_d)(EC_GROUP *group) = NULL;
 void (*EC_POINT_free_d)(EC_POINT *point) = NULL;
 void (*X509_STORE_free_d)(X509_STORE *v) = NULL;
+int (*DH_check_d)(const DH *dh, int *ret) = NULL;
 int (*EC_KEY_generate_key_d)(EC_KEY *key) = NULL;
 void (*ASN1_STRING_TABLE_cleanup_d)(void) = NULL;
 void (*HMAC_CTX_cleanup_d)(HMAC_CTX *ctx) = NULL;

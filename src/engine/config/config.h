@@ -33,7 +33,7 @@
 #define MAGMA_WORKER_THREAD_LIMIT 16384
 
 // The amount of data used to seed the random number generator.
-#define MAGMA_CRYPTOGRAPHY_SEED_SIZE 64
+#define MAGMA_CRYPTOGRAPHY_SEED_SIZE 256
 
 // The default resource paths.
 #define MAGMA_LOGS "logs/"

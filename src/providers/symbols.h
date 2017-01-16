@@ -333,6 +333,7 @@ extern BIO * (*SSL_get_wbio_d)(const SSL * ssl);
 extern void (*EC_GROUP_free_d)(EC_GROUP *group);
 extern void (*EC_POINT_free_d)(EC_POINT *point);
 extern void (*X509_STORE_free_d)(X509_STORE *v);
+extern int (*DH_check_d)(const DH *dh, int *ret);
 extern int (*EC_KEY_generate_key_d)(EC_KEY *key);
 extern void (*ASN1_STRING_TABLE_cleanup_d)(void);
 extern void (*HMAC_CTX_cleanup_d)(HMAC_CTX *ctx);

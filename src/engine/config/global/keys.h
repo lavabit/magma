@@ -226,6 +226,30 @@ magma_keys_t magma_keys[] = {
 		.required = false
 	},
 	{
+		.store = (void *)&(magma.iface.cryptography.dhparams_rotate),
+		.norm.type = M_TYPE_BOOLEAN,
+		.norm.val.binary = true,
+		.name = "magma.iface.cryptography.dhparams_rotate",
+		.description = "Controls whether fresh DH group parameters should be generated at launch and then periodically rotated.";
+		.file = true,
+		.database = true,
+		.overwrite = true,
+		.set = false,
+		.required = false
+	},
+	{
+		.store = (void *)&(magma.iface.cryptography.dhparams_large_keys),
+		.norm.type = M_TYPE_BOOLEAN,
+		.norm.val.binary = false,
+		.name = "magma.iface.cryptography.dhparams_large_keys",
+		.description = "Controls whether the ephemeral DHE ciphersuites should use 2048 or 4096 bit session keys.";
+		.file = true,
+		.database = true,
+		.overwrite = true,
+		.set = false,
+		.required = false
+	},
+	{
 		.store = (void *)&(magma.secure.sessions),
 		.norm.type = M_TYPE_STRINGER,
 		.norm.val.st = NULL,

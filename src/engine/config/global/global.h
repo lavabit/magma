@@ -150,16 +150,18 @@ typedef struct {
 	} web;
 
 	struct {
-		bool_t enabled; /* whether or not dkim signing is enabled */
+		bool_t enabled; /* Whether or not dkim signing is enabled. */
 		chr_t *domain;
 		chr_t *selector;
-		stringer_t *privkey; /* location of the dkim private key at startup (replaced with contents later) */
+		stringer_t *privkey; /* Location of the dkim private key at startup (replaced with contents later). */
 	} dkim;
 
 	struct {
 
 		struct {
 			uint32_t seed_length; /* How much data should be used to seed the random number generator. */
+			bool_t dhparams_rotate; /* Should we generate new a DH prime parameter periodically. */
+			bool_t dhparams_large_keys; /* Should we use large DH session keys. */
 		} cryptography;
 
 		struct {

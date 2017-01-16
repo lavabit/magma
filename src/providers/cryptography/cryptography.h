@@ -159,7 +159,8 @@ stringer_t *  hmac_sha512(stringer_t *s, stringer_t *key, stringer_t *output);
 /// openssl.c
 bool_t           lib_load_openssl(void);
 const char *     lib_version_openssl(void);
-DH *             ssl_dh_exchange_callback(SSL *ssl, int is_export, int keylength);
+DH *             ssl_dh2048_exchange_callback(SSL *ssl, int is_export, int keylength);
+DH *             ssl_dh4096_exchange_callback(SSL *ssl, int is_export, int keylength);
 int              ssl_dh_generate_callback(int p, int n, BN_GENCB *cb);
 EC_KEY *         ssl_ecdh_exchange_callback(SSL *ssl, int is_export, int keylength);
 char *           ssl_error_string(chr_t *buffer, int_t length);
@@ -232,5 +233,13 @@ stringer_t *  symmetric_decrypt(cipher_t *cipher, stringer_t *vector, stringer_t
 stringer_t *  symmetric_encrypt(cipher_t *cipher, stringer_t *vector, stringer_t *key, stringer_t *input);
 stringer_t *  symmetric_key(cipher_t *cipher, stringer_t *key, stringer_t *output);
 stringer_t *  symmetric_vector(cipher_t *cipher, stringer_t *output);
+
+/// parameters.c
+DH *   dh_exchange_2048(SSL *ssl, int is_export, int keylength);
+DH *   dh_exchange_4096(SSL *ssl, int is_export, int keylength);
+DH *   dh_params_2048(void);
+DH *   dh_params_4096(void);
+void   dh_params_generate(void);
+int    dh_params_generate_callback(int p, int n, BN_GENCB *cb);
 
 #endif

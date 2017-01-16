@@ -13,6 +13,119 @@
 #include "magma.h"
 
 /**
+ * @brief	Setup an SSL CTX for a server.
+ *
+ * @note	The server is passed as a void pointer because the provider layer doesn't comprehend protocol specific
+ * 			server instances.
+ *
+ * @param server_t	the SSL context will be assigned to the provided server context.
+ * @param security_level	an integer which will be used to control how the SSL context is configured:
+ * 							0 = accept any type of SSL or TLS protocol version, and offer broad cipher support.
+ * 							1 = require TLSv1 and above, refuse SSLv2 and SSLv3 connections, use any reasonably secure cipher.
+ * (reccomended)			2 = require TLSv1 and above, refuse SSLv2 and SSLv3 connections, only use ciphers which provide forward secrecy.
+ * 							3 = require TLSv1.2 and limit the cipher list to ECDHE-RSA-AES256-GCM-SHA384 or ECDHE-RSA-CHACHA20-POLY1305
+ * 								as required by the specifications.
+ *
+ */
+bool_t ssl_server_create(void *server, uint_t security_level) {
+
+	long options = 0;
+	char *ciphers = NULL;
+	server_t *local = server;
+
+	// TODO: Add SSL_OP_SINGLE_ECDH_USE | SSL_OP_SINGLE_DH_USE | SSL_OP_EPHEMERAL_RSA but that means adding callbacks, and possibly updating the certificate.
+	options = (SSL_OP_ALL | SSL_MODE_AUTO_RETRY | SSL_OP_TLS_ROLLBACK_BUG | SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION | SSL_OP_CIPHER_SERVER_PREFERENCE);
+
+	if (security_level == 0) {
+		options = (options);
+		ciphers = MAGMA_CIPHERS_GENERIC;
+	}
+	else if (security_level == 1) {
+		options = (options | SSL_OP_NO_SSLv2);
+		ciphers = SSL_DEFAULT_CIPHER_LIST;
+	}
+	else if (security_level == 2) {
+		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION);
+		ciphers = MAGMA_CIPHERS_MEDIUM;
+	}
+	else if (security_level >= 3) {
+		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1 | SSL_OP_NO_COMPRESSION);
+		ciphers = MAGMA_CIPHERS_HIGH;
+	}
+
+	// We use the generic SSLv23 method, which really means support SSLv2 and above, including TLSv1, TLSv1.1, etc, and then limit
+	// the actual protocols the SSL context will support using the options variable configured above, and the call to SSL_CTX_ctrl() below.
+	if (!(local->tls.context = SSL_CTX_new_d(SSLv23_server_method_d()))) {
+		log_critical("Could not create a valid SSL context.");
+		return false;
+	}
+	// Set the CTX options. We use the underlying function instead of going through the macro below,
+	// since macros can't be loaded at runtime.
+	// #define SSL_CTX_set_options(ctx, op) SSL_CTX_ctrl((ctx),SSL_CTRL_OPTIONS,(op),NULL)
+	// Pete suggested "RC4:kEDH:HIGH:!aNULL:!eNULL:!EXP:!LOW:!SSLv2:!MD5" or using SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS to workaround the Thunderbird SSL bug.
+	// Otherwise the suggestion was to use "kEDH:HIGH:RC4:!aNULL:!eNULL:!EXP:!LOW:!SSLv2:!MD5" once the stream bug is fixed.
+	else if ((SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_OPTIONS, options, NULL) & options) != options) {
+		log_critical("Could set the options mask on the TLS context.");
+		return false;
+	}
+	else if (SSL_CTX_use_certificate_chain_file_d(local->tls.context, local->tls.certificate) != 1) {
+		log_critical("Could not create a valid TLS certificate chain using the file %s.", local->tls.certificate);
+		return false;
+	}
+	else if (SSL_CTX_use_PrivateKey_file_d(local->tls.context, local->tls.certificate, SSL_FILETYPE_PEM) != 1) {
+		log_critical("Could not load the private key for our TLS certificate chain using the file %s.", local->tls.certificate);
+		return false;
+	}
+	else if (SSL_CTX_check_private_key_d(local->tls.context) != 1) {
+		log_critical("Could not verify the SSL private key. Make sure a valid private key is in the file %s.", local->tls.certificate);
+		return false;
+	}
+	// We had some compatibility issues enabling PFS, so this needs to be resolved soon.
+	else if (SSL_CTX_set_cipher_list_d(local->tls.context, ciphers) != 1) {
+		log_critical("Could not load the default collection of ciphers.");
+		return false;
+	}
+	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_ECDH_AUTO, 1, NULL) != 1) {
+		log_critical("Could not enable the automatic, default selection of the strongest curve.");
+		return false;
+	}
+
+	// High security connections get 4096 bit prime when generating a DH session key.
+	else if (magma.iface.cryptography.dhparams_large_keys) {
+		SSL_CTX_set_tmp_dh_callback_d(local->tls.context, dh_exchange_4096);
+	}
+	// Otherwise use a 2048 bit prime when generating a DH session key.
+	else {
+		SSL_CTX_set_tmp_dh_callback_d(local->tls.context, dh_exchange_2048);
+	}
+
+	/// TODO: The SSL_CTX_set_tmp_ecdh_callback() may no longer be needed with SSL_CTX_set_ecdh_auto(). More research is needed.
+	SSL_CTX_set_tmp_ecdh_callback_d(local->tls.context, ssl_ecdh_exchange_callback);
+
+	return true;
+}
+
+/**
+ * @brief	Destroy an SSL context associated with a server.
+ * @param	server	the server to be deactivated.
+ * @return	This function returns no value.
+ */
+void ssl_server_destroy(void *server) {
+
+	server_t *local = server;
+
+#ifdef MAGMA_PEDANTIC
+	if (!local || !local->tls.context) {
+		log_pedantic("Passed invalid data. Going to execute the function call anyways.");
+	}
+#endif
+
+	SSL_CTX_free_d(local->tls.context);
+
+	return;
+}
+
+/**
  * @brief	Create an SSL session for a file descriptor, and accept the client TLS/SSL handshake.
  * @see		SSL_accept()
  * @see		BIO_new_socket()
@@ -117,21 +230,6 @@ void * tls_client_alloc(int_t sockd) {
 }
 
 /**
- * @brief	Checks whether an SSL tunnel has been shut down or not.
- * @see		SSL_get_shutdown()
- * @param	ssl		the SSL connection to be shut down.
- * @return	0 if the connection is alive and well, or SSL_SENT_SHUTDOWN/SSL_RECEIVED_SHUTDOWN
- */
-int tls_status(SSL *ssl) {
-
-	int_t result = 0;
-	if (ssl) {
-		result = SSL_get_shutdown_d(ssl);
-	}
-	return result;
-}
-
-/**
  * @brief	Shutdown and free an SSL connection.
  * @param	ssl		the SSL connection to be shut down.
  * @return	This function returns no value.
@@ -154,6 +252,20 @@ void tls_free(SSL *ssl) {
 	return;
 }
 
+/**
+ * @brief	Checks whether an SSL tunnel has been shut down or not.
+ * @see		SSL_get_shutdown()
+ * @param	ssl		the SSL connection to be shut down.
+ * @return	0 if the connection is alive and well, or SSL_SENT_SHUTDOWN/SSL_RECEIVED_SHUTDOWN
+ */
+int tls_status(SSL *ssl) {
+
+	int_t result = 0;
+	if (ssl) {
+		result = SSL_get_shutdown_d(ssl);
+	}
+	return result;
+}
 
 
 /**
@@ -298,114 +410,4 @@ int ssl_print(SSL *ssl, const char *format, va_list args) {
 	mm_free(buffer);
 
 	return result;
-}
-
-
-
-
-/**
- * @brief	Setup an SSL CTX for a server.
- *
- * @note	The server is passed as a void pointer because the provider layer doesn't comprehend protocol specific
- * 			server instances.
- *
- * @param server_t	the SSL context will be assigned to the provided server context.
- * @param security_level	an integer which will be used to control how the SSL context is configured:
- * 							0 = accept any type of SSL or TLS protocol version, and offer broad cipher support.
- * 							1 = require TLSv1 and above, refuse SSLv2 and SSLv3 connections, use any reasonably secure cipher.
- * (reccomended)			2 = require TLSv1 and above, refuse SSLv2 and SSLv3 connections, only use ciphers which provide forward secrecy.
- * 							3 = require TLSv1.2 and limit the cipher list to ECDHE-RSA-AES256-GCM-SHA384 or ECDHE-RSA-CHACHA20-POLY1305
- * 								as required by the specifications.
- *
- */
-bool_t ssl_server_create(void *server, uint_t security_level) {
-
-	long options = 0;
-	char *ciphers = NULL;
-	server_t *local = server;
-
-	// TODO: Add SSL_OP_SINGLE_ECDH_USE | SSL_OP_SINGLE_DH_USE | SSL_OP_EPHEMERAL_RSA but that means adding callbacks, and possibly updating the certificate.
-	options = (SSL_OP_ALL | SSL_MODE_AUTO_RETRY | SSL_OP_TLS_ROLLBACK_BUG | SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION | SSL_OP_CIPHER_SERVER_PREFERENCE);
-
-	if (security_level == 0) {
-		options = (options);
-		ciphers = MAGMA_CIPHERS_GENERIC;
-	}
-	else if (security_level == 1) {
-		options = (options | SSL_OP_NO_SSLv2);
-		//ciphers = MAGMA_CIPHERS_LOW;
-		ciphers = SSL_DEFAULT_CIPHER_LIST;
-	}
-	else if (security_level == 2) {
-		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION);
-		ciphers = MAGMA_CIPHERS_MEDIUM;
-	}
-	else if (security_level >= 3) {
-		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1 | SSL_OP_NO_COMPRESSION);
-		ciphers = MAGMA_CIPHERS_HIGH;
-	}
-
-	// We use the generic SSLv23 method, which really means support SSLv2 and above, including TLSv1, TLSv1.1, etc, and then limit
-	// the actual protocols the SSL context will support using the options variable configured above, and the call to SSL_CTX_ctrl() below.
-	if (!(local->tls.context = SSL_CTX_new_d(SSLv23_server_method_d()))) {
-		log_critical("Could not create a valid SSL context.");
-		return false;
-	}
-	// Set the CTX options. We use the underlying function instead of going through the macro below,
-	// since macros can't be loaded at runtime.
-	// #define SSL_CTX_set_options(ctx, op) SSL_CTX_ctrl((ctx),SSL_CTRL_OPTIONS,(op),NULL)
-	// Pete suggested "RC4:kEDH:HIGH:!aNULL:!eNULL:!EXP:!LOW:!SSLv2:!MD5" or using SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS to workaround the Thunderbird SSL bug.
-	// Otherwise the suggestion was to use "kEDH:HIGH:RC4:!aNULL:!eNULL:!EXP:!LOW:!SSLv2:!MD5" once the stream bug is fixed.
-	else if ((SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_OPTIONS, options, NULL) & options) != options) {
-		log_critical("Could set the options mask on the TLS context.");
-		return false;
-	}
-	else if (SSL_CTX_use_certificate_chain_file_d(local->tls.context, local->tls.certificate) != 1) {
-		log_critical("Could not create a valid TLS certificate chain using the file %s.", local->tls.certificate);
-		return false;
-	}
-	else if (SSL_CTX_use_PrivateKey_file_d(local->tls.context, local->tls.certificate, SSL_FILETYPE_PEM) != 1) {
-		log_critical("Could not load the private key for our TLS certificate chain using the file %s.", local->tls.certificate);
-		return false;
-	}
-	else if (SSL_CTX_check_private_key_d(local->tls.context) != 1) {
-		log_critical("Could not verify the SSL private key. Make sure a valid private key is in the file %s.", local->tls.certificate);
-		return false;
-	}
-	// We had some compatibility issues enabling PFS, so this needs to be resolved soon.
-	else if (SSL_CTX_set_cipher_list_d(local->tls.context, ciphers) != 1) {
-		log_critical("Could not load the default collection of ciphers.");
-		return false;
-	}
-	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_ECDH_AUTO, 1, NULL) != 1) {
-		log_critical("Could not enable the automatic, default selection of the strongest curve.");
-		return false;
-	}
-
-	SSL_CTX_set_tmp_dh_callback_d(local->tls.context, ssl_dh_exchange_callback);
-
-	/// TODO: The SSL_CTX_set_tmp_ecdh_callback() may no longer be needed with SSL_CTX_set_ecdh_auto(). More research is needed.
-	SSL_CTX_set_tmp_ecdh_callback_d(local->tls.context, ssl_ecdh_exchange_callback);
-
-	return true;
-}
-
-/**
- * @brief	Destroy an SSL context associated with a server.
- * @param	server	the server to be deactivated.
- * @return	This function returns no value.
- */
-void ssl_server_destroy(void *server) {
-
-	server_t *local = server;
-
-#ifdef MAGMA_PEDANTIC
-	if (!local || !local->tls.context) {
-		log_pedantic("Passed invalid data. Going to execute the function call anyways.");
-	}
-#endif
-
-	SSL_CTX_free_d(local->tls.context);
-
-	return;
 }

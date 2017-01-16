@@ -144,7 +144,7 @@ typedef enum {
 } prime_user_artifact_fields_t;
 
 /**
- * @typedef prime_message_chunk_type_t
+ * @typedef prime_type_t
  */
 typedef uint16_t prime_type_t;
 
@@ -205,6 +205,32 @@ typedef struct __attribute__ ((packed)) {
 } prime_org_signet_t;
 
 /**
+ * @typedef prime_chunk_keys_t
+ */
+typedef struct __attribute__ ((packed)) {
+
+	ed25519_key_t *signing;
+	secp256k1_key_t *ephemeral;
+
+	secp256k1_key_t *author;
+	secp256k1_key_t *origin;
+	secp256k1_key_t *destination;
+	secp256k1_key_t *recipient;
+
+} prime_chunk_keys_t;
+
+/**
+ * @typedef prime_chunk_slots_t
+ */
+typedef struct __attribute__ ((packed)) {
+	stringer_t *author;
+	stringer_t *origin;
+	stringer_t *destination;
+	stringer_t *recipient;
+	stringer_t *buffer;
+} prime_chunk_slots_t;
+
+/**
  * @typedef prime_ephemeral_chunk_t
  */
 typedef struct __attribute__ ((packed)) {
@@ -236,13 +262,8 @@ typedef struct __attribute__ ((packed)) {
 	stringer_t *trailing;
 
 	stringer_t *encrypted;
+	prime_chunk_slots_t slots;
 
-	struct {
-		stringer_t *author;
-		stringer_t *origin;
-		stringer_t *destination;
-		stringer_t *recipient;
-	} slots;
 } prime_encrypted_chunk_t;
 
 /**

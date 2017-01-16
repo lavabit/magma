@@ -21,10 +21,7 @@ void encrypted_chunk_free(prime_encrypted_chunk_t *chunk) {
 		if (chunk->trailing) st_free(chunk->trailing);
 		if (chunk->encrypted) st_free(chunk->encrypted);
 
-		if (chunk->slots.author) st_free(chunk->slots.author);
-		if (chunk->slots.origin) st_free(chunk->slots.origin);
-		if (chunk->slots.destination) st_free(chunk->slots.destination);
-		if (chunk->slots.recipient) st_free(chunk->slots.recipient);
+		if (chunk->slots) slots_free(chunk->slots);
 
 		mm_free(chunk);
 	}
@@ -74,15 +71,16 @@ stringer_t * encrypted_chunk_buffer(prime_encrypted_chunk_t *chunk) {
  * @brief	Generate an encrypted message chunk. The signing and encryption keys are required, along with the public encryption
  * 			key for at least one actor.
  */
-prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, ed25519_key_t *signing, secp256k1_key_t *encryption,
-	secp256k1_key_t *author, secp256k1_key_t *origin, secp256k1_key_t *destination, secp256k1_key_t *recipient, stringer_t *data) {
+prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *data) {
 
 	uint32_t big_endian_length = 0;
+	prime_chunk_slots_t *slots = NULL;
 	prime_encrypted_chunk_t *result = NULL;
 	stringer_t *key = MANAGEDBUF(32), *stretched = MANAGEDBUF(64);
 
 	// We need a signing key, encryption key, and at least one actor.
-	if (!signing || signing->type != ED25519_PRIV || !encryption || !data || (!author && !origin && !destination && !recipient)) {
+	if (!signing || ed25519_type(signing) == ED25519_PRIV ||
+		!keks || (!keks->author && !keks->origin && !keks->destination && !keks->recipient) || !data) {
 		log_pedantic("Invalid parameters passed to the encrypted chunk generator.");
 		return NULL;
 	}
@@ -92,7 +90,7 @@ prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, e
 	// minus the 32 byte needed for the shards, and then accounting for the 69 required encryted bytes, while still resulting
 	// in a total encrypted size that aligns to a 16 byte boundary.
 	else if (st_length_get(data) < 1 || st_length_get(data) >= 16777099) {
-		log_pedantic("The chunk payload data must be larger than 1 byte, but smaller than 16,777,099 bytes. { length = %zu }", st_length_get(data));
+		log_pedantic("The chunk payload data must bpe larger than 1 byte, but smaller than 16,777,099 bytes. { length = %zu }", st_length_get(data));
 		return NULL;
 	}
 	else if (!(result = encrypted_chunk_alloc())) {
@@ -153,68 +151,30 @@ prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, e
 		return NULL;
 	}
 
-	/// LOW: If we pass in the kek, instead of the secp256k1 key, we won't need to recompute the kek for every chunk.
-
-	// Generate keyslots for any of the actors we recieved keys for, starting with the author.
-	else if (author && (!(result->slots.author = secp256k1_compute_kek(encryption, author, NULL)) ||
-		!(result->slots.author = st_xor(result->slots.author, key, result->slots.author)))) {
+	// Calculate the key slots.
+	else if (!(slots = slots_get(type, key, keks))) {
 		encrypted_chunk_free(result);
 		return NULL;
 	}
 
-	// The author keyslot is always required, so if an author key wasn't provided, set the author slot to all zeros.
-	else if (!author && (!(result->slots.author = st_alloc(64)) || !st_set(result->slots.author, 0, 64))) {
+	else if (st_append_out(128, &(result->encrypted), slots_buffer(slots)) <= 0) {
 		encrypted_chunk_free(result);
+		slots_free(slots);
 		return NULL;
 	}
 
-	// Origin keyslot.
-	else if (origin && (!(result->slots.origin = secp256k1_compute_kek(encryption, origin, NULL)) ||
-		!(result->slots.origin = st_xor(result->slots.origin, key, result->slots.origin)))) {
-		encrypted_chunk_free(result);
-		return NULL;
-	}
-
-	// Destination keyslot.
-	else if (destination && (!(result->slots.destination = secp256k1_compute_kek(encryption, destination, NULL)) ||
-		!(result->slots.destination = st_xor(result->slots.destination, key, result->slots.destination)))) {
-		encrypted_chunk_free(result);
-		return NULL;
-	}
-
-	// Recipient keyslot.
-	else if (recipient && (!(result->slots.recipient = secp256k1_compute_kek(encryption, recipient, NULL)) ||
-		!(result->slots.recipient = st_xor(result->slots.recipient, key, result->slots.recipient)))) {
-		encrypted_chunk_free(result);
-		return NULL;
-	}
-
-	// The recipient keyslot is always required, so if a recipient key wasn't provided, set the recipient slot to all zeros.
-	else if (!recipient && (!(result->slots.recipient = st_alloc(64)) || !st_set(result->slots.recipient, 0, 64))) {
-		encrypted_chunk_free(result);
-		return NULL;
-	}
-
-	// Append the key slots onto the end of the encrypted chunk data.
-	else if ((result->slots.author && st_append_out(128, &(result->encrypted), result->slots.author) < 0)||
-		(result->slots.origin && st_append_out(128, &(result->encrypted), result->slots.origin) < 0) ||
-		(result->slots.destination && st_append_out(128, &(result->encrypted), result->slots.destination) < 0) ||
-		(result->slots.recipient && st_append_out(128, &(result->encrypted), result->slots.recipient) < 0)) {
-		encrypted_chunk_free(result);
-		return NULL;
-	}
-
+	slots_free(slots);
 	return result;
 }
 
-prime_encrypted_chunk_t * encrypted_chunk_set(ed25519_key_t *signing, secp256k1_key_t *encryption, secp256k1_key_t *author,
-	secp256k1_key_t *origin, secp256k1_key_t *destination, secp256k1_key_t *recipient, stringer_t *chunk) {
+prime_encrypted_chunk_t * encrypted_chunk_set(ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *chunk) {
 
 	prime_encrypted_chunk_t *result = NULL;
 
 	// We need a signing key, encryption key, and at least one actor.
-	if (!signing || signing->type != ED25519_PRIV || !encryption || !chunk || (!author && !origin && !destination && !recipient)) {
-		log_pedantic("Invalid parameters passed to the encrypted chunk generator.");
+	if (!signing || ed25519_type(signing) == ED25519_PRIV ||
+		!keks || (!keks->author && !keks->origin && !keks->destination && !keks->recipient) || !chunk) {
+		log_pedantic("Invalid parameters passed to the encrypted chunk parser.");
 		return NULL;
 	}
 
@@ -230,6 +190,10 @@ prime_encrypted_chunk_t * encrypted_chunk_set(ed25519_key_t *signing, secp256k1_
 	else if (!(result = encrypted_chunk_alloc())) {
 		return NULL;
 	}
+
+
+	//# error parse chunk string, and match keyslots to available keks.
+
 	return result;
 }
 

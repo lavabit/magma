@@ -183,6 +183,8 @@ START_TEST (check_prime_chunk_encrypted_s) {
 
 	log_disable();
 	bool_t result = true;
+	prime_chunk_keys_t encrypt_keys, decrypt_keys;
+	prime_chunk_keks_t *encrypt_keks = NULL, *decrypt_keks = NULL;
 	prime_encrypted_chunk_t *get = NULL, *set = NULL;
 	stringer_t *errmsg = MANAGEDBUF(1024), *data = NULL;
 	ed25519_key_t *signing_pub = NULL, *signing_priv = NULL;
@@ -202,20 +204,38 @@ START_TEST (check_prime_chunk_encrypted_s) {
 			result = false;
 		}
 
+		mm_wipe(&encrypt_keys, sizeof(prime_chunk_keys_t));
+		mm_wipe(&decrypt_keys, sizeof(prime_chunk_keys_t));
+
+		encrypt_keys.signing = signing_priv;
+		encrypt_keys.encryption = encryption_priv;
+		encrypt_keys.recipient = recipient_pub;
+
+		decrypt_keys.signing = signing_pub;
+		decrypt_keys.encryption = encryption_pub;
+		decrypt_keys.recipient = recipient_priv;
+
+		if (result && (!(encrypt_keks = keks_get(&encrypt_keys)) || !(decrypt_keks = keks_set(&decrypt_keys)))) {
+			st_sprint(errmsg, "Encrypted chunk kek creation failed.");
+			result = false;
+		}
+
 		// Test chunk creation using an ephemeral signing/encryption key, and a recipient public key.
-		else if (!(get = encrypted_chunk_get(PRIME_CHUNK_HEADERS, signing_priv, encryption_priv, NULL, NULL, NULL, recipient_pub, data))) {
+		else if (result && !(get = encrypted_chunk_get(PRIME_CHUNK_HEADERS, signing_priv, encrypt_keks, data))) {
 			st_sprint(errmsg, "Encrypted chunk creation failed.");
 			result = false;
 		}
-		else if (!(set = encrypted_chunk_set(signing_pub, encryption_pub, NULL, NULL, NULL, recipient_priv, encrypted_chunk_buffer(get)))) {
+		else if (result && !(set = encrypted_chunk_set(signing_pub, decrypt_keks, encrypted_chunk_buffer(get)))) {
 			st_sprint(errmsg, "Encrypted chunk parsing failed.");
 			result = false;
 		}
-		else if (st_cmp_cs_eq(data, set->data)) {
+		else if (result && st_cmp_cs_eq(data, set->data)) {
 			st_sprint(errmsg, "Encrypted chunk comparison failed. The output isn't identical to the input.");
 			result = false;
 		}
 
+		keks_cleanup(encrypt_keks);
+		keks_cleanup(decrypt_keks);
 		encrypted_chunk_cleanup(get);
 		encrypted_chunk_cleanup(set);
 

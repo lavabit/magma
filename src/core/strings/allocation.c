@@ -259,7 +259,7 @@ stringer_t * st_import(const void *s, size_t len) {
 }
 
 /**
- * @brief	Copy data into a a managed string.
+ * @brief	Copy data into a managed string.
  * @param	s	the managed string to store the copied contents of the data.
  * @param	buf	a pointer to the buffer containing the data to be copied.
  * @param	len	the length of the data to be copied.
@@ -275,14 +275,14 @@ stringer_t * st_copy_in(stringer_t *s, void *buf, size_t len) {
 	} else if (st_avail_get(s) < len) {
 		log_pedantic("Managed string was not big enough to store copied data.");
 		return NULL;
-	} else if (!(dstbuf =  st_data_get(s))) {
+	} else if (!(dstbuf = st_data_get(s))) {
 		log_pedantic("Could not retrieve managed string data buffer for copy operation.");
 		return NULL;
 	}
 
-	mm_copy(dstbuf,buf,len);
+	mm_copy(dstbuf, buf, len);
 
-	if (!st_length_set(s,len)) {
+	if (!st_length_set(s, len)) {
 		log_pedantic("Error setting length of copied string.");
 		return NULL;
 	}

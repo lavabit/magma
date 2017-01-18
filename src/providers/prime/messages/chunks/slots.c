@@ -155,7 +155,7 @@ int_t slots_actors(prime_message_chunk_type_t type) {
  * @brief	Returns the number of slots for a given chunk type.
  */
 int_t slots_count(prime_message_chunk_type_t type) {
-	return bitwise_count(slots_count(type));
+	return bitwise_count(slots_actors(type));
 }
 
 stringer_t * slots_buffer(prime_chunk_slots_t *slots) {
@@ -174,8 +174,8 @@ prime_chunk_slots_t * slots_get(prime_message_chunk_type_t type, stringer_t *key
 	int_t actors = 0;
 	prime_chunk_slots_t *result = NULL;
 
-	if (!key || st_length_get(key) != 32 || !keks || (actors = slots_actors(type)) < 2 || actors > 4 ||
-		(!keks->author && !keks->recipient) || (keks->author && st_length_get(keks->author) != 32) ||
+	if (!key || st_length_get(key) != 32 || !keks || (actors = slots_actors(type)) == PRIME_ACTOR_NONE || slots_count(type) < 2 ||
+		slots_count(type) > 4 || (!keks->author && !keks->recipient) || (keks->author && st_length_get(keks->author) != 32) ||
 		(keks->origin && st_length_get(keks->origin) != 32) || (keks->recipient && st_length_get(keks->recipient) != 32) ||
 		(keks->destination && st_length_get(keks->destination) != 32) || !(result = slots_alloc(type))) {
 		return NULL;

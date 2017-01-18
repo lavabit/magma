@@ -79,7 +79,7 @@ prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, e
 	stringer_t *key = MANAGEDBUF(32), *stretched = MANAGEDBUF(64);
 
 	// We need a signing key, encryption key, and at least one actor.
-	if (!signing || ed25519_type(signing) == ED25519_PRIV ||
+	if (!signing || ed25519_type(signing) != ED25519_PRIV ||
 		!keks || (!keks->author && !keks->origin && !keks->destination && !keks->recipient) || !data) {
 		log_pedantic("Invalid parameters passed to the encrypted chunk generator.");
 		return NULL;
@@ -192,7 +192,7 @@ prime_encrypted_chunk_t * encrypted_chunk_set(ed25519_key_t *signing, prime_chun
 	}
 
 
-	//# error parse chunk string, and match keyslots to available keks.
+//	# error parse chunk string, and match keyslots to available keks.
 
 	return result;
 }

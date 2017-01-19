@@ -1,9 +1,10 @@
 #! /bin/sh
 #
-# chkconfig: - 55 45
+# chkconfig: - 95 05
 # description:  The magma daemon provides automagically encrypted email services.
 # processname: magmad
 # pidfile: /var/run/magmad/magmad.pid
+# config: /etc/magmad.config
 
 # Source function library.
 . /etc/init.d/functions
@@ -41,7 +42,7 @@ start () {
     echo
     [ $RETVAL -eq 0 ] && touch ${lockfile}
     [ $RETVAL -eq 0 ] && pidof ${prog} > ${pidfile}
-    [ $RETVAL -ne 0 ] && cat /var/log/magma/magmad.init.log
+    [ $RETVAL -ne 0 -a ! -z "${BOOTUP:-}" ] && cat /var/log/magma/magmad.init.log
 }
 
 stop () {

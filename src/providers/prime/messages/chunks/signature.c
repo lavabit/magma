@@ -60,7 +60,7 @@ int_t signature_chunk_tree_add(prime_signature_chunk_t *chunk, stringer_t *data)
 	multi_t key;
 	stringer_t *hash = NULL;
 
-	if (!chunk || chunk->tree || !data || st_length_get(data) < 35) {
+	if (!chunk || !chunk->tree || !data || st_length_get(data) < 35) {
 		return -1;
 	}
 
@@ -87,18 +87,18 @@ stringer_t * signature_chunk_tree_get(ed25519_key_t *signing, prime_signature_ch
 	stringer_t *result = NULL, *combined = NULL, *value = NULL, *stretched = NULL, *signature = NULL,
 		*shard = NULL, *key = MANAGEDBUF(32);
 
-	if (!signing || ed25519_type(signing) != ED25519_PRIV || !chunk || chunk->tree || (count = inx_count(chunk->tree))) {
+	if (!signing || ed25519_type(signing) != ED25519_PRIV || !chunk || !chunk->tree || !(count = inx_count(chunk->tree))) {
 		return NULL;
 	}
 
-	else if (!(cursor = inx_cursor_alloc(chunk->tree)) || !(combined = st_alloc(count * SHA512_DIGEST_LENGTH))) {
+	else if (!(cursor = inx_cursor_alloc(chunk->tree)) || !(combined = st_alloc_opts(MANAGED_T | JOINTED | HEAP, count * SHA512_DIGEST_LENGTH))) {
 		if (cursor) inx_cursor_free(cursor);
 		return NULL;
 	}
 
 
 	while ((value = inx_cursor_value_next(cursor))) {
-		if (!(combined = st_append(combined, value))) {
+		if (!st_append(combined, value)) {
 			inx_cursor_free(cursor);
 			st_free(combined);
 			return NULL;
@@ -142,7 +142,7 @@ stringer_t * signature_chunk_tree_get(ed25519_key_t *signing, prime_signature_ch
 	return result;
 }
 
-stringer_t * signature_chunk_full_get(prime_message_chunk_type_t type, ed25519_key_t *signing, stringer_t *data, prime_chunk_keks_t *keks) {
+stringer_t * signature_chunk_full_get(prime_message_chunk_type_t type, ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *data) {
 
 	placer_t buffer;
 	prime_chunk_slots_t *slots = NULL;

@@ -302,13 +302,14 @@ START_TEST (check_prime_chunk_signature_s) {
 
 	log_disable();
 	bool_t result = true;
+	size_t length = 0;
 	prime_chunk_keys_t encrypt_keys, decrypt_keys;
 	prime_ephemeral_chunk_t *ephemeral = NULL;
-	prime_signature_chunk_t *tree = NULL, *full = NULL;
+	prime_signature_chunk_t *tree = NULL;
 	ed25519_key_t *signing_pub = NULL, *signing_priv = NULL;
 	prime_chunk_keks_t *encrypt_keks = NULL, *decrypt_keks = NULL;
 	prime_encrypted_chunk_t *common = NULL, *headers = NULL, *body = NULL;
-	stringer_t *errmsg = MANAGEDBUF(1024);//, *data = NULL, *payload = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024), *payload = MANAGEDBUF(1024), *data = NULL, *full = NULL;
 	secp256k1_key_t *encryption_pub = NULL, *encryption_priv = NULL, *recipient_pub = NULL, *recipient_priv = NULL;
 
 	if (status()) {
@@ -338,8 +339,45 @@ START_TEST (check_prime_chunk_signature_s) {
 			result = false;
 		}
 
-		ephemeral = ephemeral_chunk_get(signing_priv, encryption_priv);
+		rand_write(payload);
 
+		tree = signature_chunk_alloc();
+
+		ephemeral = ephemeral_chunk_get(signing_priv, encryption_priv);
+		if (signature_chunk_tree_add(tree, ephemeral_chunk_buffer(ephemeral))) {
+			st_sprint(errmsg, "Tree signature creation failed.");
+			result = false;
+		}
+
+		common = encrypted_chunk_get(PRIME_CHUNK_COMMON, signing_priv, encrypt_keks, payload);
+		if (signature_chunk_tree_add(tree, encrypted_chunk_buffer(common))) {
+			st_sprint(errmsg, "Tree signature creation failed.");
+			result = false;
+		}
+
+		headers = encrypted_chunk_get(PRIME_CHUNK_HEADERS, signing_priv, encrypt_keks, payload);
+		if (signature_chunk_tree_add(tree, encrypted_chunk_buffer(headers))) {
+			st_sprint(errmsg, "Tree signature creation failed.");
+			result = false;
+		}
+
+		body = encrypted_chunk_get(PRIME_CHUNK_BODY, signing_priv, encrypt_keks, payload);
+		if (signature_chunk_tree_add(tree, encrypted_chunk_buffer(body))) {
+			st_sprint(errmsg, "Tree signature creation failed.");
+			result = false;
+		}
+
+		length = st_write(NULL, ephemeral_chunk_buffer(ephemeral), encrypted_chunk_buffer(common), encrypted_chunk_buffer(headers),
+			encrypted_chunk_buffer(body));
+
+		if (!(data = st_alloc(length + 512)) || st_write(data, ephemeral_chunk_buffer(ephemeral), encrypted_chunk_buffer(common), encrypted_chunk_buffer(headers),
+			encrypted_chunk_buffer(body), signature_chunk_tree_get(signing_priv, tree, encrypt_keks)) != length + 160) {
+			st_sprint(errmsg, "Serialized message creation failed.");
+			result = false;
+		}
+
+		full = signature_chunk_full_get(PRIME_CHUNK_SIGNATURE_DESTINATION, signing_priv, encrypt_keks, data);
+		st_append(data, full);
 
 
 		ephemeral_chunk_cleanup(ephemeral);
@@ -347,7 +385,7 @@ START_TEST (check_prime_chunk_signature_s) {
 		encrypted_chunk_cleanup(headers);
 		encrypted_chunk_cleanup(body);
 		signature_chunk_cleanup(tree);
-		signature_chunk_cleanup(full);
+		st_cleanup(full);
 
 		keks_cleanup(encrypt_keks);
 		keks_cleanup(decrypt_keks);

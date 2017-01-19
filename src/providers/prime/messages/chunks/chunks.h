@@ -40,7 +40,7 @@ prime_chunk_slots_t *  slots_set(prime_message_chunk_type_t type, stringer_t *ke
 prime_signature_chunk_t *  signature_chunk_alloc(void);
 void                       signature_chunk_cleanup(prime_signature_chunk_t *chunk);
 void                       signature_chunk_free(prime_signature_chunk_t *chunk);
-stringer_t *               signature_chunk_full_get(prime_message_chunk_type_t type, ed25519_key_t *signing, stringer_t *data, prime_chunk_keks_t *keks);
+stringer_t *               signature_chunk_full_get(prime_message_chunk_type_t type, ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *data);
 stringer_t *               signature_chunk_tree_get(ed25519_key_t *signing, prime_signature_chunk_t *chunk, prime_chunk_keks_t *keks);
 int_t                      signature_chunk_tree_add(prime_signature_chunk_t *chunk, stringer_t *data);
 

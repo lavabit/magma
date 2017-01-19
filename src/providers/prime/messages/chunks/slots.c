@@ -58,33 +58,33 @@ prime_chunk_slots_t * slots_alloc(prime_message_chunk_type_t type) {
 	}
 
 	// We need wipe the buffer to ensure a clean slate.
-	mm_wipe(result, sizeof(prime_chunk_slots_t) + (count * SECP256K1_SHARED_SECRET_LEN));
+	mm_wipe((uchr_t *)result, sizeof(prime_chunk_slots_t) + (count * SECP256K1_SHARED_SECRET_LEN));
 
 	// Allocate the buffer representing all the slots together.
-	result->buffer = pl_init(result + sizeof(prime_chunk_slots_t), (count * SECP256K1_SHARED_SECRET_LEN));
+	result->buffer = pl_init((uchr_t *)result + sizeof(prime_chunk_slots_t), (count * SECP256K1_SHARED_SECRET_LEN));
 
 	// For each actor, setup the location of the keyslot, and use the descending count variable to find the
 	// memory offset for the start of the keyslot.
 	if ((actors & PRIME_ACTOR_RECIPIENT) == PRIME_ACTOR_RECIPIENT) {
-		result->recipient = pl_init(result + sizeof(prime_chunk_slots_t) + ((count - 1) * SECP256K1_SHARED_SECRET_LEN),
+		result->recipient = pl_init((uchr_t *)result + sizeof(prime_chunk_slots_t) + ((count - 1) * SECP256K1_SHARED_SECRET_LEN),
 			SECP256K1_SHARED_SECRET_LEN);
 		count--;
 	}
 
 	if ((actors & PRIME_ACTOR_DESTINATION) == PRIME_ACTOR_DESTINATION) {
-		result->destination = pl_init(result + sizeof(prime_chunk_slots_t) + ((count - 1) * SECP256K1_SHARED_SECRET_LEN),
+		result->destination = pl_init((uchr_t *)result  + sizeof(prime_chunk_slots_t) + ((count - 1) * SECP256K1_SHARED_SECRET_LEN),
 			SECP256K1_SHARED_SECRET_LEN);
 		count--;
 	}
 
 	if ((actors & PRIME_ACTOR_ORIGIN) == PRIME_ACTOR_ORIGIN) {
-		result->origin = pl_init(result + sizeof(prime_chunk_slots_t) + ((count - 1) * SECP256K1_SHARED_SECRET_LEN),
+		result->origin = pl_init((uchr_t *)result + sizeof(prime_chunk_slots_t) + ((count - 1) * SECP256K1_SHARED_SECRET_LEN),
 			SECP256K1_SHARED_SECRET_LEN);
 		count--;
 	}
 
 	if ((actors & PRIME_ACTOR_AUTHOR) == PRIME_ACTOR_AUTHOR) {
-		result->author = pl_init(result + sizeof(prime_chunk_slots_t) + ((count - 1) * SECP256K1_SHARED_SECRET_LEN),
+		result->author = pl_init((uchr_t *)result + sizeof(prime_chunk_slots_t) + ((count - 1) * SECP256K1_SHARED_SECRET_LEN),
 			SECP256K1_SHARED_SECRET_LEN);
 		count--;
 	}
@@ -158,18 +158,88 @@ int_t slots_count(prime_message_chunk_type_t type) {
 	return bitwise_count(slots_actors(type));
 }
 
-stringer_t * slots_buffer(prime_chunk_slots_t *slots) {
+placer_t slots_buffer(prime_chunk_slots_t *slots) {
 
-	stringer_t *result = NULL;
+	placer_t result = pl_null();
 
 	if (slots && pl_length_get(slots->buffer)) {
-		result = &slots->buffer;
+		result = slots->buffer;
 	}
 
 	return result;
 }
 
-prime_chunk_slots_t * slots_get(prime_message_chunk_type_t type, stringer_t *key, prime_chunk_keks_t *keks) {
+/**
+ * @brief	Get the unstreteched key value using the first available kek with a matching keyslot value.
+ */
+stringer_t * slots_key(prime_chunk_slots_t *slots, prime_chunk_keks_t *keks, stringer_t *output) {
+
+	stringer_t *result = NULL, *empty = st_set(MANAGEDBUF(32), 0, 32);
+
+	// Ensure we have at least one valid key encryption key.
+	if (!keks || (keks->author && st_length_get(keks->author) != 32) ||
+		(keks->origin && st_length_get(keks->origin) != 32) ||
+		(keks->recipient && st_length_get(keks->recipient) != 32) ||
+		(keks->destination && st_length_get(keks->destination) != 32)) {
+		log_pedantic("Invalid key encryption key. Unable to parse the chunk key.");
+		return NULL;
+	}
+	// Ensure we have at least one valid key slot.
+	else if (!slots || (!pl_empty(slots->author) && st_length_get(&(slots->author)) != 32) ||
+		(!pl_empty(slots->origin) && st_length_get(&(slots->origin)) != 32) ||
+		(!pl_empty(slots->recipient) && st_length_get(&(slots->recipient)) != 32) ||
+		(!pl_empty(slots->destination) && st_length_get(&(slots->destination)) != 32)) {
+		log_pedantic("Invalid key slots. Unable to parse the chunk key.");
+		return NULL;
+	}
+
+	// Allocate a buffer for the output if one wasn't provided.
+	else if (!(result = st_output(output, SECP256K1_SHARED_SECRET_LEN))) {
+		log_pedantic("Allocate an output buffer. Unable to parse the chunk key.");
+		return NULL;
+	}
+
+	// If we have a key encryption key, and a keyslot value for the same actor, and the key slot value isn't
+	// just a string 0's, attempt the XOR operation. If it fails, free any memory we allocated and return NULL.
+	else if (keks->author && !pl_empty(slots->author) && st_cmp_cs_eq(empty, &(slots->author))) {
+		if (!st_xor(keks->author, &(slots->author), result)) {
+			if (!output) st_free(result);
+			result = NULL;
+		}
+	}
+
+	else if (keks->origin && !pl_empty(slots->origin) && st_cmp_cs_eq(empty, &(slots->origin))) {
+		if (!st_xor(keks->origin, &(slots->origin), result)) {
+			if (!output) st_free(result);
+			result = NULL;
+		}
+	}
+
+	else if (keks->destination && !pl_empty(slots->destination) && st_cmp_cs_eq(empty, &(slots->destination))) {
+		if (!st_xor(keks->destination, &(slots->destination), result)) {
+			if (!output) st_free(result);
+			result = NULL;
+		}
+	}
+
+	else if (keks->recipient && !pl_empty(slots->recipient) && st_cmp_cs_eq(empty, &(slots->recipient))) {
+		if (!st_xor(keks->recipient, &(slots->recipient), result)) {
+			if (!output) st_free(result);
+			result = NULL;
+		}
+	}
+
+	// If we didn't have an available key slot for the provided key encryption keys, free any memory we
+	// allocated, and return NULL.
+	else {
+		if (!output) st_free(result);
+		result = NULL;
+	}
+
+	return result;
+}
+
+prime_chunk_slots_t * slots_set(prime_message_chunk_type_t type, stringer_t *key, prime_chunk_keks_t *keks) {
 
 	int_t actors = 0;
 	prime_chunk_slots_t *result = NULL;
@@ -205,50 +275,53 @@ prime_chunk_slots_t * slots_get(prime_message_chunk_type_t type, stringer_t *key
 	return result;
 }
 
-prime_chunk_slots_t * slots_set(prime_message_chunk_type_t type, stringer_t *slots) {
+stringer_t * slots_get(prime_message_chunk_type_t type, stringer_t *slots, prime_chunk_keks_t *keks, stringer_t *output) {
 
 	size_t size = 0;
 	int_t actors = 0, count = 0;
-	prime_chunk_slots_t *result = NULL;
+	prime_chunk_slots_t *parsed = NULL;
 
 	if ((actors = slots_actors(type)) == PRIME_ACTOR_NONE || (count = slots_count(type)) < 2 || count > 4 || !slots ||
 		st_length_get(slots) % 32 != 0 || st_length_get(slots) != (size = (count * SECP256K1_SHARED_SECRET_LEN)) ||
-		!(result = slots_alloc(type))) {
+		!(parsed = slots_alloc(type))) {
 		return NULL;
 	}
 
 	// Copy the slots into the structure buffer.
-	else if (st_length_get(&(result->buffer)) != st_length_get(slots) || st_write(&(result->buffer), slots) != size)  {
-		slots_free(result);
+	else if (st_length_get(&(parsed->buffer)) != st_length_get(slots))  {
+		slots_free(parsed);
 		return NULL;
 	}
 
+	// Set the buffer place holder to point at the provided slots buffer.
+	parsed->buffer = pl_init(st_data_get(slots), size);
+
 	// Generate slots for the actors with slots, starting with the author.
 	if ((actors & PRIME_ACTOR_RECIPIENT) == PRIME_ACTOR_RECIPIENT) {
-		result->recipient = pl_init(slots + ((count - 1) * SECP256K1_SHARED_SECRET_LEN), SECP256K1_SHARED_SECRET_LEN);
+		parsed->recipient = pl_init(st_data_get(slots) + ((count - 1) * SECP256K1_SHARED_SECRET_LEN), SECP256K1_SHARED_SECRET_LEN);
 		count--;
 	}
 
 	if ((actors & PRIME_ACTOR_DESTINATION) == PRIME_ACTOR_DESTINATION) {
-		result->destination = pl_init(slots + ((count - 1) * SECP256K1_SHARED_SECRET_LEN), SECP256K1_SHARED_SECRET_LEN);
+		parsed->destination = pl_init(st_data_get(slots) + ((count - 1) * SECP256K1_SHARED_SECRET_LEN), SECP256K1_SHARED_SECRET_LEN);
 		count--;
 	}
 
 	if ((actors & PRIME_ACTOR_ORIGIN) == PRIME_ACTOR_ORIGIN) {
-		result->origin = pl_init(slots + ((count - 1) * SECP256K1_SHARED_SECRET_LEN), SECP256K1_SHARED_SECRET_LEN);
+		parsed->origin = pl_init(st_data_get(slots) + ((count - 1) * SECP256K1_SHARED_SECRET_LEN), SECP256K1_SHARED_SECRET_LEN);
 		count--;
 	}
 
 	if ((actors & PRIME_ACTOR_AUTHOR) == PRIME_ACTOR_AUTHOR) {
-		result->author = pl_init(slots + ((count - 1) * SECP256K1_SHARED_SECRET_LEN), SECP256K1_SHARED_SECRET_LEN);
+		parsed->author = pl_init(st_data_get(slots) + ((count - 1) * SECP256K1_SHARED_SECRET_LEN), SECP256K1_SHARED_SECRET_LEN);
 		count--;
 	}
 
 	if (count) {
 		log_pedantic("PRIME keyslot parsing failed. { count = %i }", count);
-		slots_free(result);
+		slots_free(parsed);
 		return NULL;
 	}
 
-	return result;
+	return slots_key(parsed, keks, output);
 }

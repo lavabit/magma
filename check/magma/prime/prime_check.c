@@ -183,10 +183,10 @@ START_TEST (check_prime_chunk_encrypted_s) {
 
 	log_disable();
 	bool_t result = true;
+	prime_encrypted_chunk_t *chunk = NULL;
 	prime_chunk_keys_t encrypt_keys, decrypt_keys;
 	prime_chunk_keks_t *encrypt_keks = NULL, *decrypt_keks = NULL;
-	prime_encrypted_chunk_t *get = NULL, *set = NULL;
-	stringer_t *errmsg = MANAGEDBUF(1024), *data = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024), *data = NULL, *set = NULL;
 	ed25519_key_t *signing_pub = NULL, *signing_priv = NULL;
 	secp256k1_key_t *encryption_pub = NULL, *encryption_priv = NULL, *recipient_pub = NULL, *recipient_priv = NULL;
 
@@ -215,32 +215,32 @@ START_TEST (check_prime_chunk_encrypted_s) {
 		decrypt_keys.encryption = encryption_pub;
 		decrypt_keys.recipient = recipient_priv;
 
-		if (result && (!(encrypt_keks = keks_get(&encrypt_keys)) || !(decrypt_keks = keks_set(&decrypt_keys)))) {
+		if (result && (!(encrypt_keks = keks_get(&encrypt_keys)) || !(decrypt_keks = keks_set(&decrypt_keys)) ||
+			st_cmp_cs_eq(encrypt_keks->recipient, decrypt_keks->recipient))) {
 			st_sprint(errmsg, "Encrypted chunk kek creation failed.");
 			result = false;
 		}
 
 		// Test chunk creation using an ephemeral signing/encryption key, and a recipient public key.
-		else if (result && !(get = encrypted_chunk_get(PRIME_CHUNK_HEADERS, signing_priv, encrypt_keks, data))) {
+		else if (result && !(chunk = encrypted_chunk_get(PRIME_CHUNK_HEADERS, signing_priv, encrypt_keks, data))) {
 			st_sprint(errmsg, "Encrypted chunk creation failed.");
 			result = false;
 		}
-		else if (result && !(set = encrypted_chunk_set(signing_pub, decrypt_keks, encrypted_chunk_buffer(get)))) {
+		else if (result && !(set = encrypted_chunk_set(signing_pub, decrypt_keks, encrypted_chunk_buffer(chunk), MANAGEDBUF(1024)))) {
 			st_sprint(errmsg, "Encrypted chunk parsing failed.");
 			result = false;
 		}
-		else if (result && st_cmp_cs_eq(data, set->data)) {
+		else if (result && st_cmp_cs_eq(data, set)) {
 			st_sprint(errmsg, "Encrypted chunk comparison failed. The output isn't identical to the input.");
 			result = false;
 		}
 
 		keks_cleanup(encrypt_keks);
 		keks_cleanup(decrypt_keks);
-		encrypted_chunk_cleanup(get);
-		encrypted_chunk_cleanup(set);
+		encrypted_chunk_cleanup(chunk);
 
 		// Reset the pointers so we don't trigger a double free.
-		get = set = NULL;
+		chunk = NULL;
 
 		if (signing_pub) ed25519_free(signing_pub);
 		if (signing_priv) ed25519_free(signing_priv);

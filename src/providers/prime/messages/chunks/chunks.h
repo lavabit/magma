@@ -28,12 +28,13 @@ prime_chunk_keks_t *  keks_set(prime_chunk_keys_t *keys);
 /// slots.c
 int_t                  slots_actors(prime_message_chunk_type_t type);
 prime_chunk_slots_t *  slots_alloc(prime_message_chunk_type_t type);
-stringer_t *           slots_buffer(prime_chunk_slots_t *slots);
+placer_t               slots_buffer(prime_chunk_slots_t *slots);
 void                   slots_cleanup(prime_chunk_slots_t *slots);
 int_t                  slots_count(prime_message_chunk_type_t type);
 void                   slots_free(prime_chunk_slots_t *slots);
-prime_chunk_slots_t *  slots_get(prime_message_chunk_type_t type, stringer_t *key, prime_chunk_keks_t *keks);
-prime_chunk_slots_t *  slots_set(prime_message_chunk_type_t type, stringer_t *slots);
+stringer_t *           slots_get(prime_message_chunk_type_t type, stringer_t *slots, prime_chunk_keks_t *keks, stringer_t *output);
+stringer_t *           slots_key(prime_chunk_slots_t *slots, prime_chunk_keks_t *keks, stringer_t *output);
+prime_chunk_slots_t *  slots_set(prime_message_chunk_type_t type, stringer_t *key, prime_chunk_keks_t *keks);
 
 /// signature.c
 prime_signature_chunk_t *  signature_chunk_alloc(void);
@@ -53,8 +54,8 @@ prime_encrypted_chunk_t *  encrypted_chunk_alloc(void);
 stringer_t *               encrypted_chunk_buffer(prime_encrypted_chunk_t *chunk);
 void                       encrypted_chunk_cleanup(prime_encrypted_chunk_t *chunk);
 void                       encrypted_chunk_free(prime_encrypted_chunk_t *chunk);
-prime_encrypted_chunk_t *  encrypted_chunk_set(ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *chunk);
 prime_encrypted_chunk_t *  encrypted_chunk_get(prime_message_chunk_type_t type, ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *data);
+stringer_t *               encrypted_chunk_set(ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *chunk, stringer_t *output);
 
 #endif
 

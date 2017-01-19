@@ -399,7 +399,7 @@ stringer_t * aes_chunk_decrypt(stringer_t *key, stringer_t *chunk, stringer_t *o
 	}
 
 	if (EVP_DecryptFinal_ex_d(&ctx, st_data_get(output) + written, &available) != 1) {
-		log_pedantic("An error occurred while trying to complete decryption process. { error = %s}",
+		log_pedantic("An error occurred while trying to complete decryption process. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
 		EVP_CIPHER_CTX_cleanup_d(&ctx);
 		st_cleanup(result);
@@ -694,13 +694,15 @@ stringer_t * aes_artifact_decrypt(stringer_t *key, stringer_t *object, stringer_
 
 	// Initialize the cipher context.
 	if (EVP_DecryptInit_ex_d(&ctx, EVP_aes_256_gcm_d(), NULL, NULL, NULL) != 1) {
-		log_pedantic("An error occurred while trying to initialize chosen symmetric cipher.");
+		log_pedantic("An error occurred while trying to initialize chosen symmetric cipher. { error = %s }",
+			ssl_error_string(MEMORYBUF(256), 256));
 		EVP_CIPHER_CTX_cleanup_d(&ctx);
 		return NULL;
 	}
 
 	else if (EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_GCM_SET_IVLEN, AES_VECTOR_LEN, NULL) != 1) {
-		log_pedantic("The initialization vector length could not be properly set to 16 bytes.");
+		log_pedantic("The initialization vector length could not be properly set to 16 bytes. { error = %s }",
+			ssl_error_string(MEMORYBUF(256), 256));
 		EVP_CIPHER_CTX_cleanup_d(&ctx);
 		return NULL;
 	}
@@ -715,7 +717,8 @@ stringer_t * aes_artifact_decrypt(stringer_t *key, stringer_t *object, stringer_
 
 	// Add the vector and key data.
 	else if (EVP_DecryptInit_ex_d(&ctx, NULL, NULL, pl_data_get(cipher_key), st_data_get(vector)) != 1) {
-		log_pedantic("An error occurred initializing the symmetric cipher with the provided key and vector data.");
+		log_pedantic("An error occurred initializing the symmetric cipher with the provided key and vector data. { error = %s }",
+			ssl_error_string(MEMORYBUF(256), 256));
 		EVP_CIPHER_CTX_cleanup_d(&ctx);
 		return NULL;
 	}
@@ -736,7 +739,8 @@ stringer_t * aes_artifact_decrypt(stringer_t *key, stringer_t *object, stringer_
 	st_wipe(output);
 
 	if (EVP_DecryptUpdate_d(&ctx, st_data_get(output) + 1, &available, object_data + PRIME_OBJECT_HEAD_LEN, object_size - PRIME_OBJECT_HEAD_LEN) != 1) {
-		log_pedantic("An error occurred while trying to decrypt the input buffer using the chosen symmetric cipher.");
+		log_pedantic("An error occurred while trying to decrypt the input buffer using the chosen symmetric cipher. { error = %s }",
+			ssl_error_string(MEMORYBUF(256), 256));
 		EVP_CIPHER_CTX_cleanup_d(&ctx);
 		st_cleanup(result);
 		return NULL;
@@ -747,14 +751,16 @@ stringer_t * aes_artifact_decrypt(stringer_t *key, stringer_t *object, stringer_
 
 	// Set the Galois verification tag, which provides protection against tampering by an attacker.
 	if (EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_GCM_SET_TAG, 16, st_data_get(tag)) != 1) {
-		log_pedantic("An error occurred while trying to set the decryption tag value.");
+		log_pedantic("An error occurred while trying to set the decryption tag value. { error = %s }",
+			ssl_error_string(MEMORYBUF(256), 256));
 		EVP_CIPHER_CTX_cleanup_d(&ctx);
 		st_cleanup(result);
 		return NULL;
 	}
 
 	if (EVP_DecryptFinal_ex_d(&ctx, st_data_get(output) + 1 + written, &available) != 1) {
-		log_pedantic("An error occurred while trying to complete decryption process. {%s}", ssl_error_string(MEMORYBUF(256), 256));
+		log_pedantic("An error occurred while trying to complete decryption process. { error = %s }",
+			ssl_error_string(MEMORYBUF(256), 256));
 		EVP_CIPHER_CTX_cleanup_d(&ctx);
 		st_cleanup(result);
 		return NULL;

@@ -384,7 +384,10 @@
 		<configuration configurationName=".debug">
 			<resource resourceType="PROJECT" workspacePath="/magma"/>
 		</configuration>
-		<configuration configurationName="Default"/>
+		<configuration configurationName="Default">
+			<resource resourceType="FOLDER" workspacePath="/magma/src"/>
+			<resource resourceType="FOLDER" workspacePath="/magma/check"/>
+		</configuration>
 		<configuration configurationName="DIME Check"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>

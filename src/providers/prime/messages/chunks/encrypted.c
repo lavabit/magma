@@ -152,12 +152,12 @@ prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, e
 	}
 
 	// Calculate the key slots.
-	else if (!(slots = slots_get(type, key, keks))) {
+	else if (!(slots = slots_set(type, key, keks))) {
 		encrypted_chunk_free(result);
 		return NULL;
 	}
 
-	else if (st_append_out(128, &(result->encrypted), slots_buffer(slots)) <= 0) {
+	else if (st_append_out(128, &(result->encrypted), &slots->buffer) <= 0) {
 		encrypted_chunk_free(result);
 		slots_free(slots);
 		return NULL;
@@ -167,12 +167,17 @@ prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, e
 	return result;
 }
 
-prime_encrypted_chunk_t * encrypted_chunk_set(ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *chunk) {
+stringer_t * encrypted_chunk_set(ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *chunk, stringer_t *output) {
 
-	prime_encrypted_chunk_t *result = NULL;
+	int32_t payload_size = 0;
+	uint32_t big_endian_size = 0;
+	uint8_t flags = 0, padding = 0;
+	size_t slot_size = 0, data_size = 0;
+	prime_message_chunk_type_t type = PRIME_CHUNK_INVALID;
+	stringer_t *key = NULL, *stretched = NULL, *payload = NULL, *result = NULL;
 
 	// We need a signing key, encryption key, and at least one actor.
-	if (!signing || ed25519_type(signing) == ED25519_PRIV ||
+	if (!signing || ed25519_type(signing) != ED25519_PUB ||
 		!keks || (!keks->author && !keks->origin && !keks->destination && !keks->recipient) || !chunk) {
 		log_pedantic("Invalid parameters passed to the encrypted chunk parser.");
 		return NULL;
@@ -187,13 +192,97 @@ prime_encrypted_chunk_t * encrypted_chunk_set(ed25519_key_t *signing, prime_chun
 			st_length_get(chunk));
 		return NULL;
 	}
-	else if (!(result = encrypted_chunk_alloc())) {
+
+	// Chunk Type
+	else if ((type = chunk_header_type(chunk)) == PRIME_CHUNK_INVALID) {
+		log_pedantic("Invalid chunk type. { type = INVALID }");
+		return NULL;
+	}
+	// Header Size
+	else if ((payload_size = chunk_header_size(chunk)) == -1) {
+		log_pedantic("Invalid chunk size. { size = -1 }");
+		return NULL;
+	}
+	// Keyslot Size
+	else if ((slot_size = (slots_count(type) * SECP256K1_SHARED_SECRET_LEN)) == 0) {
+		log_pedantic("Invalid keyslot size. { size = %zu }", slot_size);
+		return NULL;
+	}
+	// Ensure the chunk string matches the expected length.
+	else if (st_length_get(chunk) != (payload_size + slot_size + 4)) {
+		log_pedantic("Invalid chunk string. Header payload size does not match actual length. { actual = %zu / expected = %zu }",
+			st_length_get(chunk), (payload_size + slot_size + 4));
 		return NULL;
 	}
 
+	// Key slots.
+	else if (!(key = slots_get(type, PLACER(st_data_get(chunk) + payload_size + 4, slot_size), keks, MANAGEDBUF(32))) ||
+		!(stretched = hash_sha512(key, MANAGEDBUF(64)))) {
+		log_pedantic("Key slot parsing failed.s");
+		return NULL;
+	}
 
-//	# error parse chunk string, and match keyslots to available keks.
+	// Decrypt.
+	else if (!(payload = aes_chunk_decrypt(stretched, PLACER(st_data_get(chunk), st_length_get(chunk) - slot_size), NULL))) {
+		log_pedantic("Chunk decryption failed.");
+		return NULL;
+	}
+	// Ensure the required minimum has been met.
+	else if (st_length_get(payload) < 80) {
+		log_pedantic("The decrypted payload is too short.");
+		st_free(payload);
+		return NULL;
+	}
 
+	// Verify the signature.
+	else if (ed25519_verify(signing, PLACER(st_data_get(payload) + ED25519_SIGNATURE_LEN, st_length_get(payload) - ED25519_SIGNATURE_LEN),
+		PLACER(st_data_get(payload), ED25519_SIGNATURE_LEN))) {
+		log_pedantic("The decrypted payload signature is invalid.");
+		st_free(payload);
+		return NULL;
+	}
+
+	// Plain Text Data Size
+	mm_copy(((uchr_t *)&big_endian_size) + 1, (uchr_t *)st_data_get(payload) + ED25519_SIGNATURE_LEN, 3);
+	data_size = be32toh(big_endian_size);
+
+	/// HIGH: Handle the different flags. Specifically data compression, and the alternate padding algorithm.
+	// Flags
+	mm_copy((uchr_t *)&flags, (uchr_t *)st_data_get(payload) + ED25519_SIGNATURE_LEN + 3, 1);
+
+	// Padding
+	mm_copy((uchr_t *)&padding, (uchr_t *)st_data_get(payload) + ED25519_SIGNATURE_LEN + 4, 1);
+
+	// Verify the payload length.
+	if (st_length_get(payload) != (69 + padding + data_size)) {
+		log_pedantic("The decrypted payload length doesn't match the length in the plain text prefix.");
+		st_free(payload);
+		return NULL;
+	}
+
+	// Validate the padding.
+	else if (st_cmp_cs_eq(PLACER((uchr_t *)st_data_get(payload) + 69 + data_size, padding), st_set(MANAGEDBUF(256), padding, padding))) {
+		log_pedantic("The decrypted payload padding was invalid.");
+		st_free(payload);
+		return NULL;
+	}
+
+	// Allocate an output buffer, if necessary.
+	else if (!(result = st_output(output, data_size))) {
+		log_pedantic("Unable to allocate an output buffer for the decrypted data.");
+		st_free(payload);
+		return NULL;
+	}
+
+	// Write the data into the output buffer.
+	else if (st_write(result, PLACER((uchr_t *)st_data_get(payload) + 69, data_size)) != data_size) {
+		log_pedantic("Unable to allocate an output buffer for the decrypted data.");
+		if (!output) st_free(result);
+		st_free(payload);
+		return NULL;
+	}
+
+	st_free(payload);
 	return result;
 }
 

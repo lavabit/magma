@@ -278,6 +278,7 @@ prime_chunk_slots_t * slots_set(prime_message_chunk_type_t type, stringer_t *key
 stringer_t * slots_get(prime_message_chunk_type_t type, stringer_t *slots, prime_chunk_keks_t *keks, stringer_t *output) {
 
 	size_t size = 0;
+	stringer_t *key = NULL;
 	int_t actors = 0, count = 0;
 	prime_chunk_slots_t *parsed = NULL;
 
@@ -323,5 +324,7 @@ stringer_t * slots_get(prime_message_chunk_type_t type, stringer_t *slots, prime
 		return NULL;
 	}
 
-	return slots_key(parsed, keks, output);
+	key = slots_key(parsed, keks, output);
+	slots_free(parsed);
+	return key;
 }

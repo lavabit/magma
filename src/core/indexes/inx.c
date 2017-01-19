@@ -50,6 +50,7 @@ void inx_auto_read(inx_t *inx) {
 	}
 	return;
 }
+
 /**
  * @brief	Acquire a writer's lock for an inx object.
  * @param	inx		a pointer to the inx object to be locked.
@@ -61,7 +62,6 @@ void inx_lock_write(inx_t *inx) {
 	}
 	return;
 }
-
 
 void inx_auto_write(inx_t *inx) {
 	if (inx->automatic) {

@@ -290,13 +290,8 @@ typedef struct __attribute__ ((packed)) {
  * @typedef prime_signature_chunk_t
  */
 typedef struct __attribute__ ((packed)) {
+	inx_t *tree;
 	stringer_t *signature;
-	struct {
-		stringer_t *author;
-		stringer_t *origin;
-		stringer_t *destination;
-		stringer_t *recipient;
-	} slots;
 } prime_signature_chunk_t;
 
 /**

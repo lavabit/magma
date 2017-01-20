@@ -49,9 +49,6 @@ prime_message_chunk_type_t chunk_header_type(stringer_t *chunk) {
 	switch(type) {
 
 		// Envelope
-		case PRIME_CHUNK_ENVELOPE:
-			result = PRIME_CHUNK_ENVELOPE;
-			break;
 		case PRIME_CHUNK_EPHEMERAL:
 			result = PRIME_CHUNK_EPHEMERAL;
 			break;
@@ -63,9 +60,6 @@ prime_message_chunk_type_t chunk_header_type(stringer_t *chunk) {
 			break;
 
 		// Metadata
-		case PRIME_CHUNK_METADATA:
-			result = PRIME_CHUNK_METADATA;
-			break;
 		case PRIME_CHUNK_COMMON:
 			result = PRIME_CHUNK_COMMON;
 			break;
@@ -79,20 +73,17 @@ prime_message_chunk_type_t chunk_header_type(stringer_t *chunk) {
 			break;
 
 		// Signatures
-		case PRIME_CHUNK_SIGNATURES:
-			result = PRIME_CHUNK_SIGNATURES;
+		case PRIME_SIGNATURE_TREE:
+			result = PRIME_SIGNATURE_TREE;
 			break;
-		case PRIME_CHUNK_SIGNATURE_TREE:
-			result = PRIME_CHUNK_SIGNATURE_TREE;
+		case PRIME_SIGNATURE_USER:
+			result = PRIME_SIGNATURE_USER;
 			break;
-		case PRIME_CHUNK_SIGNATURE_AUTHOR:
-			result = PRIME_CHUNK_SIGNATURE_AUTHOR;
+		case PRIME_SIGNATURE_ORGIN:
+			result = PRIME_SIGNATURE_ORGIN;
 			break;
-		case PRIME_CHUNK_SIGNATURE_ORGIN:
-			result = PRIME_CHUNK_SIGNATURE_ORGIN;
-			break;
-		case PRIME_CHUNK_SIGNATURE_DESTINATION:
-			result = PRIME_CHUNK_SIGNATURE_DESTINATION;
+		case PRIME_SIGNATURE_DESTINATION:
+			result = PRIME_SIGNATURE_DESTINATION;
 			break;
 		default:
 			log_pedantic("The chunk type is invalid. { type = %i }", type);

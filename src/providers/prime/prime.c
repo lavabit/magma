@@ -75,6 +75,12 @@ void prime_free(prime_t *object) {
 			case PRIME_USER_SIGNING_REQUEST:
 				if (object->signet.user) user_signet_free(object->signet.user);
 				break;
+			case PRIME_MESSAGE_NAKED:
+				if (object->message.naked) encrypted_message_free(object->message.naked);
+				break;
+			case PRIME_MESSAGE_ENCRYPTED:
+				if (object->message.native) encrypted_message_free(object->message.native);
+				break;
 			default:
 				log_pedantic("Unrecognized PRIME object type.");
 				break;
@@ -136,6 +142,12 @@ prime_t * prime_alloc(prime_type_t type, prime_flags_t flags) {
 			break;
 		case PRIME_USER_SIGNING_REQUEST:
 			result->type = PRIME_USER_SIGNING_REQUEST;
+			break;
+		case PRIME_MESSAGE_NAKED:
+			result->type = PRIME_MESSAGE_NAKED;
+			break;
+		case PRIME_MESSAGE_ENCRYPTED:
+			result->type = PRIME_MESSAGE_ENCRYPTED;
 			break;
 		default:
 			log_pedantic("Unrecognized PRIME type.");
@@ -504,8 +516,47 @@ prime_t * prime_request_sign(prime_t *request, prime_t *org) {
  */
  prime_t * prime_message_encrypt(stringer_t *message, prime_t *author, prime_t *origin, prime_t *destination, prime_t *recipient) {
 
+	 prime_t *result = NULL;
 
-	 return NULL;
+	 if (!destination || destination->type != PRIME_ORG_KEY || !destination->key.org ||
+		 !recipient || recipient->type != PRIME_USER_SIGNET || !recipient->signet.user) {
+		 return NULL;
+	 }
+	 else if (!(result = prime_alloc(PRIME_MESSAGE_NAKED, NONE))) {
+		log_pedantic("PRIME naked message allocation failed.");
+		return NULL;
+	}
+	else if (!(result->message.naked = naked_message_set(message, destination->key.org, recipient->signet.user))) {
+		log_pedantic("PRIME naked message creation failed.");
+		prime_free(result);
+		return NULL;
+	}
+
+	return result;
+ }
+
+/**
+ * @brief	Decrypt a message.
+ */
+ stringer_t * prime_message_decrypt(prime_t *message, prime_t *org, prime_t *user) {
+
+	 prime_t *result = NULL;
+
+	 if (!org || org->type != PRIME_ORG_SIGNET || !org->signet.org ||
+		 !user || user->type != PRIME_USER_KEY || !user->key.user) {
+		 return NULL;
+	 }
+	 else if (!(result = prime_alloc(PRIME_MESSAGE_NAKED, NONE))) {
+		log_pedantic("PRIME naked message allocation failed.");
+		return NULL;
+	}
+//	else if (!(result->message.naked = naked_message_get(message, destination->key.org, recipient->signet.user))) {
+//		log_pedantic("PRIME naked message creation failed.");
+//		prime_free(result);
+//		return NULL;
+//	}
+
+	return result;
  }
 
 /**

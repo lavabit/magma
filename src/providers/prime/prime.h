@@ -103,26 +103,23 @@ typedef enum {
     PRIME_CHUNK_TRACING = 0,               /**< Tracing data. >*/
 
 	// Envelope Block
-    PRIME_CHUNK_ENVELOPE = 1,              /**< Envelope block. >*/
-	PRIME_CHUNK_EPHEMERAL = 2,             /**< Ephemeral chunk. >*/
-	PRIME_CHUNK_ORIGIN = 3,                /**< Origin chunk. >*/
-	PRIME_CHUNK_DESTINATION = 4,           /**< Destination chunk. >*/
+	PRIME_CHUNK_EPHEMERAL = 1,             /**< Ephemeral chunk. >*/
+	PRIME_CHUNK_ORIGIN = 2,                /**< Origin chunk. >*/
+	PRIME_CHUNK_DESTINATION = 3,           /**< Destination chunk. >*/
 
 	// Metadata Block
-	PRIME_CHUNK_METADATA = 32,             /**< Metadata block. >*/
-	PRIME_CHUNK_COMMON = 33,               /**< Common headers chunk. >*/
-	PRIME_CHUNK_HEADERS = 34,              /**< Remaining headers chunk. >*/
+	PRIME_CHUNK_COMMON = 32,               /**< Common headers chunk. >*/
+	PRIME_CHUNK_HEADERS = 33,              /**< Remaining headers chunk. >*/
 
 	// Body
 	PRIME_CHUNK_BODY = 48,                 /**< Naked unstructured message body. >*/
 
 	// Signature Block
-	PRIME_CHUNK_SIGNATURES = 224,
-	PRIME_CHUNK_SIGNATURE_TREE = 225,
-	PRIME_CHUNK_SIGNATURE_AUTHOR = 226,
+	PRIME_SIGNATURE_TREE = 224,
+	PRIME_SIGNATURE_USER = 225,
 
-	PRIME_CHUNK_SIGNATURE_ORGIN = 254,
-	PRIME_CHUNK_SIGNATURE_DESTINATION = 255
+	PRIME_SIGNATURE_ORGIN = 254,
+	PRIME_SIGNATURE_DESTINATION = 255
 } prime_message_chunk_type_t;
 
 /**
@@ -287,51 +284,43 @@ typedef struct __attribute__ ((packed)) {
 } prime_encrypted_chunk_t;
 
 /**
- * @typedef prime_signature_chunk_t
+ * @typedef prime_signature_tree_t
  */
 typedef struct __attribute__ ((packed)) {
 	inx_t *tree;
-	stringer_t *signature;
-} prime_signature_chunk_t;
+} prime_signature_tree_t;
 
 /**
  * @typedef prime_message_t
  */
 typedef struct __attribute__ ((packed)) {
-	struct {
-		// Ephemeral
-		ed25519_key_t *signing;
-		secp256k1_key_t *encryption;
 
-		// Actors
-		secp256k1_key_t *author;
-		secp256k1_key_t *origin;
-		secp256k1_key_t *destination;
-		secp256k1_key_t *recipient;
-	} keys;
-	struct {
-		stringer_t *author;
-		stringer_t *origin;
-		stringer_t *destination;
-		stringer_t *recipient;
-	} kek;
+	prime_chunk_keys_t keys;
+	prime_chunk_keks_t keks;
+
 	struct {
 		prime_ephemeral_chunk_t *ephemeral;
 		prime_encrypted_chunk_t *origin;
 		prime_encrypted_chunk_t *destination;
 	} envelope;
+
 	struct {
 		prime_encrypted_chunk_t *common;
 		prime_encrypted_chunk_t *headers;
 	} metadata;
+
 	struct {
 		prime_encrypted_chunk_t *body;
 	} content;
+
 	struct {
-		prime_signature_chunk_t *tree;
-		prime_signature_chunk_t *author;
-		prime_signature_chunk_t *org;
+		stringer_t *tree;
+		stringer_t *user;
+		stringer_t *org;
 	} signatures;
+
+	stringer_t *encrypted;
+
 } prime_message_t;
 
 /**
@@ -385,4 +374,3 @@ void          prime_stop(void);
 #include "keys/keys.h"
 
 #endif
-

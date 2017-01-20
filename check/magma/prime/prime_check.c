@@ -215,7 +215,7 @@ START_TEST (check_prime_chunk_encrypted_s) {
 		decrypt_keys.encryption = encryption_pub;
 		decrypt_keys.recipient = recipient_priv;
 
-		if (result && (!(encrypt_keks = keks_get(&encrypt_keys)) || !(decrypt_keks = keks_set(&decrypt_keys)) ||
+		if (result && (!(encrypt_keks = keks_get(&encrypt_keys, NULL)) || !(decrypt_keks = keks_set(&decrypt_keys, NULL)) ||
 			st_cmp_cs_eq(encrypt_keks->recipient, decrypt_keks->recipient))) {
 			st_sprint(errmsg, "Encrypted chunk kek creation failed.");
 			result = false;
@@ -305,7 +305,7 @@ START_TEST (check_prime_chunk_signature_s) {
 	size_t length = 0;
 	prime_chunk_keys_t encrypt_keys, decrypt_keys;
 	prime_ephemeral_chunk_t *ephemeral = NULL;
-	prime_signature_chunk_t *tree = NULL;
+	prime_signature_tree_t *tree = NULL;
 	ed25519_key_t *signing_pub = NULL, *signing_priv = NULL;
 	prime_chunk_keks_t *encrypt_keks = NULL, *decrypt_keks = NULL;
 	prime_encrypted_chunk_t *common = NULL, *headers = NULL, *body = NULL;
@@ -333,7 +333,7 @@ START_TEST (check_prime_chunk_signature_s) {
 		decrypt_keys.encryption = encryption_pub;
 		decrypt_keys.recipient = recipient_priv;
 
-		if (result && (!(encrypt_keks = keks_get(&encrypt_keys)) || !(decrypt_keks = keks_set(&decrypt_keys)) ||
+		if (result && (!(encrypt_keks = keks_get(&encrypt_keys, NULL)) || !(decrypt_keks = keks_set(&decrypt_keys, NULL)) ||
 			st_cmp_cs_eq(encrypt_keks->recipient, decrypt_keks->recipient))) {
 			st_sprint(errmsg, "Signature chunk kek creation failed.");
 			result = false;
@@ -341,28 +341,28 @@ START_TEST (check_prime_chunk_signature_s) {
 
 		rand_write(payload);
 
-		tree = signature_chunk_alloc();
+		tree = signature_tree_alloc();
 
 		ephemeral = ephemeral_chunk_get(signing_priv, encryption_priv);
-		if (signature_chunk_tree_add(tree, ephemeral_chunk_buffer(ephemeral))) {
+		if (signature_tree_add(tree, ephemeral_chunk_buffer(ephemeral))) {
 			st_sprint(errmsg, "Tree signature creation failed.");
 			result = false;
 		}
 
 		common = encrypted_chunk_get(PRIME_CHUNK_COMMON, signing_priv, encrypt_keks, payload);
-		if (signature_chunk_tree_add(tree, encrypted_chunk_buffer(common))) {
+		if (signature_tree_add(tree, encrypted_chunk_buffer(common))) {
 			st_sprint(errmsg, "Tree signature creation failed.");
 			result = false;
 		}
 
 		headers = encrypted_chunk_get(PRIME_CHUNK_HEADERS, signing_priv, encrypt_keks, payload);
-		if (signature_chunk_tree_add(tree, encrypted_chunk_buffer(headers))) {
+		if (signature_tree_add(tree, encrypted_chunk_buffer(headers))) {
 			st_sprint(errmsg, "Tree signature creation failed.");
 			result = false;
 		}
 
 		body = encrypted_chunk_get(PRIME_CHUNK_BODY, signing_priv, encrypt_keks, payload);
-		if (signature_chunk_tree_add(tree, encrypted_chunk_buffer(body))) {
+		if (signature_tree_add(tree, encrypted_chunk_buffer(body))) {
 			st_sprint(errmsg, "Tree signature creation failed.");
 			result = false;
 		}
@@ -371,21 +371,25 @@ START_TEST (check_prime_chunk_signature_s) {
 			encrypted_chunk_buffer(body));
 
 		if (!(data = st_alloc(length + 512)) || st_write(data, ephemeral_chunk_buffer(ephemeral), encrypted_chunk_buffer(common), encrypted_chunk_buffer(headers),
-			encrypted_chunk_buffer(body), signature_chunk_tree_get(signing_priv, tree, encrypt_keks)) != length + 160) {
+			encrypted_chunk_buffer(body), signature_tree_get(signing_priv, tree, encrypt_keks)) != length + 161) {
 			st_sprint(errmsg, "Serialized message creation failed.");
 			result = false;
 		}
 
-		full = signature_chunk_full_get(PRIME_CHUNK_SIGNATURE_DESTINATION, signing_priv, encrypt_keks, data);
+		full = signature_full_get(PRIME_SIGNATURE_USER, signing_priv, encrypt_keks, data);
 		st_append(data, full);
+		st_cleanup(full);
 
+		full = signature_full_get(PRIME_SIGNATURE_DESTINATION, signing_priv, encrypt_keks, data);
+		st_append(data, full);
 
 		ephemeral_chunk_cleanup(ephemeral);
 		encrypted_chunk_cleanup(common);
 		encrypted_chunk_cleanup(headers);
 		encrypted_chunk_cleanup(body);
-		signature_chunk_cleanup(tree);
+		signature_tree_cleanup(tree);
 		st_cleanup(full);
+		st_cleanup(data);
 
 		keks_cleanup(encrypt_keks);
 		keks_cleanup(decrypt_keks);
@@ -405,15 +409,32 @@ END_TEST
 
 START_TEST (check_prime_message_naked_s) {
 
-	log_disable();
+//	log_disable();
 	bool_t result = true;
-	prime_t *message = NULL;
-	stringer_t *errmsg = MANAGEDBUF(1024);
+	stringer_t *raw = NULL, *errmsg = MANAGEDBUF(1024);
+	prime_t *message = NULL, *destination = NULL, *recipient = NULL, *request = NULL, *signet = NULL;
 
 	if (status()) {
 
-		message = prime_message_encrypt(NULL, NULL, NULL, NULL, NULL);
+		if (!(destination = prime_key_generate(PRIME_ORG_KEY, NONE)) || !(recipient = prime_key_generate(PRIME_USER_KEY, NONE)) ||
+			!(request = prime_request_generate(recipient, NULL)) || !(signet = prime_request_sign(request, destination))) {
+			st_sprint(errmsg, "PRIME message test identity generation failed.");
+			result = false;
+		}
+
+		raw = check_message_get(0);
+
+		if (!(message = prime_message_encrypt(raw, NULL, NULL, destination, signet))) {
+			st_sprint(errmsg, "PRIME message test failed.");
+			result = false;
+		}
+
+		prime_cleanup(destination);
+		prime_cleanup(recipient);
 		prime_cleanup(message);
+		prime_cleanup(request);
+		prime_cleanup(signet);
+
 	}
 
 	log_test("PRIME / MESSAGES / NAKED / SINGLE THREADED:", errmsg);

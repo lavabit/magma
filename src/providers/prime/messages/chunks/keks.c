@@ -55,7 +55,7 @@ prime_chunk_keks_t * keks_alloc(void) {
 /**
  * @brief	Uses the private ephemeral encryption key to compute a KEK with all of the provided actor public keys.
  */
-prime_chunk_keks_t * keks_get(prime_chunk_keys_t *keys) {
+prime_chunk_keks_t * keks_get(prime_chunk_keys_t *keys, prime_chunk_keks_t *keks) {
 
 	prime_chunk_keks_t *result = NULL;
 
@@ -63,31 +63,34 @@ prime_chunk_keks_t * keks_get(prime_chunk_keys_t *keys) {
 	// chunk types require at least one of them to be valid.
 	if (!keys || (!keys->encryption && secp256k1_type(keys->encryption) != SECP256K1_PRIV) ||
 		((!keys->author || secp256k1_type(keys->author) != SECP256K1_PUB) &&
-		(!keys->recipient || secp256k1_type(keys->recipient) != SECP256K1_PUB)) || !(result = keks_alloc())) {
+		(!keys->recipient || secp256k1_type(keys->recipient) != SECP256K1_PUB))) {
+		return NULL;
+	}
+	else if (!(result = keks) && !(result = keks_alloc())) {
 		return NULL;
 	}
 
 	// Author keyslot.
 	else if (keys->author && !(result->author = secp256k1_compute_kek(keys->encryption, keys->author, NULL))) {
-		keks_free(result);
+		if (!keks) keks_free(result);
 		return NULL;
 	}
 
 	// Origin keyslot.
 	else if (keys->origin && !(result->origin = secp256k1_compute_kek(keys->encryption, keys->origin, NULL))) {
-		keks_free(result);
+		if (!keks) keks_free(result);
 		return NULL;
 	}
 
 	// Destination keyslot.
 	else if (keys->destination && !(result->destination = secp256k1_compute_kek(keys->encryption, keys->destination, NULL))) {
-		keks_free(result);
+		if (!keks) keks_free(result);
 		return NULL;
 	}
 
 	// Recipient keyslot.
 	else if (keys->recipient && !(result->recipient = secp256k1_compute_kek(keys->encryption, keys->recipient, NULL))) {
-		keks_free(result);
+		if (!keks) keks_free(result);
 		return NULL;
 	}
 
@@ -97,7 +100,7 @@ prime_chunk_keks_t * keks_get(prime_chunk_keys_t *keys) {
 /**
  * @brief	Uses the public ephemeral encryption key to compute a KEK with all of the provided actor private keys.
  */
-prime_chunk_keks_t * keks_set(prime_chunk_keys_t *keys) {
+prime_chunk_keks_t * keks_set(prime_chunk_keys_t *keys, prime_chunk_keks_t *keks) {
 
 	prime_chunk_keks_t *result = NULL;
 
@@ -106,31 +109,34 @@ prime_chunk_keks_t * keks_set(prime_chunk_keys_t *keys) {
 		((!keys->author || secp256k1_type(keys->author) != SECP256K1_PRIV) &&
 		(!keys->origin || secp256k1_type(keys->origin) != SECP256K1_PRIV) &&
 		(!keys->destination || secp256k1_type(keys->destination) != SECP256K1_PRIV) &&
-		(!keys->recipient || secp256k1_type(keys->recipient) != SECP256K1_PRIV)) || !(result = keks_alloc())) {
+		(!keys->recipient || secp256k1_type(keys->recipient) != SECP256K1_PRIV))) {
+		return NULL;
+	}
+	else if (!(result = keks) && !(result = keks_alloc())) {
 		return NULL;
 	}
 
 	// Author keyslot.
 	else if (keys->author && !(result->author = secp256k1_compute_kek(keys->author, keys->encryption, NULL))) {
-		keks_free(result);
+		if (!keks) keks_free(result);
 		return NULL;
 	}
 
 	// Origin keyslot.
 	else if (keys->origin && !(result->origin = secp256k1_compute_kek(keys->origin, keys->encryption, NULL))) {
-		keks_free(result);
+		if (!keks) keks_free(result);
 		return NULL;
 	}
 
 	// Destination keyslot.
 	else if (keys->destination && !(result->destination = secp256k1_compute_kek(keys->destination, keys->encryption, NULL))) {
-		keks_free(result);
+		if (!keks) keks_free(result);
 		return NULL;
 	}
 
 	// Recipient keyslot.
 	else if (keys->recipient && !(result->recipient = secp256k1_compute_kek(keys->recipient, keys->encryption, NULL))) {
-		keks_free(result);
+		if (!keks) keks_free(result);
 		return NULL;
 	}
 

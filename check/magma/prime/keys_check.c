@@ -220,8 +220,7 @@ bool_t check_prime_keys_parameters_sthread(stringer_t *errmsg) {
 
 	// Attempt allocation of a non-key type using the key allocation function.
 	if ((holder = prime_alloc(PRIME_ORG_KEY_ENCRYPTED, NONE)) ||
-		(holder = prime_alloc(PRIME_USER_KEY_ENCRYPTED, NONE)) ||
-		(holder = prime_alloc(PRIME_MESSAGE_ENCRYPTED, NONE))) {
+		(holder = prime_alloc(PRIME_USER_KEY_ENCRYPTED, NONE))) {
 		st_sprint(errmsg, "Allocation parameter checks failed.");
 		prime_free(holder);
 		return false;

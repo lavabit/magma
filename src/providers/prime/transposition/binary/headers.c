@@ -78,23 +78,33 @@ int_t prime_header_read(stringer_t *object, uint16_t *type, uint32_t *size) {
 	*type = be16toh(*((uint16_t *)object_data));
 
 	switch (*type) {
-		case (PRIME_ORG_SIGNET):
-		case (PRIME_ORG_KEY):
-		case (PRIME_USER_SIGNING_REQUEST):
-		case (PRIME_USER_SIGNET):
-		case (PRIME_USER_KEY):
-			// The buffer wasn't long enough, signets and keys use a 5 byte header.
+		case PRIME_USER_SIGNING_REQUEST:
+		case PRIME_USER_SIGNET:
+		case PRIME_ORG_SIGNET:
+		case PRIME_USER_KEY:
+		case PRIME_ORG_KEY:
+			// The buffer wasn't long enough to be valid.
 			if (object_len < 5) return -1;
+			// Encrypted objects use a 5 byte header. A 2 byte type, and 3 byte length.
 			mm_copy(((uchr_t *)&big_endian_size) + 1, ((uchr_t *)object_data) + 2, 3);
+			// Convert the size to the host format.
 			*size = be32toh(big_endian_size);
 			header_len = 5;
 			break;
-		case (PRIME_ORG_KEY_ENCRYPTED):
-		case (PRIME_USER_KEY_ENCRYPTED):
-		case (PRIME_MESSAGE_ENCRYPTED):
-			// The buffer wasn't long enough. Encrypted objects use a 6 byte header.
+		case PRIME_USER_KEY_ENCRYPTED:
+		case PRIME_ORG_KEY_ENCRYPTED:
+		case PRIME_MESSAGE_ENCRYPTED:
+		case PRIME_MESSAGE_FORWARD:
+		case PRIME_MESSAGE_BOUNCE:
+		case PRIME_MESSAGE_NAKED:
+		case PRIME_MESSAGE_DRAFT:
+		case PRIME_MESSAGE_ABUSE:
+		case PRIME_MESSAGE_SENT:
+			// The buffer wasn't long enough to be valid.
 			if (object_len < 6) return -1;
+			// Encrypted objects use a 6 byte header. A 2 byte type, and 4 byte length.
 			mm_copy(((uchr_t *)&big_endian_size), ((uchr_t *)object_data) + 2, 4);
+			// Convert the size to the host format.
 			*size = be32toh(big_endian_size);
 			header_len = 6;
 			break;

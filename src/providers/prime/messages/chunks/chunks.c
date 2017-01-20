@@ -15,17 +15,24 @@
 int32_t chunk_header_size(stringer_t *chunk) {
 
 	size_t len = 0;
+	uint8_t type = 0;
 	uchr_t *data = NULL;
 	int32_t result = -1;
 	uint32_t big_endian_size = 0;
 
-	if (st_empty_out(chunk, &data, &len) || len < 4) {
+	if (st_empty_out(chunk, &data, &len) || len < 4 || (type = chunk_header_type(chunk)) == PRIME_CHUNK_INVALID) {
 		log_pedantic("The chunk buffer is invalid.");
 		return result;
 	}
 
-	mm_copy(((uchr_t *)&big_endian_size) + 1, ((uchr_t *)data) + 1, 3);
-	result = be32toh(big_endian_size);
+	else if (type < PRIME_SIGNATURE_TREE) {
+		mm_copy(((uchr_t *)&big_endian_size) + 1, ((uchr_t *)data) + 1, 3);
+		result = be32toh(big_endian_size);
+	}
+
+	else {
+		result = 64;
+	}
 
 	return result;
 }
@@ -90,6 +97,31 @@ prime_message_chunk_type_t chunk_header_type(stringer_t *chunk) {
 			break;
 	};
 	return result;
+}
+
+int_t chunk_header_read(stringer_t *data, uint8_t *type, uint32_t *size, placer_t *chunk) {
+
+	int32_t holder = 0;
+
+	if (!data || !type || !size || !chunk) {
+		log_pedantic("A NULL pointer was supplied to the PRIME chunk read function.");
+		return 1;
+	}
+
+	else if ((*type = chunk_header_type(data)) == PRIME_CHUNK_INVALID) {
+		return -1;
+	}
+
+	else if ((holder = chunk_header_size(data)) < 0) {
+		return -1;
+	}
+
+	// The chunk
+	*chunk = pl_init(st_data_get(data), holder + (*type < PRIME_SIGNATURE_TREE ? 4 : 1) +
+		(*type > PRIME_CHUNK_EPHEMERAL ? (slots_count(*type) * SECP256K1_SHARED_SECRET_LEN) : 0));
+	*size = holder;
+
+	return 0;
 }
 
 stringer_t * chunk_header_write(prime_message_chunk_type_t type, size_t size, stringer_t *output) {

@@ -14,9 +14,10 @@
 #define PRIME_CHUNKS_H
 
 /// chunks.c
-int32_t                  chunk_header_size(stringer_t *chunk);
+int_t                        chunk_header_read(stringer_t *data, uint8_t *type, uint32_t *size, placer_t *chunk);
+int32_t                      chunk_header_size(stringer_t *chunk);
 prime_message_chunk_type_t   chunk_header_type(stringer_t *chunk);
-stringer_t *             chunk_header_write(prime_message_chunk_type_t type, size_t size, stringer_t *output);
+stringer_t *                 chunk_header_write(prime_message_chunk_type_t type, size_t size, stringer_t *output);
 
 /// keks.c
 prime_chunk_keks_t *  keks_alloc(void);
@@ -37,12 +38,14 @@ stringer_t *           slots_key(prime_chunk_slots_t *slots, prime_chunk_keks_t 
 prime_chunk_slots_t *  slots_set(prime_message_chunk_type_t type, stringer_t *key, prime_chunk_keks_t *keks);
 
 /// signature.c
-prime_signature_tree_t *   signature_tree_alloc(void);
-void                       signature_tree_cleanup(prime_signature_tree_t *chunk);
-void                       signature_tree_free(prime_signature_tree_t *chunk);
-stringer_t *               signature_full_get(prime_message_chunk_type_t type, ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *data);
-stringer_t *               signature_tree_get(ed25519_key_t *signing, prime_signature_tree_t *chunk, prime_chunk_keks_t *keks);
-int_t                      signature_tree_add(prime_signature_tree_t *chunk, stringer_t *data);
+stringer_t *              signature_full_get(prime_message_chunk_type_t type, ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *data);
+int_t                     signature_full_verify(ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *data, stringer_t *chunk);
+int_t                     signature_tree_add(prime_signature_tree_t *chunk, stringer_t *data);
+prime_signature_tree_t *  signature_tree_alloc(void);
+void                      signature_tree_cleanup(prime_signature_tree_t *chunk);
+void                      signature_tree_free(prime_signature_tree_t *chunk);
+stringer_t *              signature_tree_get(ed25519_key_t *signing, prime_signature_tree_t *chunk, prime_chunk_keks_t *keks);
+int_t                     signature_tree_verify(ed25519_key_t *signing, prime_signature_tree_t *chunk, prime_chunk_keks_t *keks, stringer_t *data);
 
 /// ephemeral.c
 prime_ephemeral_chunk_t *  ephemeral_chunk_alloc(void);

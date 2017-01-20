@@ -411,29 +411,43 @@ START_TEST (check_prime_message_naked_s) {
 
 //	log_disable();
 	bool_t result = true;
-	stringer_t *raw = NULL, *errmsg = MANAGEDBUF(1024);
-	prime_t *message = NULL, *destination = NULL, *recipient = NULL, *request = NULL, *signet = NULL;
+	uint32_t max = check_message_max();
+	stringer_t *raw = NULL, *message = NULL, *rebuilt = NULL, *errmsg = MANAGEDBUF(1024);
+	prime_t *destination = NULL, *org = NULL, *recipient = NULL, *request = NULL, *signet = NULL;
 
 	if (status()) {
 
-		if (!(destination = prime_key_generate(PRIME_ORG_KEY, NONE)) || !(recipient = prime_key_generate(PRIME_USER_KEY, NONE)) ||
-			!(request = prime_request_generate(recipient, NULL)) || !(signet = prime_request_sign(request, destination))) {
+		if (!(destination = prime_key_generate(PRIME_ORG_KEY, NONE)) || !(org = prime_signet_generate(destination)) ||
+			!(recipient = prime_key_generate(PRIME_USER_KEY, NONE)) || !(request = prime_request_generate(recipient, NULL)) ||
+			!(signet = prime_request_sign(request, destination))) {
 			st_sprint(errmsg, "PRIME message test identity generation failed.");
 			result = false;
 		}
 
-		raw = check_message_get(0);
+		for (uint32_t i = 0; i < max && result; i++) {
 
-		if (!(message = prime_message_encrypt(raw, NULL, NULL, destination, signet))) {
-			st_sprint(errmsg, "PRIME message test failed.");
-			result = false;
+			if (!(raw = check_message_get(i)) || !(message = prime_message_encrypt(raw, NULL, NULL, destination, signet))) {
+				st_sprint(errmsg, "PRIME message encryption test failed.");
+				result = false;
+			}
+			else if (!(rebuilt = prime_message_decrypt(message, org, recipient))) {
+				st_sprint(errmsg, "PRIME message decryption test failed.");
+				result = false;
+			}
+			else if (st_cmp_cs_eq(raw, rebuilt)) {
+				st_sprint(errmsg, "PRIME message encryption before and after comparison test failed.");
+				result = false;
+			}
+
+			st_cleanup(message, rebuilt, raw);
+			raw = rebuilt = message;
 		}
 
 		prime_cleanup(destination);
 		prime_cleanup(recipient);
-		prime_cleanup(message);
 		prime_cleanup(request);
 		prime_cleanup(signet);
+		prime_cleanup(org);
 
 	}
 

@@ -140,6 +140,55 @@ stringer_t * signature_tree_get(ed25519_key_t *signing, prime_signature_tree_t *
 	return result;
 }
 
+/**
+ * @brief		Verify an Ed25519 signature using the EdDSA algorithm.
+ * @return		0 for sucessful signature verification, -1 for a signature verification failures, -2 for processing or parameter issue.
+ */
+int_t signature_tree_verify(ed25519_key_t *signing, prime_signature_tree_t *chunk, prime_chunk_keks_t *keks, stringer_t *data) {
+
+	int_t result = 0;
+	uint64_t count = 0;
+	inx_cursor_t *cursor;
+	placer_t shard, slots;
+	stringer_t *value = NULL, *combined = NULL, *stretched = NULL, *signature = NULL, *key = NULL;
+
+	// Note the fancy way of verifying the tree chunk is 161 bytes. Or 1 byte type, 64 byte signature and 96 bytes for the keyslots.
+	if (!signing || (ed25519_type(signing) != ED25519_PUB && ed25519_type(signing) != ED25519_PRIV) || !chunk || !chunk->tree ||
+		!(count = inx_count(chunk->tree)) || chunk_header_type(data) != PRIME_SIGNATURE_TREE ||
+		st_length_get(data) != (ED25519_SIGNATURE_LEN + (slots_count(PRIME_SIGNATURE_TREE) * SECP256K1_SHARED_SECRET_LEN) + 1)) {
+		return -2;
+	}
+
+	// Parse the signature chunk, and calculate the actual signature value.
+	shard = pl_init(st_data_get(data) + 1, ED25519_SIGNATURE_LEN);
+	slots = pl_init(st_data_get(data) + ED25519_SIGNATURE_LEN + 1, (slots_count(PRIME_SIGNATURE_TREE) * SECP256K1_SHARED_SECRET_LEN));
+
+	key = slots_get(PRIME_SIGNATURE_TREE, &slots, keks, MANAGEDBUF(SECP256K1_SHARED_SECRET_LEN));
+	stretched = hash_sha512(key, MANAGEDBUF(SHA512_DIGEST_LENGTH));
+	signature = st_xor(&shard, stretched, MANAGEDBUF(ED25519_SIGNATURE_LEN));
+
+	// Build the concatenated string of tree hash values.
+	if (!(cursor = inx_cursor_alloc(chunk->tree)) || !(combined = st_alloc_opts(MANAGED_T | JOINTED | HEAP, count * SHA512_DIGEST_LENGTH))) {
+		if (cursor) inx_cursor_free(cursor);
+		return -2;
+	}
+
+	while ((value = inx_cursor_value_next(cursor))) {
+		if (!st_append(combined, value)) {
+			inx_cursor_free(cursor);
+			st_free(combined);
+			return -2;
+		}
+	}
+
+	// We don't need the cursor anymore.
+	inx_cursor_free(cursor);
+
+	result = ed25519_verify(signing, combined, signature);
+	st_free(combined);
+	return result;
+}
+
 stringer_t * signature_full_get(prime_message_chunk_type_t type, ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *data) {
 
 	placer_t buffer;
@@ -166,9 +215,9 @@ stringer_t * signature_full_get(prime_message_chunk_type_t type, ed25519_key_t *
 
 	buffer = slots_buffer(slots);
 
-	if (!(result = st_alloc(SHA512_DIGEST_LENGTH + 129)) ||
+	if (!(result = st_alloc(ED25519_SIGNATURE_LEN + 129)) ||
 		(st_length_get(&buffer) != 64 && st_length_get(&buffer) != 96 && st_length_get(&buffer) != 128) ||
-		st_write(result, PLACER(&type, 1), shard, &buffer) != (st_length_get(&buffer) + SHA512_DIGEST_LENGTH + 1)) {
+		st_write(result, PLACER(&type, 1), shard, &buffer) != (st_length_get(&buffer) + ED25519_SIGNATURE_LEN + 1)) {
 
 		st_cleanup(result);
 		slots_free(slots);
@@ -179,3 +228,30 @@ stringer_t * signature_full_get(prime_message_chunk_type_t type, ed25519_key_t *
 	return result;
 }
 
+/**
+ * @brief		Verify an Ed25519 signature using the EdDSA algorithm.
+ * @return		0 for sucessful signature verification, -1 for a signature verification failures, -2 for processing or parameter issue.
+ */
+int_t signature_full_verify(ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *data, stringer_t *chunk) {
+
+	uint8_t type = 0;
+	placer_t shard, slots;
+	stringer_t *stretched = NULL, *signature = NULL, *key = NULL;
+
+	// Note the fancy way of verifying the tree chunk is 161 bytes. Or 1 byte type, 64 byte signature and 96 bytes for the keyslots.
+	if (!signing || (ed25519_type(signing) != ED25519_PUB && ed25519_type(signing) != ED25519_PRIV) || !data ||
+		(type = chunk_header_type(chunk)) < PRIME_SIGNATURE_USER ||
+		st_length_get(chunk) != (ED25519_SIGNATURE_LEN + (slots_count(type) * SECP256K1_SHARED_SECRET_LEN) + 1)) {
+		return -2;
+	}
+
+	// Parse the signature chunk, and calculate the actual signature value.
+	shard = pl_init(st_data_get(chunk) + 1, ED25519_SIGNATURE_LEN);
+	slots = pl_init(st_data_get(chunk) + ED25519_SIGNATURE_LEN + 1, (slots_count(type) * SECP256K1_SHARED_SECRET_LEN));
+
+	key = slots_get(type, &slots, keks, MANAGEDBUF(SECP256K1_SHARED_SECRET_LEN));
+	stretched = hash_sha512(key, MANAGEDBUF(SHA512_DIGEST_LENGTH));
+	signature = st_xor(&shard, stretched, MANAGEDBUF(ED25519_SIGNATURE_LEN));
+
+	return ed25519_verify(signing, data, signature);
+}

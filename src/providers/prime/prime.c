@@ -514,47 +514,47 @@ prime_t * prime_request_sign(prime_t *request, prime_t *org) {
 /**
  * @brief	Encrypt a message.
  */
- prime_t * prime_message_encrypt(stringer_t *message, prime_t *author, prime_t *origin, prime_t *destination, prime_t *recipient) {
+ stringer_t * prime_message_encrypt(stringer_t *message, prime_t *author, prime_t *origin, prime_t *destination, prime_t *recipient) {
 
-	 prime_t *result = NULL;
+	prime_t *result = NULL;
+	stringer_t *encrypted = NULL;
 
-	 if (!destination || destination->type != PRIME_ORG_KEY || !destination->key.org ||
-		 !recipient || recipient->type != PRIME_USER_SIGNET || !recipient->signet.user) {
-		 return NULL;
-	 }
-	 else if (!(result = prime_alloc(PRIME_MESSAGE_NAKED, NONE))) {
+	if (!destination || destination->type != PRIME_ORG_KEY || !destination->key.org || !recipient
+		|| recipient->type != PRIME_USER_SIGNET || !recipient->signet.user) {
+		return NULL;
+	}
+	else if (!(result = prime_alloc(PRIME_MESSAGE_NAKED, NONE))) {
 		log_pedantic("PRIME naked message allocation failed.");
 		return NULL;
 	}
 	else if (!(result->message.naked = naked_message_set(message, destination->key.org, recipient->signet.user))) {
-		log_pedantic("PRIME naked message creation failed.");
+		log_pedantic("PRIME naked message encryption failed.");
 		prime_free(result);
 		return NULL;
 	}
 
-	return result;
+	encrypted = result->message.naked->encrypted;
+	result->message.naked->encrypted = NULL;
+	prime_free(result);
+	return encrypted;
  }
 
 /**
  * @brief	Decrypt a message.
  */
- stringer_t * prime_message_decrypt(prime_t *message, prime_t *org, prime_t *user) {
+ stringer_t * prime_message_decrypt(stringer_t *message, prime_t *org, prime_t *user) {
 
-	 prime_t *result = NULL;
+	stringer_t *result = NULL;
 
-	 if (!org || org->type != PRIME_ORG_SIGNET || !org->signet.org ||
-		 !user || user->type != PRIME_USER_KEY || !user->key.user) {
-		 return NULL;
-	 }
-	 else if (!(result = prime_alloc(PRIME_MESSAGE_NAKED, NONE))) {
-		log_pedantic("PRIME naked message allocation failed.");
+	if (!org || org->type != PRIME_ORG_SIGNET || !org->signet.org ||
+		!user || user->type != PRIME_USER_KEY || !user->key.user) {
 		return NULL;
 	}
-//	else if (!(result->message.naked = naked_message_get(message, destination->key.org, recipient->signet.user))) {
-//		log_pedantic("PRIME naked message creation failed.");
-//		prime_free(result);
-//		return NULL;
-//	}
+	else if (!(result = naked_message_get(message, org->signet.org, user->key.user))) {
+		log_pedantic("PRIME naked message decryption failed.");
+		prime_free(result);
+		return NULL;
+	}
 
 	return result;
  }

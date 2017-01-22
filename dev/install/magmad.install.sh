@@ -20,12 +20,6 @@ DOMAIN="example.com"
 
 
 
-
-
-
-
-
-
 # Operating System Check
 grep -E "CentOS release 6|Red Hat Enterprise.*release 6" /etc/system-release  >& /dev/null
 if [ $? != 0 ]; then
@@ -128,6 +122,67 @@ chcon system_u:object_r:etc_t:s0 /etc/security/limits.d/50-magmad.conf
 # Disable IPv6 and the iptables module used to firewall IPv6.
 /sbin/chkconfig ip6tables off
 printf "\n\nnet.ipv6.conf.all.disable_ipv6 = 1\n" >> /etc/sysctl.conf
+
+# Other network and system tuning parameters.
+printf "net.core.netdev_max_backlog = 65536\n" >> /etc/sysctl.conf
+printf "net.core.optmem_max = 25165824\n" >> /etc/sysctl.conf
+printf "net.core.rmem_default = 31457280\n" >> /etc/sysctl.conf
+printf "net.core.rmem_max = 12582912\n" >> /etc/sysctl.conf
+printf "net.core.somaxconn = 32768\n" >> /etc/sysctl.conf
+printf "net.core.wmem_default = 31457280\n" >> /etc/sysctl.conf
+printf "net.core.wmem_max = 12582912\n" >> /etc/sysctl.conf
+printf "net.ipv4.neigh.default.gc_thresh1 = 1024\n" >> /etc/sysctl.conf
+printf "net.ipv4.neigh.default.gc_thresh2 = 4096\n" >> /etc/sysctl.conf
+printf "net.ipv4.neigh.default.gc_thresh3 = 8192\n" >> /etc/sysctl.conf
+printf "net.ipv4.tcp_fin_timeout = 20\n" >> /etc/sysctl.conf
+printf "net.ipv4.tcp_keepalive_intvl = 60\n" >> /etc/sysctl.conf
+printf "net.ipv4.tcp_keepalive_probes = 8\n" >> /etc/sysctl.conf
+printf "net.ipv4.tcp_keepalive_time = 300\n" >> /etc/sysctl.conf
+printf "net.ipv4.tcp_max_syn_backlog = 32768\n" >> /etc/sysctl.conf
+printf "net.ipv4.tcp_max_tw_buckets = 2621440\n" >> /etc/sysctl.conf
+printf "net.ipv4.tcp_mem = 65536 131072 262144\n" >> /etc/sysctl.conf
+printf "net.ipv4.tcp_rfc1337 = 1\n" >> /etc/sysctl.conf
+printf "net.ipv4.tcp_rmem = 8192 87380 16777216\n" >> /etc/sysctl.conf
+printf "net.ipv4.tcp_syn_retries = 3\n" >> /etc/sysctl.conf
+printf "net.ipv4.tcp_synack_retries = 3\n" >> /etc/sysctl.conf
+printf "net.ipv4.tcp_tw_recycle = 1\n" >> /etc/sysctl.conf
+printf "net.ipv4.tcp_tw_reuse = 1\n" >> /etc/sysctl.conf
+printf "net.ipv4.tcp_wmem = 8192 65536 16777216\n" >> /etc/sysctl.conf
+printf "net.ipv4.udp_mem = 65536 131072 262144\n" >> /etc/sysctl.conf
+printf "net.ipv4.udp_rmem_min = 16384\n" >> /etc/sysctl.conf
+printf "net.ipv4.udp_wmem_min = 16384\n" >> /etc/sysctl.conf
+printf "vm.dirty_background_ratio = 2\n" >> /etc/sysctl.conf
+printf "vm.dirty_ratio = 60\n" >> /etc/sysctl.conf
+printf "vm.swappiness = 10\n" >> /etc/sysctl.conf
+
+# Enable the important settings immediately.
+sysctl -w net.core.netdev_max_backlog=65536
+sysctl -w net.core.optmem_max=25165824
+sysctl -w net.core.rmem_default=31457280
+sysctl -w net.core.rmem_max=12582912
+sysctl -w net.core.somaxconn=32768
+sysctl -w net.core.wmem_default=31457280
+sysctl -w net.core.wmem_max=12582912
+sysctl -w net.ipv4.neigh.default.gc_thresh1=1024
+sysctl -w net.ipv4.neigh.default.gc_thresh2=4096
+sysctl -w net.ipv4.neigh.default.gc_thresh3=8192
+sysctl -w net.ipv4.tcp_fin_timeout=20
+sysctl -w net.ipv4.tcp_keepalive_intvl=60
+sysctl -w net.ipv4.tcp_keepalive_probes=8
+sysctl -w net.ipv4.tcp_keepalive_time=300
+sysctl -w net.ipv4.tcp_max_syn_backlog=32768
+sysctl -w net.ipv4.tcp_max_tw_buckets=2621440
+sysctl -w net.ipv4.tcp_rfc1337=1
+sysctl -w net.ipv4.tcp_syn_retries=3
+sysctl -w net.ipv4.tcp_synack_retries=3
+sysctl -w net.ipv4.tcp_tw_recycle=1
+sysctl -w net.ipv4.tcp_tw_reuse=1
+sysctl -w net.ipv4.udp_rmem_min=16384
+sysctl -w net.ipv4.udp_wmem_min=16384
+sysctl -w net.ipv6.conf.all.disable_ipv6=1
+sysctl -w vm.dirty_background_ratio=2
+sysctl -w vm.dirty_ratio=60
+sysctl -w vm.swappiness=10
 
 # Open up the firewall. 
 iptables -P INPUT OUTPUT FORWARD

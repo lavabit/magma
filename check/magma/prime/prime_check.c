@@ -309,7 +309,7 @@ START_TEST (check_prime_chunk_signature_s) {
 	ed25519_key_t *signing_pub = NULL, *signing_priv = NULL;
 	prime_chunk_keks_t *encrypt_keks = NULL, *decrypt_keks = NULL;
 	prime_encrypted_chunk_t *common = NULL, *headers = NULL, *body = NULL;
-	stringer_t *errmsg = MANAGEDBUF(1024), *payload = MANAGEDBUF(1024), *data = NULL, *full = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024), *payload = MANAGEDBUF(1024), *treesig = NULL, *data = NULL, *full = NULL;
 	secp256k1_key_t *encryption_pub = NULL, *encryption_priv = NULL, *recipient_pub = NULL, *recipient_priv = NULL;
 
 	if (status()) {
@@ -367,11 +367,16 @@ START_TEST (check_prime_chunk_signature_s) {
 			result = false;
 		}
 
+		if (!(treesig = signature_tree_get(signing_priv, tree, encrypt_keks))) {
+			st_sprint(errmsg, "Tree signature retrieval failed.");
+			result = false;
+		}
+
 		length = st_write(NULL, ephemeral_chunk_buffer(ephemeral), encrypted_chunk_buffer(common), encrypted_chunk_buffer(headers),
 			encrypted_chunk_buffer(body));
 
 		if (!(data = st_alloc(length + 512)) || st_write(data, ephemeral_chunk_buffer(ephemeral), encrypted_chunk_buffer(common), encrypted_chunk_buffer(headers),
-			encrypted_chunk_buffer(body), signature_tree_get(signing_priv, tree, encrypt_keks)) != length + 161) {
+			encrypted_chunk_buffer(body), treesig) != length + 161) {
 			st_sprint(errmsg, "Serialized message creation failed.");
 			result = false;
 		}
@@ -388,8 +393,7 @@ START_TEST (check_prime_chunk_signature_s) {
 		encrypted_chunk_cleanup(headers);
 		encrypted_chunk_cleanup(body);
 		signature_tree_cleanup(tree);
-		st_cleanup(full);
-		st_cleanup(data);
+		st_cleanup(full, data, treesig);
 
 		keks_cleanup(encrypt_keks);
 		keks_cleanup(decrypt_keks);

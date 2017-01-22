@@ -50,13 +50,13 @@
 #include <lzo/lzo1x.h>
 
 // XML2
-#include <libxml/xmlmemory.h>
-#include <libxml/tree.h>
-#include <libxml/valid.h>
-#include <libxml/xpath.h>
-#include <libxml/xpathInternals.h>
-#include <libxml/parserInternals.h>
-#include <libxml/xmlerror.h>
+#include <libxml2/libxml/xmlmemory.h>
+#include <libxml2/libxml/tree.h>
+#include <libxml2/libxml/valid.h>
+#include <libxml2/libxml/xpath.h>
+#include <libxml2/libxml/xpathInternals.h>
+#include <libxml2/libxml/parserInternals.h>
+#include <libxml2/libxml/xmlerror.h>
 
 // ZLIB
 #include <zlib.h>

@@ -23,6 +23,11 @@ void encrypted_message_free(prime_message_t *object) {
 		if (object->keys.destination) secp256k1_free(object->keys.destination);
 		if (object->keys.recipient) secp256k1_free(object->keys.recipient);
 
+		if (object->keks.author) st_free(object->keks.author);
+		if (object->keks.origin) st_free(object->keks.origin);
+		if (object->keks.destination) st_free(object->keks.destination);
+		if (object->keks.recipient) st_free(object->keks.recipient);
+
 		if (object->envelope.ephemeral) ephemeral_chunk_free(object->envelope.ephemeral);
 		if (object->envelope.origin) encrypted_chunk_free(object->envelope.origin);
 		if (object->envelope.destination) encrypted_chunk_free(object->envelope.destination);
@@ -235,19 +240,9 @@ prime_message_t * naked_message_set(stringer_t *message, prime_org_key_t *destin
 	}
 	else if (!(result->envelope.ephemeral = ephemeral_chunk_get(result->keys.signing, result->keys.encryption))) {
 		encrypted_message_free(result);
-		return NULL;// Generate the signatures.
-	if (!(tree = signature_tree_alloc())) {
-		encrypted_message_free(result);
 		return NULL;
 	}
 
-	signature_tree_add(tree, ephemeral_chunk_buffer(result->envelope.ephemeral));
-	signature_tree_add(tree, encrypted_chunk_buffer(result->metadata.common));
-	signature_tree_add(tree, encrypted_chunk_buffer(result->metadata.headers));
-	signature_tree_add(tree, encrypted_chunk_buffer(result->content.body));
-	}
-
-	result->keys.signing = ed25519_private_set(ed25519_private_get(result->keys.signing, MANAGEDBUF(32)));
 	result->keys.destination = secp256k1_public_set(secp256k1_public_get(destination->encryption, MANAGEDBUF(33)));
 	result->keys.recipient = secp256k1_public_set(secp256k1_public_get(recipient->encryption, MANAGEDBUF(33)));
 

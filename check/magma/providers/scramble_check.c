@@ -40,27 +40,27 @@ bool_t check_scramble_sthread(void) {
 		st_length_set(key, 128 + (rand() % 384));
 
 		// Encrypt the data block.
-		if (!(scramble = scramble_encrypt(key, PLACER(original, rlen)))) {
+		if (!(scramble = deprecated_scramble_encrypt(key, PLACER(original, rlen)))) {
 			mm_free(original);
 			return false;
 		}
 
 		// Decrypt the data block and verify.
-		if (!(output = scramble_decrypt(key, scramble))) {
-			scramble_free(scramble);
+		if (!(output = deprecated_scramble_decrypt(key, scramble))) {
+			deprecated_scramble_free(scramble);
 			mm_free(original);
 			return false;
 		}
 
 		// Verify the output is identical to the input.
 		if (st_length_get(output) != rlen || memcmp(st_data_get(output), original, rlen)) {
-			scramble_free(scramble);
+			deprecated_scramble_free(scramble);
 			mm_free(original);
 			st_free(output);
 			return false;
 		}
 
-		scramble_free(scramble);
+		deprecated_scramble_free(scramble);
 		mm_free(original);
 		st_free(output);
 	}

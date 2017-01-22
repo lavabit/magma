@@ -21,8 +21,8 @@
  * @param	buffer	a pointer to the header of the scrambled data.
  * @return	the total length, in bytes, of the scrambled object.
  */
-uint64_t scramble_total_length(scramble_t *buffer) {
-	return scramble_vector_length(buffer) + scramble_body_length(buffer) + sizeof(scramble_head_t);
+uint64_t deprecated_scramble_total_length(scramble_t *buffer) {
+	return deprecated_scramble_vector_length(buffer) + deprecated_scramble_body_length(buffer) + sizeof(scramble_head_t);
 }
 
 /*uint64_t scramble_orig_hash(scramble_t *buffer) {
@@ -35,7 +35,7 @@ uint64_t scramble_total_length(scramble_t *buffer) {
  * @param	buffer	a pointer to the header of the scrambled data.
  * @return	the 64-bit bash of the specified scrambled object's body data.
  */
-uint64_t scramble_body_hash(scramble_t *buffer) {
+uint64_t deprecated_scramble_body_hash(scramble_t *buffer) {
 
 	scramble_head_t *head = (scramble_head_t *)buffer;
 
@@ -47,7 +47,7 @@ uint64_t scramble_body_hash(scramble_t *buffer) {
  * @param	buffer	a pointer to the header of the scrambled data.
  * @return	the length, in bytes, of the scrambled object's original data.
  */
-uint64_t scramble_orig_length(scramble_t *buffer) {
+uint64_t deprecated_scramble_orig_length(scramble_t *buffer) {
 
 	scramble_head_t *head = (scramble_head_t *)buffer;
 
@@ -59,7 +59,7 @@ uint64_t scramble_orig_length(scramble_t *buffer) {
  * @param	buffer	a pointer to the header of the scrambled data.
  * @return	the length, in bytes, of the scrambled object's body data.
  */
-uint64_t scramble_body_length(scramble_t *buffer) {
+uint64_t deprecated_scramble_body_length(scramble_t *buffer) {
 
 	scramble_head_t *head = (scramble_head_t *)buffer;
 
@@ -71,7 +71,7 @@ uint64_t scramble_body_length(scramble_t *buffer) {
  * @param	buffer	a pointer to the header of the scrambled data.
  * @return	the length, in bytes, of the scrambled object's IV.
  */
-uint64_t scramble_vector_length(scramble_t *buffer) {
+uint64_t deprecated_scramble_vector_length(scramble_t *buffer) {
 
 	scramble_head_t *head = (scramble_head_t *)buffer;
 
@@ -83,9 +83,9 @@ uint64_t scramble_vector_length(scramble_t *buffer) {
  * @param	buffer	a pointer to the header of the scrambled data.
  * @return	a pointer to the start of the scrambled data header's associated encrypted data body.
  */
-void * scramble_body_data(scramble_t *buffer) {
+void * deprecated_scramble_body_data(scramble_t *buffer) {
 
-	return buffer + sizeof(scramble_head_t) + scramble_vector_length(buffer);
+	return buffer + sizeof(scramble_head_t) + deprecated_scramble_vector_length(buffer);
 }
 
 /**
@@ -93,7 +93,7 @@ void * scramble_body_data(scramble_t *buffer) {
  * @param	buffer	a pointer to the header of the scrambled data.
  * @return	a pointer to the start of the scrambled data header's associated IV block.
  */
-void * scramble_vector_data(scramble_t *buffer) {
+void * deprecated_scramble_vector_data(scramble_t *buffer) {
 
 	return buffer + sizeof(scramble_head_t);
 }
@@ -104,7 +104,7 @@ void * scramble_vector_data(scramble_t *buffer) {
  * @param	s	a managed string containing the serialized scrambled data.
  * @return	NULL on failure, or a pointer to the scrambled data header on success.
  */
-scramble_t * scramble_import(stringer_t *s) {
+scramble_t * deprecated_scramble_import(stringer_t *s) {
 
 	void *bptr;
 	scramble_t *buffer;
@@ -118,7 +118,7 @@ scramble_t * scramble_import(stringer_t *s) {
 		log_pedantic("The provided string is not large enough to hold scrambled data. {s = %zu / min = %zu}", st_empty(s) ? 0 : st_length_get(s), sizeof(scramble_t));
 		return NULL;
 	}
-	else if (!(buffer = head = st_data_get(s)) || !(bptr = scramble_body_data(buffer))) {
+	else if (!(buffer = head = st_data_get(s)) || !(bptr = deprecated_scramble_body_data(buffer))) {
 		log_pedantic("The string appears to be corrupted because NULL data pointers were generated.");
 		return NULL;
 	}
@@ -144,7 +144,7 @@ scramble_t * scramble_import(stringer_t *s) {
  * @param	length	the length, in bytes, of the scrambled data buffer (should include the IV and encrypted body length).
  * @return	a pointer to a newly allocated scrambled data header.
  */
-scramble_t * scramble_alloc(size_t length) {
+scramble_t * deprecated_scramble_alloc(size_t length) {
 
 	return mm_alloc(sizeof(scramble_head_t) + length);
 }
@@ -154,7 +154,7 @@ scramble_t * scramble_alloc(size_t length) {
  * @param	buffer	a pointer to the scrambled data header to be freed.
  * @return	This function returns no value.
  */
-void scramble_free(scramble_t *buffer) {
+void deprecated_scramble_free(scramble_t *buffer) {
 
 	mm_free(buffer);
 
@@ -167,7 +167,7 @@ void scramble_free(scramble_t *buffer) {
  * @param	block	the scramble buffer to be freed.
  * @return	This function returns no value.
  */
-void scramble_cleanup(scramble_t *buffer) {
+void deprecated_scramble_cleanup(scramble_t *buffer) {
 
 	if (buffer) {
 		mm_free(buffer);
@@ -183,7 +183,7 @@ void scramble_cleanup(scramble_t *buffer) {
  * @param	input	a managed string containing the data to be encrypted.
  * @return	NULL on failure, or a pointer to a scrambled data header containing the encrypted data and its metadata.
  */
-scramble_t * scramble_encrypt(stringer_t *key, stringer_t *input) {
+scramble_t * deprecated_scramble_encrypt(stringer_t *key, stringer_t *input) {
 
 	size_t len;
 	scramble_t *output;
@@ -196,21 +196,21 @@ scramble_t * scramble_encrypt(stringer_t *key, stringer_t *input) {
 		return NULL;
 	}
 
-	if (!symmetric_vector(cipher, vector)) {
+	if (!deprecated_symmetric_vector(cipher, vector)) {
 		log_pedantic("An error occurred while trying to generate the initialization vector.");
 		return NULL;
 	}
-	else if (!symmetric_key(cipher, key, digest)) {
+	else if (!deprecated_symmetric_key(cipher, key, digest)) {
 		log_pedantic("An error occurred while trying to digest key.");
 		return NULL;
 	}
-	else if (!(encrypted = symmetric_encrypt(cipher, vector, digest, input))) {
+	else if (!(encrypted = deprecated_symmetric_encrypt(cipher, vector, digest, input))) {
 		log_pedantic("An error occurred while trying to encrypt the data.");
 		return NULL;
 	}
 
 	// We need a buffer large enough to hold the encrypted data plus the initialization vector.
-	else if (!(len = st_length_get(vector) + st_length_get(encrypted)) || !(head = (scramble_head_t *)(output = scramble_alloc(len)))) {
+	else if (!(len = st_length_get(vector) + st_length_get(encrypted)) || !(head = (scramble_head_t *)(output = deprecated_scramble_alloc(len)))) {
 		log_pedantic("Unable to allocate a buffer to hold the scramble output.");
 		st_free(encrypted);
 		return NULL;
@@ -227,8 +227,8 @@ scramble_t * scramble_encrypt(stringer_t *key, stringer_t *input) {
 	head->hash.scrambled = hash_adler32(st_data_get(encrypted), st_length_get(encrypted));
 
 	// Copy the vector and ciphered data into the result buffer and then free the original encrypted buffer.
-	mm_copy(scramble_vector_data(output), st_data_get(vector), st_length_get(vector));
-	mm_copy(scramble_body_data(output), st_data_get(encrypted), st_length_get(encrypted));
+	mm_copy(deprecated_scramble_vector_data(output), st_data_get(vector), st_length_get(vector));
+	mm_copy(deprecated_scramble_body_data(output), st_data_get(encrypted), st_length_get(encrypted));
 	st_free(encrypted);
 
 	return output;
@@ -240,7 +240,7 @@ scramble_t * scramble_encrypt(stringer_t *key, stringer_t *input) {
  * @param	input	a pointer to the scrambled data header to be decrypted.
  * @return	NULL on failure, or a managed string containing the verified decrypted data.
  */
-stringer_t * scramble_decrypt(stringer_t *key, scramble_t *input) {
+stringer_t * deprecated_scramble_decrypt(stringer_t *key, scramble_t *input) {
 
 	uint32_t hash;
 	cipher_t *cipher;
@@ -251,16 +251,16 @@ stringer_t * scramble_decrypt(stringer_t *key, scramble_t *input) {
 		log_pedantic("Invalid parameters provided.");
 		return NULL;
 	}
-	else if (!symmetric_key(cipher, key, digest)) {
+	else if (!deprecated_symmetric_key(cipher, key, digest)) {
 		log_pedantic("An error occurred while trying to digest key.");
 		return NULL;
 	}
-	else if ((head->hash.scrambled != (hash = hash_adler32(scramble_body_data(input), scramble_body_length(input))))) {
+	else if ((head->hash.scrambled != (hash = hash_adler32(deprecated_scramble_body_data(input), deprecated_scramble_body_length(input))))) {
 		log_info("The encrypted data is corrupt. {hash = %u != %u}", head->hash.scrambled, hash);
 		return NULL;
 	}
-	else if (!(result = symmetric_decrypt(cipher, PLACER(scramble_vector_data(input), scramble_vector_length(input)), digest,
-		PLACER(scramble_body_data(input), scramble_body_length(input))))) {
+	else if (!(result = deprecated_symmetric_decrypt(cipher, PLACER(deprecated_scramble_vector_data(input), deprecated_scramble_vector_length(input)), digest,
+		PLACER(deprecated_scramble_body_data(input), deprecated_scramble_body_length(input))))) {
 		log_pedantic("An error occurred while trying to decrypt the data.");
 		return NULL;
 	}

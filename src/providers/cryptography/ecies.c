@@ -17,10 +17,10 @@ const EVP_MD *ecies_hmac_evp = NULL;
 const EVP_MD *ecies_envelope_evp = NULL;
 const EVP_CIPHER *ecies_cipher_evp = NULL;
 
-bool_t ecies_start(void) {
+bool_t deprecated_ecies_start(void) {
 
 	if (!(ecies_cipher_evp = EVP_get_cipherbyname_d(OBJ_nid2sn_d(ECIES_CIPHER))) || !(ecies_hmac_evp = EVP_get_digestbyname_d(OBJ_nid2sn_d(ECIES_HMAC))) ||
-			!(ecies_envelope_evp = EVP_get_digestbyname_d(OBJ_nid2sn_d(ECIES_ENVELOPE))) || !(ecies_curve_group	= ecies_group(ECIES_CURVE, true))) {
+			!(ecies_envelope_evp = EVP_get_digestbyname_d(OBJ_nid2sn_d(ECIES_ENVELOPE))) || !(ecies_curve_group	= deprecated_ecies_group(ECIES_CURVE, true))) {
 		log_error("Initialization of the default ECIES algorithms failed.");
 		return false;
 	}
@@ -32,7 +32,7 @@ bool_t ecies_start(void) {
  * @brief	Destroy all initialized ECIES curve group information.
  * @return	This function returns no value.
  */
-void ecies_stop(void) {
+void deprecated_ecies_stop(void) {
 
 	EC_GROUP *group;
 
@@ -49,7 +49,7 @@ void ecies_stop(void) {
  * @brief	Free an ECIES key pair.
  * @return	This function returns no value.
  */
-void ecies_key_free(EC_KEY *key) {
+void deprecated_ecies_key_free(EC_KEY *key) {
 
 	EC_KEY_free_d(key);
 	return;
@@ -60,7 +60,7 @@ void ecies_key_free(EC_KEY *key) {
  * @see		NID_sect571k1
  * @return	NULL on failure, or a pointer to the newly allocated key pair.
  */
-EC_KEY * ecies_key_alloc(void) {
+EC_KEY * deprecated_ecies_key_alloc(void) {
 
 	EC_KEY *key = NULL;
 
@@ -91,7 +91,7 @@ EC_KEY * ecies_key_alloc(void) {
 	return key;
 }
 
-EC_GROUP * ecies_group(uint64_t curve, bool_t precompute) {
+EC_GROUP * deprecated_ecies_group(uint64_t curve, bool_t precompute) {
 
 	EC_GROUP *group;
 
@@ -114,11 +114,11 @@ EC_GROUP * ecies_group(uint64_t curve, bool_t precompute) {
  * @brief	Generate a random ECIES key pair.
  * @return	NULL on failure, or a new random ECIES key pair on success.
  */
-EC_KEY * ecies_key_create(void) {
+EC_KEY * deprecated_ecies_key_create(void) {
 
 	EC_KEY *key = NULL;
 
-	if (!(key = ecies_key_alloc())) {
+	if (!(key = deprecated_ecies_key_alloc())) {
 		log_info("Unable to allocate an empty key context.");
 		return NULL;
 	}
@@ -133,12 +133,12 @@ EC_KEY * ecies_key_create(void) {
 	return key;
 }
 
-EC_KEY * ecies_key_public(uint64_t format, placer_t data) {
+EC_KEY * deprecated_ecies_key_public(uint64_t format, placer_t data) {
 
 	EC_KEY *key = NULL;
 	EC_POINT *point = NULL;
 
-	if (!(key = ecies_key_alloc())) {
+	if (!(key = deprecated_ecies_key_alloc())) {
 		log_info("Unable to allocate an empty key context.");
 		return NULL;
 	}
@@ -201,12 +201,12 @@ EC_KEY * ecies_key_public(uint64_t format, placer_t data) {
 	return key;
 }
 
-EC_KEY * ecies_key_private(uint64_t format, placer_t data) {
+EC_KEY * deprecated_ecies_key_private(uint64_t format, placer_t data) {
 
 	EC_KEY *key = NULL;
 	BIGNUM *number = NULL;
 
-	if (!(key = ecies_key_alloc())) {
+	if (!(key = deprecated_ecies_key_alloc())) {
 		log_info("Unable to allocate an empty key context.");
 		return NULL;
 	}
@@ -257,7 +257,7 @@ EC_KEY * ecies_key_private(uint64_t format, placer_t data) {
  * @param	key	the input ECIES key pair.
  * @return	NULL on failure, or the hex-formatted public key as a null-terminated string.
  */
-stringer_t * ecies_key_public_hex(EC_KEY *key) {
+stringer_t * deprecated_ecies_key_public_hex(EC_KEY *key) {
 
 	char *hex;
 	const EC_POINT *point;
@@ -290,7 +290,7 @@ stringer_t * ecies_key_public_hex(EC_KEY *key) {
  * @param	olen	a pointer to store the length of the returned key.
  * @return	NULL on failure, or a pointer to the raw public key.
  */
-uchr_t * ecies_key_public_bin(EC_KEY *key, size_t *olen) {
+uchr_t * deprecated_ecies_key_public_bin(EC_KEY *key, size_t *olen) {
 
 	uchr_t *result;
 	size_t rlen, blen = 512;
@@ -327,7 +327,7 @@ uchr_t * ecies_key_public_bin(EC_KEY *key, size_t *olen) {
  * @param	key	the input ECIES key pair.
  * @return	NULL on failure, or the hex-formatted private key as a managed string.
  */
-stringer_t *ecies_key_private_hex(EC_KEY *key) {
+stringer_t * deprecated_ecies_key_private_hex(EC_KEY *key) {
 
 	chr_t *hex;
 	const BIGNUM *bn;
@@ -361,7 +361,7 @@ stringer_t *ecies_key_private_hex(EC_KEY *key) {
  * @param	olen	a pointer to store the length of the returned key.
  * @return	NULL on failure, or a pointer to the raw private key.
  */
-uchr_t * ecies_key_private_bin(EC_KEY *key, size_t *olen) {
+uchr_t * deprecated_ecies_key_private_bin(EC_KEY *key, size_t *olen) {
 
 	const BIGNUM *bn;
 	int bn_len;
@@ -409,7 +409,7 @@ void * ecies_envelope_derivation(const void *input, size_t ilen, void *output, s
  * @param	length		the length, in bytes, of the data to be encrypted.
  * @return	NULL on failure, or a pointer to the header of the cryptex object containing the encrypted data on success..
  */
-cryptex_t * ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned char *data, size_t length) {
+cryptex_t * deprecated_ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned char *data, size_t length) {
 
 	void *body;
 	HMAC_CTX hmac;
@@ -442,19 +442,19 @@ cryptex_t * ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned cha
 		return NULL;
 	}
 	// Convert the user's public key from hex into a full EC_KEY structure.
-	if (!(user = ecies_key_public(key_type, pl_init(kbuf, hexkey_length)))) {
+	if (!(user = deprecated_ecies_key_public(key_type, pl_init(kbuf, hexkey_length)))) {
 		log_info("Invalid public key provided.");
 		return NULL;
 	}
 	// Create the ephemeral key used specifically for this block of data.
-	else if (!(ephemeral = ecies_key_create())) {
+	else if (!(ephemeral = deprecated_ecies_key_create())) {
 		log_info("An error occurred while trying to generate the ephemeral key.");
 		EC_KEY_free_d(user);
 		return NULL;
 	}
 	// Use the intersection of the provided keys to generate the envelope data used by the ciphers below. The ecies_key_derivation() function uses
 	// SHA 512 to ensure we have a sufficient amount of envelope key material and that the material created is sufficiently secure.
-	else if (ECDH_compute_key_d(envelope_key, SHA512_DIGEST_LENGTH, EC_KEY_get0_public_key_d(user), ephemeral, ecies_envelope_derivation) != SHA512_DIGEST_LENGTH) {
+	else if (ECDH_compute_key_d(envelope_key, SHA512_DIGEST_LENGTH, EC_KEY_get0_public_key_d(user), ephemeral, deprecated_ecies_envelope_derivation) != SHA512_DIGEST_LENGTH) {
 		log_info("An error occurred while trying to compute the envelope key. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EC_KEY_free_d(ephemeral);
 		EC_KEY_free_d(user);
@@ -469,18 +469,18 @@ cryptex_t * ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned cha
 		return NULL;
 	}
 	// We use a conditional to pad the length if the input buffer is not evenly divisible by the block size.
-	else if (!(cryptex = cryptex_alloc(envelope_length, EVP_MD_size_d(EVP_get_digestbyname_d(OBJ_nid2sn_d(ECIES_HMAC))), length, length + (length % block_length ? (block_length - (length % block_length)) : 0)))) {
+	else if (!(cryptex = deprecated_cryptex_alloc(envelope_length, EVP_MD_size_d(EVP_get_digestbyname_d(OBJ_nid2sn_d(ECIES_HMAC))), length, length + (length % block_length ? (block_length - (length % block_length)) : 0)))) {
 		log_info("Unable to allocate a secure_t buffer to hold the encrypted result.");
 		EC_KEY_free_d(ephemeral);
 		EC_KEY_free_d(user);
 		return NULL;
 	}
 	// Store the public key portion of the ephemeral key.
-	else if (EC_POINT_point2oct_d(EC_KEY_get0_group_d(ephemeral), EC_KEY_get0_public_key_d(ephemeral), POINT_CONVERSION_COMPRESSED, cryptex_envelope_data(cryptex), envelope_length, NULL) != envelope_length) {
+	else if (EC_POINT_point2oct_d(EC_KEY_get0_group_d(ephemeral), EC_KEY_get0_public_key_d(ephemeral), POINT_CONVERSION_COMPRESSED, deprecated_cryptex_envelope_data(cryptex), envelope_length, NULL) != envelope_length) {
 		log_info("An error occurred while trying to record the public portion of the envelope key. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EC_KEY_free_d(ephemeral);
 		EC_KEY_free_d(user);
-		cryptex_free(cryptex);
+		deprecated_cryptex_free(cryptex);
 		return NULL;
 	}
 	// The envelope key has been stored so we no longer need to keep the keys around.
@@ -493,15 +493,15 @@ cryptex_t * ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned cha
 
 	// Setup the cipher context, the body length, and store a pointer to the body buffer location.
 	EVP_CIPHER_CTX_init_d(&cipher);
-	body = cryptex_body_data(cryptex);
-	body_length = cryptex_body_length(cryptex);
+	body = deprecated_cryptex_body_data(cryptex);
+	body_length = deprecated_cryptex_body_length(cryptex);
 
 	// Initialize the cipher with the envelope key.
 	if (EVP_EncryptInit_ex_d(&cipher, EVP_get_cipherbyname_d(OBJ_nid2sn_d(ECIES_CIPHER)), NULL, envelope_key, iv) != 1 || EVP_CIPHER_CTX_set_padding_d(&cipher, 0) != 1 ||
 			EVP_EncryptUpdate_d(&cipher, body, &body_length, data, length - (length % block_length)) != 1) {
 		log_info("An error occurred while trying to secure the data using the chosen symmetric cipher. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EVP_CIPHER_CTX_cleanup_d(&cipher);
-		cryptex_free(cryptex);
+		deprecated_cryptex_free(cryptex);
 		return NULL;
 	}
 	// Check whether all of the data was encrypted. If they don't match up, we either have a partial block remaining, or an error occurred.
@@ -511,7 +511,7 @@ cryptex_t * ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned cha
 		if (length - body_length >= block_length) {
 			log_info("Unable to secure the data using the chosen symmetric cipher. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 			EVP_CIPHER_CTX_cleanup_d(&cipher);
-			cryptex_free(cryptex);
+			deprecated_cryptex_free(cryptex);
 			return NULL;
 		}
 
@@ -521,17 +521,17 @@ cryptex_t * ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned cha
 		// Advance the body pointer to the location of the remaining space, and calculate just how much room is still available.
 		body += body_length;
 
-		if ((body_length = cryptex_body_length(cryptex) - body_length) < 0) {
+		if ((body_length = deprecated_cryptex_body_length(cryptex) - body_length) < 0) {
 			log_info("The symmetric cipher overflowed!");
 			EVP_CIPHER_CTX_cleanup_d(&cipher);
-			cryptex_free(cryptex);
+			deprecated_cryptex_free(cryptex);
 			return NULL;
 		}
 		// Pass the final partially filled data block into the cipher as a complete block. The padding will be removed during the decryption process.
 		else if (EVP_EncryptUpdate_d(&cipher, body, &body_length, block, block_length) != 1) {
 			log_info("Unable to secure the data using the chosen symmetric cipher. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 			EVP_CIPHER_CTX_cleanup_d(&cipher);
-			cryptex_free(cryptex);
+			deprecated_cryptex_free(cryptex);
 			return NULL;
 		}
 
@@ -540,15 +540,15 @@ cryptex_t * ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned cha
 	// the correct status regardless of whether there was a partial data block.
 	body += body_length;
 
-	if ((body_length = cryptex_body_length(cryptex) - (body - cryptex_body_data(cryptex))) < 0) {
+	if ((body_length = deprecated_cryptex_body_length(cryptex) - (body - deprecated_cryptex_body_data(cryptex))) < 0) {
 		log_info("The symmetric cipher overflowed!");
 		EVP_CIPHER_CTX_cleanup_d(&cipher);
-		cryptex_free(cryptex);
+		deprecated_cryptex_free(cryptex);
 		return NULL;
 	} else if (EVP_EncryptFinal_ex_d(&cipher, body, &body_length) != 1) {
 		log_info("Unable to secure the data using the chosen symmetric cipher. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EVP_CIPHER_CTX_cleanup_d(&cipher);
-		cryptex_free(cryptex);
+		deprecated_cryptex_free(cryptex);
 		return NULL;
 	}
 
@@ -556,14 +556,14 @@ cryptex_t * ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned cha
 
 	// Generate an authenticated hash which can be used to validate the data during decryption.
 	HMAC_CTX_init_d(&hmac);
-	mac_length = cryptex_hmac_length(cryptex);
+	mac_length = deprecated_cryptex_hmac_length(cryptex);
 
 	// At the moment we are generating the hash using encrypted data. At some point we may want to validate the original text instead.
-	if (HMAC_Init_ex_d(&hmac, envelope_key + key_length, key_length, EVP_get_digestbyname_d(OBJ_nid2sn_d(ECIES_HMAC)), NULL) != 1 || HMAC_Update_d(&hmac, cryptex_body_data(cryptex), cryptex_body_length(cryptex)) != 1 || HMAC_Final_d(&hmac, cryptex_hmac_data(
+	if (HMAC_Init_ex_d(&hmac, envelope_key + key_length, key_length, EVP_get_digestbyname_d(OBJ_nid2sn_d(ECIES_HMAC)), NULL) != 1 || HMAC_Update_d(&hmac, deprecated_cryptex_body_data(cryptex), deprecated_cryptex_body_length(cryptex)) != 1 || HMAC_Final_d(&hmac, deprecated_cryptex_hmac_data(
 			cryptex), &mac_length) != 1) {
 		log_info("Unable to generate a data authentication code. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		HMAC_CTX_cleanup_d(&hmac);
-		cryptex_free(cryptex);
+		deprecated_cryptex_free(cryptex);
 		return NULL;
 	}
 
@@ -580,7 +580,7 @@ cryptex_t * ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned cha
  * @param	length		a pointer to a size_t variable which will receive the final length of the unencrypted data.
  * @return	NULL on failure, or a pointer to a memory address containing the decrypted data on success..
  */
-uchr_t * ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryptex_t *cryptex, size_t *length) {
+uchr_t * deprecated_ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryptex_t *cryptex, size_t *length) {
 
 	HMAC_CTX hmac;
 	size_t key_length;
@@ -611,19 +611,19 @@ uchr_t * ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryptex_t *cryp
 		return NULL;
 	}
 	// Convert the user's public key from hex into a full EC_KEY structure.
-	else if (!(user = ecies_key_private(key_type, pl_init(kbuf, hexkey_length)))) {
+	else if (!(user = deprecated_ecies_key_private(key_type, pl_init(kbuf, hexkey_length)))) {
 		log_info("Invalid private key provided.");
 		return NULL;
 	}
 	// Create the ephemeral key used specifically for this block of data.
-	else if (!(ephemeral = ecies_key_public(ECIES_PUBLIC_BINARY, pl_init(cryptex_envelope_data(cryptex), cryptex_envelope_length(cryptex))))) {
+	else if (!(ephemeral = deprecated_ecies_key_public(ECIES_PUBLIC_BINARY, pl_init(deprecated_cryptex_envelope_data(cryptex), deprecated_cryptex_envelope_length(cryptex))))) {
 		log_info("An error occurred while trying to recreate the ephemeral key.");
 		EC_KEY_free_d(user);
 		return NULL;
 	}
 	// Use the intersection of the provided keys to generate the envelope data used by the ciphers below. The ecies_key_derivation() function uses
 	// SHA 512 to ensure we have a sufficient amount of envelope key material and that the material created is sufficiently secure.
-	else if (ECDH_compute_key_d(envelope_key, SHA512_DIGEST_LENGTH, EC_KEY_get0_public_key_d(ephemeral), user, ecies_envelope_derivation) != SHA512_DIGEST_LENGTH) {
+	else if (ECDH_compute_key_d(envelope_key, SHA512_DIGEST_LENGTH, EC_KEY_get0_public_key_d(ephemeral), user, deprecated_ecies_envelope_derivation) != SHA512_DIGEST_LENGTH) {
 		log_info("An error occurred while trying to compute the envelope key. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EC_KEY_free_d(ephemeral);
 		EC_KEY_free_d(user);
@@ -638,7 +638,7 @@ uchr_t * ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryptex_t *cryp
 	HMAC_CTX_init_d(&hmac);
 
 	// At the moment we are generating the hash using encrypted data. At some point we may want to validate the original text instead.
-	if (HMAC_Init_ex_d(&hmac, envelope_key + key_length, key_length, EVP_get_digestbyname_d(OBJ_nid2sn_d(ECIES_HMAC)), NULL) != 1 || HMAC_Update_d(&hmac, cryptex_body_data(cryptex), cryptex_body_length(cryptex)) != 1 || HMAC_Final_d(&hmac, md, &mac_length) != 1) {
+	if (HMAC_Init_ex_d(&hmac, envelope_key + key_length, key_length, EVP_get_digestbyname_d(OBJ_nid2sn_d(ECIES_HMAC)), NULL) != 1 || HMAC_Update_d(&hmac, deprecated_cryptex_body_data(cryptex), deprecated_cryptex_body_length(cryptex)) != 1 || HMAC_Final_d(&hmac, md, &mac_length) != 1) {
 		log_info("Unable to generate the authentication code needed for validation. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		HMAC_CTX_cleanup_d(&hmac);
 		return NULL;
@@ -647,13 +647,13 @@ uchr_t * ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryptex_t *cryp
 	HMAC_CTX_cleanup_d(&hmac);
 
 	// We can use the generated hash to ensure the encrypted data was not altered after being encrypted.
-	if (mac_length != cryptex_hmac_length(cryptex) || memcmp(md, cryptex_hmac_data(cryptex), mac_length)) {
+	if (mac_length != deprecated_cryptex_hmac_length(cryptex) || memcmp(md, deprecated_cryptex_hmac_data(cryptex), mac_length)) {
 		log_info("The authentication code was invalid! The ciphered data has been corrupted!");
 		return NULL;
 	}
 
 	// Create a buffer to hold the result.
-	output_length = cryptex_body_length(cryptex);
+	output_length = deprecated_cryptex_body_length(cryptex);
 
 	if (!(block = output = mm_alloc(output_length + 1))) {
 		log_info("An error occurred while trying to allocate memory for the decrypted data.");
@@ -667,8 +667,8 @@ uchr_t * ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryptex_t *cryp
 	EVP_CIPHER_CTX_init_d(&cipher);
 
 	// Decrypt the data using the chosen symmetric cipher.
-	if (EVP_DecryptInit_ex_d(&cipher, EVP_get_cipherbyname_d(OBJ_nid2sn_d(ECIES_CIPHER)), NULL, envelope_key, iv) != 1 || EVP_CIPHER_CTX_set_padding_d(&cipher, 0) != 1 || EVP_DecryptUpdate_d(&cipher, block, &output_length, cryptex_body_data(cryptex),
-			cryptex_body_length(cryptex)) != 1) {
+	if (EVP_DecryptInit_ex_d(&cipher, EVP_get_cipherbyname_d(OBJ_nid2sn_d(ECIES_CIPHER)), NULL, envelope_key, iv) != 1 || EVP_CIPHER_CTX_set_padding_d(&cipher, 0) != 1 || EVP_DecryptUpdate_d(&cipher, block, &output_length, deprecated_cryptex_body_data(cryptex),
+			deprecated_cryptex_body_length(cryptex)) != 1) {
 		log_info("Unable to decrypt the data using the chosen symmetric cipher. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EVP_CIPHER_CTX_cleanup_d(&cipher);
 		free(output);
@@ -677,7 +677,7 @@ uchr_t * ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryptex_t *cryp
 
 	block += output_length;
 
-	if ((output_length = cryptex_body_length(cryptex) - output_length) != 0) {
+	if ((output_length = deprecated_cryptex_body_length(cryptex) - output_length) != 0) {
 		log_info("The symmetric cipher failed to properly decrypt the correct amount of data!");
 		EVP_CIPHER_CTX_cleanup_d(&cipher);
 		free(output);
@@ -693,7 +693,7 @@ uchr_t * ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryptex_t *cryp
 
 	EVP_CIPHER_CTX_cleanup_d(&cipher);
 
-	*length = cryptex_original_length(cryptex);
+	*length = deprecated_cryptex_original_length(cryptex);
 
 	return output;
 }

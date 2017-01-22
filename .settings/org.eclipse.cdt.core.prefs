@@ -6,12 +6,12 @@ environment/project/cdt.managedbuild.config.gnu.exe.debug.1006571712/appendContr
 environment/project/cdt.managedbuild.config.gnu.exe.debug.689728174/append=true
 environment/project/cdt.managedbuild.config.gnu.exe.debug.689728174/appendContributed=true
 indexer/filesToParseUpFront=time.h, stdio.h, stdlib.h, cstdarg, stdarg.h, stddef.h, sys/resource.h, ctime, sys/types.h, signal.h, cstdio
-indexer/indexAllFiles=false
-indexer/indexAllHeaderVersions=false
+indexer/indexAllFiles=true
+indexer/indexAllHeaderVersions=true
 indexer/indexAllVersionsSpecificHeaders=
 indexer/indexOnOpen=true
-indexer/indexUnusedHeadersWithAlternateLang=false
-indexer/indexUnusedHeadersWithDefaultLang=false
+indexer/indexUnusedHeadersWithAlternateLang=true
+indexer/indexUnusedHeadersWithDefaultLang=true
 indexer/indexerId=org.eclipse.cdt.core.fastIndexer
 indexer/reindexOnConfigChange=true
 indexer/skipFilesLargerThanMB=1024

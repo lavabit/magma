@@ -42,7 +42,7 @@ bool_t check_symmetric_sthread(chr_t *name) {
 			st_free(key);
 			return false;
 		}
-		else if (!(encrypted = symmetric_encrypt(cipher, vector, key, PLACER(buffer, len)))) {
+		else if (!(encrypted = deprecated_symmetric_encrypt(cipher, vector, key, PLACER(buffer, len)))) {
 			if (vector) {
 				st_free(vector);
 			}
@@ -51,7 +51,7 @@ bool_t check_symmetric_sthread(chr_t *name) {
 		}
 
 		// Convert the buffer back to binary and compare it with the original array.
-		if (!(decrypted = symmetric_decrypt(cipher, vector, key, encrypted))) {
+		if (!(decrypted = deprecated_symmetric_decrypt(cipher, vector, key, encrypted))) {
 			if (vector) {
 				st_free(vector);
 			}

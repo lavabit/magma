@@ -22,7 +22,7 @@
  *
  * @return	The managed string containing the resulting HMAC or NULL if an error occurs.
  */
-stringer_t * hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, stringer_t *output) {
+stringer_t * deprecated_hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, stringer_t *output) {
 
 	int_t olen;
 	uint_t rlen;
@@ -92,40 +92,40 @@ stringer_t * hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, strin
 	return result;
 }
 
-stringer_t * hmac_md4(stringer_t *s, stringer_t *key, stringer_t *output) {
-	return hmac_digest((digest_t *)EVP_md4_d(), s, key, output);
+stringer_t * deprecated_hmac_md4(stringer_t *s, stringer_t *key, stringer_t *output) {
+	return deprecated_hmac_digest((digest_t *)EVP_md4_d(), s, key, output);
 }
 
-stringer_t * hmac_md5(stringer_t *s, stringer_t *key, stringer_t *output) {
-	return hmac_digest((digest_t *)EVP_md5_d(), s, key, output);
+stringer_t * deprecated_hmac_md5(stringer_t *s, stringer_t *key, stringer_t *output) {
+	return deprecated_hmac_digest((digest_t *)EVP_md5_d(), s, key, output);
 }
 
-stringer_t * hmac_sha(stringer_t *s, stringer_t *key, stringer_t *output) {
-	return hmac_digest((digest_t *)EVP_sha_d(), s, key, output);
+stringer_t * deprecated_hmac_sha(stringer_t *s, stringer_t *key, stringer_t *output) {
+	return deprecated_hmac_digest((digest_t *)EVP_sha_d(), s, key, output);
 }
 
-stringer_t * hmac_sha1(stringer_t *s, stringer_t *key, stringer_t *output) {
-	return hmac_digest((digest_t *)EVP_sha1_d(), s, key, output);
+stringer_t * deprecated_hmac_sha1(stringer_t *s, stringer_t *key, stringer_t *output) {
+	return deprecated_hmac_digest((digest_t *)EVP_sha1_d(), s, key, output);
 }
 
-stringer_t * hmac_sha224(stringer_t *s, stringer_t *key, stringer_t *output) {
-	return hmac_digest((digest_t *)EVP_sha224_d(), s, key, output);
+stringer_t * deprecated_hmac_sha224(stringer_t *s, stringer_t *key, stringer_t *output) {
+	return deprecated_hmac_digest((digest_t *)EVP_sha224_d(), s, key, output);
 }
 
-stringer_t * hmac_sha256(stringer_t *s, stringer_t *key, stringer_t *output) {
-	return hmac_digest((digest_t *)EVP_sha256_d(), s, key, output);
+stringer_t * deprecated_hmac_sha256(stringer_t *s, stringer_t *key, stringer_t *output) {
+	return deprecated_hmac_digest((digest_t *)EVP_sha256_d(), s, key, output);
 }
 
-stringer_t * hmac_sha384(stringer_t *s, stringer_t *key, stringer_t *output) {
-	return hmac_digest((digest_t *)EVP_sha384_d(), s, key, output);
+stringer_t * deprecated_hmac_sha384(stringer_t *s, stringer_t *key, stringer_t *output) {
+	return deprecated_hmac_digest((digest_t *)EVP_sha384_d(), s, key, output);
 }
 
-stringer_t * hmac_sha512(stringer_t *s, stringer_t *key, stringer_t *output) {
-	return hmac_digest((digest_t *)EVP_sha512_d(), s, key, output);
+stringer_t * deprecated_hmac_sha512(stringer_t *s, stringer_t *key, stringer_t *output) {
+	return deprecated_hmac_digest((digest_t *)EVP_sha512_d(), s, key, output);
 }
 
-stringer_t * hmac_ripemd160(stringer_t *s, stringer_t *key, stringer_t *output) {
-	return hmac_digest((digest_t *)EVP_ripemd160_d(), s, key, output);
+stringer_t * deprecated_hmac_ripemd160(stringer_t *s, stringer_t *key, stringer_t *output) {
+	return deprecated_hmac_digest((digest_t *)EVP_ripemd160_d(), s, key, output);
 }
 
 

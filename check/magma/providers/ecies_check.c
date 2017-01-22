@@ -15,11 +15,11 @@
 void check_ecies_cleanup(EC_KEY *key, cryptex_t *ciphered, stringer_t *hex_pub, stringer_t *hex_priv, unsigned char *text, unsigned char *copy, unsigned char *original) {
 
 	if (key) {
-		ecies_key_free(key);
+		deprecated_ecies_key_free(key);
 	}
 
 	if (ciphered) {
-		cryptex_free(ciphered);
+		deprecated_cryptex_free(ciphered);
 	}
 
 	st_cleanup(hex_pub);
@@ -71,26 +71,26 @@ bool_t check_ecies_sthread(void) {
 		}
 
 		// Generate a key for our theoretical user.
-		if (!(key = ecies_key_create())) {
+		if (!(key = deprecated_ecies_key_create())) {
 			printf("Key creation failed.\n");
 			check_ecies_cleanup(key, ciphered, hex_pub, hex_priv, text, copy, original);
 			return false;
 		}
 
 		// Since we'll store the keys as hex values in real life, extract the appropriate hex values and release the original key structure.
-		if (!(hex_pub = ecies_key_public_hex(key)) || !(hex_priv = ecies_key_private_hex(key))) {
+		if (!(hex_pub = deprecated_ecies_key_public_hex(key)) || !(hex_priv = deprecated_ecies_key_private_hex(key))) {
 			printf("Serialization of the key to a pair of hex strings failed.\n");
 			check_ecies_cleanup(key, ciphered, hex_pub, hex_priv, text, copy, original);
 			return false;
 		}
 
-		if (!(ciphered = ecies_encrypt(hex_pub, ECIES_PUBLIC_HEX, text, tlen))) {
+		if (!(ciphered = deprecated_ecies_encrypt(hex_pub, ECIES_PUBLIC_HEX, text, tlen))) {
 			printf("The encryption process failed!\n");
 			check_ecies_cleanup(key, ciphered, hex_pub, hex_priv, text, copy, original);
 			return false;
 		}
 
-		if (!(original = ecies_decrypt(hex_priv, ECIES_PRIVATE_HEX, ciphered, &olen))) {
+		if (!(original = deprecated_ecies_decrypt(hex_priv, ECIES_PRIVATE_HEX, ciphered, &olen))) {
 			printf("The decryption process failed!\n");
 			check_ecies_cleanup(key, ciphered, hex_pub, hex_priv, text, copy, original);
 			return false;

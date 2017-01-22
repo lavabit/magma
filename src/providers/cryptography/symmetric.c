@@ -22,7 +22,7 @@
  * @param	input	a managed string containing the data to be encrypted.
  * @return	NULL on failure, or a pointer to a managed string containing the encrypted data.
  */
-stringer_t * symmetric_encrypt(cipher_t *cipher, stringer_t *vector, stringer_t *key, stringer_t *input) {
+stringer_t * deprecated_symmetric_encrypt(cipher_t *cipher, stringer_t *vector, stringer_t *key, stringer_t *input) {
 
 	EVP_CIPHER_CTX ctx;
 	stringer_t *output = NULL;
@@ -130,7 +130,7 @@ stringer_t * symmetric_encrypt(cipher_t *cipher, stringer_t *vector, stringer_t 
 	return output;
 }
 
-stringer_t * symmetric_decrypt(cipher_t *cipher, stringer_t *vector, stringer_t *key, stringer_t *input) {
+stringer_t * deprecated_symmetric_decrypt(cipher_t *cipher, stringer_t *vector, stringer_t *key, stringer_t *input) {
 
 	EVP_CIPHER_CTX ctx;
 	stringer_t *output = NULL;
@@ -253,7 +253,7 @@ stringer_t * symmetric_decrypt(cipher_t *cipher, stringer_t *vector, stringer_t 
  * @param	output	the managed string that will store the IV data.
  * @return	NULL on failure, or a pointer to the managed string that contains the IV data.
  */
-stringer_t * symmetric_vector(cipher_t *cipher, stringer_t *output) {
+stringer_t * deprecated_symmetric_vector(cipher_t *cipher, stringer_t *output) {
 
 	size_t len;
 	stringer_t *result = NULL;
@@ -290,7 +290,7 @@ stringer_t * symmetric_vector(cipher_t *cipher, stringer_t *output) {
  * @param	output	the output managed string to receive the digested password. Can be NULL.
  * @return	NULL on failure, or a pointer to the managed string containing the key.
  */
-stringer_t * symmetric_key(cipher_t *cipher, stringer_t *key, stringer_t *output) {
+stringer_t * deprecated_symmetric_key(cipher_t *cipher, stringer_t *key, stringer_t *output) {
 
 	size_t len;
 	stringer_t *result = NULL;

@@ -441,15 +441,9 @@ bool_t config_validate_settings(void) {
 		result = false;
 	}
 
-	if (magma.dkim.enabled) {
-
-		if (!magma.dkim.domain || !magma.dkim.selector || !magma.dkim.key) {
-			log_critical("If magma.dkim.enabled is set, then magma.dkim.domain, magma.dkim.selector, and magma.dkim.key must all be set!");
-			result = false;
-		}
-
-		// The rest has to be executed after the OpenSSL library is loaded.
-
+	if (magma.dkim.enabled && (!magma.dkim.domain || !magma.dkim.selector || !magma.dkim.key)) {
+		log_critical("If magma.dkim.enabled is set, then magma.dkim.domain, magma.dkim.selector, and magma.dkim.key must all be set!");
+		result = false;
 	}
 
 	// Validate the magma server keys here.
@@ -467,9 +461,17 @@ bool_t config_validate_settings(void) {
 		result = false;
 	}
 
-	// Validate all remaining configurable filenames and paths
-	CONFIG_CHECK_DIR_READABLE(magma.system.root_directory);
+	// Validate read access to the shared object library..
 	CONFIG_CHECK_FILE_READABLE(magma.library.file);
+
+	// At this stage we only verify that we can read these keys. Deeper validation is done when
+	// the associated module gets loaded.
+	if (magma.dkim.key) CONFIG_CHECK_FILE_READABLE(st_char_get(magma.dkim.key));
+	if (magma.dime.key) CONFIG_CHECK_FILE_READABLE(st_char_get(magma.dime.key));
+	if (magma.dime.signet) CONFIG_CHECK_FILE_READABLE(st_char_get(magma.dime.signet));
+
+	// Validate read access to the directories provided.
+	CONFIG_CHECK_DIR_READABLE(magma.system.root_directory);
 	CONFIG_CHECK_DIR_READABLE(magma.http.pages);
 	CONFIG_CHECK_DIR_READABLE(magma.http.templates);
 	CONFIG_CHECK_DIR_READABLE(magma.output.path);

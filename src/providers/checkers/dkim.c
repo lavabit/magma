@@ -97,7 +97,9 @@ bool_t dkim_start(void) {
 		keyname = magma.dkim.key;
 
 		if (file_world_accessible(st_char_get(keyname))) {
-			log_critical("Warning: DKIM private key has world-access file permissions! Please fix. { path = %.*s }",  st_length_int(keyname), st_char_get(keyname));
+			log_critical("The DKIM private key is accessible to the world! Please fix the file permissions. { chmod 600 %.*s }",
+				st_length_int(keyname), st_char_get(keyname));
+			return false;
 		}
 
 		if (!ssl_verify_privkey(st_char_get(keyname))) {

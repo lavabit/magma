@@ -12,6 +12,8 @@
 
 #include "magma.h"
 
+prime_t *org_key = NULL;
+prime_t *org_signet = NULL;
 EC_GROUP *prime_curve_group = NULL;
 
 /**
@@ -21,12 +23,53 @@ EC_GROUP *prime_curve_group = NULL;
  */
 bool_t prime_start(void) {
 
+	stringer_t *key = NULL, *signet = NULL;
+
+	// Validate permissions and then read the organizational key and signet files.
+	if (!magma.dime.key || !magma.dime.signet) {
+		log_critical("An error occurred while trying to create the elliptical group. { error = %s }",
+			ssl_error_string(MEMORYBUF(256), 256));
+		return false;
+	}
+	else if (file_world_accessible(st_char_get(magma.dime.key))) {
+		log_critical("The PRIME private key is accessible to the world! Please fix the file permissions. { chmod 600 %.*s }",
+			st_length_int(magma.dime.key), st_char_get(magma.dime.key));
+		return false;
+	}
+	else if (!(key = file_load(st_char_get(magma.dime.key)))) {
+		log_critical("Unable to load the PRIME primary organizational key from the provided file. { path = %.*s }",
+			st_length_int(magma.dime.key), st_char_get(magma.dime.key));
+		return false;
+	}
+	else if (!(signet = file_load(st_char_get(magma.dime.signet)))) {
+		log_critical("Unable to load the PRIME organizational signet from the provided file. { path = %.*s }",
+			st_length_int(magma.dime.signet), st_char_get(magma.dime.signet));
+		st_free(key);
+		return false;
+	}
+
+	// Setup the global PRIME org structures we'll need for signing and encryption operations.
+	else if (!(org_key = prime_set(key, ARMORED, SECURE)) || !(org_signet = prime_set(signet, ARMORED, NONE))) {
+		st_free(signet);
+		st_free(key);
+		return false;
+	}
+
+	// We don't need the raw file data anymore.
+	st_free(signet);
+	st_free(key);
+
+	/// TODO: Verify that the provided signet matches the provided key file.
+
+	// Precompute the encryption curve group parameters.
 	if (!(prime_curve_group = EC_GROUP_new_by_curve_name_d(NID_secp256k1))) {
-		log_error("An error occurred while trying to create the elliptical group. {%s}", ssl_error_string(MEMORYBUF(256), 256));
+		log_critical("An error occurred while trying to create the elliptical group. { error = %s }",
+			ssl_error_string(MEMORYBUF(256), 256));
 		return false;
 	}
 	else if (EC_GROUP_precompute_mult_d(prime_curve_group, NULL) != 1) {
-		log_error("Unable to precompute the required elliptical curve point data. {%s}", ssl_error_string(MEMORYBUF(256), 256));
+		log_error("Unable to precompute the required elliptical curve point data. { error = %s }",
+			ssl_error_string(MEMORYBUF(256), 256));
 		EC_GROUP_free_d(prime_curve_group);
 		prime_curve_group = NULL;
 		return false;
@@ -45,6 +88,9 @@ bool_t prime_start(void) {
 void prime_stop(void) {
 
 	EC_GROUP *group;
+
+	if (org_key) prime_free(org_key);
+	if (org_signet) prime_free(org_signet);
 
 	if (prime_curve_group) {
 		group = prime_curve_group;

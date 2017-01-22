@@ -325,7 +325,7 @@ void config_output_help(void) {
  *			9. Make sure 16384 <= system_limit_max(RLIMIT_STACK)
  *			10. If magma.system.daemonize is set, make sure magma.output.file is not false
  *			11. If magma.output.file is enabled, magma.output.path must be set.
- *			12. If magma.dkim.enabled is set, then magma.dkim.domain, magma.dkim.selector, and magma.dkim.privkey must all be set.
+ *			12. If magma.dkim.enabled is set, then magma.dkim.domain, magma.dkim.selector, and magma.dkim.key must all be set.
  *			13. Validate all the configured magma servers, relay servers, and cache servers.
  *			14. Check all config key filenames and directories to ensure that they exist and are accessible.
  *			15. Make sure magma.admin.contact and point to valid email addresses, if they are specified.
@@ -443,8 +443,8 @@ bool_t config_validate_settings(void) {
 
 	if (magma.dkim.enabled) {
 
-		if (!magma.dkim.domain || !magma.dkim.selector || !magma.dkim.privkey) {
-			log_critical("If magma.dkim.enabled is set, then magma.dkim.domain, magma.dkim.selector, and magma.dkim.privkey must all be set!");
+		if (!magma.dkim.domain || !magma.dkim.selector || !magma.dkim.key) {
+			log_critical("If magma.dkim.enabled is set, then magma.dkim.domain, magma.dkim.selector, and magma.dkim.key must all be set!");
 			result = false;
 		}
 

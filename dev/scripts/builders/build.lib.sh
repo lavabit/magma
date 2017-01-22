@@ -2145,24 +2145,27 @@ load() {
 
 keys() {
 
-	printf "Fixing the permissions for the TLS and DKIM keys in the magma sandbox...\n\n"
+	printf "Fixing the permissions for the DIME, DKIM and TLS keys in the magma sandbox...\n\n"
 
-	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"; error
+	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/tls.localhost.localdomain.pem"; error
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem"; error
+	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dime.localhost.localdomain.key"; error
+	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dime.localhost.localdomain.signet"; error
 
 	# Tell git to skip checking for changes to the key files, but only if git is on the system and the files
 	# are stored inside a repo.
 	GIT_IS_AVAILABLE=`which git &> /dev/null && git log &> /dev/null && echo 1`
 	if [[ "$GIT_IS_AVAILABLE" == "1" ]]; then
-		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"
+		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/tls.localhost.localdomain.pem"
 		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
-		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem"
+		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dime.localhost.localdomain.key"
+		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dime.localhost.localdomain.signet"
 	fi
 }
 
 generate() {
 
-	printf "Generating TLS and DKIM keys for the magma sandbox...\n"
+	printf "Generating DIME, DKIM and TLS keys for the magma sandbox...\n"
 
 	# Generate a DKIM private key.
 	"$M_LOCAL/bin/"openssl genrsa -out "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem" 2048 2>&1 >& /dev/null
@@ -2175,8 +2178,8 @@ generate() {
 	
 	# The TLS private key and a self-signed certificate.
 	"$M_LOCAL/bin/"openssl req -x509 -nodes -batch -days 1826 -newkey rsa:4096 \
-	-keyout "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem" \
-	-out "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem" >& /dev/null ; error
+	-keyout "$M_PROJECT_ROOT/sandbox/etc/tls.localhost.localdomain.pem" \
+	-out "$M_PROJECT_ROOT/sandbox/etc/tls.localhost.localdomain.pem" >& /dev/null ; error
 
 	keys
 }

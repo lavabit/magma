@@ -25,11 +25,15 @@
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1445563090" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.1861641414" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<option id="gnu.cpp.compiler.option.include.paths.1273358102" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/local/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1653654635" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="HAVE_NS_TYPE"/>
+									<listOptionValue builtIn="false" value="_REENTRANT"/>
+									<listOptionValue builtIn="false" value="_LARGEFILE64_SOURCE"/>
+									<listOptionValue builtIn="false" value="_GNU_SOURCE"/>
 									<listOptionValue builtIn="false" value="MAGMA_PEDANTIC"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.include.files.723178644" name="Include files (-include)" superClass="gnu.cpp.compiler.option.include.files" useByScannerDiscovery="false" valueType="includeFiles">
@@ -45,11 +49,15 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/providers/dime/common/misc.h}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.490644488" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/local/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/local/include}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1926738496" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="HAVE_NS_TYPE"/>
+									<listOptionValue builtIn="false" value="_REENTRANT"/>
+									<listOptionValue builtIn="false" value="_LARGEFILE64_SOURCE"/>
+									<listOptionValue builtIn="false" value="_GNU_SOURCE"/>
 									<listOptionValue builtIn="false" value="MAGMA_PEDANTIC"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.102438972" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
@@ -74,8 +82,8 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.base.999450839" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base">
 								<option id="gnu.both.asm.option.include.paths.2098444350" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/local/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1639098879" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
@@ -87,7 +95,17 @@
 					</sourceEntries>
 				</configuration>
 			</storageModule>
-			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings">
+				<externalSettings containerId="magma.so;cdt.managedbuild.toolchain.gnu.base.501067626" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier">
+					<externalSetting>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/local/include"/>
+						<entry flags="RESOLVED" kind="macro" name="HAVE_NS_TYPE" value=""/>
+						<entry flags="RESOLVED" kind="macro" name="_REENTRANT" value=""/>
+						<entry flags="RESOLVED" kind="macro" name="_LARGEFILE64_SOURCE" value=""/>
+						<entry flags="RESOLVED" kind="macro" name="_GNU_SOURCE" value=""/>
+					</externalSetting>
+				</externalSettings>
+			</storageModule>
 		</cconfiguration>
 		<cconfiguration id="cdt.managedbuild.toolchain.gnu.base.1042491499.1834931754">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.toolchain.gnu.base.1042491499.1834931754" moduleId="org.eclipse.cdt.core.settings" name="Magma Check">
@@ -110,11 +128,15 @@
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1668166124" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.566685175" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<option id="gnu.cpp.compiler.option.include.paths.820696727" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/local/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1946707425" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="HAVE_NS_TYPE"/>
+									<listOptionValue builtIn="false" value="_REENTRANT"/>
+									<listOptionValue builtIn="false" value="_LARGEFILE64_SOURCE"/>
+									<listOptionValue builtIn="false" value="_GNU_SOURCE"/>
 									<listOptionValue builtIn="false" value="MAGMA_PEDANTIC"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.include.files.1607387786" name="Include files (-include)" superClass="gnu.cpp.compiler.option.include.files" useByScannerDiscovery="false" valueType="includeFiles">
@@ -130,11 +152,15 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/providers/dime/common/misc.h}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.142183936" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/local/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/local/include}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.2117180584" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="HAVE_NS_TYPE"/>
+									<listOptionValue builtIn="false" value="_REENTRANT"/>
+									<listOptionValue builtIn="false" value="_LARGEFILE64_SOURCE"/>
+									<listOptionValue builtIn="false" value="_GNU_SOURCE"/>
 									<listOptionValue builtIn="false" value="MAGMA_PEDANTIC"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.208862389" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
@@ -159,8 +185,8 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.base.399935483" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base">
 								<option id="gnu.both.asm.option.include.paths.1981211645" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/local/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.900848572" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
@@ -172,7 +198,17 @@
 					</sourceEntries>
 				</configuration>
 			</storageModule>
-			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings">
+				<externalSettings containerId="magma.so;cdt.managedbuild.toolchain.gnu.base.501067626" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier">
+					<externalSetting>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/local/include"/>
+						<entry flags="RESOLVED" kind="macro" name="HAVE_NS_TYPE" value=""/>
+						<entry flags="RESOLVED" kind="macro" name="_REENTRANT" value=""/>
+						<entry flags="RESOLVED" kind="macro" name="_LARGEFILE64_SOURCE" value=""/>
+						<entry flags="RESOLVED" kind="macro" name="_GNU_SOURCE" value=""/>
+					</externalSetting>
+				</externalSettings>
+			</storageModule>
 		</cconfiguration>
 		<cconfiguration id="cdt.managedbuild.toolchain.gnu.base.1042491499.540148943">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.toolchain.gnu.base.1042491499.540148943" moduleId="org.eclipse.cdt.core.settings" name="Default">
@@ -262,7 +298,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="dev/*|lib/|web/|sandbox/|tools/|res/" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
+						<entry excluding="dev/*|lib/*|web/*|sandbox/*|tools/*|res/*" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -299,11 +335,15 @@
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1239144236" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.308986739" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<option id="gnu.cpp.compiler.option.include.paths.1193046984" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/local/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1131354851" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="HAVE_NS_TYPE"/>
+									<listOptionValue builtIn="false" value="_REENTRANT"/>
+									<listOptionValue builtIn="false" value="_LARGEFILE64_SOURCE"/>
+									<listOptionValue builtIn="false" value="_GNU_SOURCE"/>
 									<listOptionValue builtIn="false" value="MAGMA_PEDANTIC"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.include.files.297929583" name="Include files (-include)" superClass="gnu.cpp.compiler.option.include.files" useByScannerDiscovery="false" valueType="includeFiles">
@@ -319,11 +359,15 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/providers/dime/common/misc.h}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.718257223" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/local/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/local/include}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1452029528" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="HAVE_NS_TYPE"/>
+									<listOptionValue builtIn="false" value="_REENTRANT"/>
+									<listOptionValue builtIn="false" value="_LARGEFILE64_SOURCE"/>
+									<listOptionValue builtIn="false" value="_GNU_SOURCE"/>
 									<listOptionValue builtIn="false" value="MAGMA_PEDANTIC"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1220022755" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
@@ -348,8 +392,8 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.base.1159217529" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base">
 								<option id="gnu.both.asm.option.include.paths.534190619" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/local/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/check/magma}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.496164738" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
@@ -361,7 +405,17 @@
 					</sourceEntries>
 				</configuration>
 			</storageModule>
-			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings">
+				<externalSettings containerId="magma.so;cdt.managedbuild.toolchain.gnu.base.501067626" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier">
+					<externalSetting>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/local/include"/>
+						<entry flags="RESOLVED" kind="macro" name="HAVE_NS_TYPE" value=""/>
+						<entry flags="RESOLVED" kind="macro" name="_REENTRANT" value=""/>
+						<entry flags="RESOLVED" kind="macro" name="_LARGEFILE64_SOURCE" value=""/>
+						<entry flags="RESOLVED" kind="macro" name="_GNU_SOURCE" value=""/>
+					</externalSetting>
+				</externalSettings>
+			</storageModule>
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
@@ -397,7 +451,7 @@
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.1042491499">
-			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 			<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
 				<buildOutputProvider>
 					<openAction enabled="true" filePath=""/>
@@ -443,7 +497,7 @@
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerFileProfile"/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.1042491499.1834931754">
-			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerFileProfile"/>
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerFileProfile"/>
 			<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
 				<buildOutputProvider>
 					<openAction enabled="true" filePath=""/>
@@ -496,7 +550,7 @@
 			</profile>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.1042491499.540148943">
-			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerFileProfile"/>
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerFileProfile"/>
 			<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
 				<buildOutputProvider>
 					<openAction enabled="true" filePath=""/>
@@ -539,7 +593,7 @@
 			</profile>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.1042491499.1834931754.853698006">
-			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerFileProfile"/>
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerFileProfile"/>
 			<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
 				<buildOutputProvider>
 					<openAction enabled="true" filePath=""/>

@@ -153,8 +153,13 @@ typedef struct {
 		bool_t enabled; /* Whether or not dkim signing is enabled. */
 		chr_t *domain;
 		chr_t *selector;
-		stringer_t *privkey; /* Location of the dkim private key at startup (replaced with contents later). */
+		stringer_t *key; /* Location of the dkim private key at startup (replaced with contents later). */
 	} dkim;
+
+	struct {
+		stringer_t *key;	/* The Dark Internet Mail Environment Primary Organizational Key. */
+		stringer_t *signet;	/* The Dark Internet Mail Environment Organizational Signet. */
+	} dime;
 
 	struct {
 

@@ -862,16 +862,40 @@ magma_keys_t magma_keys[] = {
 		.required = false
 	},
 	{
-		.store = (void *)&(magma.dkim.privkey),
+		.store = (void *)&(magma.dkim.key),
 		.norm.type = M_TYPE_STRINGER,
-		.norm.val.ns = NULL,
-		.name = "magma.dkim.privkey",
+		.norm.val.st = NULL,
+		.name = "magma.dkim.key",
 		.description = "The location of the PEM or DER-encoded DKIM private key.",
 		.file = true,
 		.database = true,
 		.overwrite = true,
 		.set = false,
 		.required = false
+	},
+	{
+		.store = (void *)&(magma.dime.key),
+		.norm.type = M_TYPE_STRINGER,
+		.norm.val.st = NULL,
+		.name = "magma.dime.key",
+		.description = "The location for the PEM encoded Dark Internet Mail Environment (DIME) Primary Organizational Key (POK).",
+		.file = true,
+		.database = true,
+		.overwrite = true,
+		.set = false,
+		.required = true
+	},
+	{
+		.store = (void *)&(magma.dime.signet),
+		.norm.type = M_TYPE_STRINGER,
+		.norm.val.st = NULL,
+		.name = "magma.dime.signet",
+		.description = "The location for the PEM encoded Dark Internet Mail Environment (DIME) Organizational Signet.",
+		.file = true,
+		.database = true,
+		.overwrite = true,
+		.set = false,
+		.required = true
 	},
 	{
 		.store = (void *)&(magma.iface.spf.pool.connections),

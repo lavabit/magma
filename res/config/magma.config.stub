@@ -23,7 +23,7 @@ magma.web.statistics = true
 magma.dkim.enabled = true
 magma.dkim.selector = bazinga
 magma.dkim.domain = example.com
-magma.dkim.privkey = ${BASE_DIR}/res/config/dkim.localhost.localdomain.pem
+magma.dkim.key = ${BASE_DIR}/res/config/dkim.localhost.localdomain.pem
 
 magma.config.output_config = false
 

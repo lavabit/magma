@@ -11,9 +11,9 @@
  */
 
 #include "magma.h"
-#include "dime/signet/keys.h"
-#include "dime/common/misc.h"
-#include "dime/common/dcrypto.h"
+//#include "dime/signet/keys.h"
+//#include "dime/common/misc.h"
+//#include "dime/common/dcrypto.h"
 
 /**
  * @brief	Fetches the user realm keys and extracts the different components.
@@ -126,9 +126,9 @@ int_t meta_update_keys(meta_user_t *user, stringer_t *master, META_LOCK_STATUS l
 	}
 
 	/***************************/
-	crypto_init();
-	char *signet, *key;
-	dime_keys_generate(KEYS_TYPE_USER, &signet, &key);
+	//crypto_init();
+	//char *signet, *key;
+	//dime_keys_generate(KEYS_TYPE_USER, &signet, &key);
 	//log_pedantic("%s\n%s\n", signet, key);
 	/***************************/
 

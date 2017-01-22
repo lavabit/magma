@@ -122,11 +122,11 @@ stringer_t * dkim_signature_create(stringer_t *id, stringer_t *message) {
 	dkim_sigkey_t key;
 	stringer_t *output = NULL, *signature = NULL;
 
-	if (!magma.dkim.enabled && st_populated(magma.dkim.privkey)) {
+	if (!magma.dkim.enabled && st_populated(magma.dkim.key)) {
 		return NULL;
 	}
 
-	key = st_uchar_get(magma.dkim.privkey);
+	key = st_uchar_get(magma.dkim.key);
 
 	// Create a new handle to sign the message.
 	if (!(context = dkim_sign_d(dkim_engine, st_data_get(id), NULL, key, (uchr_t *)magma.dkim.selector, (uchr_t *)magma.dkim.domain,

@@ -25,7 +25,9 @@ INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad'
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.dkim.enabled', 'true', NOW());
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.dkim.selector', '$SELECTOR', NOW());
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.dkim.domain', '$DOMAIN', NOW());
-INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.dkim.privkey', '/etc/pki/dkim/private/$DKIMFILE', NOW());
+INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.dkim.key', '/etc/pki/dkim/private/$DKIMFILE', NOW());
+INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.dime.key', '/etc/pki/dime/private/$DIMEFILE', NOW());
+INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.dime.signet', '/etc/pki/dime/private/$DIMEFILE', NOW());
 
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[1].name', 'SMTP', NOW());
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[1].protocol', 'SMTP', NOW());

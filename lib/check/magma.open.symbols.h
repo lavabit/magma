@@ -50,13 +50,13 @@
 #include <lzo/lzo1x.h>
 
 // XML2
-#include <libxml/xmlmemory.h>
-#include <libxml/tree.h>
-#include <libxml/valid.h>
-#include <libxml/xpath.h>
-#include <libxml/xpathInternals.h>
-#include <libxml/parserInternals.h>
-#include <libxml/xmlerror.h>
+#include <libxml2/libxml/xmlmemory.h>
+#include <libxml2/libxml/tree.h>
+#include <libxml2/libxml/valid.h>
+#include <libxml2/libxml/xpath.h>
+#include <libxml2/libxml/xpathInternals.h>
+#include <libxml2/libxml/parserInternals.h>
+#include <libxml2/libxml/xmlerror.h>
 
 // ZLIB
 #include <zlib.h>
@@ -331,6 +331,7 @@ extern BIO * (*SSL_get_wbio_d)(const SSL * ssl);
 extern void (*EC_GROUP_free_d)(EC_GROUP *group);
 extern void (*EC_POINT_free_d)(EC_POINT *point);
 extern void (*X509_STORE_free_d)(X509_STORE *v);
+extern int (*DH_check_d)(const DH *dh, int *ret);
 extern int (*EC_KEY_generate_key_d)(EC_KEY *key);
 extern void (*ASN1_STRING_TABLE_cleanup_d)(void);
 extern void (*HMAC_CTX_cleanup_d)(HMAC_CTX *ctx);
@@ -481,6 +482,7 @@ extern int (*X509_STORE_load_locations_d)(X509_STORE *ctx, const char *file, con
 extern OCSP_REQ_CTX * (*OCSP_sendreq_new_d)(BIO *io, const char *path, void *req, int maxline);
 extern void (*SSL_CTX_set_verify_d)(SSL_CTX *ctx, int mode, int (*cb) (int, X509_STORE_CTX *));
 extern EC_POINT * (*EC_POINT_hex2point_d)(const EC_GROUP *, const char *, EC_POINT *, BN_CTX *);
+extern int (*CRYPTO_set_locked_mem_functions_d)(void *(*m) (size_t), void (*free_func) (void *));
 extern int (*OCSP_REQ_CTX_add1_header_d)(OCSP_REQ_CTX *rctx, const char *name, const char *value);
 extern void (*X509_STORE_CTX_set_chain_d)(struct x509_store_ctx_st *ctx, struct stack_st_X509 *sk);
 extern int (*SSL_CTX_load_verify_locations_d)(SSL_CTX *ctx, const char *CAfile, const char *CApath);
@@ -491,6 +493,7 @@ extern int (*EC_POINT_cmp_d)(const EC_GROUP *group, const EC_POINT *a, const EC_
 extern void (*SSL_CTX_set_tmp_dh_callback_d)(SSL_CTX *ctx, DH *(*dh)(SSL *ssl,int is_export, int keylength)) ;
 extern int (*ECDSA_do_verify_d)(const unsigned char *dgst, int dgst_len, const ECDSA_SIG *sig, EC_KEY *eckey);
 extern int (*X509_check_host_d)(X509 *x, const char *chk, size_t chklen, unsigned int flags, char **peername);
+extern int (*CRYPTO_set_mem_functions_d)(void *(*m) (size_t), void *(*r) (void *, size_t), void (*f) (void *));
 extern int (*X509_STORE_CTX_init_d)(X509_STORE_CTX *ctx, X509_STORE *store, X509 *x509, STACK_OF(X509) *chain);
 extern unsigned long (*ERR_peek_error_line_data_d)(const char **file, int *line, const char **data, int *flags);
 extern char * (*EC_POINT_point2hex_d)(const EC_GROUP *, const EC_POINT *, point_conversion_form_t form, BN_CTX *);

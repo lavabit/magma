@@ -198,6 +198,7 @@ BIO * (*SSL_get_wbio_d)(const SSL * ssl) = NULL;
 void (*EC_GROUP_free_d)(EC_GROUP *group) = NULL;
 void (*EC_POINT_free_d)(EC_POINT *point) = NULL;
 void (*X509_STORE_free_d)(X509_STORE *v) = NULL;
+int (*DH_check_d)(const DH *dh, int *ret) = NULL;
 int (*EC_KEY_generate_key_d)(EC_KEY *key) = NULL;
 void (*ASN1_STRING_TABLE_cleanup_d)(void) = NULL;
 void (*HMAC_CTX_cleanup_d)(HMAC_CTX *ctx) = NULL;
@@ -348,6 +349,7 @@ int (*X509_STORE_load_locations_d)(X509_STORE *ctx, const char *file, const char
 OCSP_REQ_CTX * (*OCSP_sendreq_new_d)(BIO *io, const char *path, void *req, int maxline) = NULL;
 void (*SSL_CTX_set_verify_d)(SSL_CTX *ctx, int mode, int (*cb) (int, X509_STORE_CTX *)) = NULL;
 EC_POINT * (*EC_POINT_hex2point_d)(const EC_GROUP *, const char *, EC_POINT *, BN_CTX *) = NULL;
+int (*CRYPTO_set_locked_mem_functions_d)(void *(*m) (size_t), void (*free_func) (void *)) = NULL;
 int (*OCSP_REQ_CTX_add1_header_d)(OCSP_REQ_CTX *rctx, const char *name, const char *value) = NULL;
 void (*X509_STORE_CTX_set_chain_d)(struct x509_store_ctx_st *ctx, struct stack_st_X509 *sk) = NULL;
 int (*SSL_CTX_load_verify_locations_d)(SSL_CTX *ctx, const char *CAfile, const char *CApath) = NULL;
@@ -358,6 +360,7 @@ int (*EC_POINT_cmp_d)(const EC_GROUP *group, const EC_POINT *a, const EC_POINT *
 void (*SSL_CTX_set_tmp_dh_callback_d)(SSL_CTX *ctx, DH *(*dh)(SSL *ssl,int is_export, int keylength))  = NULL;
 int (*ECDSA_do_verify_d)(const unsigned char *dgst, int dgst_len, const ECDSA_SIG *sig, EC_KEY *eckey) = NULL;
 int (*X509_check_host_d)(X509 *x, const char *chk, size_t chklen, unsigned int flags, char **peername) = NULL;
+int (*CRYPTO_set_mem_functions_d)(void *(*m) (size_t), void *(*r) (void *, size_t), void (*f) (void *)) = NULL;
 int (*X509_STORE_CTX_init_d)(X509_STORE_CTX *ctx, X509_STORE *store, X509 *x509, STACK_OF(X509) *chain) = NULL;
 unsigned long (*ERR_peek_error_line_data_d)(const char **file, int *line, const char **data, int *flags) = NULL;
 char * (*EC_POINT_point2hex_d)(const EC_GROUP *, const EC_POINT *, point_conversion_form_t form, BN_CTX *) = NULL;
@@ -732,6 +735,7 @@ if ((*(void **)&(SSL_get_wbio_d) = dlsym(magma, "SSL_get_wbio")) == NULL) return
 if ((*(void **)&(EC_GROUP_free_d) = dlsym(magma, "EC_GROUP_free")) == NULL) return "EC_GROUP_free";
 if ((*(void **)&(EC_POINT_free_d) = dlsym(magma, "EC_POINT_free")) == NULL) return "EC_POINT_free";
 if ((*(void **)&(X509_STORE_free_d) = dlsym(magma, "X509_STORE_free")) == NULL) return "X509_STORE_free";
+if ((*(void **)&(DH_check_d) = dlsym(magma, "DH_check")) == NULL) return "DH_check";
 if ((*(void **)&(EC_KEY_generate_key_d) = dlsym(magma, "EC_KEY_generate_key")) == NULL) return "EC_KEY_generate_key";
 if ((*(void **)&(ASN1_STRING_TABLE_cleanup_d) = dlsym(magma, "ASN1_STRING_TABLE_cleanup")) == NULL) return "ASN1_STRING_TABLE_cleanup";
 if ((*(void **)&(HMAC_CTX_cleanup_d) = dlsym(magma, "HMAC_CTX_cleanup")) == NULL) return "HMAC_CTX_cleanup";
@@ -882,6 +886,7 @@ if ((*(void **)&(X509_STORE_load_locations_d) = dlsym(magma, "X509_STORE_load_lo
 if ((*(void **)&(OCSP_sendreq_new_d) = dlsym(magma, "OCSP_sendreq_new")) == NULL) return "OCSP_sendreq_new";
 if ((*(void **)&(SSL_CTX_set_verify_d) = dlsym(magma, "SSL_CTX_set_verify")) == NULL) return "SSL_CTX_set_verify";
 if ((*(void **)&(EC_POINT_hex2point_d) = dlsym(magma, "EC_POINT_hex2point")) == NULL) return "EC_POINT_hex2point";
+if ((*(void **)&(CRYPTO_set_locked_mem_functions_d) = dlsym(magma, "CRYPTO_set_locked_mem_functions")) == NULL) return "CRYPTO_set_locked_mem_functions";
 if ((*(void **)&(OCSP_REQ_CTX_add1_header_d) = dlsym(magma, "OCSP_REQ_CTX_add1_header")) == NULL) return "OCSP_REQ_CTX_add1_header";
 if ((*(void **)&(X509_STORE_CTX_set_chain_d) = dlsym(magma, "X509_STORE_CTX_set_chain")) == NULL) return "X509_STORE_CTX_set_chain";
 if ((*(void **)&(SSL_CTX_load_verify_locations_d) = dlsym(magma, "SSL_CTX_load_verify_locations")) == NULL) return "SSL_CTX_load_verify_locations";
@@ -892,6 +897,7 @@ if ((*(void **)&(EC_POINT_cmp_d) = dlsym(magma, "EC_POINT_cmp")) == NULL) return
 if ((*(void **)&(SSL_CTX_set_tmp_dh_callback_d) = dlsym(magma, "SSL_CTX_set_tmp_dh_callback")) == NULL) return "SSL_CTX_set_tmp_dh_callback";
 if ((*(void **)&(ECDSA_do_verify_d) = dlsym(magma, "ECDSA_do_verify")) == NULL) return "ECDSA_do_verify";
 if ((*(void **)&(X509_check_host_d) = dlsym(magma, "X509_check_host")) == NULL) return "X509_check_host";
+if ((*(void **)&(CRYPTO_set_mem_functions_d) = dlsym(magma, "CRYPTO_set_mem_functions")) == NULL) return "CRYPTO_set_mem_functions";
 if ((*(void **)&(X509_STORE_CTX_init_d) = dlsym(magma, "X509_STORE_CTX_init")) == NULL) return "X509_STORE_CTX_init";
 if ((*(void **)&(ERR_peek_error_line_data_d) = dlsym(magma, "ERR_peek_error_line_data")) == NULL) return "ERR_peek_error_line_data";
 if ((*(void **)&(EC_POINT_point2hex_d) = dlsym(magma, "EC_POINT_point2hex")) == NULL) return "EC_POINT_point2hex";

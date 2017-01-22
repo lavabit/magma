@@ -113,8 +113,6 @@ bool_t lib_load_openssl(void) {
  */
 bool_t ssl_start(void) {
 
-	stringer_t *keyname;
-
 	// DH Parameter Generator Lock
 	if (mutex_init(&dhparam_lock, NULL)) {
 		log_critical("Could not initialize DH parameter mutex.");
@@ -155,28 +153,6 @@ bool_t ssl_start(void) {
 	// CRYPTO_secure_malloc_init() and then when we shutdown, call CRYPTO_secure_malloc_done();
 	//CRYPTO_set_mem_functions_d(&mm_alloc, &mm_realloc, &mm_free);
 	CRYPTO_set_locked_mem_functions_d(&mm_sec_alloc, &mm_sec_free);
-
-
-	// This must be done here because we have to wait for OpenSSL to be initialized first.
-	if (magma.dkim.enabled) {
-
-		keyname = magma.dkim.key;
-
-		if (file_world_accessible(st_char_get(keyname))) {
-			log_critical("Warning: DKIM private key has world-access file permissions! Please fix. { path = %.*s }",  st_length_int(keyname), st_char_get(keyname));
-		}
-
-		if (!ssl_verify_privkey(st_char_get(keyname))) {
-			log_critical("Unable to validate DKIM private key. { path = %.*s }", st_length_int(keyname), st_char_get(keyname));
-			return false;
-		}
-		else if (!(magma.dkim.key = file_load(st_char_get(keyname)))) {
-			log_critical("Unable to load DKIM private key contents from file. { path = %.*s }", st_length_int(keyname), st_char_get(keyname));
-			return false;
-		}
-
-		st_free(keyname);
-	}
 
 	return true;
 }

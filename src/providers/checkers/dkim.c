@@ -84,9 +84,32 @@ void dkim_memory_free(void *closure, void *ptr) {
  */
 bool_t dkim_start(void) {
 
+	stringer_t *keyname = NULL;
+
 	if (!(dkim_engine = dkim_init_d(dkim_memory_alloc, dkim_memory_free))) {
 		log_pedantic("DKIM engine failed to start. {dkim_init = NULL}");
 		return false;
+	}
+
+	// This must be done here because we have to wait for OpenSSL to be initialized first.
+	if (magma.dkim.enabled) {
+
+		keyname = magma.dkim.key;
+
+		if (file_world_accessible(st_char_get(keyname))) {
+			log_critical("Warning: DKIM private key has world-access file permissions! Please fix. { path = %.*s }",  st_length_int(keyname), st_char_get(keyname));
+		}
+
+		if (!ssl_verify_privkey(st_char_get(keyname))) {
+			log_critical("Unable to validate DKIM private key. { path = %.*s }", st_length_int(keyname), st_char_get(keyname));
+			return false;
+		}
+		else if (!(magma.dkim.key = file_load(st_char_get(keyname)))) {
+			log_critical("Unable to load DKIM private key contents from file. { path = %.*s }", st_length_int(keyname), st_char_get(keyname));
+			return false;
+		}
+
+		st_free(keyname);
 	}
 
 	return true;

@@ -423,8 +423,7 @@ int_t meta_data_insert_keys(uint64_t usernum, stringer_t *username, key_pair_t *
 
 	// Encode the key values using base64 modified. We are also checking to make sure the encoded values are the expected length. Also,
 	// note the key length is hard coded here but is dynamic below, on purpose, to make changes easier.
-	if (!(public = base64_encode_mod(input->public, NULL)) || !(private = base64_encode_mod(input->private, NULL)) ||
-		st_length_get(public) != 98 || st_length_get(private) != 171) {
+	if (!(public = base64_encode_mod(input->public, NULL)) || !(private = base64_encode_mod(input->private, NULL))) {
 		log_pedantic("Unable to store a user key pair. { username = %.*s }", st_length_int(username),
 			st_char_get(username));
 		st_cleanup(public, private);
@@ -451,7 +450,7 @@ int_t meta_data_insert_keys(uint64_t usernum, stringer_t *username, key_pair_t *
 	parameters[2].buffer = st_char_get(private);
 
 	if ((affected = stmt_exec_affected_conn(stmts.meta_insert_mail_keys, parameters, transaction)) != 1 && affected == -1) {
-		log_pedantic("Unable to insert the user key pair. A database error occurred. { username = %.*s }",
+		log_pedantic("Unable to insert the user signet and key. A database error occurred. { username = %.*s }",
 			st_length_int(username), st_char_get(username));
 		st_cleanup(public, private);
 		return -1;

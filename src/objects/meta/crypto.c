@@ -22,65 +22,43 @@
  */
 int_t meta_crypto_keys_create(uint64_t usernum, stringer_t *username, stringer_t *master, int64_t transaction) {
 
-	size_t length = 0;
-	EC_KEY *ecies_key = NULL;
-	scramble_t *scramble = NULL;
-	uchr_t *public = NULL, *private = NULL;
-	key_pair_t pair = {
-		NULL, NULL
-	};
+	key_pair_t pair = { NULL, NULL };
+	stringer_t *encrypted = NULL, *serialized = NULL;
+	prime_t *key = NULL, *request = NULL, *signet = NULL;
 
-	// Create the ECIES key pair first and extract the public and private keys, wrapping them in managed strings.
-	if (!(ecies_key = ecies_key_create())) {
-		log_pedantic("Unable to create a user key pair. { username = %.*s }",
-			st_length_int(username), st_char_get(username));
+	// Create the DIME user key.
+	if (!(key = prime_key_generate(PRIME_USER_KEY, SECURITY)) || !(pair.private = encrypted = prime_key_encrypt(master, key, BINARY, NULL))) {
+		log_pedantic("Unable to create a DIME user key. { username = %.*s }", st_length_int(username), st_char_get(username));
+		prime_cleanup(key);
 		return -1;
 	}
 
-	// Extract the public portion in binary form.
-	else if (!(public = ecies_key_public_bin(ecies_key, &length)) || length <= 0 || !(pair.public = st_import(public, length))) {
-
-		log_pedantic("Unable to extract the ECIES public key from the user key pair. { username = %.*s }",
-			st_length_int(username), st_char_get(username));
-
-		ecies_key_free(ecies_key);
-		mm_cleanup(public);
-
+	// Create the DIME signing request, and then sign it to create the user's signet.
+	else if (!(request = prime_request_generate(key, NULL)) || !(signet = prime_request_sign(request, org_key)) ||
+		!(pair.public = serialized = prime_get(signet, BINARY, NULL))) {
+		log_pedantic("Unable to create a user signet. { username = %.*s }", st_length_int(username), st_char_get(username));
+		prime_cleanup(request);
+		prime_cleanup(signet);
+		st_free(encrypted);
+		prime_free(key);
 		return -1;
 	}
 
-	// Extract the private portion of the key pair in binary form.
-	else if (!(private = ecies_key_private_bin(ecies_key, &length)) || length <= 0
-		|| !(scramble = scramble_encrypt(master, PLACER(private, length)))
-		|| !(pair.private = st_import(scramble, scramble_total_length(scramble)))) {
-
-		log_pedantic("Unable to extract and scamble the private portion of the user key pair. { username = %.*s }",
-			st_length_int(username), st_char_get(username));
-
-		scramble_cleanup(scramble);
-		ecies_key_free(ecies_key);
-		mm_sec_cleanup(private);
-		st_cleanup(pair.public);
-		mm_cleanup(public);
-
-		return -1;
-	}
-
-	scramble_cleanup(scramble);
-	ecies_key_free(ecies_key);
-	mm_sec_cleanup(private);
-	mm_cleanup(public);
+	// We no longer need the DIME structures, just the serialized versions.
+	prime_free(request);
+	prime_free(signet);
+	prime_free(key);
 
 	// Try storing the keys in the database. If 0 is returned, the new pair was stored, otherwise if a 1 is returned
 	// its possible another process created the keys already, in which case they will be retrieved below.
 	if (meta_data_insert_keys(usernum, username, &pair, transaction) < 0) {
-		log_pedantic("Unable to store the user key pair. { username = %.*s }", st_length_int(username), st_char_get(username));
-		st_cleanup(pair.private, pair.public);
+		log_pedantic("Unable to store the user signet and key. { username = %.*s }", st_length_int(username), st_char_get(username));
+		st_cleanup(encrypted, serialized);
 		return 1;
 	}
 
-	log_info("Created user storage keys. { username = %.*s }", st_length_int(username), st_char_get(username));
-	st_cleanup(pair.private, pair.public);
+	log_info("Created the user signet and key. { username = %.*s }", st_length_int(username), st_char_get(username));
+	st_cleanup(encrypted, serialized);
 
 	return 0;
 }

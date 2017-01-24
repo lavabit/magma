@@ -114,8 +114,6 @@ int_t meta_update_keys(meta_user_t *user, stringer_t *master, META_LOCK_STATUS l
 
 	int_t result = 0;
 	int64_t transaction = 0;
-	stringer_t *holder = NULL;
-	scramble_t *scramble = NULL;
 	key_pair_t pair = {
 		NULL, NULL
 	};
@@ -139,20 +137,20 @@ int_t meta_update_keys(meta_user_t *user, stringer_t *master, META_LOCK_STATUS l
 
 			// Make sure we can retrieve the keys from the database before we return them to the caller.
 			if (meta_crypto_keys_create(user->usernum, user->username, master, transaction) < 0) {
-				log_pedantic("Unable to create and fetch a newly created user key pair. { username = %.*s }", st_length_int(user->username),
+				log_pedantic("Unable to create a signet and key for the user. { username = %.*s }", st_length_int(user->username),
 					st_char_get(user->username));
 				tran_rollback(transaction);
 				transaction = -1;
 				result = -1;
 			}
 			else if (tran_commit(transaction)) {
-				log_pedantic("Unable to create and fetch a newly created user key pair. { username = %.*s }", st_length_int(user->username),
+				log_pedantic("Unable to commit the transaction. Insertion of the user signet and key failed. { username = %.*s }", st_length_int(user->username),
 					st_char_get(user->username));
 				transaction = -1;
 				result = -1;
 			}
 			else if ((transaction = tran_start()) < 0 || meta_data_fetch_keys(user, &pair, transaction)) {
-				log_pedantic("Unable to create and fetch a newly created user key pair. { username = %.*s }", st_length_int(user->username),
+				log_pedantic("Unable to fetch the newly created user signet and key. { username = %.*s }", st_length_int(user->username),
 					st_char_get(user->username));
 				result = -1;
 			}
@@ -173,29 +171,25 @@ int_t meta_update_keys(meta_user_t *user, stringer_t *master, META_LOCK_STATUS l
 		}
 
 		// Decrypt the buffer retrieved from the database. Return a different error code if there was a problem decrypting the key.
-		else if (!(scramble = scramble_import(pair.private)) || !(holder = scramble_decrypt(master, scramble))) {
+		else if (!(user->prime.key = prime_key_decrypt(user->realm.mail, pair.private, BINARY, SECURITY))) {
 			log_pedantic("Unable to decrypt the private user key. { username = %.*s }", st_length_int(user->username),
 				st_char_get(user->username));
 			st_cleanup(pair.private, pair.public);
 			result = -2;
 		}
 
-		/// BUG: We shouldn't need to duplicate the private key. This is a short term solution because we can't store the decrypted data in
-		/// 		a secure buffer yet.
 		// Copy the private key into a secure buffer and assign the public key to the user object.
-		else if (!(user->prime.signet = pair.public) || !(user->prime.key = st_dupe_opts(MANAGED_T | CONTIGUOUS | SECURE, holder))) {
+		else if (!(user->prime.signet = prime_set(pair.public, BINARY, NONE))) {
 
 			log_pedantic("Unable to copy the key pair into the user object. { username = %.*s }", st_length_int(user->username),
 				st_char_get(user->username));
 
-			st_cleanup(holder, pair.private, pair.public);
+			st_cleanup(pair.private, pair.public);
 			user->prime.signet = user->prime.key = NULL;
 			result = -1;
 		}
 
-		else {
-			st_cleanup(holder, pair.private);
-		}
+		st_cleanup(pair.private, pair.public);
 	}
 
 	// Do we need to clear the lock.

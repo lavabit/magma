@@ -7,7 +7,7 @@
 
 START_TEST (check_mail_load_s) {
 
-//	log_disable();
+	log_disable();
 	bool_t result = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
@@ -20,7 +20,7 @@ END_TEST
 
 START_TEST (check_mail_store_s) {
 
-//	log_disable();
+	log_disable();
 	bool_t result = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 

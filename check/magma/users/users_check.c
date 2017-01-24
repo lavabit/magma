@@ -137,6 +137,13 @@ START_TEST (check_users_meta_invalid_s) {
 			result = false;
 		}
 
+		else if (!(meta_get(auth->usernum, auth->username, auth->keys.master, st_xor(auth->keys.master, auth->tokens.verification,
+			MANAGEDBUF(64)), META_PROTOCOL_POP, META_GET_MESSAGES | META_GET_KEYS, &(user)))) {
+			st_sprint(errmsg, "User meta login check failed. Get user metadata failure. { username =  %.*s / password = %.*s }",
+				st_length_int(usernames[i]), st_char_get(usernames[i]), st_length_int(passwords[i]), st_char_get(passwords[i]));
+			result = false;
+		}
+
 		if (auth) auth_free(auth);
 		if (user) meta_inx_remove(user->usernum, META_PROTOCOL_POP);
 

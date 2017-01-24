@@ -168,7 +168,6 @@ int_t meta_update_keys(meta_user_t *user, META_LOCK_STATUS locked) {
 		else if (!(user->prime.key = prime_key_decrypt(user->realm.mail, pair.private, BINARY, NONE))) {
 			log_pedantic("Unable to decrypt the private user key. { username = %.*s }", st_length_int(user->username),
 				st_char_get(user->username));
-			st_cleanup(pair.private, pair.public);
 			result = -2;
 		}
 
@@ -176,7 +175,6 @@ int_t meta_update_keys(meta_user_t *user, META_LOCK_STATUS locked) {
 		else if (!(user->prime.signet = prime_set(pair.public, BINARY, NONE))) {
 			log_pedantic("Unable to copy the key pair into the user object. { username = %.*s }", st_length_int(user->username),
 				st_char_get(user->username));
-			st_cleanup(pair.private, pair.public);
 			result = -1;
 		}
 

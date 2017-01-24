@@ -12,7 +12,7 @@ MAKEFLAGS						= --output-sync=target
 # Identity of this package.
 PACKAGE_NAME					= Magma Daemon
 PACKAGE_TARNAME					= magma
-PACKAGE_VERSION					= 6.3
+PACKAGE_VERSION					= 6.4
 PACKAGE_STRING					= $(PACKAGE_NAME) $(PACKAGE_VERSION)
 PACKAGE_BUGREPORT				= support@lavabit.com
 PACKAGE_URL						= https://lavabit.com

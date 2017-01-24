@@ -16,16 +16,16 @@
  * @param	pathptr		if not NULL, the address of a pointer to a string that will receive a copy of the message's on-disk data.
  * @return	true if the storage operation succeeded, or false on failure.
  */
-bool_t mail_store_message_data(uint64_t messagenum, uint8_t fflags, void *data, size_t data_len, chr_t **pathptr) {
+bool_t mail_store_message_data(uint64_t messagenum, uint8_t flags, stringer_t *data, chr_t **pathptr) {
 
-	message_fheader_t fheader;
 	int_t fd;
 	chr_t *path;
+	message_header_t header;
 
-	fheader.magic1 = FMESSAGE_MAGIC_1;
-	fheader.magic2 = FMESSAGE_MAGIC_2;
-	fheader.reserved = 0;
-	fheader.flags = fflags;
+	header.magic1 = FMESSAGE_MAGIC_1;
+	header.magic2 = FMESSAGE_MAGIC_2;
+	header.reserved = 0;
+	header.flags = flags;
 
 	// In case of possible failure.
 	if (pathptr) {
@@ -56,8 +56,8 @@ bool_t mail_store_message_data(uint64_t messagenum, uint8_t fflags, void *data, 
 
 	// Write the data out to disk, starting with the header.
 
-	if ((write(fd, &fheader, sizeof(fheader)) != sizeof(fheader)) || (write(fd, data, data_len) != data_len)) {
-		log_error("Error writing message data to disk.");
+	if ((write(fd, &header, sizeof(header)) != sizeof(header)) || (write(fd, st_data_get(data), st_length_get(data)) != st_length_get(data))) {
+		log_error("Error writing message data to disk. { errno = %i }", errno);
 		close(fd);
 		unlink(path);
 		ns_free(path);
@@ -66,7 +66,7 @@ bool_t mail_store_message_data(uint64_t messagenum, uint8_t fflags, void *data, 
 
 	// Flush the buffer.
 	if (fsync(fd) != 0) {
-		log_error("Could not flush the write buffers to disk.");
+		log_error("Could not flush the write buffers to disk. { errno = %i }", errno);
 		close(fd);
 		unlink(path);
 		ns_free(path);
@@ -75,7 +75,7 @@ bool_t mail_store_message_data(uint64_t messagenum, uint8_t fflags, void *data, 
 
 	// Close the descriptor.
 	if (close(fd) != 0) {
-		log_error("An error occurred while trying to close the file descriptor.");
+		log_error("An error occurred while trying to close the file descriptor. { errno = %i }", errno);
 		unlink(path);
 		ns_free(path);
 		return false;
@@ -100,55 +100,43 @@ bool_t mail_store_message_data(uint64_t messagenum, uint8_t fflags, void *data, 
  * @param	message		a managed string containing the raw body of the message.
  * @return	0 on failure, or the newly inserted id of the message in the database on success.
  */
-uint64_t mail_store_message(uint64_t usernum, stringer_t *pubkey, uint64_t foldernum, uint32_t *status, uint64_t signum, uint64_t sigkey, stringer_t *message) {
+uint64_t mail_store_message(uint64_t usernum, prime_t *signet, uint64_t foldernum, uint32_t *status, uint64_t signum, uint64_t sigkey, stringer_t *message) {
 
 	chr_t *path;
-	cryptex_t *encrypted = NULL;
-	compress_t *reduced;
+
 	uint64_t messagenum;
-	int64_t transaction, ret;
-	size_t write_len;
-	uint8_t fflags = FMESSAGE_OPT_COMPRESSED;
-	uchr_t *write_data;
 	bool_t store_result;
+	compress_t *reduced = NULL;
+	stringer_t *encrypted = NULL;
+	int64_t transaction = -1, result = 0;
+	uint8_t flags = 0;
 
 	// Next, encrypt the message if necessary.
-	if (pubkey) {
-
-
-		if (!(encrypted = ecies_encrypt(pubkey, ECIES_PUBLIC_BINARY, message, st_length_get(message)))) {
-			log_pedantic("Unable to decrypt mail message.");
+	if (signet) {
+		if (!(encrypted = prime_message_encrypt(message, NULL, NULL, org_key, signet))) {
+			log_pedantic("Unable to encrypt the email message.");
 			return 0;
 		}
 
-		write_data = (uchr_t *)encrypted;
-		write_len = cryptex_total_length(encrypted);
-		fflags |= FMESSAGE_OPT_ENCRYPTED;
+		flags |= FMESSAGE_OPT_ENCRYPTED;
 		*status |= MAIL_STATUS_ENCRYPTED;
 	}
 	else {
 
-
-		// Compress the message.
 		if (!(reduced = compress_lzo(message))) {
-			log_error("An error occurred while attempting to compress a message with %zu bytes.", st_length_get(message));
+			log_pedantic("Unable to compress the email message.");
 			return 0;
 		}
 
-		write_data = (uchr_t *)reduced;
-		write_len = compress_total_length(reduced);
+		flags |= FMESSAGE_OPT_COMPRESSED;
 	}
+
 
 	// Begin the transaction.
 	if ((transaction = tran_start()) < 0) {
-		log_error("Could not start a transaction. {start = %li}", transaction);
-
-		if (encrypted) {
-			cryptex_free(encrypted);
-		} else {
-			compress_free(reduced);
-		}
-
+		log_error("Could not start a transaction. { transaction = %li }", transaction);
+		compress_cleanup(reduced);
+		prime_cleanup(encrypted);
 		return 0;
 	}
 
@@ -156,28 +144,20 @@ uint64_t mail_store_message(uint64_t usernum, stringer_t *pubkey, uint64_t folde
 	if ((messagenum = mail_db_insert_message(usernum, foldernum, *status, st_length_int(message), signum, sigkey, transaction)) == 0) {
 		log_pedantic("Could not create a record in the database. mail_db_insert_message = 0");
 		tran_rollback(transaction);
-
-		if (encrypted) {
-			cryptex_free(encrypted);
-		} else {
-			compress_free(reduced);
-		}
-
+		compress_cleanup(reduced);
+		prime_cleanup(encrypted);
 		return 0;
 	}
 
 	// Now attempt to save everything to disk.
-	store_result = mail_store_message_data(messagenum, fflags, write_data, write_len, &path);
+	store_result = mail_store_message_data(messagenum, flags, (encrypted ? encrypted : reduced), &path);
 
-	if (encrypted) {
-		cryptex_free(encrypted);
-	} else {
-		compress_free(reduced);
-	}
+	compress_cleanup(reduced);
+	prime_cleanup(encrypted);
 
-	// If storage failed, fail out.
+	// If the disk operation failed...
 	if (!store_result || !path) {
-		log_pedantic("Failed to store user's message to disk.");
+		log_pedantic("Failed to store the user's message to disk.");
 		tran_rollback(transaction);
 
 		if (path) {
@@ -189,8 +169,8 @@ uint64_t mail_store_message(uint64_t usernum, stringer_t *pubkey, uint64_t folde
 	}
 
 	// Commit the transaction.
-	if ((ret = tran_commit(transaction))) {
-		log_error("Could not commit the transaction. { commit = %li }", ret);
+	if ((result = tran_commit(transaction))) {
+		log_error("Could not commit the transaction. { commit = %li }", result);
 		unlink(path);
 		ns_free(path);
 		return 0;

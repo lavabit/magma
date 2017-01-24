@@ -20,18 +20,16 @@
 // find those symbols using dlsym() so we can't dynamically select individual test cases at
 // runtime. This redefines the macro without using the static keyword to workaround this problem.
 #undef START_TEST
-#define START_TEST(__testname)\
-void __testname (int _i CK_ATTRIBUTE_UNUSED)\
-{\
-  tcase_fn_start (""# __testname, __FILE__, __LINE__);
+#define START_TEST(__testname) void __testname (int _i CK_ATTRIBUTE_UNUSED) {  tcase_fn_start (""# __testname, __FILE__, __LINE__);
 
-#include <data/data_check.h>
+#include "data/data_check.h"
 #include "core/core_check.h"
 #include "providers/provide_check.h"
 #include "prime/prime_check.h"
 #include "network/network_check.h"
 #include "objects/objects_check.h"
 #include "users/users_check.h"
+#include "mail/mail_check.h"
 #include "smtp/smtp_check.h"
 
 extern int case_timeout;
@@ -41,6 +39,8 @@ void	log_test(chr_t *test, stringer_t *error);
 #define testcase(s, tc, name, func) tcase_add_test((tc = tcase_create(name)), func); tcase_set_timeout(tc, case_timeout); suite_add_tcase(s, tc)
 
 Suite * suite_check_sample(void);
+
+#endif
 
 //! Quick Test
 #if 1
@@ -200,7 +200,5 @@ Suite * suite_check_sample(void);
 //#define SYMMETRIC_CHECK_SIZE_MAX (1 * 1024 * 1024) // 1 megabyte
 
 #define OBJECT_CHECK_ITERATIONS 256
-
-#endif
 
 #endif

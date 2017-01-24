@@ -38,7 +38,7 @@ void       meta_user_serial_set(meta_user_t *user, uint64_t object, uint64_t ser
 int_t   meta_update_aliases(meta_user_t *user, META_LOCK_STATUS locked);
 int_t   meta_update_contacts(meta_user_t *user, META_LOCK_STATUS locked);
 int_t   meta_update_folders(meta_user_t *user, META_LOCK_STATUS locked);
-int_t   meta_update_keys(meta_user_t *user, stringer_t *master, META_LOCK_STATUS locked);
+int_t   meta_update_keys(meta_user_t *user, META_LOCK_STATUS locked);
 int_t   meta_update_message_folders(meta_user_t *user, META_LOCK_STATUS locked);
 int_t   meta_update_realms(meta_user_t *user, stringer_t *master, META_LOCK_STATUS locked);
 int_t   meta_update_user(meta_user_t *user, META_LOCK_STATUS locked);

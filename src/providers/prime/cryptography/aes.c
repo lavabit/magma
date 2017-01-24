@@ -283,7 +283,7 @@ stringer_t * aes_chunk_decrypt(stringer_t *key, stringer_t *chunk, stringer_t *o
 	placer_t cipher_key = pl_null(), tag_key_shard = pl_null(), vector_key_shard = pl_null();
 	stringer_t *vector = NULL, *tag = NULL, *result = NULL;
 
-	if (st_length_get(key) != PRIME_CHUNK_KEY_LEN) {
+	if (!key || st_length_get(key) != PRIME_CHUNK_KEY_LEN) {
 		log_pedantic("PRIME chunk decryption requires a %i byte key. { length = %zu }", PRIME_CHUNK_KEY_LEN, st_length_get(key));
 		return NULL;
 	}
@@ -634,7 +634,7 @@ stringer_t * aes_artifact_decrypt(stringer_t *key, stringer_t *object, stringer_
 	placer_t cipher_key = pl_null(), tag_key_shard = pl_null(), vector_key_shard = pl_null();
 	stringer_t *vector = NULL, *tag = NULL, *result = NULL;
 
-	if (st_length_get(key) != PRIME_OBJECT_KEY_LEN) {
+	if (!key || st_length_get(key) != PRIME_OBJECT_KEY_LEN) {
 		log_pedantic("PRIME object decryption requires a %i byte key. { length = %zu }", PRIME_OBJECT_KEY_LEN, st_length_get(key));
 		return NULL;
 	}
@@ -753,7 +753,7 @@ stringer_t * aes_artifact_decrypt(stringer_t *key, stringer_t *object, stringer_
 		return NULL;
 	}
 
-	if (EVP_DecryptFinal_ex_d(&ctx, st_data_get(output) + 1 + written, &available) != 1) {
+	else if (EVP_DecryptFinal_ex_d(&ctx, st_data_get(output) + 1 + written, &available) != 1) {
 		log_pedantic("An error occurred while trying to complete decryption process. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
 		EVP_CIPHER_CTX_cleanup_d(&ctx);

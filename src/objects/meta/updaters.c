@@ -105,7 +105,7 @@ int_t meta_update_realms(meta_user_t *user, stringer_t *master, META_LOCK_STATUS
  *
  * @return	-2 if there is a problem unscrambling the private key, -1 for a system error, 0 for success, and 1 if the keys were created.
  */
-int_t meta_update_keys(meta_user_t *user, stringer_t *master, META_LOCK_STATUS locked) {
+int_t meta_update_keys(meta_user_t *user, META_LOCK_STATUS locked) {
 
 	int_t result = 0;
 	int64_t transaction = 0;
@@ -119,7 +119,7 @@ int_t meta_update_keys(meta_user_t *user, stringer_t *master, META_LOCK_STATUS l
 	}
 
 	// We only need to fetch and decrypt the user keys if they aren't already stored in the structure.
-	if (user->usernum && st_empty(user->prime.key, user->prime.signet)) {
+	if (user->usernum && (!user->prime.key || !user->prime.signet)) {
 
 		if ((transaction = tran_start()) < 0) {
 			log_pedantic("Unable to start shard SQL transaction. { username = %.*s }", st_length_int(user->username),
@@ -131,7 +131,7 @@ int_t meta_update_keys(meta_user_t *user, stringer_t *master, META_LOCK_STATUS l
 		else if (meta_data_fetch_keys(user, &pair, transaction) == 1) {
 
 			// Make sure we can retrieve the keys from the database before we return them to the caller.
-			if (meta_crypto_keys_create(user->usernum, user->username, master, transaction) < 0) {
+			if (meta_crypto_keys_create(user->usernum, user->username, user->realm.mail, transaction) < 0) {
 				log_pedantic("Unable to create a signet and key for the user. { username = %.*s }", st_length_int(user->username),
 					st_char_get(user->username));
 				tran_rollback(transaction);
@@ -164,9 +164,8 @@ int_t meta_update_keys(meta_user_t *user, stringer_t *master, META_LOCK_STATUS l
 				st_char_get(user->username));
 			result = -1;
 		}
-
 		// Decrypt the buffer retrieved from the database. Return a different error code if there was a problem decrypting the key.
-		else if (!(user->prime.key = prime_key_decrypt(user->realm.mail, pair.private, BINARY, SECURITY))) {
+		else if (!(user->prime.key = prime_key_decrypt(user->realm.mail, pair.private, BINARY, NONE))) {
 			log_pedantic("Unable to decrypt the private user key. { username = %.*s }", st_length_int(user->username),
 				st_char_get(user->username));
 			st_cleanup(pair.private, pair.public);
@@ -175,12 +174,9 @@ int_t meta_update_keys(meta_user_t *user, stringer_t *master, META_LOCK_STATUS l
 
 		// Copy the private key into a secure buffer and assign the public key to the user object.
 		else if (!(user->prime.signet = prime_set(pair.public, BINARY, NONE))) {
-
 			log_pedantic("Unable to copy the key pair into the user object. { username = %.*s }", st_length_int(user->username),
 				st_char_get(user->username));
-
 			st_cleanup(pair.private, pair.public);
-			user->prime.signet = user->prime.key = NULL;
 			result = -1;
 		}
 

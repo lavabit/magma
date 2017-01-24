@@ -111,7 +111,7 @@ typedef struct __attribute__ ((packed)) {
 	uint8_t magic2;		// second magic byte: 0x76
 	uint8_t reserved;
 	uint8_t flags;
-}  message_fheader_t;
+}  message_header_t;
 
 /// messages.c
 message_t *  message_alloc(uint64_t messagenum, uint64_t created, uint64_t signature, uint64_t key, uint64_t flags, stringer_t *server, size_t size);

@@ -18,14 +18,14 @@
 stringer_t * mail_load_header(meta_message_t *meta, meta_user_t *user) {
 
 	struct stat file_info;
-	message_fheader_t fheader;
+	message_header_t header;
 	mail_message_t *message;
 	stringer_t *uncompressed;
 	uint32_t total, taken = 0;
 	uchr_t *unencrypted;
 	chr_t *path, key[128], *raw;
 	size_t dec_len, data_len;
-	off_t offset = sizeof(compress_head_t) + sizeof(message_fheader_t);
+	off_t offset = sizeof(compress_head_t) + sizeof(message_header_t);
 
 	int_t fd, keylen, block_len = compress_block_length() + offset;
 
@@ -64,7 +64,7 @@ stringer_t * mail_load_header(meta_message_t *meta, meta_user_t *user) {
 			return NULL;
 		}
 
-		if (file_info.st_size < sizeof(message_fheader_t)) {
+		if (file_info.st_size < sizeof(message_header_t)) {
 			log_pedantic("Mail message was missing full file header: { %s }", path);
 			close(fd);
 			ns_free(path);
@@ -72,16 +72,16 @@ stringer_t * mail_load_header(meta_message_t *meta, meta_user_t *user) {
 		}
 
 		// Do some sanity checking on the message header
-		data_len = file_info.st_size - sizeof(message_fheader_t);
+		data_len = file_info.st_size - sizeof(message_header_t);
 
-		if (read(fd, &fheader, sizeof(fheader)) != sizeof(fheader)) {
+		if (read(fd, &header, sizeof(header)) != sizeof(header)) {
 			log_pedantic("Unable to read message file header: { %s }", path);
 			close(fd);
 			ns_free(path);
 			return NULL;
 		}
 
-		if ((fheader.magic1 != FMESSAGE_MAGIC_1) || (fheader.magic2 != FMESSAGE_MAGIC_2)) {
+		if ((header.magic1 != FMESSAGE_MAGIC_1) || (header.magic2 != FMESSAGE_MAGIC_2)) {
 			log_pedantic("Mail message had incorrect file format: { %s }", path);
 			close(fd);
 			ns_free(path);
@@ -89,13 +89,13 @@ stringer_t * mail_load_header(meta_message_t *meta, meta_user_t *user) {
 		}
 
 		// We can fail... or we can just trust the file header. It's unclear which is best.
-		if ((meta->status & MAIL_STATUS_ENCRYPTED) && !(fheader.flags & FMESSAGE_OPT_ENCRYPTED)) {
+		if ((meta->status & MAIL_STATUS_ENCRYPTED) && !(header.flags & FMESSAGE_OPT_ENCRYPTED)) {
 			log_pedantic("The message is marked as encrypted in database but the file heading indicates it was stored as plain text.");
 			ns_free(path);
 			close(fd);
 			return NULL;
 		}
-		else if (!(meta->status & MAIL_STATUS_ENCRYPTED) && (fheader.flags & FMESSAGE_OPT_ENCRYPTED)) {
+		else if (!(meta->status & MAIL_STATUS_ENCRYPTED) && (header.flags & FMESSAGE_OPT_ENCRYPTED)) {
 			log_pedantic("The message is marked as plain text in database but the file heading indicates it has been encrypted.");
 			ns_free(path);
 			close(fd);
@@ -235,8 +235,8 @@ mail_message_t * mail_load_message(meta_message_t *meta, meta_user_t *user, serv
 
 	int_t fd, keylen;
 	chr_t *path, key[128];
-	message_fheader_t fheader;
-	compress_t *compressed;
+	message_header_t fheader;
+//	compress_t *compressed;
 	stringer_t *raw, *uncompressed;
 	uchr_t *unencrypted;
 	mail_message_t *result;
@@ -287,7 +287,7 @@ mail_message_t * mail_load_message(meta_message_t *meta, meta_user_t *user, serv
 		return NULL;
 	}
 
-	if (file_info.st_size < sizeof(message_fheader_t)) {
+	if (file_info.st_size < sizeof(message_header_t)) {
 		log_pedantic("Mail message was missing full file header: { %s }", path);
 		close(fd);
 		ns_free(path);
@@ -295,7 +295,7 @@ mail_message_t * mail_load_message(meta_message_t *meta, meta_user_t *user, serv
 	}
 
 	// Do some sanity checking on the message header
-	data_len = file_info.st_size - sizeof(message_fheader_t);
+	data_len = file_info.st_size - sizeof(message_header_t);
 
 	if (read(fd, &fheader, sizeof(fheader)) != sizeof(fheader)) {
 		log_pedantic("Unable to read message file header: { %s }", path);

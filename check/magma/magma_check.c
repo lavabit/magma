@@ -7,10 +7,9 @@
 
 #include "magma_check.h"
 
+int_t case_timeout = RUN_TEST_CASE_TIMEOUT;
 bool_t do_virus_check = true, do_tank_check = true, do_dspam_check = true, do_spf_check = true;
 chr_t *virus_check_data_path = NULL, *tank_check_data_path = NULL, *dspam_check_data_path = NULL, *barrister_unit_test = NULL;
-
-int_t case_timeout = RUN_TEST_CASE_TIMEOUT;
 
 /**
  * @brief Enable the log so we can print status information. We're only concerned with whether the
@@ -75,7 +74,8 @@ Suite * suite_check_barrister(chr_t *testname) {
 }
 
 /***
- * @return Will return -1 if the code is unable to determine whether tracing is active, 0 if tracing is disabled and 1 if tracing has been detected.
+ * @return Will return -1 if the code is unable to determine whether tracing is active, 0 if tracing is disabled and
+ *		1 if tracing has been detected.
  */
 int_t running_on_debugger(void) {
 
@@ -86,7 +86,8 @@ int_t running_on_debugger(void) {
 		return -1;
 	}
 
-	// If were the child, we'll try to start tracing the parent process. If our trace request fails, we assume that means its already being traced by a debugger.
+	// If were the child, we'll try to start tracing the parent process. If our trace request fails, we assume that means
+	// its already being traced by a debugger.
 	else if (pid == 0) {
 
 		parent = getppid();
@@ -99,7 +100,6 @@ int_t running_on_debugger(void) {
 		}
 
 		exit(1);
-
 	}
 	else if ((ret = waitpid(pid, &status, 0)) == pid && WIFEXITED(status) == true) {
 
@@ -107,11 +107,13 @@ int_t running_on_debugger(void) {
 		return WEXITSTATUS(status) ? 1 : 0;
 	}
 
-
 	return -1;
 }
 
-/* modeled closely after display_usage() */
+/**
+ * @brief	Show the check program usage information.
+ * @see		display_usage()
+ */
 void check_display_help (chr_t *invalid_option) {
 
 	log_info("%s%s%s" \
@@ -271,9 +273,7 @@ int main(int argc, char *argv[]) {
 		log_error("Initialization error. Exiting.\n");
 		status_set(-1);
 		process_stop();
-		ns_cleanup(virus_check_data_path);
-		ns_cleanup(tank_check_data_path);
-		ns_cleanup(dspam_check_data_path);
+		ns_cleanup( virus_check_data_path, tank_check_data_path, dspam_check_data_path);
 		exit(EXIT_FAILURE);
 	}
 
@@ -297,6 +297,7 @@ int main(int argc, char *argv[]) {
 		srunner_add_suite(sr, suite_check_network());
 		srunner_add_suite(sr, suite_check_objects());
 		srunner_add_suite(sr, suite_check_users());
+		srunner_add_suite(sr, suite_check_mail());
 		srunner_add_suite(sr, suite_check_smtp());
 	}
 
@@ -307,8 +308,9 @@ int main(int argc, char *argv[]) {
 		srunner_set_fork_status (sr, CK_FORK);
 		case_timeout = RUN_TEST_CASE_TIMEOUT;
 	}
+
+	// Trace detection attempted was thwarted.
 	else {
-		// Trace detection attempted was thwarted.
 		if (failed == -1) log_unit("Trace detection was thwarted.\n");
 		else log_unit("Tracing or debugging is active...\n");
 		srunner_set_fork_status (sr, CK_NOFORK);
@@ -342,11 +344,8 @@ int main(int argc, char *argv[]) {
 	// Cleanup and free the resources allocated by the magma code.
 	process_stop();
 
-	ns_cleanup(barrister_unit_test);
-	ns_cleanup(virus_check_data_path);
-	ns_cleanup(tank_check_data_path);
-	ns_cleanup(dspam_check_data_path);
-
+	st_cleanup(check_username, check_password);
+	ns_cleanup(barrister_unit_test, virus_check_data_path, tank_check_data_path, dspam_check_data_path);
 	exit((failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE);
 
 }

@@ -50,6 +50,7 @@ compress_t *  compress_import(stringer_t *s);
 uint64_t      compress_orig_hash(compress_t *buffer);
 uint64_t      compress_orig_length(compress_t *buffer);
 uint64_t      compress_total_length(compress_t *buffer);
+void          compress_cleanup(compress_t *buffer);
 
 /// engine.c
 compress_t * engine_compress(uint8_t engine, stringer_t *s);

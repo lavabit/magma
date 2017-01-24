@@ -370,7 +370,7 @@ int_t meta_data_fetch_keys(meta_user_t *user, key_pair_t *output, int64_t transa
 	}
 
 	// Store the public key. Using a hard coded length. This will need to change if the key format/type ever changes.
-	if (res_field_length(row, 0) != 98 || !(public = base64_decode_mod(PLACER(res_field_block(row, 0), res_field_length(row, 0)), NULL))) {
+	else if (!(public = base64_decode_mod(PLACER(res_field_block(row, 0), res_field_length(row, 0)), NULL))) {
 		log_pedantic("Unable to decode and store a public user key. { username = %.*s / length = %zu }", st_length_int(user->username),
 			st_char_get(user->username), res_field_length(row, 0));
 		res_table_free(result);
@@ -379,7 +379,7 @@ int_t meta_data_fetch_keys(meta_user_t *user, key_pair_t *output, int64_t transa
 
 	// Store the private key. Using a hard coded length. This will need to change if the key format/type ever changes. Also note, we don't
 	// need secure memory at this stage because the private key is still encrypted.
-	if (res_field_length(row, 1) != 171 || !(private = base64_decode_mod(PLACER(res_field_block(row, 1), res_field_length(row, 1)), NULL))) {
+	else if (!(private = base64_decode_mod(PLACER(res_field_block(row, 1), res_field_length(row, 1)), NULL))) {
 		log_pedantic("Unable to decode and store a private user key. { username = %.*s / length = %zu }", st_length_int(user->username),
 			st_char_get(user->username), res_field_length(row, 1));
 		res_table_free(result);
@@ -419,9 +419,8 @@ int_t meta_data_insert_keys(uint64_t usernum, stringer_t *username, key_pair_t *
 	// Encode the key values using base64 modified. We are also checking to make sure the encoded values are the expected length. Also,
 	// note the key length is hard coded here but is dynamic below, on purpose, to make changes easier.
 	if (!(public = base64_encode_mod(input->public, NULL)) || !(private = base64_encode_mod(input->private, NULL))) {
-		log_pedantic("Unable to store a user key pair. { username = %.*s }", st_length_int(username),
-			st_char_get(username));
-		st_cleanup(public, private);
+		log_pedantic("Unable to store a user key pair. { username = %.*s }", st_length_int(username), st_char_get(username));
+		st_cleanup(public);
 		return -1;
 	}
 

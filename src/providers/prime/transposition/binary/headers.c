@@ -60,7 +60,7 @@ int_t prime_header_read(stringer_t *object, uint16_t *type, uint32_t *size) {
 		return 1;
 	}
 	else if (st_empty_out(object, &object_data, &object_len)) {
-		log_pedantic("An PRIME object buffer was empty.");
+		log_pedantic("The PRIME object buffer was empty.");
 		return 2;
 	}
 

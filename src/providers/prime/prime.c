@@ -128,13 +128,13 @@ void prime_free(prime_t *object) {
 		}
 
 		// Secure deallocation.
-		if ((object->flags & SECURITY) == SECURITY) {
-			mm_sec_free(object);
-		}
+//		if ((object->flags & SECURITY) == SECURITY) {
+//			mm_sec_free(object);
+//		}
 		// Regular allocation.
-		else {
+//		else {
 			mm_free(object);
-		}
+//		}
 	}
 #ifdef MAGMA_PEDANTIC
 	else {
@@ -278,11 +278,11 @@ prime_t * prime_set(stringer_t *object, prime_encoding_t encoding, prime_flags_t
 		// result. Since we know the binary format will be smaller than the armored version, we use the armored
 		// length to as the size of our output buffer. This keeps the code simple, at the expense of using extra
 		// memory
-		if ((flags & SECURITY) == SECURITY &&
-			!(output = st_alloc_opts(MANAGED_T | CONTIGUOUS | SECURE, st_length_get(object)))) {
-			log_pedantic("The caller asked us to use secure buffers, but we were unable to allocate one to hold the unwrapped PRIME object.");
-			return NULL;
-		}
+//		if ((flags & SECURITY) == SECURITY &&
+//			!(output = st_alloc_opts(MANAGED_T | CONTIGUOUS | SECURE, st_length_get(object)))) {
+//			log_pedantic("The caller asked us to use secure buffers, but we were unable to allocate one to hold the unwrapped PRIME object.");
+//			return NULL;
+//		}
 
 		// Unwrap the object. If output is NULL the unwrap function will allocate a normal buffer. Either way, we'll need
 		// free it after the object has been parsed.
@@ -661,41 +661,23 @@ prime_t * prime_key_decrypt(stringer_t *key, stringer_t *object, prime_encoding_
 	uint16_t type = 0;
 	prime_size_t size = 0;
 	prime_t *result = NULL;
-	stringer_t *binary = NULL, *output = NULL;
+	stringer_t *binary = NULL;
+
+	if (!key || st_length_get(key) != STACIE_KEY_LENGTH || !object) {
+		log_pedantic("Invalid variables were provided to the PRIME key decryption function.");
+		return NULL;
+	}
 
 	// If the object data has been armored, we'll need to unwrap it before attempting to parse it.
-	if ((encoding & ARMORED) == ARMORED) {
-
-		// If the caller requests memory security, we'll allocate a secure buffer to hold the unwrapped
-		// result. Since we know the binary format will be smaller than the armored version, we use the armored
-		// length to as the size of our output buffer. This keeps the code simple, at the expense of using extra
-		// memory
-		if ((flags & SECURITY) == SECURITY &&
-			!(output = st_alloc_opts(MANAGED_T | CONTIGUOUS | SECURE, st_length_get(object)))) {
-			log_pedantic("The caller asked us to use secure buffers, but we were unable to allocate one to hold the unwrapped PRIME object.");
-			return NULL;
-		}
-
-		// Unwrap the object. If output is NULL the unwrap function will allocate a normal buffer. Either way, we'll need
-		// free it after the object has been parsed.
-		if (!(binary = prime_pem_unwrap(object, output))) {
-			log_pedantic("Our attempt to remove the PRIME object armor failed.");
-			st_cleanup(output);
-			return NULL;
-		 }
-
-		// We'll use the output variable to track, and then free the binary buffer below.
-		output = binary;
-	}
-	// We were provided a serialized object in binary form already.
-	else {
-		binary = object;
+	else if ((encoding & ARMORED) == ARMORED && !(object = binary = prime_pem_unwrap(object, NULL))) {
+		log_pedantic("Our attempt to remove the PRIME object armor failed.");
+		return NULL;
 	}
 
 	// Unpack the object header. For now, we won't worry about message objects,
 	// which means we can assume the header is only 5 bytes.
-	if (prime_header_read(binary, &type, &size)) {
-		st_cleanup(output);
+	else if (prime_header_read(object, &type, &size)) {
+		st_cleanup(binary);
 		return NULL;
 	}
 
@@ -709,36 +691,29 @@ prime_t * prime_key_decrypt(stringer_t *key, stringer_t *object, prime_encoding_
 			break;
 		default:
 			log_pedantic("Unrecognized PRIME type.");
-			st_cleanup(output);
-			prime_free(result);
+			st_cleanup(binary);
 			return NULL;
 	}
-
 
 	// Allocation.
 	if (!(result = prime_alloc(type, flags))) {
 		log_pedantic("PRIME object allocation failed.");
-		st_cleanup(output);
+		st_cleanup(binary);
 		return NULL;
 	}
 
 	// Switch statement to call the appropriate allocator.
 	switch (type) {
 		case PRIME_ORG_KEY:
-			result->key.org = org_encrypted_key_set(key, binary);
+			result->key.org = org_encrypted_key_set(key, object);
 			break;
 		case PRIME_USER_KEY:
-			result->key.user = user_encrypted_key_set(key, binary);
+			result->key.user = user_encrypted_key_set(key, object);
 			break;
-		default:
-			log_pedantic("Unrecognized PRIME type.");
-			st_cleanup(output);
-			prime_free(result);
-			return NULL;
 	}
 
 	// All done with the binary data, so if we had to unwrap the object above, we need to free the temporary buffer.
-	st_cleanup(output);
+	st_cleanup(binary);
 
 	// Check that whichever key type was requrested, it actually succeeded.
 	if ((type == PRIME_ORG_KEY && !result->key.org) || (type == PRIME_USER_KEY && !result->key.user)) {

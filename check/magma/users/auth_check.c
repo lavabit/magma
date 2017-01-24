@@ -198,11 +198,11 @@ START_TEST (check_users_auth_response_s) {
 
 START_TEST (check_users_auth_login_s) {
 
+	log_disable();
 	auth_t *auth = NULL;
 	stringer_t *errmsg = NULL;
 
 	// Valid Login Attempts
-	log_disable();
 
 	if (!status()) {
 		log_test("USERS / AUTH / LOGIN / SINGLE THREADED:", errmsg);

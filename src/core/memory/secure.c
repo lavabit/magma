@@ -109,7 +109,6 @@ secured_t * mm_sec_chunk_next(secured_t *chunk) {
 	return next;
 }
 
-
 /**
  * @brief	Get the previous chunk of secure memory.
  * @param	chunk	the input secure chunk.
@@ -130,7 +129,9 @@ secured_t * mm_sec_chunk_prev(secured_t *chunk) {
 	return prev;
 }
 
-// If an adjacent region is available, merge them together.
+/**
+ * @brief  If an adjacent region is available, merge them together.
+ */
 void mm_sec_chunk_merge(secured_t *chunk) {
 
 	secured_t *prev, *next;
@@ -150,7 +151,9 @@ void mm_sec_chunk_merge(secured_t *chunk) {
 	return;
 }
 
-// Locates a properly sized chunk of memory and reserves it.
+/**
+ * @brief  Locates a properly sized chunk of memory and reserves it.
+ */
 secured_t * mm_sec_chunk_new(secured_t *block, size_t size) {
 
 	bool_t loop = true;
@@ -286,8 +289,10 @@ void * mm_sec_alloc(size_t len) {
 	return result;
 }
 
-// Allocates a larger block of secure memory if requested. Depends on allocation/free routines to lock the required mutex. If a new block
-// is allocated, the original data is copied and then the block is freed. In the event of an error, the original block is preserved and NULL is returned.
+/**
+ * @brief	Allocates a larger block of secure memory if requested. Depends on allocation/free routines to lock the required mutex. If a new block
+ *		is allocated, the original data is copied and then the block is freed. In the event of an error, the original block is preserved and NULL is returned.
+ */
 void * mm_sec_realloc(void *orig, size_t len) {
 
 	size_t olen;
@@ -349,8 +354,6 @@ void mm_sec_stop(void) {
  * 			Guard pages with empty permissions are created on the boundaries of the slab to prevent memory bungling.
  * @return	true if the secure memory slab has been initialized, or false if the process fails.
  */
-// TODO: We still need to implement signal handlers that detect when the application is being attached to a debugger, or being forced to create a core dump
-// file so we can wipe the secure memory region before control is relinquished.
 bool_t mm_sec_start(void) {
 
 	size_t alignment;

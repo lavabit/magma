@@ -36,5 +36,6 @@ lib/check/magma.open.check
 dev/tools/pwtool/pwtool
 dev/tools/runner/runner
 dev/tools/testde/testde
+dev/tools/lockdown/lockdown
 dev/tools/shabench/shabench
 

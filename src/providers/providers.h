@@ -27,6 +27,6 @@ bool_t lib_symbols(size_t count, symbol_t symbols[]);
 #include "parsers/parsers.h"
 #include "storage/storage.h"
 #include "images/images.h"
-#include "deprecated/deprecated.h"
+//#include "deprecated/deprecated.h"
 
 #endif

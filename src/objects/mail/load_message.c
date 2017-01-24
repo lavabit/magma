@@ -130,13 +130,14 @@ mail_message_t * mail_load_message(meta_message_t *meta, meta_user_t *user, serv
 			return NULL;
 		}
 
-		else if (!(message = prime_message_decrypt(raw, org_signet, user->prime.signet))) {
+		else if (!(message = prime_message_decrypt(raw, org_signet, user->prime.key))) {
 			log_pedantic("Unable to decrypt mail message.");
 			ns_free(path);
 			st_free(raw);
 			return NULL;
 		}
 
+		// Free the raw buffer, but keep the path around in case we need it for error messages.
 		st_free(raw);
 	}
 	else if (header.flags & FMESSAGE_OPT_ENCRYPTED) {
@@ -157,10 +158,10 @@ mail_message_t * mail_load_message(meta_message_t *meta, meta_user_t *user, serv
 
 		// Decompress the message.
 		message = decompress_lzo(compressed);
-	}
 
-	// Free the raw buffer, but keep the path around in case we need it for error messages.
-	st_free(raw);
+		// Free the raw buffer, but keep the path around in case we need it for error messages.
+		st_free(raw);
+	}
 
 	// If were unable to uncompress the file, hide it.
 	if (!message) {
@@ -220,7 +221,6 @@ mail_message_t * mail_load_message(meta_message_t *meta, meta_user_t *user, serv
 
 	return result;
 }
-
 
 /**
  * @brief	Get the header of a message, checking first in the cache and then on disk.

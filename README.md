@@ -4,12 +4,9 @@ Magma was originally designed and developed by Ladar Levison for lavabit.com. Th
 
 # Downloads
 
-##### Magma Classic v6.0.1
+##### Magma v6.4.710
 
-https://darkmail.info/downloads/magma-classic-6.0.1.tar.gz    
-https://darkmail.info/downloads/magma-classic-6.0.1.tar.gz.sha256    
-
-d4c5b2d3e435eaae5a1c320cec5ec44db3818c67fe23819abcecab7d223e482e
+https://darkmail.info/downloads/magma-6.4.710.tar.gz    
 
 ##### Magma Development Machine, v1.0.0
 
@@ -34,23 +31,6 @@ vagrant init lavabit/magma; vagrant up --provider virtualbox
 # libvirt
 vagrant init lavabit/magma; vagrant up --provider libvirt
 ```
-
-Or you can download the Vagrant box image manually.
-
-https://darkmail.info/downloads/magma-centos-vmware.box   
-https://darkmail.info/downloads/magma-centos-vmware.box.sha256    
-
-847042e2b40b2be4abf01071b537d8ccb3dba596345f9a242023da3d13be7dac
-
-https://darkmail.info/downloads/magma-centos-virtualbox.box    
-https://darkmail.info/downloads/magma-centos-virtualbox.box.sha256    
-
-fb917e12e44886a27192962f34cb836828ac8f8bec14f686abb5b1620663cefa
-
-https://darkmail.info/downloads/magma-centos-libvirt.box    
-https://darkmail.info/downloads/magma-centos-libvirt.box.sha256    
-
-7c47d37113eb2dc2eb4f2c4d8c5317868b8d882317b139ebb76e20f3d4a366df   
 
 # Credits
 

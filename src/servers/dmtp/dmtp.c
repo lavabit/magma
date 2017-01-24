@@ -157,13 +157,13 @@ void	dmtp_vrfy(connection_t *con) {
 
 void	dmtp_help(connection_t *con) {
 
-	con_write_bl(con, "502 HELP COMMAND DISBLED\n", 26);
+	con_write_bl(con, "502 HELP COMMAND DISABLED\n", 26);
 	return;
 }
 
 void	dmtp_verb(connection_t *con) {
 
-	con_write_bl(con, "502 VERB COMMAND DISBLED\n", 26);
+	con_write_bl(con, "502 VERB COMMAND DISABLED\n", 26);
 	return;
 }
 

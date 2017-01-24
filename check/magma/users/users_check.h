@@ -17,7 +17,6 @@ void check_users_auth_response_s(int);
 void check_users_auth_login_s(int);
 void check_users_auth_username_s(int);
 void check_users_auth_address_s(int);
-void check_users_register_s(int);
 
 #endif
 

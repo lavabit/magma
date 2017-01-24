@@ -4,13 +4,13 @@ information on obtaining a license other than the one included in the LICENSE fi
 please contact the Lavabit customer support team.
 
 Please note that a handful of folders contain a number of dependencies which have been bundled
-for convenience. These bundled dependencies are own by their respective copyright holders, and
-their usage governed by the applicable licence. The folders containing such resources include,
-but may not be limited to, lib/archives, lib/sources, res/fonts, web/js/plugins, web/js/test
-(the qunit sub folder, and the jshint.js file). Some of the web dependencies have also been
+for convenience. These bundled dependencies are owned by their respective copyright holders, and
+their usage is governed by the applicable licences. The folders containing such resources include,
+but may not be limited to, lib/archives, lib/sources, res/fonts, web/js/plugins, and the web/js/test
+(the qunit sub folder, and the jshint.js file). Other third party web dependencies have been
 placed in the res/webmail folder.
 
-Please note that by submitting code to the  magma and libdime projects, you are granting Lavabit
+Please note that by submitting code to the  magma and libdime projects, you are granting Lavabit LLC 
 the use of those contributions, in perpetuity, under the current license, and possibly a different
 license in the future.
 

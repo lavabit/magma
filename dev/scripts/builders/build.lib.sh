@@ -857,7 +857,7 @@ dspam() {
 
 			./configure --enable-static --with-pic --enable-preferences-extension --enable-virtual-users \
 			--with-storage-driver=mysql_drv --disable-trusted-user-security --disable-mysql4-initialization	\
-			--with-mysql-includes="$M_SOURCES/mysql/include" --with-mysql-libraries="$M_SOURCES/mysql/libmysql/.libs" \
+			--with-mysql-includes="$M_LOCAL/include/mysql/" --with-mysql-libraries="$M_LOCAL/lib/mysql/" \
 			--prefix="$M_LOCAL" &>> "$M_LOGS/dspam.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset LD_LIBRARY_PATH
 

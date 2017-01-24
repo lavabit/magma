@@ -34,6 +34,7 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/utsname.h>
+#include <sys/prctl.h>
 #include <sys/epoll.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>

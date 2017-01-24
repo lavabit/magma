@@ -112,6 +112,12 @@ bool_t system_fork_daemon(void) {
 		}
 		fclose(stdin);
 
+		// Block debuggers from attacing to the process daemon and stealing sensitive data.
+		if (prctl(PR_SET_DUMPABLE, 0) != 0) {
+			log_critical("Failed to block debuggers from attaching to the process.");
+			return false;
+		}
+
 		// Since the process description may have changed we need to refresh it.
 		status_process();
 	}
@@ -215,6 +221,12 @@ bool_t system_init_impersonation(void) {
 		}
 
 		mm_free(pwnam);
+
+		// Block debuggers from attacing to the process daemon and stealing sensitive data.
+		if (prctl(PR_SET_DUMPABLE, 0) != 0) {
+			log_critical("Failed to block debuggers from attaching to the process.");
+			return false;
+		}
 
 		// Since the process description may have changed we need to refresh it.
 		status_process();

@@ -1,6 +1,6 @@
 
 /**
- * @file /check/core/core_check.h
+ * @file /check/magma/core/core_check.h
  *
  * @brief The entry point for the core module test suite.
  *

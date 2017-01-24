@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/providers/prime/primitives/unpack.c
+ * @file /magma/providers/prime/transposition/binary/unpack.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/providers/cryptography/hmac.c
+ * @file /magma/providers/deprecated/hmac.c
  *
  * @brief   Functions used to create a Hashed Message Authentication Code (HMAC).
  *

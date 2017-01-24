@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/providers/prime/cryptography/aes.c
+ * @file /magma/providers/prime/cryptography/aes.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

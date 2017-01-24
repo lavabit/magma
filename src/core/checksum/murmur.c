@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/core/hash/murmur.c
+ * @file /magma/core/checksum/murmur.c
  *
  * @brief	An x64 implementation of the Murmur hash function.
  *

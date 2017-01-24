@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/core/hash/fletcher.c
+ * @file /magma/core/checksum/fletcher.c
  *
  * @brief	An implementation of the Fletcher hash algorithim.
  *

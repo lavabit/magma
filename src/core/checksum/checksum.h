@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/core/hash/hash.h
+ * @file /magma/core/checksum/checksum.h
  *
  * @brief	Declarations for hash functions that have been implemented internally.
  *

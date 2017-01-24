@@ -1,4 +1,9 @@
 
+/**
+ * @file /check/magma/data/message.11.h
+ *
+ */
+
 #ifndef CHECK_MESSAGE_11_H
 #define CHECK_MESSAGE_11_H
 

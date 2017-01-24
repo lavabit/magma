@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/providers/prime/messages/chunks.c
+ * @file /magma/providers/prime/messages/chunks/ephemeral.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

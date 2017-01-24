@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/providers/parsers/utf.c
+ * @file /magma/providers/parsers/utf8.c
  *
  * @brief	The interface for UTF-8 parsing.
  * 		CURRENTLY ONLY SUPPORTS ASCII.

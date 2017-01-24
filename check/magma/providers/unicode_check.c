@@ -1,6 +1,6 @@
 
 /**
- * @file /check/providers/unicode_check.c
+ * @file /check/magma/providers/unicode_check.c
  *
  * @brief The unit tests for functions which provide Unicode functionality.
  *

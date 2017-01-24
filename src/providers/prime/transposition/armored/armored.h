@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/providers/prime/formats/armored/armored.h
+ * @file /magma/providers/prime/transposition/armored/armored.h
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

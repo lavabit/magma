@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/providers/cryptography/symmetric.c
+ * @file /magma/providers/deprecated/symmetric.c
  *
  * @brief Functions used to encrypt/decrypt data using symmetric ciphers.
  *

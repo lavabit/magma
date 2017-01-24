@@ -1,6 +1,6 @@
 
 /**
- * @file /check/providers/provide_check.c
+ * @file /check/magma/prime/prime_check.c
  *
  * @brief The heart of the suite of unit tests for the Magma provide module.
  *

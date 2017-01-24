@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/providers/cryptography/scramble.c
+ * @file /magma/providers/deprecated/scramble.c
  *
  * @brief	Functions used to handle symmetric encryption.
  *

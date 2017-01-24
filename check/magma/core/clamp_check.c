@@ -1,6 +1,6 @@
 
 /**
- * @file /magma.check/core/clamp_check.c
+ * @file /check/magma/core/clamp_check.c
  *
  * @brief The clamp function test cases.
  *

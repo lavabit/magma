@@ -1,6 +1,6 @@
 
 /**
- * @file /check/core/bitwise_check.c
+ * @file /check/magma/core/bitwise_check.c
  *
  * @brief Base64 encoder unit tests.
  *

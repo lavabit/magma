@@ -227,7 +227,6 @@ bool_t stmt_rebuild(uint32_t connection) {
 MYSQL_STMT * stmt_reset(MYSQL_STMT **group, uint32_t connection) {
 
 	// Make sure we have a valid connection, and statement.
-	// QUESTION: Where are we verifying the validity of the connection?
 	if (!group) {
 		log_pedantic("Passed a NULL statement pointer.");
 		return NULL;
@@ -236,7 +235,8 @@ MYSQL_STMT * stmt_reset(MYSQL_STMT **group, uint32_t connection) {
 	// Try preparing the statement.
 	if (*(group + connection) == NULL || mysql_stmt_reset_d(*(group + connection))) {
 
-		// If the reset failed, check and if necessary reconnect to the database. Then rebuild all of the prepared statement references associated with the connection.
+		// If the reset failed, check and if necessary reconnect to the database. Then rebuild all of the prepared
+		// statement references associated with the connection.
 		if (sql_ping(connection) < 0 || !stmt_rebuild(connection)) {
 			log_critical("Unable to reset the statement.");
 			return NULL;
@@ -314,7 +314,6 @@ bool_t stmt_exec(MYSQL_STMT **group, MYSQL_BIND *parameters) {
 	bool_t result;
 	uint32_t connection;
 
-	// QUESTION: Why aren't we checking for PL_AVAILABLE?
 	if (pool_pull(sql_pool, &connection) != PL_RESERVED) {
 			log_info("Unable to get an available connection for the query.");
 			return 0;

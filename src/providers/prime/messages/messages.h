@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/providers/prime/messages/messages.h
+ * @file /magma/providers/prime/messages/messages.h
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

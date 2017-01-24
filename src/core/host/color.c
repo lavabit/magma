@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/core/host/color.c
+ * @file /magma/core/host/color.c
  *
  * @brief Functions for colorizing the console output.
  *

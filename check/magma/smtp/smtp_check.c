@@ -1,6 +1,6 @@
 
 /**
- * @file /check/smtp/smtp_check.c
+ * @file /check/magma/smtp/smtp_check.c
  *
  * @brief SMTP interface test functions.
  *

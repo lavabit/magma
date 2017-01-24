@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/providers/prime/messages/chunks/chunks.h
+ * @file /magma/providers/prime/messages/chunks/chunks.h
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

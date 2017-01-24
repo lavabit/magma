@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/providers/cryptography/cryptography.h
+ * @file /magma/providers/deprecated/deprecated.h
  *
  * @brief	Functions used to perform cryptographic operations and provide truly random data.
  *

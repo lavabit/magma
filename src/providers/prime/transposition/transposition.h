@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/providers/prime/primitives/primitives.h
+ * @file /magma/providers/prime/transposition/transposition.h
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

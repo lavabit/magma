@@ -1,6 +1,6 @@
 
 /**
- * @file /check/providers/tank_check.c
+ * @file /check/magma/providers/tank_check.c
  *
  * @brief A collection of functions designed to test the storage interface.
  *

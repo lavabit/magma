@@ -1,5 +1,6 @@
+
 /**
- * @file /magma/src/providers/prime/ed25519.c
+ * @file /magma/providers/prime/cryptography/ed25519.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

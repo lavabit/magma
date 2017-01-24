@@ -1,6 +1,6 @@
 
 /**
- * @file /check/users/users_check.c
+ * @file /check/magma/users/users_check.c
  *
  * @brief Checks the code used to handle user data.
  *

@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/providers/prime/primitives/reader.c
+ * @file /magma/providers/prime/transposition/binary/reader.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

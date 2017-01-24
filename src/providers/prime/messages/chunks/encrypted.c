@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/providers/prime/messages/chunks/encrypted.c
+ * @file /magma/providers/prime/messages/chunks/encrypted.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

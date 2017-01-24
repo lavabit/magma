@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/objects/users/folders.c
+ * @file /magma/objects/meta/folders.c
  *
  * @brief  Functions used for handling message folders.
  *

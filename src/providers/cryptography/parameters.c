@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/providers/cryptography/parameters.c
+ * @file /magma/providers/cryptography/parameters.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

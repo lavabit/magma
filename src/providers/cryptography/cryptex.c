@@ -2,7 +2,7 @@
 /**
  * @file /magma/providers/cryptography/cryptex.c
  *
- * @brief	Functions for handling the secure data type.
+ * @brief	Functions for handling the cryptex data type.
  *
  * $Author$
  * $Date$

@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/providers/prime/formats/binary/binary.h
+ * @file /magma/providers/prime/transposition/binary/binary.h
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

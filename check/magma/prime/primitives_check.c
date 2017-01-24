@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/check/magma/prime/prime_objects.c
+ * @file /check/magma/prime/primitives_check.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

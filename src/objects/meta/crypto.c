@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/objects/meta/crypto.c
+ * @file /magma/objects/meta/crypto.c
  *
  * @brief The meta module interfaces for handling cryptographic functionality.
  *

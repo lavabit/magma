@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/providers/prime/formats/armored/pem.c
+ * @file /magma/providers/prime/transposition/armored/pem.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

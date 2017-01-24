@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/check/magma/providers/dkim_check.c
+ * @file /check/magma/providers/dkim_check.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

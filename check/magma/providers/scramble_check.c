@@ -1,6 +1,6 @@
 
 /**
- * @file /check/providers/scramble_check.c
+ * @file /check/magma/providers/scramble_check.c
  *
  * @brief Check the scrambler.
  *

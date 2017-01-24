@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/check/magma/providers/prime_check.c
+ * @file /check/magma/prime/secp256k1_check.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

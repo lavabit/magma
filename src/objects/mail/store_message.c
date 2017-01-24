@@ -308,7 +308,6 @@ int_t mail_move_message(uint64_t usernum, uint64_t messagenum, uint64_t source, 
 	int_t result;
 	int64_t transaction;
 
-	// QUESTION: Transaction seems unnecessary right now.
 	// Begin the transaction.
 	if ((transaction = tran_start()) < 0) {
 		log_error("Could not start a transaction. {start = %li}", transaction);

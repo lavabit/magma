@@ -1,6 +1,6 @@
 
 /**
- * @file /check/providers/provide_check.h
+ * @file /check/magma/providers/provide_check.h
  *
  * @brief The entry point for the provide module test suite.
  *

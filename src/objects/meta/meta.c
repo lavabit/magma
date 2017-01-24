@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/objects/meta/meta.c
+ * @file /magma/objects/meta/meta.c
  *
  * @brief The primary interface for the meta objects.
  *

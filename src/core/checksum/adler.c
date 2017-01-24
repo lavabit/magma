@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/core/hash/adler.c
+ * @file /magma/core/checksum/adler.c
  *
  * @brief	An x86 implementation of the Adler hash algorithm.
  *

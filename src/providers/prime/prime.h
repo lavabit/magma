@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/providers/prime/prime.h
+ * @file /magma/providers/prime/prime.h
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

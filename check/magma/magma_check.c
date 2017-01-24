@@ -1,6 +1,6 @@
 
 /**
- * @file /check/magma_check.c
+ * @file /check/magma/magma_check.c
  *
  * @brief	The unit test executable entry point.
  *

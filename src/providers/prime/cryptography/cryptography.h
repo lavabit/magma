@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/providers/prime/cryptography/cryptography.h
+ * @file /magma/providers/prime/cryptography/cryptography.h
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

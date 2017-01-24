@@ -1,6 +1,6 @@
 
 /**
- * @file /check/providers/rand_check.c
+ * @file /check/magma/providers/rand_check.c
  *
  * @brief Check out the random number functions.
  *

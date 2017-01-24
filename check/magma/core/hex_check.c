@@ -1,6 +1,6 @@
 
 /**
- * @file /check/core/hex_check.c
+ * @file /check/magma/core/hex_check.c
  *
  * @brief Hex encoder unit tests.
  *

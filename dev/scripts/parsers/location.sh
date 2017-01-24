@@ -8,14 +8,13 @@
 
 # Build file location
 PWD=`pwd`
-FILE="$PWD$1" 
+FILE="$PWD/$1" 
 BASE=`basename $1`
 
-# We can only generation function prototypes using code files
 SUFFIX=`echo $BASE | awk -F'.' '{ print $NF }'`
 if [ "$SUFFIX" != "c" ] && [ "$SUFFIX" != "h" ]; then
-	 echo "location updates can only be performed on code files... not $SUFFIX ... $1" 1>&2
-	 exit 1
+	tput setaf 3;  echo "location updates can only be performed on code files... not $SUFFIX ... $1" 1>&2; tput sgr0
+	exit 1
 fi
 
 # Ensure the heading has a leading space.
@@ -36,7 +35,7 @@ cat $FILE | sed "s|^.*@file.*$| * @file $PRETTY|g" > $FILE.X
 
 # Check for an output file 
 if [ ! -f "$FILE.X" ]; then
-	echo "location update for $1 failed..." 1>&2
+	tput setaf 1; echo "location update for $1 failed..." 1>&2; tput sgr0
 	exit 1
 fi 
 
@@ -46,7 +45,7 @@ if [ "$?" == "0" ]; then
 	mv -f "$FILE.X" $FILE
 	tput setaf 2; echo "$1 updated..."; tput sgr0
 else 
-	echo "automatic location updating for file $1 failed..." 1>&2
+	tput setaf 1; echo "automatic location updating for file $1 failed..." 1>&2; tput sgr0
 	rm -f "$FILE.X"
 fi
 

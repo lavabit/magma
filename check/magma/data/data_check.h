@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/check/magma/data/data.h
+ * @file /check/magma/data/data_check.h
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

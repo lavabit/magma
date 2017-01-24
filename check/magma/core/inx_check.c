@@ -1,6 +1,6 @@
 
 /**
- * @file /check/core/inx_check.c
+ * @file /check/magma/core/inx_check.c
  *
  * @brief Index checks.
  *

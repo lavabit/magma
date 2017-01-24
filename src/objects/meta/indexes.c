@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/objects/users/indexes.c
+ * @file /magma/objects/meta/indexes.c
  *
  * @brief The functions used to search, add and remove user objects from the local index.
  *

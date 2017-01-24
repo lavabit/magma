@@ -1,8 +1,8 @@
 
 /**
- * @file /magma/providers/cryptography/cryptex.c
+ * @file /magma/providers/deprecated/cryptex.c
  *
- * @brief	Functions for handling the secure data type.
+ * @brief	Functions for handling the crytex data type.
  *
  * $Author$
  * $Date$

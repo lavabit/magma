@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/objects/meta/alias.c
+ * @file /magma/objects/meta/alias.c
  *
  * @brief Functions used to handle the alias objects.
  *

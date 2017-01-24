@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/providers/prime/keys/keys.h
+ * @file /magma/providers/prime/keys/keys.h
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

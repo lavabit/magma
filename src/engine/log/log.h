@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/core/log/log.h
+ * @file /magma/engine/log/log.h
  *
  * @brief	The function declarations and macros needed to access the error log subsystem.
  *

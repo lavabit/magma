@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/check/magma/prime/signets_check.c
+ * @file /check/magma/prime/signets_check.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

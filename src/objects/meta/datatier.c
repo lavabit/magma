@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/objects/meta/datatier.c
+ * @file /magma/objects/meta/datatier.c
  *
  * @brief The meta object database interface.
  *

@@ -1,6 +1,6 @@
 
 /**
- * @file /check/network/network_check.h
+ * @file /check/magma/network/network_check.h
  *
  * @brief Check the network functions.
  *

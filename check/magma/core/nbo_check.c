@@ -1,6 +1,6 @@
 
 /**
- * @file /check/core/nbo_check.c
+ * @file /check/magma/core/nbo_check.c
  *
  * @brief Network byte order tests.
  *

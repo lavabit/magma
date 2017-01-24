@@ -4,9 +4,6 @@
  *
  * @brief	Functions used to load mail messages.
  *
- * $Author$
- * $Date$
- * $Revision$
  *
  */
 
@@ -29,8 +26,9 @@ stringer_t * mail_load_header(meta_message_t *meta, meta_user_t *user) {
 	uint32_t total, taken = 0;
 	uchr_t *unencrypted;
 	chr_t *path, key[128], *raw;
-	off_t offset = sizeof(compress_head_t) + sizeof(message_fheader_t);
 	size_t dec_len, data_len;
+	off_t offset = sizeof(compress_head_t) + sizeof(message_fheader_t);
+
 	int_t fd, keylen, block_len = compress_block_length() + offset;
 
 	// QUESTION: Do we check for user secure flag here, or user->storage_privkey != NULL ?
@@ -92,18 +90,17 @@ stringer_t * mail_load_header(meta_message_t *meta, meta_user_t *user) {
 			return NULL;
 		}
 
-		// QUESTION: What exactly should we do here?
 		// We can fail... or we can just trust the file header. It's unclear which is best.
 		if ((meta->status & MAIL_STATUS_ENCRYPTED) && !(fheader.flags & FMESSAGE_OPT_ENCRYPTED)) {
-			log_pedantic("Message state mismatch: encrypted in database but unencrypted on disk.");
-			close(fd);
+			log_pedantic("The message is marked as encrypted in database but the file heading indicates it was stored as plain text.");
 			ns_free(path);
+			close(fd);
 			return NULL;
 		}
 		else if (!(meta->status & MAIL_STATUS_ENCRYPTED) && (fheader.flags & FMESSAGE_OPT_ENCRYPTED)) {
-			log_pedantic("Message state mismatch: unencrypted in database but encrypted on disk.");
-			close(fd);
+			log_pedantic("The message is marked as plain text in database but the file heading indicates it has been encrypted.");
 			ns_free(path);
+			close(fd);
 			return NULL;
 		}
 
@@ -269,139 +266,144 @@ mail_message_t * mail_load_message(meta_message_t *meta, meta_user_t *user, serv
 		log_pedantic("Could not build the message path.");
 		return NULL;
 	}
+//
+//	// Create the cache key.
+//	keylen = snprintf(key, 128, "magma.message.%lu", meta->messagenum);
+//
+//	if (!(raw = cache_get(PLACER(key, keylen)))) {
 
-	// Create the cache key.
-	keylen = snprintf(key, 128, "magma.message.%lu", meta->messagenum);
-
-	if (!(raw = cache_get(PLACER(key, keylen)))) {
-
-		// Open the file.LZO1X_1_MEM_COMPRESS
-		if ((fd = open(path, O_RDONLY)) < 0) {
-			log_pedantic("Could not open a file descriptor for the message %s.", path);
-			mail_db_hide_message(meta->messagenum);
-			serial_increment(OBJECT_MESSAGES, user->usernum);
-			ns_free(path);
-			return NULL;
-		}
-
-		// Figure out how big the file is, and allocate memory for it.
-		if (fstat(fd, &file_info) != 0) {
-			log_pedantic("Could not fstat the file %s.", path);
-			close(fd);
-			ns_free(path);
-			return NULL;
-		}
-
-		if (file_info.st_size < sizeof(message_fheader_t)) {
-			log_pedantic("Mail message was missing full file header: { %s }", path);
-			close(fd);
-			ns_free(path);
-			return NULL;
-		}
-
-		// Do some sanity checking on the message header
-		data_len = file_info.st_size - sizeof(message_fheader_t);
-
-		if (read(fd, &fheader, sizeof(fheader)) != sizeof(fheader)) {
-			log_pedantic("Unable to read message file header: { %s }", path);
-			close(fd);
-			ns_free(path);
-			return NULL;
-		}
-
-		if ((fheader.magic1 != FMESSAGE_MAGIC_1) || (fheader.magic2 != FMESSAGE_MAGIC_2)) {
-			log_pedantic("Mail message had incorrect file format: { %s }", path);
-			close(fd);
-			ns_free(path);
-			return NULL;
-		}
-
-		// Allocate a buffer big enough to hold the entire compressed file.
-		if (!(raw = st_alloc(data_len))) {
-			log_pedantic("Could not allocate a buffer of %li bytes to hold the message.", data_len);
-			close(fd);
-			ns_free(path);
-			return NULL;
-		}
-
-		// Read the file in.
-		if (read(fd, st_char_get(raw), data_len) != data_len) {
-			log_pedantic("Could not read all %li bytes of the file %s.", data_len, path);
-			close(fd);
-			ns_free(path);
-			st_free(raw);
-			return NULL;
-		}
-
-		// Were done with the file.
-		close(fd);
-
-		// Tell the stringer how much data is there.
-		st_length_set(raw, data_len);
-
-		if (meta->status & MAIL_STATUS_ENCRYPTED) {
-
-			if (!(fheader.flags & FMESSAGE_OPT_ENCRYPTED)) {
-				log_pedantic("Message state mismatch: encrypted in database but unencrypted on disk.");
-			}
-
-			if (!(user->flags & META_USER_ENCRYPT_DATA)) {
-				log_info("User with secure mode off requested encrypted message.");
-			}
-
-			if (!user->prime.key) {
-				log_pedantic("User cannot read encrypted message without a private key!");
-				ns_free(path);
-				st_free(raw);
-				return NULL;
-			}
-
-			if (!(unencrypted = ecies_decrypt(user->prime.key, ECIES_PRIVATE_BINARY, (cryptex_t *)st_data_get(raw), &plain_len))) {
-				log_pedantic("Unable to decrypt mail message.");
-				ns_free(path);
-				st_free(raw);
-				return NULL;
-			}
-
-			st_free(raw);
-
-			if (!(raw = st_import(unencrypted, plain_len))) {
-				log_pedantic("Unable to copy decrypted mail message buffer.");
-				ns_free(path);
-				mm_free(unencrypted);
-				return NULL;
-			}
-
-			mm_free(unencrypted);
-		} else if (fheader.flags & FMESSAGE_OPT_ENCRYPTED) {
-				log_pedantic("Message state mismatch: unencrypted in database but encrypted on disk.");
-		}
-
-		// Store the compressed data.
-		/*if (st_length_get(compressed) <= 65536) {
-			cache_add_ns(key, keylen, st_char_get(compressed), st_length_get(compressed), 3600);
-		}
-		 Memcached can currently only store objects less than 1 megabyte.
-		else if (st_length_get(compressed) <= 2097152) {
-			cache_add_ns(key, keylen, st_char_get(compressed), st_length_get(compressed), 86400);
-		}
-		else {
-			cache_add_ns(key, keylen, st_char_get(compressed), st_length_get(compressed), 7200);
-		}*/
+	// Open the file.
+	if ((fd = open(path, O_RDONLY)) < 0) {
+		log_pedantic("Could not open a file descriptor for the message %s.", path);
+		mail_db_hide_message(meta->messagenum);
+		serial_increment(OBJECT_MESSAGES, user->usernum);
+		ns_free(path);
+		return NULL;
 	}
 
-	// QUESTION: Compress then decompress???
-	// Convert the string buffer into a compression buffer.
-	if (!(compressed = compress_import(raw))) {
-		log_pedantic("Could not convert the stringer to a reducer.");
+	// Figure out how big the file is, and allocate memory for it.
+	if (fstat(fd, &file_info) != 0) {
+		log_pedantic("Could not fstat the file %s.", path);
+		close(fd);
+		ns_free(path);
+		return NULL;
+	}
+
+	if (file_info.st_size < sizeof(message_fheader_t)) {
+		log_pedantic("Mail message was missing full file header: { %s }", path);
+		close(fd);
+		ns_free(path);
+		return NULL;
+	}
+
+	// Do some sanity checking on the message header
+	data_len = file_info.st_size - sizeof(message_fheader_t);
+
+	if (read(fd, &fheader, sizeof(fheader)) != sizeof(fheader)) {
+		log_pedantic("Unable to read message file header: { %s }", path);
+		close(fd);
+		ns_free(path);
+		return NULL;
+	}
+
+	if ((fheader.magic1 != FMESSAGE_MAGIC_1) || (fheader.magic2 != FMESSAGE_MAGIC_2)) {
+		log_pedantic("Mail message had incorrect file format: { %s }", path);
+		close(fd);
+		ns_free(path);
+		return NULL;
+	}
+
+	// Allocate a buffer big enough to hold the entire compressed file.
+	if (!(raw = st_alloc(data_len))) {
+		log_pedantic("Could not allocate a buffer of %li bytes to hold the message.", data_len);
+		close(fd);
+		ns_free(path);
+		return NULL;
+	}
+
+	// Read the file in.
+	if (read(fd, st_char_get(raw), data_len) != data_len) {
+		log_pedantic("Could not read all %li bytes of the file %s.", data_len, path);
+		close(fd);
 		ns_free(path);
 		st_free(raw);
 		return NULL;
 	}
 
-	// Decompress the message.
-	uncompressed = decompress_lzo(compressed);
+	// Were done with the file.
+	close(fd);
 
+	// Tell the stringer how much data is there.
+	st_length_set(raw, data_len);
+
+	if (meta->status & MAIL_STATUS_ENCRYPTED) {
+
+		if (!(fheader.flags & FMESSAGE_OPT_ENCRYPTED)) {
+			log_pedantic("Message state mismatch: encrypted in database but unencrypted on disk.");
+		}
+
+		if (!(user->flags & META_USER_ENCRYPT_DATA)) {
+			log_info("User with secure mode off requested encrypted message.");
+		}
+
+		if (!user->prime.key) {
+			log_pedantic("User cannot read encrypted message without a private key!");
+			ns_free(path);
+			st_free(raw);
+			return NULL;
+		}
+
+		if (!(unencrypted = ecies_decrypt(user->prime.key, ECIES_PRIVATE_BINARY, (cryptex_t *)st_data_get(raw), &plain_len))) {
+			log_pedantic("Unable to decrypt mail message.");
+			ns_free(path);
+			st_free(raw);
+			return NULL;
+		}
+
+		st_free(raw);
+
+		if (!(raw = st_import(unencrypted, plain_len))) {
+			log_pedantic("Unable to copy decrypted mail message buffer.");
+			ns_free(path);
+			mm_free(unencrypted);
+			return NULL;
+		}
+
+		mm_free(unencrypted);
+	}
+	else if (fheader.flags & FMESSAGE_OPT_ENCRYPTED) {
+			log_pedantic("Message state mismatch: unencrypted in database but encrypted on disk.");
+	}
+
+
+	/*
+	// Store the compressed data.
+	if (st_length_get(compressed) <= 65536) {
+		cache_add_ns(key, keylen, st_char_get(compressed), st_length_get(compressed), 3600);
+	}
+	 Memcached can currently only store objects less than 1 megabyte.
+	else if (st_length_get(compressed) <= 2097152) {
+		cache_add_ns(key, keylen, st_char_get(compressed), st_length_get(compressed), 86400);
+	}
+	else {
+		cache_add_ns(key, keylen, st_char_get(compressed), st_length_get(compressed), 7200);
+	}
+	*/
+//	}
+
+	// QUESTION: Compress then decompress???
+	// Convert the string buffer into a compression buffer.
+//	if (!(compressed = compress_import(raw))) {
+//		log_pedantic("Could not convert the stringer to a reducer.");
+//		ns_free(path);
+//		st_free(raw);
+//		return NULL;
+//	}
+//
+//	// Decompress the message.
+//	uncompressed = decompress_lzo(compressed);
+
+	uncompressed = raw;
 	st_free(raw);
 
 	// If were unable to uncompress the file, hide it.
@@ -448,7 +450,8 @@ mail_message_t * mail_load_message(meta_message_t *meta, meta_user_t *user, serv
 		}
 
 		// Set thread cache. We use a thread cache since some IMAP clients like to pull messages in chunks leading to
-		// lots of requests for small amounts of data.
+		// lots of serialized requests for small pieces of the same message. Thread caching avoids having to process the
+		// message repeatedly.
 		mail_cache_set(meta->messagenum, result->text);
 
 	}
@@ -458,7 +461,6 @@ mail_message_t * mail_load_message(meta_message_t *meta, meta_user_t *user, serv
 		return NULL;
 	}
 	// Cache the header as well.
-	// QUESTION: How is this ever going to be reached? if (parse) is evaluated twice...
 	else if (parse) {
 		keylen = snprintf(key, 128, "magma.message.header.%lu", meta->messagenum);
 		cache_add(PLACER(key, keylen), PLACER(st_char_get(result->text), result->header_length), 3600);

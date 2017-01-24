@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/core/hash/crc.c
+ * @file /magma/core/checksum/crc.c
  *
  * @brief	An x86 implementation of the 32-bit and 64-bit CRC algorithms.
  *

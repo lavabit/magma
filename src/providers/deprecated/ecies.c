@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/providers/cryptography/ecies.c
+ * @file /magma/providers/deprecated/ecies.c
  *
  * @brief	ECIES encryption/decryption functions.
  *

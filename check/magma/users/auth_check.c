@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/check/users/auth_check.c
+ * @file /check/magma/users/auth_check.c
  *
  * @brief Ensure the STACIE and legacy objects used by the auth_t module calculate their results correctly.
  *

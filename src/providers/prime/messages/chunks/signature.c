@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/providers/prime/messages/chunks/signature.c
+ * @file /magma/providers/prime/messages/chunks/signature.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

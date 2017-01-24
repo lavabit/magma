@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/network/meta.h
+ * @file /magma/network/meta.h
  *
  * @brief Meta information structures/types for users, folders, messages, etc.
  *

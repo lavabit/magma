@@ -1,6 +1,6 @@
 
 /**
- * @file /check/providers/ecies_check.c
+ * @file /check/magma/providers/ecies_check.c
  *
  * @brief The heart of the suite of unit tests for the Magma provide module.
  *

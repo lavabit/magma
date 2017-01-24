@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/objects/users/alerts.c
+ * @file /magma/objects/meta/alerts.c
  *
  * @brief	Functions for handling user alerts and warnings.
  *

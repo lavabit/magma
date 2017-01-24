@@ -1,6 +1,6 @@
 
 /**
- * @file /check/providers/hmac_check.c
+ * @file /check/magma/providers/hmac_check.c
  *
  * @brief The logic used to test the hmac algorithm interface.
  *

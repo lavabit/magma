@@ -1,6 +1,6 @@
 
 /**
- * @file /check/providers/compress_check.c
+ * @file /check/magma/providers/compress_check.c
  *
  * @brief The heart of the suite of unit tests for the Magma provide module.
  *

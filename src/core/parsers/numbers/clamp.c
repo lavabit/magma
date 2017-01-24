@@ -1,3 +1,4 @@
+
 /**
  * @file /magma/core/parsers/numbers/clamp.c
  *

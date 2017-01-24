@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/check/magma/core/checksum_check.c
+ * @file /check/magma/core/checksum_check.c
  *
  * @brief The unit tests for the checksumming functions.
  *

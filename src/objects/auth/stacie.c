@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/objects/auth/stacie.c
+ * @file /magma/objects/auth/stacie.c
  *
  * @brief Functions needed to support/convert password hashes using the deprecated stacie strategy.
  *

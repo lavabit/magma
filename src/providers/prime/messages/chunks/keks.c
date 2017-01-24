@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/providers/prime/messages/chunks/keks.c
+ * @file /magma/providers/prime/messages/chunks/keks.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

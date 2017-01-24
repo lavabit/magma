@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/objects/auth/auth.c
+ * @file /magma/objects/auth/auth.c
  *
  * @brief The primary interface for the STACIE authentication functions.
  *

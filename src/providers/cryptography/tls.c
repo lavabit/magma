@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/providers/cryptography/tls.c
+ * @file /magma/providers/cryptography/tls.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

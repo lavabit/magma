@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/src/providers/prime/signets/orgs.c
+ * @file /magma/providers/prime/signets/orgs.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

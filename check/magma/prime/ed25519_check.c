@@ -1,6 +1,6 @@
 
 /**
- * @file /magma/check/magma/prime/ed25519_check.c
+ * @file /check/magma/prime/ed25519_check.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
  *

@@ -44,7 +44,7 @@ UPDATE Aliases SET selected = 0;
 UPDATE Aliases SET selected = 1 WHERE aliasnum IN (SELECT num FROM nums);
 DROP TABLE nums;
 
-DROP TABLE  IF EXISTS `User_Keys`;
+/*DROP TABLE  IF EXISTS `User_Keys`;
 CREATE TABLE `User_Keys` (
   `keynum` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `usernum` bigint(20) unsigned NOT NULL DEFAULT '0',
@@ -57,10 +57,10 @@ CREATE TABLE `User_Keys` (
   KEY `IX_MAILBOXNUM` (`mailboxnum`),
   CONSTRAINT `User_Keys_ibfk_1` FOREIGN KEY (`usernum`) REFERENCES `Users` (`usernum`) ON UPDATE CASCADE,
   CONSTRAINT `User_Keys_ibfk_2` FOREIGN KEY (`mailboxnum`) REFERENCES `Mailboxes` (`mailboxnum`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1 MAX_ROWS=4294967295 AVG_ROW_LENGTH=100 COMMENT='Signets and keys for every mailbox.';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1 MAX_ROWS=4294967295 AVG_ROW_LENGTH=100 COMMENT='Signets and keys for every mailbox.';*/
 
-DROP TABLE  IF EXISTS `User_Realms`;
-CREATE TABLE `User_Realms` (
+DROP TABLE  IF EXISTS `Realms`;
+CREATE TABLE `Realms` (
   `usernum` bigint(20) unsigned NOT NULL DEFAULT '0',
   `serial` smallint(5) NOT NULL DEFAULT '0',
   `label` VARCHAR(16) NOT NULL,

@@ -349,6 +349,10 @@ typedef struct __attribute__ ((packed)) {
 	} message;
 } prime_t;
 
+// The magma org key/signet.
+extern prime_t *org_key;
+extern prime_t *org_signet;
+
 /// prime.c
 prime_t *     prime_alloc(prime_type_t type, prime_flags_t flags);
 void          prime_cleanup(prime_t *object);

@@ -16,7 +16,7 @@ MAGMA_DIST=`pwd`
 
 MYSQL_USER=${MYSQL_USER:-"mytool"}
 MYSQL_PASSWORD=${MYSQL_PASSWORD:-"aComplex1"}
-MYSQL_SCHEMA=${MYSQL_SCHEMA:-"Lavabit"}
+MYSQL_SCHEMA=${MYSQL_SCHEMA:-"Sandbox"}
 
 # Check and make sure mysqld is running before attempting a connection.
 PID=`pidof mysqld`       

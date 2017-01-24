@@ -21,13 +21,13 @@ case $# in
     	echo "Using the default sandbox values for the MySQL username, password and schema name."
 		MYSQL_USER=${MYSQL_USER:-"mytool"}
 		MYSQL_PASSWORD=${MYSQL_PASSWORD:-"aComplex1"}
-		MYSQL_SCHEMA=${MYSQL_SCHEMA:-"Lavabit"}
+		MYSQL_SCHEMA=${MYSQL_SCHEMA:-"Sandbox"}
 	;;
 	*!3*)
 		echo "Initialize the MySQL database used by the magma daemon."
 		echo ""
 		echo "Usage:    $0 \<mysql_user\> \<mysql_password\> \<mysql_schema\>"
-		echo "Example:  $0 magma volcano Lavabit"
+		echo "Example:  $0 magma volcano Sandbox"
 		echo ""
 		exit 1
 	;;
@@ -66,13 +66,12 @@ if [ ! -d $MAGMA_RES_SQL ]; then
 fi
 
 if [ ! -d $MAGMA_RES_TANKS ]; then
-	echo "The storage tank directory appears to be missing. { path = $MAGMA_RES_TANKS }"
-	exit 1
+	echo "The storage tank directory appears to be missing. It will be created. { path = $MAGMA_RES_TANKS }"
+	mkdir --parents $MAGMA_RES_TANKS
 fi
 
 if [ ! -d $MAGMA_RES_STORAGE ]; then
-	echo "The local storage directory appears to be missing. { path = $MAGMA_RES_STORAGE }"
-	exit 1
+	echo "The local storage directory appears to be missing. It will be created. { path = $MAGMA_RES_STORAGE }"
 fi
 
 # Generate Start.sql from the user-provided Schema
@@ -107,6 +106,6 @@ rm --force "$MAGMA_RES_TANKS/tank.4.data"
 
 # Remove the local storage folder.
 rm --recursive --force "$MAGMA_RES_STORAGE"
-mkdir "$MAGMA_RES_STORAGE"
+mkdir --parents "$MAGMA_RES_STORAGE"
 
 

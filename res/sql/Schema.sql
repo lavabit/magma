@@ -231,11 +231,11 @@ CREATE TABLE `Hosts` (
 DROP TABLE IF EXISTS `Keys`;
 CREATE TABLE `Keys` (
   `usernum` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `storage_pub` text,
-  `storage_priv` text,
+  `signet` text,
+  `key` text,
   PRIMARY KEY (`usernum`),
   CONSTRAINT `Keys_ibfk_1` FOREIGN KEY (`usernum`) REFERENCES `Users` (`usernum`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 MAX_ROWS=4294967295 AVG_ROW_LENGTH=5000 COMMENT='Encryption keys are stored here.';
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 MAX_ROWS=4294967295 AVG_ROW_LENGTH=5000 COMMENT='User signets and encrypted private keys.';
 
 DROP TABLE IF EXISTS `Limits`;
 CREATE TABLE `Limits` (

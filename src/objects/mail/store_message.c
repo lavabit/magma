@@ -12,7 +12,6 @@
 
 #include "magma.h"
 
-
 /**
  * @brief	Persist a message's data to disk.
  * @param	messagenum	the numerical id of the message that will be associated with the data.
@@ -94,7 +93,6 @@ bool_t mail_store_message_data(uint64_t messagenum, uint8_t fflags, void *data, 
 	return true;
 }
 
-
 /**
  * @brief	Store a mail message, with its meta-information in the database, and the contents persisted to disk.
  * @note	The stored message is always compressed, but only encrypted if the user's public key is suppplied.
@@ -120,27 +118,29 @@ uint64_t mail_store_message(uint64_t usernum, stringer_t *pubkey, uint64_t folde
 	uchr_t *write_data;
 	bool_t store_result;
 
-	// Compress the message.
-	if (!(reduced = compress_lzo(message))) {
-		log_error("An error occurred while attempting to compress a message with %zu bytes.", st_length_get(message));
-		return 0;
-	}
-
 	// Next, encrypt the message if necessary.
 	if (pubkey) {
-		*status |= MAIL_STATUS_ENCRYPTED;
 
-		if (!(encrypted = ecies_encrypt(pubkey, ECIES_PUBLIC_BINARY, reduced, compress_total_length(reduced)))) {
+
+		if (!(encrypted = ecies_encrypt(pubkey, ECIES_PUBLIC_BINARY, message, st_length_get(message)))) {
 			log_pedantic("Unable to decrypt mail message.");
-			compress_free(reduced);
 			return 0;
 		}
 
-		compress_free(reduced);
 		write_data = (uchr_t *)encrypted;
 		write_len = cryptex_total_length(encrypted);
 		fflags |= FMESSAGE_OPT_ENCRYPTED;
-	} else {
+		*status |= MAIL_STATUS_ENCRYPTED;
+	}
+	else {
+
+
+		// Compress the message.
+		if (!(reduced = compress_lzo(message))) {
+			log_error("An error occurred while attempting to compress a message with %zu bytes.", st_length_get(message));
+			return 0;
+		}
+
 		write_data = (uchr_t *)reduced;
 		write_len = compress_total_length(reduced);
 	}
@@ -218,7 +218,6 @@ uint64_t mail_store_message(uint64_t usernum, stringer_t *pubkey, uint64_t folde
  * @param	created		the UNIX timestamp of when the message was created.
  * @return	0 on failure, or the ID of the copy of the mail message in the database on success.
  */
-// QUESTION: Any reason we're not just passing around the meta_message_t * ?
 uint64_t mail_copy_message(uint64_t usernum, uint64_t original, chr_t *server, uint32_t size, uint64_t foldernum, uint32_t status, uint64_t signum, uint64_t sigkey, uint64_t created) {
 
 	int_t fd, state;

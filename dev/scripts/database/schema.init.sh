@@ -19,13 +19,13 @@ case $# in
     	echo "Using the default sandbox values for the MySQL username, password and schema name."
 		MYSQL_USER=${MYSQL_USER:-"mytool"}
 		MYSQL_PASSWORD=${MYSQL_PASSWORD:-"aComplex1"}
-		MYSQL_SCHEMA=${MYSQL_SCHEMA:-"Lavabit"}
+		MYSQL_SCHEMA=${MYSQL_SCHEMA:-"Magma"}
 	;;
 	*!3*)
 		echo "Ini "res/sql/" tialize the MySQL database used by the magma daemon."
 		echo ""
 		echo "Usage:    $0 \<mysql_user\> \<mysql_password\> \<mysql_schema\>"
-		echo "Example:  $0 magma volcano Lavabit"
+		echo "Example:  $0 magma volcano Magma"
 		echo ""
 		exit 1
 	;;

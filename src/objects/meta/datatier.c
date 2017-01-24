@@ -366,7 +366,7 @@ int_t meta_data_fetch_keys(meta_user_t *user, key_pair_t *output, int64_t transa
 	parameters[0].buffer = &(user->usernum);
 	parameters[0].is_unsigned = true;
 
-	if (!(result = stmt_get_result_conn(stmts.meta_fetch_storage_keys, parameters, transaction))) {
+	if (!(result = stmt_get_result_conn(stmts.meta_fetch_mail_keys, parameters, transaction))) {
 		return -1;
 	}
 	else if (!(row = res_row_next(result))) {
@@ -450,7 +450,7 @@ int_t meta_data_insert_keys(uint64_t usernum, stringer_t *username, key_pair_t *
 	parameters[2].buffer_length = st_length_get(private);
 	parameters[2].buffer = st_char_get(private);
 
-	if ((affected = stmt_exec_affected_conn(stmts.meta_insert_storage_keys, parameters, transaction)) != 1 && affected == -1) {
+	if ((affected = stmt_exec_affected_conn(stmts.meta_insert_mail_keys, parameters, transaction)) != 1 && affected == -1) {
 		log_pedantic("Unable to insert the user key pair. A database error occurred. { username = %.*s }",
 			st_length_int(username), st_char_get(username));
 		st_cleanup(public, private);

@@ -151,7 +151,7 @@ stringer_t * mail_load_header(meta_message_t *meta, meta_user_t *user) {
 
 			// First read in the cryptex disk header.
 
-			if (!(unencrypted = ecies_decrypt(user->keys.secret, ECIES_PRIVATE_BINARY, (cryptex_t *) raw, &dec_len))) {
+			if (!(unencrypted = ecies_decrypt(user->prime.key, ECIES_PRIVATE_BINARY, (cryptex_t *) raw, &dec_len))) {
 				log_pedantic("Failed to decrypt message mail header.");
 				ns_free(raw);
 				return NULL;
@@ -349,14 +349,14 @@ mail_message_t * mail_load_message(meta_message_t *meta, meta_user_t *user, serv
 				log_info("User with secure mode off requested encrypted message.");
 			}
 
-			if (!user->keys.secret) {
+			if (!user->prime.key) {
 				log_pedantic("User cannot read encrypted message without a private key!");
 				ns_free(path);
 				st_free(raw);
 				return NULL;
 			}
 
-			if (!(unencrypted = ecies_decrypt(user->keys.secret, ECIES_PRIVATE_BINARY, (cryptex_t *)st_data_get(raw), &plain_len))) {
+			if (!(unencrypted = ecies_decrypt(user->prime.key, ECIES_PRIVATE_BINARY, (cryptex_t *)st_data_get(raw), &plain_len))) {
 				log_pedantic("Unable to decrypt mail message.");
 				ns_free(path);
 				st_free(raw);

@@ -110,10 +110,11 @@ typedef struct {
 		stringer_t *mail;
 	} realm;
 
-	// The uesr signet and private keys.
+	// The user signet and private keys.
 	struct {
-		stringer_t *signet, *secret;
-	} keys;
+		stringer_t *key;
+		stringer_t *signet;
+	} prime;
 
 	struct {
 		uint64_t user, messages, folders, contacts, aliases;

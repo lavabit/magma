@@ -11,6 +11,7 @@
  */
 
 #include "magma.h"
+#include "deprecated.h"
 
 /// HIGH: Alter the interfaces here to allow passing in the output buffer, or options which allow us to store the decrypted data in secure memory.
 

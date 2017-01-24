@@ -11,6 +11,7 @@
  */
 
 #include "magma.h"
+#include "deprecated.h"
 
 /// TODO: Create a scramble_export() function, and/or alter the import interfaces to make using managed strings easier. ie. the import/export
 /// 		functions could provide wrappers around dsecrypt/encrypt which return strings instead of scramble objects.

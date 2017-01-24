@@ -11,6 +11,7 @@
  */
 
 #include "magma.h"
+#include "deprecated.h"
 
 extern EC_GROUP *ecies_curve_group;
 extern const EVP_MD *ecies_hmac_evp;

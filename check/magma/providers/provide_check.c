@@ -374,6 +374,7 @@ END_TEST
 //! SPF Tests
 START_TEST (check_spf_s) {
 
+	log_disable();
 	chr_t *errmsg = NULL;
 	SPF_server_t *object;
 	SPF_dns_server_t *spf_dns_zone = NULL;
@@ -386,8 +387,6 @@ START_TEST (check_spf_s) {
 			{ "fail.lavabit.com", ns_t_txt, NETDB_SUCCESS, "v=spf1 -all" },
 			{ "neutral.lavabit.com", ns_t_txt, NETDB_SUCCESS, "v=spf1 ~all" }
 	};
-
-	log_unit("%-64.64s", "CHECKERS / SPF / SINGLE THREADED:");
 
 	if (status()) {
 
@@ -430,7 +429,7 @@ START_TEST (check_spf_s) {
 		}
 	}
 
-	log_unit("%10.10s\n", (!errmsg ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+	log_test("CHECKERS / SPF / SINGLE THREADED:", NULLER(errmsg));
 	fail_unless(!errmsg, errmsg);
 
 }
@@ -502,8 +501,6 @@ START_TEST (check_dkim_s) {
 	// Otherwise, we'll perform the checks... unless the status variable indicates we shouldn't.
 	if (status() && result) result = check_dkim_sign_sthread(errmsg);
 	if (status() && result) result = check_dkim_verify_sthread(errmsg);
-
-	log_enable();
 
 	log_test("CHECKERS / DKIM / SINGLE THREADED:", errmsg);
 	ck_assert_msg(result, st_char_get(errmsg));

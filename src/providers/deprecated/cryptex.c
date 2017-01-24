@@ -11,6 +11,7 @@
  */
 
 #include "magma.h"
+#include "deprecated.h"
 
 /**
  * @brief	Get the length of a cryptex envelope.

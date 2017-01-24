@@ -11,6 +11,7 @@
  */
 
 #include "magma.h"
+#include "deprecated.h"
 
 /**
  * @brief  Performs an HMAC using the specified digest and key.

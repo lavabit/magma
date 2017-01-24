@@ -7,12 +7,13 @@
 
 START_TEST (check_mail_load_s) {
 
+	bool_t result = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	errmsg = NULLER("SKIPPED");
 
 	log_test("MAIL / LOAD / SINGLE THREADED:", errmsg);
-	ck_assert_msg(true, st_char_get(errmsg));
+	ck_assert_msg(result, st_char_get(errmsg));
 }
 END_TEST
 
@@ -73,7 +74,7 @@ START_TEST (check_mail_store_s) {
 	}
 
 	log_test("MAIL / STORE / SINGLE THREADED:", errmsg);
-	ck_assert_msg(true, st_char_get(errmsg));
+	ck_assert_msg(result, st_char_get(errmsg));
 }
 END_TEST
 

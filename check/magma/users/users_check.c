@@ -149,7 +149,7 @@ START_TEST (check_users_meta_invalid_s) {
 	}
 
 	log_test("USERS / META / INVALID / SINGLE THREADED:", errmsg);
-	if (st_cmp_ci_eq(errmsg, NULLER("SKIPPED"))) ck_assert_msg(result, st_char_get(errmsg));
+	ck_assert_msg(result, st_char_get(errmsg));
 }
 END_TEST
 

@@ -18,14 +18,16 @@ void meta_free(meta_user_t *user) {
 
 	if (user) {
 
+		prime_cleanup(user->prime.key);
+		prime_cleanup(user->prime.signet);
+
 		inx_cleanup(user->aliases);
 		inx_cleanup(user->folders);
 		inx_cleanup(user->message_folders);
 		inx_cleanup(user->messages);
 		inx_cleanup(user->contacts);
 
-		st_cleanup(user->username, user->verification);
-		st_cleanup(user->prime.signet, user->prime.key, user->realm.mail);
+		st_cleanup(user->username, user->verification, user->realm.mail);
 
 		// When read/write locking issues have been fixed, this line can be used once again.
 		rwlock_destroy(&(user->lock));

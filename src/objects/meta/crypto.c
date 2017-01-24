@@ -52,6 +52,7 @@ int_t meta_crypto_keys_create(uint64_t usernum, stringer_t *username, stringer_t
 	}
 
 	log_info("Created the user signet and key. { username = %.*s }", st_length_int(username), st_char_get(username));
+	st_cleanup(pair.public, pair.private);
 	return 0;
 }
 

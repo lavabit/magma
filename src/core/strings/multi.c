@@ -3,11 +3,6 @@
  * @file /magma/core/strings/multi.c
  *
  * @brief	Functions for handling the multi-type structure.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -250,7 +245,6 @@ char * mt_get_char(const multi_t *multi) {
  * @brief	Get the length of the data associated with a multi-type object.
  * @param	multi	the multi-type object to be examined.
  * @return	the length in bytes of the data associated with the input object, or 0 on failure.
- *
  */
 size_t mt_get_length(multi_t multi) {
 
@@ -682,9 +676,6 @@ bool_t ident_mt_mt(multi_t one, multi_t two) {
  * @param	one		the first multi-type object to be compared.
  * @param	two		the second multi-type object to be compared.
  * @return
- *
- *
- *
  */
 // QUESTION: Why do we have this function AND the one above?
 // QUESTION: Not sure on the return at all. Why would failure and equality both return 0 for certain data types?

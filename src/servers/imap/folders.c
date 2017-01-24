@@ -3,11 +3,6 @@
  * @file /magma/servers/imap/folders.c
  *
  * @brief	Functions used to handle IMAP commands/actions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -489,10 +484,6 @@ int_t imap_folder_remove(uint64_t usernum, inx_t *folders, inx_t *messages, stri
  * 			-4: Either the original or new name exceeded the imap folder recursion limit.
  * 			-5: A folder already exists with the new folder name.
  * 			-6: A segment of the folder name was larger than FOLDER_LENGTH_LIMIT (16 bytes).
- *
- *
- *
- *
  */
 int_t imap_folder_rename(uint64_t usernum, inx_t *folders, stringer_t *original, stringer_t *rename) {
 

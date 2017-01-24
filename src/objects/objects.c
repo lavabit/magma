@@ -3,11 +3,6 @@
  * @file /magma/objects/objects.c
  *
  * @brief	Functions used for managing objects.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

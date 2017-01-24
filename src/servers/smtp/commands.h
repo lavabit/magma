@@ -3,11 +3,6 @@
  * @file /magma/servers/smtp/commands.h
  *
  * @brief	The data structure for parsing and routing SMTP commands.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_SERVERS_SMTP_COMMANDS_H

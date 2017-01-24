@@ -3,11 +3,6 @@
  * @file /magma/core/buckets/arrays.c
  *
  * @brief 	A collection of functions used to create, maintain and safely utilize arrays of pointers.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -94,7 +89,6 @@ size_t ar_length_get(array_t *array) {
  * @param	array	a pointer to the array to be examined.
  * @param	element	the index of the element in the array to be queried.
  * @return	the type of the specified array element, or ARRAY_TYPE_EMPTY on failure.
- *
  */
 uint32_t ar_field_type(array_t *array, size_t element) {
 

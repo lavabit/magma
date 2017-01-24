@@ -3,11 +3,6 @@
  * @file /magma/core/strings/allocation.c
  *
  * @brief	Functions used to allocate stringers.
- *
- * $Author$
- * $Date$
- * $Revision:$
- *
  */
 
 #include "magma.h"
@@ -38,7 +33,6 @@ void st_free(stringer_t *s) {
 
 #ifdef MAGMA_PEDANTIC
 	if (!st_valid_free(opts)) {
-		debug_hook();
 		log_pedantic("Invalid string options. { opt = %u = %s }", opts, st_info_opts(opts, MEMORYBUF(128), 128));
 		return;
 	}
@@ -260,7 +254,7 @@ stringer_t * st_import(const void *s, size_t len) {
 }
 
 /**
- * @brief	Copy data into a a managed string.
+ * @brief	Copy data into a managed string.
  * @param	s	the managed string to store the copied contents of the data.
  * @param	buf	a pointer to the buffer containing the data to be copied.
  * @param	len	the length of the data to be copied.
@@ -276,14 +270,14 @@ stringer_t * st_copy_in(stringer_t *s, void *buf, size_t len) {
 	} else if (st_avail_get(s) < len) {
 		log_pedantic("Managed string was not big enough to store copied data.");
 		return NULL;
-	} else if (!(dstbuf =  st_data_get(s))) {
+	} else if (!(dstbuf = st_data_get(s))) {
 		log_pedantic("Could not retrieve managed string data buffer for copy operation.");
 		return NULL;
 	}
 
-	mm_copy(dstbuf,buf,len);
+	mm_copy(dstbuf, buf, len);
 
-	if (!st_length_set(s,len)) {
+	if (!st_length_set(s, len)) {
 		log_pedantic("Error setting length of copied string.");
 		return NULL;
 	}
@@ -424,6 +418,46 @@ stringer_t * st_append_opts(size_t align, stringer_t *s, stringer_t *append) {
 	}
 
 	return s;
+}
+
+int_t st_append_out(size_t align, stringer_t **s, stringer_t *append) {
+
+	size_t alen, slen = 0;
+	stringer_t *holder = NULL;
+
+	// We can only append to mapped strings or jointed managed strings.
+	if (!s || (*s && (!st_valid_destination(*((uint32_t *)*s)) || !(holder = *s)))) {
+		log_pedantic("Invalid string options. {opt = %u}", *((uint32_t *)s));
+		return -1;
+	}
+
+	if (!append || !(alen = st_length_get(append))) {
+		log_pedantic("The append string appears to be empty.");
+		return 0;
+	}
+
+	// Allocate a new string if the existing string pointer is NULL.
+	if (!holder) {
+		holder = st_alloc_opts(MANAGED_T | HEAP | JOINTED, (alen + align - 1) & ~(align - 1));
+	}
+	// Otherwise check the amount of available space in the buffer and if necessary allocate more.
+	else if (st_avail_get(holder) - (slen = st_length_get(holder)) < alen &&
+		!(holder = st_realloc(*s, (slen + alen + align - 1) & ~(align - 1)))) {
+		log_pedantic("Append reallocation failed.");
+		return -1;
+	}
+
+	if (holder) {
+		mm_copy(st_data_get(holder) + slen, st_data_get(append), alen);
+		st_length_set(holder, slen + alen);
+	}
+
+	if (*s && *s != holder) {
+		st_free(*s);
+	}
+	// Return the number of bytes appended.
+	*s = holder;
+	return alen;
 }
 
 /**
@@ -578,7 +612,6 @@ stringer_t * st_alloc(size_t len) {
 	return st_alloc_opts(MANAGED_T | CONTIGUOUS | HEAP, len);
 
 }
-
 
 /**
  * @brief	Reallocate a managed string to a specified size.

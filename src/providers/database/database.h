@@ -4,9 +4,6 @@
  *
  * @brief	Functions used to interface with the database.
  *
- * $Author$
- * $Date$
- * $Revision$
 *
 *  MySQL Data Types
 *

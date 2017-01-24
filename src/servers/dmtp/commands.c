@@ -3,11 +3,6 @@
  * @file /magma/servers/dmtp/commands.c
  *
  * @brief The functions involved with parsing and routing DMTP commands.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

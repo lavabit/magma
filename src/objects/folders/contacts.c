@@ -3,11 +3,6 @@
  * @file /magma/objects/folders/contacts.c
  *
  * @brief	Interface for user contact folders.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

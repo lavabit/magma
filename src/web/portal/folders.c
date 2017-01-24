@@ -3,11 +3,6 @@
  * @file /magma/web/portal/folders.c
  *
  * @brief	Folder manipulation functions for use by the portal.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

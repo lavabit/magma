@@ -3,11 +3,6 @@
  * @file /magma/core/thread/keys.c
  *
  * @brief	Functions for handling thread local storage keys.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -50,7 +45,7 @@ void * tkey_get(pthread_key_t key) {
  */
 int tkey_set(pthread_key_t key, void *value) {
 
-	#ifdef MAGMA_PEDANTIC
+#ifdef MAGMA_PEDANTIC
 	int result = pthread_setspecific(key, value);
 	if (result) log_pedantic("Could not update the thread specific storage key. {pthread_setspecific = %i}", result);
 	return result;

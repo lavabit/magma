@@ -3,11 +3,6 @@
  * @file /magma/core/compare/compare.h
  *
  * @brief	Function declarations for various data and string comparison functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_CORE_COMPARE_H

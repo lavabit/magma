@@ -3,11 +3,6 @@
  * @file /magma/objects/warehouse/warehouse.c
  *
  * @brief	The warehouse management functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

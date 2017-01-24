@@ -3,11 +3,6 @@
  * @file /magma/queries.h
  *
  * @brief	Assorted SQL queries used throughout Magma.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_DATA_QUERIES_H
@@ -32,8 +27,8 @@
 #define SELECT_USERNUM_AUTH "SELECT usernum FROM Users WHERE userid = ? AND auth = ? AND email = 1"
 #define SELECT_USER_RECORD "SELECT legacy, Dispatch.secure, locked, tls, overquota FROM Users INNER JOIN Dispatch ON Users.usernum = Dispatch.usernum WHERE Users.usernum = ? AND email = 1"
 #define SELECT_USER_SALT "SELECT salt FROM Users WHERE userid = ?"
-#define SELECT_USER_STORAGE_KEYS "SELECT storage_pub, storage_priv FROM `Keys` WHERE usernum = ?"
-#define UPDATE_USER_STORAGE_KEYS "INSERT INTO `Keys` (usernum, storage_pub, storage_priv) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE storage_pub = ?, storage_priv = ?"
+#define SELECT_USER_STORAGE_KEYS "SELECT signet, `key` FROM `Keys` WHERE usernum = ?"
+#define UPDATE_USER_STORAGE_KEYS "INSERT INTO `Keys` (usernum, signet, `key`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE signet = ?, `key` = ?"
 #define UPDATE_USER_LOCK "UPDATE Users SET locked = ? WHERE usernum = ?"
 #define UPDATE_USER_QUOTA_ADD "UPDATE Users SET size = size + ?, overquota = IF(size < quota, 0, 1) WHERE usernum = ?"
 #define UPDATE_USER_QUOTA_SUBTRACT "UPDATE Users SET size = size - ?, overquota = IF(size < quota, 0, 1) WHERE usernum = ?"
@@ -96,7 +91,7 @@
 		"Dispatch.spam, Dispatch.spamaction, Dispatch.virus, Dispatch.virusaction, Dispatch.phish, Dispatch.phishaction, " \
 		"Dispatch.autoreply, Dispatch.inbox, Dispatch.recv_size_limit, Dispatch.daily_recv_limit, Dispatch.daily_recv_limit_ip, " \
 		"Dispatch.greylist, Dispatch.greytime, Dispatch.spf, Dispatch.spfaction, Dispatch.dkim, Dispatch.dkimaction, Dispatch.rbl, " \
-		"Dispatch.rblaction, Dispatch.filters, `Keys`.storage_pub FROM Mailboxes LEFT JOIN Users ON Mailboxes.usernum = Users.usernum LEFT JOIN Dispatch ON " \
+		"Dispatch.rblaction, Dispatch.filters, `Keys`.signet FROM Mailboxes LEFT JOIN Users ON Mailboxes.usernum = Users.usernum LEFT JOIN Dispatch ON " \
 		"Mailboxes.usernum = Dispatch.usernum LEFT JOIN `Keys` ON Mailboxes.usernum = `Keys`.usernum WHERE Mailboxes.address = ?"
 #define INSERT_TRANSMITTING "INSERT INTO Transmitting (usernum, timestamp) VALUES (?, NOW())"
 #define INSERT_SIGNATURE "INSERT INTO Signatures (usernum, cryptkey, junk, signature, created) VALUES (?, ?, ?, ?, NOW())"
@@ -132,8 +127,8 @@
 
 // For the portal/user management.
 #define REGISTER_CHECK_USERNAME	"SELECT usernum FROM Users WHERE userid = ?"
-#define REGISTER_INSERT_USER "INSERT INTO Users (`userid`, `legacy`, `plan`, `quota`, `plan_expiration`) VALUES (?, ?, ?, ?, ?)"
 #define REGISTER_INSERT_STACIE_USER "INSERT INTO Users (`userid`, `salt`, `auth`, `bonus`, `plan`, `quota`, `plan_expiration`) VALUES (?, ?, ?, ?, ?, ?, ?)"
+#define REGISTER_INSERT_STACIE_REALMS "INSERT INTO Realms (`usernum`, `serial`, `label`, `shard`) VALUES (?, ?, ?, ?)"
 #define REGISTER_INSERT_PROFILE "INSERT INTO Profile (`usernum`) VALUES (?)"
 #define REGISTER_INSERT_FOLDERS "INSERT INTO Folders (`usernum`) VALUES (?)"
 #define REGISTER_INSERT_FOLDER_NAME "INSERT INTO Folders (`usernum`, `foldername`) VALUES (?, ?)"
@@ -163,18 +158,20 @@
 
 // The meta data object.
 #define META_FETCH_USER "SELECT Users.userid, Users.auth, Users.tls, Users.overquota, Dispatch.secure FROM Users INNER JOIN Dispatch ON Users.usernum = Dispatch.usernum WHERE Users.usernum = ? AND email = 1 LIMIT 1"
-#define META_FETCH_STORAGE_KEYS "SELECT storage_pub, storage_priv FROM `Keys` WHERE usernum = ?"
-#define META_INSERT_STORAGE_KEYS "INSERT INTO `Keys` (usernum, storage_pub, storage_priv) VALUES (?, ?, ?)"
+#define META_FETCH_SHARD "SELECT `shard` FROM `Realms` WHERE `usernum` = ? AND `serial` = ? AND `label` = ?"
+#define META_FETCH_MAIL_KEYS "SELECT signet, `key` FROM `Keys` WHERE usernum = ?"
+#define META_INSERT_SHARD "INSERT INTO `Realms` (`usernum`, `serial`, `label`, `shard`) VALUES (?, ?, ?, ?)"
+#define META_INSERT_MAIL_KEYS "INSERT INTO `Keys` (usernum, signet, `key`) VALUES (?, ?, ?)"
 
 /**
  * @note Be sure to add any new queries to this list. Run the queries.sh script, or the commands below.
+ *
  * @remark Queries + Stmts Init
  *	 	 	 cat queries.h | grep "\#define" | egrep -v "MAGMA_DATA_QUERIES_H|INIT" | grep -v "//" | awk -F' ' '{ print $2 }' | egrep "^[A-Z_]+$" | awk -F' ' '{ print "\t\t\t\t\t\t\t\t\t\t\t" $1 ", \\" }'; \
  *	 	 	 cat queries.h | grep "\#define" | egrep -v "MAGMA_DATA_QUERIES_H|INIT" | grep -v "//" | awk -F' ' '{ print $2 }' | egrep "^[A-Z_]+$" | awk -F' ' '{ print "\t\t\t\t\t\t\t\t\t\t\t**" tolower($1) ", \\" }'
- *
  */
 
-#define QUERIES_INIT	SELECT_DOMAINS, \
+#define QUERIES_INIT						SELECT_DOMAINS, \
 											SELECT_CONFIG, \
 											SELECT_HOST_NUMBER, \
 											DELETE_OBJECT, \
@@ -249,8 +246,8 @@
 											UPDATE_SIGNATURE_FLAGS_REMOVE, \
 											DELETE_SIGNATURE, \
 											REGISTER_CHECK_USERNAME, \
-											REGISTER_INSERT_USER, \
 											REGISTER_INSERT_STACIE_USER, \
+											REGISTER_INSERT_STACIE_REALMS, \
 											REGISTER_INSERT_PROFILE, \
 											REGISTER_INSERT_FOLDERS, \
 											REGISTER_INSERT_FOLDER_NAME, \
@@ -274,10 +271,12 @@
 											AUTH_GET_BY_ADDRESS, \
 											AUTH_UPDATE_LEGACY_TO_STACIE, \
 											META_FETCH_USER, \
-											META_FETCH_STORAGE_KEYS, \
-											META_INSERT_STORAGE_KEYS
+											META_FETCH_SHARD, \
+											META_FETCH_MAIL_KEYS, \
+											META_INSERT_SHARD, \
+											META_INSERT_MAIL_KEYS
 
-#define STMTS_INIT		**select_domains, \
+#define STMTS_INIT							**select_domains, \
 											**select_config, \
 											**select_host_number, \
 											**delete_object, \
@@ -352,8 +351,8 @@
 											**update_signature_flags_remove, \
 											**delete_signature, \
 											**register_check_username, \
-											**register_insert_user, \
 											**register_insert_stacie_user, \
+											**register_insert_stacie_realms, \
 											**register_insert_profile, \
 											**register_insert_folders, \
 											**register_insert_folder_name, \
@@ -377,8 +376,10 @@
 											**auth_get_by_address, \
 											**auth_update_legacy_to_stacie, \
 											**meta_fetch_user, \
-											**meta_fetch_storage_keys, \
-											**meta_insert_storage_keys
+											**meta_fetch_shard, \
+											**meta_fetch_mail_keys, \
+											**meta_insert_shard, \
+											**meta_insert_mail_keys
 
 
 extern chr_t *queries[];

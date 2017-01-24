@@ -7,7 +7,6 @@
  * $$Author$$
  * $$Date$$
  * $$Revision$$
- *
  */
 
 #ifndef MAGMA_CORE_BUCKETS_H
@@ -106,6 +105,5 @@ stacker_t * stacker_alloc(void *free_function);
 unsigned long stacker_nodes(stacker_t *stack);
 void * stacker_pop(stacker_t *stack);
 void stacker_free(stacker_t *stack);
-
 
 #endif

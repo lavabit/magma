@@ -19,7 +19,6 @@ static int _dns_initialized = 0;
  *                      following the completion of the append operation.
  * @param       name    a null-terminated string containing the domain label to be stored in the buffer in canonical form.
  * @return  the new size of the (re)allocated output buffer, or 0 on failure.
- *
  */
 size_t _mem_append_canon(unsigned char **buf, size_t *blen, const char *name) {
 

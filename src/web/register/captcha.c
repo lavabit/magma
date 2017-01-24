@@ -3,11 +3,6 @@
  * @file /magma/web/register/captcha.c
  *
  * @brief	The captcha interface for the registration process.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

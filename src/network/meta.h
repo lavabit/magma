@@ -1,13 +1,8 @@
 
 /**
- * @file /magma/src/network/meta.h
+ * @file /magma/network/meta.h
  *
  * @brief Meta information structures/types for users, folders, messages, etc.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_NETWORK_META_H
@@ -105,9 +100,16 @@ typedef struct {
 	stringer_t *username, *verification;
 	inx_t *aliases, *messages, *message_folders, *folders, *contacts;
 
+	// The symmetric realm keys.
 	struct {
-		stringer_t *public, *private;
-	} keys;
+		stringer_t *mail;
+	} realm;
+
+	// The user signet and private keys.
+	struct {
+		stringer_t *key;
+		stringer_t *signet;
+	} prime;
 
 	struct {
 		uint64_t user, messages, folders, contacts, aliases;

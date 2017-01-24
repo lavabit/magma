@@ -1,13 +1,8 @@
 
 /**
- * @file /check/core/core_check.h
+ * @file /check/magma/core/core_check.h
  *
  * @brief The entry point for the core module test suite.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef CORE_CHECK_H
@@ -38,6 +33,7 @@ bool_t   check_string_dupe(uint32_t check);
 bool_t   check_string_import(void);
 bool_t   check_string_merge(void);
 bool_t   check_string_print(void);
+bool_t   check_string_write(void);
 bool_t   check_string_realloc(uint32_t check);
 
 /// qp_check.c
@@ -98,5 +94,10 @@ bool_t   check_nbo_parameters(void);
 bool_t   check_bitwise_parameters(void);
 bool_t   check_bitwise_determinism(void);
 bool_t   check_bitwise_simple(void);
+
+/// checksum_check.c
+bool_t check_checksum_fuzz_sthread(void);
+bool_t check_checksum_fixed_sthread(void);
+bool_t check_checksum_loop_sthread(void);
 
 #endif

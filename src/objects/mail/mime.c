@@ -3,11 +3,6 @@
  * @file /magma/objects/mail/mime.c
  *
  * @brief	Functions used to parse and manipulate MIME messages.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

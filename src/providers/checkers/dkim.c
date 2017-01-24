@@ -1,12 +1,8 @@
+
 /**
  * @file /magma/providers/checkers/dkim.c
  *
  * @brief	Functions used to generate and verify Domain Keys Identified Mail (DKIM).
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -35,7 +31,9 @@ bool_t lib_load_dkim(void) {
 	symbol_t dkim[] = {
 		M_BIND(dkim_body), M_BIND(dkim_chunk), M_BIND(dkim_close), M_BIND(dkim_eoh), M_BIND(dkim_eom), M_BIND(dkim_free),
 		M_BIND(dkim_getresultstr), M_BIND(dkim_header),	M_BIND(dkim_init),	M_BIND(dkim_libversion),
-		M_BIND(dkim_sign), M_BIND(dkim_verify), M_BIND(dkim_geterror), // yes there is one anomaly because of a name clash:
+		M_BIND(dkim_sign), M_BIND(dkim_verify), M_BIND(dkim_geterror), M_BIND(dkim_test_dns_put), M_BIND(dkim_mfree),
+
+		// This value structure is setup manually to avoid singular anomaly in our naming convetntion.
 		{ .name = "dkim_getsighdr", .pointer = (void *)&dkim_getsighdrx_d },
 	};
 
@@ -82,9 +80,34 @@ void dkim_memory_free(void *closure, void *ptr) {
  */
 bool_t dkim_start(void) {
 
+	stringer_t *keyname = NULL;
+
 	if (!(dkim_engine = dkim_init_d(dkim_memory_alloc, dkim_memory_free))) {
 		log_pedantic("DKIM engine failed to start. {dkim_init = NULL}");
 		return false;
+	}
+
+	// This must be done here because we have to wait for OpenSSL to be initialized first.
+	if (magma.dkim.enabled) {
+
+		keyname = magma.dkim.key;
+
+		if (file_world_accessible(st_char_get(keyname))) {
+			log_critical("The DKIM private key is accessible to the world! Please fix the file permissions. { chmod 600 %.*s }",
+				st_length_int(keyname), st_char_get(keyname));
+			return false;
+		}
+
+		if (!ssl_verify_privkey(st_char_get(keyname))) {
+			log_critical("Unable to validate DKIM private key. { path = %.*s }", st_length_int(keyname), st_char_get(keyname));
+			return false;
+		}
+		else if (!(magma.dkim.key = file_load(st_char_get(keyname)))) {
+			log_critical("Unable to load DKIM private key contents from file. { path = %.*s }", st_length_int(keyname), st_char_get(keyname));
+			return false;
+		}
+
+		st_free(keyname);
 	}
 
 	return true;
@@ -113,18 +136,18 @@ void dkim_stop(void) {
  * @return	NULL on failure or if magma.dkim.enabled is false; otherwise, a managed string containing a DKIM-Signature header
  * 			built using the dkim signature that was generated for the input message.
  */
-stringer_t * dkim_create(stringer_t *id, stringer_t *message) {
+stringer_t * dkim_signature_create(stringer_t *id, stringer_t *message) {
 
 	DKIM *context;
 	DKIM_STAT status;
 	dkim_sigkey_t key;
 	stringer_t *output = NULL, *signature = NULL;
 
-	if (!magma.dkim.enabled && st_populated(magma.dkim.privkey)) {
+	if (!magma.dkim.enabled && st_populated(magma.dkim.key)) {
 		return NULL;
 	}
 
-	key = st_uchar_get(magma.dkim.privkey);
+	key = st_uchar_get(magma.dkim.key);
 
 	// Create a new handle to sign the message.
 	if (!(context = dkim_sign_d(dkim_engine, st_data_get(id), NULL, key, (uchr_t *)magma.dkim.selector, (uchr_t *)magma.dkim.domain,
@@ -140,7 +163,8 @@ stringer_t * dkim_create(stringer_t *id, stringer_t *message) {
 		return NULL;
 	}
 
-	// Handle the message as a chunk, then finalize input by processing a NULL chunk and signal end-of-message.
+	// Handle the message as a chunk, then signal the end by passing in a NULL chunk and calling the end-of-message
+	// function.
 	if ((status = dkim_chunk_d(context, st_data_get(message), st_length_get(message))) == DKIM_STAT_OK &&
 		(status = dkim_chunk_d(context, NULL, 0)) == DKIM_STAT_OK &&
 		(status = dkim_eom_d(context, NULL)) == DKIM_STAT_OK &&
@@ -180,7 +204,7 @@ stringer_t * dkim_create(stringer_t *id, stringer_t *message) {
  *         -1:	General internal or dkim-related failure occurred, or no signature was present.
  *         -2:	The signature was bad or the signing key was revoked or key retrieval failed (try again later).
  */
-int_t dkim_check(stringer_t *id, stringer_t *message) {
+int_t dkim_signature_verify(stringer_t *id, stringer_t *message) {
 
 	DKIM *context;
 	DKIM_STAT status;
@@ -189,7 +213,7 @@ int_t dkim_check(stringer_t *id, stringer_t *message) {
 
 	// Create a new handle to verify the signed message.
 	if (!(context = dkim_verify_d(dkim_engine, st_data_get(id), NULL, &status)) || status != DKIM_STAT_OK) {
-		log_pedantic("Allocation of the DKIM verification context failed. { %status = %s }", context ? "" : "dkim_verify = NULL / ",
+		log_pedantic("Allocation of the DKIM verification context failed. { %sstatus = %s }", context ? "" : "dkim_verify = NULL / ",
 			dkim_getresultstr_d(status));
 		stats_adjust_by_name("provider.dkim.errors", 1);
 
@@ -200,7 +224,8 @@ int_t dkim_check(stringer_t *id, stringer_t *message) {
 		return -1;
 	}
 
-	// Handle the message as a chunk, then finalize input by processing a NULL chunk and signal end-of-message.
+	// Handle the message as a chunk, then finalize the input by passing in a NULL chunk and calling the
+	// end-of-message function.
 	if ((status = dkim_chunk_d(context, st_data_get(message), st_length_get(message))) == DKIM_STAT_OK &&
 		(status = dkim_chunk_d(context, NULL, 0)) == DKIM_STAT_OK) {
 		status = dkim_eom_d(context, NULL);
@@ -209,7 +234,7 @@ int_t dkim_check(stringer_t *id, stringer_t *message) {
 	dkim_free_d(context);
 
 	if (status == DKIM_STAT_BADSIG || status == DKIM_STAT_REVOKED || status == DKIM_STAT_KEYFAIL) {
-		//log_pedantic("The DKIM signature found but it does not validate.");
+		log_pedantic("Found a DKIM signature but verification of its validity failed. { status = %s }", dkim_getresultstr_d(status));
 		stats_adjust_by_name("provider.dkim.fail", 1);
 		return -2;
 	}

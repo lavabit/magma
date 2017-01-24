@@ -3,11 +3,6 @@
  * @file /magma/web/contact/abuse.c
  *
  * @brief	Functions for detecting abuse of the contact form.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

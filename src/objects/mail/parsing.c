@@ -3,11 +3,6 @@
  * @file /magma/objects/mail/parsing.c
  *
  * @brief	Functions used to parse mail messages and extract information from them.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

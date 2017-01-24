@@ -3,11 +3,6 @@
  * @file /magma/objects/mail/mail.h
  *
  * @brief	Functions used to interface with and manage message data.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_OBJECTS_MAIL_H
@@ -146,8 +141,9 @@ int_t         mail_modify_part(server_t *server, mail_message_t *message, string
 void          mail_signature_add(mail_message_t *message, server_t *server, uint64_t signum, uint64_t sigkey, int_t disposition);
 
 /// store_message.c
-uint64_t      mail_copy_message(uint64_t usernum, uint64_t original, chr_t *server, uint32_t size, uint64_t foldernum, uint32_t status, uint64_t signum, uint64_t sigkey, uint64_t created);
-int_t         mail_move_message(uint64_t usernum, uint64_t messagenum, uint64_t source, uint64_t target);
-uint64_t      mail_store_message(uint64_t usernum, stringer_t *pubkey, uint64_t foldernum, uint32_t *status, uint64_t signum, uint64_t sigkey, stringer_t *message);
+uint64_t   mail_copy_message(uint64_t usernum, uint64_t original, chr_t *server, uint32_t size, uint64_t foldernum, uint32_t status, uint64_t signum, uint64_t sigkey, uint64_t created);
+int_t      mail_move_message(uint64_t usernum, uint64_t messagenum, uint64_t source, uint64_t target);
+uint64_t   mail_store_message(uint64_t usernum, prime_t *signet, uint64_t foldernum, uint32_t *status, uint64_t signum, uint64_t sigkey, stringer_t *message);
+bool_t     mail_store_message_data(uint64_t messagenum, uint8_t fflags, stringer_t *data, chr_t **pathptr);
 
 #endif

@@ -3,11 +3,6 @@
  * @file /magma/objects/contacts/contacts.c
  *
  * @brief	The interface to managing user address book contacts.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

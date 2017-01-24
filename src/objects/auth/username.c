@@ -1,13 +1,8 @@
 
 /**
- * @file /magma/src/objects/auth/username.c
+ * @file /magma/objects/auth/username.c
  *
  * @brief Functions used to parse and pre-process usernames.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

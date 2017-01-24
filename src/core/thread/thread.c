@@ -3,11 +3,6 @@
  * @file /magma/core/thread/thread.c
  *
  * @brief	Functions for spawning new threads, and retrieving their exit statuses.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -132,7 +127,7 @@ int_t thread_signal(pthread_t thread, int_t signal) {
  */
 int_t thread_cancel(pthread_t thread) {
 
-	#ifdef MAGMA_PEDANTIC
+#ifdef MAGMA_PEDANTIC
 	int_t result = pthread_cancel(thread);
 
 	// ESRCH is returned if the thread has already exited, so we don't need to log any error message.

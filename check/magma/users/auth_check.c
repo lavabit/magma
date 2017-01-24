@@ -1,13 +1,8 @@
 
 /**
- * @file /magma/check/users/auth_check.c
+ * @file /check/magma/users/auth_check.c
  *
  * @brief Ensure the STACIE and legacy objects used by the auth_t module calculate their results correctly.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"
@@ -203,11 +198,11 @@ START_TEST (check_users_auth_response_s) {
 
 START_TEST (check_users_auth_login_s) {
 
+	log_disable();
 	auth_t *auth = NULL;
 	stringer_t *errmsg = NULL;
 
 	// Valid Login Attempts
-	log_disable();
 
 	if (!status()) {
 		log_test("USERS / AUTH / LOGIN / SINGLE THREADED:", errmsg);

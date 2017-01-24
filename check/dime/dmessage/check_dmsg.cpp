@@ -1,4 +1,5 @@
 extern "C" {
+#include "dime_check_params.h"
 #include "dime/signet/keys.h"
 #include "dime/signet/signet.h"
 #include "dime/dmessage/parse.h"
@@ -6,6 +7,7 @@ extern "C" {
 }
 #include "gtest/gtest.h"
 #include "error-assert.h"
+
 
 /**
  * Demonstrates how a message travels from the author to the recipient.
@@ -15,7 +17,10 @@ TEST(DIME, message_encryption_and_decryption)
     EC_KEY *auth_enckey, *orig_enckey, *dest_enckey, *recp_enckey;
     ED25519_KEY *auth_signkey, *orig_signkey, *dest_signkey, *recp_signkey;
     const char *auth = "ivan@darkmail.info", *orig = "darkmail.info", *dest = "lavabit.com", *recp = "ryan@lavabit.com";
-    const char *auth_keys = ".out/auth.keys", *orig_keys = ".out/orig.keys", *dest_keys = ".out/dest.keys", *recp_keys = ".out/recp.keys";
+    const char *auth_keys = DIME_CHECK_OUTPUT_PATH "auth.keys",
+    	*orig_keys = DIME_CHECK_OUTPUT_PATH "orig.keys",
+		*dest_keys = DIME_CHECK_OUTPUT_PATH "dest.keys",
+		*recp_keys = DIME_CHECK_OUTPUT_PATH "recp.keys";
     const char *common_date = "12 minutes ago";
     const char *common_to = "Ryan <ryan@lavabit.com>";
     const char *common_from = "Ivan <ivan@darkmail.info>";

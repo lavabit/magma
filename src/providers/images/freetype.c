@@ -3,11 +3,6 @@
  * @file /magma/providers/images/freetype.c
  *
  * @brief Functions used to handle fonts.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

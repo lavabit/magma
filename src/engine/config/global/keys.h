@@ -3,11 +3,6 @@
  * @file /magma/engine/config/global/keys.h
  *
  * @brief	A collection of keys that define access rules, default values and other parameters needed when loading the global configuration.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_OPIONS_GLOBAL_KEYS_H
@@ -219,6 +214,30 @@ magma_keys_t magma_keys[] = {
 		.norm.val.u32 = MAGMA_CRYPTOGRAPHY_SEED_SIZE,
 		.name = "magma.iface.cryptography.seed_length",
 		.description = "The amount of data used to seed the random number generator.",
+		.file = true,
+		.database = true,
+		.overwrite = true,
+		.set = false,
+		.required = false
+	},
+	{
+		.store = (void *)&(magma.iface.cryptography.dhparams_rotate),
+		.norm.type = M_TYPE_BOOLEAN,
+		.norm.val.binary = true,
+		.name = "magma.iface.cryptography.dhparams_rotate",
+		.description = "Controls whether fresh DH group parameters should be generated at launch and then periodically rotated.",
+		.file = true,
+		.database = true,
+		.overwrite = true,
+		.set = false,
+		.required = false
+	},
+	{
+		.store = (void *)&(magma.iface.cryptography.dhparams_large_keys),
+		.norm.type = M_TYPE_BOOLEAN,
+		.norm.val.binary = false,
+		.name = "magma.iface.cryptography.dhparams_large_keys",
+		.description = "Controls whether the ephemeral DHE ciphersuites should use 2048 or 4096 bit session keys.",
 		.file = true,
 		.database = true,
 		.overwrite = true,
@@ -838,16 +857,40 @@ magma_keys_t magma_keys[] = {
 		.required = false
 	},
 	{
-		.store = (void *)&(magma.dkim.privkey),
+		.store = (void *)&(magma.dkim.key),
 		.norm.type = M_TYPE_STRINGER,
-		.norm.val.ns = NULL,
-		.name = "magma.dkim.privkey",
+		.norm.val.st = NULL,
+		.name = "magma.dkim.key",
 		.description = "The location of the PEM or DER-encoded DKIM private key.",
 		.file = true,
 		.database = true,
 		.overwrite = true,
 		.set = false,
 		.required = false
+	},
+	{
+		.store = (void *)&(magma.dime.key),
+		.norm.type = M_TYPE_STRINGER,
+		.norm.val.st = NULL,
+		.name = "magma.dime.key",
+		.description = "The location for the PEM encoded Dark Internet Mail Environment (DIME) Primary Organizational Key (POK).",
+		.file = true,
+		.database = true,
+		.overwrite = true,
+		.set = false,
+		.required = true
+	},
+	{
+		.store = (void *)&(magma.dime.signet),
+		.norm.type = M_TYPE_STRINGER,
+		.norm.val.st = NULL,
+		.name = "magma.dime.signet",
+		.description = "The location for the PEM encoded Dark Internet Mail Environment (DIME) Organizational Signet.",
+		.file = true,
+		.database = true,
+		.overwrite = true,
+		.set = false,
+		.required = true
 	},
 	{
 		.store = (void *)&(magma.iface.spf.pool.connections),

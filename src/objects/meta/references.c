@@ -1,13 +1,8 @@
 
 /**
- * @file /magma/src/objects/meta/references.c
+ * @file /magma/objects/meta/references.c
  *
  * @brief Functions for handling the meta object reference counters.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

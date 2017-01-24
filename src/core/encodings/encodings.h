@@ -3,11 +3,6 @@
  * @file /magma/core/encodings/encodings.h
  *
  * @brief	Functions used to encode and decode data in various formats.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_CORE_ENCODINGS_H
@@ -22,12 +17,17 @@
  *	Opera: at least 190,000 characters
  *	IIS: by default the limit is 16,384 but can be increased
  *	Apache: by default 4,000 characters
- *
  */
 
 #define URL_MAX_LENGTH 				1048576
 #define QP_LINE_WRAP_LENGTH			76
 #define BASE64_LINE_WRAP_LENGTH		76
+
+typedef enum {
+	BASE64_LINE_WRAP_NONE = 0,
+	BASE64_LINE_WRAP_LF = 1,
+	BASE64_LINE_WRAP_CRLF = 2
+} base64_wrap_t;
 
 typedef struct {
 	struct {
@@ -44,14 +44,18 @@ typedef struct {
 extern mappings_t mappings;
 
 /// base64.c
-stringer_t * base64_decode(stringer_t *s, stringer_t *output);
-stringer_t * base64_decode_opts(stringer_t *s, uint32_t opts, bool_t modified);
-stringer_t * base64_decode_mod(stringer_t *s, stringer_t *output);
-stringer_t * base64_encode(stringer_t *s, stringer_t *output);
-stringer_t * base64_encode_opts(stringer_t *s, uint32_t opts, bool_t modified);
-stringer_t * base64_encode_mod(stringer_t *s, stringer_t *output);
-stringer_t * decode_base64_modified_st(stringer_t *string);
-stringer_t * encode_base64_modified_st(stringer_t *string);
+stringer_t *  base64_decode(stringer_t *s, stringer_t *output);
+stringer_t *  base64_decode_mod(stringer_t *s, stringer_t *output);
+stringer_t *  base64_decode_opts(stringer_t *s, uint32_t opts, bool_t modified);
+size_t        base64_decoded_length(size_t length);
+size_t        base64_decoded_length_mod(size_t length);
+stringer_t *  base64_encode(stringer_t *s, stringer_t *output);
+stringer_t *  base64_encode_mod(stringer_t *s, stringer_t *output);
+stringer_t *  base64_encode_opts(stringer_t *s, uint32_t opts, bool_t modified);
+stringer_t *  base64_encode_wrap(stringer_t *s, size_t wrap, base64_wrap_t type, stringer_t *output);
+size_t        base64_encoded_length(size_t length);
+size_t        base64_encoded_length_mod(size_t length);
+size_t        base64_encoded_length_wrap(size_t length, size_t wrap, base64_wrap_t type);
 
 /// hex.c
 bool_t hex_valid_chr(uchr_t c);

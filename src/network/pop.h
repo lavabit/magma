@@ -3,11 +3,6 @@
  * @file /magma/network/pop.h
  *
  * @brief	The POP control structures.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_NETWORK_POP_H

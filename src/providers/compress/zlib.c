@@ -3,11 +3,6 @@
  * @file /magma/providers/compress/zlib.c
  *
  * @brief The interface for the ZLIB compression functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -213,7 +208,7 @@ compress_t * compress_zlib(stringer_t *input) {
 	 head->length.compressed = out;
 	 head->hash.compressed = hash_adler32(compress_body_data(result), out);
 
-	 #ifdef MAGMA_PEDANTIC
+#ifdef MAGMA_PEDANTIC
 	 stringer_t *verify;
 
 	 if (!(verify = decompress_zlib(result))) {
@@ -223,7 +218,7 @@ compress_t * compress_zlib(stringer_t *input) {
 	 }
 
 	 st_free(verify);
-	 #endif
+#endif
 
 	 return result;
 }

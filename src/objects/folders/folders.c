@@ -3,11 +3,6 @@
  * @file /magma/objects/folders/folders.c
  *
  * @brief	Interface with user folders.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

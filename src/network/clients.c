@@ -3,11 +3,6 @@
  * @file /magma/network/clients.c
  *
  * @brief	Functions for handling network client connections.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -43,7 +38,7 @@ int_t client_secure(client_t *client) {
 		return 0;
 	}
 
-	else if (!(client->tls = ssl_client_create(client->sockd))) {
+	else if (!(client->tls = tls_client_alloc(client->sockd))) {
 		client->status = -1;
 		return -1;
 	}
@@ -139,7 +134,7 @@ void client_close(client_t *client) {
 	if (client) {
 
 		if (client->tls) {
-			ssl_free(client->tls);
+			tls_free(client->tls);
 		}
 
 		if (client->sockd != -1) {

@@ -1,0 +1,18 @@
+diff -r c626b83f456d src/check.c
+--- a/src/check.c	Wed Oct 05 06:57:12 2016 -0500
++++ b/src/check.c	Wed Oct 05 07:17:12 2016 -0500
+@@ -534,8 +534,13 @@
+  */
+ #ifdef HAVE_LIBRT
+         timer_t timerid;
++        memset(&timerid, 0, sizeof(timer_t));
++        struct sigevent evp;
++        memset(&evp, 0, sizeof(struct sigevent));
++        evp.sigev_notify = SIGEV_SIGNAL;
++        evp.sigev_signo = SIGALRM;
+ 
+-        if(timer_create(CLOCK_MONOTONIC, NULL, &timerid) == 0)
++        if(timer_create(CLOCK_MONOTONIC, &evp, &timerid) == 0)
+         {
+             timer_delete(timerid);
+             clockid = CLOCK_MONOTONIC;

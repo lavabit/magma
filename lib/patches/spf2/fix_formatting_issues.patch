@@ -1,0 +1,92 @@
+diff -r 34bc57bb441c src/include/spf_response.h
+--- a/src/include/spf_response.h	Thu Nov 03 00:42:28 2016 -0500
++++ b/src/include/spf_response.h	Thu Nov 03 01:06:36 2016 -0500
+@@ -203,7 +203,7 @@
+ SPF_reason_t	 SPF_response_reason(SPF_response_t *rp);
+ SPF_errcode_t	 SPF_response_errcode(SPF_response_t *rp);
+ const char		*SPF_response_get_received_spf(SPF_response_t *rp);
+-const char		*SPF_response_get_received_spf_value(SPF_response_t*rp);
++const char		*SPF_response_get_received_spf_value(SPF_response_t *rp);
+ const char		*SPF_response_get_header_comment(SPF_response_t *rp);
+ const char		*SPF_response_get_smtp_comment(SPF_response_t *rp);
+ const char		*SPF_response_get_explanation(SPF_response_t *rp);
+diff -r 34bc57bb441c src/include/spf_win32_internal.h
+--- a/src/include/spf_win32_internal.h	Thu Nov 03 00:42:28 2016 -0500
++++ b/src/include/spf_win32_internal.h	Thu Nov 03 01:06:36 2016 -0500
+@@ -35,7 +35,7 @@
+ char *inet_ntop(int af, const void *src, char *dst, size_t size);
+ int inet_pton(int af, const char *src, void *dst);
+ 
+-int gethostnameFQDN(char* name, int namelen);
++int gethostnameFQDN(char *name, int namelen);
+ 
+ #endif
+ 
+diff -r 34bc57bb441c src/libreplace/__ns_initparse.c
+--- a/src/libreplace/__ns_initparse.c	Thu Nov 03 00:42:28 2016 -0500
++++ b/src/libreplace/__ns_initparse.c	Thu Nov 03 01:06:36 2016 -0500
+@@ -82,13 +82,16 @@
+ 		b = dn_skipname(ptr, eom);
+ 		if (b < 0)
+ 			RETERR(EMSGSIZE);
+-		ptr += b/*Name*/ + NS_INT16SZ/*Type*/ + NS_INT16SZ/*Class*/;
++		/*    Name    Type       Class */
++		ptr += b + NS_INT16SZ + NS_INT16SZ;
+ 		if (section != ns_s_qd) {
+ 			if (ptr + NS_INT32SZ + NS_INT16SZ > eom)
+ 				RETERR(EMSGSIZE);
+-			ptr += NS_INT32SZ/*TTL*/;
++			/*        TTL   */
++			ptr += NS_INT32SZ;
+ 			NS_GET16(rdlength, ptr);
+-			ptr += rdlength/*RData*/;
++			/*      RData   */
++			ptr += rdlength;
+ 		}
+ 	}
+ 	if (ptr > eom)
+diff -r 34bc57bb441c src/libspf2/spf_compile.c
+--- a/src/libspf2/spf_compile.c	Thu Nov 03 00:42:28 2016 -0500
++++ b/src/libspf2/spf_compile.c	Thu Nov 03 01:06:36 2016 -0500
+@@ -1182,7 +1182,7 @@
+ 								SPF_record_t **spf_recordp,
+ 								const char *record)
+ {
+-	const SPF_mechtype_t*mechtype;
++	const SPF_mechtype_t *mechtype;
+ 	SPF_record_t		*spf_record;
+ 	SPF_error_t			*spf_error;
+ 	SPF_errcode_t		 err;
+diff -r 34bc57bb441c src/libspf2/spf_interpret.c
+--- a/src/libspf2/spf_interpret.c	Thu Nov 03 00:42:28 2016 -0500
++++ b/src/libspf2/spf_interpret.c	Thu Nov 03 01:06:36 2016 -0500
+@@ -611,7 +611,7 @@
+ 
+ 	SPF_errcode_t	 err;
+ 
+-	SPF_dns_server_t*resolver;
++	SPF_dns_server_t *resolver;
+ 
+ 	/* An SPF record for subrequests - replaces c_results */
+ 	SPF_record_t	*spf_record_subr;
+diff -r 34bc57bb441c src/libspf2/spf_win32.c
+--- a/src/libspf2/spf_win32.c	Thu Nov 03 00:42:28 2016 -0500
++++ b/src/libspf2/spf_win32.c	Thu Nov 03 01:06:36 2016 -0500
+@@ -44,7 +44,7 @@
+ 	return WSACleanup();
+ }
+ 
+-char *inet_ntop( int af, const void *src, char *dst, size_t size )
++char * inet_ntop( int af, const void *src, char *dst, size_t size )
+ {
+ 	void	*pSrc_sockaddr;
+ 	struct	sockaddr_in		src_sockaddr;
+@@ -126,7 +126,7 @@
+ 	switch( af )
+ 	{
+ 	case AF_INET:
+-		memcpy( dst, &((struct sockaddr_in*)pDst_sockaddr)->sin_addr, 
++		memcpy( dst, &((struct sockaddr_in *)pDst_sockaddr)->sin_addr, 
+ 			sizeof( struct in_addr ) );
+ 		break;
+ 	case AF_INET6:

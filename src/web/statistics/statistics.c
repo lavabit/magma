@@ -3,11 +3,6 @@
  * @file /magma/web/statistics/statistics.c
  *
  * @brief	Generate a dynamic web page with statistics on server performance.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

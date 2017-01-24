@@ -3,11 +3,6 @@
  * @file /magma/core/indexes/cursors.c
  *
  * @brief	The generic index interface for handling cursors.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

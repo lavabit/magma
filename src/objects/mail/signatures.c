@@ -3,11 +3,6 @@
  * @file /magma/objects/mail/signatures.c
  *
  * @brief	Functions used to insert signatures into mail messages.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

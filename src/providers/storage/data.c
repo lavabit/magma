@@ -3,11 +3,6 @@
  * @file /magma/providers/storage/data.c
  *
  * @brief The meta functions needed by the engine module.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

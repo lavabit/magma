@@ -3,11 +3,6 @@
  * @file /magma/providers/database/query.c
  *
  * @brief Traditional SQL queries in string form.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

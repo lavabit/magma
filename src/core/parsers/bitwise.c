@@ -3,11 +3,6 @@
  * @file /magma/core/parsers/bitwise.c
  *
  * @brief	Functions capable of performing binary arithmetic on managed strings.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

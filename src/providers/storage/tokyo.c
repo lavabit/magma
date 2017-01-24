@@ -3,11 +3,6 @@
  * @file /magma/providers/storage/tokyo.c
  *
  * @brief Tokyo Cabinet symbols.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 

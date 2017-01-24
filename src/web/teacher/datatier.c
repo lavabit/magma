@@ -3,11 +3,6 @@
  * @file /magma/web/teacher/datatier.c
  *
  * @brief	Allow users to train their statistical mail filter.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

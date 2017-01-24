@@ -1,13 +1,8 @@
 
 /**
- * @file /check/core/tree_check.c
+ * @file /check/magma/core/tree_check.c
  *
  * @brief Unit tests for tree based indexes.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

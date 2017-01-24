@@ -25,7 +25,8 @@ typedef enum {
 } signet_type_t;
 
 typedef struct {
-    signet_type_t type; uint32_t fields[256];           /**< Each index corresponds to a different field type identifier. The value of fields[index] is the byte directly after the first occurence of the corresponding field type identifier. */
+    signet_type_t type;
+    uint32_t fields[256];           /**< Each index corresponds to a different field type identifier. The value of fields[index] is the byte directly after the first occurence of the corresponding field type identifier. */
                                     /**< If fields[index] is 0 it means that the corresponding field type identifier occurred 0 times.*/
     uint32_t size;                  /**< Combined length of all the fields */
     unsigned char *data;

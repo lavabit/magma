@@ -1,5 +1,6 @@
 #include <unistd.h>
 extern "C" {
+#include "dime_check_params.h"
 #include "dime/common/misc.h"
 #include "dime/signet/keys.h"
 #include "dime/signet/signet.h"
@@ -44,9 +45,11 @@ TEST(DIME, check_signet_creation)
 
 TEST(DIME, check_signet_keys_pairing)
 {
-    const char *filename_u = ".out/keys_user.keys", *filename_o = ".out/keys_org.keys",
-               *filename_s = ".out/keys_ssr.keys", *filename_w = ".out/keys_wrong.keys",
-               *to_sign = "AbcDEFghijKLMNOpqrstuVWXYZ";
+    const char *filename_u = DIME_CHECK_OUTPUT_PATH "keys_user.keys",
+    	*filename_o = DIME_CHECK_OUTPUT_PATH "keys_org.keys",
+        *filename_s = DIME_CHECK_OUTPUT_PATH "keys_ssr.keys",
+		*filename_w = DIME_CHECK_OUTPUT_PATH "keys_wrong.keys",
+        *to_sign = "AbcDEFghijKLMNOpqrstuVWXYZ";
     EC_KEY *priv_enckey, *pub_enckey;
     ED25519_KEY *priv_signkey, *pub_signkey;
     ed25519_signature sigbuf;
@@ -138,7 +141,7 @@ TEST(DIME, check_signet_keys_pairing)
     free(enc2_pub);
     dime_sgnt_signet_destroy(signet);
 
-/* creating ssr signet with keys */
+    /* creating ssr signet with keys */
     signet = dime_sgnt_signet_create_w_keys(SIGNET_TYPE_SSR, filename_s);
     ASSERT_TRUE(signet != NULL) << "Failure to create SSR.";
 
@@ -318,7 +321,7 @@ static void signet_dump(const signet_t *signet) {
 TEST(DIME, check_signet_parsing)
 {
     char *b64_sigone, *b64_sigtwo;
-    const char *filename = ".out/check.signet", *name = "some name",
+    const char *filename = DIME_CHECK_OUTPUT_PATH "check.signet", *name = "some name",
                *phone1 = "phonenum1", *phone2 = "someotherphone",
                *name1 = "field name", *name2 = "other field name",
                *name3 = "last name of field", *data1 = "some field",
@@ -384,7 +387,9 @@ TEST(DIME, check_signet_parsing)
 
 TEST(DIME, check_signet_validation)
 {
-    const char *org_keys = ".out/check_org.keys", *user_keys = ".out/check_user.keys", *newuser_keys = ".out/check_newuser.keys";
+    const char *org_keys = DIME_CHECK_OUTPUT_PATH "check_org.keys",
+    	*user_keys = DIME_CHECK_OUTPUT_PATH "check_user.keys",
+		*newuser_keys = DIME_CHECK_OUTPUT_PATH "check_newuser.keys";
     ED25519_KEY *orgkey, *userkey, **keys_obj;
     int res;
     signet_state_t state;
@@ -393,20 +398,20 @@ TEST(DIME, check_signet_validation)
     size_t keysnum = 1;
 
     _crypto_init();
-//create org signet and keys file
+    //create org signet and keys file
     org_signet = dime_sgnt_signet_create_w_keys(SIGNET_TYPE_ORG, org_keys);
     ASSERT_TRUE(org_signet != NULL) << "Failure to create signet with keys file.";
-//retrieve org private signing key
+    //retrieve org private signing key
     orgkey = dime_keys_signkey_fetch(org_keys);
     //ASSERT_TRUE(orgkey != NULL) << "Failure to fetch private signing key from keys file.";
-//sign org cryptographic signet signature
+    //sign org cryptographic signet signature
     res = dime_sgnt_sig_crypto_sign(org_signet, orgkey);
     //ASSERT_EQ(0, res) << "Failure to create organizational cryptographic signet signature.\n";
-//retrieve the list of all org signet-signing keys (note we're using this instead of retrieving the list of POKs from the dime record just to have a list of keys, 1 of which will be valid.)
+    //retrieve the list of all org signet-signing keys (note we're using this instead of retrieving the list of POKs from the dime record just to have a list of keys, 1 of which will be valid.)
     keys_obj = dime_sgnt_signkeys_signet_fetch(org_signet);
     res = dime_sgnt_sig_crypto_sign(org_signet, orgkey);
     ASSERT_TRUE(keys_obj != NULL) << "Failure to retrieve organizational signet signing keys.";
-//convert ed25519 pointer chain to serialized ed25519 public key pointer chain
+    //convert ed25519 pointer chain to serialized ed25519 public key pointer chain
 
     for(size_t i = 0; keys_obj[i]; ++i) {
         ++keysnum;
@@ -420,84 +425,84 @@ TEST(DIME, check_signet_validation)
         org_signet_sign_keys[i] = (unsigned char *)malloc(ED25519_KEY_SIZE);
         memcpy(org_signet_sign_keys[i], keys_obj[i]->public_key, ED25519_KEY_SIZE);
     }
-//verify that the org crypto signet is valid
+    //verify that the org crypto signet is valid
     state = dime_sgnt_validate_all(org_signet, NULL, NULL, (const unsigned char **)org_signet_sign_keys);
     ASSERT_EQ(SS_CRYPTO, state) << "Failure to correctly validate organizational signet as a cryptographic signet.";
-//sign org full signet signature
+    //sign org full signet signature
     res = dime_sgnt_sig_full_sign(org_signet, orgkey);
     ASSERT_EQ(0, res) << "Failure to create organizational full signet signature.";
-//verify that the org full signet is valid
+    //verify that the org full signet is valid
     state = dime_sgnt_validate_all(org_signet, NULL, NULL, (const unsigned char **)org_signet_sign_keys);
     ASSERT_EQ(SS_FULL, state) << "Failure to correctly validate organizational signet as a full signet.";
-//set organizational signet id
+    //set organizational signet id
     res = dime_sgnt_id_set(org_signet, strlen("test_org_signet"), (const unsigned char *)"test_org_signet");
     ASSERT_EQ(0, res) << "Failure to set organizational signet id.";
-//sign identified signet signature
+    //sign identified signet signature
     res = dime_sgnt_sig_id_sign(org_signet, orgkey);
     ASSERT_EQ(0, res) << "Failure to create organizational identifiable signet signature field.";
-//verify that the org signet is a valid identifiable signet
+    //verify that the org signet is a valid identifiable signet
     state = dime_sgnt_validate_all(org_signet, NULL, NULL, (const unsigned char **)org_signet_sign_keys);
     ASSERT_EQ(SS_ID, state) << "Failure to correctly validate organizational signet as an identifiable signet.";
-//create ssr signet and user keys file
+    //create ssr signet and user keys file
     user_signet = dime_sgnt_signet_create_w_keys(SIGNET_TYPE_SSR, user_keys);
     ASSERT_TRUE(user_signet != NULL) << "Failure to create ssr with keys file.";
-//retrieve user private signing key
+    //retrieve user private signing key
     userkey = dime_keys_signkey_fetch(user_keys);
     ASSERT_TRUE(userkey != NULL) << "Failure to fetch user's private signing key from keys file.";
-//sign the ssr signature with user keys
+    //sign the ssr signature with user keys
     res = dime_sgnt_sig_ssr_sign(user_signet, userkey);
     ASSERT_EQ(0, res) << "Failure to sign ssr with the user's private signing key.";
-//verify that the signet is a valid ssr
+    //verify that the signet is a valid ssr
     state = dime_sgnt_validate_all(user_signet, NULL, NULL, NULL);
     ASSERT_EQ(SS_SSR, state) << "Failure to correctly validate ssr.";
-//sign ssr with org signing key
+    //sign ssr with org signing key
     res = dime_sgnt_sig_crypto_sign(user_signet, orgkey);
     ASSERT_EQ(0, res) << "Failure to sign ssr into a user cryptographic signet using organizational private signing key.";
-//verify that the signet is now a valid user core signet
+    //verify that the signet is now a valid user core signet
     state = dime_sgnt_validate_all(user_signet, NULL, org_signet, NULL);
     ASSERT_EQ(SS_CRYPTO, state) << "Failure to correctly validate user cryptographic signet.";
-//sign the full signature with org key
+    //sign the full signature with org key
     res = dime_sgnt_sig_full_sign(user_signet, orgkey);
     ASSERT_EQ(0, res) << "Failure to sign user signet with the full signet signature.";
-//verify that the user signet is now a valid core signet
+    //verify that the user signet is now a valid core signet
     state = dime_sgnt_validate_all(user_signet, NULL, org_signet, NULL);
     ASSERT_EQ(SS_FULL, state) << "Failure to correctly validate user full signet.";
-//set user signet id (address)
+    //set user signet id (address)
     res = dime_sgnt_id_set(user_signet, strlen("user@test.org"), (const unsigned char *)"user@test.org");
     ASSERT_EQ(0, res) << "Failure to set user signet id.";
-//sign the user signature with the identifiable signet signature
+    //sign the user signature with the identifiable signet signature
     res = dime_sgnt_sig_id_sign(user_signet, orgkey);
     ASSERT_EQ(0, res) << "Failure to sign user signet with the identifiable signet signature.";
-//verify that the user signet is a valid full signet
+    //verify that the user signet is a valid full signet
     state = dime_sgnt_validate_all(user_signet, NULL, org_signet, NULL);
     ASSERT_EQ(SS_ID, state) << "Failure to correctly validate user identifiable signet.";
-//create new ssr and keys file
+    //create new ssr and keys file
     newuser_signet = dime_sgnt_signet_create_w_keys(SIGNET_TYPE_SSR, newuser_keys);
     ASSERT_TRUE(newuser_signet != NULL) << "Failure to create ssr with keys file.";
-//sign the new ssr with a chain of custody signature using the user's old signing key
+    //sign the new ssr with a chain of custody signature using the user's old signing key
     res = dime_sgnt_sig_coc_sign(newuser_signet, userkey);
     ASSERT_EQ(0, res) << "Failure to create the chain of custody signature.";
 
     _free_ed25519_key(userkey);
 
-//retrieve user's new private signing key
+    //retrieve user's new private signing key
     userkey = dime_keys_signkey_fetch(newuser_keys);
     ASSERT_TRUE(userkey != NULL) << "Failure to retrieve user's new private signing key.";
-//perform all the signatures on the new ssr (adding an address as the id is required for the identifiable signet signature.
+    //perform all the signatures on the new ssr (adding an address as the id is required for the identifiable signet signature.
     dime_sgnt_sig_ssr_sign(newuser_signet, userkey);
     dime_sgnt_sig_crypto_sign(newuser_signet, orgkey);
     dime_sgnt_sig_full_sign(newuser_signet, orgkey);
     dime_sgnt_id_set(newuser_signet, strlen("user@test.com"), (const unsigned char *)"user@test.com");
     dime_sgnt_sig_id_sign(newuser_signet, orgkey);
-//Confirm that without using the previous signet to verify the chain of custody, the signet validation returns broken chain of custody
+    //Confirm that without using the previous signet to verify the chain of custody, the signet validation returns broken chain of custody
     state = dime_sgnt_validate_all(newuser_signet, NULL, org_signet, NULL);
     ASSERT_EQ(SS_BROKEN_COC, state) << "Failure to invalidate signet due to no parent signet being provided to validate chain of custody signature.";
-//Config that by using the previous signet to verify chain of custody, the new user signet is validate as identifiable signet.
-//TODO it may be necessary to test intermediate states with presence of chain of custody also
+    //Config that by using the previous signet to verify chain of custody, the new user signet is validate as identifiable signet.
+    //TODO it may be necessary to test intermediate states with presence of chain of custody also
     state = dime_sgnt_validate_all(newuser_signet, user_signet, org_signet, NULL);
     ASSERT_EQ(SS_ID, state) << "Failure to validate an identifiable signet with a chain of custody signature.";
 
-//Now, lets test splitting.
+    //Now, lets test splitting.
     split = dime_sgnt_signet_full_split(newuser_signet);
     ASSERT_TRUE(split != NULL) << "Failed to split identifiable user signet into a full user signet.";
 
@@ -678,7 +683,7 @@ TEST(DIME, check_signet_fingerprint)
 
     _crypto_init();
 
-    signet = dime_sgnt_signet_create_w_keys(SIGNET_TYPE_USER, ".out/fp_test.keys");
+    signet = dime_sgnt_signet_create_w_keys(SIGNET_TYPE_USER, DIME_CHECK_OUTPUT_PATH "fp_test.keys");
     ASSERT_TRUE(signet != NULL) << "Failed to create signet with keys.";
 
     fp1 = dime_sgnt_fingerprint_ssr(signet);
@@ -743,7 +748,7 @@ TEST(DIME, check_signet_fingerprint)
 TEST(DIME, check_signet_signature_verification)
 {
     char *fp;
-    const char *org_keys = ".out/check_org.keys";
+    const char *org_keys = DIME_CHECK_OUTPUT_PATH "check_org.keys";
     unsigned char signature[ED25519_SIG_SIZE];
     ED25519_KEY *orgkey;
     int res;

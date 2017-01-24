@@ -3,11 +3,6 @@
  * @file /magma/providers/images/gd.c
  *
  * @brief The functions used to create and images using the GD library.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

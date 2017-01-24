@@ -3,11 +3,6 @@
  * @file /magma/core/strings/info.c
  *
  * @brief	A collection of functions used to extract information from stringer options.
- *
- * $Author$
- * $Author$
- * $Revision$
- *
  */
 
 #include "magma.h"

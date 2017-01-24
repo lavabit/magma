@@ -3,11 +3,6 @@
  * @file /magma/engine/context/thread.c
  *
  * @brief	The thread start and stop functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

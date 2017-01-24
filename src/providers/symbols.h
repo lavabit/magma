@@ -3,11 +3,6 @@
  * @file /magma/providers/symbols.h
  *
  * @brief External function pointers/definitions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_PROVIDERS_SYMBOLS_H
@@ -20,26 +15,27 @@
 #include <arpa/nameser.h>
 
 // SPF
-#include <spf.h>
-#include <spf_dns_zone.h>
+#include <spf2/spf.h>
+#include <spf2/spf_dns_zone.h>
 
 // ClamAV
 #include <clamav.h>
 
 // MySQL
-#include <mysql.h>
+#include <mysql/mysql.h>
+#include <mysql/errmsg.h>
 
 // OpenSSL
 #include <openssl/conf.h>
-#include <openssl/ssl.h>
-#include <openssl/crypto.h>
-#include <openssl/rand.h>
 #include <openssl/engine.h>
+#include <openssl/err.h>
+#include <openssl/rand.h>
+#include <openssl/crypto.h>
+#include <openssl/dh.h>
+#include <openssl/ec.h>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
-#include <openssl/ec.h>
-#include <openssl/dh.h>
-#include <openssl/err.h>
+#include <openssl/ssl.h>
 #include <openssl/ocsp.h>
 
 // LZO
@@ -49,13 +45,13 @@
 #include <lzo/lzo1x.h>
 
 // XML2
-#include <libxml/xmlmemory.h>
-#include <libxml/tree.h>
-#include <libxml/valid.h>
-#include <libxml/xpath.h>
-#include <libxml/xpathInternals.h>
-#include <libxml/parserInternals.h>
-#include <libxml/xmlerror.h>
+#include <libxml2/libxml/xmlmemory.h>
+#include <libxml2/libxml/tree.h>
+#include <libxml2/libxml/valid.h>
+#include <libxml2/libxml/xpath.h>
+#include <libxml2/libxml/xpathInternals.h>
+#include <libxml2/libxml/parserInternals.h>
+#include <libxml2/libxml/xmlerror.h>
 
 // ZLIB
 #include <zlib.h>
@@ -75,14 +71,14 @@
 
 // DKIM
 #define lint
-#include <dkim.h>
+#include <opendkim/dkim.h>
 #undef lint
 
 // DSPAM
 #define CONFIG_DEFAULT ""
 #define LOGDIR "~/"
-#include <libdspam.h>
-#include <mysql_drv.h>
+#include <dspam/libdspam.h>
+#include <dspam/mysql_drv.h>
 
 // Jansson
 #include <jansson.h>
@@ -97,7 +93,7 @@
 #include <jpeglib.h>
 
 // FreeType
-#include <ft2build.h>
+#include <freetype2/ft2build.h>
 #include FT_FREETYPE_H
 
 // UTF8
@@ -165,20 +161,24 @@ extern DSPAM_CTX * (*dspam_create_d)(const char *username, const char *group, co
 
 //! DKIM
 /// Note that dkim_getsighdr_d is used by the library, so were using dkim_getsighdrx_d.
+/// Note that dkim_test_dns_put_d is only used by the verification unit test, to load public keys which may no
+/// longer be available on the public internet.
 extern DKIM_STAT (*dkim_eoh_d)(DKIM *dkim);
 extern void (*dkim_close_d)(DKIM_LIB *lib);
-extern DKIM_STAT (*dkim_free_d)(DKIM *dkim);
 extern uint32_t (*dkim_libversion_d)(void);
+extern DKIM_STAT (*dkim_free_d)(DKIM *dkim);
+extern char * (*dkim_geterror_d)(DKIM *dkim);
 extern DKIM_STAT (*dkim_eom_d)(DKIM *dkim, _Bool *testkey);
 extern const char * (*dkim_getresultstr_d)(DKIM_STAT result);
 extern DKIM_STAT (*dkim_body_d)(DKIM *dkim, u_char *buf, size_t len);
 extern DKIM_STAT (*dkim_header_d)(DKIM *dkim, u_char *hdr, size_t len);
+extern void (*dkim_mfree_d)(DKIM_LIB *libhandle, void *closure, void *ptr);
+extern DKIM_STAT (*dkim_chunk_d)(DKIM *dkim, unsigned char *chunkp, size_t len);
 extern DKIM_STAT (*dkim_getsighdrx_d)(DKIM *dkim, u_char *buf, size_t len, size_t initial);
+extern int (*dkim_test_dns_put_d)(DKIM *dkim, int class, int type, int prec, u_char *name, u_char *data);
 extern DKIM * (*dkim_verify_d)(DKIM_LIB *libhandle, const unsigned char *id, void *memclosure, DKIM_STAT *statp);
 extern DKIM_LIB * (*dkim_init_d)(void *(*mallocf)(void *closure, size_t nbytes), void (*freef)(void *closure, void *p));
 extern DKIM * (*dkim_sign_d)(DKIM_LIB *libhandle, const unsigned char *id, void *memclosure, const dkim_sigkey_t secretkey, const unsigned char *selector, const unsigned char *domain, dkim_canon_t hdr_canon_alg, dkim_canon_t body_canon_alg, dkim_alg_t sign_alg,	off_t length, DKIM_STAT *statp);
-extern DKIM_STAT (*dkim_chunk_d)(DKIM *dkim, unsigned char *chunkp, size_t len);
-extern char * (*dkim_geterror_d)(DKIM *dkim);
 
 //! FreeType
 extern FT_Error (*FT_Done_FreeType_d)(FT_Library library);
@@ -269,6 +269,7 @@ extern void (*RAND_cleanup_d)(void);
 extern void (*SSL_free_d)(SSL *ssl);
 extern int (*SSL_accept_d)(SSL *ssl);
 extern void *(*sk_pop_d)(_STACK *st);
+extern BN_CTX * (*BN_CTX_new_d)(void);
 extern int (*SSL_connect_d)(SSL *ssl);
 extern EC_KEY * (*EC_KEY_new_d)(void);
 extern void (*CRYPTO_free_d) (void *);
@@ -289,10 +290,12 @@ extern const EVP_MD * (*EVP_md5_d)(void);
 extern const EVP_MD * (*EVP_sha_d)(void);
 extern void (*COMP_zlib_cleanup_d)(void);
 extern int (*SSL_get_fd_d)(const SSL *s);
+extern void (*BN_CTX_free_d)(BN_CTX *ctx);
 extern const EVP_MD * (*EVP_sha1_d)(void);
 extern void (*EC_KEY_free_d)(EC_KEY *key);
 extern int (*SSL_get_rfd_d)(const SSL *s);
 extern EVP_PKEY * (*EVP_PKEY_new_d)(void);
+extern void (*BN_CTX_start_d)(BN_CTX *ctx);
 extern const char * (*OBJ_nid2sn_d)(int n);
 extern int (*SHA256_Init_d)(SHA256_CTX *c);
 extern int (*SHA512_Init_d)(SHA512_CTX *c);
@@ -304,9 +307,10 @@ extern const EVP_MD * (*EVP_sha512_d)(void);
 extern void (*OBJ_NAME_cleanup_d)(int type);
 extern void (*SSL_CTX_free_d)(SSL_CTX *ctx);
 extern int (*SSL_pending_d)(const SSL *ssl);
-extern int	(*BN_num_bits_d)(const BIGNUM *);
+extern int (*BN_num_bits_d)(const BIGNUM *);
 extern int (*X509_get_ext_count_d) (X509 *x);
 extern RSA * (*RSAPublicKey_dup_d)(RSA *rsa);
+extern char * (*BN_bn2dec_d)(const BIGNUM *a);
 extern char * (*BN_bn2hex_d)(const BIGNUM *a);
 extern int (*EVP_MD_size_d)(const EVP_MD *md);
 extern unsigned long (*ERR_get_error_d)(void);
@@ -324,6 +328,7 @@ extern BIO * (*SSL_get_wbio_d)(const SSL * ssl);
 extern void (*EC_GROUP_free_d)(EC_GROUP *group);
 extern void (*EC_POINT_free_d)(EC_POINT *point);
 extern void (*X509_STORE_free_d)(X509_STORE *v);
+extern int (*DH_check_d)(const DH *dh, int *ret);
 extern int (*EC_KEY_generate_key_d)(EC_KEY *key);
 extern void (*ASN1_STRING_TABLE_cleanup_d)(void);
 extern void (*HMAC_CTX_cleanup_d)(HMAC_CTX *ctx);
@@ -335,15 +340,16 @@ extern OCSP_REQUEST * (*OCSP_REQUEST_new_d)(void);
 extern int (*EC_KEY_check_key_d)(const EC_KEY *key);
 extern int (*EVP_MD_CTX_cleanup_d)(EVP_MD_CTX *ctx);
 extern void (*OCSP_REQUEST_free_d)(OCSP_REQUEST *a);
+extern const EVP_CIPHER * (*EVP_aes_256_gcm_d)(void);
 extern const EVP_CIPHER * (*EVP_aes_256_cbc_d)(void);
-extern int 	(*SSL_peek_d)(SSL *ssl,void *buf,int num);
+extern int (*SSL_peek_d)(SSL *ssl,void *buf,int num);
 extern EVP_CIPHER_CTX * (*EVP_CIPHER_CTX_new_d)(void);
 extern int (*OCSP_check_nonce_d)(void *req, void *bs);
 extern int (*X509_verify_cert_d)(X509_STORE_CTX *ctx);
 extern void (*EC_GROUP_clear_free_d)(EC_GROUP *group);
 extern void (*OCSP_RESPONSE_free_d)(OCSP_RESPONSE *a);
 extern X509_STORE_CTX * (*X509_STORE_CTX_new_d)(void);
-extern X509_NAME *	(*X509_get_subject_name_d)(X509 *a);
+extern X509_NAME * (*X509_get_subject_name_d)(X509 *a);
 extern EC_KEY * (*EC_KEY_new_by_curve_name_d)(int nid);
 extern int (*BN_hex2bn_d)(BIGNUM **a, const char *str);
 extern int (*SSL_read_d)(SSL *ssl, void *buf, int num);
@@ -353,10 +359,11 @@ extern void (*EVP_CIPHER_CTX_init_d)(EVP_CIPHER_CTX *a);
 extern void (*OCSP_BASICRESP_free_d)(OCSP_BASICRESP *a);
 extern void (*EVP_CIPHER_CTX_free_d)(EVP_CIPHER_CTX *a);
 extern X509_LOOKUP_METHOD * (*X509_LOOKUP_file_d)(void);
+extern int (*BN_cmp_d)(const BIGNUM *a, const BIGNUM *b);
 extern const SSL_METHOD * (*TLSv1_server_method_d)(void);
 extern int (*EVP_CIPHER_nid_d)(const EVP_CIPHER *cipher);
 extern void (*OPENSSL_add_all_algorithms_noconf_d)(void);
-extern int	(*SSL_get_error_d)(const SSL *s,int ret_code);
+extern int (*SSL_get_error_d)(const SSL *s,int ret_code);
 extern const SSL_METHOD * (*SSLv23_client_method_d)(void);
 extern const SSL_METHOD * (*SSLv23_server_method_d)(void);
 extern X509 * (*SSL_get_peer_certificate_d)(const SSL *s);
@@ -368,12 +375,13 @@ extern void (*X509_STORE_CTX_free_d)(X509_STORE_CTX *ctx);
 extern BIO * (*BIO_new_socket_d)(int sock, int close_flag);
 extern EC_GROUP * (*EC_GROUP_new_by_curve_name_d)(int nid);
 extern EC_POINT * (*EC_POINT_new_d)(const EC_GROUP *group);
-extern int	(*BN_bn2bin_d)(const BIGNUM *, unsigned char *);
+extern int (*BN_bn2bin_d)(const BIGNUM *, unsigned char *);
 extern BIO * (*BIO_new_fp_d)(FILE *stream, int close_flag);
 extern X509_EXTENSION * (*X509_get_ext_d) (X509 *x, int loc);
 extern SSL_CTX * (*SSL_CTX_new_d)(const SSL_METHOD * method);
 extern void (*SSL_set_bio_d)(SSL *ssl, BIO *rbio, BIO *wbio);
 extern unsigned char * (*ASN1_STRING_data_d)(ASN1_STRING *x);
+extern int (*BN_bn2mpi_d)(const BIGNUM *a, unsigned char *to);
 extern int (*SSL_CTX_check_private_key_d)(const SSL_CTX *ctx);
 extern int (*SSL_write_d)(SSL *ssl, const void *buf, int num);
 extern void (*sk_pop_free_d)(_STACK *st, void(*func)(void *));
@@ -384,7 +392,6 @@ extern const char * (*X509_verify_cert_error_string_d)(long n);
 extern int (*SHA256_Final_d)(unsigned char *md, SHA256_CTX *c);
 extern int (*SHA512_Final_d)(unsigned char *md, SHA512_CTX *c);
 extern int (*X509_check_issued_d)(X509 *issuer, X509 *subject);
-extern char * (*ERR_error_string_d)(unsigned long e, char *buf);
 extern int (*EVP_CIPHER_block_size_d)(const EVP_CIPHER *cipher);
 extern int (*EVP_CIPHER_key_length_d)(const EVP_CIPHER *cipher);
 extern void * (*OCSP_response_get1_basic_d)(OCSP_RESPONSE *resp);
@@ -392,7 +399,7 @@ extern const EC_GROUP * (*EC_KEY_get0_group_d)(const EC_KEY *key);
 extern const EVP_MD * (*EVP_get_digestbyname_d)(const char *name);
 extern long (*SSL_ctrl_d)(SSL *s, int cmd, long larg, void *parg);
 extern int (*i2o_ECPublicKey_d)(EC_KEY *key, unsigned char **out);
-extern int	(*SSL_CTX_set_cipher_list_d)(SSL_CTX *,const char *str);
+extern int (*SSL_CTX_set_cipher_list_d)(SSL_CTX *,const char *str);
 extern int (*i2d_ECPrivateKey_d)(EC_KEY *key, unsigned char **out);
 extern int (*EVP_CIPHER_CTX_iv_length_d)(const EVP_CIPHER_CTX *ctx);
 extern int (*EVP_DigestInit_d)(EVP_MD_CTX *ctx, const EVP_MD *type);
@@ -411,6 +418,7 @@ extern const BIGNUM * (*EC_KEY_get0_private_key_d)(const EC_KEY *key);
 extern const EVP_CIPHER * (*EVP_get_cipherbyname_d)(const char *name);
 extern int (*EVP_PKEY_set1_RSA_d)(EVP_PKEY *pkey, struct rsa_st *key);
 extern int (*SHA1_Update_d)(SHA_CTX *c, const void *data, size_t len);
+extern BIGNUM * (*BN_mpi2bn_d)(unsigned char *s, int len, BIGNUM *ret);
 extern const EC_POINT * (*EC_KEY_get0_public_key_d)(const EC_KEY *key);
 extern int (*EC_GROUP_precompute_mult_d)(EC_GROUP *group, BN_CTX *ctx);
 extern int (*EC_KEY_set_private_key_d)(EC_KEY *key, const BIGNUM *prv);
@@ -432,6 +440,7 @@ extern void (*CRYPTO_set_id_callback_d)(unsigned long(*id_function)(void));
 extern int (*SHA256_Update_d)(SHA256_CTX *c, const void *data, size_t len);
 extern int (*SHA512_Update_d)(SHA512_CTX *c, const void *data, size_t len);
 extern int (*X509_STORE_set_flags_d)(X509_STORE *ctx, unsigned long flags);
+extern point_conversion_form_t (*EC_KEY_get_conv_form_d)(const EC_KEY *key);
 extern long (*SSL_CTX_ctrl_d)(SSL_CTX *ctx, int cmd, long larg, void *parg);
 extern void (*ERR_error_string_n_d)(unsigned long e, char *buf, size_t len);
 extern BIGNUM * (*ASN1_INTEGER_to_BN_d)(const ASN1_INTEGER *ai, BIGNUM *bn);
@@ -445,6 +454,7 @@ extern int (*HMAC_Update_d)(HMAC_CTX *ctx, const unsigned char *data, size_t len
 extern int (*X509_NAME_get_index_by_NID_d)(X509_NAME *name, int nid, int lastpos);
 extern int (*SSL_CTX_use_certificate_chain_file_d)(SSL_CTX *ctx, const char *file);
 extern int (*ASN1_GENERALIZEDTIME_print_d)(BIO *fp, const ASN1_GENERALIZEDTIME *a);
+extern void (*EC_KEY_set_conv_form_d)(EC_KEY *eckey, point_conversion_form_t cform);
 extern int (*OCSP_RESPONSE_print_d)(BIO *bp, OCSP_RESPONSE *o, unsigned long flags);
 extern void * (*OCSP_cert_to_id_d)(const EVP_MD *dgst, X509 *subject, X509 *issuer);
 extern int (*EVP_DigestFinal_d)(EVP_MD_CTX *ctx, unsigned char *md, unsigned int *s);
@@ -460,23 +470,27 @@ extern EC_KEY * (*d2i_ECPrivateKey_d)(EC_KEY **key, const unsigned char **in, lo
 extern unsigned char * (*SHA512_d)(const unsigned char *d, size_t n, unsigned char *md);
 extern int (*EVP_DecryptFinal_ex_d)(EVP_CIPHER_CTX *ctx, unsigned char *outm, int *outl);
 extern void (*EC_GROUP_set_point_conversion_form_d)(EC_GROUP *, point_conversion_form_t);
+extern void (*ED25519_keypair_d)(uint8_t out_public_key[32], uint8_t out_private_key[64]);
 extern void (*ERR_put_error_d)(int lib, int func, int reason, const char *file, int line);
 extern ECDSA_SIG * (*d2i_ECDSA_SIG_d)(ECDSA_SIG **sig, const unsigned char **pp, long len);
-extern int	(*DH_generate_parameters_ex_d)(DH *dh, int prime_len,int generator, BN_GENCB *cb);
+extern int (*DH_generate_parameters_ex_d)(DH *dh, int prime_len,int generator, BN_GENCB *cb);
 extern ECDSA_SIG * (*ECDSA_do_sign_d)(const unsigned char *dgst, int dgst_len, EC_KEY *eckey);
 extern int (*X509_STORE_load_locations_d)(X509_STORE *ctx, const char *file, const char *path);
 extern OCSP_REQ_CTX * (*OCSP_sendreq_new_d)(BIO *io, const char *path, void *req, int maxline);
 extern void (*SSL_CTX_set_verify_d)(SSL_CTX *ctx, int mode, int (*cb) (int, X509_STORE_CTX *));
 extern EC_POINT * (*EC_POINT_hex2point_d)(const EC_GROUP *, const char *, EC_POINT *, BN_CTX *);
+extern int (*CRYPTO_set_locked_mem_functions_d)(void *(*m) (size_t), void (*free_func) (void *));
 extern int (*OCSP_REQ_CTX_add1_header_d)(OCSP_REQ_CTX *rctx, const char *name, const char *value);
 extern void (*X509_STORE_CTX_set_chain_d)(struct x509_store_ctx_st *ctx, struct stack_st_X509 *sk);
 extern int (*SSL_CTX_load_verify_locations_d)(SSL_CTX *ctx, const char *CAfile, const char *CApath);
 extern OCSP_RESPONSE * (*d2i_OCSP_RESPONSE_d)(OCSP_RESPONSE **a, const unsigned char **in, long len);
 extern int (*OCSP_parse_url_d)(const char *url, char **phost, char **pport, char **ppath, int *pssl);
 extern int (*HMAC_Init_ex_d)(HMAC_CTX *ctx, const void *key, int len, const EVP_MD *md, ENGINE *impl);
+extern int (*EC_POINT_cmp_d)(const EC_GROUP *group, const EC_POINT *a, const EC_POINT *b, BN_CTX *ctx);
 extern void (*SSL_CTX_set_tmp_dh_callback_d)(SSL_CTX *ctx, DH *(*dh)(SSL *ssl,int is_export, int keylength)) ;
 extern int (*ECDSA_do_verify_d)(const unsigned char *dgst, int dgst_len, const ECDSA_SIG *sig, EC_KEY *eckey);
 extern int (*X509_check_host_d)(X509 *x, const char *chk, size_t chklen, unsigned int flags, char **peername);
+extern int (*CRYPTO_set_mem_functions_d)(void *(*m) (size_t), void *(*r) (void *, size_t), void (*f) (void *));
 extern int (*X509_STORE_CTX_init_d)(X509_STORE_CTX *ctx, X509_STORE *store, X509 *x509, STACK_OF(X509) *chain);
 extern unsigned long (*ERR_peek_error_line_data_d)(const char **file, int *line, const char **data, int *flags);
 extern char * (*EC_POINT_point2hex_d)(const EC_GROUP *, const EC_POINT *, point_conversion_form_t form, BN_CTX *);
@@ -487,10 +501,14 @@ extern int (*EVP_DecryptUpdate_d)(EVP_CIPHER_CTX *ctx, unsigned char *out, int *
 extern int (*EVP_EncryptUpdate_d)(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl, const unsigned char *in, int inl);
 extern int (*OCSP_basic_verify_d)(void *bs, struct stack_st_X509 *certs, struct x509_store_st *st, unsigned long flags);
 extern int (*OCSP_check_validity_d)(ASN1_GENERALIZEDTIME *thisupd, ASN1_GENERALIZEDTIME *nextupd, long sec, long maxsec);
+extern int (*ED25519_sign_d)(uint8_t *out_sig, const uint8_t *message, size_t message_len, const uint8_t private_key[64]);
 extern int (*EC_POINT_oct2point_d)(const EC_GROUP *group, EC_POINT *p, const unsigned char *buf, size_t len, BN_CTX *ctx);
+extern void (*ED25519_keypair_from_seed_d)(uint8_t out_public_key[32], uint8_t out_private_key[64], const uint8_t seed[32]);
 extern int (*EVP_Digest_d)(const void *data, size_t count, unsigned char *md, unsigned int *size, const EVP_MD *type, ENGINE *impl);
+extern int (*ED25519_verify_d)(const uint8_t *message, size_t message_len, const uint8_t signature[64], const uint8_t public_key[32]);
 extern int (*EVP_DecryptInit_ex_d)(EVP_CIPHER_CTX *ctx, const EVP_CIPHER *cipher, ENGINE *impl, const unsigned char *key, const unsigned char *iv);
 extern int (*EVP_EncryptInit_ex_d)(EVP_CIPHER_CTX *ctx, const EVP_CIPHER *cipher, ENGINE *impl, const unsigned char *key, const unsigned char *iv);
+extern int (*EC_POINT_mul_d)(const EC_GROUP *group, EC_POINT *r, const BIGNUM *g_scalar, const EC_POINT *point, const BIGNUM *p_scalar, BN_CTX *ctx);
 extern size_t (*EC_POINT_point2oct_d)(const EC_GROUP *group, const EC_POINT *p, point_conversion_form_t form, unsigned char *buf, size_t len, BN_CTX *ctx);
 extern int (*ECDH_compute_key_d)(void *out, size_t outlen, const EC_POINT *pub_key, EC_KEY *ecdh, void *(*KDF)(const void *in, size_t inlen, void *out, size_t *outlen));
 extern int (*OCSP_resp_find_status_d)(void *bs, void *id, int *status, int *reason, ASN1_GENERALIZEDTIME **revtime, ASN1_GENERALIZEDTIME **thisupd, ASN1_GENERALIZEDTIME **nextupd);

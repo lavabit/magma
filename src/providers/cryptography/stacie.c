@@ -1,3 +1,4 @@
+
 /**
  * @file /magma/providers/cryptography/stacie.c
  *
@@ -5,14 +6,44 @@
  * 		specification. These functions implement the individual steps required for key and token derivation.
  * 		The inputs for these functions should already processed and normalized for a deterministic
  * 		output.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
+
+/**
+ * @brief	Generates a random shard of precisely 64 bytes, suitable for use with a STACIE realm.
+ *
+ * @note	The master key is combined with the realm label and a random shard value to create the realm key.
+ *
+ * @param	output	a managed string to receive the output; if passed as NULL, an output buffer will be allocated.
+ *
+ * @return	A managed string holding the freshly generated shard in binary form. If NULL was passed in then the result must be freed by the caller.
+ */
+stringer_t * stacie_shard_create(stringer_t *output) {
+
+	stringer_t *result = NULL;
+
+	// If an output buffer was passed in make sure it's a valid destination with length tracking.
+	if (output && (!st_valid_destination(st_opt_get(output)) || !st_valid_tracked(st_opt_get(output)) || st_avail_get(output) < STACIE_SHARD_LENGTH)) {
+		log_pedantic("An output string was supplied but is not a valid destination for the shard value.");
+		return NULL;
+	}
+	// Otherwise allocate an output buffer.
+	else if (!output && !(output = result = st_alloc(STACIE_SHARD_LENGTH))) {
+		log_pedantic("Failed to allocate an output buffer for the shard value.");
+		return NULL;
+	}
+
+	// Attempt to write the random bytes into the output buffer.
+	if (rand_write(PLACER(st_data_get(output), STACIE_SHARD_LENGTH)) != STACIE_SHARD_LENGTH) {
+		log_pedantic("Failed to create a random shard value.");
+		st_cleanup(result);
+		return NULL;
+	}
+
+	st_length_set(output, STACIE_SHARD_LENGTH);
+	return output;
+}
 
 /**
  * @brief	Generates a random salt of precisely 128 bytes, suitable for use with STACIE authentication scheme.
@@ -20,21 +51,34 @@
  * @note	While the salt and nonce creation functions are nearly identical, they remain seperated so they can use distinct
  * 			preprocessor definitions for the result length.
  *
- * @return	A managed string holding the freshly generated salt in binary form. The result must be freed by the caller.
+ * @param	output	a managed string to receive the output; if passed as NULL, an output buffer will be allocated.
  *
+ * @return	A managed string holding the freshly generated salt in binary form. If NULL was passed in then the result must be freed by the caller.
  */
-stringer_t * stacie_salt_create(void) {
+stringer_t * stacie_salt_create(stringer_t *output) {
 
 	stringer_t *result = NULL;
 
-	// We call cleanup on the result pointer just in case the allocation succeeds but the random write operation fails.
-	if (!(result = st_alloc(STACIE_SALT_LENGTH)) || rand_write(result) != STACIE_SALT_LENGTH) {
+	// If an output buffer was passed in make sure it's a valid destination with length tracking.
+	if (output && (!st_valid_destination(st_opt_get(output)) || !st_valid_tracked(st_opt_get(output)) || st_avail_get(output) < STACIE_SALT_LENGTH)) {
+		log_pedantic("An output string was supplied but is not a valid destination for the salt value.");
+		return NULL;
+	}
+	// Otherwise allocate an output buffer.
+	else if (!output && !(output = result = st_alloc(STACIE_SALT_LENGTH))) {
+		log_pedantic("Failed to allocate an output buffer for the salt value.");
+		return NULL;
+	}
+
+	// Attempt to write the random bytes into the output buffer.
+	if (rand_write(PLACER(st_data_get(output), STACIE_SALT_LENGTH)) != STACIE_SALT_LENGTH) {
 		log_pedantic("Failed to create a random salt value.");
 		st_cleanup(result);
 		return NULL;
 	}
 
-	return result;
+	st_length_set(output, STACIE_SALT_LENGTH);
+	return output;
 }
 
 /**
@@ -43,21 +87,34 @@ stringer_t * stacie_salt_create(void) {
  * @note	While the salt and nonce creation functions are nearly identical, they remain seperated so they can use distinct
  * 			preprocessor definitions for the result length.
  *
- * @return	A managed string holding the freshly generated nonce in binary form. The result must be freed by the caller.
+ * @param	output	a managed string to receive the output; if passed as NULL, an output buffer will be allocated.
  *
+ * @return	A managed string holding the freshly generated nonce in binary form. If NULL was passed in then the result must be freed by the caller.
  */
-stringer_t * stacie_nonce_create(void) {
+stringer_t * stacie_nonce_create(stringer_t *output) {
 
 	stringer_t *result = NULL;
 
-	// We call cleanup on the result pointer just in case the allocation succeeds but the random write operation fails.
-	if (!(result = st_alloc(STACIE_NONCE_LENGTH)) || rand_write(result) != STACIE_NONCE_LENGTH) {
+	// If an output buffer was passed in make sure it's a valid destination with length tracking.
+	if (output && (!st_valid_destination(st_opt_get(output)) || !st_valid_tracked(st_opt_get(output)) || st_avail_get(output) < STACIE_NONCE_LENGTH)) {
+		log_pedantic("An output string was supplied but is not a valid destination for the nonce value.");
+		return NULL;
+	}
+	// Otherwise allocate an output buffer.
+	else if (!output && !(output = result = st_alloc(STACIE_NONCE_LENGTH))) {
+		log_pedantic("Failed to allocate an output buffer for the nonce value.");
+		return NULL;
+	}
+
+	// Attempt to write the random bytes into the output buffer.
+	if (rand_write(PLACER(st_data_get(output), STACIE_NONCE_LENGTH)) != STACIE_NONCE_LENGTH) {
 		log_pedantic("Failed to create a random nonce value.");
 		st_cleanup(result);
 		return NULL;
 	}
 
-	return result;
+	st_length_set(output, STACIE_NONCE_LENGTH);
+	return output;
 }
 
 /**
@@ -77,7 +134,6 @@ stringer_t * stacie_nonce_create(void) {
  *
  * @return  Valid passwords will return a value between 8 (the prescribed minimum) and 16,777,216 (the prescribed
  * 		maximum). If an error occurs, then 0 will be returned.
- *
  */
 uint32_t stacie_rounds_calculate(stringer_t *password, uint32_t bonus) {
 
@@ -112,7 +168,7 @@ uint32_t stacie_rounds_calculate(stringer_t *password, uint32_t bonus) {
 	// variation of the clamp function is used to avoid being tricked into an overflow situation. Magma should never pass
 	// in an illegal value, but we protect against overflows just in case somebody decides to copy this code without
 	// realizing they should be checking their values higher up the stack.
-	return (uint32_t)uint64_clamp(STACIE_ROUNDS_MIN, STACIE_ROUNDS_MAX, (dynamic + bonus));
+	return (uint32_t)uint64_clamp(STACIE_KEY_ROUNDS_MIN, STACIE_KEY_ROUNDS_MAX, (dynamic + bonus));
 }
 
 /**
@@ -131,7 +187,6 @@ uint32_t stacie_rounds_calculate(stringer_t *password, uint32_t bonus) {
  * @return	provides a managed string with the entropy seed value stored in a secure memory buffer, or NULL if an error occurs. The
  * 		length of the return value depends on the HMAC function being used. Magma currently uses an HMAC function based around
  * 		SHA-512, which results in the output being exactly 64 bytes, at least it was 64 bytes every time I bothered to look.
- *
  */
 stringer_t * stacie_entropy_seed_derive(uint32_t rounds, stringer_t *password, stringer_t *salt) {
 
@@ -143,7 +198,7 @@ stringer_t * stacie_entropy_seed_derive(uint32_t rounds, stringer_t *password, s
 	const EVP_MD *digest = EVP_sha512_d();
 
 	// Sanity check the rounds value.
-	if (rounds < STACIE_ROUNDS_MIN || rounds > STACIE_ROUNDS_MAX) {
+	if (rounds < STACIE_KEY_ROUNDS_MIN || rounds > STACIE_KEY_ROUNDS_MAX) {
 		log_error("An invalid value for rounds was passed to the STACIE seed derivation function. { rounds = %u }", rounds);
 		return NULL;
 	}
@@ -175,7 +230,7 @@ stringer_t * stacie_entropy_seed_derive(uint32_t rounds, stringer_t *password, s
 
 	if (HMAC_Init_ex_d(&ctx, salt_data, salt_len, digest, NULL) != 1) {
 		log_error("The STACIE seed derivation failed because the HMAC function didn't initialize properly. {%s}",
-			ERR_error_string_d(ERR_get_error_d(), NULL));
+			ssl_error_string(MEMORYBUF(256), 256));
 		HMAC_CTX_cleanup_d(&ctx);
 		st_cleanup(seed);
 		return NULL;
@@ -185,7 +240,7 @@ stringer_t * stacie_entropy_seed_derive(uint32_t rounds, stringer_t *password, s
 	for (uint32_t count = 0; count < rounds; count++) {
 		if (HMAC_Update_d(&ctx, password_data, password_len) != 1) {
 			log_error("The STACIE seed derivation failed because the HMAC function context couldn't be updated. {%s}",
-				ERR_error_string_d(ERR_get_error_d(), NULL));
+				ssl_error_string(MEMORYBUF(256), 256));
 			HMAC_CTX_cleanup_d(&ctx);
 			st_cleanup(seed);
 			return NULL;
@@ -194,7 +249,7 @@ stringer_t * stacie_entropy_seed_derive(uint32_t rounds, stringer_t *password, s
 
 	// Finalize the HMAC context and retrieve the digest result as our seed value.
 	if (HMAC_Final_d(&ctx, st_data_get(seed), &seed_len) != 1 || seed_len != 64) {
-		log_error("Failed HMAC_Final_d(). {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_error("Failed HMAC_Final_d(). {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		HMAC_CTX_cleanup_d(&ctx);
 		st_cleanup(seed);
 		return NULL;
@@ -234,7 +289,6 @@ stringer_t * stacie_entropy_seed_derive(uint32_t rounds, stringer_t *password, s
  * @return	provides a managed string with the derived key stored in a secure memory buffer, or NULL if an error occurs. The
  * 		length of the output depends on the hash function being used. Magma currently uses SHA-512, which will result in
  * 		the output being exactly 64 bytes, every single time.
- *
  */
 stringer_t * stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt) {
 
@@ -247,7 +301,7 @@ stringer_t * stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringe
 	const EVP_MD *digest = EVP_sha512_d();
 
 	// Sanity check the rounds value.
-	if (rounds < STACIE_ROUNDS_MIN || rounds > STACIE_ROUNDS_MAX) {
+	if (rounds < STACIE_KEY_ROUNDS_MIN || rounds > STACIE_KEY_ROUNDS_MAX) {
 		log_error("An invalid value for rounds was passed to The STACIE key derivation function. { rounds = %u }", rounds);
 		return NULL;
 	}
@@ -299,7 +353,7 @@ stringer_t * stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringe
 		// Setup the digest algorithm.
 		if (EVP_DigestInit_ex_d(&ctx, (const EVP_MD *)digest, NULL) != 1) {
 			log_pedantic("The STACIE key derivation failed because an error occurred while trying to initialize the hash context. {%s}",
-				ERR_error_string_d(ERR_get_error_d(), NULL));
+				ssl_error_string(MEMORYBUF(256), 256));
 			EVP_MD_CTX_cleanup_d(&ctx);
 			st_cleanup(key);
 			return NULL;
@@ -314,7 +368,7 @@ stringer_t * stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringe
 			EVP_DigestUpdate_d(&ctx, password_data, password_len) != 1 ||
 			EVP_DigestUpdate_d(&ctx, ((uchr_t *)&count_data) + 1, 3) != 1) {
 			log_pedantic("The STACIE key derivation failed because an error occurred while trying to process the input data. {%s}",
-				ERR_error_string_d(ERR_get_error_d(), NULL));
+				ssl_error_string(MEMORYBUF(256), 256));
 			EVP_MD_CTX_cleanup_d(&ctx);
 			st_cleanup(key);
 			return NULL;
@@ -323,7 +377,7 @@ stringer_t * stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringe
 		// Retrieve the hash output.
 		else if (EVP_DigestFinal_d(&ctx, key_data, &key_len) != 1 || key_len != 64) {
 			log_pedantic("The STACIE key derivation failed because an error occurred while trying to retrieve the hash result. {%s}",
-				ERR_error_string_d(ERR_get_error_d(), NULL));
+				ssl_error_string(MEMORYBUF(256), 256));
 			EVP_MD_CTX_cleanup_d(&ctx);
 			st_cleanup(key);
 			return NULL;
@@ -363,7 +417,6 @@ stringer_t * stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringe
  * @return	provides a managed string with the derived token stored in a secure memory buffer, or NULL if an error
  * 		occurs. The	length of the output depends on the hash function being used. Magma currently uses SHA-512, which will result in
  * 		the output being exactly 64 bytes, with a level of reliability that rivals death and taxes.
- *
  */
 stringer_t * stacie_hashed_token_derive(stringer_t *base, stringer_t *username, stringer_t *salt, stringer_t *nonce) {
 
@@ -422,7 +475,7 @@ stringer_t * stacie_hashed_token_derive(stringer_t *base, stringer_t *username, 
 	// Initialize the context. We only need to do this once.
 	EVP_MD_CTX_init_d(&ctx);
 
-	for (uint32_t count = 0; count < STACIE_ROUNDS_TOKENS; count++) {
+	for (uint32_t count = 0; count < STACIE_TOKEN_ROUNDS; count++) {
 
 		// Store the counter as a big endian number.
 		count_data = htobe32(count);
@@ -430,7 +483,7 @@ stringer_t * stacie_hashed_token_derive(stringer_t *base, stringer_t *username, 
 		// Setup the digest algorithm.
 		if (EVP_DigestInit_ex_d(&ctx, (const EVP_MD *)digest, NULL) != 1) {
 			log_pedantic("The STACIE token derivation failed because an error occurred while trying to initialize the hash context. {%s}",
-				ERR_error_string_d(ERR_get_error_d(), NULL));
+				ssl_error_string(MEMORYBUF(256), 256));
 			EVP_MD_CTX_cleanup_d(&ctx);
 			st_cleanup(token);
 			return NULL;
@@ -445,7 +498,7 @@ stringer_t * stacie_hashed_token_derive(stringer_t *base, stringer_t *username, 
 			(nonce_data && EVP_DigestUpdate_d(&ctx, nonce_data, nonce_len) != 1) ||
 			EVP_DigestUpdate_d(&ctx, ((uchr_t *)&count_data) + 1, 3) != 1) {
 			log_pedantic("The STACIE token derivation failed because an error occurred while trying to process the input data. {%s}",
-				ERR_error_string_d(ERR_get_error_d(), NULL));
+				ssl_error_string(MEMORYBUF(256), 256));
 			EVP_MD_CTX_cleanup_d(&ctx);
 			st_cleanup(token);
 			return NULL;
@@ -454,7 +507,7 @@ stringer_t * stacie_hashed_token_derive(stringer_t *base, stringer_t *username, 
 		// Retrieve the hash output.
 		else if (EVP_DigestFinal_d(&ctx, token_data, &token_len) != 1 || token_len != 64) {
 			log_pedantic("The STACIE token derivation failed because an error occurred while trying to retrieve the hash result. {%s}",
-				ERR_error_string_d(ERR_get_error_d(), NULL));
+				ssl_error_string(MEMORYBUF(256), 256));
 			EVP_MD_CTX_cleanup_d(&ctx);
 			st_cleanup(token);
 			return NULL;
@@ -501,16 +554,19 @@ stringer_t * stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, 
 		log_error("The STACIE realm key derivation failed because the hash function wasn't available.");
 		return NULL;
 	}
+
 	// What's the point of going any further if the master key is empty?
-	else if (st_empty_out(master_key, &key_data, &key_len) || key_len != 64) {
+	else if (st_empty_out(master_key, &key_data, &key_len) || key_len != STACIE_KEY_LENGTH) {
 		log_error("The STACIE realm key derivation failed because the master key was empty.");
 		return NULL;
 	}
-	// This implementation requires the base value to be 64 bytes in length,
+
+	// This implementation requires the realm label to be less than 16
 	else if (st_empty_out(realm, &realm_data, &realm_len)) {
-		log_error("The STACIE realm key derivation failed because the name value was empty.");
+		log_error("The STACIE realm key derivation failed because the realm label was empty.");
 		return NULL;
 	}
+
 	// And the shard value, which must also be 64 bytes in length.
 	else if (st_empty_out(shard, &shard_data, &shard_len) || shard_len != 64) {
 		log_error("The STACIE realm key derivation failed because the shard value was empty.");
@@ -529,7 +585,7 @@ stringer_t * stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, 
 	// Setup the digest algorithm.
 	if (EVP_DigestInit_ex_d(&ctx, (const EVP_MD *)digest, NULL) != 1) {
 		log_pedantic("The STACIE realm key derivation failed because an error occurred while trying to initialize the hash context. {%s}",
-			ERR_error_string_d(ERR_get_error_d(), NULL));
+			ssl_error_string(MEMORYBUF(256), 256));
 		EVP_MD_CTX_cleanup_d(&ctx);
 		st_cleanup(result);
 		return NULL;
@@ -540,7 +596,7 @@ stringer_t * stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, 
 		EVP_DigestUpdate_d(&ctx, realm_data, realm_len) != 1 ||
 		EVP_DigestUpdate_d(&ctx, shard_data, shard_len) != 1) {
 		log_pedantic("The STACIE realm key derivation failed because an error occurred while trying to process the input data. {%s}",
-			ERR_error_string_d(ERR_get_error_d(), NULL));
+			ssl_error_string(MEMORYBUF(256), 256));
 		EVP_MD_CTX_cleanup_d(&ctx);
 		st_cleanup(result);
 		return NULL;
@@ -549,7 +605,7 @@ stringer_t * stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, 
 	// Retrieve the hash output.
 	else if (EVP_DigestFinal_d(&ctx, hash_data, &hash_len) != 1 || hash_len != 64) {
 		log_pedantic("The STACIE realm key derivation failed because an error occurred while trying to retrieve the hash result. {%s}",
-			ERR_error_string_d(ERR_get_error_d(), NULL));
+			ssl_error_string(MEMORYBUF(256), 256));
 		EVP_MD_CTX_cleanup_d(&ctx);
 		st_cleanup(result);
 		return NULL;
@@ -567,9 +623,9 @@ stringer_t * stacie_realm_key_derive(stringer_t *master_key, stringer_t *realm, 
 }
 
 /**
- * @brief	Extract the symmetric encryption key from the combined realm key.
+ * @brief	Extract the symmetric encryption key from the realm key.
  *
- * @param	realm_key	The complete realm key, which holds the initialization vector and the symmetric key.
+ * @param	realm_key	The complete realm key, which holds the vector, tag and cipher key values.
  *
  * @return	provides a managed string with the symmetric encryption key stored in a secure memory buffer, or NULL if an error
  * 		occurs.
@@ -589,27 +645,343 @@ stringer_t * stacie_realm_cipher_key(stringer_t *realm_key) {
 }
 
 /**
- * @brief   Extract the static initialization vector from the combined realm key.
+ * @brief   Extract the vector key from the realm key.
  *
- * @param	realm_key	The complete realm key, which holds the initialization vector and the symmetric key.
+ * @param	realm_key	The complete realm key, which holds the vector, tag and cipher key values.
  *
- * @return  provides a managed string with the initialization vector stored in a secure memory buffer, or NULL if an error
+ * @return  provides a managed string with the vector key stored in a secure memory buffer, or NULL if an error
  * 		occurs.
  */
-stringer_t * stacie_realm_init_vector(stringer_t *realm_key) {
+stringer_t * stacie_realm_vector_key(stringer_t *realm_key) {
 
-	stringer_t *vector = NULL;
+	stringer_t *vector_key = NULL;
 
 	if (st_empty(realm_key) || st_length_get(realm_key) != 64) {
-		log_error("The realm initialization vector extraction failed because the realm key passed in wasn't valid.");
+		log_error("The realm vector key extraction failed because the realm key passed in wasn't valid.");
 	}
-	else if (!(vector = st_alloc_opts((MANAGED_T | CONTIGUOUS | SECURE), 16))) {
-		log_error("The realm initialization vector extraction failed because a secure memory buffer could not be allocated to hold the result.");
+	else if (!(vector_key = st_dupe_opts(MANAGED_T | CONTIGUOUS | SECURE, PLACER(st_data_get(realm_key), 16)))) {
+		log_error("The realm vector key extraction failed because a secure memory buffer could not be allocated to hold the result.");
 	}
-	else if (!st_xor(PLACER(st_data_get(realm_key), 16), PLACER(st_data_get(realm_key) + 16, 16), vector)) {
-		log_error("The realm initialization vector extraction failed because an error occurred while trying to perform the XOR operation.");
-		st_free(vector);
+
+	return vector_key;
+}
+
+/**
+ * @brief   Extract the tag key from the realm key.
+ *
+ * @param	realm_key	The complete realm key, which holds the vector, tag and cipher key values.
+ *
+ * @return  provides a managed string with the tag key stored in a secure memory buffer, or NULL if an error
+ * 		occurs.
+ */
+stringer_t * stacie_realm_tag_key(stringer_t *realm_key) {
+
+	stringer_t *tag_key = NULL;
+
+	if (st_empty(realm_key) || st_length_get(realm_key) != 64) {
+		log_error("The realm tag key extraction failed because the realm key passed in wasn't valid.");
+	}
+	else if (!(tag_key = st_dupe_opts(MANAGED_T | CONTIGUOUS | SECURE, PLACER(st_data_get(realm_key) + 16, 16)))) {
+		log_error("The realm tag key extraction failed because a secure memory buffer could not be allocated to hold the result.");
+	}
+
+	return tag_key;
+}
+
+/**
+ *
+ * @brief
+ *
+ * @param serial
+ * @param vector_key
+ * @param tag_key
+ * @param cipher_key
+ * @param buffer
+ *
+ * @return
+ */
+stringer_t * stacie_realm_encrypt(uint16_t serial, stringer_t *vector_key, stringer_t *tag_key, stringer_t *cipher_key, stringer_t *buffer) {
+
+	uint8_t pad = 0;
+	uint16_t serial_be;
+	size_t buffer_len;
+	EVP_CIPHER_CTX ctx;
+	uchr_t *buffer_data, tag[16];
+	uint32_t buffer_len_be;
+	int_t  out_len, avail_len, used_len = 0;
+	stringer_t *vector = MANAGEDBUF(16), *vector_shard = MANAGEDBUF(16), *tag_shard = MANAGEDBUF(16), *output = NULL;
+
+	if (st_length_get(vector_key) != 16) {
+		log_error("STACIE realm encryption requires a 16 byte vector key. { vector_key_len = %zu }", st_length_get(vector_key));
 		return NULL;
 	}
-	return vector;
+	else if (st_length_get(tag_key) != 16) {
+		log_error("STACIE realm encryption requires a 16 byte tag key. { tag_key_len = %zu }", st_length_get(tag_key));
+		return NULL;
+	}
+	else if (st_length_get(cipher_key) != 32) {
+		log_error("STACIE realm encryption requires a 32 byte cipher key. { cipher_key_len = %zu }", st_length_get(cipher_key));
+		return NULL;
+	}
+	else if (st_empty_out(buffer, &buffer_data, &buffer_len) || buffer_len < STACIE_ENCRYPT_MIN || buffer_len > STACIE_ENCRYPT_MAX) {
+		log_error("STACIE realm encryption requires an input buffer with a minimum of 1 byte and a maximum of 16,777,215 bytes. { buffer_len = %zu }",
+			buffer_len);
+		return NULL;
+	}
+
+	// Generate a random initialization vector shard which will be combined with the vector key.
+	else if (rand_write(vector_shard) != 16 || !st_xor(vector_key, vector_shard, vector)) {
+		log_error("The STACIE realm encryption failed because a random vector could not be generated.");
+		return NULL;
+	}
+
+	// Calculate the number of padding bytes required.
+	pad = STACIE_BLOCK_LENGTH - ((buffer_len + 4) % STACIE_BLOCK_LENGTH);
+	avail_len = buffer_len + pad + 4;
+	out_len = STACIE_ENVELOPE_LENGTH + avail_len;
+
+	// Create the big endian representations of the serial number and the plain text length.
+	serial_be = htobe16(serial);
+	buffer_len_be = htobe32(buffer_len);
+
+	// Setup the cipher context, the body length, and store a pointer to the body buffer location.
+	EVP_CIPHER_CTX_init_d(&ctx);
+
+	// Initialize the cipher context.
+	if (EVP_EncryptInit_ex_d(&ctx, EVP_aes_256_gcm_d(), NULL, NULL, NULL) != 1) {
+		log_pedantic("An error occurred while trying to initialize chosen symmetric cipher.");
+		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		return NULL;
+	}
+
+	// Set the vector length.
+	if (EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_GCM_SET_IVLEN, 16, NULL) != 1) {
+		log_pedantic("The initialization vector length could not be properly set to 16 bytes.");
+		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		return NULL;
+	}
+
+	// Validate the key length.
+	else if (EVP_CIPHER_CTX_key_length_d(&ctx) != 32) {
+		log_pedantic("The encryption key length does not match the selected cipher key length. { key = %i / expected = %i }", 32, EVP_CIPHER_CTX_key_length_d(&ctx));
+		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		return NULL;
+	}
+
+	// Add the vector and key data.
+	if (EVP_EncryptInit_ex_d(&ctx, NULL, NULL, st_data_get(cipher_key), st_data_get(vector)) != 1) {
+		log_pedantic("An error occurred initializing the symmetric cipher with the provided key and vector data.");
+		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		return NULL;
+	}
+
+	// Allocate the output buffer.
+	if (!(output = st_alloc(out_len))) {
+		log_pedantic("Unable to allocate a buffer of %i bytes for the output buffer.", avail_len);
+		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		return NULL;
+	}
+
+	// Write the plain text length into the cipher text as a 24 bit big endian integer.
+	if (EVP_EncryptUpdate_d(&ctx, st_data_get(output) + STACIE_ENVELOPE_LENGTH, &avail_len, ((uchr_t *)&buffer_len_be) + 1, 3) != 1) {
+		log_pedantic("An error occurred while trying to encrypt the input buffer using the chosen symmetric cipher.");
+		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		st_free(output);
+		return NULL;
+	}
+
+	used_len += avail_len;
+	avail_len = out_len - STACIE_ENVELOPE_LENGTH - used_len;
+
+	// Write the pad length into the cipher text as an 8 bit integer.
+	if (EVP_EncryptUpdate_d(&ctx, st_data_get(output) + STACIE_ENVELOPE_LENGTH + used_len, &avail_len, ((uchr_t *)&pad), 1) != 1) {
+		log_pedantic("An error occurred while trying to encrypt the input buffer using the chosen symmetric cipher.");
+		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		st_free(output);
+		return NULL;
+	}
+
+	used_len += avail_len;
+	avail_len = out_len - STACIE_ENVELOPE_LENGTH - used_len;
+
+	// Encrypt the plain text buffer.
+	if (EVP_EncryptUpdate_d(&ctx, st_data_get(output) + STACIE_ENVELOPE_LENGTH + used_len, &avail_len, buffer_data, buffer_len) != 1) {
+		log_pedantic("An error occurred while trying to encrypt the input buffer using the chosen symmetric cipher.");
+		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		st_free(output);
+		return NULL;
+	}
+
+	used_len += avail_len;
+	avail_len = out_len - STACIE_ENVELOPE_LENGTH - used_len;
+
+	// Encrypt the padding bytes (if necessary).
+	for (int_t i = 0; i < pad; i++) {
+		if (EVP_EncryptUpdate_d(&ctx, st_data_get(output) + STACIE_ENVELOPE_LENGTH + used_len, &avail_len, ((uchr_t *)&pad), 1) != 1) {
+			log_pedantic("An error occurred while trying to encrypt the input buffer using the chosen symmetric cipher.");
+			EVP_CIPHER_CTX_cleanup_d(&ctx);
+			st_free(output);
+			return NULL;
+		}
+
+		used_len += avail_len;
+		avail_len = out_len - STACIE_ENVELOPE_LENGTH - used_len;
+	}
+
+	if (EVP_EncryptFinal_ex_d(&ctx, st_data_get(output) + STACIE_ENVELOPE_LENGTH + used_len, &avail_len) != 1) {
+		log_pedantic("An error occurred while trying to complete encryption process.");
+		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		st_free(output);
+		return NULL;
+	}
+
+	used_len += avail_len;
+
+	if (EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_GCM_GET_TAG, 16, &tag[0]) != 1 || st_xor(tag_key, PLACER(&tag[0], 16), tag_shard) != tag_shard) {
+		log_pedantic("An error occurred while trying to retrieve the tag value.");
+		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		st_free(output);
+		return NULL;
+	}
+
+	EVP_CIPHER_CTX_cleanup_d(&ctx);
+
+	mm_move(st_data_get(output), ((uchr_t *)&serial_be), 2);
+	mm_move(st_data_get(output) + 2, st_data_get(vector_shard), 16);
+	mm_move(st_data_get(output) + 18, st_data_get(tag_shard), 16);
+	st_length_set(output, STACIE_ENVELOPE_LENGTH + used_len);
+
+	return output;
 }
+
+/**
+ *
+ * @brief
+ *
+ * @param vector_key
+ * @param tag_key
+ * @param cipher_key
+ * @param buffer
+ *
+ * @return
+ */
+stringer_t * stacie_realm_decrypt(stringer_t *vector_key, stringer_t *tag_key, stringer_t *cipher_key, stringer_t *buffer) {
+
+	uint8_t pad = 0;
+	size_t buffer_len;
+	EVP_CIPHER_CTX ctx;
+	uchr_t *buffer_data;
+	uint32_t buffer_len_be = 0;
+	int_t  out_len, avail_len, used_len = 0;
+	stringer_t *vector = MANAGEDBUF(16), *tag = MANAGEDBUF(16), *output = NULL;
+
+	if (st_length_get(vector_key) != 16) {
+		log_error("STACIE realm encryption requires a 16 byte vector key. { vector_key_len = %zu }", st_length_get(vector_key));
+		return NULL;
+	}
+	else if (st_length_get(tag_key) != 16) {
+		log_error("STACIE realm encryption requires a 16 byte tag key. { tag_key_len = %zu }", st_length_get(tag_key));
+		return NULL;
+	}
+	else if (st_length_get(cipher_key) != 32) {
+		log_error("STACIE realm encryption requires a 32 byte cipher key. { cipher_key_len = %zu }", st_length_get(cipher_key));
+		return NULL;
+	}
+	else if (st_empty_out(buffer, &buffer_data, &buffer_len) || buffer_len < 54) {
+		log_error("STACIE realm encryption generates a minimum of 54 bytes. { buffer_len = %zu }",
+			buffer_len);
+		return NULL;
+	}
+
+	st_xor(PLACER(buffer_data + 2, 16), vector_key, vector);
+	st_xor(PLACER(buffer_data + 18, 16), tag_key, tag);
+
+	out_len = avail_len = (buffer_len - STACIE_ENVELOPE_LENGTH);
+
+	// Setup the cipher context, the body length, and store a pointer to the body buffer location.
+	EVP_CIPHER_CTX_init_d(&ctx);
+
+	// Initialize the cipher context.
+	if (EVP_DecryptInit_ex_d(&ctx, EVP_aes_256_gcm_d(), NULL, NULL, NULL) != 1) {
+		log_pedantic("An error occurred while trying to initialize chosen symmetric cipher.");
+		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		return NULL;
+	}
+
+	if (EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_GCM_SET_IVLEN, 16, NULL) != 1) {
+		log_pedantic("The initialization vector length could not be properly set to 16 bytes.");
+		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		return NULL;
+	}
+
+	// Validate the key length.
+	else if (EVP_CIPHER_CTX_key_length_d(&ctx) != 32) {
+		log_pedantic("The encryption key length does not match the selected cipher key length. { key = %i / expected = %i }", 32, EVP_CIPHER_CTX_key_length_d(&ctx));
+		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		return NULL;
+	}
+
+	// Add the vector and key data.
+	if (EVP_DecryptInit_ex_d(&ctx, NULL, NULL, st_data_get(cipher_key), st_data_get(vector)) != 1) {
+		log_pedantic("An error occurred initializing the symmetric cipher with the provided key and vector data.");
+		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		return NULL;
+	}
+
+	if (!(output = st_alloc(out_len))) {
+		log_pedantic("Unable to allocate a buffer of %i bytes for the output buffer.", avail_len);
+		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		return NULL;
+	}
+
+	if (EVP_DecryptUpdate_d(&ctx, st_data_get(output), &avail_len, buffer_data + STACIE_ENVELOPE_LENGTH, buffer_len - STACIE_ENVELOPE_LENGTH) != 1) {
+		log_pedantic("An error occurred while trying to decrypt the input buffer using the chosen symmetric cipher.");
+		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		st_free(output);
+		return NULL;
+	}
+
+	used_len += avail_len;
+	avail_len = out_len - used_len;
+
+	if (EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_GCM_SET_TAG, 16, st_data_get(tag)) != 1) {
+		log_pedantic("An error occurred while trying to set the decryption tag value.");
+		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		st_free(output);
+		return NULL;
+	}
+
+	if (EVP_DecryptFinal_ex_d(&ctx, st_data_get(output) + used_len, &avail_len) != 1) {
+		log_pedantic("An error occurred while trying to complete decryption process. {%s}", ssl_error_string(MEMORYBUF(256), 256));
+		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		st_free(output);
+		return NULL;
+	}
+
+	EVP_CIPHER_CTX_cleanup_d(&ctx);
+
+	mm_move(((uchr_t *)&buffer_len_be) + 1, st_data_get(output), 3);
+	mm_move((uchr_t *)&pad, st_data_get(output) + 3, 1);
+	buffer_len = be32toh(buffer_len_be);
+
+	if (((buffer_len + pad + 4) % 16) != 0 || (buffer_len + pad + 4) != (size_t)used_len) {
+		log_pedantic("An invalid length or pad value was found inside the decrypted buffer.");
+		st_free(output);
+		return NULL;
+	}
+
+	buffer_data = st_data_get(output) + buffer_len + 4;
+	for (int_t i = 0; i < pad; i++) {
+		if (*buffer_data++ != pad) {
+			log_pedantic("An invalid padding byte was found inside the decrypted buffer.");
+			st_free(output);
+			return NULL;
+		}
+	}
+
+	mm_move(st_data_get(output), st_data_get(output) + 4, buffer_len);
+	st_length_set(output, buffer_len);
+
+	return output;
+}
+

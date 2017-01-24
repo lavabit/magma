@@ -3,11 +3,6 @@
  * @file /magma/providers/cryptography/hash.c
  *
  * @brief Functions used to create a secure one-way hash of an arbitrary input buffer.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -51,7 +46,7 @@ stringer_t * hash_digest(digest_t *digest, stringer_t *s, stringer_t *output) {
 
 	// Setup the digest algorithm.
 	if (EVP_DigestInit_ex_d(&ctx, (const EVP_MD *)digest, NULL) != 1) {
-		log_pedantic("An error occurred while trying to initialize the hash context. {%s}",	ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_pedantic("An error occurred while trying to initialize the hash context. {%s}",	ssl_error_string(MEMORYBUF(256), 256));
 		EVP_MD_CTX_cleanup_d(&ctx);
 		if (!output) {
 			st_free(result);
@@ -61,7 +56,7 @@ stringer_t * hash_digest(digest_t *digest, stringer_t *s, stringer_t *output) {
 
 	// Process the input data.
 	else if (EVP_DigestUpdate_d(&ctx, st_data_get(s), st_length_get(s)) != 1) {
-		log_pedantic("An error occurred while trying to process the input data. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_pedantic("An error occurred while trying to process the input data. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EVP_MD_CTX_cleanup_d(&ctx);
 		if (!output) {
 			st_free(result);
@@ -71,7 +66,7 @@ stringer_t * hash_digest(digest_t *digest, stringer_t *s, stringer_t *output) {
 
 	// Retrieve the hash output.
 	else if (EVP_DigestFinal_d(&ctx, st_data_get(result), &rlen) != 1) {
-		log_pedantic("An error occurred while trying to retrieve the hash result. {%s}", ERR_error_string_d(ERR_get_error_d(), NULL));
+		log_pedantic("An error occurred while trying to retrieve the hash result. {%s}", ssl_error_string(MEMORYBUF(256), 256));
 		EVP_MD_CTX_cleanup_d(&ctx);
 		if (!output) {
 			st_free(result);

@@ -3,11 +3,6 @@
  * @file /magma/providers/checkers/spf.c
  *
  * @brief	The functions used to validate SPF information.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -148,7 +143,7 @@ int_t spf_check(ip_t *ip, stringer_t *helo, stringer_t *mailfrom) {
 		(ip->family != AF_INET && ip->family != AF_INET6)) {
 		SPF_request_free_d(spf_request);
 		pool_release(spf_pool, item);
-		log_pedantic("SPF context configuration error. {error = %s}", SPF_strerror_d(error));
+		log_pedantic("SPF context configuration error. { error = %s }", SPF_strerror_d(error));
 		stats_adjust_by_name("provider.spf.error", 1);
 		return -1;
 	}
@@ -173,7 +168,7 @@ int_t spf_check(ip_t *ip, stringer_t *helo, stringer_t *mailfrom) {
 			stats_adjust_by_name("provider.spf.missing", 1);
 		}
 		else {
-			log_pedantic("SPF query error. {domain = %.*s / error = %s}", st_length_int(&domain), st_char_get(&domain), SPF_strerror_d(error));
+			log_pedantic("SPF query error. { domain = %.*s / error = %s }", st_length_int(&domain), st_char_get(&domain), SPF_strerror_d(error));
 			stats_adjust_by_name("provider.spf.error", 1);
 		}
 		return -1;
@@ -191,28 +186,28 @@ int_t spf_check(ip_t *ip, stringer_t *helo, stringer_t *mailfrom) {
 
 	if (response == SPF_RESULT_PASS) {
 #ifdef MAGMA_SPF_DEBUG
-		log_pedantic("SPF check passed. {result = PASS / reason = %s}", SPF_strreason_d(reason));
+		log_pedantic("SPF check passed. { result = PASS / reason = %s }", SPF_strreason_d(reason));
 #endif
 		stats_adjust_by_name("provider.spf.pass", 1);
 		return 1;
 	}
 	else if (response == SPF_RESULT_NEUTRAL) {
 #ifdef MAGMA_SPF_DEBUG
-		log_pedantic("SPF check neutral. {result = NEUTRAL / reason = %s}", SPF_strreason_d(reason));
+		log_pedantic("SPF check neutral. { result = NEUTRAL / reason = %s }", SPF_strreason_d(reason));
 #endif
 		stats_adjust_by_name("provider.spf.neutral", 1);
 		return -1;
 	}
 	else if (response == SPF_RESULT_FAIL) {
 #ifdef MAGMA_SPF_DEBUG
-		log_pedantic("SPF check failed. {result = FAILED / reason = %s}", SPF_strreason_d(reason));
+		log_pedantic("SPF check failed. { result = FAILED / reason = %s }", SPF_strreason_d(reason));
 #endif
 		stats_adjust_by_name("provider.spf.fail", 1);
 		return -2;
 	}
 
 #ifdef MAGMA_SPF_DEBUG
-	log_pedantic("SPF check error. {result = %s / reason = %s}", SPF_strresult_d(response), SPF_strreason_d(reason));
+	log_pedantic("SPF check error. { result = %s / reason = %s }", SPF_strresult_d(response), SPF_strreason_d(reason));
 #endif
 	stats_adjust_by_name("provider.spf.error", 1);
 	return -1;

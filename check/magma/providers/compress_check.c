@@ -1,13 +1,8 @@
 
 /**
- * @file /check/providers/compress_check.c
+ * @file /check/magma/providers/compress_check.c
  *
  * @brief The heart of the suite of unit tests for the Magma provide module.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"
@@ -83,7 +78,7 @@ void check_compress_mthread_cnv(check_compress_opt_t *opts) {
 	bool_t *result;
 
 	if (!thread_start() || !(result = mm_alloc(sizeof(bool_t)))) {
-		log_error("Unable to setup the thread context.");
+		log_unit("Unable to setup the thread context.");
 		pthread_exit(NULL);
 		return;
 	}

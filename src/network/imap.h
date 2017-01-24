@@ -3,11 +3,6 @@
  * @file /magma/network/imap.h
  *
  * @brief	The IMAP server control structures.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_NETWORK_IMAP_H

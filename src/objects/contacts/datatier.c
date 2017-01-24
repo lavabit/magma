@@ -3,11 +3,6 @@
  * @file /magma/objects/contacts/datatier.c
  *
  * @brief	Functions for handling user contacts in the database.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

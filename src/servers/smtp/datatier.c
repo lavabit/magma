@@ -3,11 +3,6 @@
  * @file /magma/servers/smtp/datatier.c
  *
  * @brief	Functions used to interface with and manage data needed by the SMTP protocol.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

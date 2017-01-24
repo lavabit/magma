@@ -3,11 +3,6 @@
  * @file /magma/objects/config/config.h
  *
  * @brief	The user configuration interface.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_OBJECTS_CONFIG_H

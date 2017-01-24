@@ -3,11 +3,6 @@
  * @file /magma/engine/config/servers/keys.h
  *
  * @brief	A collection of keys that define access rules, default values and other parameters needed when configuring server instances.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_OPIONS_SERVERS_KEYS_H

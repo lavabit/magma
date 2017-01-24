@@ -3,11 +3,6 @@
  * @file /magma/servers/http/response.c
  *
  * @brief	Functions for fulfilling responses to http client requests.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -402,7 +397,7 @@ void http_response_header(connection_t *con, int_t status, stringer_t *type, siz
 		(cookie ? st_length_int(cookie) : 0), (cookie ? st_char_get(cookie) : NULL),
 		st_length_int(type), st_char_get(type),
 		len,
-		(connection ? st_length_int(connection) : 0),	(connection ? st_char_get(connection) : NULL));
+		(connection ? st_length_int(connection) : 0), (connection ? st_char_get(connection) : NULL));
 
 	st_cleanup(allow);
 	st_cleanup(cookie);

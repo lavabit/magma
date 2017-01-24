@@ -3,11 +3,6 @@
  * @file /magma/servers/http/http.c
  *
  * @brief	Functions used to handle HTTP commands and actions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

@@ -3,11 +3,6 @@
  * @file /magma/engine/context/context.h
  *
  * @brief	Functions involved in initializing, manipulating and verifying the operating context for the system.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_ENGINE_CONTEXT_H

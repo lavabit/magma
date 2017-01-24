@@ -3,11 +3,6 @@
  * @file /magma/web/portal/contacts.c
  *
  * @brief	Functions for handling user contact list entries.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

@@ -3,11 +3,6 @@
  * @file /magma/core/host/mappings.c
  *
  * @brief	Map numeric system values to their string equivalents.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

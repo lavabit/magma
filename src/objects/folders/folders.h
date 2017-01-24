@@ -3,11 +3,6 @@
  * @file /magma/objects/folders/folders.h
  *
  * @brief	Interface to managing user folders.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_OBJECTS_FOLDERS_H

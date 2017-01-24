@@ -4,11 +4,6 @@
  * @file /magma/engine/config/global/global.c
  *
  * @brief	Functions for handling the global configuration.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 #include "magma.h"
 #include "keys.h"
@@ -325,7 +320,7 @@ void config_output_help(void) {
  *			9. Make sure 16384 <= system_limit_max(RLIMIT_STACK)
  *			10. If magma.system.daemonize is set, make sure magma.output.file is not false
  *			11. If magma.output.file is enabled, magma.output.path must be set.
- *			12. If magma.dkim.enabled is set, then magma.dkim.domain, magma.dkim.selector, and magma.dkim.privkey must all be set.
+ *			12. If magma.dkim.enabled is set, then magma.dkim.domain, magma.dkim.selector, and magma.dkim.key must all be set.
  *			13. Validate all the configured magma servers, relay servers, and cache servers.
  *			14. Check all config key filenames and directories to ensure that they exist and are accessible.
  *			15. Make sure magma.admin.contact and point to valid email addresses, if they are specified.
@@ -441,15 +436,9 @@ bool_t config_validate_settings(void) {
 		result = false;
 	}
 
-	if (magma.dkim.enabled) {
-
-		if (!magma.dkim.domain || !magma.dkim.selector || !magma.dkim.privkey) {
-			log_critical("If magma.dkim.enabled is set, then magma.dkim.domain, magma.dkim.selector, and magma.dkim.privkey must all be set!");
-			result = false;
-		}
-
-		// The rest has to be executed after the OpenSSL library is loaded.
-
+	if (magma.dkim.enabled && (!magma.dkim.domain || !magma.dkim.selector || !magma.dkim.key)) {
+		log_critical("If magma.dkim.enabled is set, then magma.dkim.domain, magma.dkim.selector, and magma.dkim.key must all be set!");
+		result = false;
 	}
 
 	// Validate the magma server keys here.
@@ -467,9 +456,17 @@ bool_t config_validate_settings(void) {
 		result = false;
 	}
 
-	// Validate all remaining configurable filenames and paths
-	CONFIG_CHECK_DIR_READABLE(magma.system.root_directory);
+	// Validate read access to the shared object library..
 	CONFIG_CHECK_FILE_READABLE(magma.library.file);
+
+	// At this stage we only verify that we can read these keys. Deeper validation is done when
+	// the associated module gets loaded.
+	if (magma.dkim.key) CONFIG_CHECK_FILE_READABLE(st_char_get(magma.dkim.key));
+	if (magma.dime.key) CONFIG_CHECK_FILE_READABLE(st_char_get(magma.dime.key));
+	if (magma.dime.signet) CONFIG_CHECK_FILE_READABLE(st_char_get(magma.dime.signet));
+
+	// Validate read access to the directories provided.
+	CONFIG_CHECK_DIR_READABLE(magma.system.root_directory);
 	CONFIG_CHECK_DIR_READABLE(magma.http.pages);
 	CONFIG_CHECK_DIR_READABLE(magma.http.templates);
 	CONFIG_CHECK_DIR_READABLE(magma.output.path);
@@ -695,6 +692,12 @@ bool_t config_load_defaults(void) {
 			config_free();
 			return false;
 		}
+//		else if (magma_keys[i].required && magma_keys[i].norm.type == M_TYPE_BOOLEAN &&
+//			magma_keys[i].norm.val.binary == false && !config_value_set(&magma_keys[i], NULL)) {
+//			log_info("%s has an invalid default value.", magma_keys[i].name);
+//			config_free();
+//			return false;
+//		}
 	}
 
 	return true;

@@ -3,11 +3,6 @@
  * @file /magma/core/compare/starts.c
  *
  * @brief	Functions used to compare the starts of strings with other strings.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

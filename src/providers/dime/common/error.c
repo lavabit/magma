@@ -20,7 +20,7 @@ struct thread_err_stack {
 } __attribute__((__packed__));
 
 
-static __thread struct thread_err_stack _t_err_stack;
+__thread struct thread_err_stack _t_err_stack;
 
 
 // The global error message string table.
@@ -179,7 +179,9 @@ const errinfo_t *get_first_error(void) {
  */
 void _clear_error_stack(void) {
 
-    memset(_t_err_stack.error_stack, 0, sizeof(_t_err_stack.error_stack));
+	for (unsigned int i = 0; i < ERR_STACK_SIZE; i++) {
+		memset(&(_t_err_stack.error_stack[i]), 0, sizeof(errinfo_t));
+	}
     _t_err_stack.error_stack_top = NULL;
     _t_err_stack.error_stack_overflow = 0;
 
@@ -244,11 +246,11 @@ errinfo_t *_push_error_stack_syscall(const char *filename, const char *funcname,
     memset(auxmsg, 0, sizeof(auxmsg));
     snprintf(auxmsg, sizeof(auxmsg) - 1, "%s: ", errfunc);
     ptr = auxmsg + strlen(auxmsg);
-    #ifdef STRERROR_R_CHAR_P
+#ifdef STRERROR_R_CHAR_P
     ptr = strerror_r(xerrno, ptr, auxmsg_end - ptr);
-    #else
+#else
     strerror_r(xerrno, ptr, auxmsg_end - ptr);
-    #endif
+#endif
 
     return (_push_error_stack(filename, funcname, lineno, ERR_SYSCALL, xerrno, auxmsg));
 }

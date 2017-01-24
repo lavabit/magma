@@ -3,11 +3,6 @@
  * @file /magma/providers/compress/compress.h
  *
  * @brief Compression interface functions/handlers.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_PROVIDERS_EXTERNAL_COMPRESS_H
@@ -19,7 +14,7 @@ enum {
 	COMPRESS_ENGINE_BZIP = 4
 } COMPRESS_ENGINE;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 
 	uint8_t engine;
 
@@ -33,7 +28,7 @@ typedef struct {
 		uint64_t compressed;
 	} hash;
 
-} __attribute__ ((packed)) compress_head_t;
+} compress_head_t;
 
 typedef stringer_t compress_t;
 
@@ -55,6 +50,7 @@ compress_t *  compress_import(stringer_t *s);
 uint64_t      compress_orig_hash(compress_t *buffer);
 uint64_t      compress_orig_length(compress_t *buffer);
 uint64_t      compress_total_length(compress_t *buffer);
+void          compress_cleanup(compress_t *buffer);
 
 /// engine.c
 compress_t * engine_compress(uint8_t engine, stringer_t *s);

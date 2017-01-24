@@ -3,11 +3,6 @@
  * @file /magma/providers/compress/engine.c
  *
  * @brief Generic engine independent compression interfaces.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

@@ -3,11 +3,6 @@
  * @file /magma/web/web.h
  *
  * @brief	The web application modules.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_WEB_H

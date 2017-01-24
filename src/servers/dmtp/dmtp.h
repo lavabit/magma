@@ -3,11 +3,6 @@
  * @file /magma/servers/dmtp/dmtp.h
  *
  * @brief The entry point for the DMTP server module.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_SERVERS_DMTP_H

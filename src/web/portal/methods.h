@@ -3,11 +3,6 @@
  * @file /magma/web/portal/methods.h
  *
  * @brief	Definitions for all supported web portal methods and their calling interfaces.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_WEB_PORTAL_METHODS_H

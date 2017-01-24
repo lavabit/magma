@@ -1,13 +1,8 @@
 
 /**
- * @file /magma/src/objects/auth/legacy.c
+ * @file /magma/objects/auth/legacy.c
  *
  * @brief Functions needed to support/convert password hashes using the deprecated legacy strategy.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

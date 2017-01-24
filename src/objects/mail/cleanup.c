@@ -3,11 +3,6 @@
  * @file /magma/objects/mail/cleanup.c
  *
  * @brief	Functions for cleaning up mail messages.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -171,7 +166,7 @@ bool_t mail_message_cleanup(stringer_t **message) {
 
 		}
 
-		// Copy into the new buffer, replacing invalid sequences as we go. Skip certain lines.
+		// Copy into the new buffer, replacing invalid sequences as we go, and skipping the rejected lines.
 		if (skip == 0) {
 
 			if (*orig == '\r' && (length - increment) > 1 && *(orig + 1) != '\n') {
@@ -197,20 +192,24 @@ bool_t mail_message_cleanup(stringer_t **message) {
 				line++;
 			}
 
-			// Detect when we've reached the maximum line length and insert a new line. If in header mode also add a tab.
-/*			if (header == 3 && line == magma.smtp.wrap_line_length) {
+			/// LOW: Splitting lines, particularly headers causes more problems then it fixes, so this code is currently
+			/// 	disabled. At some point we should survey other mail systems and see how they handle long lines.
+			/*
+			// Detect when we've reached the maximum line length and insert a new line. If we are still iterating over
+			// the header, split lines include a leading tab to indicate a continuation of the current field.
+			if (header == 3 && line == magma.smtp.wrap_line_length) {
 				*new++ = '\r';
 				*new++ = '\n';
 				used += 2;
 				line = 0;
 			}
-			else */if ((header != 3) && (line == magma.smtp.wrap_line_length)) {
+			else if ((header != 3) && (line == magma.smtp.wrap_line_length)) {
 				*new++ = '\r';
 				*new++ = '\n';
 				*new++ = '\t';
 				used += 3;
 				line = 0;
-			}
+			}*/
 
 		}
 		else if (skip == 2) {

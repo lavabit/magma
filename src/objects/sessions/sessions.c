@@ -3,11 +3,6 @@
  * @file /magma/objects/sessions/sessions.c
  *
  * @brief	Routines to handle web sessions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -250,13 +245,13 @@ stringer_t * sess_token(session_t *sess) {
 
 	if (!(binary = st_merge("ssss", PLACER(&(sess->warden.host), sizeof(uint64_t)), PLACER(&(sess->warden.stamp), sizeof(uint64_t)),
 		PLACER(&(sess->warden.number),	sizeof(uint64_t)), PLACER(&(sess->warden.key), sizeof(uint64_t)))) ||
-		!(encrypted = scramble_encrypt(magma.secure.sessions, binary)) ||
-		!(encoded = zbase32_encode(PLACER(encrypted, scramble_total_length(encrypted))))) {
+		!(encrypted = deprecated_scramble_encrypt(magma.secure.sessions, binary)) ||
+		!(encoded = zbase32_encode(PLACER(encrypted, deprecated_scramble_total_length(encrypted))))) {
 		log_pedantic("An error occurred while trying to generate the session token.");
 	}
 
 	if (encrypted) {
-		scramble_free(encrypted);
+		deprecated_scramble_free(encrypted);
 	}
 
 	st_cleanup(binary);
@@ -449,8 +444,8 @@ int_t sess_get(connection_t *con, stringer_t *application, stringer_t *path, str
 
 	/// Most session attributes need simple equality comparison, except for timeout checking. Make sure not to validate against a stale session that should have already timed out (which will have to be determined dynamically).
 	encrypted = zbase32_decode(token);
-	scramble = scramble_import(encrypted);
-	binary = scramble_decrypt(magma.secure.sessions, scramble);
+	scramble = deprecated_scramble_import(encrypted);
+	binary = deprecated_scramble_decrypt(magma.secure.sessions, scramble);
 
 	st_cleanup(encrypted);
 

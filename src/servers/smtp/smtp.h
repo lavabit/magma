@@ -3,11 +3,6 @@
  * @file /magma/servers/smtp/smtp.h
  *
  * @brief The entry point for the SMTP server module.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_SERVERS_SMTP_H

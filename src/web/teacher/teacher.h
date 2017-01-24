@@ -3,11 +3,6 @@
  * @file /magma/web/teacher/teacher.h
  *
  * @brief	A facility for allowing users to train the statistical mail filter.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_WEB_TEACHER_H

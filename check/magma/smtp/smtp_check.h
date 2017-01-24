@@ -1,13 +1,8 @@
 
 /**
- * @file /check/smtp/smtp_check.h
+ * @file /check/magma/smtp/smtp_check.h
  *
  * @brief SMTP interface test functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef SMTP_CHECK_H

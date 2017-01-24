@@ -3,11 +3,6 @@
  * @file /magma/web/register/register.h
  *
  * @brief	Functions for handling the registration process.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_WEB_REGISTER_H

@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Name: build.lib.sh
+# Author: Ladar Levison
+#
+# Description: Used to compile the external dependencies required by magma, and combine them into the magmad.so shared object file. 
+
+
 # Install Sphinx (python-sphinx package) to build Jansson HTML docs
 # Install LTDL and create the clamav user/group so ClamAV will build correctly
 # DSPAM will require the MySQL development (lib/headers) for a parallel build to complete
@@ -97,8 +103,8 @@ gd() {
 				&>> "$M_LOGS/gd.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
-			make &>> "$M_LOGS/gd.txt"; error
 			make --jobs=4 &>> "$M_LOGS/gd.txt"; error
+			make install &>> "$M_LOGS/gd.txt"; error
 		;;
 		gd-check)
 			cd "$M_SOURCES/gd"; error
@@ -354,7 +360,21 @@ spf2() {
 		;;
 		spf2-prep)
 			cd "$M_SOURCES/spf2"; error
-			cat "$M_PATCHES/spf2/"fix_variadic_macro_logging.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			cat "$M_PATCHES/spf2/"fix_formatting_issues.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			cat "$M_PATCHES/spf2/"fix_variadic_logging_macros.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			cat "$M_PATCHES/spf2/"expand_hostname_buffer.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			cat "$M_PATCHES/spf2/"fix_use_after_free.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			cat "$M_PATCHES/spf2/"handle_redirect_mechanism.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			cat "$M_PATCHES/spf2/"return_reason_for_dns_failure.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			cat "$M_PATCHES/spf2/"fix_formatting_issues_again.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+
+			# Rejected patch, because it requires an autoreconf to work.
+			# cat "$M_PATCHES/spf2/"fix_spf_lib_version.h_generator.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+
+			# Consolidated into a single patch above.
+			# cat "$M_PATCHES/spf2/"fix_variadic_macro_logging.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			# cat "$M_PATCHES/spf2/"swap_gnu_macro_for_c99_syntax.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			# cat "$M_PATCHES/spf2/"update_log_macros_for_non_c99_compiler.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
 		;;
 		spf2-build)
 			cd "$M_SOURCES/spf2"; error
@@ -603,6 +623,8 @@ dkim() {
 		;;
 		dkim-prep)
 			cd "$M_SOURCES/dkim"; error
+			cat "$M_PATCHES/dkim/"opendkim.ticket226.patch | patch -p1 --verbose &>> "$M_LOGS/dkim.txt"; error
+			cat "$M_PATCHES/dkim/"opendkim_headers_2.10.3.patch | patch -p1 --verbose &>> "$M_LOGS/dkim.txt"; error
 		;;
 		dkim-build)
 			cd "$M_SOURCES/dkim"; error
@@ -757,7 +779,7 @@ bzip2() {
 		bzip2-build)
 			cd "$M_SOURCES/bzip2"; error
 			make CC=gcc AR=ar RANLIB=ranlib 'CFLAGS=-O2 -g3 -fPIC -rdynamic -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -D_FILE_OFFSET_BITS=64' &>> "$M_LOGS/bzip2.txt"; error
-			make PREFIX="$M_SOURCES" install &>> "$M_LOGS/bzip2.txt"; error
+			make PREFIX="$M_LOCAL" install &>> "$M_LOGS/bzip2.txt"; error
 		;;
 		bzip2-check)
 			cd "$M_SOURCES/bzip2"; error
@@ -821,6 +843,7 @@ dspam() {
 			fi
 
 			cat "$M_PATCHES/dspam/"dspam_version.patch | patch -p1 --verbose &>> "$M_LOGS/dspam.txt"; error
+			cat "$M_PATCHES/dspam/"dspam_headers_3.10.2.patch | patch -p1 --verbose &>> "$M_LOGS/dspam.txt"; error
 		;;
 		dspam-build)
 			cd "$M_SOURCES/dspam"; error
@@ -1124,7 +1147,7 @@ clamav() {
 			./configure  \
 				--disable-llvm --with--disable-xml --enable-check --enable-static --disable-silent-rules --disable-libcurl \
 				--with-openssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" --with-libcheck-prefix="$M_LOCAL" \
-				--with-libbz2-prefix="$M_SOURCES/bzip2" --prefix="$M_LOCAL" \
+				--with-libbz2-prefix="$M_SOURCES/bzip2" --prefix="$M_LOCAL"  --exec-prefix="$M_LOCAL"  --libdir="$M_LOCAL/lib" \
 				&>> "$M_LOGS/clamav.txt"; error
 
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
@@ -1222,6 +1245,9 @@ checker() {
 			# non-POSIX archivers might require the AM_PROG_AR macro to work, which was added to automake in version 1.11.2.
 			# For those systems, this patch might break things in unpredictable ways, assuming that automake is indeed 1.11.1.
 			cat "$M_PATCHES/checker/"checker-automake-version.patch | patch -p1 --verbose &>> "$M_LOGS/checker.txt"; error
+			# Valgrind will complain about uninitialized bytes if we don't memset the timer variable before using it.
+			cat "$M_PATCHES/checker/"checker-timer-memset.patch | patch -p1 --verbose &>> "$M_LOGS/checker.txt"; error
+
 		;;
 		checker-build)
 			cd "$M_SOURCES/checker"; error
@@ -1289,6 +1315,9 @@ openssl() {
 		;;
 		openssl-prep)
 			cd "$M_SOURCES/openssl"; error
+			if [[ $OPENSSL =~ "openssl-1.0.2" ]]; then
+				cat "$M_PATCHES/openssl/"1.0.2_curve25519_ed25519.patch | patch -p1 --verbose &>> "$M_LOGS/openssl.txt"; error
+			fi
 		;;
 		openssl-build)
 			# OpenSSL does not use environment variables to pickup additional compiler flags
@@ -1296,12 +1325,12 @@ openssl() {
 			# See here for reasoning behind openssl-specific linker flags:
 			# https://mta.openssl.org/pipermail/openssl-users/2015-April/001053.html
 			cd "$M_SOURCES/openssl"; error
-        	grep "CentOS Linux release 7" /etc/system-release >& /dev/null
+        	grep -E "CentOS Linux release 7|Red Hat Enterprise.*release 7" /etc/system-release >& /dev/null
         	if [ $? == 0 ]; then
                 	export CONFIGOPTS='-fno-merge-debug-strings '
         	fi
 		    ./config \
-		        -d shared zlib no-asm --openssldir="$M_LOCAL" \
+		        -d shared zlib no-asm --openssldir="$M_LOCAL" --libdir="lib" \
 				-I"$M_SOURCES/zlib" -O $CONFIGOPTS -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
 				-L"$M_SOURCES/openssl" -Wl,-rpath,"$M_SOURCES/openssl" \
 				-L"$M_SOURCES/zlib" -Wl,-rpath,"$M_SOURCES/zlib" \
@@ -1655,7 +1684,7 @@ utf8proc() {
 		;;
 		utf8proc-prep)
 			cd "$M_SOURCES/utf8proc"; error
-			if [[ $UTF8PROC == "1.3.1" ]]; then
+			if [[ $UTF8PROC =~ "utf8proc-1.3.1" ]]; then
 				cat "$M_PATCHES/utf8proc/"utf8proc.release.version.patch | patch -p1 --verbose &>> "$M_LOGS/utf8proc.txt"; error
 			fi
 		;;
@@ -2080,14 +2109,13 @@ load() {
 	sed -i -e "s/\"dkim_getsighdrx\"/\"dkim_getsighdr\"/g" magma.open.symbols.c; error
 
 	# Compile the source files. If an error occurs at compile time it is probably because we have a mismatch somewhere.
-	gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_DIRS $M_SO \
-		-g3 -rdynamic -Wall -Wextra -Werror -o magma.open.check \
-		magma.open.check.c magma.open.symbols.c -ldl
+	gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_INCLUDES $M_SO \
+		-g3 -rdynamic -Wall -Wextra -Werror -o magma.open.check magma.open.check.c magma.open.symbols.c -ldl
 
 	# If errors are generated from invalid symbols, this should print out the specific lines that are invalid.
 	if [ $? -ne 0 ]; then
 
-		LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_DIRS $M_SO -g3 -rdynamic -Wall -Wextra -Werror \
+		LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_INCLUDES $M_SO -g3 -rdynamic -Wall -Wextra -Werror \
 			-o magma.open.check magma.open.check.c magma.open.symbols.c -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
 			grep "[0-9*]" | awk '{print $1 ", " }' | sort -gu | uniq | tr -d "\n" | sed "s/, $//g"`
 
@@ -2098,7 +2126,7 @@ load() {
 			echo "lines = " $LNS
 			echo ""
 
-			LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_DIRS $M_SO -g3 -rdynamic -Wall -Wextra -Werror \
+			LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_INCLUDES $M_SO -g3 -rdynamic -Wall -Wextra -Werror \
 				-o magma.open.check magma.open.check.c magma.open.symbols.c -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
 				grep "[0-9*]" | awk '{print $1 "p;" }' | sort -gu | uniq | tr -d "\n"`
 
@@ -2115,47 +2143,53 @@ load() {
 	echo ""
 }
 
-generate() {
-
-	printf "Generating TLS and DKIM keys for the magma sandbox...\n"
-
-	# The DKIM private key and a sample DNS record with the public key.
-	"$M_LOCAL/bin/"openssl genrsa -out "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem" 2048 2>&1 >& /dev/null
-	"$M_LOCAL/bin/"openssl rsa -in "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem" -pubout -outform PEM  >& /dev/null | \
-	sed -r "s/-----BEGIN PUBLIC KEY-----$//" | sed -r "s/-----END PUBLIC KEY-----//" | tr -d [:space:] | \
-	awk '{ print "bazinga._domainkey IN TXT \"v=DKIM1; k=rsa; p=" $1 "\" ; ----- DKIM bazinga" }' > \
-	"$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub" ; error
-
-	# The TLS private key and a self-signed certificate.
-	"$M_LOCAL/bin/"openssl req -x509 -nodes -batch -days 1826 -newkey rsa:4096 \
-	-keyout "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem" \
-	-out "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem" >& /dev/null ; error
-
-	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"; error
-	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem"; error
-
-	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"
-	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
-	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
-}
-
 keys() {
 
-	printf "Fixing the permissions for the TLS and DKIM keys in the magma sandbox...\n\n"
+	printf "Fixing the permissions for the DIME, DKIM and TLS keys in the magma sandbox...\n\n"
 
-	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"; error
+	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/tls.localhost.localdomain.pem"; error
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem"; error
+	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dime.localhost.localdomain.key"; error
+	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dime.localhost.localdomain.signet"; error
 
-	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/localhost.localdomain.pem"
-	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
-	git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
+	# Tell git to skip checking for changes to the key files, but only if git is on the system and the files
+	# are stored inside a repo.
+	GIT_IS_AVAILABLE=`which git &> /dev/null && git log &> /dev/null && echo 1`
+	if [[ "$GIT_IS_AVAILABLE" == "1" ]]; then
+		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/tls.localhost.localdomain.pem"
+		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
+		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dime.localhost.localdomain.key"
+		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dime.localhost.localdomain.signet"
+	fi
+}
+
+generate() {
+
+	printf "Generating DIME, DKIM and TLS keys for the magma sandbox...\n"
+
+	# Generate a DKIM private key.
+	"$M_LOCAL/bin/"openssl genrsa -out "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem" 2048 2>&1 >& /dev/null
+	
+	# Derive the DKIM public DNS record based on the generated key.
+	"$M_LOCAL/bin/"openssl rsa -in "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem" -pubout -outform PEM 2> /dev/null | \
+	sed -r "s/-----BEGIN PUBLIC KEY-----$//" | sed -r "s/-----END PUBLIC KEY-----//" | tr -d [:space:] | \
+	awk "{ print \"bazinga._domainkey IN TXT \\\"v=DKIM1; k=rsa; p=\" substr(\$1, 1, 208) \"\\\" \\\"\" substr(\$1, 209) \"\\\" ; ----- DKIM bazinga key\" }"  > \
+	"$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub" ; error
+	
+	# The TLS private key and a self-signed certificate.
+	"$M_LOCAL/bin/"openssl req -x509 -nodes -batch -days 1826 -newkey rsa:4096 \
+	-keyout "$M_PROJECT_ROOT/sandbox/etc/tls.localhost.localdomain.pem" \
+	-out "$M_PROJECT_ROOT/sandbox/etc/tls.localhost.localdomain.pem" >& /dev/null ; error
+
+	keys
 }
 
 combo() {
 
 	date +"%nStarting $1 at %r on %x%n" &>> "$M_LOGS/build.txt"
 
-	if [[ $1 != "check" ]] && [[ $1 != "check-full" ]]; then
+	# If compiling, then proceed sequentially to ensure dependencies are compiled in order.
+	if [[ $1 == "build" ]]; then
 
 		($M_BUILD "zlib-$1") & ZLIB_PID=$!
 		wait $ZLIB_PID; error
@@ -2204,22 +2238,21 @@ combo() {
 		($M_BUILD "googtap-$1") & GOOGTAP_PID=$!
 		wait $GOOGTAP_PID; error
 
+	# Otherwise do everything in parallel.
 	else
 
 		# The ClamAV unit tests will timeout if the system is under heavy load so they run alone.
 		($M_BUILD "clamav-$1") & CLAMAV_PID=$!
-		wait $CLAMAV_PID; error
-
+		($M_BUILD "curl-$1") & CURL_PID=$!
+		($M_BUILD "mysql-$1") & MYSQL_PID=$!
 		($M_BUILD "gd-$1") & GD_PID=$!
 		($M_BUILD "png-$1") & PNG_PID=$!
 		($M_BUILD "lzo-$1") & LZO_PID=$!
-		($M_BUILD "curl-$1") & CURL_PID=$!
 		($M_BUILD "jpeg-$1") & JPEG_PID=$!
 		($M_BUILD "spf2-$1") & SPF2_PID=$!
 		($M_BUILD "xml2-$1") & XML2_PID=$!
 		($M_BUILD "dkim-$1") & DKIM_PID=$!
 		($M_BUILD "zlib-$1") & ZLIB_PID=$!
-		($M_BUILD "mysql-$1") & MYSQL_PID=$!
 		($M_BUILD "bzip2-$1") & BZIP2_PID=$!
 		($M_BUILD "dspam-$1") & DSPAM_PID=$!
 		($M_BUILD "geoip-$1") & GEOIP_PID=$!
@@ -2246,6 +2279,7 @@ combo() {
 		wait $DSPAM_PID; error
 		wait $MYSQL_PID; error
 		wait $GEOIP_PID; error
+		wait $CLAMAV_PID; error
 		wait $CHECKER_PID; error
 		wait $OPENSSL_PID; error
 		wait $GOOGTEST_PID; error

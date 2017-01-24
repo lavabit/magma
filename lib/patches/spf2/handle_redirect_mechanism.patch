@@ -1,0 +1,88 @@
+From 23e0dcfb4d6a348ee68c5822b3a4f06e82258839 Mon Sep 17 00:00:00 2001
+From: Ilya Pronin <iopronin@yandex.ru>
+Date: Thu, 26 Nov 2015 16:58:24 +0300
+Subject: [PATCH] Fix "redirect" modifier handling
+
+Add it to the end of the mechanisms list so it will be taken into account only if all other mechanisms failed to match.
+---
+ src/libspf2/spf_compile.c | 45 ++++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 34 insertions(+), 11 deletions(-)
+
+diff --git a/src/libspf2/spf_compile.c b/src/libspf2/spf_compile.c
+index ff02f87..5ab18f2 100644
+--- a/src/libspf2/spf_compile.c
++++ b/src/libspf2/spf_compile.c
+@@ -1198,6 +1198,10 @@ SPF_record_compile(SPF_server_t *spf_server,
+ 	const char			*p;
+ 	int					 i;
+ 
++	const SPF_mechtype_t*redirect_mechtype = NULL;
++	int					 redirect_prefix;
++	const char			*redirect_val_start;
++
+ 
+ 	/*
+ 	 * make sure we were passed valid data to work with
+@@ -1382,8 +1386,6 @@ SPF_record_compile(SPF_server_t *spf_server,
+ 				continue;
+ 			}
+ #endif
+-			/* FIXME  the redirect mechanism needs to be moved to
+-			 * the very end */
+ 			else if ( STREQ_SIZEOF_N(name_start, "redirect", name_len) )
+ 				mechtype = SPF_mechtype_find(MECH_REDIRECT);
+ 			else
+@@ -1403,16 +1405,26 @@ SPF_record_compile(SPF_server_t *spf_server,
+ 								"a recognised mechanism");
+ 			}
+ 
+-			if (spf_server->debug)
+-				SPF_debugf("Adding mechanism type %d",
+-								(int)mechtype->mech_type);
+-
+ 			val_start = p;
+-			err = SPF_c_mech_add(spf_server,
+-							spf_record, spf_response,
+-							mechtype, prefix, &val_start);
+-			if (err == SPF_E_NO_MEMORY)
+-				return err;
++			if (mechtype->mech_type == MECH_REDIRECT) {
++				/* Syntactically "redirect" modifier can appear anywhere in the
++				 * record. But it must be taken into account only if all other
++				 * mechanisms failed to match. So we postpone its adding. */
++				if (redirect_mechtype == NULL) {
++					redirect_mechtype = mechtype;
++					redirect_prefix = prefix;
++					redirect_val_start = val_start;
++				}
++			}
++			else {
++				if (spf_server->debug)
++					SPF_debugf("Adding mechanism type %d",
++									(int)mechtype->mech_type);
++				err = SPF_c_mech_add(spf_server, spf_record, spf_response,
++								mechtype, prefix, &val_start);
++				if (err == SPF_E_NO_MEMORY)
++					return err;
++			}
+ 			/* XXX Else do nothing. Continue for the next error. */
+ 			/* We shouldn't have to worry about the child function
+ 			 * updating the pointer. So we just use our 'well known'
+@@ -1468,6 +1480,17 @@ SPF_record_compile(SPF_server_t *spf_server,
+ 		}
+ 	}
+ 	
++	/* If there was a "redirect" modifier add it to the end. */
++	if (redirect_mechtype) {
++		if (spf_server->debug)
++				SPF_debugf("Adding mechanism type %d",
++								(int)redirect_mechtype->mech_type);
++		err = SPF_c_mech_add(spf_server, spf_record, spf_response,
++						redirect_mechtype, redirect_prefix,
++						&redirect_val_start);
++		if (err == SPF_E_NO_MEMORY)
++			return err;
++	}
+ 
+ 	/*
+ 	 * check for common mistakes

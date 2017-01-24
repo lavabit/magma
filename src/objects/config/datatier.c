@@ -3,11 +3,6 @@
  * @file /magma/objects/config/datatier.c
  *
  * @brief	The database routines for the user configuration interface.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

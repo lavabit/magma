@@ -3,11 +3,6 @@
  * @file /magma/engine/context/signal.c
  *
  * @brief	A collection of functions used to register and handle signals.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -190,8 +185,7 @@ bool_t signal_start(void) {
 	mm_wipe(&normal, sizeof(struct sigaction));
 	normal.sa_handler = signal_shutdown;
 	normal.sa_flags = 0;
-	// QUESTION: Why is this being handled here and below?
-	if (sigemptyset(&normal.sa_mask) || sigaction(SIGINT, &normal, NULL) || sigaction(SIGQUIT, &normal, NULL) || sigaction(SIGTERM, &normal, NULL) || sigaction(SIGHUP, &normal, NULL)) {
+	if (sigemptyset(&normal.sa_mask) || sigaction(SIGINT, &normal, NULL) || sigaction(SIGQUIT, &normal, NULL) || sigaction(SIGTERM, &normal, NULL)) {
 		log_info("Could not setup the shutdown signal handler.");
 		return false;
 	}

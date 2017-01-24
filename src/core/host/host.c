@@ -3,11 +3,6 @@
  * @file /magma/core/host/host.c
  *
  * @brief	Functions to retrieve information about the operating system.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -16,7 +11,6 @@
  * @brief	Get a description of the local operating system.
  * @param	output	a pointer to a managed string to receive the OS description.
  * @return	NULL on failure, or the user-specified managed string containing the OS info on success.
- *
  */
 stringer_t * host_platform(stringer_t *output) {
 

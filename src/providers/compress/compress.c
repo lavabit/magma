@@ -3,11 +3,6 @@
  * @file /magma/providers/compress/compress.c
  *
  * @brief	Interface to the compression functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -155,5 +150,15 @@ compress_t * compress_alloc(size_t length) {
 void compress_free(compress_t *buffer) {
 
 	mm_free(buffer);
+	return;
+}
+
+/**
+ * @brief	A checked cleanup function which can be used free a compressed object.
+ * @param	buffer	a pointer to the head of the compressed object to be freed.
+ * @return	This function returns no value.
+ */
+void compress_cleanup(compress_t *buffer) {
+	if (buffer) mm_free(buffer);
 	return;
 }

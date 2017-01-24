@@ -1,0 +1,26 @@
+diff --git a/libopendkim/Makefile.am b/libopendkim/Makefile.am
+index b105eef..4308111 100644
+--- a/libopendkim/Makefile.am
++++ b/libopendkim/Makefile.am
+@@ -21,7 +21,7 @@ if RPATH
+ libopendkim_la_LDFLAGS += -rpath $(libdir)
+ endif
+ libopendkim_includedir = $(includedir)/opendkim
+-libopendkim_include_HEADERS = dkim.h
++libopendkim_include_HEADERS = ../build-config.h dkim-internal.h dkim-types.h dkim-keys.h dkim-util.h dkim-test.h dkim.h
+ 
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = opendkim.pc
+diff --git a/libopendkim/Makefile.in b/libopendkim/Makefile.in
+index c2959e4..b839b11 100644
+--- a/libopendkim/Makefile.in
++++ b/libopendkim/Makefile.in
+@@ -507,7 +507,7 @@ libopendkim_la_LIBADD = $(LIBOPENDKIM_LIBS) $(LIBCRYPTO_LDADD) \
+ 	$(COV_LIBADD) $(am__append_5) $(am__append_7)
+ @ALL_SYMBOLS_FALSE@libopendkim_la_DEPENDENCIES = symbols.map
+ libopendkim_includedir = $(includedir)/opendkim
+-libopendkim_include_HEADERS = dkim.h
++libopendkim_include_HEADERS = ../build-config.h dkim-internal.h dkim-types.h dkim-keys.h dkim-util.h dkim-test.h dkim.h
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = opendkim.pc
+ DISTCLEANFILES = symbols.map *.gcno *.gcda

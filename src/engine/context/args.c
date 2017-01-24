@@ -4,11 +4,6 @@
  * @file /magma/engine/context/args.c
  *
  * @brief	Functions for parsing command line arguments.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

@@ -3,11 +3,6 @@
  * @file /magma/web/contact/business.c
  *
  * @brief	Functions for handling the logic of the contact form.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

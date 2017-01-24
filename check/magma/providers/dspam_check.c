@@ -1,13 +1,8 @@
 
 /**
- * @file /check/providers/dspam_check.c
+ * @file /check/magma/providers/dspam_check.c
  *
  * @brief DSPAM unit tests.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"
@@ -61,7 +56,7 @@ bool_t check_dspam_mail_sthread(chr_t *location) {
 //	uint64_t class = 0, train = 0;
 
 	if (!(working = opendir(location ? location : dspam_check_data_path))) {
-		log_info("Unable to open the data path. { location = %s / errno = %i / strerror = %s }", location ? location : dspam_check_data_path, errno, strerror_r(errno, MEMORYBUF(1024), 1024));
+		log_unit("Unable to open the data path. { location = %s / errno = %i / strerror = %s }", location ? location : dspam_check_data_path, errno, strerror_r(errno, MEMORYBUF(1024), 1024));
 		return false;
 	}
 
@@ -84,14 +79,14 @@ bool_t check_dspam_mail_sthread(chr_t *location) {
 		else if (entry->d_type == DT_REG && *(entry->d_name) != '.') {
 
 			if (!(buffer = file_load(path))) {
-				log_info("%s - read error", path);
+				log_unit("%s - read error", path);
 				closedir(working);
 				return false;
 			}
 
 			// Process the email message.
 			if ((outcome = dspam_check(DSPAM_CHECK_DATA_UNUM, buffer, &signature)) == -1 || !signature) {
-				log_info("dspam_check error");
+				log_unit("dspam_check error");
 				st_cleanup(signature);
 				closedir(working);
 				st_free(buffer);
@@ -100,7 +95,7 @@ bool_t check_dspam_mail_sthread(chr_t *location) {
 
 			// Every 16 or so messages tell the library it made a mistake.
 			if ((rand_get_uint8() % 16) == 0 && !dspam_train(DSPAM_CHECK_DATA_UNUM, outcome == 1 ? 1 : 0, signature)) {
-				log_info("dspam_training error");
+				log_unit("dspam_training error");
 				st_free(signature);
 				closedir(working);
 				st_free(buffer);
@@ -110,7 +105,7 @@ bool_t check_dspam_mail_sthread(chr_t *location) {
 //			if ((rand_get_uint8() % 16) == 0) {
 //
 //				if (dspam_train(DSPAM_CHECK_DATA_UNUM, outcome == 1 ? 1 : 0, signature) != 1) {
-//					log_info("dspam_training error");
+//					log_unit("dspam_training error");
 //					st_free(signature);
 //					closedir(working);
 //					st_free(buffer);
@@ -125,7 +120,7 @@ bool_t check_dspam_mail_sthread(chr_t *location) {
 //			}
 //
 //			if ((class % 100) == 0) {
-//				log_pedantic("CLASSIFIED = %lu / TRAINED = %lu", class, train);
+//				log_unit("CLASSIFIED = %lu / TRAINED = %lu", class, train);
 //			}
 
 			st_free(signature);

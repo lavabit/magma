@@ -3,11 +3,6 @@
  * @file /magma/core/parsers/parsers.h
  *
  * @brief The function decelerations and types needed by the generic parsing functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_CORE_PARSERS_H

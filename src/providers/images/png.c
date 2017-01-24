@@ -3,11 +3,6 @@
  * @file /magma/providers/images/png.c
  *
  * @brief The functions used to create and modify PNG image files
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

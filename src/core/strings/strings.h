@@ -3,11 +3,6 @@
  * @file /magma/core/strings/strings.h
  *
  * @brief	Function declarations and types used by the different modules involved with handling stringers and null terminated strings.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_CORE_STRINGS_H
@@ -127,6 +122,8 @@ bool_t    st_populated_variadic(ssize_t len, ...);
 bool_t    st_used_variadic(ssize_t len, ...);
 uchr_t *  st_uchar_get(stringer_t *s);
 void      st_wipe(stringer_t *s);
+stringer_t *  st_set(stringer_t *s, uint8_t set, size_t len);
+
 
 // Creation/Destruction
 void st_free(stringer_t *s);
@@ -148,6 +145,7 @@ stringer_t * st_alloc_opts(uint32_t opts, size_t len);
 stringer_t * st_dupe_opts(uint32_t opts, stringer_t *s);
 stringer_t * st_merge_opts(uint32_t opts, chr_t *format, ...);
 stringer_t * st_append_opts(size_t align, stringer_t *s, stringer_t *append);
+int_t st_append_out(size_t align, stringer_t **s, stringer_t *append);
 
 /// shortcuts.c
 placer_t * pl_init_by_addr(placer_t *result, void *data, size_t len);
@@ -175,6 +173,7 @@ stringer_t * st_quick(stringer_t *s, chr_t *format, ...) __attribute__((format (
 size_t st_sprint(stringer_t *s, chr_t *format, ...) __attribute__((format (printf, 2, 3)));
 stringer_t * st_vaprint_opts(uint32_t opts, chr_t *format, va_list args);
 size_t st_vsprint(stringer_t *s, chr_t *format, va_list args);
+int_t st_write_variadic(stringer_t *output, ssize_t count, ...);
 
 /// replace.c
 int_t         st_replace(stringer_t **target, stringer_t *pattern, stringer_t *replacement);
@@ -221,7 +220,7 @@ typedef struct {
 		double dbl;
 	} val;
 } multi_t;
-/************ TYPES ******#define st_cleanup(...) st_cleanup_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)******/
+/************ TYPES ************/
 
 /// multi.c
 int32_t    cmp_mt_mt(multi_t one, multi_t two);
@@ -245,11 +244,14 @@ multi_t    mt_set_type(multi_t multi, M_TYPE target);
 // Macros are used to allow a variable number of strings to be tested for emptiness, or freed with a single call.
 #define st_empty(...) st_empty_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
 #define st_populated(...) st_populated_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
+
 #define st_cleanup(...) st_cleanup_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
 #define ns_cleanup(...) ns_cleanup_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
 
+#define st_write(output, ...) st_write_variadic(output, va_narg(__VA_ARGS__), ##__VA_ARGS__)
+
 // Macro for counting the number of arguments in a variadic list function call.
-#define va_narg(...) (__VA_NARG__(_0, ## __VA_ARGS__, __VA_NARG_SEQ_N()) - 1)
+#define va_narg(...) (__VA_NARG__(_0, ##__VA_ARGS__, __VA_NARG_SEQ_N()) - 1)
 
 // These are internal macros used by the va_narg macro above.
 #define __VA_NARG__(...) __VA_NARG_N(__VA_ARGS__)
@@ -258,8 +260,7 @@ multi_t    mt_set_type(multi_t multi, M_TYPE target);
         _41,_42,_43,_44,_45,_46,_47,_48,_49,_50,_51,_52,_53,_54,_55,_56,_57,_58,_59,_60, \
         _61,_62,_63,N,...) N
 #define __VA_NARG_SEQ_N() 63,62,61,60,59,58,57,56,55,54,53,52,51,50,49,48,47,46,45,44,43,42,41,40, \
-				39,38,37,36,35,34,33,32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10, \
-				9,8,7,6,5,4,3,2,1,0
-
+        39,38,37,36,35,34,33,32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10, \
+        9,8,7,6,5,4,3,2,1,0
 
 #endif

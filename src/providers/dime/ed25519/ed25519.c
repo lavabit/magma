@@ -4,20 +4,10 @@
 	Ed25519 reference implementation using Ed25519-donna
 */
 
-
-/* define ED25519_SUFFIX to have it appended to the end of each public function */
-#if !defined(ED25519_SUFFIX)
-#define ED25519_SUFFIX 
-#endif
-
-#define ED25519_FN3(fn,suffix) fn##suffix
-#define ED25519_FN2(fn,suffix) ED25519_FN3(fn,suffix)
-#define ED25519_FN(fn)         ED25519_FN2(fn,ED25519_SUFFIX)
-
-#include "../ed25519/ed25519-donna.h"
-#include "../ed25519/ed25519.h"
-#include "../ed25519/ed25519-randombytes.h"
-#include "../ed25519/ed25519-hash.h"
+#include "ed25519-donna.h"
+#include "ed25519.h"
+#include "ed25519-randombytes.h"
+#include "ed25519-hash.h"
 
 /*
 	Generates a (extsk[0..31]) and aExt (extsk[32..63])
@@ -86,7 +76,7 @@ ED25519_FN(ed25519_sign) (const unsigned char *m, size_t mlen, const ed25519_sec
 	/* S = (r + H(R,A,m)a) */
 	add256_modm(S, S, r);
 
-	/* S = (r + H(R,A,m)a) mod L */	
+	/* S = (r + H(R,A,m)a) mod L */
 	contract256_modm(RS + 32, S);
 }
 

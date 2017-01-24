@@ -4,11 +4,6 @@
  *
  * @brief	Functions used to route incoming network connections to their designated protocol modules. This layer also tracks overall protocol
  * 			statistics and establishes TLS connections for connections that arrive on secure ports.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -103,12 +98,12 @@ void protocol_secure(connection_t *con) {
 	log_check(con->server == NULL);
 
 	// Create a new TLS object.
-	if (!(con->network.tls = ssl_alloc(con->server, con->network.sockd, BIO_NOCLOSE))) {
+	if (!(con->network.tls = tls_server_alloc(con->server, con->network.sockd, BIO_NOCLOSE))) {
 
 		log_pedantic("The TLS connection attempt failed.");
 
 		// We manually free the connection structure since calling con_destroy() would improperly decrement the statistical counters.
-		if (con->network.tls) ssl_free(con->network.tls);
+		if (con->network.tls) tls_free(con->network.tls);
 		if (con->network.sockd != -1) close(con->network.sockd);
 		if (con->network.buffer) st_free(con->network.buffer);
 		mutex_destroy(&(con->lock));

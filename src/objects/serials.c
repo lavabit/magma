@@ -3,11 +3,6 @@
  * @file /magma/objects/serials.c
  *
  * @brief	Functions used for track and update the object checkpoints.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

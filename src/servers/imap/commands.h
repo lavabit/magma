@@ -3,11 +3,6 @@
  * @file /magma/servers/imap/commands.h
  *
  * @brief The data structure involved with parsing and routing POP commands.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_SERVERS_IMAP_COMMANDS_H

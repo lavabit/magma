@@ -3,11 +3,6 @@
  * @file /magma/engine/status/performance.c
  *
  * @brief	A collection of functions used to measure and track system performance.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

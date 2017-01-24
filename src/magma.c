@@ -3,11 +3,6 @@
  * @file /magma/magma.c
  *
  * @brief	The main executable entry point.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

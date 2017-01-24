@@ -6,12 +6,13 @@
 
 TOPDIR							= $(realpath .)
 MFLAGS							=
-MAKEFLAGS						= --output-sync=target --jobs=6
+#MAKEFLAGS						= --output-sync=target --jobs=6
+MAKEFLAGS						= --output-sync=target
 
 # Identity of this package.
 PACKAGE_NAME					= Magma Daemon
 PACKAGE_TARNAME					= magma
-PACKAGE_VERSION					= 6.2
+PACKAGE_VERSION					= 6.4
 PACKAGE_STRING					= $(PACKAGE_NAME) $(PACKAGE_VERSION)
 PACKAGE_BUGREPORT				= support@lavabit.com
 PACKAGE_URL						= https://lavabit.com
@@ -37,41 +38,48 @@ MAGMA_CHECK_DYNAMIC				= $(MAGMA_DYNAMIC) -lm
 MAGMA_CHECK_SRCDIRS				= $(shell find check/magma -type d -print)
 MAGMA_CHECK_SRCFILES			= $(foreach dir, $(MAGMA_CHECK_SRCDIRS), $(wildcard $(dir)/*.c))
 
-DIME_SRCDIRS					= $(shell  find src/providers/dime tools/dime -type d -print)
+DIME_SRCDIRS					= $(shell  find src/ tools/dime -type d -print)
 DIME_SRCFILES					= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(DIME_SRCDIRS), $(wildcard $(dir)/*.c)))
-DIME_STATIC						= $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT)
+DIME_STATIC						= $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) \
+                                  $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libutf8proc$(STATLIBEXT)
 
-SIGNET_SRCDIRS					= $(shell find src/providers/dime tools/signet -type d -print)
+SIGNET_SRCDIRS					= $(shell find src/ tools/signet -type d -print)
 SIGNET_SRCFILES					= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(SIGNET_SRCDIRS), $(wildcard $(dir)/*.c)))
-SIGNET_STATIC					= $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT)
+SIGNET_STATIC					= $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) \
+                                  $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libutf8proc$(STATLIBEXT)
 
-GENREC_SRCDIRS					= $(shell find src/providers/dime tools/genrec -type d -print)
+GENREC_SRCDIRS					= $(shell find src/ tools/genrec -type d -print)
 GENREC_SRCFILES					= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(GENREC_SRCDIRS), $(wildcard $(dir)/*.c)))
-GENREC_STATIC					= $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT)
-
-DIME_CHECK_STATIC				= $(MAGMA_STATIC) $(TOPDIR)/lib/sources/googtest/lib/.libs/libgtest.a $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT)
+GENREC_STATIC					= $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) \
+                                  $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libutf8proc$(STATLIBEXT)
+                                  
 DIME_CHECK_DYNAMIC				= $(MAGMA_DYNAMIC) -lstdc++
 DIME_CHECK_CPPDIRS				= $(shell find check/dime -type d -print)
-DIME_CHECK_SRCDIRS				= $(shell find src/providers/dime check/dime -type d -print)
+DIME_CHECK_SRCDIRS				= $(shell find src/ check/dime -type d -print)
 DIME_CHECK_CPPFILES				= $(foreach dir, $(DIME_CHECK_CPPDIRS), $(wildcard $(dir)/*.cpp))
 DIME_CHECK_SRCFILES				= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(DIME_CHECK_SRCDIRS), $(wildcard $(dir)/*.c)))
+DIME_CHECK_STATIC				= $(MAGMA_STATIC) $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) \
+                                  $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libutf8proc$(STATLIBEXT) \
+                                  $(TOPDIR)/lib/sources/googtest/lib/.libs/libgtest.a 
  
 FILTERED_SRCFILES				= src/providers/dime/ed25519/test.c src/providers/dime/ed25519/test-internals.c \
- src/providers/dime/ed25519/fuzz/curve25519-ref10.c src/providers/dime/ed25519/fuzz/ed25519-donna-sse2.c \
- src/providers/dime/ed25519/fuzz/fuzz-curve25519.c src/providers/dime/ed25519/fuzz/ed25519-donna.c \
- src/providers/dime/ed25519/fuzz/ed25519-ref10.c src/providers/dime/ed25519/fuzz/fuzz-ed25519.c
+                                  src/providers/dime/ed25519/fuzz/curve25519-ref10.c src/providers/dime/ed25519/fuzz/ed25519-donna-sse2.c \
+                                  src/providers/dime/ed25519/fuzz/fuzz-curve25519.c src/providers/dime/ed25519/fuzz/ed25519-donna.c \
+                                  src/providers/dime/ed25519/fuzz/ed25519-ref10.c src/providers/dime/ed25519/fuzz/fuzz-ed25519.c
  
 PACKAGE_DEPENDENCIES			=  $(TOPDIR)/magmad.so $(MAGMA_STATIC) $(filter-out $(MAGMA_STATIC), $(MAGMA_CHECK_STATIC))
 
 # Bundled Dependency Include Paths
-INCDIR							= $(TOPDIR)/lib/sources
-MAGMA_INCDIRS					= spf2/src/include clamav/libclamav mysql/include openssl/include lzo/include xml2/include \
-		zlib bzip2 tokyocabinet memcached dkim/libopendkim dspam/src jansson/src gd png jpeg freetype/include \
-		utf8proc
+#INCDIR							= $(TOPDIR)/lib/sources
+#MAGMA_INCDIRS					= spf2/src/include clamav/libclamav mysql/include openssl/include lzo/include xml2/include \
+#                                  zlib bzip2 tokyocabinet memcached dkim/libopendkim dspam/src jansson/src gd png jpeg freetype/include \
+#                                  utf8proc
+INCDIR							= $(TOPDIR)/lib/local/include
+MAGMA_INCDIRS					= spf2/ mysql/ openssl/ lzo/ libxml2/ libmemcached/ opendkim/ dspam/ freetype2/
 
 MAGMA_CHECK_INCDIRS				= 
 
-MAGMA_CINCLUDES					= -Isrc -Isrc/providers $(addprefix -I,$(MAGMA_INCLUDE_ABSPATHS))
+MAGMA_CINCLUDES					= -Isrc -Isrc/providers -I$(INCDIR) $(addprefix -I,$(MAGMA_INCLUDE_ABSPATHS))
 DIME_CHECK_CINCLUDES			= $(MAGMA_CINCLUDES)
 MAGMA_CHECK_CINCLUDES			= -Icheck/magma -Ilib/local/include/ $(MAGMA_CINCLUDES) $(addprefix -I,$(MAGMA_CHECK_INCLUDE_ABSPATHS))
 DIME_CHECK_CPPINCLUDES			= -Icheck/dime -Ilib/sources/googtest/include/ -Ilib/sources/googtest/ -Ilib/sources/googtap/src/ $(MAGMA_CINCLUDES)
@@ -96,12 +104,13 @@ DIME_CHECK_DEPFILES				+= $(patsubst %.cpp,$(DEPDIR)/%.d,$(DIME_CHECK_CPPFILES))
 
 # Hidden Directory for Object Files
 OBJDIR							= .objs
-DIME_OBJFILES					= $(patsubst %.c,$(OBJDIR)/%.o,$(DIME_SRCFILES))
 MAGMA_OBJFILES					= $(patsubst %.c,$(OBJDIR)/%.o,$(MAGMA_SRCFILES))
-SIGNET_OBJFILES					= $(patsubst %.c,$(OBJDIR)/%.o,$(SIGNET_SRCFILES))
-GENREC_OBJFILES					= $(patsubst %.c,$(OBJDIR)/%.o,$(GENREC_SRCFILES))
 MAGMA_CHECK_OBJFILES			= $(patsubst %.c,$(OBJDIR)/%.o,$(MAGMA_CHECK_SRCFILES))
-DIME_CHECK_OBJFILES				= $(patsubst %.c,$(OBJDIR)/%.o,$(DIME_CHECK_SRCFILES))
+
+DIME_OBJFILES					= $(filter-out .objs/src//magma.o, $(patsubst %.c,$(OBJDIR)/%.o,$(DIME_SRCFILES)))
+SIGNET_OBJFILES					= $(filter-out .objs/src//magma.o, $(patsubst %.c,$(OBJDIR)/%.o,$(SIGNET_SRCFILES)))
+GENREC_OBJFILES					= $(filter-out .objs/src//magma.o, $(patsubst %.c,$(OBJDIR)/%.o,$(GENREC_SRCFILES)))
+DIME_CHECK_OBJFILES				= $(filter-out .objs/src//magma.o, $(patsubst %.c,$(OBJDIR)/%.o,$(DIME_CHECK_SRCFILES)))
 DIME_CHECK_OBJFILES				+= $(patsubst %.cc,$(OBJDIR)/%.o,$(DIME_CHECK_CCFILES))
 DIME_CHECK_OBJFILES				+= $(patsubst %.cpp,$(OBJDIR)/%.o,$(DIME_CHECK_CPPFILES))
 
@@ -113,15 +122,18 @@ INCLUDE_DIR_SEARCH 				= $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(
 MAGMA_INCLUDE_ABSPATHS			+= $(foreach target,$(MAGMA_INCDIRS), $(call INCLUDE_DIR_SEARCH,$(target)))
 MAGMA_CHECK_INCLUDE_ABSPATHS	+= $(foreach target,$(MAGMA_CHECK_INCDIRS), $(call INCLUDE_DIR_SEARCH,$(target)))
 
+# Magma Incremental Builds
+# MAGMA_INCREMENTAL_BUILD		= $(patsubst %.c, $(OBJDIR)/%.o, $(shell find src/ tools/ check/ -type f -mtime -1 -print))
+
 # Compiler Parameters
 CC								= gcc
 CFLAGS							= -std=gnu99 -O0 -fPIC -fmessage-length=0 -ggdb3 -rdynamic -c $(CFLAGS_WARNINGS) -MMD 
-CFLAGS_WARNINGS					= -Wall -Werror -Winline -Wformat-security -Warray-bounds -Wfatal-errors
+CFLAGS_WARNINGS					= -Wall -Werror -Winline -Wformat-security -Warray-bounds #-Wfatal-errors
 CFLAGS_PEDANTIC					= -Wextra -Wpacked -Wunreachable-code -Wformat=2
 
 CPP								= g++
 CPPFLAGS						= -std=c++0x $(CPPFLAGS_WARNINGS) -Wno-unused-parameter -pthread -g3 
-CPPFLAGS_WARNINGS				= -Wfatal-errors -Werror -Wall -Wextra  -Wformat=2 -Wwrite-strings -Wno-format-nonliteral 
+CPPFLAGS_WARNINGS				= -Werror -Wall -Wextra  -Wformat=2 -Wwrite-strings -Wno-format-nonliteral #-Wfatal-errors
 
 # Linker Parameters
 LD								= gcc
@@ -197,16 +209,22 @@ else
     EXEEXT						:= 
 endif
 
-all: config warning setup $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) 
-
-setup: $(PACKAGE_DEPENDENCIES)
+all: config warning $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) 
 
 check: config warning $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) finished
 	$(RUN)$(TOPDIR)/$(MAGMA_CHECK_PROGRAM) sandbox/etc/magma.sandbox.config
-	$(RUN)$(TOPDIR)/$(DIME_CHECK_PROGRAM) sandbox/etc/magma.sandbox.config
+	$(RUN)$(TOPDIR)/$(DIME_CHECK_PROGRAM)
 
 setup: $(PACKAGE_DEPENDENCIES)
-
+ifeq ($(VERBOSE),no)
+	@echo 'Running the '$(YELLOW)'setup'$(NORMAL)' scripts.'
+endif
+	$(RUN)dev/scripts/linkup.sh
+ifeq ($(VERBOSE),no)
+	@echo 'Generating new '$(YELLOW)'key'$(NORMAL)' files.'
+endif
+	$(RUN)dev/scripts/builders/build.lib.sh generate
+	
 warning:
 ifeq ($(VERBOSE),no)
 	@echo 
@@ -230,6 +248,8 @@ ifeq ($(VERBOSE),no)
 	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
 endif
 
+#incremental: $(MAGMA_INCREMENTAL_BUILD)
+
 # Delete the compiled program along with the generated object and dependency files
 clean:
 	@$(RM) $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM)
@@ -242,7 +262,7 @@ clean:
 	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
 
 # Construct the magma daemon executable file
-$(MAGMA_PROGRAM): $(MAGMA_OBJFILES)
+$(MAGMA_PROGRAM): $(PACKAGE_DEPENDENCIES) $(MAGMA_OBJFILES)
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 else
@@ -251,7 +271,7 @@ endif
 	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) -Wl,--end-group
 
 # Construct the dime command line utility
-$(DIME_PROGRAM): $(DIME_OBJFILES) 
+$(DIME_PROGRAM): $(PACKAGE_DEPENDENCIES) $(DIME_OBJFILES) 
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 else
@@ -260,7 +280,7 @@ endif
 	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(DIME_OBJFILES) -Wl,--start-group,--whole-archive $(MAGMA_STATIC) $(DIME_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_DYNAMIC) 
 
 # Construct the signet command line utility
-$(SIGNET_PROGRAM): $(SIGNET_OBJFILES) 
+$(SIGNET_PROGRAM): $(PACKAGE_DEPENDENCIES) $(SIGNET_OBJFILES) 
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 else
@@ -269,7 +289,7 @@ endif
 	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(SIGNET_OBJFILES) -Wl,--start-group,--whole-archive $(MAGMA_STATIC) $(SIGNET_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_DYNAMIC)
 
 # Construct the dime command line utility
-$(GENREC_PROGRAM): $(GENREC_OBJFILES) 
+$(GENREC_PROGRAM): $(PACKAGE_DEPENDENCIES) $(GENREC_OBJFILES) 
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 else
@@ -278,14 +298,14 @@ endif
 	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(GENREC_OBJFILES) -Wl,--start-group,--whole-archive $(MAGMA_STATIC) $(GENREC_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_DYNAMIC)
 
 # Construct the magma unit test executable
-$(MAGMA_CHECK_PROGRAM): $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES))
+$(MAGMA_CHECK_PROGRAM): $(PACKAGE_DEPENDENCIES) $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES))
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 endif
 	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) -Wl,--start-group,--whole-archive $(MAGMA_CHECK_STATIC) -Wl,--no-whole-archive,--end-group  $(MAGMA_CHECK_DYNAMIC) 
 
 # Construct the dime unit test executable
-$(DIME_CHECK_PROGRAM): $(DIME_CHECK_OBJFILES) 
+$(DIME_CHECK_PROGRAM): $(PACKAGE_DEPENDENCIES) $(DIME_CHECK_OBJFILES) 
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 endif
@@ -309,7 +329,7 @@ endif
 	$(RUN)$(CC) $(CFLAGS) $(CFLAGS.$(<F)) $(CDEFINES) $(CDEFINES.$(<F)) $(MAGMA_CHECK_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" -o"$@" "$<"
 
 # The Magma Daemon Object files
-$(OBJDIR)/%.o: %.c $(PACKAGE_DEPENDENCIES)
+$(OBJDIR)/%.o: %.c 
 ifeq ($(VERBOSE),no)
 	@echo 'Building' $(YELLOW)$<$(NORMAL)
 endif
@@ -319,11 +339,7 @@ endif
 	
 $(PACKAGE_DEPENDENCIES): 
 ifeq ($(VERBOSE),no)
-	@echo 'Running the ' $(YELLOW)'setup'$(NORMAL) ' scripts.'
-endif
-	$(RUN)dev/scripts/linkup.sh
-ifeq ($(VERBOSE),no)
-	@echo 'Building the ' $(YELLOW)'bundled'$(NORMAL) ' dependencies.'
+	@echo 'Building the '$(YELLOW)'bundled'$(NORMAL)' dependencies.'
 endif
 	$(RUN)dev/scripts/builders/build.lib.sh all
 
@@ -332,7 +348,8 @@ endif
 
 # Special Make Directives
 .SUFFIXES: .c .cc .cpp .o 
-# .NOTPARALLEL: warning conifg
-.PHONY: all warning config finished check setup
+#.NOTPARALLEL: warning conifg $(PACKAGE_DEPENDENCIES)
+.PHONY: all warning config finished check setup 
+#incremental
 
 # vim:set softtabstop=4 shiftwidth=4 tabstop=4:

@@ -3,11 +3,6 @@
  * @file /magma/engine/context/process.c
  *
  * @brief	Functions used to start and stop the daemon, including the execution of the module init and module clean up functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -97,7 +92,8 @@ void process_stop(void) {
 		stats_shutdown, /* Shutdown the statistics interface. */
 		ssl_stop, /* Shutdown the OpenSSL interface. */
 		rand_stop, /* Shutdown the random number generator. */
-		ecies_stop, /* Release the elliptical curve group. */
+		deprecated_ecies_stop, /* Release the elliptical curve group. */
+		prime_stop, /* Release the privacy respecting internet mail environment objects. */
 
 		xml_stop,
 		virus_stop, /* Shutdown the anti-virus engine. */
@@ -193,7 +189,8 @@ bool_t process_start(void) {
 		(void *)&stats_init,
 		(void *)&ssl_start,
 		(void *)&rand_start,
-		(void *)&ecies_start,
+		(void *)&deprecated_ecies_start,
+		(void *)&prime_start,
 
 		(void *)&xml_start,
 		(void *)&virus_start,
@@ -240,6 +237,7 @@ bool_t process_start(void) {
 		"Unable to initialize the encryption interface. Exiting.",
 		"Unable to initialize the random number generator. Exiting.",
 		"Unable to initialize the elliptical curve group. Exiting.",
+		"Unable to initialize the privacy respecting internet mail environment. Exiting.",
 
 		"Unable to initialize the XML parsing engine. Exiting.",
 		"Unable to initialize the anti-virus engine. Exiting.",

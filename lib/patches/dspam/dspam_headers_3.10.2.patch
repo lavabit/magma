@@ -1,0 +1,28 @@
+diff --git a/src/Makefile.am b/src/Makefile.am
+index bfdb22a..c1d3761 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -59,6 +59,23 @@ include_HEADERS = buffer.h config_shared.h decode.h error.h diction.h \
+ 	libdspam.h libdspam_objects.h nodetree.h tokenizer.h \
+ 	storage_driver.h heap.h config.h pref.h read_config.h
+ 
++# Add the storage driver header to the list of header files to install.
++if BUILD_HASH_DRV
++include_HEADERS += hash_drv.h
++endif
++if BUILD_MYSQL_DRV
++include_HEADERS += mysql_drv.h
++endif
++if BUILD_PGSQL_DRV
++include_HEADERS += pgsql_drv.h
++endif
++if BUILD_SQLITE_DRV
++include_HEADERS += sqlite_drv.h
++endif
++if BUILD_SQLITE3_DRV
++include_HEADERS += sqlite3_drv.h
++endif
++
+ if BUILD_EXT_LOOKUP
+ include_HEADERS += external_lookup.h
+ endif

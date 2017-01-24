@@ -3,11 +3,6 @@
  * @file /magma/network/read.c
  *
  * @brief	Functions used to read in data via the network.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -122,9 +117,6 @@ int64_t con_read_line(connection_t *con, bool_t block) {
  * 			If the connection's network buffer hasn't been allocated, it will be initialized.
  * @param	con		a pointer to the connection object from which the data will be read.
  * @return	-1 on internal error, or on a read error.
- *
- *
- *
  */
 int64_t con_read(connection_t *con) {
 
@@ -174,7 +166,7 @@ int64_t con_read(connection_t *con) {
 			bytes = ssl_read(con->network.tls, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
 				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), blocking);
 
-			if (!bytes && ssl_shutdown_get(con->network.tls)) {
+			if (!bytes && tls_status(con->network.tls)) {
 				con->network.status = -1;
 				return -1;
 			}
@@ -217,8 +209,6 @@ int64_t con_read(connection_t *con) {
  *
  *
  * @return
- *
- *
  */
 int64_t client_read_line(client_t *client) {
 

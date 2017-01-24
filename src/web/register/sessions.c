@@ -3,11 +3,6 @@
  * @file /magma/web/register/sessions.c
  *
  * @brief	Functions for handling the internal session structure used by new user registration attemptps.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -46,7 +41,7 @@ register_session_t * register_session_generate(void) {
 		return NULL;
 	}
 
-	if (!(session->name = rand_choices("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 32))) {
+	if (!(session->name = rand_choices("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 32, NULL))) {
 		register_session_free(session);
 		return NULL;
 	}

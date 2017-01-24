@@ -4,38 +4,16 @@
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.toolchain.gnu.base.501067626" moduleId="org.eclipse.cdt.core.settings" name="Default">
 				<externalSettings>
 					<externalSetting>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/freetype/include/"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/jpeg"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/png"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/gd"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/jansson/src"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/dspam/src"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/dkim/libopendkim/"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/geoip/libGeoIP"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/memcached"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/curl/include"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/curl/include/curl"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/zlib"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/bzip2"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/lzo/include"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/lzo/include/lzo"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/xml2/include"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/xml2/include/libxml"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/spf2/src/include"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/tokyocabinet"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/openssl/include"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/openssl/include/openssl"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/mysql/include"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/sources/clamav/libclamav"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma"/>
-						<entry flags="BUILTIN|READONLY|RESOLVED" kind="includePath" name="/usr/include"/>
-						<entry flags="BUILTIN|READONLY|RESOLVED" kind="includePath" name="/usr/lib/gcc/x86_64-redhat-linux/4.4.7/include"/>
-						<entry flags="BUILTIN|READONLY|RESOLVED" kind="includePath" name="/usr/local/include"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="libraryPath" name="/magma.so/sources/lzo/src/.libs"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="includePath" name="/magma.so/local/include"/>
+						<entry flags="RESOLVED" kind="macro" name="HAVE_NS_TYPE" value=""/>
+						<entry flags="RESOLVED" kind="macro" name="_REENTRANT" value=""/>
+						<entry flags="RESOLVED" kind="macro" name="_LARGEFILE64_SOURCE" value=""/>
+						<entry flags="RESOLVED" kind="macro" name="_GNU_SOURCE" value=""/>
 					</externalSetting>
 				</externalSettings>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
@@ -47,42 +25,20 @@
 				<configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.base.501067626" name="Default" parent="org.eclipse.cdt.build.core.emptycfg">
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.base.501067626.2015809734" name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.base.660413501" name="cdt.managedbuild.toolchain.gnu.base" resourceTypeBasedDiscovery="false" superClass="cdt.managedbuild.toolchain.gnu.base">
-							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.base.119469865" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
-							<builder arguments="magmad.so" buildPath="${ProjDirPath}/../" cleanBuildTarget="" command="ls" id="cdt.managedbuild.target.gnu.builder.base.850723688" incrementalBuildTarget="" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.GNU_ELF;org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.base.119469865" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
+							<builder arguments="magmad.so" buildPath="${ProjDirPath}/../" cleanBuildTarget="" command="ls" id="cdt.managedbuild.target.gnu.builder.base.850723688" incrementalBuildTarget="" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base">
+								<outputEntries>
+									<entry flags="VALUE_WORKSPACE_PATH" kind="outputPath" name="local"/>
+								</outputEntries>
+							</builder>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1470992130" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.1080473255" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.1147615775" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
-								<option id="gnu.c.compiler.option.include.files.1253898178" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" useByScannerDiscovery="false" valueType="includeFiles">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/lzo/config.h}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma/src/providers/symbols.h}&quot;"/>
-								</option>
+								<option id="gnu.c.compiler.option.include.files.1253898178" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" useByScannerDiscovery="false"/>
 								<option id="gnu.c.compiler.option.include.paths.1748515179" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/clamav/libclamav}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/mysql/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/openssl/include/openssl}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/openssl/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/tokyocabinet}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/spf2/src/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/xml2/include/libxml}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/xml2/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/lzo/include/lzo}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/lzo/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/bzip2}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/zlib}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/curl/include/curl}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/curl/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/memcached}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/geoip/libGeoIP}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/dkim/libopendkim/}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/dspam/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/jansson/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/gd}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/png}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/jpeg}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/sources/freetype/include/}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/local/include}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.666071728" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="MAGMA_PEDANTIC"/>
 									<listOptionValue builtIn="false" value="_REENTRANT"/>
 									<listOptionValue builtIn="false" value="_GNU_SOURCE"/>
 									<listOptionValue builtIn="false" value="FORTIFY_SOURCE=2"/>
@@ -100,13 +56,16 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.1167962038" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.base.223897773" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base">
-								<option id="gnu.both.asm.option.include.paths.1315544935" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths"/>
+								<option id="gnu.both.asm.option.include.paths.1315544935" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/magma.so/local/include}&quot;"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.888460701" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="check/|archives/|logs/|objects/|patches/|sources/clamav/libclamav/c++/llvm/|sources/mysql/vio/viosocket.c|sources/mysql/libmysql_r/viosocket.c|sources/clamav/win32/|sources/mysql/include/config-win.h|sources/mysql/include/config-netware.h" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
+						<entry excluding="sources|check/|archives/|logs/|objects/|patches/|sources/clamav/libclamav/c++/llvm/|sources/mysql/vio/viosocket.c|sources/mysql/libmysql_r/viosocket.c|sources/clamav/win32/|sources/mysql/include/config-win.h|sources/mysql/include/config-netware.h|local/include/spf2/|sources/spf2/" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="sources"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -116,8 +75,10 @@
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="magma.so.null.1305668994" name="magma.so"/>
 	</storageModule>
-	<storageModule moduleId="refreshScope" versionNumber="1">
-		<resource resourceType="PROJECT" workspacePath="/magma.so"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Default">
+			<resource resourceType="PROJECT" workspacePath="/magma.so"/>
+		</configuration>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>

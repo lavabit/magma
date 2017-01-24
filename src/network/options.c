@@ -3,11 +3,6 @@
  * @file /magma/network/options.c
  *
  * @brief	Functions used to set network socket options.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

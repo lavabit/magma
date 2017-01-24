@@ -3,11 +3,6 @@
  * @file /magma/providers/consumers/counters.c
  *
  * @brief Distributed cache interface.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

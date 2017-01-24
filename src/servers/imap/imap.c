@@ -3,17 +3,13 @@
  * @file /magma/servers/imap/imap.c
  *
  * @brief	Functions used to handle IMAP commands/actions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
 
 /// TODO: Review error messages and update them with the appropriate response code.
 /// LOW: When should we check the serial number to see if the local data is stale and needs to be refreshed?
+/// LOW: Add function descriptions to all of the different IMAP commands.
 
 /**
  * @brief	Create a secure connection for an IMAP session.
@@ -42,7 +38,7 @@ void imap_starttls(connection_t *con) {
 	// Tell the user that we are ready to start the negotiation.
 	con_print(con, "%.*s OK Ready to start TLS negotiation.\r\n", st_length_get(con->imap.tag), st_char_get(con->imap.tag));
 
-	if (!(con->network.tls = ssl_alloc(con->server, con->network.sockd, M_SSL_BIO_NOCLOSE))) {
+	if (!(con->network.tls = tls_server_alloc(con->server, con->network.sockd, M_SSL_BIO_NOCLOSE))) {
 		con_print(con, "%.*s NO TLS Connection attempt failed.\r\n", st_length_get(con->imap.tag), st_char_get(con->imap.tag));
 		log_pedantic("The TLS connection attempt failed.");
 		return;

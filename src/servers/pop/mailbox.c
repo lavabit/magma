@@ -3,11 +3,6 @@
  * @file /magma/servers/pop/mailbox.c
  *
  * @brief	Utility functions used to retrieve POP3 message-related statistics.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

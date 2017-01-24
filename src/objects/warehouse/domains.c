@@ -3,11 +3,6 @@
  * @file /magma/objects/warehouse/domains.c
  *
  * @brief	Functions for managing the list of system domain names.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

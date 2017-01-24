@@ -18,10 +18,10 @@
 #include <stdlib.h>
 #include <inttypes.h>
 
-#include <ssl.h>
-#include <crypto.h>
-#include <err.h>
-#include <stack.h>
+#include <openssl/ssl.h>
+#include <openssl/crypto.h>
+#include <openssl/err.h>
+#include <openssl/stack.h>
 
 #define ECIES_CURVE NID_secp521r1
 #define ECIES_CIPHER EVP_aes_256_cbc()

@@ -1,13 +1,8 @@
 
 /**
- * @file /magma/src/objects/meta/locking.c
+ * @file /magma/objects/meta/locking.c
  *
  * @brief Meta object read and write locking functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

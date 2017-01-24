@@ -1,12 +1,8 @@
+
 /**
  * @file /magma/core/parsers/numbers/clamp.c
  *
  * @brief Provides a collection of functions for clamping a number to a specific range.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

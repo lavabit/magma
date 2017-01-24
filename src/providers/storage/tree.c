@@ -3,11 +3,6 @@
  * @file /magma/providers/storage/tree.c
  *
  * @brief Use Tokyo Cabinet to provide a tree based index implementation for the generic index interface.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -39,9 +34,6 @@ int tree_cmp(const char *aptr, int asiz, const char *bptr, int bsiz, void *op) {
  * @see		tcndbrnum()
  * @param	inx
  * @return	the record count.
- *
- *
- *
  */
 uint64_t tree_count(void *inx) {
 	inx_t *index = inx;

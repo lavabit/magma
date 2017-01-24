@@ -3,11 +3,6 @@
  * @file /magma/servers/imap/messages.c
  *
  * @brief	Functions used to handle IMAP commands and actions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -16,7 +11,7 @@ int_t imap_append_message(connection_t *con, meta_folder_t *folder, uint32_t fla
 
 	meta_message_t *new;
 	multi_t key = { .type = M_TYPE_UINT64, .val.u64 = 0 };
-	stringer_t *pubkey = ((con->imap.user->flags & META_USER_ENCRYPT_DATA) == META_USER_ENCRYPT_DATA) ? con->imap.user->keys.public : NULL;
+	stringer_t *pubkey = ((con->imap.user->flags & META_USER_ENCRYPT_DATA) == META_USER_ENCRYPT_DATA) ? con->imap.user->prime.signet : NULL;
 
 	// Always add the recent and appended flags to these messages.
 	flags = (flags | MAIL_STATUS_RECENT | MAIL_STATUS_APPENDED);

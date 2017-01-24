@@ -9,7 +9,11 @@
 # use this script in a production environment without first altering the default values.
 
 # Check and make sure mysqld is running before attempting a connection.
-PID=`pidof mysqld`       
+PID=`pidof mysqld`
+
+MYSQL_USER=${MYSQL_USER:-"mytool"}
+MYSQL_PASSWORD=${MYSQL_PASSWORD:-"aComplex1"}
+MYSQL_SCHEMA=${MYSQL_SCHEMA:-"Sandbox"}
 
 if [ -z "$PID" ]; then
 	tput setaf 1; tput bold; echo "The MySQL server process isn't running."; tput sgr0
@@ -23,4 +27,4 @@ if [ $? -ne 0 ]; then
 	exit 1
 fi
 
-mysql -u mytool --password=aComplex1 Lavabit
+mysql -u "$MYSQL_USER" --password="$MYSQL_PASSWORD" "$MYSQL_SCHEMA"

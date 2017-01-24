@@ -1,13 +1,8 @@
 
 /**
- * @file /check/providers/virus_check.c
+ * @file /check/magma/providers/virus_check.c
  *
  * @brief Check the anti-virus provider.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

@@ -3,11 +3,6 @@
  * @file /magma/web/statistics/datatier.c
  *
  * @brief	Interface for harvesting statistics from the database for the portal statistics app.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

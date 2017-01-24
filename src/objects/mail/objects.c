@@ -3,11 +3,6 @@
  * @file /magma/objects/mail/objects.c
  *
  * @brief Functions used to interface with and manage message data.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -187,7 +182,7 @@ smtp_message_t * mail_create_message(stringer_t *text) {
 	// Setup the message structure.
 	result->text = text;
 	result->header_length = mail_header_end(result->text);
-	result->id = rand_choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 12);
+	result->id = rand_choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 12, NULL);
 
 	if (!result->id) {
 		log_pedantic("An error occurred while generating the message ID.");

@@ -3,11 +3,6 @@
  * @file /magma/servers/smtp/relay.c
  *
  * @brief	Functions to relay messages via SMTP to the outbound mail server.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

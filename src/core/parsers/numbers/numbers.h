@@ -3,11 +3,6 @@
  * @file /magma/core/parsers/numbers/numbers.h
  *
  * @brief	Function declarations for the number conversion functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_CORE_PARSERS_NUMBERS_H

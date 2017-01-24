@@ -54,7 +54,7 @@
 
 
 #define ERR_STACK_SIZE 8U
-
+#define ERR_CORRUPTION 9U
 
 typedef struct {
     unsigned int errcode;

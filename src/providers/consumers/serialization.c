@@ -3,11 +3,6 @@
  * @file /magma/providers/consumers/serialization.c
  *
  * @brief	Distributed cache interface for serializing various data types.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

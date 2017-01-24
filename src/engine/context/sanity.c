@@ -3,11 +3,6 @@
  * @file /magma/engine/context/sanity.c
  *
  * @brief	A collection of checks performed at launch to make sure the system will operate as expected.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 #include "magma.h"
 

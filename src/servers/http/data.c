@@ -3,11 +3,6 @@
  * @file /magma/servers/http/data.c
  *
  * @brief	Assorted functions for handling HTTP data.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

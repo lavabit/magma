@@ -3,11 +3,6 @@
  * @file /magma/engine/config/global/global.h
  *
  * @brief	The global configuration structure used for overall system settings, and functions to initialize it at startup and free it at shutdown.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_ENGINE_CONFIG_GLOBAL_H
@@ -150,16 +145,23 @@ typedef struct {
 	} web;
 
 	struct {
-		bool_t enabled; /* whether or not dkim signing is enabled */
+		bool_t enabled; /* Whether or not dkim signing is enabled. */
 		chr_t *domain;
 		chr_t *selector;
-		stringer_t *privkey; /* location of the dkim private key at startup (replaced with contents later) */
+		stringer_t *key; /* Location of the dkim private key at startup (replaced with contents later). */
 	} dkim;
+
+	struct {
+		stringer_t *key;	/* The Dark Internet Mail Environment Primary Organizational Key. */
+		stringer_t *signet;	/* The Dark Internet Mail Environment Organizational Signet. */
+	} dime;
 
 	struct {
 
 		struct {
 			uint32_t seed_length; /* How much data should be used to seed the random number generator. */
+			bool_t dhparams_rotate; /* Should we generate new a DH prime parameter periodically. */
+			bool_t dhparams_large_keys; /* Should we use large DH session keys. */
 		} cryptography;
 
 		struct {

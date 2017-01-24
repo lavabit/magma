@@ -3,11 +3,6 @@
  * @file /magma/servers/molten/commands.c
  *
  * @brief Functions used to parse protocol specific data out of the inbound network stream.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

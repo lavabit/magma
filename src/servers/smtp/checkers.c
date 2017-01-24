@@ -3,11 +3,6 @@
  * @file /magma/servers/smtp/checkers.c
  *
  * @brief Functions used by the SMTP protocol to check and if necessary validate data using external information.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

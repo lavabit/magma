@@ -1,13 +1,8 @@
 
 /**
- * @file /check/providers/provide_check.h
+ * @file /check/magma/providers/provide_check.h
  *
  * @brief The entry point for the provide module test suite.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef PROVIDE_CHECK_H
@@ -24,6 +19,10 @@ typedef struct {
 typedef struct {
 	uint64_t engine;
 } check_compress_opt_t;
+
+/// dkim_check.c
+bool_t   check_dkim_sign_sthread(stringer_t *errmsg);
+bool_t   check_dkim_verify_sthread(stringer_t *errmsg);
 
 /// symmetric_check.c
 bool_t   check_symmetric_sthread(chr_t *name);
@@ -72,15 +71,9 @@ bool_t   check_compress_mthread(check_compress_opt_t *opts);
 void     check_compress_mthread_cnv(check_compress_opt_t *opts);
 bool_t   check_compress_sthread(check_compress_opt_t *opts);
 
-/// stacie_check.c
-bool_t   check_stacie_simple(void);
-bool_t   check_stacie_parameters(void);
-bool_t   check_stacie_rounds(void);
-bool_t   check_stacie_determinism(void);
-
 /// unicode_check.c
-chr_t * check_unicode_valid(void);
-chr_t * check_unicode_invalid(void);
-chr_t * check_unicode_length(void);
+bool_t   check_unicode_invalid(stringer_t *errmsg);
+bool_t   check_unicode_length(stringer_t *errmsg);
+bool_t   check_unicode_valid(stringer_t *errmsg);
 
 #endif

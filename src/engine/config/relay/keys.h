@@ -3,11 +3,6 @@
  * @file /magma/engine/config/relay/keys.h
  *
  * @brief	A collection of keys that define access rules, default values and other parameters needed to configure relay instances.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_OPIONS_RELAY_KEYS_H

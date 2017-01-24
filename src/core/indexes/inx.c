@@ -3,11 +3,6 @@
  * @file /magma/core/indexes/inx.c
  *
  * @brief	The generic index interface used to abstract away the underlying data structure used for storage.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -50,6 +45,7 @@ void inx_auto_read(inx_t *inx) {
 	}
 	return;
 }
+
 /**
  * @brief	Acquire a writer's lock for an inx object.
  * @param	inx		a pointer to the inx object to be locked.
@@ -61,7 +57,6 @@ void inx_lock_write(inx_t *inx) {
 	}
 	return;
 }
-
 
 void inx_auto_write(inx_t *inx) {
 	if (inx->automatic) {

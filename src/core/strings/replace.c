@@ -3,11 +3,6 @@
  * @file /magma/core/strings/replace.c
  *
  * @brief	Functions used for string replacement.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

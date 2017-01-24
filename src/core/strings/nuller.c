@@ -3,11 +3,6 @@
  * @file /magma/core/strings/nuller.c
  *
  * @brief	Functions for handling null terminated strings.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

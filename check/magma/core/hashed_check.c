@@ -1,13 +1,8 @@
 
 /**
- * @file /check/core/hashed_check.c
+ * @file /check/magma/core/hashed_check.c
  *
  * @brief Unit tests for hashed indexes.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

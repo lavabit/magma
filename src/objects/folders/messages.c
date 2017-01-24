@@ -3,11 +3,6 @@
  * @file /magma/objects/folders/messages.c
  *
  * @brief	Interface with user message folders.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

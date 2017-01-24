@@ -1,30 +1,26 @@
 
 /**
- * @file /check/smtp/smtp_check.c
+ * @file /check/magma/smtp/smtp_check.c
  *
  * @brief SMTP interface test functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"
 
 START_TEST (check_smtp_inbound_creation_s) {
 
-	//auth_t *cred;
-	char *errmsg = NULL;
+	/// TODO: This test is supposed to be connecting back to magma using SMTP and then submitting several inbound messages.
+	log_test("SMTP / INBOUND / CREATION / SINGLE THREADED:", NULLER("SKIPPED"));
+	ck_assert_msg(true, NULL);
 
-	log_unit("%-64.64s%10.10s\n", "SMTP / INBOUND / CREATION / SINGLE THREADED:", "SKIPPED");
-	return;
-
-	if (!status()) {
-		log_test("SMTP / INBOUND / CREATION / SINGLE THREADED:", errmsg);
-		return;
-	}
-
+//	auth_t *cred;
+//	char *errmsg = NULL;
+//
+//	if (!status()) {
+//		log_test("SMTP / INBOUND / CREATION / SINGLE THREADED:", errmsg);
+//		return;
+//	}
+//
 //	if ((cred = credential_alloc_mail(CONSTANT("ladar")))) {
 //		errmsg = "Credential creation should have failed but didn't.";
 //	}
@@ -139,24 +135,21 @@ START_TEST (check_smtp_inbound_creation_s) {
 //	if (cred) {
 //		credential_free(cred);
 //	}
-
-	log_test("SMTP / INBOUND / CREATION / SINGLE THREADED:", errmsg);
-	fail_unless(!errmsg, errmsg);
-} END_TEST
+//
+//	log_test("SMTP / INBOUND / CREATION / SINGLE THREADED:", errmsg);
+//	if (errmsg) ck_abort_msg(errmsg);
+}
+END_TEST
 
 START_TEST (check_smtp_authentication_s) {
 
-	//auth_t *cred;
-	char *errmsg = NULL;
+	/// TODO: This test is supposed to be connecting back to magma using SMTP and then attempting authentication.
+	log_test("SMTP / AUTHENTICATION / SINGLE THREADED:", NULLER("SKIPPED"));
+	ck_assert_msg(true, NULL);
 
-	log_unit("%-64.64s%10.10s\n", "SMTP / AUTHENTICATION / SINGLE THREADED:", "SKIPPED");
-	return;
-
-	if (!status()) {
-		log_test("USERS / SMTP / AUTHENTICATION / SINGLE THREADED:", errmsg);
-		return;
-	}
-
+//	auth_t *cred;
+//	char *errmsg = NULL;
+//
 //	if (!(cred = credential_alloc_auth(CONSTANT("ladar")))) {
 //		errmsg = "Credential allocation failed.";
 //	}
@@ -187,10 +180,11 @@ START_TEST (check_smtp_authentication_s) {
 //	if (cred) {
 //		credential_free(cred);
 //	}
-
-	log_test("USERS / SMTP / AUTHENTICATION / SINGLE THREADED:", errmsg);
-	fail_unless(!errmsg, errmsg);
-} END_TEST
+//
+//	log_test("USERS / SMTP / AUTHENTICATION / SINGLE THREADED:", errmsg);
+//	if (errmsg) ck_abort_msg(errmsg);
+}
+END_TEST
 
 Suite * suite_check_smtp(void) {
 

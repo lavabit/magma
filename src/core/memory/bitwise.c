@@ -3,11 +3,6 @@
  * @file /magma/core/memory/bitwise.c
  *
  * @brief	A collection of functions used handle common bit manipulation tasks.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

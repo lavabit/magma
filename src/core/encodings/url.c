@@ -3,11 +3,6 @@
  * @file /magma/core/encodings/url.c
  *
  * @brief	Functions used to encode and decode website URLs.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

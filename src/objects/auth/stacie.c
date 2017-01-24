@@ -1,13 +1,8 @@
 
 /**
- * @file /magma/src/objects/auth/stacie.c
+ * @file /magma/objects/auth/stacie.c
  *
  * @brief Functions needed to support/convert password hashes using the deprecated stacie strategy.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -57,13 +52,23 @@ void auth_stacie_cleanup(auth_stacie_t *stacie) {
 	return;
 }
 
+/**
+ * @brief	Allocate and initialize a STACIE object.
+ *
+ * @return	NULL on failure, or a pointer to the newly allocated STACIE object on success.
+ */
 auth_stacie_t * auth_stacie_alloc(void) {
 
 	auth_stacie_t *stacie = NULL;
 
-	if ((stacie = mm_alloc(sizeof(auth_stacie_t)))) {
-		mm_wipe(stacie, sizeof(auth_stacie_t));
+	// Allocate the buffer.
+	if (!(stacie = mm_alloc(sizeof(auth_stacie_t)))) {
+		log_pedantic("Unable to allocate %zu bytes for a user meta information structure.", sizeof(auth_stacie_t));
+		return NULL;
 	}
+
+	// Wipe the structure so all of the pointers are initialized to NULL.
+	mm_wipe(stacie, sizeof(auth_stacie_t));
 
 	return stacie;
 }
@@ -91,7 +96,7 @@ auth_stacie_t * auth_stacie(uint32_t bonus, stringer_t *username, stringer_t *pa
 	auth_stacie_t *stacie = NULL;
 
 	// Make sure all three required inputs are valid pointers and hold at least one character.
-	if (bonus > STACIE_ROUNDS_MAX || st_empty(username) || st_empty(salt)) {
+	if (bonus > STACIE_KEY_ROUNDS_MAX || st_empty(username) || st_empty(salt)) {
 		log_pedantic("A required parameter, needed to calculate the STACIE values, is missing or invalid.");
 		return NULL;
 	}

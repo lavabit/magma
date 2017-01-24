@@ -20,7 +20,7 @@
 #define ED25519_KEY_B64_SIZE 43
 #define ED25519_SIG_SIZE     64
 #define ED25519_SIG_B64_SIZE 86
-#define EC_PUBKEY_SIZE       65
+#define EC_PUBKEY_SIZE       33
 
 // Wrappers around ED25519 functions
 typedef struct {
@@ -51,9 +51,9 @@ PUBLIC_FUNC_DECL(int,             compute_aes256_kek,       EC_KEY *public_key, 
 
 // EC key serialization/deserialization.
 PUBLIC_FUNC_DECL(unsigned char *, serialize_ec_pubkey,      EC_KEY *key, size_t *outsize);
-PUBLIC_FUNC_DECL(EC_KEY *,        deserialize_ec_pubkey,    const unsigned char *buf, size_t blen, int signing);
+PUBLIC_FUNC_DECL(EC_KEY *,        deserialize_ec_pubkey,    const unsigned char *buf, size_t blen);
 PUBLIC_FUNC_DECL(unsigned char *, serialize_ec_privkey,     EC_KEY *key, size_t *outsize);
-PUBLIC_FUNC_DECL(EC_KEY *,        deserialize_ec_privkey,   const unsigned char *buf, size_t blen, int signing);
+PUBLIC_FUNC_DECL(EC_KEY *,        deserialize_ec_privkey,   const unsigned char *buf, size_t blen);
 
 // ED25519 key routines.
 PUBLIC_FUNC_DECL(ED25519_KEY *,   load_ed25519_privkey,     const char *filename);

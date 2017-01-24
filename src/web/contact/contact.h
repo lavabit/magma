@@ -3,11 +3,6 @@
  * @file /magma/web/contact/contact.h
  *
  * @brief	Definitions for handling the web contact form.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_WEB_CONTACT_H

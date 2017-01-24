@@ -3,11 +3,6 @@
  * @file /magma/network/connections.c
  *
  * @brief	A collection of functions to allocate, configure and destroy connection structures.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -109,7 +104,7 @@ void con_destroy(connection_t *con) {
 		}
 
 		if (con->network.tls) {
-			ssl_free(con->network.tls);
+			tls_free(con->network.tls);
 		}
 
 		if (con->network.sockd != -1) {

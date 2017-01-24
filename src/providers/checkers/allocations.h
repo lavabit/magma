@@ -4,9 +4,6 @@
  *
  * @brief Functions used to scan, analyze, check, and validate data.
  *
- * $Author$
- * $Date$
- * $Revision$
  *
  * Allocation Data
  * http://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.xml
@@ -18,7 +15,6 @@
  *
  * Last Updated
  * 2010/11/09
- *
  */
 
 #ifndef MAGMA_PROVIDERS_CHECKERS_ALLOCATIONS_H

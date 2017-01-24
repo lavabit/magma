@@ -1,13 +1,8 @@
 
 /**
- * @file /check/core/qsort_check.c
+ * @file /check/magma/core/qsort_check.c
  *
  * @brief The heart of the suite of unit tests for the Magma core module.
- *
- * $Author: $
- * $Date: $
- * $Revision: $
- *
  */
 
 #include "magma_check.h"

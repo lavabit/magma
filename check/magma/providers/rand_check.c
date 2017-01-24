@@ -1,13 +1,8 @@
 
 /**
- * @file /check/providers/rand_check.c
+ * @file /check/magma/providers/rand_check.c
  *
  * @brief Check out the random number functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"
@@ -51,7 +46,7 @@ stringer_t * check_rand_sthread(void) {
 		// Pick a random length.
 		len = (rand() % (RAND_CHECK_SIZE_MAX - RAND_CHECK_SIZE_MIN)) + RAND_CHECK_SIZE_MIN;
 
-		if (!(buffer = rand_choices("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", len))) {
+		if (!(buffer = rand_choices("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", len, NULL))) {
 			return st_dupe(NULLER("Unable to fill the buffer with random data."));
 		}
 		st_free(buffer);
@@ -65,7 +60,7 @@ void check_rand_mthread_wrap(void) {
 	stringer_t *result = NULL;
 
 	if (!thread_start()) {
-		log_error("Unable to setup the thread context.");
+		log_unit("Unable to setup the thread context.");
 		pthread_exit(st_dupe(NULLER("Thread startup error.")));
 		return;
 	}
@@ -87,7 +82,7 @@ stringer_t * check_rand_mthread(void) {
 		return NULL;
 	}
 	else if (!(threads = mm_alloc(sizeof(pthread_t) * RAND_CHECK_MTHREADS))) {
-		return st_dupe(NULLER("Thread allocation error."));;
+		return st_dupe(NULLER("Thread allocation error."));
 	}
 
 	for (uint64_t counter = 0; counter < RAND_CHECK_MTHREADS; counter++) {

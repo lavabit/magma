@@ -3,11 +3,6 @@
  * @file /magma/providers/compress/lzo.c
  *
  * @brief	The interface for the LZO compression functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 

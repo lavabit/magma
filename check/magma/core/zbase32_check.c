@@ -1,13 +1,8 @@
 
 /**
- * @file /check/core/zbase32_check.c
+ * @file /check/magma/core/zbase32_check.c
  *
  * @brief Zbase32 encoder unit tests.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

@@ -3,11 +3,6 @@
  * @file /magma/objects/mail/paths.c
  *
  * @brief	Functions for mapping mail messages to their persistent file storage paths.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

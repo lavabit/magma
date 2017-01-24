@@ -3,11 +3,6 @@
  * @file /magma/network/network.h
  *
  * @brief	The types and functions for abstracting access to network functionality.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #if defined(GET_IP_T_DEFINITION) || !defined(MAGMA_NETWORK_H)

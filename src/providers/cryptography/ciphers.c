@@ -3,11 +3,6 @@
  * @file /magma/providers/cryptography/ciphers.c
  *
  * @brief Functions used to handle cryptographic cipher primitives.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

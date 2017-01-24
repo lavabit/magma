@@ -3,11 +3,6 @@
  * @file /magma/servers/pop/sessions.c
  *
  * @brief	Functions for managing POP3 sessions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

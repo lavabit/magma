@@ -3,26 +3,30 @@
  * @file /magma/core/memory/memory.c
  *
  * @brief	The functions used to handle Magma memory buffers.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
 
 /**
- * @brief	Performed a checked memory free.
+ * @brief	A checked cleanup function which can be used free a variable number memory buffers.
  * @see		mm_free
+ *
  * @param	block	the block of memory to be freed.
+ *
  * @return	This function returns no value.
  */
-void mm_cleanup(void *block) {
+void mm_cleanup_variadic(ssize_t len, ...) {
 
-	if (block) {
-		mm_free(block);
+	va_list list;
+	void *block = NULL;
+
+	va_start(list, len);
+
+	for (ssize_t i = 0; i < len; i++) {
+		block = va_arg(list, void *);
+		if (block) mm_free(block);
 	}
+	va_end(list);
 
 	return;
 }
@@ -77,10 +81,8 @@ void * mm_move(void *dst, void *src, size_t len) {
  * @param	len		the number of times to write the value of the byte repeatedly to block.
  * @return	a pointer to the block of memory passed to the function.
  * @see http://gcc.gnu.org/onlinedocs/gcc-4.4.4/gcc/Function-Attributes.html
- *
  */
-// QUESTION: Why isn't "set" of type unsigned char?
-void * mm_set(void *block, int_t set, size_t len) {
+void * mm_set(void *block, uint8_t set, size_t len) {
 
 	volatile char *ptr = block;
 

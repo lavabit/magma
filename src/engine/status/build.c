@@ -3,11 +3,6 @@
  * @file /magma/engine/status/build.c
  *
  * @brief	Functions for retrieving the version and build information.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

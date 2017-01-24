@@ -1,9 +1,10 @@
-#include <stdio.h>
 
+#include <stdio.h>
 #include <openssl/ec.h>
 #include <openssl/rand.h>
 
 extern "C" {
+#include "dime_check_params.h"
 #include "dime/common/dcrypto.h"
 #include "dime/common/misc.h"
 #include "symbols.h"
@@ -131,7 +132,9 @@ TEST(DIME, load_ec_key_file)
     char filename[256], *b64key;
     EC_KEY *result, *key;
     size_t size;
-    unsigned char *serial;
+    long crc;
+    char *b64_crc_keys, holder[16];
+    unsigned char *serial, be[3];
     int res;
 
     res = _crypto_init();
@@ -140,29 +143,68 @@ TEST(DIME, load_ec_key_file)
 
     for (size_t i = 0; i < 5; ++i) {
         key = _generate_ec_keypair();
-        snprintf(filename, sizeof(filename), ".out/ec-key-%zu-priv.pem", i + 1);
+        snprintf(filename, sizeof(filename), DIME_CHECK_OUTPUT_PATH "ec-key-%zu-priv.pem", i + 1);
         serial = _serialize_ec_privkey(key, &size);
         b64key = _b64encode(serial, size);
-        free(serial);
-        _write_pem_data(b64key, "EC PRIVATE KEY", filename);
+
+		crc = _compute_crc24_checksum(serial, size);
+
+		be[0] = ((unsigned char *)&crc)[2];
+		be[1] = ((unsigned char *)&crc)[1];
+		be[2] = ((unsigned char *)&crc)[0];
+
+		b64_crc_keys = _b64encode(be, 3);
+
+		if (snprintf(holder, 16, "\n=%s", b64_crc_keys) != 6) {
+			free(b64_crc_keys);
+			free(serial);
+			ASSERT_TRUE(true) << "b64_crc failed for " << filename;
+		}
+		else {
+			free(serial);
+			free(b64_crc_keys);
+		}
+
+		//printf ("%s crc = %li %s\n", filename, crc, holder + 1);
+
+        _write_pem_data(b64key, holder, "EC PRIVATE KEY", filename);
         free(b64key);
 
-        snprintf(filename, sizeof(filename), ".out/ec-key-%zu-pub.pem", i + 1);
+        snprintf(filename, sizeof(filename), DIME_CHECK_OUTPUT_PATH "ec-key-%zu-pub.pem", i + 1);
         serial = _serialize_ec_pubkey(key, &size);
         free_ec_key(key);
         b64key = _b64encode(serial, size);
-        free(serial);
-        _write_pem_data(b64key, "PUBLIC KEY", filename);
+
+        crc = _compute_crc24_checksum(serial, size);
+
+		be[0] = ((unsigned char *)&crc)[2];
+		be[1] = ((unsigned char *)&crc)[1];
+		be[2] = ((unsigned char *)&crc)[0];
+
+		b64_crc_keys = _b64encode(be, 3);
+
+		if (snprintf(holder, 16, "\n=%s", b64_crc_keys) != 6) {
+			free(b64_crc_keys);
+			free(serial);
+			ASSERT_TRUE(true) << "b64_crc failed for " << filename;
+		}
+		else {
+			free(b64_crc_keys);
+			free(serial);
+		}
+
+		// printf ("%s crc = %li %s\n", filename, crc, holder + 1);
+        _write_pem_data(b64key, holder, "PUBLIC KEY", filename);
         free(b64key);
     }
 
     for (size_t i = 0; i < 5; i++) {
-        snprintf(filename, sizeof(filename), ".out/ec-key-%zu-priv.pem", i + 1);
+        snprintf(filename, sizeof(filename), DIME_CHECK_OUTPUT_PATH "ec-key-%zu-priv.pem", i + 1);
         result = _load_ec_privkey(filename);
         ASSERT_TRUE(result != NULL) << "load_ec_privkey failed for " << filename;
         free_ec_key(result);
 
-        snprintf(filename, sizeof(filename), ".out/ec-key-%zu-pub.pem", i + 1);
+        snprintf(filename, sizeof(filename), DIME_CHECK_OUTPUT_PATH "ec-key-%zu-pub.pem", i + 1);
         result = _load_ec_pubkey(filename);
         ASSERT_TRUE(result != NULL) << "load_ec_pubkey failed for " << filename;
         free_ec_key(result);
@@ -186,7 +228,7 @@ TEST(DIME, check_ec_serialization)
         sbuf = _serialize_ec_pubkey(pair, &ssize);
         ASSERT_TRUE(sbuf != NULL) << "EC serialization check failed: pubkey serialization error.";
 
-        pair2 = _deserialize_ec_pubkey(sbuf, ssize, 0);
+        pair2 = _deserialize_ec_pubkey(sbuf, ssize);
         ASSERT_TRUE(pair2 != NULL) << "EC serialization check failed: pubkey deserialization error.";
 
         sbuf2 = _serialize_ec_pubkey(pair, &ssize2);
@@ -205,7 +247,7 @@ TEST(DIME, check_ec_serialization)
         sbuf = _serialize_ec_privkey(pair, &ssize);
         ASSERT_TRUE(sbuf != NULL) << "EC serialization check failed: pubkey serialization error.";
 
-        pair2 = _deserialize_ec_privkey(sbuf, ssize, 0);
+        pair2 = _deserialize_ec_privkey(sbuf, ssize);
         ASSERT_TRUE(pair2 != NULL) << "EC serialization check failed: pubkey deserialization error.";
 
         sbuf2 = _serialize_ec_privkey(pair, &ssize2);
@@ -245,7 +287,7 @@ TEST(DIME, check_ecdh_kdf)
 
     ASSERT_TRUE(serial_temp != NULL) << "could not serialize public key.";
 
-    pub1 = _deserialize_ec_pubkey(serial_temp, serial_size, 0);
+    pub1 = _deserialize_ec_pubkey(serial_temp, serial_size);
 
     res = _compute_aes256_kek(pub1, ec2, key1);
 
@@ -257,7 +299,7 @@ TEST(DIME, check_ecdh_kdf)
 
     ASSERT_TRUE(serial_temp != NULL) << "could not serialize public key.";
 
-    pub2 = _deserialize_ec_pubkey(serial_temp, serial_size, 0);
+    pub2 = _deserialize_ec_pubkey(serial_temp, serial_size);
 
     res = _compute_aes256_kek(pub2, ec1, key2);
 

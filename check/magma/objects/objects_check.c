@@ -1,13 +1,8 @@
 
 /**
- * @file /check/objects/objects_check.c
+ * @file /check/magma/objects/objects_check.c
  *
  * @brief Low level object utility tests.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

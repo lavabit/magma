@@ -3,11 +3,6 @@
  * @file /magma/servers/smtp/transmit.c
  *
  * @brief Handle replies.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -200,13 +195,13 @@ int_t smtp_bounce(connection_t *con) {
 	}
 
 		// Generate the ID string. If the random method fails, use a hash of the current time.
-	if ((holder = rand_choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 12))) {
+	if ((holder = rand_choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 12, NULL))) {
 		st_sprint(id, "%.*s", st_length_int(holder), st_char_get(holder));
 		st_free(holder);
 		holder = NULL;
 	}
 	else {
-		st_sprint(id, "%lu", hash_crc64(&utime, sizeof(time_t)));
+		st_sprint(id, "%lu", crc64_checksum(&utime, sizeof(time_t)));
 	}
 
 	// Open the connection to the SMTP server. Always use the default servers for forwards.
@@ -336,7 +331,7 @@ int_t smtp_bounce(connection_t *con) {
 	if (!message) {
 		log_pedantic("Unable to build the bounce message.");
 	}
-	else if ((signature = dkim_create(id, message))) {
+	else if ((signature = dkim_signature_create(id, message))) {
 
 		if ((holder = st_merge("ss", signature, message))) {
 			st_free(message);
@@ -409,12 +404,12 @@ int_t smtp_reply(stringer_t *from, stringer_t *to, uint64_t usernum, uint64_t au
 	}
 
 	// Generate the ID string. If the random method fails, use a hash of the current time.
-	if ((holder = rand_choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 12))) {
+	if ((holder = rand_choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 12, NULL))) {
 		st_sprint(id, "%.*s", st_length_int(holder), st_char_get(holder));
 		st_free(holder);
 	}
 	else {
-		st_sprint(id, "%lu", hash_crc64(&utime, sizeof(time_t)));
+		st_sprint(id, "%lu", crc64_checksum(&utime, sizeof(time_t)));
 	}
 
 	// Open the connection to the SMTP server. Always use the default servers for forwards.
@@ -464,7 +459,7 @@ int_t smtp_reply(stringer_t *from, stringer_t *to, uint64_t usernum, uint64_t au
 	if (!message) {
 		log_pedantic("Unable to build the bounce message.");
 	}
-	else if ((signature = dkim_create(id, message)) != NULL) {
+	else if ((signature = dkim_signature_create(id, message)) != NULL) {
 		if ((holder = st_merge("ss", signature, message)) != NULL) {
 			st_free(message);
 			message = holder;

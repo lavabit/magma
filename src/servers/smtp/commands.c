@@ -3,11 +3,6 @@
  * @file /magma/servers/smtp/commands.c
  *
  * @brief The functions involved with parsing and routing SMTP commands.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -54,7 +49,6 @@ void smtp_process(connection_t *con) {
 
 	command_t *command, client = { .function = NULL };
 
-	// QUESTION: Is this the only comparison?
 	if (con_read_line(con, false) < 0) {
 		con->command = NULL;
 		enqueue(&smtp_quit, con);

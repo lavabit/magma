@@ -1,13 +1,8 @@
 
 /**
- * @file /check/objects/objects_check.h
+ * @file /check/magma/objects/objects_check.h
  *
  * @brief Object interface test functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef OBJECTS_CHECK_H

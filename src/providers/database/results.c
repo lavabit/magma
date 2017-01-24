@@ -3,11 +3,6 @@
  * @file /magma/providers/database/results.c
  *
  * @brief	A collection of functions for handling MySQL result sets.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -32,7 +27,6 @@ row_t * res_field_generic(row_t *row, uint64_t field, size_t typesize) {
 	if (typesize && (*(size_t *)row != typesize)) {
 		log_info("Attempted to access a database row field that is an improper size {%u vs. %u byte(s) requested}",
 			(unsigned int)*(size_t *)row, (unsigned int)typesize);
-		debug_hook();
 	}
 
 	row += sizeof(size_t);

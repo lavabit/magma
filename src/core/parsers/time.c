@@ -3,11 +3,6 @@
  * @file /magma/core/parsers/time.c
  *
  * @brief	Functions used to parse time.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

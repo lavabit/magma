@@ -3,11 +3,6 @@
  * @file /magma/core/parsers/formats/nvp.c
  *
  * @brief	Interface to the name/value pair parser.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -17,10 +12,11 @@
  * on error -1 is returned
  */
 int nvp_parse(nvp_t *nvp, stringer_t *data) {
-	#ifdef MAGMA_PEDANTIC
+
+#ifdef MAGMA_PEDANTIC
 	if (nvp == NULL) log_options(M_LOG_PEDANTIC | M_LOG_STACK_TRACE, "Attempted to access a NULL nvp pointer. Printing stack:");
 	else if (data == NULL || st_length_get(data) == 0)	log_options(M_LOG_PEDANTIC | M_LOG_STACK_TRACE, "Attempted to access a NULL or zero length string. Printing stack:");
-	#endif
+#endif
 
 	multi_t key;
 	int r, count = 0;

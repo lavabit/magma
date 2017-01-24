@@ -3,11 +3,6 @@
  * @file /magma/providers/checkers/checkers.h
  *
  * @brief Functions used to scan, analyze, check, and validate data.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_PROVIDERS_CHECKERS_H
@@ -51,8 +46,8 @@ void virus_engine_destroy(struct cl_engine **target);
 void virus_stop(void);
 
 /// dkim.c
-int_t           dkim_check(stringer_t *id, stringer_t *message);
-stringer_t *    dkim_create(stringer_t *id, stringer_t *message);
+int_t           dkim_signature_verify(stringer_t *id, stringer_t *message);
+stringer_t *    dkim_signature_create(stringer_t *id, stringer_t *message);
 void *          dkim_memory_alloc(void *closure, size_t nbytes);
 void            dkim_memory_free(void *closure, void *ptr);
 bool_t          dkim_start(void);

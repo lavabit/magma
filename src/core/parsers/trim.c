@@ -3,11 +3,6 @@
  * @file /magma/core/parsers/trim.c
  *
  * @brief	Functions used to trim whitespace from strings.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

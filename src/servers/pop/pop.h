@@ -3,11 +3,6 @@
  * @file /magma/servers/pop/pop.h
  *
  * @brief	The entry point for the POP server module.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_SERVERS_POP_H

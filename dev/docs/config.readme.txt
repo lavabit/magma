@@ -444,8 +444,8 @@ magma.dkim.enabled
 Possible values:	true or false
 Default value:		false
 Description:		Specifies whether DKIM signing is enabled for outbound messages.
-Related:			magma.dkim.domain, magma.dkim.selector, magma.dkim.privkey
-Note:				If magma.dkim.enabled is set, then magma.dkim.domain, magma.dkim.selector, and magma.dkim.privkey must all be set.
+Related:			magma.dkim.domain, magma.dkim.selector, magma.dkim.key
+Note:				If magma.dkim.enabled is set, then magma.dkim.domain, magma.dkim.selector, and magma.dkim.key must all be set.
 
 magma.dkim.selector
 Possible values:	any string containing a valid DKIM selector.
@@ -459,7 +459,7 @@ Default value:		[empty]
 Description:		This is the domain name for which DKIM message signing is being performed.
 Related:			magma.dkim.enabled
 
-magma.dkim.privkey
+magma.dkim.key
 Possible values:	a pathname to a file with the DKIM private key.
 Default value:		[empty]
 Description:		The DKIM private key must contain a PEM-encoded private key and cannot be world-readable.

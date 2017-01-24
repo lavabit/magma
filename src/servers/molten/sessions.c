@@ -3,11 +3,6 @@
  * @file /magma/servers/molten/sessions.c
  *
  * @brief Molten session handlers.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

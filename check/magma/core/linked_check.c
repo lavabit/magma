@@ -1,13 +1,8 @@
 
 /**
- * @file /check/core/linked_check.c
+ * @file /check/magma/core/linked_check.c
  *
  * @brief Unit tests for linked lists.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

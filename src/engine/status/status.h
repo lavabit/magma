@@ -3,11 +3,6 @@
  * @file /magma/engine/status/status.h
  *
  * @brief	Functions involved with tracking system status and performance.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_ENGINE_STATUS_H

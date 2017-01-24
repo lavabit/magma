@@ -3,11 +3,6 @@
  * @file /magma/objects/contacts/contacts.h
  *
  * @brief	Interface for managing user address book contacts.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_OBJECTS_CONTACTS_H

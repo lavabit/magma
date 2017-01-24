@@ -3,11 +3,6 @@
  * @file /magma/network/reverse.c
  *
  * @brief	Function to perform reverse DNS lookups.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

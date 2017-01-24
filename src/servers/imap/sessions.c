@@ -3,11 +3,6 @@
  * @file /magma/servers/imap/sessions.c
  *
  * @brief IMAP session handlers.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

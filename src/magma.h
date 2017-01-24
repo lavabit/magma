@@ -3,11 +3,6 @@
  * @file /magma/magma.h
  *
  * @brief The global include file. This header includes both system headers and Magma module headers.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_H
@@ -17,13 +12,13 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 #include <unistd.h>
 #include <stddef.h>
 #include <limits.h>
 #include <signal.h>
 #include <string.h>
 #include <dirent.h>
-#include <time.h>
 #include <pwd.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -39,6 +34,7 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/utsname.h>
+#include <sys/prctl.h>
 #include <sys/epoll.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>

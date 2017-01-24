@@ -15,18 +15,12 @@
 
 int _verbose = 0;
 
-static const unsigned char
-_base64_chars[64] =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-static const unsigned char
-_base64_vals[128] =
-{
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 62, 0, 0, 0, 63, 52, 53,
-  54, 55, 56, 57, 58, 59, 60, 61, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7,
-  8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 0, 0,
-  0, 0, 0, 0, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41,
-  42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 0, 0, 0, 0, 0
+static const unsigned char _base64_chars[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static const unsigned char _base64_vals[128] = {
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 62, 0,
+	0, 0, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+	19, 20, 21, 22, 23, 24, 25, 0, 0, 0, 0, 0, 0, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+	48, 49, 50, 51, 0, 0, 0, 0, 0
 };
 
 /**
@@ -45,29 +39,25 @@ _base64_vals[128] =
  * @free_using{free}
  */
 char *
-_b64encode_nopad(
-    unsigned char const *buf,
-    size_t len)
-{
-    char *result, *ptr;
+_b64encode_nopad(unsigned char const *buf, size_t len) {
+	char *result, *ptr;
 
-    if (!buf || !len) {
-        RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
-    }
+	if (!buf || !len) {
+		RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
+	}
 
-    if (!(result = _b64encode(buf, len))) {
-        RET_ERROR_PTR(ERR_UNSPEC, "could not base64 encode input");
-    }
+	if (!(result = _b64encode(buf, len))) {
+		RET_ERROR_PTR(ERR_UNSPEC, "could not base64 encode input");
+	}
 
-    ptr = result + strlen(result) - 1;
+	ptr = result + strlen(result) - 1;
 
-    while ((ptr >= result) && (*ptr == '=')) {
-        *ptr-- = 0;
-    }
+	while ((ptr >= result) && (*ptr == '=')) {
+		*ptr-- = 0;
+	}
 
-    return result;
+	return result;
 }
-
 
 /**
  * @brief
@@ -85,40 +75,35 @@ _b64encode_nopad(
  * @free_using{free}
  */
 unsigned char *
-_b64decode_nopad(
-    char const *buf,
-    size_t len,
-    size_t *outlen)
-{
-    unsigned char *result;
-    char *padded;
-    size_t padlen;
+_b64decode_nopad(char const *buf, size_t len, size_t *outlen) {
+	unsigned char *result;
+	char *padded;
+	size_t padlen;
 
-    if (!buf || !len || !outlen) {
-        RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
-    }
+	if (!buf || !len || !outlen) {
+		RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
+	}
 
-    if (!(len % 4)) {
-        return (_b64decode(buf, len, outlen));
-    }
+	if (!(len % 4)) {
+		return (_b64decode(buf, len, outlen));
+	}
 
-    padlen = (len + 4) & ~(3);
+	padlen = (len + 4) & ~(3);
 
-    if (!(padded = malloc(padlen + 1))) {
-        PUSH_ERROR_SYSCALL("malloc");
-        RET_ERROR_PTR(ERR_NOMEM, "could not allocate space for temporary string");
-    }
+	if (!(padded = malloc(padlen + 1))) {
+		PUSH_ERROR_SYSCALL("malloc");
+		RET_ERROR_PTR(ERR_NOMEM, "could not allocate space for temporary string");
+	}
 
-    memset(padded, '=', padlen);
-    padded[padlen] = 0;
-    memcpy(padded, buf, len);
+	memset(padded, '=', padlen);
+	padded[padlen] = 0;
+	memcpy(padded, buf, len);
 
-    result = _b64decode(padded, padlen, outlen);
-    free(padded);
+	result = _b64decode(padded, padlen, outlen);
+	free(padded);
 
-    return result;
+	return result;
 }
-
 
 /**
  * @brief
@@ -129,21 +114,18 @@ _b64decode_nopad(
  *  the 4 byte value to be placed in the specified buffer, in network byte
  *  order.
  */
-void
-_int_no_put_4b(void *buf, uint32_t val)
-{
-    unsigned char *bptr = (unsigned char *)buf;
+void _int_no_put_4b(void *buf, uint32_t val) {
+	unsigned char *bptr = (unsigned char *)buf;
 
-    if (!buf) {
-        return;
-    }
+	if (!buf) {
+		return;
+	}
 
-    bptr[0] = (val & 0xff000000) >> 24;
-    bptr[1] = (val & 0x00ff0000) >> 16;
-    bptr[2] = (val & 0x0000ff00) >> 8;
-    bptr[3] = val & 0x000000ff;
+	bptr[0] = (val & 0xff000000) >> 24;
+	bptr[1] = (val & 0x00ff0000) >> 16;
+	bptr[2] = (val & 0x0000ff00) >> 8;
+	bptr[3] = val & 0x000000ff;
 }
-
 
 /**
  * @brief
@@ -154,20 +136,17 @@ _int_no_put_4b(void *buf, uint32_t val)
  *  the 3 byte value to be placed in the specified buffer, in network byte
  *  order.
  */
-void
-_int_no_put_3b(void *buf, uint32_t val)
-{
-    unsigned char *bptr = (unsigned char *)buf;
+void _int_no_put_3b(void *buf, uint32_t val) {
+	unsigned char *bptr = (unsigned char *)buf;
 
-    if (!buf) {
-        return;
-    }
+	if (!buf) {
+		return;
+	}
 
-    bptr[0] = (val & 0x00ff0000) >> 16;
-    bptr[1] = (val & 0x0000ff00) >> 8;
-    bptr[2] = val & 0x000000ff;
+	bptr[0] = (val & 0x00ff0000) >> 16;
+	bptr[1] = (val & 0x0000ff00) >> 8;
+	bptr[2] = val & 0x000000ff;
 }
-
 
 /**
  * @brief
@@ -178,17 +157,15 @@ _int_no_put_3b(void *buf, uint32_t val)
  *  the 2 byte value to be placed in the specified buffer, in network byte
  *  order.
  */
-void
-_int_no_put_2b(void *buf, uint16_t val)
-{
-    unsigned char *bptr = (unsigned char *)buf;
+void _int_no_put_2b(void *buf, uint16_t val) {
+	unsigned char *bptr = (unsigned char *)buf;
 
-    if (!buf) {
-        return;
-    }
+	if (!buf) {
+		return;
+	}
 
-    bptr[0] = (val & 0x0000ff00) >> 8;
-    bptr[1] = val & 0x000000ff;
+	bptr[0] = (val & 0x0000ff00) >> 8;
+	bptr[1] = val & 0x000000ff;
 }
 
 /**
@@ -199,22 +176,20 @@ _int_no_put_2b(void *buf, uint16_t val)
  * @return
  *  the value of the first 4 bytes in the buffer in host byte order.
  */
-uint32_t
-_int_no_get_4b(const void *buf)
-{
-    uint32_t result = 0;
-    unsigned char *sptr = (unsigned char *)buf;
+uint32_t _int_no_get_4b(const void *buf) {
+	uint32_t result = 0;
+	unsigned char *sptr = (unsigned char *)buf;
 
-    if (!buf) {
-        return 0;
-    }
+	if (!buf) {
+		return 0;
+	}
 
-    result |= (sptr[0] << 24);
-    result |= (sptr[1] << 16);
-    result |= (sptr[2] << 8);
-    result |= sptr[3];
+	result |= (sptr[0] << 24);
+	result |= (sptr[1] << 16);
+	result |= (sptr[2] << 8);
+	result |= sptr[3];
 
-    return result;
+	return result;
 }
 
 /**
@@ -225,23 +200,20 @@ _int_no_get_4b(const void *buf)
  * @return
  *  the value of the first 3 bytes in the buffer in host byte order.
  */
-uint32_t
-_int_no_get_3b(const void *buf)
-{
-    uint32_t result = 0;
-    unsigned char *sptr = (unsigned char *)buf;
+uint32_t _int_no_get_3b(const void *buf) {
+	uint32_t result = 0;
+	unsigned char *sptr = (unsigned char *)buf;
 
-    if (!buf) {
-        return 0;
-    }
+	if (!buf) {
+		return 0;
+	}
 
-    result |= (sptr[0] << 16);
-    result |= (sptr[1] << 8);
-    result |= sptr[2];
+	result |= (sptr[0] << 16);
+	result |= (sptr[1] << 8);
+	result |= sptr[2];
 
-    return result;
+	return result;
 }
-
 
 /**
  * @brief
@@ -251,22 +223,19 @@ _int_no_get_3b(const void *buf)
  * @return
  *  the value of the first 2 bytes in the buffer in host byte order.
  */
-uint16_t
-_int_no_get_2b(const void *buf)
-{
-    uint16_t result = 0;
-    unsigned char *sptr = (unsigned char *)buf;
+uint16_t _int_no_get_2b(const void *buf) {
+	uint16_t result = 0;
+	unsigned char *sptr = (unsigned char *)buf;
 
-    if (!buf) {
-        return 0;
-    }
+	if (!buf) {
+		return 0;
+	}
 
-    result |= (sptr[0] << 8);
-    result |= sptr[1];
+	result |= (sptr[0] << 8);
+	result |= sptr[1];
 
-    return result;
+	return result;
 }
-
 
 /**
  * @brief
@@ -281,29 +250,28 @@ _int_no_get_2b(const void *buf)
  * @free_using{free}
  */
 char *
-_hex_encode(unsigned char const *buf, size_t len)
-{
-    char *result;
-    size_t newlen;
+_hex_encode(unsigned char const *buf, size_t len) {
+	char *result;
+	size_t newlen;
 
-    if (!buf || !len) {
-        RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
-    }
+	if (!buf || !len) {
+		RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
+	}
 
-    newlen = (len * 2) + 1;
+	newlen = (len * 2) + 1;
 
-    if (!(result = malloc(newlen))) {
-        PUSH_ERROR_SYSCALL("malloc");
-        RET_ERROR_PTR(ERR_NOMEM, "unable to allocate space for hex string");
-    }
+	if (!(result = malloc(newlen))) {
+		PUSH_ERROR_SYSCALL("malloc");
+		RET_ERROR_PTR(ERR_NOMEM, "unable to allocate space for hex string");
+	}
 
-    memset(result, 0, newlen);
+	memset(result, 0, newlen);
 
-    for (size_t i = 0; i < len; i++) {
-        snprintf(&(result[i * 2]), 3, "%.2x", (unsigned char)buf[i]);
-    }
+	for (size_t i = 0; i < len; i++) {
+		snprintf(&(result[i * 2]), 3, "%.2x", (unsigned char)buf[i]);
+	}
 
-    return result;
+	return result;
 }
 
 /**
@@ -317,12 +285,9 @@ _hex_encode(unsigned char const *buf, size_t len)
  * @param level
  *  the value of the new debugging level to be set.
  */
-void
-_set_dbg_level(unsigned int level)
-{
-    _verbose = level;
+void _set_dbg_level(unsigned int level) {
+	_verbose = level;
 }
-
 
 /**
  * @brief
@@ -330,10 +295,8 @@ _set_dbg_level(unsigned int level)
  * @return
  *  the current value of the debugging level.
  */
-unsigned int
-_get_dbg_level(void)
-{
-    return _verbose;
+unsigned int _get_dbg_level(void) {
+	return _verbose;
 }
 
 /**
@@ -341,17 +304,15 @@ _get_dbg_level(void)
  *  Append variable-argument formatted data to a dynamically allocated
  *  null-terminated string.
  */
-int
-_str_printf(char **sbuf, const char *fmt, ...)
-{
-    va_list ap;
-    int result;
+int _str_printf(char **sbuf, const char *fmt, ...) {
+	va_list ap;
+	int result;
 
-    va_start(ap, fmt);
-    result = __str_printf(sbuf, fmt, ap);
-    va_end(ap);
+	va_start(ap, fmt);
+	result = __str_printf(sbuf, fmt, ap);
+	va_end(ap);
 
-    return result;
+	return result;
 }
 
 /**
@@ -359,52 +320,47 @@ _str_printf(char **sbuf, const char *fmt, ...)
  *  Append variable-argument formatted data to a dynamically allocated
  *  null-terminated string.
  */
-int
-__str_printf(
-    char **sbuf,
-    const char *fmt,
-    va_list ap)
-{
-    va_list copy;
-    char *result, *endptr, tmp;
-    size_t total, more;
-    int retval;
+int __str_printf(char **sbuf, const char *fmt, va_list ap) {
+	va_list copy;
+	char *result, *endptr, tmp;
+	size_t total, more;
+	int retval;
 
-    if (!sbuf || !fmt) {
-        RET_ERROR_INT(ERR_BAD_PARAM, NULL);
-    }
+	if (!sbuf || !fmt) {
+		RET_ERROR_INT(ERR_BAD_PARAM, NULL);
+	}
 
-    va_copy(copy, ap);
-    total = more = vsnprintf(&tmp, 1, fmt, copy) + 1;
-    va_end(copy);
+	va_copy(copy, ap);
+	total = more = vsnprintf(&tmp, 1, fmt, copy) + 1;
+	va_end(copy);
 
-    // We already have an allocated string so we need to append to it.
-    if (*sbuf) {
-        total += strlen(*sbuf);
-    }
+	// We already have an allocated string so we need to append to it.
+	if (*sbuf) {
+		total += strlen(*sbuf);
+	}
 
-    if (!(result = realloc(*sbuf, total))) {
-        PUSH_ERROR_SYSCALL("realloc");
+	if (!(result = realloc(*sbuf, total))) {
+		PUSH_ERROR_SYSCALL("realloc");
 
-        if (*sbuf) {
-            free(*sbuf);
-        }
+		if (*sbuf) {
+			free(*sbuf);
+		}
 
-        RET_ERROR_INT(ERR_NOMEM, "unable to reallocate more space for string");
-    }
+		RET_ERROR_INT(ERR_NOMEM, "unable to reallocate more space for string");
+	}
 
-    if (!*sbuf) {
-        memset(result, 0, total);
-    }
+	if (!*sbuf) {
+		memset(result, 0, total);
+	}
 
-    endptr = result + strlen(result);
+	endptr = result + strlen(result);
 
-    va_copy(copy, ap);
-    retval = vsnprintf(endptr, more + 1, fmt, copy);
-    va_end(copy);
+	va_copy(copy, ap);
+	retval = vsnprintf(endptr, more + 1, fmt, copy);
+	va_end(copy);
 
-    *sbuf = result;
-    return retval;
+	*sbuf = result;
+	return retval;
 }
 
 /**
@@ -426,50 +382,41 @@ __str_printf(
  * @return
  *  the new size of the (re)allocated output buffer, or 0 on failure.
  */
-size_t
-_mem_append(
-    unsigned char **buf,
-    size_t *blen,
-    unsigned char const *data,
-    size_t dlen)
-{
-    void *obuf;
+size_t _mem_append(unsigned char **buf, size_t *blen, unsigned char const *data, size_t dlen) {
+	void *obuf;
 
-    if (!buf || !blen || !data) {
-        RET_ERROR_UINT(ERR_BAD_PARAM, NULL);
-    }
+	if (!buf || !blen || !data) {
+		RET_ERROR_UINT(ERR_BAD_PARAM, NULL);
+	}
 
-    if (_verbose >= 7) {
-        _dbgprint(7, "_mem_append() called: ");
-        _dump_buf(data, dlen, 1);
-    }
+	if (_verbose >= 7) {
+		_dbgprint(7, "_mem_append() called: ");
+		_dump_buf(data, dlen, 1);
+	}
 
-    if (!*buf) {
+	if (!*buf) {
 
-        if (!(*buf = malloc(dlen))) {
-            PUSH_ERROR_SYSCALL("malloc");
-            RET_ERROR_UINT(
-                ERR_NOMEM,
-                "unable to allocate memory for buffer expansion");
-        }
+		if (!(*buf = malloc(dlen))) {
+			PUSH_ERROR_SYSCALL("malloc");
+			RET_ERROR_UINT(ERR_NOMEM, "unable to allocate memory for buffer expansion");
+		}
 
-        memcpy(*buf, data, dlen);
-        *blen = dlen;
-    } else {
+		memcpy(*buf, data, dlen);
+		*blen = dlen;
+	}
+	else {
 
-        if (!(*buf = realloc((obuf = *buf), *blen + dlen))) {
-            PUSH_ERROR_SYSCALL("realloc");
-            free(obuf);
-            RET_ERROR_UINT(
-                ERR_NOMEM,
-                "unable to reallocate memory for buffer expansion");
-        }
+		if (!(*buf = realloc((obuf = *buf), *blen + dlen))) {
+			PUSH_ERROR_SYSCALL("realloc");
+			free(obuf);
+			RET_ERROR_UINT(ERR_NOMEM, "unable to reallocate memory for buffer expansion");
+		}
 
-        memcpy(*buf + *blen, data, dlen);
-        *blen = *blen + dlen;
-    }
+		memcpy(*buf + *blen, data, dlen);
+		*blen = *blen + dlen;
+	}
 
-    return *blen;
+	return *blen;
 }
 
 /**
@@ -481,21 +428,19 @@ _mem_append(
  * @param
  *  buf the address of the pointer chain to be freed.
  */
-void
-_ptr_chain_free(void *buf)
-{
-    unsigned char **memptr = (unsigned char **)buf;
+void _ptr_chain_free(void *buf) {
+	unsigned char **memptr = (unsigned char **)buf;
 
-    if (!buf) {
-        return;
-    }
+	if (!buf) {
+		return;
+	}
 
-    while (*memptr) {
-        free(*memptr);
-        memptr++;
-    }
+	while (*memptr) {
+		free(*memptr);
+		memptr++;
+	}
 
-    free(buf);
+	free(buf);
 }
 
 /**
@@ -508,48 +453,45 @@ _ptr_chain_free(void *buf)
  *  the address to be appended to the pointer chain.
  */
 void *
-_ptr_chain_add(void *buf, const void *addr)
-{
-    unsigned char **newbuf, **ptr = (unsigned char **)buf, **obuf;
-    size_t bufsize = sizeof(unsigned char *);
+_ptr_chain_add(void *buf, const void *addr) {
+	unsigned char **newbuf, **ptr = (unsigned char **)buf, **obuf;
+	size_t bufsize = sizeof(unsigned char *);
 
-    // Get the entire size of the buffer, if it's not NULL.
-    if (buf) {
+	// Get the entire size of the buffer, if it's not NULL.
+	if (buf) {
 
-        while (*ptr) {
-            ptr++;
-        }
+		while (*ptr) {
+			ptr++;
+		}
 
-        ptr++;
-        bufsize = (unsigned long)ptr - (unsigned long)buf;
-    }
+		ptr++;
+		bufsize = (unsigned long)ptr - (unsigned long)buf;
+	}
 
-    // Reallocate with space for one more pointer at the end of it.
-    if (!(newbuf = realloc((obuf = buf), bufsize + sizeof(unsigned char *)))) {
-        PUSH_ERROR_SYSCALL("realloc");
+	// Reallocate with space for one more pointer at the end of it.
+	if (!(newbuf = realloc((obuf = buf), bufsize + sizeof(unsigned char *)))) {
+		PUSH_ERROR_SYSCALL("realloc");
 
-        if (obuf) {
-            free(obuf);
-        }
+		if (obuf) {
+			free(obuf);
+		}
 
-        RET_ERROR_PTR(ERR_NOMEM, "unable to lengthen pointer chain");
-    }
+		RET_ERROR_PTR(ERR_NOMEM, "unable to lengthen pointer chain");
+	}
 
-    if (!buf) {
-        ptr = (unsigned char **)newbuf;
-    } else {
-        ptr =
-            (unsigned char **)((unsigned char *)newbuf
-            + bufsize
-            - sizeof(unsigned char *));
-    }
+	if (!buf) {
+		ptr = (unsigned char **)newbuf;
+	}
+	else {
+		ptr = (unsigned char **)((unsigned char *)newbuf + bufsize - sizeof(unsigned char *));
+	}
 
-    // Replace the next-to-last entry in the new pointer chain with our
-    // address, then follow it with a terminating NULL pointer.
-    *ptr++ = (unsigned char *)addr;
-    *ptr = NULL;
+	// Replace the next-to-last entry in the new pointer chain with our
+	// address, then follow it with a terminating NULL pointer.
+	*ptr++ = (unsigned char *)addr;
+	*ptr = NULL;
 
-    return newbuf;
+	return newbuf;
 }
 
 /**
@@ -560,22 +502,20 @@ _ptr_chain_add(void *buf, const void *addr)
  * @return
  *  the number of elements in the pointer chain, or -1 on general error.
  */
-int
-_count_ptr_chain(void *buf)
-{
-    unsigned char **memptr = (unsigned char **)buf;
-    unsigned int result = 0;
+int _count_ptr_chain(void *buf) {
+	unsigned char **memptr = (unsigned char **)buf;
+	unsigned int result = 0;
 
-    if (!buf) {
-        RET_ERROR_INT(ERR_BAD_PARAM, NULL);
-    }
+	if (!buf) {
+		RET_ERROR_INT(ERR_BAD_PARAM, NULL);
+	}
 
-    while (*memptr) {
-        memptr++;
-        result++;
-    }
+	while (*memptr) {
+		memptr++;
+		result++;
+	}
 
-    return result;
+	return result;
 }
 
 /**
@@ -588,36 +528,36 @@ _count_ptr_chain(void *buf)
  * @free_usingref{ptr_chain_free}
  */
 void *
-_ptr_chain_clone(void *buf)
-{
-    unsigned char **result, **inptr = (unsigned char **)buf;
-    size_t totsize;
-    int nitems;
+_ptr_chain_clone(void *buf) {
+	unsigned char **result, **inptr = (unsigned char **)buf;
+	size_t totsize;
+	int nitems;
 
-    if (!buf) {
-        RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
-    }
+	if (!buf) {
+		RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
+	}
 
-    if ((nitems = _count_ptr_chain(buf)) < 0) {
-        RET_ERROR_PTR(ERR_UNSPEC, "unable to count items in pointer chain");
-    } else if (!nitems) {
-        RET_ERROR_PTR(ERR_UNSPEC, "cannot clone empty pointer chain");
-    }
+	if ((nitems = _count_ptr_chain(buf)) < 0) {
+		RET_ERROR_PTR(ERR_UNSPEC, "unable to count items in pointer chain");
+	}
+	else if (!nitems) {
+		RET_ERROR_PTR(ERR_UNSPEC, "cannot clone empty pointer chain");
+	}
 
-    totsize = (nitems + 1) * sizeof(unsigned char *);
+	totsize = (nitems + 1) * sizeof(unsigned char *);
 
-    if (!(result = malloc(totsize))) {
-        PUSH_ERROR_SYSCALL("malloc");
-        RET_ERROR_PTR(ERR_NOMEM, NULL);
-    }
+	if (!(result = malloc(totsize))) {
+		PUSH_ERROR_SYSCALL("malloc");
+		RET_ERROR_PTR(ERR_NOMEM, NULL);
+	}
 
-    memset(result, 0, totsize);
+	memset(result, 0, totsize);
 
-    for (int i = 0; i < nitems; i++) {
-        result[i] = inptr[i];
-    }
+	for (int i = 0; i < nitems; i++) {
+		result[i] = inptr[i];
+	}
 
-    return result;
+	return result;
 }
 
 /**
@@ -633,34 +573,32 @@ _ptr_chain_clone(void *buf)
  * @free_using{free}
  */
 char *
-_get_chr_date(time_t time, int local)
-{
-    struct tm tmr;
-    char tbuf[64];
-    char *result;
-    const char *local_fmt = "%H:%M:%S %a %b %d %Y";
-    char const *utc_fmt = "%H:%M:%S %a %b %d %Y (UTC)";
+_get_chr_date(time_t time, int local) {
+	struct tm tmr;
+	char tbuf[64];
+	char *result;
+	const char *local_fmt = "%H:%M:%S %a %b %d %Y";
+	char const *utc_fmt = "%H:%M:%S %a %b %d %Y (UTC)";
 
-    if (local && (!localtime_r(&time, &tmr))) {
-        RET_ERROR_PTR(ERR_UNSPEC, "error occurred formatting local date-time");
-    } else if (!local && (!gmtime_r(&time, &tmr))) {
-        RET_ERROR_PTR(ERR_UNSPEC, "error occurred formatting UTC date-time");
-    }
+	if (local && (!localtime_r(&time, &tmr))) {
+		RET_ERROR_PTR(ERR_UNSPEC, "error occurred formatting local date-time");
+	}
+	else if (!local && (!gmtime_r(&time, &tmr))) {
+		RET_ERROR_PTR(ERR_UNSPEC, "error occurred formatting UTC date-time");
+	}
 
-    memset(tbuf, 0, sizeof(tbuf));
+	memset(tbuf, 0, sizeof(tbuf));
 
-    if (!strftime(tbuf, sizeof(tbuf), (local ? local_fmt : utc_fmt), &tmr)) {
-        RET_ERROR_PTR(ERR_UNSPEC, "error occurred packaging date-time");
-    }
+	if (!strftime(tbuf, sizeof(tbuf), (local ? local_fmt : utc_fmt), &tmr)) {
+		RET_ERROR_PTR(ERR_UNSPEC, "error occurred packaging date-time");
+	}
 
-    if (!(result = strdup(tbuf))) {
-        PUSH_ERROR_SYSCALL("strdup");
-        RET_ERROR_PTR(
-            ERR_NOMEM,
-            "could not allocate space for date-time string");
-    }
+	if (!(result = strdup(tbuf))) {
+		PUSH_ERROR_SYSCALL("strdup");
+		RET_ERROR_PTR(ERR_NOMEM, "could not allocate space for date-time string");
+	}
 
-    return result;
+	return result;
 }
 
 /**
@@ -678,90 +616,78 @@ _get_chr_date(time_t time, int local)
  * @free_using{free}
  */
 unsigned char *
-_b64decode(
-    char const *buf,
-    size_t len,
-    size_t *outlen)
-{
-    unsigned char *o, *result;
-    const char *p;
-    size_t new_len, written = 0;
-    int loop = 0, value = 0;
+_b64decode(char const *buf, size_t len, size_t *outlen) {
+	unsigned char *o, *result;
+	const char *p;
+	size_t new_len, written = 0;
+	int loop = 0, value = 0;
 
-    if (!buf || !len || !outlen) {
-        RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
-    }
+	if (!buf || !len || !outlen) {
+		RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
+	}
 
-    new_len = B64_DECODED_LEN(len);
+	new_len = B64_DECODED_LEN(len);
 
-    if (!(result = malloc(new_len))) {
-        PUSH_ERROR_SYSCALL("malloc");
-        RET_ERROR_PTR(
-            ERR_NOMEM,
-            "unable to allocate buffer for base64 decoded data");
-    }
+	if (!(result = malloc(new_len))) {
+		PUSH_ERROR_SYSCALL("malloc");
+		RET_ERROR_PTR(ERR_NOMEM, "unable to allocate buffer for base64 decoded data");
+	}
 
-    memset(result, 0, new_len);
+	memset(result, 0, new_len);
 
-    o = result;
-    p = buf;
+	o = result;
+	p = buf;
 
-    // Get four characters at a time from the input buffer and decode them.
-    for (size_t i = 0; i < len; i++) {
+	// Get four characters at a time from the input buffer and decode them.
+	for (size_t i = 0; i < len; i++) {
 
-        // Only process legit base64 characters.
-        if ((*p >= 'A' && *p <= 'Z')
-            || (*p >= 'a' && *p <= 'z')
-            || (*p >= '0' && *p <= '9')
-            || *p == '+'
-            || *p == '/')
-        {
-            // Do the appropriate operation.
-            switch (loop) {
+		// Only process legit base64 characters.
+		if ((*p >= 'A' && *p <= 'Z') || (*p >= 'a' && *p <= 'z') || (*p >= '0' && *p <= '9') || *p == '+' || *p == '/') {
+			// Do the appropriate operation.
+			switch (loop) {
 
-            case 0:
-                value = _base64_vals[(int)*p++] << 18;
-                loop++;
-                break;
-            case 1:
-                value += _base64_vals[(int)*p++] << 12;
-                *o++ = (value & 0x00ff0000) >> 16;
-                written++;
-                loop++;
-                break;
-            case 2:
-                value += (unsigned int)_base64_vals[(int)*p++] << 6;
-                *o++ = (value & 0x0000ff00) >> 8;
-                written++;
-                loop++;
-                break;
-            case 3:
-                value += (unsigned int)_base64_vals[(int)*p++];
-                *o++ = value & 0x000000ff;
-                written++;
-                loop = 0;
-                break;
-            default:
-                free(result);
-                RET_ERROR_PTR(
-                    ERR_UNSPEC,
-                    "an unexpected error occurred during base64 decoding");
-                break;
-            }
+			case 0:
+				value = _base64_vals[(int)*p++] << 18;
+				loop++;
+				break;
+			case 1:
+				value += _base64_vals[(int)*p++] << 12;
+				*o++ = (value & 0x00ff0000) >> 16;
+				written++;
+				loop++;
+				break;
+			case 2:
+				value += (unsigned int)_base64_vals[(int)*p++] << 6;
+				*o++ = (value & 0x0000ff00) >> 8;
+				written++;
+				loop++;
+				break;
+			case 3:
+				value += (unsigned int)_base64_vals[(int)*p++];
+				*o++ = value & 0x000000ff;
+				written++;
+				loop = 0;
+				break;
+			default:
+				free(result);
+				RET_ERROR_PTR(ERR_UNSPEC, "an unexpected error occurred during base64 decoding");
+				break;
+			}
 
-        } else if (*p == '=') {
-            i = len;
-        } else {
-            p++;
-        }
+		}
+		else if (*p == '=') {
+			i = len;
+		}
+		else {
+			p++;
+		}
 
-    }
+	}
 
-    *outlen = written;
+	*outlen = written;
 
-    return result;
+	return result;
 }
-
 
 /**
  * @brief
@@ -776,74 +702,139 @@ _b64decode(
  * @free_using{free}
  */
 char *
-_b64encode(unsigned char const *buf, size_t len)
-{
-    unsigned char *o;
-    const unsigned char *p;
-    char *result;
-    size_t new_len;
-    unsigned char c1, c2, c3;
+_b64encode(unsigned char const *buf, size_t len) {
+	unsigned char *o;
+	const unsigned char *p;
+	char *result;
+	size_t new_len;
+	unsigned char c1, c2, c3;
 
-    if (!buf || !len) {
-        RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
-    }
+	if (!buf || !len) {
+		RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
+	}
 
-    new_len = B64_ENCODED_LEN(len) + 4;
+	new_len = B64_ENCODED_LEN(len) + 4;
 
-    if (!(result = malloc(new_len))) {
-        PUSH_ERROR_SYSCALL("malloc");
-        RET_ERROR_PTR(
-            ERR_NOMEM,
-            "could not allocate space for base64-encoded string");
-    }
+	if (!(result = malloc(new_len))) {
+		PUSH_ERROR_SYSCALL("malloc");
+		RET_ERROR_PTR(ERR_NOMEM, "could not allocate space for base64-encoded string");
+	}
 
-    memset(result, 0, new_len);
+	memset(result, 0, new_len);
 
-    o = (unsigned char *)result;
-    p = buf;
+	o = (unsigned char *)result;
+	p = buf;
 
-    // This will process three bytes at a time.
-    for(size_t i = 0; i < len / 3; ++i) {
-        c1 = (*p++) & 0xFF;
-        c2 = (*p++) & 0xFF;
-        c3 = (*p++) & 0xFF;
+	// This will process three bytes at a time.
+	for (size_t i = 0; i < len / 3; ++i) {
+		c1 = (*p++) & 0xFF;
+		c2 = (*p++) & 0xFF;
+		c3 = (*p++) & 0xFF;
 
-        *o++ = _base64_chars[c1 >> 2];
-        *o++ = _base64_chars[((c1 << 4) | (c2 >> 4)) & 0x3F];
-        *o++ = _base64_chars[((c2 << 2) | (c3 >> 6)) & 0x3F];
-        *o++ = _base64_chars[c3 & 0x3F];
-    }
+		*o++ = _base64_chars[c1 >> 2];
+		*o++ = _base64_chars[((c1 << 4) | (c2 >> 4)) & 0x3F];
+		*o++ = _base64_chars[((c2 << 2) | (c3 >> 6)) & 0x3F];
+		*o++ = _base64_chars[c3 & 0x3F];
+	}
 
-    // Encode the remaining one or two characters in the input buffer
-    switch (len % 3) {
-    case 0:
-        break;
-    case 1:
-        c1 = (*p++) & 0xFF;
-        *o++ = _base64_chars[(c1 & 0xFC) >> 2];
-        *o++ = _base64_chars[((c1 & 0x03) << 4)];
-        *o++ = '=';
-        *o++ = '=';
-        break;
-    case 2:
-        c1 = (*p++) & 0xFF;
-        c2 = (*p++) & 0xFF;
-        *o++ = _base64_chars[(c1 & 0xFC) >> 2];
-        *o++ = _base64_chars[((c1 & 0x03) << 4) | ((c2 & 0xF0) >> 4)];
-        *o++ = _base64_chars[((c2 & 0x0F) << 2)];
-        *o++ = '=';
-        break;
-    default:
-        free(result);
-        RET_ERROR_PTR(
-            ERR_UNSPEC,
-            "an unexpected error occurred during base64 encoding");
-        break;
-    }
+	// Encode the remaining one or two characters in the input buffer
+	switch (len % 3) {
+	case 0:
+		break;
+	case 1:
+		c1 = (*p++) & 0xFF;
+		*o++ = _base64_chars[(c1 & 0xFC) >> 2];
+		*o++ = _base64_chars[((c1 & 0x03) << 4)];
+		*o++ = '=';
+		*o++ = '=';
+		break;
+	case 2:
+		c1 = (*p++) & 0xFF;
+		c2 = (*p++) & 0xFF;
+		*o++ = _base64_chars[(c1 & 0xFC) >> 2];
+		*o++ = _base64_chars[((c1 & 0x03) << 4) | ((c2 & 0xF0) >> 4)];
+		*o++ = _base64_chars[((c2 & 0x0F) << 2)];
+		*o++ = '=';
+		break;
+	default:
+		free(result);
+		RET_ERROR_PTR(ERR_UNSPEC, "an unexpected error occurred during base64 encoding");
+		break;
+	}
 
-    return result;
+	return result;
 }
 
+char *
+_b64encode_w_lineseperators(unsigned char const *buf, size_t len) {
+	unsigned char *o;
+	const unsigned char *p;
+	char *result;
+	size_t new_len, counter = 0;
+	unsigned char c1, c2, c3;
+
+	if (!buf || !len) {
+		RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
+	}
+
+	new_len = B64_ENCODED_LEN(len) + 4;
+	new_len += (new_len / 64) + 4;
+
+	if (!(result = malloc(new_len))) {
+		PUSH_ERROR_SYSCALL("malloc");
+		RET_ERROR_PTR(ERR_NOMEM, "could not allocate space for base64-encoded string");
+	}
+
+	memset(result, 0, new_len);
+
+	o = (unsigned char *)result;
+	p = buf;
+
+	// This will process three bytes at a time.
+	for (size_t i = 0; i < len / 3; i++) {
+		c1 = (*p++) & 0xFF;
+		c2 = (*p++) & 0xFF;
+		c3 = (*p++) & 0xFF;
+
+		*o++ = _base64_chars[c1 >> 2];
+		*o++ = _base64_chars[((c1 << 4) | (c2 >> 4)) & 0x3F];
+		*o++ = _base64_chars[((c2 << 2) | (c3 >> 6)) & 0x3F];
+		*o++ = _base64_chars[c3 & 0x3F];
+
+		// Every 64 characters output a new line.
+		counter += 4;
+		if (counter % 64 == 0) {
+			*o++ = '\n';
+		}
+	}
+
+	// Encode the remaining one or two characters in the input buffer
+	switch (len % 3) {
+	case 0:
+		break;
+	case 1:
+		c1 = (*p++) & 0xFF;
+		*o++ = _base64_chars[(c1 & 0xFC) >> 2];
+		*o++ = _base64_chars[((c1 & 0x03) << 4)];
+		*o++ = '=';
+		*o++ = '=';
+		break;
+	case 2:
+		c1 = (*p++) & 0xFF;
+		c2 = (*p++) & 0xFF;
+		*o++ = _base64_chars[(c1 & 0xFC) >> 2];
+		*o++ = _base64_chars[((c1 & 0x03) << 4) | ((c2 & 0xF0) >> 4)];
+		*o++ = _base64_chars[((c2 & 0x0F) << 2)];
+		*o++ = '=';
+		break;
+	default:
+		free(result);
+		RET_ERROR_PTR(ERR_UNSPEC, "an unexpected error occurred during base64 encoding");
+		break;
+	}
+
+	return result;
+}
 
 /**
  * @brief
@@ -855,40 +846,34 @@ _b64encode(unsigned char const *buf, size_t len)
  * @param all_hex
  *  if set, print all characters as hex codes - even printable ones.
  */
-void
-_dump_buf(
-    unsigned char const *buf,
-    size_t len,
-    int all_hex)
-{
-    if (!buf) {
-        return;
-    }
+void _dump_buf(unsigned char const *buf, size_t len, int all_hex) {
+	if (!buf) {
+		return;
+	}
 
-    fprintf(
-        stderr,
-        "Dumping buf of size %u bytes ...: |",
-        (unsigned int)len);
+	fprintf(
+	stderr, "Dumping buf of size %u bytes ...: |", (unsigned int)len);
 
-    for(size_t i = 0; i < len; i++) {
+	for (size_t i = 0; i < len; i++) {
 
-        if (!all_hex && (isgraph(buf[i]) || buf[i] == ' ')) {
-            fprintf(stderr, "%c", buf[i]);
-        } else {
-            fprintf(stderr, "%.2x ", (unsigned char)buf[i]);
-        }
+		if (!all_hex && (isgraph(buf[i]) || buf[i] == ' ')) {
+			fprintf(stderr, "%c", buf[i]);
+		}
+		else {
+			fprintf(stderr, "%.2x ", (unsigned char)buf[i]);
+		}
 
-        if (!((i + 1) % 64)) {
-            fprintf(stderr, "\n");
-        } else if (!((i + 1) % 16)) {
-            fprintf(stderr, "    ");
-        }
+		if (!((i + 1) % 64)) {
+			fprintf(stderr, "\n");
+		}
+		else if (!((i + 1) % 16)) {
+			fprintf(stderr, "    ");
+		}
 
-    }
+	}
 
-    fprintf(stderr, "|\n");
+	fprintf(stderr, "|\n");
 }
-
 
 /**
  * @brief
@@ -905,53 +890,46 @@ _dump_buf(
  * @param all_hex
  *  if set, print all characters as hex codes - even printable ones.
  */
-void
-_dump_buf_outer(
-    unsigned char const *buf,
-    size_t len,
-    size_t nouter,
-    int all_hex)
-{
-    if (!buf) {
-        return;
-    }
+void _dump_buf_outer(unsigned char const *buf, size_t len, size_t nouter, int all_hex) {
+	if (!buf) {
+		return;
+	}
 
-    // If too small, just dump the entire thing.
-    if (len <= nouter * 2) {
-        _dump_buf(buf, len, all_hex);
-        return;
-    }
+	// If too small, just dump the entire thing.
+	if (len <= nouter * 2) {
+		_dump_buf(buf, len, all_hex);
+		return;
+	}
 
-    fprintf(
-        stderr,
-        "Dumping buf of size %u bytes ...: |",
-        (unsigned int)len);
+	fprintf(
+	stderr, "Dumping buf of size %u bytes ...: |", (unsigned int)len);
 
-    for (size_t i = 0; i < nouter; i++) {
+	for (size_t i = 0; i < nouter; i++) {
 
-        if ((!all_hex && isgraph(buf[i])) || buf[i] == ' ') {
-            fprintf(stderr, "%c", buf[i]);
-        } else {
-            fprintf(stderr, "\\x%.2x", (unsigned char)buf[i]);
-        }
+		if ((!all_hex && isgraph(buf[i])) || buf[i] == ' ') {
+			fprintf(stderr, "%c", buf[i]);
+		}
+		else {
+			fprintf(stderr, "\\x%.2x", (unsigned char)buf[i]);
+		}
 
-    }
+	}
 
-    fprintf(stderr, "  ...  ");
+	fprintf(stderr, "  ...  ");
 
-    for(size_t i = len - nouter; i < len; i++) {
+	for (size_t i = len - nouter; i < len; i++) {
 
-        if ((!all_hex && isgraph(buf[i])) || buf[i] == ' ') {
-            fprintf(stderr, "%c", buf[i]);
-        } else {
-            fprintf(stderr, "\\x%.2x", (unsigned char)buf[i]);
-        }
+		if ((!all_hex && isgraph(buf[i])) || buf[i] == ' ') {
+			fprintf(stderr, "%c", buf[i]);
+		}
+		else {
+			fprintf(stderr, "\\x%.2x", (unsigned char)buf[i]);
+		}
 
-    }
+	}
 
-    fprintf(stderr, "|\n");
+	fprintf(stderr, "|\n");
 }
-
 
 /**
  * @brief
@@ -964,44 +942,33 @@ _dump_buf_outer(
  * @param ...
  *  the variable argument list specified by the format string.
  */
-void
-_dbgprint(
-    unsigned int dbglevel,
-    const char *fmt,
-    ...)
-{
-    va_list ap;
+void _dbgprint(unsigned int dbglevel, const char *fmt, ...) {
+	va_list ap;
 
-    va_start(ap, fmt);
-    __dbgprint(dbglevel, fmt, ap);
-    va_end(ap);
+	va_start(ap, fmt);
+	__dbgprint(dbglevel, fmt, ap);
+	va_end(ap);
 }
-
 
 /**
  * @brief
  *  Print a debug string to the console.
  */
-void
-__dbgprint(
-    unsigned int dbglevel,
-    char const *fmt,
-    va_list ap)
-{
-    if ((unsigned int)_verbose < dbglevel) {
-        return;
-    }
+void __dbgprint(unsigned int dbglevel, char const *fmt, va_list ap) {
+	if ((unsigned int)_verbose < dbglevel) {
+		return;
+	}
 
-    if (dbglevel) {
+	if (dbglevel) {
 
-        for (unsigned int i = 0; i < dbglevel; i++) {
-            fprintf(stderr, "-");
-        }
+		for (unsigned int i = 0; i < dbglevel; i++) {
+			fprintf(stderr, "-");
+		}
 
-        fprintf(stderr, " ");
-    }
+		fprintf(stderr, " ");
+	}
 
-    vfprintf(stderr, fmt, ap);
+	vfprintf(stderr, fmt, ap);
 
 }
 
@@ -1021,66 +988,48 @@ __dbgprint(
  * @return
  *  0 on success or < 0 if an error was encountered.
  */
-int
-_compute_sha_hash(
-    size_t nbits,
-    unsigned char const *buf,
-    size_t blen,
-    unsigned char *outbuf)
-{
-    SHA512_CTX ctx512;
-    SHA256_CTX ctx256;
-    SHA_CTX ctx160;
+int _compute_sha_hash(size_t nbits, unsigned char const *buf, size_t blen, unsigned char *outbuf) {
+	SHA512_CTX ctx512;
+	SHA256_CTX ctx256;
+	SHA_CTX ctx160;
 
-    if (!buf || !outbuf) {
-        RET_ERROR_INT(ERR_BAD_PARAM, NULL);
-    }
+	if (!buf || !outbuf) {
+		RET_ERROR_INT(ERR_BAD_PARAM, NULL);
+	}
 
-    if (nbits == 160) {
+	if (nbits == 160) {
 
-        if (!SHA1_Init_d(&ctx160)
-            || !SHA1_Update_d(&ctx160, buf, blen)
-            || !SHA1_Final_d(outbuf, &ctx160))
-        {
-            PUSH_ERROR_OPENSSL();
-            RET_ERROR_INT(
-                ERR_UNSPEC,
-                "error occurred in SHA1 hash operation");
-        }
+		if (!SHA1_Init_d(&ctx160) || !SHA1_Update_d(&ctx160, buf, blen) || !SHA1_Final_d(outbuf, &ctx160)) {
+			PUSH_ERROR_OPENSSL()
+			;
+			RET_ERROR_INT(ERR_UNSPEC, "error occurred in SHA1 hash operation");
+		}
 
-    } else if (nbits == 256) {
+	}
+	else if (nbits == 256) {
 
-        if (!SHA256_Init_d(&ctx256)
-            || !SHA256_Update_d(&ctx256, buf, blen)
-            || !SHA256_Final_d(outbuf, &ctx256))
-        {
-            PUSH_ERROR_OPENSSL();
-            RET_ERROR_INT(
-                ERR_UNSPEC,
-                "error occurred in SHA-256 hash operation");
-        }
+		if (!SHA256_Init_d(&ctx256) || !SHA256_Update_d(&ctx256, buf, blen) || !SHA256_Final_d(outbuf, &ctx256)) {
+			PUSH_ERROR_OPENSSL()
+			;
+			RET_ERROR_INT(ERR_UNSPEC, "error occurred in SHA-256 hash operation");
+		}
 
-    } else if (nbits == 512) {
+	}
+	else if (nbits == 512) {
 
-        if (!SHA512_Init_d(&ctx512)
-            || !SHA512_Update_d(&ctx512, buf, blen)
-            || !SHA512_Final_d(outbuf, &ctx512))
-        {
-            PUSH_ERROR_OPENSSL();
-            RET_ERROR_INT(
-                ERR_UNSPEC,
-                "error occurred in SHA-512 hash operation");
-        }
+		if (!SHA512_Init_d(&ctx512) || !SHA512_Update_d(&ctx512, buf, blen) || !SHA512_Final_d(outbuf, &ctx512)) {
+			PUSH_ERROR_OPENSSL()
+			;
+			RET_ERROR_INT(ERR_UNSPEC, "error occurred in SHA-512 hash operation");
+		}
 
-    } else {
-        RET_ERROR_INT(
-            ERR_BAD_PARAM,
-            "SHA hash requested against unsupported bit size");
-    }
+	}
+	else {
+		RET_ERROR_INT(ERR_BAD_PARAM, "SHA hash requested against unsupported bit size");
+	}
 
-    return 0;
+	return 0;
 }
-
 
 /**
  * @brief
@@ -1096,92 +1045,85 @@ _compute_sha_hash(
  * @return
  *  0 on success or < 0 if an error was encountered.
  */
-int
-_compute_sha_hash_multibuf(
-    size_t nbits,
-    sha_databuf_t *bufs,
-    unsigned char *outbuf)
-{
-    SHA512_CTX ctx512;
-    SHA256_CTX ctx256;
-    SHA_CTX ctx160;
-    sha_databuf_t *bufptr = bufs;
-    int res;
+int _compute_sha_hash_multibuf(size_t nbits, sha_databuf_t *bufs, unsigned char *outbuf) {
+	SHA512_CTX ctx512;
+	SHA256_CTX ctx256;
+	SHA_CTX ctx160;
+	sha_databuf_t * bufptr = bufs;
+	int res;
 
-    if (!bufs || !outbuf) {
-        RET_ERROR_INT(ERR_BAD_PARAM, NULL);
-    }
+	if (!bufs || !outbuf) {
+		RET_ERROR_INT(ERR_BAD_PARAM, NULL);
+	}
 
-    if ((nbits != 160) && (nbits != 256) && (nbits != 512)) {
-        RET_ERROR_INT(
-            ERR_BAD_PARAM,
-            "SHA multi-buffer hash requested against unsupported bit size");
-    }
+	if ((nbits != 160) && (nbits != 256) && (nbits != 512)) {
+		RET_ERROR_INT(ERR_BAD_PARAM, "SHA multi-buffer hash requested against unsupported bit size");
+	}
 
-    switch(nbits) {
-    case 160:
-        res = SHA1_Init_d(&ctx160);
-        break;
-    case 256:
-        res = SHA256_Init_d(&ctx256);
-        break;
-    case 512:
-        res = SHA512_Init_d(&ctx512);
-        break;
-    default:
-        RET_ERROR_INT(ERR_UNSPEC, "invalid number of bits for SHA hash");
-        break;
-    }
+	switch (nbits) {
+	case 160:
+		res = SHA1_Init_d(&ctx160);
+		break;
+	case 256:
+		res = SHA256_Init_d(&ctx256);
+		break;
+	case 512:
+		res = SHA512_Init_d(&ctx512);
+		break;
+	default:
+		RET_ERROR_INT(ERR_UNSPEC, "invalid number of bits for SHA hash");
+		break;
+	}
 
-    if (!res) {
-        PUSH_ERROR_OPENSSL();
-        RET_ERROR_INT(ERR_UNSPEC, "error initializing SHA context");
-    }
+	if (!res) {
+		PUSH_ERROR_OPENSSL()
+		;
+		RET_ERROR_INT(ERR_UNSPEC, "error initializing SHA context");
+	}
 
-    while (bufptr->data) {
+	while (bufptr ->data) {
 
-        switch(nbits) {
-        case 160:
-            res = SHA1_Update_d(&ctx160, bufptr->data, bufptr->len);
-            break;
-        case 256:
-            res = SHA256_Update_d(&ctx256, bufptr->data, bufptr->len);
-            break;
-        case 512:
-            res = SHA512_Update_d(&ctx512, bufptr->data, bufptr->len);
-            break;
-        }
+		switch (nbits) {
+		case 160:
+			res = SHA1_Update_d(&ctx160, bufptr ->data, bufptr ->len);
+			break;
+		case 256:
+			res = SHA256_Update_d(&ctx256, bufptr ->data, bufptr ->len);
+			break;
+		case 512:
+			res = SHA512_Update_d(&ctx512, bufptr ->data, bufptr ->len);
+			break;
+		}
 
-        if (!res) {
-            PUSH_ERROR_OPENSSL();
-            RET_ERROR_INT(ERR_UNSPEC, "error updating multi-buffer SHA context");
-        }
+		if (!res) {
+			PUSH_ERROR_OPENSSL()
+			;
+			RET_ERROR_INT(ERR_UNSPEC, "error updating multi-buffer SHA context");
+		}
 
-        bufptr++;
-    }
+		bufptr ++;
+	}
 
-    switch(nbits) {
-    case 160:
-        res = SHA1_Final_d(outbuf, &ctx160);
-        break;
-    case 256:
-        res = SHA256_Final_d(outbuf, &ctx256);
-        break;
-    case 512:
-        res = SHA512_Final_d(outbuf, &ctx512);
-        break;
-    }
+	switch (nbits) {
+	case 160:
+		res = SHA1_Final_d(outbuf, &ctx160);
+		break;
+	case 256:
+		res = SHA256_Final_d(outbuf, &ctx256);
+		break;
+	case 512:
+		res = SHA512_Final_d(outbuf, &ctx512);
+		break;
+	}
 
-    if (!res) {
-        PUSH_ERROR_OPENSSL();
-        RET_ERROR_INT(
-            ERR_UNSPEC,
-            "error finalizing multi-buffer SHA operation");
-    }
+	if (!res) {
+		PUSH_ERROR_OPENSSL()
+		;
+		RET_ERROR_INT(ERR_UNSPEC, "error finalizing multi-buffer SHA operation");
+	}
 
-    return 0;
+	return 0;
 }
-
 
 /**
  * @brief
@@ -1199,68 +1141,70 @@ _compute_sha_hash_multibuf(
  * @free_using{RSA_free}
  */
 RSA *
-_decode_rsa_pubkey(unsigned char *data, size_t dlen)
-{
-    RSA *result;
-    BIGNUM *mod, *exp;
-    unsigned char *ptr = data + 1;
-    uint16_t explen;
-    size_t left = dlen - 1;
+_decode_rsa_pubkey(unsigned char *data, size_t dlen) {
+	RSA *result;
+	BIGNUM *mod, *exp;
+	unsigned char *ptr = data + 1;
+	uint16_t explen;
+	size_t left = dlen - 1;
 
-    if (!data || !dlen) {
-        RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
-    }
+	if (!data || !dlen) {
+		RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
+	}
 
-    // If this first byte is > 0, then it's the entire length as a one byte
-    // field.  Otherwise, if it's zero, the following 2 bytes store the
-    // exponent length.
-    if (!*data) {
-        if (left < sizeof(explen)) {
-            RET_ERROR_PTR(ERR_UNSPEC, "RSA key buffer underflow");
-        }
+	// If this first byte is > 0, then it's the entire length as a one byte
+	// field.  Otherwise, if it's zero, the following 2 bytes store the
+	// exponent length.
+	if (!*data) {
+		if (left < sizeof(explen)) {
+			RET_ERROR_PTR(ERR_UNSPEC, "RSA key buffer underflow");
+		}
 
-        explen = ntohs(*((uint16_t *)ptr));
-        ptr += sizeof(explen);
-        left -= sizeof(explen);
-    } else {
-        explen = *data;
-    }
+		explen = ntohs(*((uint16_t *)ptr));
+		ptr += sizeof(explen);
+		left -= sizeof(explen);
+	}
+	else {
+		explen = *data;
+	}
 
-    if (left < explen) {
-        RET_ERROR_PTR(ERR_UNSPEC, "reached premature end of exponent");
-    }
+	if (left < explen) {
+		RET_ERROR_PTR(ERR_UNSPEC, "reached premature end of exponent");
+	}
 
-    if (!(exp = BN_bin2bn_d(ptr, explen, NULL))) {
-        PUSH_ERROR_OPENSSL();
-        RET_ERROR_PTR(ERR_UNSPEC, "could not read exponent");
-    }
+	if (!(exp = BN_bin2bn_d(ptr, explen, NULL))) {
+		PUSH_ERROR_OPENSSL()
+		;
+		RET_ERROR_PTR(ERR_UNSPEC, "could not read exponent");
+	}
 
-    ptr += explen;
-    left -= explen;
+	ptr += explen;
+	left -= explen;
 
-    // The remainder is the modulus.
-    if (!(mod = BN_bin2bn_d(ptr, left, NULL))) {
-        PUSH_ERROR_OPENSSL();
-        BN_free_d(exp);
-        RET_ERROR_PTR(ERR_UNSPEC, "could not read modulus");
-    }
+	// The remainder is the modulus.
+	if (!(mod = BN_bin2bn_d(ptr, left, NULL))) {
+		PUSH_ERROR_OPENSSL()
+		;
+		BN_free_d(exp);
+		RET_ERROR_PTR(ERR_UNSPEC, "could not read modulus");
+	}
 
-    if (!(result = RSA_new_d())) {
-        PUSH_ERROR_OPENSSL();
-        BN_free_d(exp);
-        BN_free_d(mod);
-        RET_ERROR_PTR(ERR_UNSPEC, "could not create new RSA public key holder");
-    }
+	if (!(result = RSA_new_d())) {
+		PUSH_ERROR_OPENSSL()
+		;
+		BN_free_d(exp);
+		BN_free_d(mod);
+		RET_ERROR_PTR(ERR_UNSPEC, "could not create new RSA public key holder");
+	}
 
-    result->n = mod;
-    result->e = exp;
-    result->d = NULL;
-    result->p = NULL;
-    result->q = NULL;
+	result->n = mod;
+	result->e = exp;
+	result->d = NULL;
+	result->p = NULL;
+	result->q = NULL;
 
-    return result;
+	return result;
 }
-
 
 /**
  * @brief
@@ -1276,59 +1220,58 @@ _decode_rsa_pubkey(unsigned char *data, size_t dlen)
  * @free_using{free}
  */
 unsigned char *
-_encode_rsa_pubkey(RSA *pubkey, size_t *enclen)
-{
-    unsigned char *result = NULL, *rptr;
-    unsigned short explen;
-    unsigned char byte = 0;
+_encode_rsa_pubkey(RSA *pubkey, size_t *enclen) {
+	unsigned char *result = NULL, *rptr;
+	unsigned short explen;
+	unsigned char byte = 0;
 
-    if (!pubkey || !enclen) {
-        RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
-    }
+	if (!pubkey || !enclen) {
+		RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
+	}
 
-    // If the exponent length can be fit in one byte, it will. Otherwise, it will be stored as a null byte followed by a 2-byte length.
-    if ((explen = ((BN_num_bits_d(pubkey->e)+7)/8)) < 0xff) {
-        byte = explen;
-        *enclen = explen + 1 + ((BN_num_bits_d(pubkey->n)+7)/8);
-    } else {
-        *enclen = explen + 3 + ((BN_num_bits_d(pubkey->n)+7)/8);
-        explen = htons(explen);
-    }
+	// If the exponent length can be fit in one byte, it will. Otherwise, it will be stored as a null byte followed by a 2-byte length.
+	if ((explen = ((BN_num_bits_d(pubkey->e) + 7) / 8)) < 0xff) {
+		byte = explen;
+		*enclen = explen + 1 + ((BN_num_bits_d(pubkey->n) + 7) / 8);
+	}
+	else {
+		*enclen = explen + 3 + ((BN_num_bits_d(pubkey->n) + 7) / 8);
+		explen = htons(explen);
+	}
 
-    if (!(result = malloc(*enclen))) {
-        PUSH_ERROR_SYSCALL("malloc");
-        RET_ERROR_PTR(
-            ERR_NOMEM,
-            "could not allocate space for encoded RSA public key");
-    }
+	if (!(result = malloc(*enclen))) {
+		PUSH_ERROR_SYSCALL("malloc");
+		RET_ERROR_PTR(ERR_NOMEM, "could not allocate space for encoded RSA public key");
+	}
 
-    memset(result, 0, *enclen);
-    rptr = result;
+	memset(result, 0, *enclen);
+	rptr = result;
 
-    // If the first byte is null it means the length field follows
-    if (!(*rptr++ = byte)) {
-        memcpy(rptr, &explen, sizeof(explen));
-        rptr += sizeof(explen);
-    }
+	// If the first byte is null it means the length field follows
+	if (!(*rptr++ = byte)) {
+		memcpy(rptr, &explen, sizeof(explen));
+		rptr += sizeof(explen);
+	}
 
-    // Finally, store the exponent followed by the modulus.
-    if (!BN_bn2bin_d(pubkey->e, rptr)) {
-        PUSH_ERROR_OPENSSL();
-        free(result);
-        RET_ERROR_PTR(ERR_UNSPEC, "could not encode RSA public key exponent");
-    }
+	// Finally, store the exponent followed by the modulus.
+	if (!BN_bn2bin_d(pubkey->e, rptr)) {
+		PUSH_ERROR_OPENSSL()
+		;
+		free(result);
+		RET_ERROR_PTR(ERR_UNSPEC, "could not encode RSA public key exponent");
+	}
 
-    rptr += ((BN_num_bits_d(pubkey->e)+7)/8);
+	rptr += ((BN_num_bits_d(pubkey->e) + 7) / 8);
 
-    if (!BN_bn2bin_d(pubkey->n, rptr)) {
-        PUSH_ERROR_OPENSSL();
-        free(result);
-        RET_ERROR_PTR(ERR_UNSPEC, "could not encode RSA public key modulus");
-    }
+	if (!BN_bn2bin_d(pubkey->n, rptr)) {
+		PUSH_ERROR_OPENSSL()
+		;
+		free(result);
+		RET_ERROR_PTR(ERR_UNSPEC, "could not encode RSA public key modulus");
+	}
 
-    return result;
+	return result;
 }
-
 
 /**
  * @brief
@@ -1344,32 +1287,28 @@ _encode_rsa_pubkey(RSA *pubkey, size_t *enclen)
  * @return
  *  0 if the hash operation was completed successfully, or < 0 on error.
  */
-int
-_get_x509_cert_sha_hash(
-    X509 *cert,
-    size_t nbits,
-    unsigned char *out)
-{
-    unsigned char *buf = NULL;
-    int blen;
+int _get_x509_cert_sha_hash(X509 *cert, size_t nbits, unsigned char *out) {
+	unsigned char *buf = NULL;
+	int blen;
 
-    if (!cert || !out) {
-        RET_ERROR_INT(ERR_BAD_PARAM, NULL);
-    }
-    if ((blen = i2d_X509_d(cert, &buf)) < 0) {
-        PUSH_ERROR_OPENSSL();
-        RET_ERROR_INT(ERR_UNSPEC, "could not serialize X509 certificate");
-    }
+	if (!cert || !out) {
+		RET_ERROR_INT(ERR_BAD_PARAM, NULL);
+	}
+	if ((blen = i2d_X509_d(cert, &buf)) < 0) {
+		PUSH_ERROR_OPENSSL()
+		;
+		RET_ERROR_INT(ERR_UNSPEC, "could not serialize X509 certificate");
+	}
 
-    if (_compute_sha_hash(nbits, buf, blen, out) < 0) {
-        CRYPTO_free_d(buf);
-        RET_ERROR_INT(ERR_UNSPEC, "SHA hash on X509 certificate data failed");
-    }
+	if (_compute_sha_hash(nbits, buf, blen, out) < 0) {
+		CRYPTO_free_d(buf);
+		RET_ERROR_INT(ERR_UNSPEC, "SHA hash on X509 certificate data failed");
+	}
 
-    // TODO: Is this really the proper way to free this buffer?
-    CRYPTO_free_d(buf);
+	// TODO: Is this really the proper way to free this buffer?
+	CRYPTO_free_d(buf);
 
-    return 0;
+	return 0;
 }
 
 /**
@@ -1383,28 +1322,47 @@ _get_x509_cert_sha_hash(
  *  1 if the buffer was filled exclusively with null bytes, 0 if it was not, or
  *  -1 on general error.
  */
-int
-_is_buf_zeroed(
-    void *buf,
-    size_t len)
-{
-    unsigned char *ptr = (unsigned char *)buf;
+int _is_buf_zeroed(void *buf, size_t len) {
+	unsigned char *ptr = (unsigned char *)buf;
 
-    if (!buf || !len) {
-        RET_ERROR_INT(ERR_BAD_PARAM, NULL);
-    }
+	if (!buf || !len) {
+		RET_ERROR_INT(ERR_BAD_PARAM, NULL);
+	}
 
-    for(size_t i = 0; i < len; i++) {
+	for (size_t i = 0; i < len; i++) {
 
-        if (ptr[i]) {
-            return 0;
-        }
+		if (ptr[i]) {
+			return 0;
+		}
 
-    }
+	}
 
-    return 1;
+	return 1;
 }
 
+/**
+ * @brief	Generate a 24-bit CRC value for the Privacy Enhanced Message format.
+ * @note	This function uses the predefined initial value and polynomial defined in RFC 4880.
+ * @param	buffer	a pointer to the data to be checked.
+ * @param	length	the length, in bytes, of the input buffer.
+ * @return	the updated 24-bit CRC value in a 32-bit unsigned integer.
+ */
+int _compute_crc24_checksum(void *buffer, size_t length) {
+
+	long crc = 0xB704CEL;
+
+	while (length--) {
+
+		crc ^= (*(unsigned char *)buffer++) << 16;
+
+		for (int i = 0; i < 8; i++) {
+			crc <<= 1;
+			if (crc & 0x1000000) crc ^= 0x1864CFBL;
+		}
+	}
+
+	return crc & 0xFFFFFFL;
+}
 
 /**
  * @brief
@@ -1418,47 +1376,83 @@ _is_buf_zeroed(
  * @return
  *  0 on success, -1 on failure.
  */
-int
-_write_pem_data(
-    char const *b64_data,
-    char const *tag,
-    char const *filename)
-{
-    FILE *fp;
-    char fbuf[BUFSIZ];
-    size_t data_size;
+int _write_pem_data(char const *b64_data, char const *checksum, char const *tag, char const *filename) {
 
-    if(!b64_data || !tag || !filename) {
-        RET_ERROR_INT(ERR_BAD_PARAM, NULL);
-    } else if(!strlen(filename) || !strlen(tag) || !(data_size = strlen(b64_data))) {
-        RET_ERROR_INT(ERR_BAD_PARAM, NULL);
-    }
+	FILE *fp;
+	char fbuf[BUFSIZ];
+	size_t data_size, sum_size;
 
-    if(!(fp = fopen(filename, "w"))) {
-        PUSH_ERROR_SYSCALL("fopen");
-        RET_ERROR_INT_FMT(ERR_UNSPEC, "could not open file for writing: %s", filename);
-    }
-    setbuf(fp, fbuf);
+	if (!b64_data || !tag || !filename || !checksum) {
+		RET_ERROR_INT(ERR_BAD_PARAM, NULL);
+	}
+	else if (!strlen(filename) || !strlen(tag) || !(data_size = strlen(b64_data)) || !(sum_size = strlen(checksum))) {
+		RET_ERROR_INT(ERR_BAD_PARAM, NULL);
+	}
 
-    fprintf(fp, "-----BEGIN %s-----\n", tag);
+	if (!(fp = fopen(filename, "w"))) {
+		PUSH_ERROR_SYSCALL("fopen");
+		RET_ERROR_INT_FMT(ERR_SYSCALL, "Could not open file for writing: %s", filename);
+	}
 
-    for(size_t i = 0; i < data_size; ++i) {
+	if (setvbuf(fp, fbuf, _IOFBF, BUFSIZ)) {
+		PUSH_ERROR_SYSCALL("setvbuf");
+		RET_ERROR_INT_FMT(ERR_SYSCALL, "Could not setup the file buffer: %s", filename);
+	}
 
-        if(i % 64 == 0 && i) {
-            fprintf(fp, "\n");
-        }
+	if (!fprintf(fp, "-----BEGIN %s-----\n", tag)) {
+		PUSH_ERROR_SYSCALL("fprintf");
+		fclose(fp);
+		_secure_wipe(fbuf, sizeof(fbuf));
+		RET_ERROR_INT_FMT(ERR_SYSCALL, "Could not print the PEM object header: %s", filename);
+	}
 
-        fprintf(fp, "%c", b64_data[i]);
-    }
+	for (size_t i = 0; i < data_size; ++i) {
 
-    fprintf(fp, "\n-----END %s-----\n", tag);
-    fclose(fp);
-    _secure_wipe(fbuf, sizeof(fbuf));
+		if (i % 64 == 0 && i) {
+			if (!fprintf(fp, "\n")) {
+				PUSH_ERROR_SYSCALL("fprintf");
+				fclose(fp);
+				_secure_wipe(fbuf, sizeof(fbuf));
+				RET_ERROR_INT_FMT(ERR_SYSCALL, "Could not print the line terminator: %s", filename);
+			}
+		}
 
-    return 0;
+		if (!fprintf(fp, "%c", b64_data[i])) {
+			PUSH_ERROR_SYSCALL("fprintf");
+			fclose(fp);
+			_secure_wipe(fbuf, sizeof(fbuf));
+			RET_ERROR_INT_FMT(ERR_SYSCALL, "Could not print the armored object data: %s", filename);
+		}
+	}
+
+	for (size_t i = 0; i < sum_size; ++i) {
+
+		if (!fprintf(fp, "%c", checksum[i])) {
+			PUSH_ERROR_SYSCALL("fprintf");
+			fclose(fp);
+			_secure_wipe(fbuf, sizeof(fbuf));
+			RET_ERROR_INT_FMT(ERR_SYSCALL, "Could not print the armored object checksum: %s", filename);
+		}
+	}
+
+
+	if (!fprintf(fp, "\n-----END %s-----\n", tag)) {
+		PUSH_ERROR_SYSCALL("fprintf");
+		fclose(fp);
+		_secure_wipe(fbuf, sizeof(fbuf));
+		RET_ERROR_INT_FMT(ERR_SYSCALL, "Could not print the PEM object tail: %s", filename);
+	}
+
+	if (fclose(fp)) {
+		PUSH_ERROR_SYSCALL("fclose");
+		_secure_wipe(fbuf, sizeof(fbuf));
+		RET_ERROR_INT_FMT(ERR_SYSCALL, "Could not close and flush the PEM object file: %s", filename);
+	}
+
+	_secure_wipe(fbuf, sizeof(fbuf));
+
+	return 0;
 }
-
-
 
 /**
  * @brief
@@ -1474,61 +1468,50 @@ _write_pem_data(
  *  NULL on failure.
  * @free_using{free}
  */
-unsigned char *
-_read_file_data(
-    char const *filename,
-    size_t *fsize)
-{
-    unsigned char *result;
-    struct stat sb;
-    int fd, nread;
+unsigned char * _read_file_data(char const *filename, size_t *fsize) {
+	unsigned char *result;
+	struct stat sb;
+	int fd, nread;
 
-    if (!filename || !fsize) {
-        RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
-    }
+	if (!filename || !fsize) {
+		RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
+	}
 
-    if ((fd = open(filename, O_RDONLY)) < 0) {
-        PUSH_ERROR_SYSCALL("read");
-        RET_ERROR_PTR_FMT(ERR_UNSPEC, "could not open file for reading: %s", filename);
-    }
+	if ((fd = open(filename, O_RDONLY)) < 0) {
+		PUSH_ERROR_SYSCALL("read");
+		RET_ERROR_PTR_FMT(ERR_UNSPEC, "could not open file for reading: %s", filename);
+	}
 
-    if (fstat(fd, &sb) < 0) {
-        PUSH_ERROR_SYSCALL("stat");
-        close(fd);
-        RET_ERROR_PTR_FMT(ERR_UNSPEC, "could not determine file size: %s", filename);
-    }
+	if (fstat(fd, &sb) < 0) {
+		PUSH_ERROR_SYSCALL("stat");
+		close(fd);
+		RET_ERROR_PTR_FMT(ERR_UNSPEC, "could not determine file size: %s", filename);
+	}
 
-    if (!(result = malloc(sb.st_size))) {
-        PUSH_ERROR_SYSCALL("malloc");
-        close(fd);
-        RET_ERROR_PTR_FMT(
-            ERR_UNSPEC,
-            "could not allocate space for file contents: %s",
-            filename);
-    }
+	if (!(result = malloc(sb.st_size))) {
+		PUSH_ERROR_SYSCALL("malloc");
+		close(fd);
+		RET_ERROR_PTR_FMT(ERR_UNSPEC, "could not allocate space for file contents: %s", filename);
+	}
 
-    if ((nread = read(fd, result, sb.st_size)) < 0) {
-        PUSH_ERROR_SYSCALL("read");
-        close(fd);
-        free(result);
-        RET_ERROR_PTR_FMT(ERR_UNSPEC, "error reading data from file: %s", filename);
-    }
+	if ((nread = read(fd, result, sb.st_size)) < 0) {
+		PUSH_ERROR_SYSCALL("read");
+		close(fd);
+		free(result);
+		RET_ERROR_PTR_FMT(ERR_UNSPEC, "error reading data from file: %s", filename);
+	}
 
-    close(fd);
+	close(fd);
 
-    if (nread != sb.st_size) {
-        free(result);
-        RET_ERROR_PTR_FMT(
-            ERR_UNSPEC,
-            "could not read entire contents of file: %s",
-            filename);
-    }
+	if (nread != sb.st_size) {
+		free(result);
+		RET_ERROR_PTR_FMT(ERR_UNSPEC, "could not read entire contents of file: %s", filename);
+	}
 
-    *fsize = sb.st_size;
+	*fsize = sb.st_size;
 
-    return result;
+	return result;
 }
-
 
 /**
  * @brief
@@ -1546,147 +1529,184 @@ _read_file_data(
  *  tag, or NULL on failure.
  * @free_using{free}
  */
-char *
-_read_pem_data(
-    char const *pemfile,
-    char const *tag,
-    int nospace)
-{
-    FILE *fp;
-    const char *hyphens = "-----", *begin = "BEGIN ", *end = "END ";
-    char line[4096], *result = NULL, *ptr;
-    unsigned int in_tag = 0, in_end = 0, slen;
+char * _read_pem_data(char const *pemfile, char const *tag, int nospace) {
 
-    (void)nospace; /* TODO: use this parameter */
+	FILE *fp;
+	int checked = 0;
+	size_t rawlen = 0;
+	long crc, checksum;
+	unsigned char *raw;
+	const char *hyphens = "-----", *begin = "BEGIN ", *end = "END ";
+	char line[4096], *result = NULL, *ptr;
+	unsigned int in_tag = 0, in_end = 0, slen;
 
-    if (!pemfile || !tag || !strlen(tag)) {
-        RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
-    }
+	(void)nospace; /* TODO: use this parameter */
 
-    if (!(fp = fopen(pemfile, "r"))) {
-        PUSH_ERROR_SYSCALL("fopen");
-        RET_ERROR_PTR_FMT(
-            ERR_UNSPEC,
-            "could not open PEM file for reading: %s",
-            pemfile);
-    }
+	if (!pemfile || !tag || !strlen(tag)) {
+		RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
+	}
 
-    while (!feof(fp)) {
+	if (!(fp = fopen(pemfile, "r"))) {
+		PUSH_ERROR_SYSCALL("fopen");
+		RET_ERROR_PTR_FMT(ERR_UNSPEC, "could not open PEM file for reading: %s", pemfile);
+	}
 
-        // If we're in the tag and just read a line of data, it needs to be
-        // appended to the result.
-        if ((in_tag > 1) && strlen(line)) {
-            ptr = line;
+	while (!feof(fp)) {
 
-            while (*ptr) {
+		// If we're in the tag and just read a line of data, it needs to be
+		// appended to the result.
+		if ((in_tag > 1) && strlen(line)) {
+			ptr = line;
 
-                if (isspace(*(unsigned char *)ptr)) {
-                    slen = strlen(ptr + 1);
-                    memmove(ptr, (ptr + 1), slen);
-                    ptr[slen] = 0;
-                    continue;
-                }
+			while (*ptr) {
 
-                ptr++;
-            }
+				if (isspace(*(unsigned char * )ptr)) {
+					slen = strlen(ptr + 1);
+					memmove(ptr, (ptr + 1), slen);
+					ptr[slen] = 0;
+					continue;
+				}
 
-            if (!_str_printf(&result, line)) {
-                fclose(fp);
-                RET_ERROR_PTR(
-                    ERR_NOMEM,
-                    "unable to allocate space for PEM file contents");
-            }
+				ptr++;
+			}
 
-        }
+			// We found the terminating checksum, which we (stupidly) ignore because rewriting this function
+			// to handle it right this second would take time we don't have.
+			// What we should get is a line that starts with '=' followed by 4 base64 characters that result
+			// in a crc24 for the preceeding binary data, followed by the closing tag.
+			if (*line == '=' && strlen(line) == 5) {
 
-        if (in_tag) {
-            in_tag++;
-        }
+				// Calculate the actual CRC value.
+				if ((raw = _b64decode(result, strlen(result), &rawlen))) {
+					crc = _compute_crc24_checksum(raw, rawlen);
+					free(raw);
+				}
+				else {
+					crc = 0;
+				}
 
-        memset(line, 0, sizeof(line));
+				// Extract the CRC value line.
+				if ((raw = _b64decode(line + 1, 4, &rawlen))) {
+					checksum = 0;
+					((unsigned char *)&checksum)[0] = raw[2];
+					((unsigned char *)&checksum)[1] = raw[1];
+					((unsigned char *)&checksum)[2] = raw[0];
+					free(raw);
+				}
+				else {
+					checksum = 0;
+				}
 
-        if (!fgets(line, sizeof(line), fp)) {
-            break;
-        }
+				if (crc != checksum) {
+					fclose(fp);
+					free(result);
+					dbgprint(5, "%s computed crc24 = %li / provided crc24 = %li %s", pemfile, crc, line);
+					RET_ERROR_PTR(ERR_CORRUPTION, "the PEM file provided a checksum which doesn't match the data");
+				}
+				else {
+					checked = 1;
+				}
 
-        if ((   slen = strlen(line))
-                && ((line[slen - 1] == '\n')
-            || (line[slen - 1] == '\r')))
-        {
-            line[slen - 1] = 0;
-        }
+			}
 
-        ptr = line;
+			else if (!_str_printf(&result, line)) {
+				free(result);
+				fclose(fp);
+				RET_ERROR_PTR(ERR_NOMEM, "unable to allocate space for PEM file contents");
+			}
 
-        while (*ptr && isspace(*(unsigned char *)ptr)) {
-            ptr++;
-        }
+		}
 
-        // Parse the leading hyphens and either the BEGIN or END tag.
-        if (strncmp(ptr, hyphens, strlen(hyphens))) {
-            continue;
-        }
+		if (in_tag) {
+			in_tag++;
+		}
 
-        ptr += strlen(hyphens);
+		memset(line, 0, sizeof(line));
 
-        if (!strncmp(ptr, end, strlen(end))) {
-            in_end = 1;
-            ptr += strlen(end);
-        } else if (!strncmp(ptr, begin, strlen(begin))) {
-            in_end = 0;
-            ptr += strlen(begin);
-        } else {
-            continue;
-        }
+		if (!fgets(line, sizeof(line), fp)) {
+			break;
+		}
 
-        // Is this the tag we actually want?
-        if (strncmp(ptr, tag, strlen(tag))) {
-            continue;
-        }
+		if ((slen = strlen(line)) && ((line[slen - 1] == '\n') || (line[slen - 1] == '\r'))) {
+			line[slen - 1] = 0;
+		}
 
-        ptr += strlen(tag);
+		ptr = line;
 
-        if (strncmp(ptr, hyphens, strlen(hyphens))) {
-            continue;
-        }
+		while (*ptr && isspace(*(unsigned char * )ptr)) {
+			ptr++;
+		}
 
-        ptr += strlen(hyphens);
+		// Parse the leading hyphens and either the BEGIN or END tag.
+		if (strncmp(ptr, hyphens, strlen(hyphens))) {
+			continue;
+		}
 
-        // The trailing hyphens shouldn't be followed by anything other than
-        // whitespace.
-        while (*ptr && isspace(*(unsigned char *)ptr)) {
-            ptr++;
-        }
+		ptr += strlen(hyphens);
 
-        if (*ptr) {
-            continue;
-        }
+		if (!strncmp(ptr, end, strlen(end))) {
+			in_end = 1;
+			ptr += strlen(end);
+		}
+		else if (!strncmp(ptr, begin, strlen(begin))) {
+			in_end = 0;
+			ptr += strlen(begin);
+		}
+		else {
+			continue;
+		}
 
-        // If we have successfully parsed an end tag then it's time to return;
-        if (in_end) {
-            fclose(fp);
-            return result;
-        }
+		// Is this the tag we actually want?
+		if (strncmp(ptr, tag, strlen(tag))) {
+			continue;
+		}
 
-        // Otherwise, the next line(s) of data will correspond to our tag.
-        in_tag = 1;
-    }
+		ptr += strlen(tag);
 
-    // If we got this far, we never correctly parsed (all) the data we expected
-    // to read.
-    if (result) {
-        free(result);
-    }
+		if (strncmp(ptr, hyphens, strlen(hyphens))) {
+			continue;
+		}
 
-    fclose(fp);
+		ptr += strlen(hyphens);
 
-    if (in_tag) {
-        RET_ERROR_PTR(ERR_UNSPEC, "did not find tag end in PEM file");
-    }
+		// The trailing hyphens shouldn't be followed by anything other than
+		// whitespace.
+		while (*ptr && isspace(*(unsigned char * )ptr)) {
+			ptr++;
+		}
 
-    RET_ERROR_PTR(ERR_UNSPEC, "could not find PEM tag");
+		if (*ptr) {
+			continue;
+		}
+
+		// If we have successfully parsed an end tag then it's time to return;
+		if (in_end) {
+			fclose(fp);
+			if (!checked) {
+				free(result);
+				RET_ERROR_PTR(ERR_UNSPEC, "the PEM file doesn't contain a checksum line at the end");
+			}
+			return result;
+		}
+
+		// Otherwise, the next line(s) of data will correspond to our tag.
+		in_tag = 1;
+	}
+
+	// If we got this far, we never correctly parsed (all) the data we expected
+	// to read.
+	if (result) {
+		free(result);
+	}
+
+	fclose(fp);
+
+	if (in_tag) {
+		RET_ERROR_PTR(ERR_UNSPEC, "did not find tag end in PEM file");
+	}
+
+	RET_ERROR_PTR(ERR_UNSPEC, "could not find PEM tag");
 }
-
 
 /**
  * @brief
@@ -1696,15 +1716,13 @@ _read_pem_data(
  * @param len
  *  the size, in bytes, of the data buffer to be wiped.
  */
-void
-_secure_wipe(void *buf, size_t len)
-{
-    if (!buf || !len) {
-        return;
-    }
+void _secure_wipe(void *buf, size_t len) {
+	if (!buf || !len) {
+		return;
+	}
 
-    memset(buf, 255, len);
-    memset(buf, 0xaa, len);
-    memset(buf, 0x55, len);
-    memset(buf, 0, len);
+	memset(buf, 255, len);
+	memset(buf, 0xaa, len);
+	memset(buf, 0x55, len);
+	memset(buf, 0, len);
 }

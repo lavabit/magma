@@ -3,11 +3,6 @@
  * @file /magma/objects/mail/headers.c
  *
  * @brief	Functions used to handle mail message header information.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -818,7 +813,7 @@ void mail_add_forward_headers(server_t *server, stringer_t **message, stringer_t
 	}
 
 	// Generate the message signature, and insert.
-	if (magma.dkim.enabled && ((signature = dkim_create(id, result)))) {
+	if (magma.dkim.enabled && ((signature = dkim_signature_create(id, result)))) {
 		cleaned = st_merge_opts(MAPPED_T | JOINTED | HEAP, "sss", first, signature, second);
 		st_free(signature);
 
@@ -897,7 +892,7 @@ int_t mail_add_outbound_headers(connection_t *con) {
 
 	// Generate the message signature.
 	if (magma.dkim.enabled) {
-		dk_signature = dkim_create(con->smtp.message->id, con->smtp.message->text);
+		dk_signature = dkim_signature_create(con->smtp.message->id, con->smtp.message->text);
 	}
 
 	// We need to make sure the reverse DNS lookup is complete.

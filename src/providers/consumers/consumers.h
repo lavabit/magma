@@ -3,11 +3,6 @@
  * @file /magma/providers/consumers/consumers.h
  *
  * @brief	Interfaces for clients that consume/load/retrieve data across various network protocols.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_PROVIDERS_CONSUMERS_H

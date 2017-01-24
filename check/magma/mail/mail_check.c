@@ -29,16 +29,26 @@ START_TEST (check_mail_store_s) {
 	stringer_t *errmsg = MANAGEDBUF(1024), *data;
 	stringer_t *usernames[] = { NULLER("magma"), check_username }, *passwords[] = { NULLER("password"), check_password };
 
-	for (int_t i = 0; i < (sizeof(stringer_t *)/sizeof(usernames)) && result && status(); i++) {
+	// The registration check must be run frist, otherwise we won't have a user to check against.
+	if (status() && (!check_username || !check_password)) {
+		check_users_register_s(0);
+	}
 
-		if (auth_login(usernames[i], passwords[i], &auth)) {
+	for (int_t i = 0; i < (sizeof(usernames)/sizeof(stringer_t *)) && result && status(); i++) {
+
+		if (st_empty(usernames[i]) || st_empty(passwords[i])) {
+			st_sprint(errmsg, "User meta login check failed. The username and password were invalid.");
+			result = false;
+		}
+
+		else if (auth_login(usernames[i], passwords[i], &auth)) {
 			st_sprint(errmsg, "User meta login check failed. Authentication failure. { username =  %.*s / password = %.*s }",
 				st_length_int(usernames[i]), st_char_get(usernames[i]), st_length_int(passwords[i]), st_char_get(passwords[i]));
 			result = false;
 		}
 
-		else if ((meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification,
-			META_PROTOCOL_IMAP, META_GET_KEYS | META_GET_ALIASES | META_GET_FOLDERS | META_GET_CONTACTS | META_GET_MESSAGES, &(user)))) {
+		else if (meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification,
+			META_PROTOCOL_IMAP, META_GET_KEYS | META_GET_ALIASES | META_GET_FOLDERS | META_GET_CONTACTS | META_GET_MESSAGES, &(user))) {
 			st_sprint(errmsg, "User meta login check failed. Get user metadata failure. { username =  %.*s / password = %.*s }",
 				st_length_int(usernames[i]), st_char_get(usernames[i]), st_length_int(passwords[i]), st_char_get(passwords[i]));
 			result = false;
@@ -66,7 +76,7 @@ START_TEST (check_mail_store_s) {
 		}
 
 		if (auth) auth_free(auth);
-		if (user) meta_free(user);
+		if (user) meta_inx_remove(user->usernum, META_PROTOCOL_POP);
 
 		auth = NULL;
 		user = NULL;

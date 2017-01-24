@@ -442,6 +442,9 @@ stringer_t * aes_artifact_encrypt(stringer_t *key, stringer_t *object, stringer_
 	tag_key_shard = aes_tag_shard(key);
 	vector_key_shard = aes_vector_shard(key);
 
+//	log_enable();
+//	log_pedantic("hex key = %s", st_char_get(hex_encode_st(key, NULL)));
+
 	// Check to ensure all of the fragments were extracted properly.
 	if (pl_empty(cipher_key) || pl_empty(tag_key_shard) || pl_empty(vector_key_shard)) {
 		log_pedantic("PRIME object encryption failed because an invalid key was provided.");
@@ -648,6 +651,9 @@ stringer_t * aes_artifact_decrypt(stringer_t *key, stringer_t *object, stringer_
 	cipher_key = aes_cipher_key(key);
 	tag_key_shard = aes_tag_shard(key);
 	vector_key_shard = aes_vector_shard(key);
+
+//	log_enable();
+//	log_pedantic("hex key = %s", st_char_get(hex_encode_st(key, NULL)));
 
 	// Check to ensure all of the fragments were extracted properly.
 	if (pl_empty(cipher_key) || pl_empty(tag_key_shard) || pl_empty(vector_key_shard)) {

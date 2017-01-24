@@ -69,16 +69,29 @@ END_TEST
 
 START_TEST (check_users_meta_valid_s) {
 
-	log_disable();
+//	log_disable();
 	auth_t *auth = NULL;
 	bool_t result = true;
 	meta_user_t *pop = NULL, *imap = NULL;
 	stringer_t *errmsg = MANAGEDBUF(1024);
-	stringer_t *usernames[] = { NULLER("magma"), check_username }, *passwords[] = { NULLER("password"), check_password };
+	stringer_t *usernames[] = { PLACER("magma", 5), check_username };
+	stringer_t *passwords[] = { PLACER("password", 8), check_password };
 
-	for (int_t i = 0; i < (sizeof(stringer_t *)/sizeof(usernames)) && result && status(); i++) {
+	// The registration check must be run frist, otherwise we won't have a user to check against.
+	if (status() && (!check_username || !check_password)) {
+		check_users_register_s(0);
+		usernames[1] = check_username;
+		passwords[1] = check_password;
+	}
 
-		if (auth_login(usernames[i], passwords[i], &auth)) {
+	for (int_t i = 0; i < (sizeof(usernames)/sizeof(stringer_t *)) && result && status(); i++) {
+
+		if (st_empty(usernames[i]) || st_empty(passwords[i])) {
+			st_sprint(errmsg, "User meta login check failed. The username and password were invalid. { i = %i }", i);
+			result = false;
+		}
+
+		else if (auth_login(usernames[i], passwords[i], &auth)) {
 			st_sprint(errmsg, "User meta login check failed. Authentication failure. { username =  %.*s / password = %.*s }",
 				st_length_int(usernames[i]), st_char_get(usernames[i]), st_length_int(passwords[i]), st_char_get(passwords[i]));
 			result = false;
@@ -92,15 +105,15 @@ START_TEST (check_users_meta_valid_s) {
 		}
 
 		else if ((meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification,
-			META_PROTOCOL_IMAP, META_GET_KEYS | META_GET_ALIASES | META_GET_FOLDERS | META_GET_CONTACTS | META_GET_MESSAGES, &(imap)))) {
+			META_PROTOCOL_IMAP, META_GET_KEYS | META_GET_FOLDERS | META_GET_CONTACTS | META_GET_MESSAGES, &(imap)))) {
 			st_sprint(errmsg, "User meta login check failed. Get user metadata failure. { username =  %.*s / password = %.*s }",
 				st_length_int(usernames[i]), st_char_get(usernames[i]), st_length_int(passwords[i]), st_char_get(passwords[i]));
 			result = false;
 		}
 
 		if (auth) auth_free(auth);
-		if (pop) meta_free(pop);
-		if (imap) meta_free(imap);
+		if (pop) meta_inx_remove(pop->usernum, META_PROTOCOL_POP);
+		if (imap) meta_inx_remove(imap->usernum, META_PROTOCOL_IMAP);
 
 		auth = NULL;
 		imap = pop = NULL;
@@ -119,9 +132,9 @@ START_TEST (check_users_meta_invalid_s) {
 	bool_t result = true;
 	meta_user_t *user = NULL;
 	stringer_t *errmsg = MANAGEDBUF(1024);
-	stringer_t *usernames[] = { NULLER("magma"), check_username }, *passwords[] = { NULLER("password"), check_password };
+	stringer_t *usernames[] = { NULLER("magma") }, *passwords[] = { NULLER("password") };
 
-	for (int_t i = 0; i < (sizeof(stringer_t *)/sizeof(usernames)) && result && status(); i++) {
+	for (int_t i = 0; i < (sizeof(usernames)/sizeof(stringer_t *)) && result && status(); i++) {
 
 		if (auth_login(usernames[i], passwords[i], &auth)) {
 			 st_sprint(errmsg, "User meta login check failed. Authentication failure. { username =  %.*s / password = %.*s }",
@@ -136,16 +149,11 @@ START_TEST (check_users_meta_invalid_s) {
 			result = false;
 		}
 
-		if (auth) {
-			auth_free(auth);
-			auth = NULL;
-		}
+		if (auth) auth_free(auth);
+		if (user) meta_inx_remove(user->usernum, META_PROTOCOL_POP);
 
-		if (user) {
-			meta_free(user);
-			user = NULL;
-		}
-
+		auth = NULL;
+		user = NULL;
 	}
 
 	log_test("USERS / META / INVALID / SINGLE THREADED:", errmsg);

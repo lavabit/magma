@@ -103,7 +103,6 @@ bool_t mail_store_message_data(uint64_t messagenum, uint8_t flags, stringer_t *d
 uint64_t mail_store_message(uint64_t usernum, prime_t *signet, uint64_t foldernum, uint32_t *status, uint64_t signum, uint64_t sigkey, stringer_t *message) {
 
 	chr_t *path;
-
 	uint64_t messagenum;
 	bool_t store_result;
 	compress_t *reduced = NULL;

@@ -88,7 +88,7 @@ meta_user_t *  meta_inx_find(uint64_t usernum, META_PROTOCOL protocol);
 void           meta_inx_remove(uint64_t usernum, META_PROTOCOL protocol);
 
 /// crypto.c
-int_t   meta_crypto_keys_create(uint64_t usernum, stringer_t *username, stringer_t *master, int64_t transaction);
+int_t   meta_crypto_keys_create(uint64_t usernum, stringer_t *username, stringer_t *realm, int64_t transaction);
 
 /// alias.c
 meta_alias_t *  alias_alloc(uint64_t aliasnum, stringer_t *address, stringer_t *display, int_t selected, uint64_t created);

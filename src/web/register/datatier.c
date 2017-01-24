@@ -119,7 +119,8 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 	auth_stacie_t *stacie = NULL;
 	const chr_t *account_plans[] = { "BASIC", "PERSONAL", "ENHANCED", "PREMIUM" };
 	uint64_t name_len, quota = 0, usernum, inbox, size_limit, send_limit, recv_limit;
-	stringer_t *newaddr = NULL, *salt = NULL, *shard = NULL, *b64_salt = NULL, *b64_shard = NULL, *b64_verification = NULL, *ip = NULL;
+	stringer_t *newaddr = NULL, *salt = NULL, *shard = NULL, *b64_salt = NULL, *b64_shard = NULL, *b64_verification = NULL,
+		*ip = NULL, *realm = NULL;
 
 	/// LOW: This function should be passed a number of days (or years) to use for any of the pre-paid account plans.
 	/// LOW: The IP address could be passed in as an ip_t or as a string to avoid the need for the entire connection object.
@@ -400,8 +401,8 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 		return false;
 	}
 
-	// Finally create the storage key pair.
-	if ((meta_crypto_keys_create(usernum, username, stacie->keys.master, transaction))) {
+	// Finally derive the realm key, and then create the DIME signet and key pair.
+	if (!(realm = stacie_realm_key_derive(stacie->keys.master, PLACER("mail",  4), shard)) || meta_crypto_keys_create(usernum, username, realm, transaction)) {
 		log_pedantic("Unable to insert the user into the database. (Failed on Keys table.)");
 		st_cleanup(newaddr, salt, shard, b64_salt, b64_shard, b64_verification);
 		auth_stacie_cleanup(stacie);
@@ -409,7 +410,7 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 	}
 
 	// Cleanup and tell the caller everything worked.
-	st_cleanup(newaddr, salt, shard, b64_salt, b64_shard, b64_verification);
+	st_cleanup(newaddr, salt, shard, b64_salt, b64_shard, b64_verification, realm);
 	auth_stacie_cleanup(stacie);
 	*outuser = usernum;
 

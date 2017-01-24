@@ -8,20 +8,20 @@
 #include "magma.h"
 
 /**
- * @brief Creates a new ECIES key pair and inserts it into the database.
+ * @brief Creates a new DIME key pair and insert it into the database.
  *
  * @param user
  * @param master
  *
  * @return -1 if an error occurs, 0 if successful, and 1 if the insertion fails because a key already exists.
  */
-int_t meta_crypto_keys_create(uint64_t usernum, stringer_t *username, stringer_t *master, int64_t transaction) {
+int_t meta_crypto_keys_create(uint64_t usernum, stringer_t *username, stringer_t *realm, int64_t transaction) {
 
 	key_pair_t pair = { NULL, NULL };
 	prime_t *key = NULL, *request = NULL, *signet = NULL;
 
 	// Create the DIME user key.
-	if (!(key = prime_key_generate(PRIME_USER_KEY, NONE)) || !(pair.private = prime_key_encrypt(master, key, BINARY, NULL))) {
+	if (!(key = prime_key_generate(PRIME_USER_KEY, NONE)) || !(pair.private = prime_key_encrypt(realm, key, BINARY, NULL))) {
 		log_pedantic("Unable to create a user key. { username = %.*s }", st_length_int(username), st_char_get(username));
 		prime_cleanup(key);
 		return -1;

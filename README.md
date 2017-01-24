@@ -4,9 +4,9 @@ Magma was originally designed and developed by Ladar Levison for lavabit.com. Th
 
 # Downloads
 
-##### Magma v6.4.710
+##### Magma v6.4.709
 
-https://darkmail.info/downloads/magma-6.4.710.tar.gz    
+https://codeload.github.com/lavabit/magma/tar.gz/06f99c9873eb64e4f06833d6bc2b8f5b6afc45dc
 
 ##### Magma Development Machine, v1.0.0
 

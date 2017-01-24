@@ -65,7 +65,6 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="sources|check/|archives/|logs/|objects/|patches/|sources/clamav/libclamav/c++/llvm/|sources/mysql/vio/viosocket.c|sources/mysql/libmysql_r/viosocket.c|sources/clamav/win32/|sources/mysql/include/config-win.h|sources/mysql/include/config-netware.h|local/include/spf2/|sources/spf2/" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="sources"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

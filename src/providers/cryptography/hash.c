@@ -3,11 +3,6 @@
  * @file /magma/providers/cryptography/hash.c
  *
  * @brief Functions used to create a secure one-way hash of an arbitrary input buffer.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

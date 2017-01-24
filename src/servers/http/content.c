@@ -3,11 +3,6 @@
  * @file /magma/servers/http/content.c
  *
  * @brief	Functions for handling the management of web server content.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

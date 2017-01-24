@@ -3,11 +3,6 @@
  * @file /magma/providers/prime/cryptography/ed25519.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

@@ -3,11 +3,6 @@
  * @file /magma/web/json_api/endpoints.c
  *
  * @brief The the JSON API interface functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

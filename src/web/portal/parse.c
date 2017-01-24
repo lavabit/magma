@@ -3,11 +3,6 @@
  * @file /magma/web/portal/parse.c
  *
  * @brief	json-rpc request parameter parsers for the portal.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

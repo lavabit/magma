@@ -3,11 +3,6 @@
  * @file /check/magma/core/url_check.c
  *
  * @brief URL encoder unit tests.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

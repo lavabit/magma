@@ -3,11 +3,6 @@
  * @file /magma/magma.h
  *
  * @brief The global include file. This header includes both system headers and Magma module headers.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_H

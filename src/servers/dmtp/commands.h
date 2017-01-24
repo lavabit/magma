@@ -3,11 +3,6 @@
  * @file /magma/servers/dmtp/commands.h
  *
  * @brief	The data structure for parsing and routing DMTP commands.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_SERVERS_DMTP_COMMANDS_H

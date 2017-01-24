@@ -3,11 +3,6 @@
  * @file /check/magma/users/users_check.c
  *
  * @brief Checks the code used to handle user data.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

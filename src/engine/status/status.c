@@ -3,11 +3,6 @@
  * @file /magma/engine/status/status.c
  *
  * @brief	Functions used to coordinate system state and worker thread operation and shutdown..
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

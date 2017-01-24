@@ -3,11 +3,6 @@
  * @file /magma/providers/images/jpeg.c
  *
  * @brief The functions used to create and modify JPEG image files
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

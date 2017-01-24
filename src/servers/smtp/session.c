@@ -3,11 +3,6 @@
  * @file /magma/servers/smtp/session.c
  *
  * @brief	Functions used to handle SMTP sessions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -82,7 +77,6 @@ void smtp_session_destroy(connection_t *con) {
 // HIGH: Wtf is this?
 // Check whether the usernum on the inbound structure has already been used.
 /**
- *
  */
 bool_t smtp_check_duplicate_recipient(connection_t *con, uint64_t usernum) {
 

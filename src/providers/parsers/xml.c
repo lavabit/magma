@@ -3,11 +3,6 @@
  * @file /magma/providers/parsers/xml.c
  *
  * @brief	The interface to the xml parser.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -1052,7 +1047,6 @@ stringer_t * xml_dump_doc(xmlDocPtr doc) {
  * @param	encoding	a null-terminated string specifying the document encoding type, or NULL for default.
  * @param	options		a value containing a mask of xml parser options of type xmlParserOption.
  * @return	NULL on failure, or a pointer to the xml document tree of the parsed xml text on success.
- *
  */
 xmlDocPtr xml_create_doc(xmlParserCtxtPtr ctx, const chr_t *buffer, int_t size, const chr_t *url, const chr_t *encoding, int_t options) {
 

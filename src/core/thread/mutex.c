@@ -3,11 +3,6 @@
  * @file /magma/core/thread/mutex.c
  *
  * @brief	Functions for thread coordination via a mutex.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

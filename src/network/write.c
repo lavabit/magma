@@ -3,11 +3,6 @@
  * @file /magma/network/write.c
  *
  * @brief	Functions used to write data out via the network.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

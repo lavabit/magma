@@ -3,11 +3,6 @@
  * @file /magma/web/register/datatier.c
  *
  * @brief	Functions for handling the new user registration process.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

@@ -3,11 +3,6 @@
  * @file /check/magma/prime/ed25519_check.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

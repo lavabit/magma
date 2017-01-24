@@ -3,11 +3,6 @@
  * @file /magma/core/compare/ends.c
  *
  * @brief	Functions used to compare the ends of strings with other strings.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

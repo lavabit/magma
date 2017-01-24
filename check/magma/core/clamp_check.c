@@ -3,11 +3,6 @@
  * @file /check/magma/core/clamp_check.c
  *
  * @brief The clamp function test cases.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

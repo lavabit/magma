@@ -3,11 +3,6 @@
  * @file /magma/core/checksum/adler.c
  *
  * @brief	An x86 implementation of the Adler hash algorithm.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

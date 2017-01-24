@@ -3,11 +3,6 @@
  * @file /magma/core/strings/shortcuts.c
  *
  * @brief	A collection of shortcuts used to call various string functions using sensible default values.
- *
- * $Author$
- * $Date$
- * $Revision:$
- *
  */
 
 #include "magma.h"

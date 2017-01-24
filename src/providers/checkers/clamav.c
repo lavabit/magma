@@ -3,11 +3,6 @@
  * @file /magma/providers/checkers/clamav.c
  *
  * @brief	Interface to the ClamAV library.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

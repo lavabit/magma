@@ -3,11 +3,6 @@
  * @file /magma/web/portal/mail.c
  *
  * @brief	Functions for various smtp-level functionality for use in conjunction with the portal.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

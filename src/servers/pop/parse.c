@@ -3,11 +3,6 @@
  * @file /magma/servers/pop/parse.c
  *
  * @brief	The POP protocol parsers.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

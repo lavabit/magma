@@ -3,11 +3,6 @@
  * @file /magma/network/clients.c
  *
  * @brief	Functions for handling network client connections.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

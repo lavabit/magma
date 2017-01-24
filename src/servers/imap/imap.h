@@ -3,11 +3,6 @@
  * @file /magma/servers/imap/imap.h
  *
  * @brief The entry point for the IMAP server module.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_SERVERS_IMAP_H

@@ -3,11 +3,6 @@
  * @file /check/magma/providers/provide_check.h
  *
  * @brief The entry point for the provide module test suite.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef PROVIDE_CHECK_H

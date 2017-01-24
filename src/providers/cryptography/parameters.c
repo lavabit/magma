@@ -3,11 +3,6 @@
  * @file /magma/providers/cryptography/parameters.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

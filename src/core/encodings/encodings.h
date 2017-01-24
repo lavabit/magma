@@ -3,11 +3,6 @@
  * @file /magma/core/encodings/encodings.h
  *
  * @brief	Functions used to encode and decode data in various formats.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_CORE_ENCODINGS_H
@@ -22,7 +17,6 @@
  *	Opera: at least 190,000 characters
  *	IIS: by default the limit is 16,384 but can be increased
  *	Apache: by default 4,000 characters
- *
  */
 
 #define URL_MAX_LENGTH 				1048576

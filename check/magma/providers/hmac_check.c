@@ -3,11 +3,6 @@
  * @file /check/magma/providers/hmac_check.c
  *
  * @brief The logic used to test the hmac algorithm interface.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

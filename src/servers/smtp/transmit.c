@@ -3,11 +3,6 @@
  * @file /magma/servers/smtp/transmit.c
  *
  * @brief Handle replies.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

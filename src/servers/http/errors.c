@@ -3,11 +3,6 @@
  * @file /magma/servers/http/errors.c
  *
  * @brief	Error page templates.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

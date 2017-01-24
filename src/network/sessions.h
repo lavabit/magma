@@ -3,11 +3,6 @@
  * @file /magma/network/sessions.h
  *
  * @brief	Structures for handling web session data.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_NETWORK_SESSIONS_H

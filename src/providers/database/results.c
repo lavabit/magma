@@ -3,11 +3,6 @@
  * @file /magma/providers/database/results.c
  *
  * @brief	A collection of functions for handling MySQL result sets.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

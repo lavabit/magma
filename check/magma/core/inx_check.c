@@ -3,11 +3,6 @@
  * @file /check/magma/core/inx_check.c
  *
  * @brief Index checks.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

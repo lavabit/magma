@@ -3,11 +3,6 @@
  * @file /magma/engine/controller/controller.h
  *
  * @brief	Functions involved with assigning tasks to worker threads and routing network connections to the proper protocol subsystem.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_ENGINE_CONTROLLER_H

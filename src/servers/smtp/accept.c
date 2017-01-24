@@ -3,11 +3,6 @@
  * @file /magma/servers/smtp/accept.c
  *
  * @brief	Functions used to handle SMTP commands/actions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

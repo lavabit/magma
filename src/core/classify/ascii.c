@@ -3,11 +3,6 @@
  * @file /magma/core/classify/ascii.c
  *
  * @brief	Functions used to classify ASCII characters.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -144,7 +139,6 @@ bool_t chr_whitespace(uchr_t c) {
  * @param	chrs	a pointer to a buffer containing the family of valid character values.
  * @param	chrlen	the number of characters in the testing set.
  * @return	true if the character passed the test, or false otherwise.
- *
  */
 bool_t chr_is_class(uchr_t c, uchr_t *chrs, size_t chrlen) {
 

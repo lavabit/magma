@@ -3,11 +3,6 @@
  * @file /magma/network/smtp.h
  *
  * @brief	Structures used to control SMTP connections/sessions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_OBJECTS_SMTP_H

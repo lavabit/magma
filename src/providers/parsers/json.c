@@ -3,11 +3,6 @@
  * @file /magma/providers/parsers/json.c
  *
  * @brief JSON serialization.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

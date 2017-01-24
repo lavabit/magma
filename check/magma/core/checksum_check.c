@@ -3,11 +3,6 @@
  * @file /check/magma/core/checksum_check.c
  *
  * @brief The unit tests for the checksumming functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

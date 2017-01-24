@@ -3,11 +3,6 @@
  * @file /magma/engine/config/cache/keys.h
  *
  * @brief	A collection of keys that define the configuration of cache instances.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_OPIONS_CACHE_KEYS_H

@@ -3,11 +3,6 @@
  * @file /magma/network/meta.h
  *
  * @brief Meta information structures/types for users, folders, messages, etc.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_NETWORK_META_H

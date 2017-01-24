@@ -3,11 +3,6 @@
  * @file /magma/providers/compress/bzip.c
  *
  * @brief The interface for the BZIP compression functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

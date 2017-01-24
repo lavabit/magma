@@ -3,11 +3,6 @@
  * @file /magma/engine/config/relay/relay.h
  *
  * @brief The types and functions involved with creating and accessing the relay structures.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_ENGINE_CONFIG_RELAY_H

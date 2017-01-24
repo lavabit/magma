@@ -3,11 +3,6 @@
  * @file /magma/core/parsers/numbers/numbers.c
  *
  * @brief	Functions for converting different string types into binary numbers.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

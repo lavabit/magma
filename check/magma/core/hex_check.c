@@ -3,11 +3,6 @@
  * @file /check/magma/core/hex_check.c
  *
  * @brief Hex encoder unit tests.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

@@ -3,11 +3,6 @@
  * @file /magma/providers/parsers/parsers.h
  *
  * @brief The entry point for modules involved with accessing functionality provided by alien code.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_PROVIDERS_PARSERS_H

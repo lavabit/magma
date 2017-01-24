@@ -3,11 +3,6 @@
  * @file /magma/web/statistics/statistics.h
  *
  * @brief	Code for dynamically generating the portal statistics page.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_WEB_STATISTICS_H

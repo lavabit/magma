@@ -4,11 +4,6 @@
  * @file /magma/engine/config/relay/relay.c
  *
  * @brief	Functions for handling relay server instance configurations.
- *
- * $Author$
- * $Author$
- * $Revision$
- *
  */
 
 #include "magma.h"

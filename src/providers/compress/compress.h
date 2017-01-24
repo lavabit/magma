@@ -3,11 +3,6 @@
  * @file /magma/providers/compress/compress.h
  *
  * @brief Compression interface functions/handlers.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_PROVIDERS_EXTERNAL_COMPRESS_H

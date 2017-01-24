@@ -3,11 +3,6 @@
  * @file /check/magma/core/system_check.c
  *
  * @brief System helper function checks.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

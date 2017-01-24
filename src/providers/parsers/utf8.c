@@ -4,11 +4,6 @@
  *
  * @brief	The interface for UTF-8 parsing.
  * 		CURRENTLY ONLY SUPPORTS ASCII.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

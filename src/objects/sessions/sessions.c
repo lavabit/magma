@@ -3,11 +3,6 @@
  * @file /magma/objects/sessions/sessions.c
  *
  * @brief	Routines to handle web sessions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

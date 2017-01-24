@@ -3,11 +3,6 @@
  * @file /magma/servers/http/sessions.c
  *
  * @brief	HTTP session handlers.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

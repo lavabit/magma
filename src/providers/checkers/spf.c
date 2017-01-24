@@ -3,11 +3,6 @@
  * @file /magma/providers/checkers/spf.c
  *
  * @brief	The functions used to validate SPF information.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

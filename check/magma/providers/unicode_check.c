@@ -3,11 +3,6 @@
  * @file /check/magma/providers/unicode_check.c
  *
  * @brief The unit tests for functions which provide Unicode functionality.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

@@ -3,11 +3,6 @@
  * @file /magma/core/compare/search.c
  *
  * @brief	String search functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

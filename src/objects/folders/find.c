@@ -3,11 +3,6 @@
  * @file /magma/objects/folders/find.c
  *
  * @brief	Functions to search for specified folders.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

@@ -3,11 +3,6 @@
  * @file /magma/providers/prime/signets/users.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

@@ -3,11 +3,6 @@
  * @file /magma/servers/http/parse.c
  *
  * @brief	Functions used to parse an HTTP request.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

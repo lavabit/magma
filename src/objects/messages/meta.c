@@ -3,11 +3,6 @@
  * @file /magma/objects/messages/meta.c
  *
  * @brief	Functions to interface with the deprecated meta_message_t structure.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

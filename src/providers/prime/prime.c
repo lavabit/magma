@@ -3,11 +3,6 @@
  * @file /magma/providers/prime/prime.c
  *
  * @brief The public PRIME interface. All of the necessary functionality should be available using these functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

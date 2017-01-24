@@ -3,11 +3,6 @@
  * @file /magma/providers/checkers/dkim.c
  *
  * @brief	Functions used to generate and verify Domain Keys Identified Mail (DKIM).
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

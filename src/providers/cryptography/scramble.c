@@ -3,11 +3,6 @@
  * @file /magma/providers/cryptography/scramble.c
  *
  * @brief	Functions used to handle symmetric encryption.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

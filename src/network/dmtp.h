@@ -3,11 +3,6 @@
  * @file /magma/network/dmtp.h
  *
  * @brief Structures used to control DMTP connections/sessions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_OBJECTS_DMTP_H

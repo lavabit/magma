@@ -3,11 +3,6 @@
  * @file /magma/objects/meta/serials.c
  *
  * @brief Functions for retrieving and incrementing meta object serial numbers.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

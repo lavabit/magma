@@ -4,9 +4,6 @@
  *
  * @brief Base64 encoder unit tests.
  *
- * $Author$
- * $Date$
- * $Revision$
  *
 */
 

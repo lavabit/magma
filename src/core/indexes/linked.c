@@ -3,11 +3,6 @@
  * @file /magma/core/indexes/linked.c
  *
  * @brief	The linked list implementation functions utilized by the generic index interface.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

@@ -5,9 +5,6 @@
  * @brief	The function declarations and macros needed to access the error log subsystem.
  *
  * @Author	Ladar
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_CORE_LOG_H

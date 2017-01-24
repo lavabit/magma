@@ -3,11 +3,6 @@
  * @file /magma/servers/pop/commands.c
  *
  * @brief	Functions involved with parsing and dispatching POP commands.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

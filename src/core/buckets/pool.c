@@ -3,11 +3,6 @@
  * @file /magma/core/buckets/pool.c
  *
  * @brief	A collection of functions used to create, maintain and safely utilize collections of object pointers that are accessed by multiple threads.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

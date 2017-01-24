@@ -3,11 +3,6 @@
  * @file /check/magma/core/string_check.c
  *
  * @brief Unit tests for tree based indexes.
- *
- * $Author: $
- * $Date: $
- * $Revision: $
- *
  */
 
 #include "magma_check.h"

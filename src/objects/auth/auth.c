@@ -3,11 +3,6 @@
  * @file /magma/objects/auth/auth.c
  *
  * @brief The primary interface for the STACIE authentication functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

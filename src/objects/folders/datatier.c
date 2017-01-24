@@ -3,11 +3,6 @@
  * @file /magma/objects/folders/datatier.c
  *
  * @brief	Folder data functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

@@ -3,11 +3,6 @@
  * @file /magma/providers/prime/transposition/binary/reader.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

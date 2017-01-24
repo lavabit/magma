@@ -3,11 +3,6 @@
  * @file /magma/engine/context/system.c
  *
  * @brief	Functions used to interface with and configure the operating system.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

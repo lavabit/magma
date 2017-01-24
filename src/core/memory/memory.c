@@ -3,11 +3,6 @@
  * @file /magma/core/memory/memory.c
  *
  * @brief	The functions used to handle Magma memory buffers.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -86,7 +81,6 @@ void * mm_move(void *dst, void *src, size_t len) {
  * @param	len		the number of times to write the value of the byte repeatedly to block.
  * @return	a pointer to the block of memory passed to the function.
  * @see http://gcc.gnu.org/onlinedocs/gcc-4.4.4/gcc/Function-Attributes.html
- *
  */
 void * mm_set(void *block, uint8_t set, size_t len) {
 

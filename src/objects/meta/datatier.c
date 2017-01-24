@@ -3,11 +3,6 @@
  * @file /magma/objects/meta/datatier.c
  *
  * @brief The meta object database interface.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

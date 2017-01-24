@@ -3,11 +3,6 @@
  * @file /magma/engine/config/global/global.h
  *
  * @brief	The global configuration structure used for overall system settings, and functions to initialize it at startup and free it at shutdown.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_ENGINE_CONFIG_GLOBAL_H

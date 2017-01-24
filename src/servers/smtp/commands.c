@@ -3,11 +3,6 @@
  * @file /magma/servers/smtp/commands.c
  *
  * @brief The functions involved with parsing and routing SMTP commands.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

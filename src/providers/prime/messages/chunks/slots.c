@@ -3,11 +3,6 @@
  * @file /magma/providers/prime/messages/chunks/slots.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

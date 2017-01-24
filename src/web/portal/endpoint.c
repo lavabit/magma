@@ -3,11 +3,6 @@
  * @file /magma/web/portal/endpoint.c
  *
  * @brief	The control logic for the Portal JSON endpoint.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -37,7 +32,6 @@ void portal_endpoint_sort(void) {
  *
  *
  * @return
- *
  */
 int_t portal_endpoint_compare(const void *compare, const void *command) {
 
@@ -3093,9 +3087,6 @@ void portal_endpoint(connection_t *con) {
  * @brief	Get a user's attachment to a message composition uploaded via multipart form data.
  * @note
  * @param	path	a pointer to a managed string containing the full /attach path specified in the client's http POST request.
- *
- *
- *
  */
 attachment_t * portal_get_upload_attachment(connection_t *con) {
 
@@ -3167,8 +3158,6 @@ attachment_t * portal_get_upload_attachment(connection_t *con) {
 
 /**
  * @brief	Process uploaded attachments for messages composed in conjunction with the portal interface.
- *
- *
  */
 void portal_upload(connection_t *con) {
 

@@ -3,11 +3,6 @@
  * @file /magma/core/memory/memory.h
  *
  * @brief The functions used to allocate and manipulate blocks of memory off the heap and inside the secured address space.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_CORE_MEMORY_H

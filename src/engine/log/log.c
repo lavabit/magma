@@ -3,11 +3,6 @@
  * @file /magma/engine/log/log.c
  *
  * @brief	Internal logging functions. This function should be accessed using the appropriate macro.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

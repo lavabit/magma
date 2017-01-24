@@ -3,11 +3,6 @@
  * @file /magma/servers/http/http.h
  *
  * @brief	The entry point for the HTTP server module.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_SERVERS_HTTP_H

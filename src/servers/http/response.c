@@ -3,11 +3,6 @@
  * @file /magma/servers/http/response.c
  *
  * @brief	Functions for fulfilling responses to http client requests.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

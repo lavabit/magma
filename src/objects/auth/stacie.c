@@ -3,11 +3,6 @@
  * @file /magma/objects/auth/stacie.c
  *
  * @brief Functions needed to support/convert password hashes using the deprecated stacie strategy.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

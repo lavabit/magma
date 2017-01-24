@@ -3,11 +3,6 @@
  * @file /magma/providers/prime/transposition/binary/binary.h
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef PRIME_BINARY_H

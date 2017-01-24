@@ -3,11 +3,6 @@
  * @file /magma/objects/mail/remove_message.c
  *
  * @brief Functions used to delete messages.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

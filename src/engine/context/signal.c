@@ -3,11 +3,6 @@
  * @file /magma/engine/context/signal.c
  *
  * @brief	A collection of functions used to register and handle signals.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

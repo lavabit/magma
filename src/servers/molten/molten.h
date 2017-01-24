@@ -3,11 +3,6 @@
  * @file /magma/servers/molten/molten.h
  *
  * @brief The entry point for the Molten server module.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_SERVERS_MOLTEN_H

@@ -3,11 +3,6 @@
  * @file /magma/providers/prime/messages/messages.h
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef PRIME_MESSAGES_H

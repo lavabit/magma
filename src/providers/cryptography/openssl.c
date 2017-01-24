@@ -3,11 +3,6 @@
  * @file /magma/providers/cryptography/openssl.c
  *
  * @brief	The interface to OpenSSL routines.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

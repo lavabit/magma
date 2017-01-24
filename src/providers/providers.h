@@ -3,11 +3,6 @@
  * @file /magma/providers/providers.h
  *
  * @brief The entry point for the provider modules.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_PROVIDERS_H

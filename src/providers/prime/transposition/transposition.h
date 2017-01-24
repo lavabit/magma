@@ -3,11 +3,6 @@
  * @file /magma/providers/prime/transposition/transposition.h
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef PRIME_TRANSPOSITION_H

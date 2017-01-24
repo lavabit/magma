@@ -3,11 +3,6 @@
  * @file /magma/objects/messages/messages.c
  *
  * @brief	Mail message interface functions.
- *
- * $Author:$
- * $Author$
- * $Revision$
- *
  */
 
 #include "magma.h"

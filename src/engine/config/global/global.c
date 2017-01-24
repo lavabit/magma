@@ -4,11 +4,6 @@
  * @file /magma/engine/config/global/global.c
  *
  * @brief	Functions for handling the global configuration.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 #include "magma.h"
 #include "keys.h"

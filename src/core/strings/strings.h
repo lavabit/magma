@@ -3,11 +3,6 @@
  * @file /magma/core/strings/strings.h
  *
  * @brief	Function declarations and types used by the different modules involved with handling stringers and null terminated strings.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_CORE_STRINGS_H

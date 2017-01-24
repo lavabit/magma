@@ -3,11 +3,6 @@
  * @file /magma/objects/meta/updaters.c
  *
  * @brief Update the various elements of the meta object.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

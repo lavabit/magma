@@ -3,11 +3,6 @@
  * @file /check/magma/data/data_check.h
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef CHECK_DATA_H

@@ -3,11 +3,6 @@
  * @file /magma/network/http.h
  *
  * @brief	The HTTP server control structures.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_NETWORK_HTTP_H

@@ -3,11 +3,6 @@
  * @file /magma/objects/mail/cache.c
  *
  * @brief	Functions used to cache a mail message in its parsed form.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

@@ -3,11 +3,6 @@
  * @file /check/magma/smtp/smtp_check.c
  *
  * @brief SMTP interface test functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

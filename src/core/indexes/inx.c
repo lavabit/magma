@@ -3,11 +3,6 @@
  * @file /magma/core/indexes/inx.c
  *
  * @brief	The generic index interface used to abstract away the underlying data structure used for storage.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

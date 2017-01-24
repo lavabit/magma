@@ -3,11 +3,6 @@
  * @file /magma/providers/prime/prime.h
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef PRIME_H

@@ -3,11 +3,6 @@
  * @file /magma/queries.h
  *
  * @brief	Assorted SQL queries used throughout Magma.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_DATA_QUERIES_H
@@ -174,7 +169,6 @@
  * @remark Queries + Stmts Init
  *	 	 	 cat queries.h | grep "\#define" | egrep -v "MAGMA_DATA_QUERIES_H|INIT" | grep -v "//" | awk -F' ' '{ print $2 }' | egrep "^[A-Z_]+$" | awk -F' ' '{ print "\t\t\t\t\t\t\t\t\t\t\t" $1 ", \\" }'; \
  *	 	 	 cat queries.h | grep "\#define" | egrep -v "MAGMA_DATA_QUERIES_H|INIT" | grep -v "//" | awk -F' ' '{ print $2 }' | egrep "^[A-Z_]+$" | awk -F' ' '{ print "\t\t\t\t\t\t\t\t\t\t\t**" tolower($1) ", \\" }'
- *
  */
 
 #define QUERIES_INIT						SELECT_DOMAINS, \

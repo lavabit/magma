@@ -3,11 +3,6 @@
  * @file /magma/web/portal/portal.h
  *
  * @brief	The portal web application.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_WEB_PORTAL_H

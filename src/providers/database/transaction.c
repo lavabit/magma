@@ -3,11 +3,6 @@
  * @file /magma/providers/database/transaction.c
  *
  * @brief MySQL transaction interface.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

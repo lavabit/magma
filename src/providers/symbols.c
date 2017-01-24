@@ -3,11 +3,6 @@
  * @file /magma/providers/symbols.c
  *
  * @brief Functions used to load the external library symbols.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

@@ -3,11 +3,6 @@
  * @file /magma/providers/deprecated/deprecated.h
  *
  * @brief	Functions used to perform cryptographic operations and provide truly random data.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_PROVIDERS_DEPRECATED_H

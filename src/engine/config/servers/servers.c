@@ -4,11 +4,6 @@
  * @file /magma/engine/config/servers/servers.c
  *
  * @brief	Functions for handling the server instance configurations.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

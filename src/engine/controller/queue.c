@@ -3,11 +3,6 @@
  * @file /magma/engine/controller/queue.c
  *
  * @brief	Functions used to distribute tasks to available worker threads.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

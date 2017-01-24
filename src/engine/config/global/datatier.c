@@ -3,11 +3,6 @@
  * @file /magma/engine/config/global/datatier.c
  *
  * @brief	Database interface for the engine module.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

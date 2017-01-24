@@ -3,11 +3,6 @@
  * @file /magma/core/parsers/formats/nvp.c
  *
  * @brief	Interface to the name/value pair parser.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

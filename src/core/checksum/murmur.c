@@ -3,11 +3,6 @@
  * @file /magma/core/checksum/murmur.c
  *
  * @brief	An x64 implementation of the Murmur hash function.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

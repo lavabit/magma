@@ -3,11 +3,6 @@
  * @file /magma/objects/mail/headers.c
  *
  * @brief	Functions used to handle mail message header information.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

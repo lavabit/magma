@@ -3,11 +3,6 @@
  * @file /magma/web/contact/contact.c
  *
  * @brief	Handle the contact form.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

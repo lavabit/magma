@@ -3,11 +3,6 @@
  * @file /magma/providers/cryptography/cryptography.h
  *
  * @brief	Functions used to perform cryptographic operations and provide truly random data.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_PROVIDERS_CRYPTOGRAPHY_H

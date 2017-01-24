@@ -3,11 +3,6 @@
  * @file /magma/providers/cryptography/symmetric.c
  *
  * @brief Functions used to encrypt/decrypt data using symmetric ciphers.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

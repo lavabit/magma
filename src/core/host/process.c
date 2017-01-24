@@ -3,11 +3,6 @@
  * @file /magma/core/host/process.c
  *
  * @brief	Functions for managing processes.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

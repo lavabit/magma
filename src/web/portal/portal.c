@@ -3,11 +3,6 @@
  * @file /magma/web/portal/portal.c
  *
  * @brief	The portal web application.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

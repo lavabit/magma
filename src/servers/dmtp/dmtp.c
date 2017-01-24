@@ -3,11 +3,6 @@
  * @file /magma/servers/dmtp/dmtp.c
  *
  * @brief	Functions used to handle DMTP commands/actions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

@@ -3,11 +3,6 @@
  * @file /magma/objects/sessions/sessions.h
  *
  * @brief	Functions for handling web sessions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_OBJECTS_SESSIONS_H

@@ -3,11 +3,6 @@
  * @file /magma/core/encodings/base64.c
  *
  * @brief	Functions for base64 encoding/decoding of data.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

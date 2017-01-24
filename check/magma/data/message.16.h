@@ -1,7 +1,6 @@
 
 /**
  * @file /check/magma/data/message.16.h
- *
  */
 
 #ifndef CHECK_MESSAGE_16_H

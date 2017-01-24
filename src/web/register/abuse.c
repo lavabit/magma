@@ -3,11 +3,6 @@
  * @file /magma/web/register/abuse.c
  *
  * @brief	Functions for handling potential abuse of the new user registration process.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

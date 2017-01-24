@@ -3,11 +3,6 @@
  * @file /magma/objects/auth/datatier.c
  *
  * @brief Functions used to interact with the database and retrieve the necessary authentication information.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

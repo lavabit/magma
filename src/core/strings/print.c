@@ -3,11 +3,6 @@
  * @file /magma/core/strings/print.c
  *
  * @brief	Functions for printing formatted data to managed strings.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

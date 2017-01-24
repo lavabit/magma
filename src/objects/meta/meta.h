@@ -3,11 +3,6 @@
  * @file /magma/objects/meta/meta.h
  *
  * @brief The interface for the meta objects.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_OBJECTS_META_H

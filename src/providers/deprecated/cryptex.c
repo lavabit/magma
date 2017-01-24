@@ -3,11 +3,6 @@
  * @file /magma/providers/deprecated/cryptex.c
  *
  * @brief	Functions for handling the crytex data type.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

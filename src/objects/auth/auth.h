@@ -3,11 +3,6 @@
  * @file /magma/objects/auth/auth.h
  *
  * @brief The STACIE authentication functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_OBJECTS_AUTH_H

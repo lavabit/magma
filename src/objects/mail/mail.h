@@ -3,11 +3,6 @@
  * @file /magma/objects/mail/mail.h
  *
  * @brief	Functions used to interface with and manage message data.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_OBJECTS_MAIL_H

@@ -3,11 +3,6 @@
  * @file /check/magma/providers/tank_check.c
  *
  * @brief A collection of functions designed to test the storage interface.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

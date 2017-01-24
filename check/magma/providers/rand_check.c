@@ -3,11 +3,6 @@
  * @file /check/magma/providers/rand_check.c
  *
  * @brief Check out the random number functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

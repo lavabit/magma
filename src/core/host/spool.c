@@ -3,11 +3,6 @@
  * @file /magma/core/host/spool.c
  *
  * @brief	Functions for checking, creating, maintaining and using the spool.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

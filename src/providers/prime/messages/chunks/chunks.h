@@ -3,11 +3,6 @@
  * @file /magma/providers/prime/messages/chunks/chunks.h
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef PRIME_CHUNKS_H

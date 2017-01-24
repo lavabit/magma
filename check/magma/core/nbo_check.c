@@ -3,11 +3,6 @@
  * @file /check/magma/core/nbo_check.c
  *
  * @brief Network byte order tests.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

@@ -3,11 +3,6 @@
  * @file /check/magma/providers/hash_check.c
  *
  * @brief The logic used to test the digest ciphers.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

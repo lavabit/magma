@@ -3,11 +3,6 @@
  * @file /magma/providers/database/mysql.c
  *
  * @brief MYSQL Symbols.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 /*
@@ -141,7 +136,6 @@
  * 208     utf8             utf8_persian_ci
  * 209     utf8             utf8_esperanto_ci
  * 210     utf8             utf8_hungarian_ci
- *
  */
 
 #include "magma.h"

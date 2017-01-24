@@ -3,11 +3,6 @@
  * @file /magma/objects/mail/cleanup.c
  *
  * @brief	Functions for cleaning up mail messages.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

@@ -3,11 +3,6 @@
  * @file /magma/core/host/host.h
  *
  * @brief	Provide access to system interfaces.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_CORE_SYSTEM_H

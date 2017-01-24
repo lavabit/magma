@@ -3,11 +3,6 @@
  * @file /magma/engine/config/cache/cache.h
  *
  * @brief	Types and functions for creating and accessing the cache structures.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_ENGINE_CONFIG_CACHE_H

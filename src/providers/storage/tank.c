@@ -3,11 +3,6 @@
  * @file /magma/providers/storage/tank.c
  *
  * @brief The storage system interface. Uses Tokyo Cabinet to store the underlying files.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

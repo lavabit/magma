@@ -3,11 +3,6 @@
  * @file /check/magma/providers/scramble_check.c
  *
  * @brief Check the scrambler.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

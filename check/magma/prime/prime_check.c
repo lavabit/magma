@@ -3,11 +3,6 @@
  * @file /check/magma/prime/prime_check.c
  *
  * @brief The heart of the suite of unit tests for the Magma provide module.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

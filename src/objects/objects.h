@@ -3,11 +3,6 @@
  * @file /magma/objects/objects.h
  *
  * @brief	Functions used to interface with objects.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_OBJECTS_H

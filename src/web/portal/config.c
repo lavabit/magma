@@ -3,11 +3,6 @@
  * @file /magma/web/portal/config.c
  *
  * @brief	Utilities functions for handling user config entries.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

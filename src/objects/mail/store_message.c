@@ -3,11 +3,6 @@
  * @file /magma/objects/mail/store_message.c
  *
  * @brief	Functions used to store and copy mail message data.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -104,7 +99,6 @@ bool_t mail_store_message_data(uint64_t messagenum, uint8_t fflags, void *data, 
  * @param	sigkey		the spam key for the message.
  * @param	message		a managed string containing the raw body of the message.
  * @return	0 on failure, or the newly inserted id of the message in the database on success.
- *
  */
 uint64_t mail_store_message(uint64_t usernum, stringer_t *pubkey, uint64_t foldernum, uint32_t *status, uint64_t signum, uint64_t sigkey, stringer_t *message) {
 

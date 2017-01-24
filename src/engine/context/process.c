@@ -3,11 +3,6 @@
  * @file /magma/engine/context/process.c
  *
  * @brief	Functions used to start and stop the daemon, including the execution of the module init and module clean up functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

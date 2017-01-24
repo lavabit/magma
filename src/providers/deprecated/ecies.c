@@ -3,11 +3,6 @@
  * @file /magma/providers/deprecated/ecies.c
  *
  * @brief	ECIES encryption/decryption functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

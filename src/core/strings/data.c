@@ -3,11 +3,6 @@
  * @file /magma/core/strings/data.c
  *
  * @brief	Functions used to inspect the data of managed strings.
- *
- * $Author$
- * $Author$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -246,8 +241,7 @@ void st_wipe(stringer_t *s) {
  * @param	s		the managed string to be overwritten with the value of set.
  * @param	set		the byte value to be write into the string.
  * @param	len		the number of bytes to set to the provided value.
- * @return	a pointer to the block of memory passed to the function. *
- */
+ * @return	a pointer to the block of memory passed to the function. */
 stringer_t * st_set(stringer_t *s, uint8_t set, size_t len) {
 
 	uint32_t opts;

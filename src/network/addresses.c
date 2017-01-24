@@ -3,11 +3,6 @@
  * @file /magma/network/addresses.c
  *
  * @brief	A collection of functions used to allocate, configure and destroy connection structures.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

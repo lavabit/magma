@@ -3,11 +3,6 @@
  * @file /magma/providers/prime/cryptography/cryptography.h
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef PRIME_CRYPTOGRAPHY_H

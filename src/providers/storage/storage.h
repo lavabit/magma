@@ -3,11 +3,6 @@
  * @file /magma/providers/storage/storage.h
  *
  * @brief The Tokyo Cabinet interface, which is primarily used for memory and disk based storage.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_PROVIDE_TOKYO_PRIVATE_H

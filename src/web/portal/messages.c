@@ -3,11 +3,6 @@
  * @file /magma/web/portal/messages.c
  *
  * @brief	Functions to help assemble mail message for output.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

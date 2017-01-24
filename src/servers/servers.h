@@ -3,11 +3,6 @@
  * @file /magma/servers/servers.h
  *
  * @brief The inclusion point for the different server implementations.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_SERVERS_H

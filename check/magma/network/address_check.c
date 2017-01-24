@@ -3,11 +3,6 @@
  * @file /check/magma/network/address_check.c
  *
  * @brief Address unit tests.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

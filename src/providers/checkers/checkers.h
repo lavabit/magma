@@ -3,11 +3,6 @@
  * @file /magma/providers/checkers/checkers.h
  *
  * @brief Functions used to scan, analyze, check, and validate data.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_PROVIDERS_CHECKERS_H

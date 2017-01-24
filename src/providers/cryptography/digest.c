@@ -3,11 +3,6 @@
  * @file /magma/providers/cryptography/digest.c
  *
  * @brief  Functions used to handle the message digest (aka hash function) primitives.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

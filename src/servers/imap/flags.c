@@ -3,11 +3,6 @@
  * @file /magma/servers/imap/flags.c
  *
  * @brief 	Functions to handle IMAP commands/actions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

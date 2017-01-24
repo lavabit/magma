@@ -3,11 +3,6 @@
  * @file /magma/engine/status/statistics.c
  *
  * @brief	A collection of functions used to track and access system statistics.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

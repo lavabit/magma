@@ -3,11 +3,6 @@
  * @file /magma/objects/warehouse/patterns.c
  *
  * @brief	Functions used to manage the list of spam patterns that are scanned for detection in outbound messages.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

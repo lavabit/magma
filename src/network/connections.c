@@ -3,11 +3,6 @@
  * @file /magma/network/connections.c
  *
  * @brief	A collection of functions to allocate, configure and destroy connection structures.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

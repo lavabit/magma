@@ -3,11 +3,6 @@
  * @file /magma/core/parsers/numbers/digits.c
  *
  * @brief	Functions for counting the digit places in a number, including the sign character for signed numbers.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

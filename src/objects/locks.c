@@ -3,11 +3,6 @@
  * @file /magma/objects/locks.c
  *
  * @brief	Functions for managing locks synchronized via memcached.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

@@ -3,11 +3,6 @@
  * @file /magma/providers/prime/transposition/armored/armored.h
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef PRIME_AMORED_H

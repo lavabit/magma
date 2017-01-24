@@ -3,11 +3,6 @@
  * @file /magma/core/thread/keys.c
  *
  * @brief	Functions for handling thread local storage keys.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

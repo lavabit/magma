@@ -3,11 +3,6 @@
  * @file /magma/web/json_api/json_api.h
  *
  * @brief The the JSON API interface functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_WEB_JSON_API_H

@@ -3,11 +3,6 @@
  * @file /magma/objects/meta/meta.c
  *
  * @brief The primary interface for the meta objects.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

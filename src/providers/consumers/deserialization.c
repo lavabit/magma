@@ -3,11 +3,6 @@
  * @file /magma/providers/consumers/deserialization.c
  *
  * @brief	Distributed cache interface for de-serializing various data types.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

@@ -3,11 +3,6 @@
  * @file /magma/objects/contacts/find.c
  *
  * @brief	Functions to search a collection of contacts.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

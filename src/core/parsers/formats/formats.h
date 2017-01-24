@@ -3,11 +3,6 @@
  * @file /magma/core/parsers/formats/formats.h
  *
  * @brief	Function declarations and types used by the structured format parsers.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_CORE_PARSERS_FORMATS_H

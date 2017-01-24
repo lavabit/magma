@@ -3,11 +3,6 @@
  * @file /magma/core/host/color.c
  *
  * @brief Functions for colorizing the console output.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

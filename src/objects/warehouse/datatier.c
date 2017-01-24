@@ -3,11 +3,6 @@
  * @file /magma/objects/warehouse/datatier.c
  *
  * @brief	Functions used by the warehouse objects to access the database.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

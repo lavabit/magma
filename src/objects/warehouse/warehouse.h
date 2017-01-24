@@ -3,11 +3,6 @@
  * @file /magma/objects/warehouse/warehouse.h
  *
  * @brief	Functions to provide access to warehoused reference data needed to make intelligent decisions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_OBJECTS_WAREHOUSE_H

@@ -6,11 +6,6 @@
  * 		specification. These functions implement the individual steps required for key and token derivation.
  * 		The inputs for these functions should already processed and normalized for a deterministic
  * 		output.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -139,7 +134,6 @@ stringer_t * stacie_nonce_create(stringer_t *output) {
  *
  * @return  Valid passwords will return a value between 8 (the prescribed minimum) and 16,777,216 (the prescribed
  * 		maximum). If an error occurs, then 0 will be returned.
- *
  */
 uint32_t stacie_rounds_calculate(stringer_t *password, uint32_t bonus) {
 
@@ -193,7 +187,6 @@ uint32_t stacie_rounds_calculate(stringer_t *password, uint32_t bonus) {
  * @return	provides a managed string with the entropy seed value stored in a secure memory buffer, or NULL if an error occurs. The
  * 		length of the return value depends on the HMAC function being used. Magma currently uses an HMAC function based around
  * 		SHA-512, which results in the output being exactly 64 bytes, at least it was 64 bytes every time I bothered to look.
- *
  */
 stringer_t * stacie_entropy_seed_derive(uint32_t rounds, stringer_t *password, stringer_t *salt) {
 
@@ -296,7 +289,6 @@ stringer_t * stacie_entropy_seed_derive(uint32_t rounds, stringer_t *password, s
  * @return	provides a managed string with the derived key stored in a secure memory buffer, or NULL if an error occurs. The
  * 		length of the output depends on the hash function being used. Magma currently uses SHA-512, which will result in
  * 		the output being exactly 64 bytes, every single time.
- *
  */
 stringer_t * stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt) {
 
@@ -425,7 +417,6 @@ stringer_t * stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringe
  * @return	provides a managed string with the derived token stored in a secure memory buffer, or NULL if an error
  * 		occurs. The	length of the output depends on the hash function being used. Magma currently uses SHA-512, which will result in
  * 		the output being exactly 64 bytes, with a level of reliability that rivals death and taxes.
- *
  */
 stringer_t * stacie_hashed_token_derive(stringer_t *base, stringer_t *username, stringer_t *salt, stringer_t *nonce) {
 

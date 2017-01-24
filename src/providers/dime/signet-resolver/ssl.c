@@ -118,7 +118,6 @@ SSL_CTX *_ssl_get_client_context(void) {
  * @note    This function is called immediately after server confirmation of a STARTTLS command receipt.
  * @param   fd  the file descriptor of the network socket over which the TLS session will be initiated.
  * @return  NULL on failure, or the SSL descriptor of the newly established TLS session on success.
- *
  */
 SSL *_ssl_starttls(int fd) {
 

@@ -3,11 +3,6 @@
  * @file /check/magma/providers/dkim_check.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include <opendkim/dkim-types.h>

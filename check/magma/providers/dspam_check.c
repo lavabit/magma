@@ -3,11 +3,6 @@
  * @file /check/magma/providers/dspam_check.c
  *
  * @brief DSPAM unit tests.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

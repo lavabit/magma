@@ -3,11 +3,6 @@
  * @file /check/magma/magma_check.h
  *
  * @brief The entry point for accessing the modules involved with executing unit tests.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_CHECK_H

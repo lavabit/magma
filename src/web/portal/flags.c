@@ -3,11 +3,6 @@
  * @file /magma/web/portal/flags.c
  *
  * @brief Functions for handling message flags and tags.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

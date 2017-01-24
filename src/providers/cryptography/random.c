@@ -3,11 +3,6 @@
  * @file /magma/providers/cryptography/random.c
  *
  * @brief A collection of functions for generating random data.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

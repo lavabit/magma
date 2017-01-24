@@ -3,11 +3,6 @@
  * @file /magma/engine/config/servers/servers.h
  *
  * @brief	The types and functions involved in creating and accessing the server structure.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_ENGINE_CONFIG_SERVERS_H

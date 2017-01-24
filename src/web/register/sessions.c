@@ -3,11 +3,6 @@
  * @file /magma/web/register/sessions.c
  *
  * @brief	Functions for handling the internal session structure used by new user registration attemptps.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

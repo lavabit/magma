@@ -7,7 +7,6 @@
  * $$Author$$
  * $$Date$$
  * $$Revision$$
- *
  */
 
 #ifndef MAGMA_CORE_BUCKETS_H

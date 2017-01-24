@@ -3,11 +3,6 @@
  * @file /magma/providers/images/images.h
  *
  * @brief The functions used to create and modify image files. For our purposes that include fonts.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_PROVIDERS_IMAGES_H

@@ -3,11 +3,6 @@
  * @file /magma/core/strings/opts.c
  *
  * @brief	Functions for handling managed string options.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

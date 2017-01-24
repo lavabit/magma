@@ -3,11 +3,6 @@
  * @file /magma/objects/messages/messages.h
  *
  * @brief	Mail message operations.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_OBJECTS_MESSAGES_H

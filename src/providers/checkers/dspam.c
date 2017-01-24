@@ -3,11 +3,6 @@
  * @file /magma/providers/checkers/dspam.c
  *
  * @brief DSPAM interface functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

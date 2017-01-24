@@ -3,11 +3,6 @@
  * @file /magma/providers/database/stmts.c
  *
  * @brief	A collection of functions for working with the MySQL prepared statement interface.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

@@ -3,11 +3,6 @@
  * @file /check/magma/prime/signets_check.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

@@ -4,11 +4,6 @@
  *
  * @brief	Functions used to route incoming network connections to their designated protocol modules. This layer also tracks overall protocol
  * 			statistics and establishes TLS connections for connections that arrive on secure ports.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

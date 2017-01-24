@@ -3,11 +3,6 @@
  * @file /magma/core/thread/thread.h
  *
  * @brief	Interface for providing pthread functionality.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_CORE_THREAD_H

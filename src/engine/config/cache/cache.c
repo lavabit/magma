@@ -4,11 +4,6 @@
  * @file /magma/engine/config/cache/cache.c
  *
  * @brief	Functions for handling the cache instance configurations.
- *
- * $Author$
- * $Author$
- * $Revision$
- *
  */
 
 #include "magma.h"

@@ -3,11 +3,6 @@
  * @file /magma/servers/pop/pop.c
  *
  * @brief	Functions used to handle POP commands/actions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

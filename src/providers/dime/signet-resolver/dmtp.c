@@ -400,7 +400,6 @@ dmtp_session_t *_dx_connect_dual(const char *host, const char *domain, int force
  *              3. If necessary, verify that the certificate has not been revoked by issuing an OCSP request.
  * @param   session     a pointer to the DMTP session to have its TLS certificate verified.
  * @return  -1 on general error, 0 if the connection's TLS certificate failed verification, and 1 if the certificate passed verification.
- *
  */
 int _verify_dx_certificate(dmtp_session_t *session) {
 

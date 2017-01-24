@@ -3,11 +3,6 @@
  * @file /check/magma/core/core_check.h
  *
  * @brief The entry point for the core module test suite.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef CORE_CHECK_H

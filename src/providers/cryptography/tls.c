@@ -3,11 +3,6 @@
  * @file /magma/providers/cryptography/tls.c
  *
  * @brief DESCRIPTIONxxxGOESxxxHERE
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"
@@ -25,7 +20,6 @@
  * (reccomended)			2 = require TLSv1 and above, refuse SSLv2 and SSLv3 connections, only use ciphers which provide forward secrecy.
  * 							3 = require TLSv1.2 and limit the cipher list to ECDHE-RSA-AES256-GCM-SHA384 or ECDHE-RSA-CHACHA20-POLY1305
  * 								as required by the specifications.
- *
  */
 bool_t ssl_server_create(void *server, uint_t security_level) {
 
@@ -232,7 +226,6 @@ void * tls_client_alloc(int_t sockd) {
  * @brief	Shutdown and free an SSL connection.
  * @param	ssl		the SSL connection to be shut down.
  * @return	This function returns no value.
- *
  */
 void tls_free(SSL *ssl) {
 

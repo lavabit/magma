@@ -3,11 +3,6 @@
  * @file /magma/web/register/business.c
  *
  * @brief	Functions for handling validation for the registration process.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

@@ -3,11 +3,6 @@
  * @file /magma/servers/smtp/parse.c
  *
  * @brief	Functions used to parse command parameters from SMTP clients.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

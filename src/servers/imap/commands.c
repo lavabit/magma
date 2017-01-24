@@ -3,11 +3,6 @@
  * @file /magma/servers/imap/commands.c
  *
  * @brief The functions involved with parsing and routing POP commands.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

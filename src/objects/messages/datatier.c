@@ -3,11 +3,6 @@
  * @file /magma/objects/messages/datatier.c
  *
  * @brief	Message data functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

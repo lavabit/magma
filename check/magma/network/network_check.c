@@ -3,11 +3,6 @@
  * @file /check/magma/network/network_check.c
  *
  * @brief Check the network functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

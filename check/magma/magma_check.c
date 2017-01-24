@@ -3,11 +3,6 @@
  * @file /check/magma/magma_check.c
  *
  * @brief	The unit test executable entry point.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

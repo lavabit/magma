@@ -3,11 +3,6 @@
  * @file /magma/engine/config/config.h
  *
  * @brief	The entry point for all configuration modules used by magma.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_ENGINE_OPTIONS_H

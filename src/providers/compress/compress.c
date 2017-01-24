@@ -3,11 +3,6 @@
  * @file /magma/providers/compress/compress.c
  *
  * @brief	Interface to the compression functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

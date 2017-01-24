@@ -3,11 +3,6 @@
  * @file /magma/servers/molten/molten.c
  *
  * @brief	Functions used to handle Molten commands/actions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

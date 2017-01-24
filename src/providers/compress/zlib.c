@@ -3,11 +3,6 @@
  * @file /magma/providers/compress/zlib.c
  *
  * @brief The interface for the ZLIB compression functions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

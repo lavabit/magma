@@ -3,11 +3,6 @@
  * @file /magma/network/listeners.c
  *
  * @brief	Functions used to listen for incoming connections on specific ports. Successful socket connections are then passed up to the controller for routing.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

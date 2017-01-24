@@ -3,8 +3,6 @@
  * @file /magma/objects/mail/load_message.c
  *
  * @brief	Functions used to load mail messages.
- *
- *
  */
 
 #include "magma.h"

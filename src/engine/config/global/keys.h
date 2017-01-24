@@ -3,11 +3,6 @@
  * @file /magma/engine/config/global/keys.h
  *
  * @brief	A collection of keys that define access rules, default values and other parameters needed when loading the global configuration.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_OPIONS_GLOBAL_KEYS_H

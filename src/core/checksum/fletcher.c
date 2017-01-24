@@ -3,11 +3,6 @@
  * @file /magma/core/checksum/fletcher.c
  *
  * @brief	An implementation of the Fletcher hash algorithim.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma.h"

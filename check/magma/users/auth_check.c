@@ -3,11 +3,6 @@
  * @file /check/magma/users/auth_check.c
  *
  * @brief Ensure the STACIE and legacy objects used by the auth_t module calculate their results correctly.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #include "magma_check.h"

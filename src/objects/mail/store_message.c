@@ -152,7 +152,7 @@ uint64_t mail_store_message(uint64_t usernum, prime_t *signet, uint64_t foldernu
 	store_result = mail_store_message_data(messagenum, flags, (encrypted ? encrypted : reduced), &path);
 
 	compress_cleanup(reduced);
-	prime_cleanup(encrypted);
+	st_cleanup(encrypted);
 
 	// If the disk operation failed...
 	if (!store_result || !path) {

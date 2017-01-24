@@ -27,12 +27,15 @@ START_TEST (check_mail_store_s) {
 	meta_folder_t *folder = NULL;
 	uint32_t max = check_message_max();
 	stringer_t *errmsg = MANAGEDBUF(1024), *data;
-	stringer_t *usernames[] = { NULLER("magma"), check_username }, *passwords[] = { NULLER("password"), check_password };
+	stringer_t *usernames[] = { PLACER("magma", 5) };
+	stringer_t *passwords[] = { PLACER("password", 8) };
 
 	// The registration check must be run frist, otherwise we won't have a user to check against.
-	if (status() && (!check_username || !check_password)) {
-		check_users_register_s(0);
-	}
+//	if (status() && (!check_username || !check_password)) {
+//		check_users_register_s(0);
+//		usernames[1] = check_username;
+//		passwords[1] = check_password;
+//	}
 
 	for (int_t i = 0; i < (sizeof(usernames)/sizeof(stringer_t *)) && result && status(); i++) {
 
@@ -59,9 +62,9 @@ START_TEST (check_mail_store_s) {
 			result = false;
 		}
 
-		for (uint32_t j = 0; j < max && result && status(); i++) {
+		for (uint32_t j = 0; j < max && result && status(); j++) {
 
-			if (!(data = check_message_get(i))) {
+			if (!(data = check_message_get(j))) {
 				st_sprint(errmsg, "Failed to get the message data. { message = %i }", i);
 				result = false;
 			}
@@ -76,7 +79,7 @@ START_TEST (check_mail_store_s) {
 		}
 
 		if (auth) auth_free(auth);
-		if (user) meta_inx_remove(user->usernum, META_PROTOCOL_POP);
+		if (user) meta_inx_remove(user->usernum, META_PROTOCOL_IMAP);
 
 		auth = NULL;
 		user = NULL;

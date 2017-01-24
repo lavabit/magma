@@ -8,9 +8,6 @@
 #ifndef USER_CHECK_H
 #define USER_CHECK_H
 
-extern stringer_t *check_username;
-extern stringer_t *check_password;
-
 Suite * suite_check_users(void);
 
 void check_users_auth_legacy_s(int);

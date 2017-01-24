@@ -7,11 +7,9 @@
 
 #include "magma_check.h"
 
-stringer_t *check_username = NULL;
-stringer_t *check_password = NULL;
-
 START_TEST (check_users_register_s) {
 
+	log_disable();
 	uint16_t plan;
 	connection_t con;
 	uint64_t usernum = 0;
@@ -20,9 +18,6 @@ START_TEST (check_users_register_s) {
 
 	// If the check process hasn't been aborted, register new user account using a randomly generated userid/password.
 	if (status()) {
-
-		// To prevent the creation of user storage keys, an event which is normally logged, from disrupting the output.
-		log_disable();
 
 		// Pass in a blank connection structure. This will be used to store the registration IP address.
 		mm_wipe(&con, sizeof(connection_t));
@@ -52,14 +47,7 @@ START_TEST (check_users_register_s) {
 			tran_commit(transaction);
 		}
 
-		// If everything worked, save the username and password so they can be used by other test cases.
-		if (st_empty(errmsg)) {
-			check_username = username;
-			check_password = password;
-		}
-		else {
-			st_cleanup(username, password);
-		}
+		st_cleanup(username, password);
 	}
 
 	log_test("USERS / REGISTER / SINGLE THREADED:", errmsg);
@@ -69,20 +57,20 @@ END_TEST
 
 START_TEST (check_users_meta_valid_s) {
 
-//	log_disable();
+	log_disable();
 	auth_t *auth = NULL;
 	bool_t result = true;
 	meta_user_t *pop = NULL, *imap = NULL;
 	stringer_t *errmsg = MANAGEDBUF(1024);
-	stringer_t *usernames[] = { PLACER("magma", 5), check_username };
-	stringer_t *passwords[] = { PLACER("password", 8), check_password };
+	stringer_t *usernames[] = { PLACER("magma", 5) };
+	stringer_t *passwords[] = { PLACER("password", 8) };
 
 	// The registration check must be run frist, otherwise we won't have a user to check against.
-	if (status() && (!check_username || !check_password)) {
-		check_users_register_s(0);
-		usernames[1] = check_username;
-		passwords[1] = check_password;
-	}
+//	if (status() && (!check_username || !check_password)) {
+//		check_users_register_s(0);
+//		usernames[1] = check_username;
+//		passwords[1] = check_password;
+//	}
 
 	for (int_t i = 0; i < (sizeof(usernames)/sizeof(stringer_t *)) && result && status(); i++) {
 

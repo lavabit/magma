@@ -344,7 +344,6 @@ int main(int argc, char *argv[]) {
 	// Cleanup and free the resources allocated by the magma code.
 	process_stop();
 
-	st_cleanup(check_username, check_password);
 	ns_cleanup(barrister_unit_test, virus_check_data_path, tank_check_data_path, dspam_check_data_path);
 	exit((failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE);
 

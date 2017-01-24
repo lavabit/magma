@@ -149,7 +149,8 @@ uint64_t mail_store_message(uint64_t usernum, prime_t *signet, uint64_t foldernu
 	}
 
 	// Now attempt to save everything to disk.
-	store_result = mail_store_message_data(messagenum, flags, (encrypted ? encrypted : reduced), &path);
+	store_result = mail_store_message_data(messagenum, flags, (encrypted ? encrypted :
+		PLACER(compress_body_data(reduced), compress_total_length(reduced))), &path);
 
 	compress_cleanup(reduced);
 	st_cleanup(encrypted);

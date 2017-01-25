@@ -866,7 +866,7 @@ dspam() {
 			
 			# I don't know my mysql_drv.h doesn't get copied to the include directory, so the quickest workaround is
 			# is to copy it over ourselves.
-			cp "$M_SOURCES/dspam/src/dspam_drv.h" "$M_LOCAL/include/dspam/"
+			cp "$M_SOURCES/dspam/src/mysql_drv.h" "$M_LOCAL/include/dspam/"
 		;;
 		dspam-check)
 			cd "$M_SOURCES/dspam"; error

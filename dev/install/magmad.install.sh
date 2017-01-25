@@ -239,10 +239,6 @@ sed -i -e "s/^smtp\([ ]*inet\)/127.0.0.1:2525\1/" /etc/postfix/master.cf
 # Configure the postfix hostname and origin parameters.
 printf "\nmyhostname = relay.$DOMAIN\nmyorigin = $DOMAIN\n" >> /etc/postfix/main.cf 
 
-# Ensure postfix auto-starts during boot, and then launch the daemon.
-/sbin/chkconfig postfix on
-/sbin/service postfix stop 
-/sbin/service postfix start
 
 #############################################################################
 # Compile magmad (if necessary).                                            #
@@ -258,7 +254,7 @@ git clone https://github.com/lavabit/magma magma-develop
 cd magma-develop
 
 # Modify the selinux rules so that postfix may bind to port 2525.
-checkmodule -M -m -o dev/install/postfix.selinux.mod postfix.selinux.te
+checkmodule -M -m -o postfix.selinux.mod dev/install/postfix.selinux.te
 semodule_package -o postfix.selinux.pp -m postfix.selinux.mod
 semodule -i postfix.selinux.pp
 

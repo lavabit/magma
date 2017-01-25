@@ -93,7 +93,7 @@ CREATE TABLE `Creation` (
 DROP TABLE IF EXISTS `Dispatch`;
 CREATE TABLE `Dispatch` (
   `usernum` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `secure` tinyint(1) NOT NULL DEFAULT '0',
+  `secure` tinyint(1) NOT NULL DEFAULT '1',
   `forwarded` varchar(100) DEFAULT '',
   `rollout` tinyint(1) NOT NULL DEFAULT '0',
   `bounces` tinyint(1) NOT NULL DEFAULT '1',

@@ -3,11 +3,6 @@
  * @file /magma/providers/symbols.h
  *
  * @brief External function pointers/definitions.
- *
- * $Author$
- * $Date$
- * $Revision$
- *
  */
 
 #ifndef MAGMA_PROVIDERS_SYMBOLS_H

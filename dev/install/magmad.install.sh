@@ -105,6 +105,9 @@ mysqladmin --user=root password "$PROOT"
 
 # Save the password so the root user can login without having to type it in.
 printf "\n\n[mysql]\nuser=root\npassword=$PROOT\ndatabase=Magma\nsocket=/var/lib/mysql/mysql.sock\n\n" >> /root/.my.cnf 
+printf "\n\n[mysqldump]\nuser=root\npassword=$PROOT\nsocket=/var/lib/mysql/mysql.sock\n\n" >> /root/.my.cnf 
+
+
 
 # Find out how much RAM is installed, and what 50% would be in KB.
 TOTALMEM=`free -k | grep -E "^Mem:" | awk -F' ' '{print $2}'`

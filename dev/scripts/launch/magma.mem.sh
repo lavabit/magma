@@ -29,7 +29,7 @@ if [ "$VMEM" != '' ] || [ "$RMEM" != '' ]; then
 	MAGMAHIT="yes"
 	let "vmem = ($VMEM / 1024)"
 	let "rmem = ($RMEM / 1024)"
-	printf "%23.23s = %5.5s virtual megabytes %5.5s resident megabytes\n" "magmad" "$vmem" "$rmem"
+	printf "%28.23s = %5.5s virtual megabytes %5.5s resident megabytes\n" "magmad" "$vmem" "$rmem"
 fi
  
 unset VMEM RMEM vmem rmem
@@ -43,7 +43,7 @@ if [ "$VMEM" != '' ] || [ "$RMEM" != '' ]; then
 	MAGMAHIT="yes"
 	let "vmem = ($VMEM / 1024)"
 	let "rmem = ($RMEM / 1024)"
-	printf "%23.23s = %5.5s virtual megabytes %5.5s resident megabytes\n" "magmad.check" "$vmem" "$rmem"
+	printf "%28.23s = %5.5s virtual megabytes %5.5s resident megabytes\n" "magmad.check" "$vmem" "$rmem"
 fi
  
 unset VMEM RMEM vmem rmem
@@ -57,7 +57,7 @@ if [ "$VMEM" != '' ] || [ "$RMEM" != '' ]; then
 	MYSQLHIT="yes"
 	let "vmem = ($VMEM / 1024)"
 	let "rmem = ($RMEM / 1024)"
-	printf "%23.23s = %5.5s virtual megabytes %5.5s resident megabytes\n" "mysqld" "$vmem" "$rmem"
+	printf "%28.23s = %5.5s virtual megabytes %5.5s resident megabytes\n" "mysqld" "$vmem" "$rmem"
 fi
 
 unset VMEM RMEM vmem rmem
@@ -71,7 +71,7 @@ if [ "$VMEM" != '' ] || [ "$RMEM" != '' ]; then
 	MEMCACHEDHIT="yes"
 	let "vmem = ($VMEM / 1024)"
 	let "rmem = ($RMEM / 1024)"
-	printf "%23.23s = %5.5s virtual megabytes %5.5s resident megabytes\n" "memcached" "$vmem" "$rmem"
+	printf "%28.23s = %5.5s virtual megabytes %5.5s resident megabytes\n" "memcached" "$vmem" "$rmem"
 fi
 
 unset VMEM RMEM vmem rmem
@@ -85,29 +85,29 @@ if [ "$VMEM" != '' ] || [ "$RMEM" != '' ]; then
 	ECLIPSEHIT="yes"
 	let "vmem = ($VMEM / 1024)"
 	let "rmem = ($RMEM / 1024)"
-	printf "%23.23s = %5.5s virtual megabytes %5.5s resident megabytes\n" "eclipse" "$vmem" "$rmem"
+	printf "%28.23s = %5.5s virtual megabytes %5.5s resident megabytes\n" "eclipse" "$vmem" "$rmem"
 fi
 
 unset VMEM RMEM vmem rmem
 
-if [ "$MAGMAHIT" == "no" ] || [ "$MEMCACHEDHIT" == "no" ] || [ "$ECLIPSEHIT" == "no" ]; then
+if [ "$MAGMAHIT" == "no" ] || [ "$MYSQLHIT" == "no" ] || [ "$MEMCACHEDHIT" == "no" ] || [ "$ECLIPSEHIT" == "no" ]; then
 	echo ""
 fi
 
 if [ "$MAGMAHIT" == "no" ]; then
-	printf "%23.23s = $(tput setaf 1)%s$(tput sgr0)\n" "magmad and magmad.check" "not running"
+	printf "%28.23s = $(tput setaf 1)%s$(tput sgr0)\n" "magmad and magmad.check" "not running"
 fi
 
 if [ "$MYSQLHIT" == "no" ]; then
-	printf "%23.23s = %s\n" "mysqld" "not running"
+	printf "%28.23s = $(tput setaf 1)%s$(tput sgr0)\n" "mysqld" "not running"
 fi
 
 if [ "$MEMCACHEDHIT" == "no" ]; then
-	printf "%23.23s = %s\n" "memcached" "not running"
+	printf "%28.23s = $(tput setaf 1)%s$(tput sgr0)\n" "memcached" "not running"
 fi
 
 if [ "$ECLIPSEHIT" == "no" ]; then
-	printf "%23.23s = %s\n" "eclipse" "not running"
+	printf "%28.23s = $(tput setaf 1)%s$(tput sgr0)\n" "eclipse" "not running"
 fi
 
 echo ""

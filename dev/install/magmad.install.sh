@@ -303,8 +303,9 @@ chcon system_u:object_r:etc_t:s0 /etc/logrotate.d/postfix
 sed -i -e "s/^smtp\([ ]*inet\)/127.0.0.1:2525\1/" /etc/postfix/master.cf 
 
 # Configure the postfix hostname and origin parameters.
-printf "\nmyhostname = relay.$DOMAIN\nmyorigin = $DOMAIN\n" >> /etc/postfix/main.cf 
-
+printf "\nmyhostname = relay.$DOMAIN\nmyorigin = $DOMAIN\ntansport_maps = hash:/etc/postfix/transport\n" >> /etc/postfix/main.cf 
+printf "$DOMAIN		smtp:[127.0.0.1]:2525\n" >> /etc/postfix/transport
+postmap /etc/postfix/transport
 
 #############################################################################
 # Compile magmad (if necessary).                                            #

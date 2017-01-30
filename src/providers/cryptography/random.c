@@ -310,7 +310,7 @@ bool_t rand_start(void) {
 	uint_t seed = (time(NULL) | thread_get_thread_id());
 
 	// Seed the random number generator.
-	RAND_load_file_d("/dev/random", magma.iface.cryptography.seed_length);
+	RAND_load_file_d("/dev/urandom", magma.iface.cryptography.seed_length);
 
 	// Set the context to the current time, in case were unable to generate a secure random number for a seed.
 	srand(rand_r(&seed));

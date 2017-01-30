@@ -44,12 +44,13 @@ yum --assumeyes install valgrind valgrind-devel texinfo autoconf automake libtoo
 ncurses-devel gcc-c++ libstdc++-devel gcc cloog-ppl cpp glibc-devel glibc-headers \
 kernel-headers libgomp mpfr ppl perl perl-Module-Pluggable perl-Pod-Escapes \
 perl-Pod-Simple perl-libs perl-version patch sysstat perl-Time-HiRes cmake \
-libbsd libbsd-devel inotify-tools haveged libarchive libevent memcached mysql \
+libbsd libbsd-devel inotify-tools libarchive libevent memcached mysql \
 mysql-server perl-DBI perl-DBD-MySQL git rsync perl-Git perl-Error perl-libintl \
 perl-Text-Unidecode policycoreutils checkpolicy
 
 # Configure the entropy gathering daemon to autostart, then launch it. Extra entropy will 
 # speed a number of randomness intensive operations. 
+yum --assumeyes install haveged
 /sbin/chkconfig haveged on
 /sbin/service haveged start
 
@@ -104,8 +105,66 @@ PROOT=`openssl rand -base64 30 | sed -e "s/\//@-/g" | sed -e "s/\+/_\?/g"`
 mysqladmin --user=root password "$PROOT"
 
 # Save the password so the root user can login without having to type it in.
-printf "\n\n[mysql]\nuser=root\npassword=$PROOT\ndatabase=Magma\nsocket=/var/lib/mysql/mysql.sock\n\n" >> /root/.my.cnf 
+printf "\n[mysql]\nuser=root\npassword=$PROOT\ndatabase=Magma\nsocket=/var/lib/mysql/mysql.sock\nsafe-updates\n\n" >> /root/.my.cnf 
 printf "\n\n[mysqldump]\nuser=root\npassword=$PROOT\nsocket=/var/lib/mysql/mysql.sock\n\n" >> /root/.my.cnf 
+printf "\n\n[mysqladmin]\nuser=root\npassword=$PROOT\nsocket=/var/lib/mysql/mysql.sock\n\n" >> /root/.my.cnf 
+
+# /etc/my.cnf
+[mysqld]
+datadir=/var/lib/mysql
+socket=/var/lib/mysql/mysql.sock
+user=mysql
+
+back_log = 128
+binlog_cache_size = 64M
+binlog-format = mixed
+innodb_buffer_pool_size = 16G
+innodb_log_buffer_size = 16M
+innodb_log_file_size = 4G
+innodb_log_files_in_group = 4
+join_buffer_size = 8M
+log-bin=mysql-bin
+long_query_time = 4
+max_allowed_packet = 128M
+max_binlog_size = 4G
+max_connect_errors = 1048576
+max_connections = 1024
+max_heap_table_size = 512M
+query_cache_limit = 8M
+query_cache_size = 128M
+read_buffer_size = 8M
+read_rnd_buffer_size = 16M
+sort_buffer_size =16M
+symbolic-links = 0
+thread_cache_size = 64
+tmp_table_size = 64M
+
+general_log_file = /var/log/mysqld-general.log
+slow_query_log_file = /var/log/mysqld-slow.log
+
+[mysqld_safe]
+log-error = /var/log/mysqld-error.log
+pid-file=/var/run/mysqld/mysqld.pid
+
+
+# /etc/logrotate.d/mysql
+/var/log/mysqld-general.log
+/var/log/mysqld-error.log
+{
+       create 640 mysql mysql
+       notifempty
+       daily
+       rotate 3
+       missingok
+       postrotate
+         if test -x /usr/bin/mysqladmin && \
+           /usr/bin/mysqladmin ping &>/dev/null
+         then
+           /usr/bin/mysqladmin flush-logs
+         fi
+       endscript
+}
+
 
 
 
@@ -127,6 +186,8 @@ chcon system_u:object_r:etc_t:s0 /etc/security/limits.d/50-magmad.conf
 printf "\n\nnet.ipv6.conf.all.disable_ipv6 = 1\n" >> /etc/sysctl.conf
 
 # Other network and system tuning parameters.
+printf "kernel.random.read_wakeup_threshold = 2048\n" >> /etc/sysctl.conf
+printf "kernel.random.write_wakeup_threshold = 2048\n" >> /etc/sysctl.conf
 printf "net.core.netdev_max_backlog = 65536\n" >> /etc/sysctl.conf
 printf "net.core.optmem_max = 25165824\n" >> /etc/sysctl.conf
 printf "net.core.rmem_default = 31457280\n" >> /etc/sysctl.conf
@@ -159,6 +220,8 @@ printf "vm.dirty_ratio = 60\n" >> /etc/sysctl.conf
 printf "vm.swappiness = 10\n" >> /etc/sysctl.conf
 
 # Enable the important settings immediately.
+sysctl -w kernel.random.read_wakeup_threshold=2048
+sysctl -w kernel.random.write_wakeup_threshold=2048
 sysctl -w net.core.netdev_max_backlog=65536
 sysctl -w net.core.optmem_max=25165824
 sysctl -w net.core.rmem_default=31457280
@@ -299,8 +362,11 @@ chcon -R system_u:object_r:var_spool_t:s0 /var/spool/magma
 
 # Create the magmad log directory.
 mkdir -p /var/log/magma/
-chown -R magma:magma /var/log/magma
-chcon -R system_u:object_r:var_log_t:s0 /var/log/magma
+chown -R magma:magma /var/log/magma/
+chcon -R system_u:object_r:var_log_t:s0 /var/log/magma/
+touch /var/log/magma/magmad.init.log
+chown magma:magma /var/log/magma/magmad.init.log
+
 
 # Create the magmad resources directory.
 mkdir -p /var/lib/magma/resources/
@@ -327,8 +393,29 @@ chcon -R system_u:object_r:var_lib_t:s0 /var/lib/magma
 usermod --home /var/lib/magma/ magma
 usermod --shell /sbin/nologin magma
 
+# Create the directory used to hold the DIME key and signet.
+mkdir -p /etc/pki/dime/signets/
+mkdir -p /etc/pki/dime/private/
+chcon system_u:object_r:cert_t:s0 /etc/pki/dime/
+chcon system_u:object_r:cert_t:s0 /etc/pki/dime/signets/
+chcon system_u:object_r:cert_t:s0 /etc/pki/dime/private/
+
+
+####
+#  Add logic for creating the organizational key and signet.
+
+####
+
+
+chmod 600 "/etc/pki/dime/private/$DIMEFILE"
+chmod 600 "/etc/pki/dime/signets/$DIMEFILE"
+chcon unconfined_u:object_r:cert_t:s0 "/etc/pki/dime/signets/$DIMEFILE"
+chcon unconfined_u:object_r:cert_t:s0 "/etc/pki/dime/private/$DIMEFILE"
+
 # Create the directory used to hold the DKIM key.
 mkdir -p /etc/pki/dkim/private/
+chcon system_u:object_r:cert_t:s0 /etc/pki/dkim/
+chcon system_u:object_r:cert_t:s0 /etc/pki/dkim/private/
 
 # We need to copy the DKIM key file... or generate a new one.
 if [[ "$DKIMKEY" != "" ]]; then
@@ -351,7 +438,7 @@ SELECTOR=`echo $DOMAIN | awk -F'.' '{ print $(NF-1) }'`
 tput setaf 1; tput bold
 printf "\n\nPublish the following record to ensure DKIM signatures operate properly.\n\n"
 tput sgr0
-openssl rsa -in "/etc/pki/dkim/private/$DKIMFILE" -pubout -outform PEM 2> /dev/null | \
+openssl rsa -in "/etc/pki/dkim/private/lavabit.com.pem" -pubout -outform PEM 2> /dev/null | \
 sed -r "s/-----BEGIN PUBLIC KEY-----$//" | sed -r "s/-----END PUBLIC KEY-----//" | tr -d [:space:] | \
 awk "{ print \"$SELECTOR._domainkey IN TXT \\\"v=DKIM1; k=rsa; p=\" substr(\$1, 1, 208) \"\\\" \\\"\" substr(\$1, 209) \"\\\" ; ----- DKIM $DOMAIN\" }"
 printf "\n\n"
@@ -379,6 +466,9 @@ PMAGMA=`openssl rand -base64 30 | sed -e "s/\//@-/g" | sed -e "s/\+/_\?/g"`
 # Create the magma user and grant the required permissions.
 mysql --execute="CREATE USER 'magma'@'localhost' IDENTIFIED BY '$PMAGMA'"
 mysql --execute="GRANT ALL ON *.* TO 'magma'@'localhost'"
+
+mysql --execute="GRANT SELECT, INSERT, UPDATE, DELETE ON Lavabit.* TO 'magma'@'localhost'"
+
 
 # Initialize the new database schema.
 dev/scripts/database/schema.init.sh magma "$PMAGMA" Magma

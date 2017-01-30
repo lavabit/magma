@@ -16,7 +16,7 @@ struct {
 };
 
 int status_level = 0;
-pthread_mutex_t status_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_rwlock_t status_lock = PTHREAD_RWLOCK_INITIALIZER;
 
 /**
  * @brief	Check to see if a worker thread should continue processing.
@@ -27,9 +27,9 @@ bool_t status(void) {
 
 	bool_t result = false;
 
-	mutex_lock(&status_mutex);
+	rwlock_lock_read(&status_lock);
 	if (status_level >= 0) result = true;
-	mutex_unlock(&status_mutex);
+	rwlock_unlock(&status_lock);
 
 	return result;
 }
@@ -41,9 +41,9 @@ bool_t status(void) {
  * @return	This function returns no value.
  */
 void status_set(int value) {
-	mutex_lock(&status_mutex);
+	rwlock_lock_write(&status_lock);
 	status_level = value;
-	mutex_unlock(&status_mutex);
+	rwlock_unlock(&status_lock);
 	return;
 }
 
@@ -54,9 +54,9 @@ void status_set(int value) {
  */
 int status_get(void) {
 	int value;
-	mutex_lock(&status_mutex);
+	rwlock_lock_read(&status_lock);
 	value = status_level;
-	mutex_unlock(&status_mutex);
+	rwlock_unlock(&status_lock);
 	return value;
 }
 

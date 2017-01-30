@@ -62,13 +62,13 @@ bool_t check_prime_signets_org_sthread(stringer_t *errmsg) {
 		return false;
 	}
 
-//  Hack to easily generate a new org identity.
+	// Hack to easily generate a new org identity.
 
-	log_enable();
-	log_pedantic("%.*s", st_length_int(armored), st_char_get(armored));
-	fingerprint = prime_get(org, ARMORED, MANAGEDBUF(1024));
-	log_pedantic("%.*s", st_length_int(fingerprint), st_char_get(fingerprint));
-	log_disable();
+//	log_enable();
+//	log_pedantic("%.*s", st_length_int(armored), st_char_get(armored));
+//	fingerprint = prime_get(org, ARMORED, MANAGEDBUF(1024));
+//	log_pedantic("%.*s", st_length_int(fingerprint), st_char_get(fingerprint));
+//	log_disable();
 
 	prime_free(signet3);
 	prime_free(signet2);

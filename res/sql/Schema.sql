@@ -217,7 +217,7 @@ CREATE TABLE `Host_Config` (
   PRIMARY KEY (`confignum`),
   KEY `IX_HOST` (`hostnum`),
   CONSTRAINT `FK_HOST_CONFIG_HOSTS` FOREIGN KEY (`hostnum`) REFERENCES `Hosts` (`hostnum`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1 COMMENT='Application configs are stored in name value pairings.';
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Application configs are stored in name value pairings.';
 
 DROP TABLE IF EXISTS `Hosts`;
 CREATE TABLE `Hosts` (
@@ -226,7 +226,7 @@ CREATE TABLE `Hosts` (
   `timestamp` datetime NOT NULL,
   PRIMARY KEY (`hostnum`),
   UNIQUE KEY `UNIQ_PREF_HOSTNAME` (`hostname`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1 COMMENT='Hostnames are paired with host numbers.';
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Hostnames are paired with host numbers.';
 
 DROP TABLE IF EXISTS `Keys`;
 CREATE TABLE `Keys` (

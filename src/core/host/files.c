@@ -24,15 +24,14 @@ int_t file_read(char *name, stringer_t *output) {
 		return -1;
 	}
 
-	// FTM: returns the new file descriptor, or -1 if an error occurred (in which case, errno is set appropriately).
+	// Open returns the new file descriptor, or -1 if an error occurred (in which case, errno is set appropriately).
 	if ((fd = open(name, O_RDONLY)) == -1) {
 		log_info("Could not open the file %s for reading. {errno = %i & strerror = %s}", name, errno, strerror_r(errno, MEMORYBUF(1024), 1024));
 		return -1;
 	}
 
-	// FTM: On success, the number of bytes read is returned (zero indicates end of file), and the file position is
+	// On success, read returns the number of bytes read (zero indicates end of file), and the file position is
 	// advanced by this number. On error, -1 is returned, and errno is set appropriately.
-	// LOW: Were loading files using a blocking read call.
 	if ((result = read(fd, st_data_get(output), st_avail_get(output))) >= 0) {
 		st_length_set(output, result);
 	}
@@ -56,28 +55,27 @@ stringer_t * file_load(char *name) {
 	struct stat info;
 	char estring[1024];
 
-	// FTM: returns the new file descriptor, or -1 if an error occurred (in which case, errno is set appropriately).
+	// Open returns the new file descriptor, or -1 if an error occurred (in which case, errno is set appropriately).
 	if ((fd = open(name, O_RDONLY)) == -1) {
 		log_info("Could not open the file %s for reading. {errno = %i & strerror = %s}", name, errno,
 				(strerror_r(errno, estring, 1024) == 0 ? estring : "Unknown error"));
 		return NULL;
 	}
-	// FTM: On success, zero is returned.  On error, -1 is returned, and errno is set appropriately.
+	// On success, fstat returns zero.  On error, -1 is returned, and errno is set appropriately.
 	else if (fstat(fd, &info) == -1) {
 		log_info("Could not fstat the file %s. {errno = %i & strerror = %s}", name, errno,
 				(strerror_r(errno, estring, 1024) == 0 ? estring : "Unknown error"));
 		close(fd);
 		return NULL;
-	} else if ((result = st_alloc(info.st_size)) == NULL) {
+	}
+	else if ((result = st_alloc(info.st_size)) == NULL) {
 		log_info("Could not create a buffer big enough to hold the file %s.", name);
 		close(fd);
 		return NULL;
 
 	}
-	// FTM: On success, the number of bytes read is returned (zero indicates end of file), and the file position is
+	// On success, read returns the number of bytes read (zero indicates end of file), and the file position is
 	// advanced by this number. On error, -1 is returned, and errno is set appropriately.
-	// LOW: Were loading files using a blocking read call.
-	// QUESTION: We also probably shouldn't count on read reading all the bytes either
 	else if (read(fd, st_data_get(result), st_avail_get(result)) != info.st_size) {
 		log_info("Could not read the entire file %s. {errno = %i & strerror = %s}", name, errno,
 				(strerror_r(errno, estring, 1024) == 0 ? estring : "Unknown error"));

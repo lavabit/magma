@@ -309,6 +309,9 @@ bool_t rand_start(void) {
 
 	uint_t seed = (time(NULL) | thread_get_thread_id());
 
+	// Gurantee there will always be at least 32 bytes of truly random data.
+	RAND_load_file_d("/dev/random", 32);
+
 	// Seed the random number generator.
 	RAND_load_file_d("/dev/urandom", magma.iface.cryptography.seed_length);
 

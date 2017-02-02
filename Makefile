@@ -265,14 +265,10 @@ clean:
 	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
 
 distclean: 
-	@$(RM) $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM)
+	@$(RM) $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) $(MAGMA_SHARED_LIBRARY)
 	@$(RM) $(MAGMA_OBJFILES) $(DIME_OBJFILES) $(SIGNET_OBJFILES) $(GENREC_OBJFILES) $(MAGMA_CHECK_OBJFILES) $(DIME_CHECK_OBJFILES)
 	@$(RM) $(MAGMA_DEPFILES) $(DIME_DEPFILES) $(SIGNET_DEPFILES) $(GENREC_DEPFILES) $(MAGMA_CHECK_DEPFILES) $(DIME_CHECK_DEPFILES)
-	@$(RM) --recursive --force lib/local lib/logs lib/objects lib/sources
-	@for d in $(sort $(dir $(MAGMA_OBJFILES)) $(dir $(MAGMA_CHECK_OBJFILES)) $(dir $(DIME_OBJFILES)) $(dir $(SIGNET_OBJFILES)) $(dir $(GENREC_OBJFILES))); \
-		do if test -d "$$d"; then $(RMDIR) "$$d"; fi; done
-	@for d in $(sort $(dir $(MAGMA_DEPFILES)) $(dir $(MAGMA_CHECK_DEPFILES)) $(dir $(DIME_DEPFILES)) $(dir $(SIGNET_DEPFILES)) $(dir $(GENREC_DEPFILES))); \
-		do if test -d "$$d"; then $(RMDIR) "$$d"; fi; done
+	@$(RM) --recursive --force $(DEPDIR) $(OBJDIR) lib/local lib/logs lib/objects lib/sources
 	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
 
 install: $(MAGMA_PROGRAM) $(MAGMA_SHARED_LIBRARY)

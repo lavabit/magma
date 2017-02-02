@@ -12,9 +12,9 @@ bool_t check_mail_load_sthread(stringer_t *errmsg) {
 	bool_t result = true;
 	meta_user_t *user = NULL;
 	meta_folder_t *folder = NULL;
-	inx_cursor_t *cursor;
-	meta_message_t *active;
-	mail_message_t *message;
+	inx_cursor_t *cursor = NULL;
+	meta_message_t *active = NULL;
+	mail_message_t *message = NULL;
 	stringer_t *usernames[] = { PLACER("magma", 5) }, *passwords[] = { PLACER("password", 8) };
 
 	// The registration check must be run frist, otherwise we won't have a user to check against.

@@ -150,6 +150,11 @@ int_t meta_get(uint64_t usernum, stringer_t *username, stringer_t *master, strin
 
 	// Are we supposed to get the mailbox keys.
 	if ((get & META_GET_KEYS) && meta_update_keys(user, META_LOCKED) < 0) {
+
+		// If key decryption fails, then the master key is likely invalid, so we need to ensure we don't cache an invalid
+		// realm key as a result.
+		st_cleanup(user->realm.mail);
+		user->realm.mail = NULL;
 		meta_user_unlock(user);
 		meta_inx_remove(usernum, protocol);
 		return -1;

@@ -120,6 +120,7 @@ START_TEST (check_users_meta_invalid_s) {
 	bool_t result = true;
 	meta_user_t *user = NULL;
 	stringer_t *errmsg = MANAGEDBUF(1024);
+	multi_t key = { .type = M_TYPE_UINT64, .val.u64 = 0 };
 	stringer_t *usernames[] = { NULLER("magma") }, *passwords[] = { NULLER("password") };
 
 	for (int_t i = 0; i < (sizeof(usernames)/sizeof(stringer_t *)) && result && status(); i++) {
@@ -129,9 +130,18 @@ START_TEST (check_users_meta_invalid_s) {
 			 	 st_length_int(usernames[i]), st_char_get(usernames[i]), st_length_int(passwords[i]), st_char_get(passwords[i]));
 			 result = false;
 		}
+		else {
+
+			// This will flush the object cache, so the magma user meta structure isn't loaded from cache. Without the cached structure,
+			// the get function will need to perform the DIME key decryption, which should fail when we provide it with an invalid master key.
+			inx_lock_read(objects.meta);
+			key.val.u64 = auth->usernum;
+			inx_delete(objects.meta, key);
+			inx_unlock(objects.meta);
+		}
 
 		// The verification token is XOR'ed with the master key, which should result in a failure.
-		else if (!(meta_get(auth->usernum, auth->username, st_xor(auth->keys.master, auth->tokens.verification, MANAGEDBUF(64)),
+		if (auth && !(meta_get(auth->usernum, auth->username, st_xor(auth->keys.master, auth->tokens.verification, MANAGEDBUF(64)),
 			auth->tokens.verification, META_PROTOCOL_POP, META_GET_MESSAGES | META_GET_KEYS, &(user)))) {
 			st_sprint(errmsg, "User meta login check failed. Get user metadata failure. { username =  %.*s / password = %.*s }",
 				st_length_int(usernames[i]), st_char_get(usernames[i]), st_length_int(passwords[i]), st_char_get(passwords[i]));

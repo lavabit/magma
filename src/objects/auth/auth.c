@@ -76,7 +76,6 @@ auth_t * auth_challenge(stringer_t *username) {
 		auth_free(auth);
 		return NULL;
 	}
-
 	// Setup the nonce value if we're dealing with a STACIE authentication challenge.
 	if (auth->tokens.verification && (st_empty(auth->seasoning.nonce = stacie_nonce_create(NULL)) ||
 		st_length_get(auth->seasoning.nonce) != STACIE_NONCE_LENGTH)) {
@@ -136,8 +135,10 @@ int_t auth_response(auth_t *auth, stringer_t *ephemeral) {
 	}
 	// If the tokens aren't equal then the attempt fails.
 	else if (st_cmp_cs_eq(stacie->tokens.ephemeral, ephemeral)) {
-		log_info("The user provided incorecct login credentials for a STACIE account. { username = %.*s }", st_length_int(auth->username),
+#ifdef MAGMA_AUTH_PEDANTIC
+		log_pedantic("The user provided incorecct login credentials for a STACIE account. { username = %.*s }", st_length_int(auth->username),
 			st_char_get(auth->username));
+#endif
 
 		mm_move(st_data_get(auth->seasoning.nonce), st_data_get(nonce), STACIE_NONCE_LENGTH);
 		auth_stacie_free(stacie);
@@ -191,7 +192,7 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 
 	// TODO: Differentiate between errors and invalid usernames.
 	if (!(auth = auth_challenge(username))) {
-		log_error("Failed to load the user challenge parameters.");
+		log_error("Failed to load the user challenge parameters. { username = %.*s }", st_length_int(username), st_char_get(username));
 		return -1;
 	}
 
@@ -205,7 +206,9 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 	// The comparison will return 0 if the two tokens are identical, so this boolean will only activate if
 	// the username/password combination is incorrect.
 	else if (auth->legacy.token && st_cmp_cs_eq(auth->legacy.token, legacy->token)) {
-		log_info("The user provided incorecct login credentials for a legacy account. { username = %.*s }", st_length_int(username), st_char_get(username));
+#ifdef MAGMA_AUTH_PEDANTIC
+		log_pedantic("The user provided incorecct login credentials for a legacy account. { username = %.*s }", st_length_int(username), st_char_get(username));
+#endif
 		auth_legacy_free(legacy);
 		auth_free(auth);
 		return 1;
@@ -269,7 +272,9 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 	// The comparison will return 0 if the two tokens are identical, so this boolean will only activate if
 	// the username/password combination is incorrect.
 	else if (!auth->legacy.token && st_cmp_cs_eq(auth->tokens.verification, stacie->tokens.verification)) {
-		log_info("The user provided incorecct login credentials for a STACIE account. { username = %.*s }", st_length_int(username), st_char_get(username));
+#ifdef MAGMA_AUTH_PEDANTIC
+		log_pedantic("The user provided incorecct login credentials for a STACIE account. { username = %.*s }", st_length_int(username), st_char_get(username));
+#endif
 		auth_stacie_free(stacie);
 		auth_free(auth);
 		return 1;

@@ -168,6 +168,7 @@ void pop_user(connection_t *con) {
 void pop_pass(connection_t *con) {
 
 	int_t state;
+	uint64_t fails = 0;
 	auth_t *auth = NULL;
 	stringer_t *password = NULL, *subnet = NULL, *key = NULL;
 
@@ -184,7 +185,7 @@ void pop_pass(connection_t *con) {
 	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu.%.*s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
 
 	// For now we hard code the maximum number of failed logins.
-	if (st_populated(key) && cache_increment(key, 0, 0, 86400) > 16) {
+	if (st_populated(key) && cache_increment(key, 0, 0, 86400) >= 16) {
 		con_write_bl(con, "-ERR [SYS/TEMP] The maximum number of failed login attempts has been reached. Please try again later.\r\n", 103);
 		con->protocol.violations++;
 		return;
@@ -213,9 +214,12 @@ void pop_pass(connection_t *con) {
 
 		st_free(password);
 
+		log_info("Failed login attempt. { ip = %s / username = %.*s / protocol = POP }", st_char_get(con_addr_presentation(con, MANAGEDBUF(256))),
+			st_length_int(con->pop.username), st_char_get(con->pop.username));
+
 		// If we have a valid key, we increment the failed login counter.
-		if (st_populated(key)) {
-			cache_increment(key, 1, 1, 86400);
+		if (st_populated(key) && (fails = cache_increment(key, 1, 1, 86400)) >= 16) {
+			log_info("Subnet banned. { subnet = %s / fails = %lu }", st_char_get(con_addr_subnet(con, MANAGEDBUF(256))), fails);
 		}
 
 		con->protocol.violations++;

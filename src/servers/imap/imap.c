@@ -103,6 +103,7 @@ void imap_logout(connection_t *con) {
 void imap_login(connection_t *con) {
 
 	int_t state = 1;
+	uint64_t fails = 0;
 	auth_t *auth = NULL;
 	stringer_t *subnet = NULL, *key = NULL;
 
@@ -119,7 +120,7 @@ void imap_login(connection_t *con) {
 	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu.%.*s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
 
 	// For now we hard code the maximum number of failed logins.
-	if (st_populated(key) && cache_increment(key, 0, 0, 86400) > 16) {
+	if (st_populated(key) && cache_increment(key, 0, 0, 86400) >= 16) {
 		con_print(con, "%.*s NO [ALERT] The maximum number of failed login attempts has been reached. Please try again tomorrow.\r\n",
 				st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		con->protocol.violations++;
@@ -148,9 +149,12 @@ void imap_login(connection_t *con) {
 				st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		}
 
+		log_info("Failed login attempt. { ip = %s / username = %.*s / protocol = IMAP }", st_char_get(con_addr_presentation(con, MANAGEDBUF(256))),
+			st_length_int(imap_get_st_ar(con->imap.arguments, 0)), st_char_get(imap_get_st_ar(con->imap.arguments, 0)));
+
 		// If we have a valid key, we increment the failed login counter.
-		if (st_populated(key)) {
-			cache_increment(key, 1, 1, 86400);
+		if (st_populated(key) && (fails = cache_increment(key, 1, 1, 86400)) >= 16) {
+			log_info("Subnet banned. { subnet = %s / fails = %lu }", st_char_get(con_addr_subnet(con, MANAGEDBUF(256))), fails);
 		}
 
 		con->protocol.violations++;

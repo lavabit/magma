@@ -38,6 +38,7 @@ static chr_t * lock_error_message(auth_t *auth) {
 void api_endpoint_auth(connection_t *con) {
 
 	int_t state;
+	uint64_t fails = 0;
 	auth_t *auth = NULL;
 	json_error_t jansson_err;
 	meta_user_t *user = NULL;
@@ -60,7 +61,7 @@ void api_endpoint_auth(connection_t *con) {
 	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu.%.*s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
 
 	// For now we hard code the maximum number of failed logins.
-	if (st_populated(key) && cache_increment(key, 0, 0, 86400) > 16) {
+	if (st_populated(key) && cache_increment(key, 0, 0, 86400) >= 16) {
 		api_error(con, HTTP_ERROR_400, PORTAL_ENDPOINT_ERROR_AUTH, "The maximum number of failed login attempts has been reached. Please try again later.");
 		con->protocol.violations++;
 		return;
@@ -74,9 +75,12 @@ void api_endpoint_auth(connection_t *con) {
 			api_error(con, HTTP_ERROR_400, PORTAL_ENDPOINT_ERROR_AUTH, "Unable to authenticate with given username and password.");
 		}
 
+		log_info("Failed login attempt. { ip = %s / username = %s / protocol = HTTP }", st_char_get(con_addr_presentation(con, MANAGEDBUF(256))),
+			username);
+
 		// If we have a valid key, we increment the failed login counter.
-		if (st_populated(key)) {
-			cache_increment(key, 1, 1, 86400);
+		if (st_populated(key) && (fails = cache_increment(key, 1, 1, 86400)) >= 16) {
+			log_info("Subnet banned. { subnet = %s / fails = %lu }", st_char_get(con_addr_subnet(con, MANAGEDBUF(256))), fails);
 		}
 
 		con->protocol.violations++;

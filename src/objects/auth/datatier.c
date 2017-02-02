@@ -160,7 +160,7 @@ int_t auth_data_fetch(auth_t *auth) {
 		return -1;
 	}
 
-#ifdef MAGMA_PEDANTIC
+#ifdef MAGMA_AUTH_PEDANTIC
 	if (st_cmp_cs_eq(PLACER(res_field_block(row, 1), res_field_length(row, 1)), auth->username)) {
 		log_pedantic("The database username does not match our sanitized username. { userid = %.*s / sanitized = %.*s }",
 			(int)res_field_length(row, 1), (char *)res_field_block(row, 1), st_length_int(auth->username), st_char_get(auth->username));

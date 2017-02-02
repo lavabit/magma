@@ -115,7 +115,7 @@ void con_reverse_lookup(connection_t *con) {
 	socklen_t len = sizeof(struct sockaddr_in6);
 
 	// Perform the lookup.
-	if (getsockname(con->network.sockd, &address, &len)) {
+	if (getpeername(con->network.sockd, &address, &len)) {
 		con_reverse_status(con, REVERSE_ERROR);
 		con_destroy(con);
 		return;

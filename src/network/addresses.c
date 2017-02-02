@@ -399,7 +399,7 @@ ip_t * con_addr(connection_t *con, ip_t *output) {
 	}
 
 	// Extract the socket structure.
-	else if (getsockname(con->network.sockd, &(address), &len)) {
+	else if (getpeername(con->network.sockd, &(address), &len)) {
 
 		if (!output) {
 			mm_free(result);

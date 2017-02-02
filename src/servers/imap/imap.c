@@ -216,7 +216,7 @@ void imap_login(connection_t *con) {
 	meta_user_unlock(con->imap.user);
 
 	// Debug logging.
-	log_pedantic("User %.*s logged in from %s via IMAP. {poprefs = %lu, imaprefs = %lu, messages = %lu, folders = %lu}",
+	log_pedantic("User %.*s logged in from %s via IMAP. { poprefs = %lu, imaprefs = %lu, messages = %lu, folders = %lu }",
 		st_length_int(con->imap.username), st_char_get(con->imap.username), st_char_get(con_addr_presentation(con, MANAGEDBUF(1024))),
 		con->imap.user->refs.pop, con->imap.user->refs.imap, con->imap.user->messages ? inx_count(con->imap.user->messages) : 0, con->imap.user->folders ? inx_count(con->imap.user->folders) : 0);
 

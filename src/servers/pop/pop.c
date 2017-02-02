@@ -186,6 +186,7 @@ void pop_pass(connection_t *con) {
 	// For now we hard code the maximum number of failed logins.
 	if (st_populated(key) && cache_increment(key, 0, 0, 86400) > 16) {
 		con_write_bl(con, "-ERR [SYS/TEMP] The maximum number of failed login attempts has been reached. Please try again later.\r\n", 103);
+		con->protocol.violations++;
 		return;
 	}
 
@@ -217,6 +218,7 @@ void pop_pass(connection_t *con) {
 			cache_increment(key, 1, 1, 86400);
 		}
 
+		con->protocol.violations++;
 		return;
 	}
 

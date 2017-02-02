@@ -62,6 +62,7 @@ void api_endpoint_auth(connection_t *con) {
 	// For now we hard code the maximum number of failed logins.
 	if (st_populated(key) && cache_increment(key, 0, 0, 86400) > 16) {
 		api_error(con, HTTP_ERROR_400, PORTAL_ENDPOINT_ERROR_AUTH, "The maximum number of failed login attempts has been reached. Please try again later.");
+		con->protocol.violations++;
 		return;
 	}
 
@@ -78,6 +79,7 @@ void api_endpoint_auth(connection_t *con) {
 			cache_increment(key, 1, 1, 86400);
 		}
 
+		con->protocol.violations++;
 		return;
 	}
 

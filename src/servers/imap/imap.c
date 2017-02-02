@@ -122,6 +122,7 @@ void imap_login(connection_t *con) {
 	if (st_populated(key) && cache_increment(key, 0, 0, 86400) > 16) {
 		con_print(con, "%.*s NO [ALERT] The maximum number of failed login attempts has been reached. Please try again tomorrow.\r\n",
 				st_length_int(con->imap.tag), st_char_get(con->imap.tag));
+		con->protocol.violations++;
 		return;
 	}
 
@@ -152,6 +153,7 @@ void imap_login(connection_t *con) {
 			cache_increment(key, 1, 1, 86400);
 		}
 
+		con->protocol.violations++;
 		return;
 	}
 

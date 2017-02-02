@@ -261,6 +261,7 @@ void smtp_auth_plain(connection_t *con) {
 	// For now we hard code the maximum number of failed logins.
 	if (st_populated(key) && cache_increment(key, 0, 0, 86400) > 16) {
 		con_write_bl(con, "423 THE MAXIMUM NUMBER OF FAILED LOGIN ATTEMPTS HAS BEEN REACHED - PLEASE TRY AGAIN LATER\r\n", 91);
+		con->protocol.violations++;
 		return;
 	}
 
@@ -327,6 +328,7 @@ void smtp_auth_plain(connection_t *con) {
 			cache_increment(key, 1, 1, 86400);
 		}
 
+		con->protocol.violations++;
 		return;
 	}
 
@@ -388,6 +390,7 @@ void smtp_auth_login(connection_t *con) {
 	// For now we hard code the maximum number of failed logins.
 	if (st_populated(key) && cache_increment(key, 0, 0, 86400) > 16) {
 		con_write_bl(con, "423 THE MAXIMUM NUMBER OF FAILED LOGIN ATTEMPTS HAS BEEN REACHED - PLEASE TRY AGAIN LATER\r\n", 91);
+		con->protocol.violations++;
 		return;
 	}
 
@@ -444,6 +447,7 @@ void smtp_auth_login(connection_t *con) {
 			cache_increment(key, 1, 1, 86400);
 		}
 
+		con->protocol.violations++;
 		return;
 	}
 

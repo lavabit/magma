@@ -333,9 +333,6 @@ semodule -i postfix.selinux.pp
 # Build the magma dependencies.
 dev/scripts/builders/build.lib.sh all
 
-# Change the process name, so the init script doesn't conflict.
-sed -i "s/PLACER(\"magmad\", 6)/PLACER\(\"\/usr\/libexec\/magmad\", 19\)/g" src/magma.c
-
 make all
 
 #############################################################################

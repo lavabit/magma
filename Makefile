@@ -19,6 +19,7 @@ PACKAGE_URL						= https://lavabit.com
 
 MAGMA_PROGRAM					= $(addsuffix $(EXEEXT), magmad)
 MAGMA_CHECK_PROGRAM				= $(addsuffix $(EXEEXT), magmad.check)
+MAGMA_SHARED_LIBRARY			= $(addsuffix $(DYNLIBEXT), magmad)
 
 DIME_PROGRAM					= $(addsuffix $(EXEEXT), dime)
 SIGNET_PROGRAM					= $(addsuffix $(EXEEXT), signet)
@@ -66,8 +67,8 @@ FILTERED_SRCFILES				= src/providers/dime/ed25519/test.c src/providers/dime/ed25
                                   src/providers/dime/ed25519/fuzz/curve25519-ref10.c src/providers/dime/ed25519/fuzz/ed25519-donna-sse2.c \
                                   src/providers/dime/ed25519/fuzz/fuzz-curve25519.c src/providers/dime/ed25519/fuzz/ed25519-donna.c \
                                   src/providers/dime/ed25519/fuzz/ed25519-ref10.c src/providers/dime/ed25519/fuzz/fuzz-ed25519.c
- 
-PACKAGE_DEPENDENCIES			=  $(TOPDIR)/magmad.so $(MAGMA_STATIC) $(filter-out $(MAGMA_STATIC), $(MAGMA_CHECK_STATIC))
+
+PACKAGE_DEPENDENCIES			= $(MAGMA_SHARED_LIBRARY) $(MAGMA_STATIC) $(filter-out $(MAGMA_STATIC), $(MAGMA_CHECK_STATIC))
 
 # Bundled Dependency Include Paths
 #INCDIR							= $(TOPDIR)/lib/sources
@@ -149,6 +150,7 @@ RM								= rm --force
 RMDIR							= rmdir --parents --ignore-fail-on-non-empty
 MKDIR							= mkdir --parents
 RANLIB							= ranlib
+INSTALL							= install
 
 # Text Coloring
 RED								= $$(tput setaf 1)
@@ -243,6 +245,7 @@ config:
 	@echo 'DATE ' $(MAGMA_TIMESTAMP)
 	@echo 'HOST ' $(HOSTTYPE)
 
+# If verbose mode is disabled, we only output this finished message.
 finished:
 ifeq ($(VERBOSE),no)
 	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
@@ -261,12 +264,32 @@ clean:
 		do if test -d "$$d"; then $(RMDIR) "$$d"; fi; done
 	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
 
+distclean: 
+	@$(RM) $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM)
+	@$(RM) $(MAGMA_OBJFILES) $(DIME_OBJFILES) $(SIGNET_OBJFILES) $(GENREC_OBJFILES) $(MAGMA_CHECK_OBJFILES) $(DIME_CHECK_OBJFILES)
+	@$(RM) $(MAGMA_DEPFILES) $(DIME_DEPFILES) $(SIGNET_DEPFILES) $(GENREC_DEPFILES) $(MAGMA_CHECK_DEPFILES) $(DIME_CHECK_DEPFILES)
+	@$(RM) --recursive --force lib/local lib/logs lib/objects lib/sources
+	@for d in $(sort $(dir $(MAGMA_OBJFILES)) $(dir $(MAGMA_CHECK_OBJFILES)) $(dir $(DIME_OBJFILES)) $(dir $(SIGNET_OBJFILES)) $(dir $(GENREC_OBJFILES))); \
+		do if test -d "$$d"; then $(RMDIR) "$$d"; fi; done
+	@for d in $(sort $(dir $(MAGMA_DEPFILES)) $(dir $(MAGMA_CHECK_DEPFILES)) $(dir $(DIME_DEPFILES)) $(dir $(SIGNET_DEPFILES)) $(dir $(GENREC_DEPFILES))); \
+		do if test -d "$$d"; then $(RMDIR) "$$d"; fi; done
+	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
+
+install: $(MAGMA_PROGRAM) $(MAGMA_SHARED_LIBRARY)
+ifeq ($(VERBOSE),no)
+	@echo 'Installing' $(GREEN)$(MAGMA_PROGRAM)$(NORMAL)
+endif
+	$(RUN)$(INSTALL) --mode=0755 --owner=root --group=root --context=system_u:object_r:bin_t:s0 --no-target-directory \
+		$(MAGMA_PROGRAM) /usr/libexec/$(MAGMA_PROGRAM)
+	$(RUN)$(INSTALL) --mode=0755 --owner=root --group=root --context=system_u:object_r:bin_t:s0 --no-target-directory \
+		$(MAGMA_SHARED_LIBRARY) /usr/libexec/$(MAGMA_SHARED_LIBRARY)
+		
 # Construct the magma daemon executable file
 $(MAGMA_PROGRAM): $(PACKAGE_DEPENDENCIES) $(MAGMA_OBJFILES)
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 else
-	@echo CPPFLAGS
+	@echo
 endif
 	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) -Wl,--end-group
 
@@ -349,7 +372,7 @@ endif
 # Special Make Directives
 .SUFFIXES: .c .cc .cpp .o 
 #.NOTPARALLEL: warning conifg $(PACKAGE_DEPENDENCIES)
-.PHONY: all warning config finished check setup 
+.PHONY: all warning config finished check setup clean distclean install
 #incremental
 
 # vim:set softtabstop=4 shiftwidth=4 tabstop=4:

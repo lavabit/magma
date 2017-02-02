@@ -132,6 +132,9 @@ void imap_login(connection_t *con) {
 			con_print(con, "%.*s NO [ALERT] Internal server error. Please try again in a few minutes.\r\n",
 				st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		}
+
+
+		MANAGEDBUF(64
 		return;
 	}
 

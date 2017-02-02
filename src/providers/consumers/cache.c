@@ -191,7 +191,7 @@ uint64_t cache_get_u64(stringer_t *key) {
 	uint32_t flags = 0, pool;
 	memcached_return_t error;
 
-	if ((pool_pull(cache_pool, &pool)) != PL_RESERVED) {
+	if (st_empty(key) || (pool_pull(cache_pool, &pool)) != PL_RESERVED) {
 		return 0;
 	}
 	else if ((data = memcached_get_d(pool_get_obj(cache_pool, pool), st_char_get(key), st_length_get(key), &length, &flags, &error)) == NULL) {

@@ -243,13 +243,25 @@ void smtp_auth_plain(connection_t *con) {
 	int_t state = 0;
 	auth_t *auth = NULL;
 	smtp_outbound_prefs_t *outbound;
-	stringer_t *decoded = NULL, *argument = NULL;
+	stringer_t *decoded = NULL, *argument = NULL, *subnet = NULL, *key = NULL;
 	placer_t username = { .opts = PLACER_T | JOINTED | STACK | FOREIGNDATA}, password = { .opts = PLACER_T | JOINTED | STACK | FOREIGNDATA},
 		authorize_id = { .opts = PLACER_T | JOINTED | STACK | FOREIGNDATA };
 
 	// If the user is already authenticated.
 	if (con->smtp.authenticated) {
 		con_write_bl(con, "503 ALREADY AUTHENTICATED\r\n", 27);
+		return;
+	}
+
+	// Store the subnet for tracking login failures. Make the buffer big enough to hold an IPv6 subnet string.
+	subnet = con_addr_subnet(con, MANAGEDBUF(256));
+
+	// Generate the invalid login tracker.
+	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu, %*.s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
+
+	// For now we hard code the maximum number of failed logins.
+	if (st_populated(key) && cache_get_u64(key) > 16) {
+		con_write_bl(con, "423 THE MAXIMUM NUMBER OF FAILED LOGIN ATTEMPTS HAS BEEN REACHED - PLEASE TRY AGAIN LATER\r\n", 91);
 		return;
 	}
 
@@ -310,6 +322,12 @@ void smtp_auth_plain(connection_t *con) {
 		else {
 			con_write_bl(con, "535 AUTHENTICATION FAILURE - INVALID USERNAME AND PASSWORD COMBINATION\r\n", 72);
 		}
+
+		// If we have a valid key, we increment the failed login counter.
+		if (st_populated(key)) {
+			cache_increment(key, 1, 1, 86400);
+		}
+
 		return;
 	}
 
@@ -354,11 +372,23 @@ void smtp_auth_login(connection_t *con) {
 	int_t state = 0;
 	auth_t *auth = NULL;
 	smtp_outbound_prefs_t *outbound;
-	stringer_t *username = NULL, *password = NULL, *argument = NULL;
+	stringer_t *username = NULL, *password = NULL, *argument = NULL, *subnet = NULL, *key = NULL;
 
 	// If the user is already authenticated.
 	if (con->smtp.authenticated == true) {
 		con_write_bl(con, "503 ALREADY AUTHENTICATED\r\n", 27);
+		return;
+	}
+
+	// Store the subnet for tracking login failures. Make the buffer big enough to hold an IPv6 subnet string.
+	subnet = con_addr_subnet(con, MANAGEDBUF(256));
+
+	// Generate the invalid login tracker.
+	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu, %*.s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
+
+	// For now we hard code the maximum number of failed logins.
+	if (st_populated(key) && cache_get_u64(key) > 16) {
+		con_write_bl(con, "423 THE MAXIMUM NUMBER OF FAILED LOGIN ATTEMPTS HAS BEEN REACHED - PLEASE TRY AGAIN LATER\r\n", 91);
 		return;
 	}
 
@@ -407,7 +437,14 @@ void smtp_auth_login(connection_t *con) {
 		else {
 			con_write_bl(con, "535 AUTHENTICATION FAILURE - INVALID USERNAME AND PASSWORD COMBINATION\r\n", 72);
 		}
+
 		st_cleanup(username, password);
+
+		// If we have a valid key, we increment the failed login counter.
+		if (st_populated(key)) {
+			cache_increment(key, 1, 1, 86400);
+		}
+
 		return;
 	}
 

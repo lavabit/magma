@@ -42,6 +42,7 @@ void api_endpoint_auth(connection_t *con) {
 	json_error_t jansson_err;
 	meta_user_t *user = NULL;
 	chr_t *username = NULL, *password = NULL;
+	stringer_t *subnet = NULL, *key = NULL;
 
 	if (json_unpack_ex_d(con->http.portal.params, &jansson_err, JSON_STRICT, "{s:s, s:s}", "username", &username, "password", &password) != 0) {
 		log_pedantic("Received invalid portal auth request parameters { user = %.*s, errmsg = %s }",
@@ -52,6 +53,18 @@ void api_endpoint_auth(connection_t *con) {
 		return;
 	}
 
+	// Store the subnet for tracking login failures. Make the buffer big enough to hold an IPv6 subnet string.
+	subnet = con_addr_subnet(con, MANAGEDBUF(256));
+
+	// Generate the invalid login tracker.
+	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu, %*.s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
+
+	// For now we hard code the maximum number of failed logins.
+	if (st_populated(key) && cache_get_u64(key) > 16) {
+		api_error(con, HTTP_ERROR_400, PORTAL_ENDPOINT_ERROR_AUTH, "The maximum number of failed login attempts has been reached. Please try again later.");
+		return;
+	}
+
 	if ((state = auth_login(NULLER(username), NULLER(password), &auth))) {
 		if (state < 0) {
 			api_error(con, HTTP_ERROR_500, JSON_RPC_2_ERROR_SERVER_INTERNAL, "Internal server error.");
@@ -59,6 +72,12 @@ void api_endpoint_auth(connection_t *con) {
 		else {
 			api_error(con, HTTP_ERROR_400, PORTAL_ENDPOINT_ERROR_AUTH, "Unable to authenticate with given username and password.");
 		}
+
+		// If we have a valid key, we increment the failed login counter.
+		if (st_populated(key)) {
+			cache_increment(key, 1, 1, 86400);
+		}
+
 		return;
 	}
 

@@ -198,10 +198,23 @@ void portal_endpoint_auth(connection_t *con) {
 	auth_t *auth = NULL;
 	meta_user_t *user = NULL;
 	chr_t *username = NULL, *password = NULL;
+	stringer_t *subnet = NULL, *key = NULL;
 
 	// Check the session state.
 	if (!con->http.session || con->http.session->state != SESSION_STATE_NEUTRAL) {
 		portal_endpoint_error(con, 403, PORTAL_ENDPOINT_ERROR_MODE | PORTAL_ENDPOINT_ERROR_AUTH, "The auth method is unavailable after a successful login.");
+		return;
+	}
+
+	// Store the subnet for tracking login failures. Make the buffer big enough to hold an IPv6 subnet string.
+	subnet = con_addr_subnet(con, MANAGEDBUF(256));
+
+	// Generate the invalid login tracker.
+	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu, %.*s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
+
+	// For now we hard code the maximum number of failed logins.
+	if (st_populated(key) && cache_get_u64(key) > 16) {
+		portal_endpoint_error(con, 403, PORTAL_ENDPOINT_ERROR_MODE | PORTAL_ENDPOINT_ERROR_AUTH, "The maximum number of failed login attempts has been reached. Please try again later.");
 		return;
 	}
 
@@ -212,10 +225,7 @@ void portal_endpoint_auth(connection_t *con) {
 		return;
 	}
 
-/*
-
-
-	// Pull the user info out.
+/*	// Pull the user info out.
 	if ((state = meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification, META_PROTOCOL_IMAP,
 		META_GET_MESSAGES | META_GET_FOLDERS, &(con->imap.user)))) {
 
@@ -242,6 +252,7 @@ void portal_endpoint_auth(connection_t *con) {
 	auth_free(auth);
 
 */
+
 	// Convert the strings into a full fledged authentication object.
 	if ((state = auth_login(NULLER(username), NULLER(password), &auth))) {
 
@@ -251,6 +262,11 @@ void portal_endpoint_auth(connection_t *con) {
 		else {
 			portal_endpoint_response(con, "{s:s, s:{s:s, s:s}, s:I}", "jsonrpc", "2.0", "result", "auth", "failed", "message",
 				"The username and password provided are incorrect, please try again.", "id", con->http.portal.id);
+		}
+
+		// If we have a valid key, we increment the failed login counter.
+		if (st_populated(key)) {
+			cache_increment(key, 1, 1, 86400);
 		}
 
 		return;

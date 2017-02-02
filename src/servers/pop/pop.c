@@ -169,11 +169,23 @@ void pop_pass(connection_t *con) {
 
 	int_t state;
 	auth_t *auth = NULL;
-	stringer_t *password = NULL;
+	stringer_t *password = NULL, *subnet = NULL, *key = NULL;
 
 	// The PASS command is only available in the pre-authentication state.
 	if (con->pop.session_state != 0) {
 		pop_invalid(con);
+		return;
+	}
+
+	// Store the subnet for tracking login failures. Make the buffer big enough to hold an IPv6 subnet string.
+	subnet = con_addr_subnet(con, MANAGEDBUF(256));
+
+	// Generate the invalid login tracker.
+	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu, %*.s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
+
+	// For now we hard code the maximum number of failed logins.
+	if (st_populated(key) && cache_get_u64(key) > 16) {
+		con_write_bl(con, "-ERR [SYS/TEMP] The maximum number of failed login attempts has been reached. Please try again later.\r\n", 103);
 		return;
 	}
 
@@ -197,7 +209,14 @@ void pop_pass(connection_t *con) {
 		else {
 			con_write_bl(con, "-ERR [AUTH] The username and password combination is invalid.\r\n", 63);
 		}
+
 		st_free(password);
+
+		// If we have a valid key, we increment the failed login counter.
+		if (st_populated(key)) {
+			cache_increment(key, 1, 1, 86400);
+		}
+
 		return;
 	}
 

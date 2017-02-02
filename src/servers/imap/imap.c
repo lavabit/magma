@@ -104,10 +104,24 @@ void imap_login(connection_t *con) {
 
 	int_t state = 1;
 	auth_t *auth = NULL;
+	stringer_t *subnet = NULL, *key = NULL;
 
 	// The LOGIN command is only valid in the non-authenticated state.
 	if (con->imap.session_state != 0) {
 		con_print(con, "%.*s BAD This session has already been authenticated. Please logout and connect again to change users.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
+		return;
+	}
+
+	// Store the subnet for tracking login failures. Make the buffer big enough to hold an IPv6 subnet string.
+	subnet = con_addr_subnet(con, MANAGEDBUF(256));
+
+	// Generate the invalid login tracker.
+	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu, %*.s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
+
+	// For now we hard code the maximum number of failed logins.
+	if (st_populated(key) && cache_get_u64(key) > 16) {
+		con_print(con, "%.*s NO [ALERT] The maximum number of failed login attempts has been reached. Please try again tomorrow.\r\n",
+				st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		return;
 	}
 
@@ -133,8 +147,11 @@ void imap_login(connection_t *con) {
 				st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		}
 
+		// If we have a valid key, we increment the failed login counter.
+		if (st_populated(key)) {
+			cache_increment(key, 1, 1, 86400);
+		}
 
-		MANAGEDBUF(64
 		return;
 	}
 

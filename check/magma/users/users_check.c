@@ -130,6 +130,7 @@ START_TEST (check_users_meta_invalid_s) {
 			 result = false;
 		}
 
+		// The verification token is XOR'ed with the master key, which should result in a failure.
 		else if (!(meta_get(auth->usernum, auth->username, st_xor(auth->keys.master, auth->tokens.verification, MANAGEDBUF(64)),
 			auth->tokens.verification, META_PROTOCOL_POP, META_GET_MESSAGES | META_GET_KEYS, &(user)))) {
 			st_sprint(errmsg, "User meta login check failed. Get user metadata failure. { username =  %.*s / password = %.*s }",

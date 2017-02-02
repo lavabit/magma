@@ -57,10 +57,10 @@ void api_endpoint_auth(connection_t *con) {
 	subnet = con_addr_subnet(con, MANAGEDBUF(256));
 
 	// Generate the invalid login tracker.
-	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu, %*.s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
+	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu.%.*s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
 
 	// For now we hard code the maximum number of failed logins.
-	if (st_populated(key) && cache_get_u64(key) > 16) {
+	if (st_populated(key) && cache_increment(key, 0, 0, 86400) > 16) {
 		api_error(con, HTTP_ERROR_400, PORTAL_ENDPOINT_ERROR_AUTH, "The maximum number of failed login attempts has been reached. Please try again later.");
 		return;
 	}
@@ -102,7 +102,6 @@ void api_endpoint_auth(connection_t *con) {
 	con->http.session->state = SESSION_STATE_AUTHENTICATED;
 	con->http.response.cookie = HTTP_COOKIE_SET;
 	con->http.session->user = user;
-
 
 	// There were two successful responses in the original function. I think this one is an extra.
 	//portal_endpoint_response(con, "{s:s, s:{s:s, s:s}, s:I}", "jsonrpc", "2.0", "result", "auth", "success", "session",

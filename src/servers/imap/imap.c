@@ -116,10 +116,10 @@ void imap_login(connection_t *con) {
 	subnet = con_addr_subnet(con, MANAGEDBUF(256));
 
 	// Generate the invalid login tracker.
-	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu, %*.s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
+	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu.%.*s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
 
 	// For now we hard code the maximum number of failed logins.
-	if (st_populated(key) && cache_get_u64(key) > 16) {
+	if (st_populated(key) && cache_increment(key, 0, 0, 86400) > 16) {
 		con_print(con, "%.*s NO [ALERT] The maximum number of failed login attempts has been reached. Please try again tomorrow.\r\n",
 				st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		return;

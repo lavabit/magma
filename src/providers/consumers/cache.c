@@ -9,7 +9,6 @@
 
 pool_t *cache_pool = NULL;
 
-
 /**
  * @brief	Initialize the memcached library and bind dynamically to the exported functions that are required.
  * @return	true on success or false on failure.
@@ -151,7 +150,7 @@ stringer_t * cache_get(stringer_t *key) {
 	stringer_t *result;
 	memcached_return_t error;
 
-	if ((pool_pull(cache_pool, &pool)) != PL_RESERVED) {
+	if (st_empty(key) || (pool_pull(cache_pool, &pool)) != PL_RESERVED) {
 		return NULL;
 	}
 	else if (!(data = memcached_get_d(pool_get_obj(cache_pool, pool), st_char_get(key), st_length_get(key), &length, &flags, &error))) {
@@ -211,7 +210,7 @@ uint64_t cache_get_u64(stringer_t *key) {
 		return 0;
 	}
 
-	// If the result is the correct number of bytes, store it in teh result.
+	// If the result is the correct number of bytes, store it in the result.
 	if (length == sizeof(uint64_t)) {
 		result = *((uint64_t *)data);
 	}
@@ -234,7 +233,7 @@ int_t cache_set(stringer_t *key, stringer_t *object, time_t expiration) {
 	uint32_t pool;
 	memcached_return_t ret;
 
-	if ((pool_pull(cache_pool, &pool)) != PL_RESERVED) {
+	if (st_empty(key) || (pool_pull(cache_pool, &pool)) != PL_RESERVED) {
 		return 0;
 	}
 	else if ((ret = memcached_set_d(pool_get_obj(cache_pool, pool), st_char_get(key), st_length_get(key), st_char_get(object), st_length_get(object), expiration, 0)) != MEMCACHED_SUCCESS) {
@@ -258,7 +257,7 @@ int_t cache_set_u64(stringer_t *key, uint64_t value, time_t expiration) {
 	uint32_t pool;
 	memcached_return_t ret;
 
-	if ((pool_pull(cache_pool, &pool)) != PL_RESERVED) {
+	if (st_empty(key) || (pool_pull(cache_pool, &pool)) != PL_RESERVED) {
 		return 0;
 	}
 	else if ((ret = memcached_set_d(pool_get_obj(cache_pool, pool), st_char_get(key), st_length_get(key), (void *)&value, sizeof(uint64_t), expiration, 0)) != MEMCACHED_SUCCESS) {
@@ -281,7 +280,7 @@ int_t cache_add(stringer_t *key, stringer_t *object, time_t expiration) {
 	uint32_t pool;
 	memcached_return_t ret;
 
-	if ((pool_pull(cache_pool, &pool)) != PL_RESERVED) {
+	if (st_empty(key) || st_empty(object) || (pool_pull(cache_pool, &pool)) != PL_RESERVED) {
 		return 0;
 	}
 	else if ((ret = memcached_add_d(pool_get_obj(cache_pool, pool), st_char_get(key), st_length_get(key), st_char_get(object), st_length_get(object), expiration, 0)) != MEMCACHED_SUCCESS) {
@@ -304,7 +303,7 @@ int_t cache_silent_add(stringer_t *key, stringer_t *object, time_t expiration) {
 	uint32_t pool;
 	memcached_return_t ret;
 
-	if ((pool_pull(cache_pool, &pool)) != PL_RESERVED) {
+	if (st_empty(key) || (pool_pull(cache_pool, &pool)) != PL_RESERVED) {
 		return 0;
 	}
 	else if ((ret = memcached_add_d(pool_get_obj(cache_pool, pool), st_char_get(key), st_length_get(key), st_char_get(object), st_length_get(object), expiration, 0)) != MEMCACHED_SUCCESS) {
@@ -326,7 +325,7 @@ int_t cache_append(stringer_t *key, stringer_t *object, time_t expiration) {
 	uint32_t pool;
 	memcached_return_t val;
 
-	if ((pool_pull(cache_pool, &pool)) != PL_RESERVED) {
+	if (st_empty(key) || (pool_pull(cache_pool, &pool)) != PL_RESERVED) {
 		return 0;
 	}
 	else if ((val = memcached_append_d(pool_get_obj(cache_pool, pool), st_char_get(key), st_length_get(key), st_char_get(object), st_length_get(object), expiration, 0)) != MEMCACHED_SUCCESS) {
@@ -356,7 +355,7 @@ int_t cache_delete(stringer_t *key) {
 	uint32_t pool;
 	memcached_return_t val;
 
-	if ((pool_pull(cache_pool, &pool)) != PL_RESERVED) {
+	if (st_empty(key) || (pool_pull(cache_pool, &pool)) != PL_RESERVED) {
 		return 0;
 	}
 	else if ((val = memcached_delete_d(pool_get_obj(cache_pool, pool), st_char_get(key), st_length_get(key), 0)) != MEMCACHED_SUCCESS) {
@@ -383,7 +382,7 @@ uint64_t cache_increment(stringer_t *key, uint64_t offset, uint64_t initial, tim
 	uint64_t output;
 	memcached_return_t val;
 
-	if ((pool_pull(cache_pool, &pool)) != PL_RESERVED) {
+	if (st_empty(key) || (pool_pull(cache_pool, &pool)) != PL_RESERVED) {
 		return 0;
 	}
 	// Try incrementing. If we can't, try creating the key.

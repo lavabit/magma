@@ -220,7 +220,6 @@ void smtp_rset(connection_t *con) {
 	return;
 }
 
-
 /// BUG: The SMTP server is not handling AUTH requests in accordance with
 ///		RFC 2554 <http://tools.ietf.org/html/rfc2554> and RFC 4954
 ///		<http://tools.ietf.org/html/rfc4954>, according to a user.
@@ -257,10 +256,10 @@ void smtp_auth_plain(connection_t *con) {
 	subnet = con_addr_subnet(con, MANAGEDBUF(256));
 
 	// Generate the invalid login tracker.
-	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu, %*.s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
+	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu.%.*s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
 
 	// For now we hard code the maximum number of failed logins.
-	if (st_populated(key) && cache_get_u64(key) > 16) {
+	if (st_populated(key) && cache_increment(key, 0, 0, 86400) > 16) {
 		con_write_bl(con, "423 THE MAXIMUM NUMBER OF FAILED LOGIN ATTEMPTS HAS BEEN REACHED - PLEASE TRY AGAIN LATER\r\n", 91);
 		return;
 	}
@@ -384,10 +383,10 @@ void smtp_auth_login(connection_t *con) {
 	subnet = con_addr_subnet(con, MANAGEDBUF(256));
 
 	// Generate the invalid login tracker.
-	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu, %*.s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
+	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu.%.*s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
 
 	// For now we hard code the maximum number of failed logins.
-	if (st_populated(key) && cache_get_u64(key) > 16) {
+	if (st_populated(key) && cache_increment(key, 0, 0, 86400) > 16) {
 		con_write_bl(con, "423 THE MAXIMUM NUMBER OF FAILED LOGIN ATTEMPTS HAS BEEN REACHED - PLEASE TRY AGAIN LATER\r\n", 91);
 		return;
 	}

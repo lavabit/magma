@@ -231,7 +231,8 @@ void smtp_free_inbound(smtp_inbound_prefs_t *inbound) {
 	smtp_inbound_prefs_t *holder;
 
 	while (inbound) {
-		st_cleanup(inbound->pubkey, inbound->rcptto, inbound->address, inbound->domain, inbound->forwarded, inbound->spamsig, inbound->filters);
+		st_cleanup(inbound->pubkey, inbound->rcptto, inbound->address, inbound->domain, inbound->forwarded, inbound->spamsig);
+		inx_cleanup(inbound->filters);
 		holder = inbound;
 		inbound = (smtp_inbound_prefs_t *)holder->next;
 		mm_free(holder);

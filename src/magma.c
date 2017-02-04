@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
 
 	pid_t pid = 0;
 
-	if ((pid = process_pid(PLACER("/usr/libexec/magmad", 19))) != 0) {
+	if ((pid = process_find_pid(PLACER("/usr/libexec/magmad", 19))) != 0) {
 		log_error("Another instance of magma is already running. {pid = %i}", pid);
 		exit(EXIT_FAILURE);
 	}

@@ -65,7 +65,7 @@ int status_get(void) {
  * @return	This function returns no value.
  */
 void status_process(void) {
-	process.pid = getpid();
+	process.pid = process_my_pid();
 	if (!process.startup) process.startup = time(NULL);
 	return;
 }

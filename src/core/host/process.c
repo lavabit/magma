@@ -8,12 +8,19 @@
 #include "magma.h"
 
 /**
- * @brief	Find the PID for a named process and return it.
- * @note	Only returns the first match, and will never return the ID for the currently running process.
- * @param	name	the name of the process to find.
- * @return 0 if process not found, otherwise the PID is returned.
+ * @brief	Return the current process identifier using appropriate function for the current system.
  */
-pid_t	process_pid(stringer_t *name) {
+pid_t process_my_pid(void) {
+	return getpid();
+}
+
+/**
+ * @brief	Find the  process identifier for a named executable and return it.
+ * @note	Only returns the first match, and will never return the process identifier for the currently running process.
+ * @param	name	the name of the executable to find.
+ * @return 0 if the process was not found, otherwise the a process identifier is returned.
+ */
+pid_t process_find_pid(stringer_t *name) {
 
 	DIR *dir;
 	struct dirent *entry;
@@ -28,7 +35,7 @@ pid_t	process_pid(stringer_t *name) {
 	}
 
 	while ((entry = readdir(dir)) && !ret) {
-		if (entry->d_type == DT_DIR && chr_numeric((uchr_t)*(entry->d_name)) && int32_conv_ns(entry->d_name, &pid) && pid != getpid()) {
+		if (entry->d_type == DT_DIR && chr_numeric((uchr_t)*(entry->d_name)) && int32_conv_ns(entry->d_name, &pid) && pid != process_my_pid()) {
 			if (snprintf(cmd, MAGMA_FILEPATH_MAX + 1, "%s/%i/comm", MAGMA_PROC_PATH, pid) && file_read(cmd, compare) > 0) {
 				st_trim(compare);
 				if (!st_cmp_cs_eq(compare, name)) {
@@ -69,7 +76,7 @@ int_t process_kill(stringer_t *name, int_t signum, int_t wait) {
 
 	while ((entry = readdir(dir)) && (matches < (sizeof (killed) / sizeof (pid_t)))) {
 
-		if (entry->d_type == DT_DIR && chr_numeric((uchr_t)*(entry->d_name)) && int32_conv_ns(entry->d_name, &pid) && pid != getpid()) {
+		if (entry->d_type == DT_DIR && chr_numeric((uchr_t)*(entry->d_name)) && int32_conv_ns(entry->d_name, &pid) && pid != process_my_pid()) {
 
 			// Since the cmdline file could contain the command arguments as a NULL separated array we have to wrap compare with a NULLER
 			// to exclude those arguments.

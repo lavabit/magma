@@ -116,11 +116,13 @@ chr_t *  errno_name(int errnum, char *buffer, size_t length);
 chr_t *  signal_name(int signal, char *buffer, size_t length);
 
 /// folder.c
+int_t   folder_count(stringer_t *path, bool_t recursive, bool_t strict);
 int_t   folder_exists(stringer_t *path, bool_t create);
 
 /// process.c
-pid_t		process_pid(stringer_t *name);
+pid_t   process_find_pid(stringer_t *name);
 int_t   process_kill(stringer_t *name, int_t signum, int_t wait);
+pid_t   process_my_pid(void);
 
 /// spool.c
 int_t         spool_check(stringer_t *path);

@@ -69,7 +69,9 @@ uint64_t system_oslimit_max(int_t control, int_t resource) {
 	mib[1] = resource;
 
 	if ((ret = sysctl(mib, 2, &result, &len, NULL, 0))) {
-		log_info("{ resource = FS_MAXFILE / return = %i / error = %s }", ret, strerror_r(errno, MEMORYBUF(1024), 1024));
+		log_info("{ constrol = %i / resource = %i / return = %i / error = %s }", control, resource,
+			ret, strerror_r(errno, MEMORYBUF(1024), 1024));
+		return 0;
 	}
 
 	return result;

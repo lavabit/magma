@@ -310,7 +310,7 @@ bool_t system_init_resource_limits(void) {
 
 	if (magma.config.output_resource_limits) {
 
-		log_info("\n\nResource Limits\n--------------------------------------------------------------------------");
+		log_info("---------------------------- RESOURCES LIMITS ----------------------------");
 
 		// Core Dumps
 		if (getrlimit64(RLIMIT_CORE, &limits)) {
@@ -400,6 +400,7 @@ bool_t system_init_resource_limits(void) {
 			log_info("RLIMIT_NOFILE = %ld", limits.rlim_cur);
 		}
 
+		log_info(" ");
 	}
 
 	return true;

@@ -47,7 +47,7 @@ start () {
 
 stop () {
     echo -n $"Stopping `basename $prog`: "
-    killproc -p ${pidfile} ${prog}
+killproc -p ${pidfile} -d 30 ${prog}
     RETVAL=$?
     echo
     if [ $RETVAL -eq 0 ]; then

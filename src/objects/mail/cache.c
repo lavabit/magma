@@ -102,6 +102,8 @@ void mail_cache_reset(void) {
 		st_cleanup(message->text);
 		message->text = NULL;
 		message->messagenum = 0;
+		mm_free(message);
+		pthread_setspecific(mail_cache, NULL);
 	}
 
 	return;

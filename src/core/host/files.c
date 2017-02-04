@@ -107,8 +107,9 @@ int_t get_temp_file_handle(chr_t *pdir, stringer_t **tmpname) {
 
 	if (sp) {
 		opath = sp;
-	} else {
-		opath = st_import(pdir,ns_length_get(pdir));
+	}
+	else {
+		opath = st_import(pdir, ns_length_get(pdir));
 	}
 
 	if (!opath) {
@@ -118,10 +119,10 @@ int_t get_temp_file_handle(chr_t *pdir, stringer_t **tmpname) {
 
 	// We have to do this because spool_path() doesn't return the type of string we need for appending.
 	if (!(path = st_dupe_opts(MANAGED_T | JOINTED | HEAP, opath))) {
-			log_pedantic("Could not allocate a buffer for temp file name.");
-			st_free(opath);
-			return -1;
-		}
+		log_pedantic("Could not allocate a buffer for temp file name.");
+		st_free(opath);
+		return -1;
+	}
 
 	st_free(opath);
 

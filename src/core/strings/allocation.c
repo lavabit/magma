@@ -71,8 +71,10 @@ void st_free(stringer_t *s) {
 			release(s);
 			break;
 		case (MAPPED_T | JOINTED):
-			munmap(((mapped_t *)s)->data, ((mapped_t *)s)->length + 1);
+			munmap(((mapped_t *)s)->data, ((mapped_t *)s)->avail);
+//			int_t oldstate, ret1 = pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldstate);
 			close(((mapped_t *)s)->handle);
+			//int_t midstate, ret2 = pthread_setcancelstate(oldstate, &midstate);
 			release(s);
 			break;
 		default:
@@ -483,6 +485,7 @@ stringer_t * st_alloc_opts(uint32_t opts, size_t len) {
 
 	int handle;
 	void *joint;
+	size_t avail = 0;
 	stringer_t *result = NULL;
 	void (*release)(void *buffer) = opts & SECURE ? &mm_sec_free : &mm_free;
 	void * (*allocate)(size_t len) = opts & SECURE ? &mm_sec_alloc : &mm_alloc;
@@ -571,17 +574,18 @@ stringer_t * st_alloc_opts(uint32_t opts, size_t len) {
 		case (MAPPED_T | JOINTED):
 
 			// Ensure the allocated size is always a multiple of the memory page size.
-			len = align(magma.page_length, len ? len + 1 : 0);
+			avail = align(magma.page_length, len);
 
 			//Then truncate the file to ensure it matches the memory map size.
-			if (len && (handle = spool_mktemp(MAGMA_SPOOL_DATA, "mapped")) != -1 && ftruncate64(handle, len) == 0 && (result = allocate(sizeof(mapped_t))) &&
-					(joint = mmap64(NULL, len,	PROT_WRITE | PROT_READ, opts & SECURE ? MAP_PRIVATE | MAP_LOCKED : MAP_PRIVATE, handle, 0)) != MAP_FAILED) {
+			if (avail && (handle = spool_mktemp(MAGMA_SPOOL_DATA, "mapped")) != -1 && ftruncate64(handle, avail) == 0 && (result = allocate(sizeof(mapped_t))) &&
+					(joint = mmap64(NULL, avail, PROT_WRITE | PROT_READ, opts & SECURE ? MAP_PRIVATE | MAP_LOCKED : MAP_PRIVATE, handle, 0)) != MAP_FAILED) {
 				mm_set(joint, 0, len);
 				((mapped_t *)result)->opts = opts;
-				((mapped_t *)result)->avail = len - 1;
+				((mapped_t *)result)->avail = avail;
 				((mapped_t *)result)->data = joint;
 				((mapped_t *)result)->handle = handle;
-			} else {
+			}
+			else {
 				if (handle != -1) close(handle);
 				if (result) {
 					release(result);
@@ -720,26 +724,28 @@ stringer_t * st_realloc(stringer_t *s, size_t len) {
 		// Strings using mmap's must always be jointed.
 		case (MAPPED_T | JOINTED):
 
-			avail = ((mapped_t *)s)->avail + 1;
-			len = len ? ((int)len + magma.page_length - 1) & ~(magma.page_length - 1) : magma.page_length;
+			// Ensure the allocated size is always a multiple of the memory page size.
+			avail = align(magma.page_length, len);
+
+			// If the new length is larger, we will increase the file size using the ftruncate64 function.
+			if (avail >= ((mapped_t *)s)->avail && ftruncate64(((mapped_t *)s)->handle, avail)) {
+				log_pedantic("An error occurred while resizing a memory mapped file descriptor. { error = %s }", strerror_r(errno, message, 1024));
+			}
 
 			// If we end up shrinking the available memory then we'll need to update the length variable to reflect that.
-			if (avail >= len && (joint = mremap(((mapped_t *)s)->data, avail, len, MREMAP_MAYMOVE)) != MAP_FAILED) {
-				((mapped_t *)s)->length = len - 1;
-				((mapped_t *)s)->avail = len - 1;
+			else if (avail < ((mapped_t *)s)->length && (joint = mremap(((mapped_t *)s)->data, ((mapped_t *)s)->avail, avail, MREMAP_MAYMOVE)) != MAP_FAILED) {
+				((mapped_t *)s)->length = avail;
+				((mapped_t *)s)->avail = avail;
 				((mapped_t *)s)->data = joint;
-				*((char *)joint + len - 1) = 0;
 				result = s;
 			}
 
 			// If we increase the amount of the available space, the length parameter can remain unchanged since any existing data should be preserved.
-			else if (avail < len && ftruncate64(((mapped_t *)s)->handle, len) == 0 && (joint = mremap(((mapped_t *)s)->data, avail, len, MREMAP_MAYMOVE)) != MAP_FAILED) {
-				((mapped_t *)s)->opts = opts;
-				((mapped_t *)s)->avail = len - 1;
+			else if (avail >= ((mapped_t *)s)->length && (joint = mremap(((mapped_t *)s)->data, ((mapped_t *)s)->avail, avail, MREMAP_MAYMOVE)) != MAP_FAILED) {
+				((mapped_t *)s)->avail = avail;
 				((mapped_t *)s)->data = joint;
 				result = s;
 			}
-
 
 			else {
 				// An error occurred. If the errno is set to EAGAIN and it's secure memory, the most likely problem is that the requested amount of memory exceeds
@@ -747,10 +753,10 @@ stringer_t * st_realloc(stringer_t *s, size_t len) {
 				if ((((mapped_t *)s)->opts & SECURE) && errno == EAGAIN && (system_ulimit_cur(RLIMIT_MEMLOCK) < len ||
 						system_ulimit_cur(RLIMIT_MEMLOCK) < (len + magma.secure.memory.length))) {
 					log_pedantic("Unable to resize the secure memory mapped buffer, the requested size exceeds the system limit for locked pages. " \
-							"{limit = %lu / requested = %zu}", system_ulimit_cur(RLIMIT_MEMLOCK), len);
+							"{ limit = %lu / requested = %zu }", system_ulimit_cur(RLIMIT_MEMLOCK), len);
 				}
 				else {
-					log_pedantic("An error occurred while resizing a memory mapped buffer. {%s}", strerror_r(errno, message, 1024));
+					log_pedantic("An error occurred while resizing a memory mapped buffer. { error = %s }", strerror_r(errno, message, 1024));
 				}
 			}
 			break;

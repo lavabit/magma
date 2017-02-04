@@ -148,8 +148,8 @@ int_t thread_cancel(pthread_t thread) {
  * @return	This function returns no value.
  */
 void thread_cancel_enable(void) {
-
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+	return;
 }
 
 /**
@@ -157,6 +157,6 @@ void thread_cancel_enable(void) {
  * @return	This function returns no value.
  */
 void thread_cancel_disable(void) {
-
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
+	return;
 }

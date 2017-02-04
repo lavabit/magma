@@ -30,6 +30,7 @@ valgrind --tool=memcheck \
 --smc-check=none \
 --fullpath-after= \
 --leak-check=yes \
+--track-fds=yes \
 --show-reachable=yes \
 --leak-resolution=high \
 --workaround-gcc296-bugs=no \

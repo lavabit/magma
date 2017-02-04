@@ -316,88 +316,88 @@ bool_t system_init_resource_limits(void) {
 		if (getrlimit64(RLIMIT_CORE, &limits)) {
 			log_info("Unable to retrieve the core dump size limit. { error = %s }", strerror_r(errno, errbuf, 1024));
 		}
-		else if (limits.rlim_max == RLIM64_INFINITY) {
+		else if (limits.rlim_cur == RLIM64_INFINITY) {
 			log_info("RLIMIT_CORE = RLIM64_INFINITY");
 		}
 		else {
-			log_info("RLIMIT_CORE = %ld", limits.rlim_max);
+			log_info("RLIMIT_CORE = %ld", limits.rlim_cur);
 		}
 
 		// Address Space
 		if (getrlimit64(RLIMIT_AS, &limits)) {
 			log_info("Unable to retrieve the address space limit. { error = %s }", strerror_r(errno, errbuf, 1024));
 		}
-		else if (limits.rlim_max == RLIM64_INFINITY) {
+		else if (limits.rlim_cur == RLIM64_INFINITY) {
 			log_info("RLIMIT_AS = RLIM64_INFINITY");
 		}
 		else {
-			log_info("RLIMIT_AS = %ld", limits.rlim_max);
+			log_info("RLIMIT_AS = %ld", limits.rlim_cur);
 		}
 
 		// Data Segment
 		if (getrlimit64(RLIMIT_DATA, &limits)) {
 			log_info("Unable to retrieve the data segment limit. { error = %s }", strerror_r(errno, errbuf, 1024));
 		}
-		else if (limits.rlim_max == RLIM64_INFINITY) {
+		else if (limits.rlim_cur == RLIM64_INFINITY) {
 			log_info("RLIMIT_DATA = RLIM64_INFINITY");
 		}
 		else {
-			log_info("RLIMIT_DATA = %ld", limits.rlim_max);
+			log_info("RLIMIT_DATA = %ld", limits.rlim_cur);
 		}
 
 		// Stack Size
 		if (getrlimit64(RLIMIT_STACK, &limits)) {
 			log_info("Unable to retrieve the stack size limit. { error = %s }", strerror_r(errno, errbuf, 1024));
 		}
-		else if (limits.rlim_max == RLIM64_INFINITY) {
+		else if (limits.rlim_cur == RLIM64_INFINITY) {
 			log_info("RLIMIT_STACK = RLIM64_INFINITY");
 		}
 		else {
-			log_info("RLIMIT_STACK = %ld", limits.rlim_max);
+			log_info("RLIMIT_STACK = %ld", limits.rlim_cur);
 		}
 
 		// File Size
 		if (getrlimit64(RLIMIT_FSIZE, &limits)) {
 			log_info("Unable to retrieve the file size limit. { error = %s }", strerror_r(errno, errbuf, 1024));
 		}
-		else if (limits.rlim_max == RLIM64_INFINITY) {
+		else if (limits.rlim_cur == RLIM64_INFINITY) {
 			log_info("RLIMIT_FSIZE = RLIM64_INFINITY");
 		}
 		else {
-			log_info("RLIMIT_FSIZE = %ld", limits.rlim_max);
+			log_info("RLIMIT_FSIZE = %ld", limits.rlim_cur);
 		}
 
 		// Number of Threads/Processes
 		if (getrlimit64(RLIMIT_NPROC, &limits)) {
 			log_info("Unable to retrieve the thread limit. { error = %s }", strerror_r(errno, errbuf, 1024));
 		}
-		else if (limits.rlim_max == RLIM64_INFINITY) {
+		else if (limits.rlim_cur == RLIM64_INFINITY) {
 			log_info("RLIMIT_NPROC = RLIM64_INFINITY");
 		}
 		else {
-			log_info("RLIMIT_NPROC = %ld", limits.rlim_max);
+			log_info("RLIMIT_NPROC = %ld", limits.rlim_cur);
 		}
 
 		// Locked Memory
 		if (getrlimit64(RLIMIT_MEMLOCK, &limits)) {
 			log_info("Unable to retrieve the locked memory limit. { error = %s }", strerror_r(errno, errbuf, 1024));
 		}
-		else if (limits.rlim_max == RLIM64_INFINITY) {
+		else if (limits.rlim_cur == RLIM64_INFINITY) {
 			log_info("RLIMIT_MEMLOCK = RLIM64_INFINITY");
 		}
 		else {
-			log_info("RLIMIT_MEMLOCK = %ld", limits.rlim_max);
+			log_info("RLIMIT_MEMLOCK = %ld", limits.rlim_cur);
 		}
 
 		// File Descriptors
 		if (getrlimit64(RLIMIT_NOFILE, &limits)) {
 			log_info("Unable to retrieve the file descriptor limit. { error = %s }", strerror_r(errno, errbuf, 1024));
 		}
-		else if (limits.rlim_max == RLIM64_INFINITY) {
+		else if (limits.rlim_cur == RLIM64_INFINITY) {
 			log_info("RLIMIT_NOFILE = RLIM64_INFINITY");
 		}
 		else {
-			log_info("RLIMIT_NOFILE = %ld", limits.rlim_max);
+			log_info("RLIMIT_NOFILE = %ld", limits.rlim_cur);
 		}
 
 	}

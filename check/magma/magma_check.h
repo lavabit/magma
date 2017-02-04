@@ -26,6 +26,7 @@
 #include "core/core_check.h"
 #include "providers/provide_check.h"
 #include "prime/prime_check.h"
+#include "engine/engine_check.h"
 #include "network/network_check.h"
 #include "objects/objects_check.h"
 #include "users/users_check.h"

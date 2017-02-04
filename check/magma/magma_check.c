@@ -276,7 +276,6 @@ int main(int argc, char *argv[]) {
 		ns_cleanup( virus_check_data_path, tank_check_data_path, dspam_check_data_path);
 		exit(EXIT_FAILURE);
 	}
-
 	// Only during development...
 	cache_flush();
 
@@ -286,7 +285,6 @@ int main(int argc, char *argv[]) {
 	// If the command line told us to run a specific test only add that individual test using the special barrister suite.
 	if (barrister_unit_test) {
 		srunner_add_suite(sr, suite_check_barrister(barrister_unit_test));
-
 	}
 	// Otherwise add all of the unit tests to the suite runner.
 	else {
@@ -294,6 +292,7 @@ int main(int argc, char *argv[]) {
 		srunner_add_suite(sr, suite_check_core());
 		srunner_add_suite(sr, suite_check_provide());
 		srunner_add_suite(sr, suite_check_prime());
+		srunner_add_suite(sr, suite_check_engine());
 		srunner_add_suite(sr, suite_check_network());
 		srunner_add_suite(sr, suite_check_objects());
 		srunner_add_suite(sr, suite_check_users());

@@ -582,7 +582,7 @@ stringer_t * st_alloc_opts(uint32_t opts, size_t len) {
 				((mapped_t *)result)->data = joint;
 				((mapped_t *)result)->handle = handle;
 			} else {
-				if (handle != -1)	close(handle);
+				if (handle != -1) close(handle);
 				if (result) {
 					release(result);
 					result = NULL;
@@ -744,10 +744,10 @@ stringer_t * st_realloc(stringer_t *s, size_t len) {
 			else {
 				// An error occurred. If the errno is set to EAGAIN and it's secure memory, the most likely problem is that the requested amount of memory exceeds
 				// the amount of locked memory available under this user account.
-				if ((((mapped_t *)s)->opts & SECURE) && errno == EAGAIN && (system_limit_cur(RLIMIT_MEMLOCK) < len ||
-						system_limit_cur(RLIMIT_MEMLOCK) < (len + magma.secure.memory.length))) {
+				if ((((mapped_t *)s)->opts & SECURE) && errno == EAGAIN && (system_ulimit_cur(RLIMIT_MEMLOCK) < len ||
+						system_ulimit_cur(RLIMIT_MEMLOCK) < (len + magma.secure.memory.length))) {
 					log_pedantic("Unable to resize the secure memory mapped buffer, the requested size exceeds the system limit for locked pages. " \
-							"{limit = %lu / requested = %zu}", system_limit_cur(RLIMIT_MEMLOCK), len);
+							"{limit = %lu / requested = %zu}", system_ulimit_cur(RLIMIT_MEMLOCK), len);
 				}
 				else {
 					log_pedantic("An error occurred while resizing a memory mapped buffer. {%s}", strerror_r(errno, message, 1024));

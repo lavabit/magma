@@ -14,19 +14,19 @@
  * @param	resource	the system rlimit resource identifier to be queried.
  * @return	-1 on failure, or the system hard limit of the specified resource identifier on success.
  */
-uint64_t system_limit_max(int_t resource) {
+uint64_t system_ulimit_max(int_t resource) {
 
 	int_t ret;
 	struct rlimit64 limits = { 0, 0 };
 
 	if ((ret = getrlimit64(resource, &limits))) {
-		log_info("Unable to retrieve the resource limit. {resource = %i / return = %i / error = %s}", resource, ret, strerror_r(errno, bufptr, buflen));
+		log_info("Unable to retrieve the resource limit. { resource = %i / return = %i / error = %s }", resource, ret, strerror_r(errno, bufptr, buflen));
 		return -1;
 	}
 
 	if (limits.rlim_max > UINT64_MAX) {
 		log_pedantic("The requested resource has a maximum value that exceeds the range of possible of return values. Returning the maximum possible value instead. "
-			"{resource = %i / actual = %lu / returning = %lu}", resource, limits.rlim_max, UINT64_MAX);
+			"{ resource = %i / actual = %lu / returning = %lu }", resource, limits.rlim_max, UINT64_MAX);
 		return UINT64_MAX;
 	}
 
@@ -40,24 +40,39 @@ uint64_t system_limit_max(int_t resource) {
  * @param	resource	the system rlimit resource identifier to be queried.
  * @return	-1 on failure, or the system soft limit of the specified resource identifier on success.
  */
-uint64_t system_limit_cur(int_t resource) {
+uint64_t system_ulimit_cur(int_t resource) {
 
 	int_t ret;
 	struct rlimit64 limits = { 0, 0 };
 
 	if ((ret = getrlimit64(resource, &limits))) {
-
-		log_info("Unable to retrieve the resource limit. {resource = %i / return = %i / error = %s}", resource, ret, strerror_r(errno, bufptr, buflen));
+		log_info("Unable to retrieve the resource limit. { resource = %i / return = %i / error = %s }", resource, ret, strerror_r(errno, bufptr, buflen));
 		return -1;
 	}
 
 	if (limits.rlim_cur > UINT64_MAX) {
 		log_pedantic("The requested resource is currently set to a value that exceeds the range of possible of return values. Returning the maximum possible value instead. "
-			"{resource = %i / actual = %lu / returning = %lu}", resource, limits.rlim_cur, UINT64_MAX);
+			"{ resource = %i / actual = %lu / returning = %lu }", resource, limits.rlim_cur, UINT64_MAX);
 		return UINT64_MAX;
 	}
 
 	return (uint64_t)limits.rlim_cur;
+}
+
+uint64_t system_oslimit_max(int_t control, int_t resource) {
+
+	int_t ret, mib[2];
+	uint64_t result = 0;
+	size_t len = sizeof(result);
+
+	mib[0] = control;
+	mib[1] = resource;
+
+	if ((ret = sysctl(mib, 2, &result, &len, NULL, 0))) {
+		log_info("{ resource = FS_MAXFILE / return = %i / error = %s }", ret, strerror_r(errno, MEMORYBUF(1024), 1024));
+	}
+
+	return result;
 }
 
 /**
@@ -67,7 +82,7 @@ uint64_t system_limit_cur(int_t resource) {
 bool_t system_change_root_directory(void) {
 
 	if (magma.system.root_directory && chroot(magma.system.root_directory)) {
-		log_info("Could not jail the process inside %s. {%s}", magma.system.root_directory,
+		log_info("Could not jail the process inside %s. { root = %s }", magma.system.root_directory,
 				strerror_r(errno, bufptr, buflen));
 		return false;
 	}
@@ -155,7 +170,7 @@ bool_t system_init_core_dumps(void) {
 	};
 
 	if (magma.system.enable_core_dumps && setrlimit64(RLIMIT_CORE, &limits)) {
-		log_info("The system does not allow core dumps. {%s}", strerror_r(errno, bufptr, buflen));
+		log_info("The system does not allow core dumps. { error = %s}", strerror_r(errno, bufptr, buflen));
 		return false;
 	}
 
@@ -179,7 +194,7 @@ bool_t system_init_impersonation(void) {
 		mm_wipe(&user, sizeof(struct passwd));
 
 		if ((pwnam_len = sysconf(_SC_GETPW_R_SIZE_MAX)) == -1) {
-			log_info("Unable to determine the required buffer size for the getpwnam_r function. {%s}", strerror_r(errno, bufptr, buflen));
+			log_info("Unable to determine the required buffer size for the getpwnam_r function. { error = %s }", strerror_r(errno, bufptr, buflen));
 			return false;
 		} else if (!(pwnam = mm_alloc(pwnam_len))) {
 			log_info("Unable to allocate the buffer required for the getpwnam_r function.");
@@ -191,7 +206,7 @@ bool_t system_init_impersonation(void) {
 			if (!result) {
 				log_info("The user account %s does not exist.", magma.system.impersonate_user);
 			} else {
-				log_info("Unable to retrieve information for the user account %s. {%s}", magma.system.impersonate_user,
+				log_info("Unable to retrieve information for the user account %s. { error = %s }", magma.system.impersonate_user,
 					strerror_r(errno, bufptr, buflen));
 			}
 
@@ -200,21 +215,21 @@ bool_t system_init_impersonation(void) {
 		}
 		// Change into the user's home directory.
 		else if (chdir(user.pw_dir)) {
-			log_info("Unable to change into the %s directory which is the home for the user %s. {%s}", user.pw_dir, magma.system.impersonate_user,
+			log_info("Unable to change into the %s directory which is the home for the user %s. { error = %s }", user.pw_dir, magma.system.impersonate_user,
 				strerror_r(errno, bufptr, buflen));
 			mm_free(pwnam);
 			return false;
 		}
 		// Assume the proper group permissions.
 		else if (getgid() != user.pw_gid && setgid(user.pw_gid)) {
-			log_info("Unable to assume the group id %i. {%s}", user.pw_gid,
+			log_info("Unable to assume the group id %i. { error = %s }", user.pw_gid,
 				strerror_r(errno, bufptr, buflen));
 			mm_free(pwnam);
 			return false;
 		}
 		// Begin impersonating the user.
 		else if (getuid() != user.pw_uid && setuid(user.pw_uid)) {
-			log_info("Unable to begin impersonating the user %s. {%s}", magma.system.impersonate_user,
+			log_info("Unable to begin impersonating the user %s. { error = %s }", magma.system.impersonate_user,
 				strerror_r(errno, bufptr, buflen));
 			mm_free(pwnam);
 			return false;
@@ -248,108 +263,138 @@ bool_t system_init_resource_limits(void) {
 		.rlim_cur = RLIM64_INFINITY,
 		.rlim_max = RLIM64_INFINITY
 	};
+	chr_t *errbuf = MEMORYBUF(1024);
 
 	if (magma.system.increase_resource_limits) {
 
 		// Address Space
 		if (setrlimit64(RLIMIT_AS, &limits) && magma.config.output_resource_limits) {
-			log_info("Unable to increase the address space limit. {%s}", strerror_r(errno, bufptr, buflen));
+			log_info("Unable to increase the address space limit. { error = %s }", strerror_r(errno, errbuf, 1024));
 		}
 
 		// Data Segment
 		if (setrlimit64(RLIMIT_DATA, &limits) && magma.config.output_resource_limits) {
-			log_info("Unable to increase the data segment limit. {%s}", strerror_r(errno, bufptr, buflen));
+			log_info("Unable to increase the data segment limit. { error = %s }", strerror_r(errno, errbuf, 1024));
 		}
 
 		// Stack Size
 		if (setrlimit64(RLIMIT_STACK, &limits) && magma.config.output_resource_limits) {
-			log_info("Unable to increase the stack size limit. {%s}", strerror_r(errno, bufptr, buflen));
+			log_info("Unable to increase the stack size limit. { error = %s }", strerror_r(errno, errbuf, 1024));
 		}
 
 		// File Size
 		if (setrlimit64(RLIMIT_FSIZE, &limits) && magma.config.output_resource_limits) {
-			log_info("Unable to increase the file size limit. {%s}", strerror_r(errno, bufptr, buflen));
+			log_info("Unable to increase the file size limit. { error = %s }", strerror_r(errno, errbuf, 1024));
 		}
 
 		// Number of Threads/Processes
 		if (setrlimit64(RLIMIT_NPROC, &limits) && magma.config.output_resource_limits) {
-			log_info("Unable to increase the thread limit. {%s}", strerror_r(errno, bufptr, buflen));
+			log_info("Unable to increase the thread limit. { error = %s }", strerror_r(errno, errbuf, 1024));
+		}
+
+		// Locked Memory
+		if (setrlimit64(RLIMIT_MEMLOCK, &limits) && magma.config.output_resource_limits) {
+			log_info("Unable to increase the locked memory limit. { error = %s }", strerror_r(errno, errbuf, 1024));
 		}
 
 		// File Descriptors
-		// The command '/sbin/sysctl -a' is indicating a kernel max of 344021 (fs.file-max).
-		limits.rlim_cur = limits.rlim_max = 262144;
+		limits.rlim_cur = limits.rlim_max = system_oslimit_max(CTL_FS, FS_MAXFILE);
 
 		if (setrlimit64(RLIMIT_NOFILE, &limits) && magma.config.output_resource_limits) {
-			log_info("Unable to increase the file descriptor limit. {%s}", strerror_r(errno, bufptr, buflen));
+			log_info("Unable to increase the file descriptor limit. { error = %s }", strerror_r(errno, errbuf, 1024));
 		}
 
 	}
 
 	if (magma.config.output_resource_limits) {
 
-		log_info("\n\nResource Limits\n--------------------------------------------------------------------------------");
+		log_info("\n\nResource Limits\n--------------------------------------------------------------------------");
 
 		// Core Dumps
 		if (getrlimit64(RLIMIT_CORE, &limits)) {
-			log_info("Unable to retrieve the core dump size limit. {%s}", strerror_r(errno, bufptr, buflen));
-		} else if (limits.rlim_max == RLIM64_INFINITY) {
+			log_info("Unable to retrieve the core dump size limit. { error = %s }", strerror_r(errno, errbuf, 1024));
+		}
+		else if (limits.rlim_max == RLIM64_INFINITY) {
 			log_info("RLIMIT_CORE = RLIM64_INFINITY");
-		} else {
+		}
+		else {
 			log_info("RLIMIT_CORE = %ld", limits.rlim_max);
 		}
 
 		// Address Space
 		if (getrlimit64(RLIMIT_AS, &limits)) {
-			log_info("Unable to retrieve the address space limit. {%s}", strerror_r(errno, bufptr, buflen));
-		} else if (limits.rlim_max == RLIM64_INFINITY) {
+			log_info("Unable to retrieve the address space limit. { error = %s }", strerror_r(errno, errbuf, 1024));
+		}
+		else if (limits.rlim_max == RLIM64_INFINITY) {
 			log_info("RLIMIT_AS = RLIM64_INFINITY");
-		} else {
+		}
+		else {
 			log_info("RLIMIT_AS = %ld", limits.rlim_max);
 		}
 
 		// Data Segment
 		if (getrlimit64(RLIMIT_DATA, &limits)) {
-			log_info("Unable to retrieve the data segment limit. {%s}", strerror_r(errno, bufptr, buflen));
-		} else if (limits.rlim_max == RLIM64_INFINITY) {
+			log_info("Unable to retrieve the data segment limit. { error = %s }", strerror_r(errno, errbuf, 1024));
+		}
+		else if (limits.rlim_max == RLIM64_INFINITY) {
 			log_info("RLIMIT_DATA = RLIM64_INFINITY");
-		} else {
+		}
+		else {
 			log_info("RLIMIT_DATA = %ld", limits.rlim_max);
 		}
 
 		// Stack Size
 		if (getrlimit64(RLIMIT_STACK, &limits)) {
-			log_info("Unable to retrieve the stack size limit. {%s}", strerror_r(errno, bufptr, buflen));
-		} else if (limits.rlim_max == RLIM64_INFINITY) {
+			log_info("Unable to retrieve the stack size limit. { error = %s }", strerror_r(errno, errbuf, 1024));
+		}
+		else if (limits.rlim_max == RLIM64_INFINITY) {
 			log_info("RLIMIT_STACK = RLIM64_INFINITY");
-		} else {
+		}
+		else {
 			log_info("RLIMIT_STACK = %ld", limits.rlim_max);
 		}
 
 		// File Size
 		if (getrlimit64(RLIMIT_FSIZE, &limits)) {
-			log_info("Unable to retrieve the file size limit. {%s}", strerror_r(errno, bufptr, buflen));
-		} else if (limits.rlim_max == RLIM64_INFINITY) {
+			log_info("Unable to retrieve the file size limit. { error = %s }", strerror_r(errno, errbuf, 1024));
+		}
+		else if (limits.rlim_max == RLIM64_INFINITY) {
 			log_info("RLIMIT_FSIZE = RLIM64_INFINITY");
-		} else {
+		}
+		else {
 			log_info("RLIMIT_FSIZE = %ld", limits.rlim_max);
 		}
 
 		// Number of Threads/Processes
 		if (getrlimit64(RLIMIT_NPROC, &limits)) {
-			log_info("Unable to retrieve the thread limit. {%s}", strerror_r(errno, bufptr, buflen));
-		} else if (limits.rlim_max == RLIM64_INFINITY) {
+			log_info("Unable to retrieve the thread limit. { error = %s }", strerror_r(errno, errbuf, 1024));
+		}
+		else if (limits.rlim_max == RLIM64_INFINITY) {
 			log_info("RLIMIT_NPROC = RLIM64_INFINITY");
-		} else {
+		}
+		else {
 			log_info("RLIMIT_NPROC = %ld", limits.rlim_max);
+		}
+
+		// Locked Memory
+		if (getrlimit64(RLIMIT_MEMLOCK, &limits)) {
+			log_info("Unable to retrieve the locked memory limit. { error = %s }", strerror_r(errno, errbuf, 1024));
+		}
+		else if (limits.rlim_max == RLIM64_INFINITY) {
+			log_info("RLIMIT_MEMLOCK = RLIM64_INFINITY");
+		}
+		else {
+			log_info("RLIMIT_MEMLOCK = %ld", limits.rlim_max);
 		}
 
 		// File Descriptors
 		if (getrlimit64(RLIMIT_NOFILE, &limits)) {
-			log_info("Unable to retrieve the file descriptor limit. {%s}", strerror_r(errno, bufptr, buflen));
-		} else if (limits.rlim_max == RLIM64_INFINITY) {
+			log_info("Unable to retrieve the file descriptor limit. { error = %s }", strerror_r(errno, errbuf, 1024));
+		}
+		else if (limits.rlim_max == RLIM64_INFINITY) {
 			log_info("RLIMIT_NOFILE = RLIM64_INFINITY");
-		} else {
+		}
+		else {
 			log_info("RLIMIT_NOFILE = %ld", limits.rlim_max);
 		}
 

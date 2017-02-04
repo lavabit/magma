@@ -317,7 +317,7 @@ void config_output_help(void) {
  *			6. Make sure 40 <= magma.smtp.wrap_line_length <= 65535
  *			7. Make sure 8 <= magma.smtp.recipient_limit <= 32768
  *			8. Make sure 16 <= magma.smtp.relay_limit
- *			9. Make sure 16384 <= system_limit_max(RLIMIT_STACK)
+ *			9. Make sure 16384 <= system_ulimit_max(RLIMIT_STACK)
  *			10. If magma.system.daemonize is set, make sure magma.output.file is not false
  *			11. If magma.output.file is enabled, magma.output.path must be set.
  *			12. If magma.dkim.enabled is set, then magma.dkim.domain, magma.dkim.selector, and magma.dkim.key must all be set.
@@ -416,7 +416,7 @@ bool_t config_validate_settings(void) {
 		log_critical("magma.system.thread_stack_size is required to be %i or larger.", PTHREAD_STACK_MIN);
 		result = false;
 	}
-	else if ((limit = system_limit_max(RLIMIT_STACK)) > 0 && magma.system.thread_stack_size > limit) {
+	else if ((limit = system_ulimit_max(RLIMIT_STACK)) > 0 && magma.system.thread_stack_size > limit) {
 		log_critical("magma.system.thread_stack_size is required to be %li or larger.", limit);
 		result = false;
 	}

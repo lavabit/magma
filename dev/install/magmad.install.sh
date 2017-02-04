@@ -165,18 +165,23 @@ pid-file=/var/run/mysqld/mysqld.pid
        endscript
 }
 
-
-
-
 # Find out how much RAM is installed, and what 50% would be in KB.
 TOTALMEM=`free -k | grep -E "^Mem:" | awk -F' ' '{print $2}'`
 HALFMEM=`echo $(($TOTALMEM/2))`
 
 # Update the limits to allow users to lock 50% of memory.
-printf "root     soft    memlock    $HALFMEM\n" > /etc/security/limits.d/50-magmad.conf
-printf "root     hard    memlock    $HALFMEM\n\n" >> /etc/security/limits.d/50-magmad.conf
+printf "root     soft    stack      unlimited\n" > /etc/security/limits.d/50-magmad.conf
+printf "root     hard    stack      unlimited\n" >> /etc/security/limits.d/50-magmad.conf
+printf "root     soft    memlock    $HALFMEM\n" >> /etc/security/limits.d/50-magmad.conf
+printf "root     hard    memlock    $HALFMEM\n" >> /etc/security/limits.d/50-magmad.conf
+printf "root     soft    nofile     262144\n" >> /etc/security/limits.d/50-magmad.conf
+printf "root     hard    nofile     262144\n\n" >> /etc/security/limits.d/50-magmad.conf
+printf "magma    soft    stack      unlimited\n" >> /etc/security/limits.d/50-magmad.conf
+printf "magma    hard    stack      unlimited\n" >> /etc/security/limits.d/50-magmad.conf
 printf "magma    soft    memlock    $HALFMEM\n" >> /etc/security/limits.d/50-magmad.conf
-printf "magma    hard    memlock    $HALFMEM\n\n" >> /etc/security/limits.d/50-magmad.conf
+printf "magma    hard    memlock    $HALFMEM\n" >> /etc/security/limits.d/50-magmad.conf
+printf "magma    soft    nofile     262144\n" >> /etc/security/limits.d/50-magmad.conf
+printf "magma    hard    nofile     262144\n\n" >> /etc/security/limits.d/50-magmad.conf
 
 # Fix the SELinux context.
 chcon system_u:object_r:etc_t:s0 /etc/security/limits.d/50-magmad.conf

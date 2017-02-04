@@ -366,101 +366,93 @@ START_TEST (check_constants)
 	}
 END_TEST
 
-START_TEST (check_allocation)
-	{
-		char *errmsg = NULL;
-		bool_t outcome = true;
+START_TEST (check_allocation) {
+	char *errmsg = NULL;
+	bool_t outcome = true;
 
-		log_unit("%-64.64s", "CORE / STRINGS / ALLOCATION / SINGLE THREADED:");
+	log_unit("%-64.64s", "CORE / STRINGS / ALLOCATION / SINGLE THREADED:");
 
-		if (!check_string_alloc(NULLER_T | CONTIGUOUS | HEAP) || !check_string_alloc(BLOCK_T | CONTIGUOUS | HEAP) || !check_string_alloc(
-			MANAGED_T | CONTIGUOUS | HEAP)) errmsg = "Standard allocation checks failed.";
+	if (!check_string_alloc(NULLER_T | CONTIGUOUS | HEAP) || !check_string_alloc(BLOCK_T | CONTIGUOUS | HEAP) || !check_string_alloc(
+		MANAGED_T | CONTIGUOUS | HEAP)) errmsg = "Standard allocation checks failed.";
 
-		if (!check_string_alloc(NULLER_T | JOINTED | HEAP) || !check_string_alloc(BLOCK_T | JOINTED | HEAP) || !check_string_alloc(
-			MANAGED_T | JOINTED | HEAP) || !check_string_alloc(MAPPED_T | JOINTED | HEAP)) errmsg = "Jointed allocation checks failed.";
+	if (!check_string_alloc(NULLER_T | JOINTED | HEAP) || !check_string_alloc(BLOCK_T | JOINTED | HEAP) || !check_string_alloc(
+		MANAGED_T | JOINTED | HEAP) || !check_string_alloc(MAPPED_T | JOINTED | HEAP)) errmsg = "Jointed allocation checks failed.";
 
-		if (!check_string_alloc(NULLER_T | CONTIGUOUS | SECURE) || !check_string_alloc(BLOCK_T | CONTIGUOUS | SECURE) || !check_string_alloc(
-			MANAGED_T | CONTIGUOUS | SECURE)) errmsg = "Secure allocation of contiguous types failed.";
+	if (!check_string_alloc(NULLER_T | CONTIGUOUS | SECURE) || !check_string_alloc(BLOCK_T | CONTIGUOUS | SECURE) || !check_string_alloc(
+		MANAGED_T | CONTIGUOUS | SECURE)) errmsg = "Secure allocation of contiguous types failed.";
 
-		if (!check_string_alloc(NULLER_T | JOINTED | SECURE) || !check_string_alloc(BLOCK_T | JOINTED | SECURE) || !check_string_alloc(
-			MANAGED_T | JOINTED | SECURE) || !check_string_alloc(MAPPED_T | JOINTED | SECURE)) errmsg
-			= "Secure allocation of jointed types failed.";
+	if (!check_string_alloc(NULLER_T | JOINTED | SECURE) || !check_string_alloc(BLOCK_T | JOINTED | SECURE) || !check_string_alloc(
+		MANAGED_T | JOINTED | SECURE) || !check_string_alloc(MAPPED_T | JOINTED | SECURE)) errmsg
+		= "Secure allocation of jointed types failed.";
 
-		outcome = errmsg ? false : true;
-		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
-		fail_unless(outcome, errmsg);
-
-	}
+	outcome = errmsg ? false : true;
+	log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
+	fail_unless(outcome, errmsg);
+}
 END_TEST
 
-START_TEST (check_reallocation)
-	{
-		char *errmsg = NULL;
-		bool_t outcome = true;
+START_TEST (check_reallocation)	{
+	char *errmsg = NULL;
+	bool_t outcome = true;
 
-		log_unit("%-64.64s", "CORE / STRINGS / REALLOCATION / SINGLE THREADED:");
+	log_unit("%-64.64s", "CORE / STRINGS / REALLOCATION / SINGLE THREADED:");
 
-		if (!check_string_realloc(NULLER_T | CONTIGUOUS | HEAP) || !check_string_realloc(BLOCK_T | CONTIGUOUS | HEAP) || !check_string_realloc(
-			MANAGED_T | CONTIGUOUS | HEAP)) errmsg = "Standard reallocation checks failed.";
+	if (!check_string_realloc(NULLER_T | CONTIGUOUS | HEAP) || !check_string_realloc(BLOCK_T | CONTIGUOUS | HEAP) || !check_string_realloc(
+		MANAGED_T | CONTIGUOUS | HEAP)) errmsg = "Standard reallocation checks failed.";
 
-		if (!check_string_realloc(NULLER_T | JOINTED | HEAP) || !check_string_realloc(BLOCK_T | JOINTED | HEAP) || !check_string_realloc(
-			MANAGED_T | JOINTED | HEAP) || !check_string_realloc(MAPPED_T | JOINTED | HEAP)) errmsg = "Jointed reallocation checks failed.";
+	if (!check_string_realloc(NULLER_T | JOINTED | HEAP) || !check_string_realloc(BLOCK_T | JOINTED | HEAP) || !check_string_realloc(
+		MANAGED_T | JOINTED | HEAP) || !check_string_realloc(MAPPED_T | JOINTED | HEAP)) errmsg = "Jointed reallocation checks failed.";
 
-		if (!check_string_realloc(NULLER_T | CONTIGUOUS | SECURE) || !check_string_realloc(BLOCK_T | CONTIGUOUS | SECURE)
-			|| !check_string_realloc(MANAGED_T | CONTIGUOUS | SECURE)) errmsg = "Secure reallocation of contiguous types failed.";
+	if (!check_string_realloc(NULLER_T | CONTIGUOUS | SECURE) || !check_string_realloc(BLOCK_T | CONTIGUOUS | SECURE)
+		|| !check_string_realloc(MANAGED_T | CONTIGUOUS | SECURE)) errmsg = "Secure reallocation of contiguous types failed.";
 
-		if (!check_string_realloc(NULLER_T | JOINTED | SECURE) || !check_string_realloc(BLOCK_T | JOINTED | SECURE) || !check_string_realloc(
-			MANAGED_T | JOINTED | SECURE) || !check_string_realloc(MAPPED_T | JOINTED | SECURE)) errmsg
-			= "Secure reallocation of jointed types failed.";
+	if (!check_string_realloc(NULLER_T | JOINTED | SECURE) || !check_string_realloc(BLOCK_T | JOINTED | SECURE) || !check_string_realloc(
+		MANAGED_T | JOINTED | SECURE) || !check_string_realloc(MAPPED_T | JOINTED | SECURE)) errmsg
+		= "Secure reallocation of jointed types failed.";
 
-		outcome = errmsg ? false : true;
-		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
-		fail_unless(outcome, errmsg);
-
-	}
+	outcome = errmsg ? false : true;
+	log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
+	fail_unless(outcome, errmsg);
+}
 END_TEST
 
-START_TEST (check_duplication)
-	{
-		char *errmsg = NULL;
-		bool_t outcome = true;
+START_TEST (check_duplication) {
+	char *errmsg = NULL;
+	bool_t outcome = true;
 
-		log_unit("%-64.64s", "CORE / STRINGS / DUPLICATION / SINGLE THREADED:");
+	log_unit("%-64.64s", "CORE / STRINGS / DUPLICATION / SINGLE THREADED:");
 
-		if (!check_string_dupe(NULLER_T | CONTIGUOUS | HEAP) || !check_string_dupe(BLOCK_T | CONTIGUOUS | HEAP) || !check_string_dupe(
-			MANAGED_T | CONTIGUOUS | HEAP)) errmsg = "Standard duplication checks failed.";
+	if (!check_string_dupe(NULLER_T | CONTIGUOUS | HEAP) || !check_string_dupe(BLOCK_T | CONTIGUOUS | HEAP) || !check_string_dupe(
+		MANAGED_T | CONTIGUOUS | HEAP)) errmsg = "Standard duplication checks failed.";
 
-		if (!check_string_dupe(NULLER_T | JOINTED | HEAP) || !check_string_dupe(BLOCK_T | JOINTED | HEAP) || !check_string_dupe(
-			MANAGED_T | JOINTED | HEAP) || !check_string_dupe(MAPPED_T | JOINTED | HEAP)) errmsg = "Jointed duplication checks failed.";
+	if (!check_string_dupe(NULLER_T | JOINTED | HEAP) || !check_string_dupe(BLOCK_T | JOINTED | HEAP) || !check_string_dupe(
+		MANAGED_T | JOINTED | HEAP) || !check_string_dupe(MAPPED_T | JOINTED | HEAP)) errmsg = "Jointed duplication checks failed.";
 
-		if (!check_string_dupe(NULLER_T | CONTIGUOUS | SECURE) || !check_string_dupe(BLOCK_T | CONTIGUOUS | SECURE) || !check_string_dupe(
-			MANAGED_T | CONTIGUOUS | SECURE)) errmsg = "Secure duplication of contiguous types failed.";
+	if (!check_string_dupe(NULLER_T | CONTIGUOUS | SECURE) || !check_string_dupe(BLOCK_T | CONTIGUOUS | SECURE) || !check_string_dupe(
+		MANAGED_T | CONTIGUOUS | SECURE)) errmsg = "Secure duplication of contiguous types failed.";
 
-		if (!check_string_dupe(NULLER_T | JOINTED | SECURE) || !check_string_dupe(BLOCK_T | JOINTED | SECURE) || !check_string_dupe(
-			MANAGED_T | JOINTED | SECURE) || !check_string_dupe(MAPPED_T | JOINTED | SECURE)) errmsg
-			= "Secure duplication of jointed types failed.";
+	if (!check_string_dupe(NULLER_T | JOINTED | SECURE) || !check_string_dupe(BLOCK_T | JOINTED | SECURE) || !check_string_dupe(
+		MANAGED_T | JOINTED | SECURE) || !check_string_dupe(MAPPED_T | JOINTED | SECURE)) errmsg
+		= "Secure duplication of jointed types failed.";
 
-		outcome = errmsg ? false : true;
-		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
-		fail_unless(outcome, errmsg);
-
-	}
+	outcome = errmsg ? false : true;
+	log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
+	fail_unless(outcome, errmsg);
+}
 END_TEST
 
-START_TEST (check_merge)
-	{
-		char *errmsg = NULL;
-		bool_t outcome = true;
+START_TEST (check_merge) {
+	char *errmsg = NULL;
+	bool_t outcome = true;
 
-		log_unit("%-64.64s", "CORE / STRINGS / MERGE / SINGLE THREADED:");
+	log_unit("%-64.64s", "CORE / STRINGS / MERGE / SINGLE THREADED:");
 
-		if (!check_string_merge()) errmsg = "The stringer merge function failed.";
+	if (!check_string_merge()) errmsg = "The stringer merge function failed.";
 
-		outcome = errmsg ? false : true;
-		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
-		fail_unless(outcome, errmsg);
-
-	}
+	outcome = errmsg ? false : true;
+	log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
+	fail_unless(outcome, errmsg);
+}
 END_TEST
 
 START_TEST (check_print)

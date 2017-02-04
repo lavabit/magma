@@ -50,12 +50,12 @@ bool_t check_mail_store_plaintext_sthread(stringer_t *errmsg) {
 		for (uint32_t j = 0; j < max && result && status(); j++) {
 
 			if (!(data = check_message_get(j))) {
-				st_sprint(errmsg, "Failed to get the message data. { message = %i }", i);
+				st_sprint(errmsg, "Failed to get the message data. { message = %i }", j);
 				result = false;
 			}
 
 			else if (mail_store_message(user->usernum, NULL, folder->foldernum, &flags, 0, 0, data) == 0) {
-				st_sprint(errmsg, "Failed to store the plaintext message data. { message = %i }", i);
+				st_sprint(errmsg, "Failed to store the plaintext message data. { message = %i }", j);
 				result = false;
 			}
 
@@ -119,12 +119,12 @@ bool_t check_mail_store_encrypted_sthread(stringer_t *errmsg) {
 		for (uint32_t j = 0; j < max && result && status(); j++) {
 
 			if (!(data = check_message_get(j))) {
-				st_sprint(errmsg, "Failed to get the message data. { message = %i }", i);
+				st_sprint(errmsg, "Failed to get the message data. { message = %i }", j);
 				result = false;
 			}
 
 			else if (mail_store_message(user->usernum, user->prime.signet, folder->foldernum, &flags, 0, 0, data) == 0) {
-				st_sprint(errmsg, "Failed to store the encrypted message data. { message = %i }", i);
+				st_sprint(errmsg, "Failed to store the encrypted message data. { message = %i }", j);
 				result = false;
 			}
 

@@ -167,6 +167,7 @@ bool_t check_string_realloc(uint32_t check) {
 	}
 
 	st_free(s);
+
 	return true;
 }
 

@@ -37,6 +37,19 @@ START_TEST (check_mail_store_s) {
 }
 END_TEST
 
+START_TEST (check_mail_headers_s) {
+
+	log_disable();
+	bool_t result = true;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	if (status()) result = check_mail_headers_sthread(errmsg);
+
+	log_test("MAIL / HEADERS / SINGLE THREADED:", errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
+}
+END_TEST
+
 Suite * suite_check_mail(void) {
 
 	TCase *tc;
@@ -44,6 +57,7 @@ Suite * suite_check_mail(void) {
 
 	testcase(s, tc, "Mail Store/S", check_mail_store_s);
 	testcase(s, tc, "Mail Load/S", check_mail_load_s);
+	testcase(s, tc, "Mail Headers/S", check_mail_headers_s);
 
 	return s;
 }

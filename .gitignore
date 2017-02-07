@@ -4,33 +4,38 @@ res/sql/Start.sql
 res/sql/Hostname.sql
 
 # Sandbox Data Leftover from Testing
-sandbox/logs/*
-sandbox/spool/*
-sandbox/virus/*
-sandbox/storage/*
-sandbox/etc/dkim.localhost.localdomain.pem
-sandbox/etc/dkim.localhost.localdomain.pub
-sandbox/etc/localhost.localdomain.pem
+/sandbox/logs/*
+/sandbox/spool/*
+/sandbox/virus/*
+/sandbox/storage/*
+/sandbox/etc/dkim.localhost.localdomain.pem
+/sandbox/etc/dkim.localhost.localdomain.pub
+/sandbox/etc/localhost.localdomain.pem
 
 # Magma Build Directories
-.deps/
-.objs/
+/.deps/
+/.objs/
 
 # Bundled Dependency Directories
-lib/logs/
-lib/local/
-lib/objects/
-lib/sources/
+/lib/logs/
+/lib/local/
+/lib/objects/
+/lib/sources/
 
 # Compiled Binaries
 /magmad
+/magmad.pg
 /magmad.so
 /magmad.check
+/magmad.check.pg
 /dime
 /signet
 /genrec
 /dime.check
-lib/check/magma.open.check
+/lib/check/magma.open.check
+
+# GProf Output
+/gmon.out
 
 # Tool Compiler Artifacts and Binaries
 dev/tools/pwtool/pwtool

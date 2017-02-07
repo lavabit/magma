@@ -21,6 +21,9 @@ MAGMA_PROGRAM					= $(addsuffix $(EXEEXT), magmad)
 MAGMA_CHECK_PROGRAM				= $(addsuffix $(EXEEXT), magmad.check)
 MAGMA_SHARED_LIBRARY			= $(addsuffix $(DYNLIBEXT), magmad)
 
+MAGMA_PROGRAM_PROF				= $(addsuffix $(EXEEXT), magmad.pg)
+MAGMA_CHECK_PROGRAM_PROF		= $(addsuffix $(EXEEXT), magmad.check.pg)
+
 DIME_PROGRAM					= $(addsuffix $(EXEEXT), dime)
 SIGNET_PROGRAM					= $(addsuffix $(EXEEXT), signet)
 GENREC_PROGRAM					= $(addsuffix $(EXEEXT), genrec)
@@ -108,6 +111,9 @@ OBJDIR							= .objs
 MAGMA_OBJFILES					= $(patsubst %.c,$(OBJDIR)/%.o,$(MAGMA_SRCFILES))
 MAGMA_CHECK_OBJFILES			= $(patsubst %.c,$(OBJDIR)/%.o,$(MAGMA_CHECK_SRCFILES))
 
+MAGMA_PROF_OBJFILES				= $(patsubst %.c,$(OBJDIR)/%.pg.o,$(MAGMA_SRCFILES))
+MAGMA_CHECK_PROF_OBJFILES		= $(patsubst %.c,$(OBJDIR)/%.pg.o,$(MAGMA_CHECK_SRCFILES))
+
 DIME_OBJFILES					= $(filter-out .objs/src//magma.o, $(patsubst %.c,$(OBJDIR)/%.o,$(DIME_SRCFILES)))
 SIGNET_OBJFILES					= $(filter-out .objs/src//magma.o, $(patsubst %.c,$(OBJDIR)/%.o,$(SIGNET_SRCFILES)))
 GENREC_OBJFILES					= $(filter-out .objs/src//magma.o, $(patsubst %.c,$(OBJDIR)/%.o,$(GENREC_SRCFILES)))
@@ -143,6 +149,9 @@ LDFLAGS							= -rdynamic
 # Archiver Parameters
 AR								= ar
 ARFLAGS							= rcs
+
+# GProf Parameters
+GPROF							= -pg -finstrument-functions -fprofile-arcs -ftest-coverage
 
 # Other External programs
 MV								= mv --force
@@ -212,19 +221,6 @@ else
 endif
 
 all: config warning $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) 
-
-check: config warning $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) finished
-	$(RUN)$(TOPDIR)/$(MAGMA_CHECK_PROGRAM) sandbox/etc/magma.sandbox.config
-	$(RUN)$(TOPDIR)/$(DIME_CHECK_PROGRAM)
-
-setup: $(PACKAGE_DEPENDENCIES)
-ifeq ($(VERBOSE),no)
-	@echo 'Running the '$(YELLOW)'setup'$(NORMAL)' scripts.'
-endif
-	$(RUN)dev/scripts/linkup.sh
-ifeq ($(VERBOSE),no)
-	@echo 'Generating new '$(YELLOW)'key'$(NORMAL)' files.'
-endif
 	$(RUN)dev/scripts/builders/build.lib.sh generate
 	
 warning:
@@ -245,6 +241,21 @@ config:
 	@echo 'DATE ' $(MAGMA_TIMESTAMP)
 	@echo 'HOST ' $(HOSTTYPE)
 
+setup: $(PACKAGE_DEPENDENCIES)
+ifeq ($(VERBOSE),no)
+	@echo 'Running the '$(YELLOW)'setup'$(NORMAL)' scripts.'
+endif
+	$(RUN)dev/scripts/linkup.sh
+ifeq ($(VERBOSE),no)
+	@echo 'Generating new '$(YELLOW)'key'$(NORMAL)' files.'
+endif
+
+check: config warning $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) finished
+	$(RUN)$(TOPDIR)/$(MAGMA_CHECK_PROGRAM) sandbox/etc/magma.sandbox.config
+	$(RUN)$(TOPDIR)/$(DIME_CHECK_PROGRAM)
+
+profile: $(MAGMA_PROGRAM_PROF) $(MAGMA_CHECK_PROGRAM_PROF)
+  
 # If verbose mode is disabled, we only output this finished message.
 finished:
 ifeq ($(VERBOSE),no)
@@ -255,8 +266,8 @@ endif
 
 # Delete the compiled program along with the generated object and dependency files
 clean:
-	@$(RM) $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM)
-	@$(RM) $(MAGMA_OBJFILES) $(DIME_OBJFILES) $(SIGNET_OBJFILES) $(GENREC_OBJFILES) $(MAGMA_CHECK_OBJFILES) $(DIME_CHECK_OBJFILES)
+	@$(RM) $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) $(MAGMA_PROGRAM_PROF) $(MAGMA_CHECK_PROGRAM_PROF)
+	@$(RM) $(MAGMA_OBJFILES) $(DIME_OBJFILES) $(SIGNET_OBJFILES) $(GENREC_OBJFILES) $(MAGMA_CHECK_OBJFILES) $(DIME_CHECK_OBJFILES) $(MAGMA_PROF_OBJFILES) $(MAGMA_CHECK_PROF_OBJFILES) 
 	@$(RM) $(MAGMA_DEPFILES) $(DIME_DEPFILES) $(SIGNET_DEPFILES) $(GENREC_DEPFILES) $(MAGMA_CHECK_DEPFILES) $(DIME_CHECK_DEPFILES)
 	@for d in $(sort $(dir $(MAGMA_OBJFILES)) $(dir $(MAGMA_CHECK_OBJFILES)) $(dir $(DIME_OBJFILES)) $(dir $(SIGNET_OBJFILES)) $(dir $(GENREC_OBJFILES))); \
 		do if test -d "$$d"; then $(RMDIR) "$$d"; fi; done
@@ -265,8 +276,8 @@ clean:
 	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
 
 distclean: 
-	@$(RM) $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) $(MAGMA_SHARED_LIBRARY)
-	@$(RM) $(MAGMA_OBJFILES) $(DIME_OBJFILES) $(SIGNET_OBJFILES) $(GENREC_OBJFILES) $(MAGMA_CHECK_OBJFILES) $(DIME_CHECK_OBJFILES)
+	@$(RM) $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) $(MAGMA_PROGRAM_PROF) $(MAGMA_CHECK_PROGRAM_PROF) $(MAGMA_SHARED_LIBRARY)
+	@$(RM) $(MAGMA_OBJFILES) $(DIME_OBJFILES) $(SIGNET_OBJFILES) $(GENREC_OBJFILES) $(MAGMA_CHECK_OBJFILES) $(DIME_CHECK_OBJFILES) $(MAGMA_PROF_OBJFILES) $(MAGMA_CHECK_PROF_OBJFILES)  
 	@$(RM) $(MAGMA_DEPFILES) $(DIME_DEPFILES) $(SIGNET_DEPFILES) $(GENREC_DEPFILES) $(MAGMA_CHECK_DEPFILES) $(DIME_CHECK_DEPFILES)
 	@$(RM) --recursive --force $(DEPDIR) $(OBJDIR) lib/local lib/logs lib/objects lib/sources
 	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
@@ -280,7 +291,7 @@ endif
 	$(RUN)$(INSTALL) --mode=0755 --owner=root --group=root --context=system_u:object_r:bin_t:s0 --no-target-directory \
 		$(MAGMA_SHARED_LIBRARY) /usr/libexec/$(MAGMA_SHARED_LIBRARY)
 		
-# Construct the magma daemon executable file
+# Construct the magma daemon executable file.
 $(MAGMA_PROGRAM): $(PACKAGE_DEPENDENCIES) $(MAGMA_OBJFILES)
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
@@ -288,6 +299,29 @@ else
 	@echo
 endif
 	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) -Wl,--end-group
+
+# Construct the magma unit test executable with gprof support.
+$(MAGMA_CHECK_PROGRAM): $(PACKAGE_DEPENDENCIES) $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES))
+ifeq ($(VERBOSE),no)
+	@echo 'Constructing' $(RED)$@$(NORMAL)
+endif
+	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) -Wl,--start-group,--whole-archive $(MAGMA_CHECK_STATIC) -Wl,--no-whole-archive,--end-group  $(MAGMA_CHECK_DYNAMIC) 
+
+# Construct the magma unit test executable.
+$(MAGMA_CHECK_PROGRAM_PROF): $(PACKAGE_DEPENDENCIES) $(MAGMA_CHECK_PROF_OBJFILES) $(filter-out .objs/src/magma.pg.o, $(MAGMA_PROF_OBJFILES))
+ifeq ($(VERBOSE),no)
+	@echo 'Constructing' $(RED)$@$(NORMAL)
+endif
+	$(RUN)$(LD) $(LDFLAGS) $(GPROF) --output='$@' $(MAGMA_CHECK_PROF_OBJFILES) $(filter-out .objs/src/magma.pg.o, $(MAGMA_PROF_OBJFILES)) -Wl,--start-group,--whole-archive $(MAGMA_CHECK_STATIC) -Wl,--no-whole-archive,--end-group  $(MAGMA_CHECK_DYNAMIC) 
+	
+# Construct the magma daemon executable file with gprof support.
+$(MAGMA_PROGRAM_PROF): $(PACKAGE_DEPENDENCIES) $(MAGMA_PROF_OBJFILES)
+ifeq ($(VERBOSE),no)
+	@echo 'Constructing' $(RED)$@$(NORMAL)
+else
+	@echo
+endif
+	$(RUN)$(LD) $(LDFLAGS) $(GPROF) --output='$@' $(MAGMA_PROF_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) -Wl,--end-group
 
 # Construct the dime command line utility
 $(DIME_PROGRAM): $(PACKAGE_DEPENDENCIES) $(DIME_OBJFILES) 
@@ -316,13 +350,6 @@ else
 endif
 	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(GENREC_OBJFILES) -Wl,--start-group,--whole-archive $(MAGMA_STATIC) $(GENREC_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_DYNAMIC)
 
-# Construct the magma unit test executable
-$(MAGMA_CHECK_PROGRAM): $(PACKAGE_DEPENDENCIES) $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES))
-ifeq ($(VERBOSE),no)
-	@echo 'Constructing' $(RED)$@$(NORMAL)
-endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) -Wl,--start-group,--whole-archive $(MAGMA_CHECK_STATIC) -Wl,--no-whole-archive,--end-group  $(MAGMA_CHECK_DYNAMIC) 
-
 # Construct the dime unit test executable
 $(DIME_CHECK_PROGRAM): $(PACKAGE_DEPENDENCIES) $(DIME_CHECK_OBJFILES) 
 ifeq ($(VERBOSE),no)
@@ -338,7 +365,7 @@ endif
 	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
 	$(RUN)$(CPP) $(CPPFLAGS) $(CPPFLAGS.$(<F)) $(CPPDEFINES) $(CDEFINES.$(<F)) $(DIME_CHECK_CPPINCLUDES) -MF"$(<:%.cpp=$(DEPDIR)/%.d)" -MD -MP -MT"$@" -o"$@" -c "$<"
 
-# The Magma Unit Test Object files
+# The Magma Unit Test Object Files
 $(OBJDIR)/check/magma/%.o: check/magma/%.c
 ifeq ($(VERBOSE),no)
 	@echo 'Building' $(YELLOW)$<$(NORMAL)
@@ -347,7 +374,7 @@ endif
 	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
 	$(RUN)$(CC) $(CFLAGS) $(CFLAGS.$(<F)) $(CDEFINES) $(CDEFINES.$(<F)) $(MAGMA_CHECK_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" -o"$@" "$<"
 
-# The Magma Daemon Object files
+# The Magma Daemon Object Files
 $(OBJDIR)/%.o: %.c 
 ifeq ($(VERBOSE),no)
 	@echo 'Building' $(YELLOW)$<$(NORMAL)
@@ -355,6 +382,24 @@ endif
 	@test -d $(DEPDIR)/$(dir $<) || $(MKDIR) $(DEPDIR)/$(dir $<)
 	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
 	$(RUN)$(CC) $(CFLAGS) $(CFLAGS.$(<F)) $(CDEFINES) $(CDEFINES.$(<F)) $(MAGMA_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" -o"$@" "$<"
+
+# The Magma Unit Test Object Files (GProf Version)
+$(OBJDIR)/check/magma/%.pg.o: check/magma/%.c
+ifeq ($(VERBOSE),no)
+	@echo 'Building' $(YELLOW)$<$(NORMAL)
+endif
+	@test -d $(DEPDIR)/$(dir $<) || $(MKDIR) $(DEPDIR)/$(dir $<)
+	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
+	$(RUN)$(CC) $(GPROF) $(CFLAGS) $(CFLAGS.$(<F)) $(CDEFINES) $(CDEFINES.$(<F)) $(MAGMA_CHECK_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" -o"$@" "$<"
+
+# The Magma Daemon Object Files (GProf Version)
+$(OBJDIR)/%.pg.o: %.c 
+ifeq ($(VERBOSE),no)
+	@echo 'Building' $(YELLOW)$<$(NORMAL)
+endif
+	@test -d $(DEPDIR)/$(dir $<) || $(MKDIR) $(DEPDIR)/$(dir $<)
+	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
+	$(RUN)$(CC) $(GPROF) $(CFLAGS) $(CFLAGS.$(<F)) $(CDEFINES) $(CDEFINES.$(<F)) $(MAGMA_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" -o"$@" "$<"
 	
 $(PACKAGE_DEPENDENCIES): 
 ifeq ($(VERBOSE),no)
@@ -368,7 +413,7 @@ endif
 # Special Make Directives
 .SUFFIXES: .c .cc .cpp .o 
 #.NOTPARALLEL: warning conifg $(PACKAGE_DEPENDENCIES)
-.PHONY: all warning config finished check setup clean distclean install
+.PHONY: all warning config finished check setup clean distclean install profile
 #incremental
 
 # vim:set softtabstop=4 shiftwidth=4 tabstop=4:

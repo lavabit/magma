@@ -33,7 +33,7 @@ stringer_t *prime_pem_endings[] = {
 	CONSTANT("-----END ENCRYPTED MESSAGE-----")
 };
 
-stringer_t * prime_pem_begin(prime_artifact_type_t type) {
+stringer_t * prime_pem_begin(uint16_t type) {
 
 	stringer_t *result = NULL;
 
@@ -70,7 +70,7 @@ stringer_t * prime_pem_begin(prime_artifact_type_t type) {
 	return result;
 }
 
-stringer_t * prime_pem_end(prime_artifact_type_t type) {
+stringer_t * prime_pem_end(uint16_t type) {
 
 	stringer_t *result = NULL;
 

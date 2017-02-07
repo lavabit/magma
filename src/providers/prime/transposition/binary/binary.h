@@ -61,30 +61,30 @@ int_t   prime_reader_size(prime_reader_t *reader, int_t bytes);
 int_t   prime_reader_type(prime_reader_t *reader);
 
 /// objects.c
-prime_object_t *  prime_object_alloc(prime_artifact_type_t type, prime_size_t size, prime_size_t fields);
+prime_object_t *  prime_object_alloc(uint16_t type, prime_size_t size, prime_size_t fields);
 void              prime_object_free(prime_object_t *object);
-size_t            prime_object_size_max(prime_artifact_type_t type);
-size_t            prime_object_size_min(prime_artifact_type_t type);
-chr_t *           prime_object_type(prime_artifact_type_t type);
+size_t            prime_object_size_max(uint16_t type);
+size_t            prime_object_size_min(uint16_t type);
+chr_t *           prime_object_type(uint16_t type);
 
 /// headers.c
 stringer_t *  prime_header_encrypted_message_write(size_t size, stringer_t *output);
 stringer_t *  prime_header_encrypted_org_key_write(size_t size, stringer_t *output);
 stringer_t *  prime_header_encrypted_user_key_write(size_t size, stringer_t *output);
-size_t        prime_header_length(prime_artifact_type_t type);
+size_t        prime_header_length(uint16_t type);
 stringer_t *  prime_header_org_key_write(size_t size, stringer_t *output);
 stringer_t *  prime_header_org_signet_write(size_t size, stringer_t *output);
 int_t         prime_header_read(stringer_t *object, uint16_t *type, uint32_t *size);
 stringer_t *  prime_header_user_key_write(size_t size, stringer_t *output);
 stringer_t *  prime_header_user_signet_write(size_t size, stringer_t *output);
 stringer_t *  prime_header_user_signing_request_write(size_t size, stringer_t *output);
-stringer_t *  prime_header_write(prime_artifact_type_t type, size_t size, stringer_t *output);
+stringer_t *  prime_header_write(uint16_t type, size_t size, stringer_t *output);
 
 /// fields.c
 prime_field_t *  prime_field_get(prime_object_t *object, prime_field_type_t type);
 int_t            prime_field_size_length(prime_field_type_t field);
-size_t           prime_field_size_max(prime_artifact_type_t type, prime_field_type_t field);
-stringer_t *     prime_field_write(prime_artifact_type_t type, prime_field_type_t field, size_t size, stringer_t *data, stringer_t *output);
+size_t           prime_field_size_max(uint16_t type, prime_field_type_t field);
+stringer_t *     prime_field_write(uint16_t type, prime_field_type_t field, size_t size, stringer_t *data, stringer_t *output);
 
 #endif
 

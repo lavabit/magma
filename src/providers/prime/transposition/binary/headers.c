@@ -12,7 +12,7 @@
  * @param 		type	The PRIME type.
  * @return		Returns the number of bytes used by the header, or 0 if an invalid type is supplied.
  */
-size_t prime_header_length(prime_artifact_type_t type) {
+size_t prime_header_length(uint16_t type) {
 
 	size_t length = 0;
 
@@ -124,7 +124,7 @@ int_t prime_header_read(stringer_t *object, uint16_t *type, uint32_t *size) {
  * @param output
  * @return
  */
-stringer_t * prime_header_write(prime_artifact_type_t type, size_t size, stringer_t *output) {
+stringer_t * prime_header_write(uint16_t type, size_t size, stringer_t *output) {
 
 	stringer_t *result = NULL;
 	size_t length = 0, written = 0;

@@ -221,7 +221,6 @@ else
 endif
 
 all: config warning $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) 
-	$(RUN)dev/scripts/builders/build.lib.sh generate
 	
 warning:
 ifeq ($(VERBOSE),no)

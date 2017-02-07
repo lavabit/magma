@@ -946,10 +946,5 @@ int_t imap_command_parser(connection_t *con) {
 		return -3;
 	}
 
-	// Debug info.
-	/*{
-		print_ar(0, con->imap.arguments);
-	}*/
-
 	return 1;
 }

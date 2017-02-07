@@ -58,26 +58,34 @@ void signal_shutdown(int signal) {
 	struct rlimit64 limits;
 	struct sockaddr_in6 saddr;
 	socklen_t len = sizeof(struct sockaddr_in6);
+	pthread_t status_thread;
 	const struct timespec split = { .tv_sec = 0, .tv_nsec = 100000000 }, single = { .tv_sec = 1, .tv_nsec = 0 };
 
-	// Set the status flag so all the worker threads exit nicely.
-	status_set(-1);
-
 	// We assume the server is being shutdown for a good reason.
-	log_critical("Signal received. The Magma daemon is attempting a graceful exit. {signal = %s}", signal_name(signal, working, 32));
+	log_critical("Signal received. The Magma daemon is attempting a graceful exit. { signal = %s }", signal_name(signal, working, 32));
 
-	// We give threads 0.1 seconds to terminate normally before forcefully closing the socket connections.
+	// Set the status flag so all the worker threads exit nicely.
+	thread_launch(&status_thread, &status_signal, NULL);
+
+	// We give threads 0.1 seconds to ensure the status update is queued and awaiting the lock.
 	nanosleep(&split, NULL);
 
-	// Signals the worker threads. Since the client socket connections were closed above, the signal should unblock any stuck worker threads.
+	// Signals the worker threads, so they unblock.
 	queue_signal();
 
-	// Sleep for one second before forcibly shutting down the client connections.
+	// We give threads 0.1 seconds to let the status update.
+	nanosleep(&split, NULL);
+
+	// Signals the worker threads, so they unblock one more time and see the updated status, thus exiting normally.
+	queue_signal();
+
+	// Then sleep for one second before forcibly shutting down the client connections.
 	nanosleep(&single, NULL);
 
 	// Now go through and shutdown all client connections.
 	if (getrlimit64(RLIMIT_NOFILE, &limits)) {
 		log_critical("Unable to determine the maximum legal file descriptor.");
+		thread_join(status_thread);
 		return;
 	}
 
@@ -105,6 +113,7 @@ void signal_shutdown(int signal) {
 		}
 	}
 
+	thread_join(status_thread);
 	return;
 }
 

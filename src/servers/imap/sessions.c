@@ -119,8 +119,23 @@ void imap_session_destroy(connection_t *con) {
 		meta_inx_remove(con->imap.usernum, META_PROTOCOL_IMAP);
 	}
 
+	// Free the username, and reset the usernum.
+	st_cleanup(con->imap.username);
+	con->imap.username = NULL;
+	con->imap.usernum = 0;
+
+	// Free the tag.
+	st_cleanup(con->imap.tag);
+	con->imap.tag = NULL;
+
+	// Free the command.
+	st_cleanup(con->imap.command);
+	con->imap.command = NULL;
+
+	// Free the arguments array.
 	if (con->imap.arguments) {
 		ar_free(con->imap.arguments);
+		con->imap.arguments = NULL;
 	}
 
 	mail_cache_reset();

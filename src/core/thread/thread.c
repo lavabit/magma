@@ -60,7 +60,6 @@ pthread_t * thread_alloc(void *function, void *data) {
 	int_t ret;
 	pthread_t *result;
 
-
 	if (!(result = mm_alloc(sizeof(pthread_t)))) {
 		log_pedantic("Could not allocate %zu bytes to hold the pthread_t structure.", sizeof(pthread_t));
 		return NULL;

@@ -24,6 +24,7 @@ int        status_get(void);
 uint64_t   status_pid(void);
 void       status_process(void);
 void       status_set(int value);
+void       status_signal(void);
 uint64_t   status_startup(void);
 
 /************  STATISTICS  ************/

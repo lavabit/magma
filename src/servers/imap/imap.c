@@ -78,8 +78,11 @@ void imap_invalid(connection_t *con) {
  */
 void imap_logout(connection_t *con) {
 
-	if (con_status(con) == 2) {
+	if (con_status(con) == 2 && status()) {
 		con_write_bl(con, "* BYE Unexpected connection shutdown detected. Goodbye.\r\n", 57);
+	}
+	else if (con_status(con) == 2 && !status()) {
+		con_write_bl(con, "* BYE The server is restarting. Please reconnect. Goodbye.\r\n", 60);
 	}
 	else if (con_status(con) >= 0) {
 		con_print(con, "* BYE Goodbye.\r\n%.*s OK Completed.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
@@ -320,7 +323,6 @@ void imap_list(connection_t *con) {
 	meta_user_rlock(con->imap.user);
 
 	//********************************************//
-
 	//Here. Now force the lister to use the new interface.
 
 	if ((cursor = inx_cursor_alloc(con->imap.user->message_folders))) {

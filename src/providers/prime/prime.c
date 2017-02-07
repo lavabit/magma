@@ -710,6 +710,9 @@ prime_t * prime_key_decrypt(stringer_t *key, stringer_t *object, prime_encoding_
 		case PRIME_USER_KEY:
 			result->key.user = user_encrypted_key_set(key, object);
 			break;
+		default:
+			log_pedantic("Unrecognized PRIME object type.");
+			break;
 	}
 
 	// All done with the binary data, so if we had to unwrap the object above, we need to free the temporary buffer.

@@ -49,6 +49,7 @@ chr_t * prime_object_type(prime_artifact_type_t type) {
 			break;
 		default:
 			log_pedantic("Unrecognized PRIME type.");
+			break;
 	}
 	return result;
 }
@@ -102,6 +103,7 @@ size_t prime_object_size_max(prime_artifact_type_t type) {
 			break;
 		default:
 			log_pedantic("Unrecognized PRIME type.");
+			break;
 	}
 	return max;
 }
@@ -125,6 +127,7 @@ size_t prime_object_size_min(prime_artifact_type_t type) {
 			break;
 		default:
 			log_pedantic("Unrecognized PRIME type.");
+			break;
 	}
 	return min;
 }

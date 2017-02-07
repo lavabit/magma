@@ -161,6 +161,7 @@ stringer_t * prime_field_write(prime_artifact_type_t type, prime_field_type_t fi
 			log_pedantic("Unrecognized PRIME type.");
 			if (!output) st_free(result);
 			result = NULL;
+			break;
 	}
 
 	// If data was written.

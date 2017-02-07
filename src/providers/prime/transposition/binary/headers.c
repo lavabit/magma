@@ -31,6 +31,7 @@ size_t prime_header_length(prime_artifact_type_t type) {
 			break;
 		default:
 			log_pedantic("Unrecognized PRIME type.");
+			break;
 	}
 	return length;
 }
@@ -173,6 +174,7 @@ stringer_t * prime_header_write(prime_artifact_type_t type, size_t size, stringe
 			break;
 		default:
 			log_pedantic("Unrecognized PRIME type.");
+			break;
 	}
 
 	// Make sure the correct number of bytes was written to the output buffer.

@@ -52,7 +52,7 @@ int_t smtp_store_message(smtp_inbound_prefs_t *prefs, stringer_t **local) {
 		return -1;
 	}
 
-	messagenum = mail_store_message(prefs->usernum, prefs->pubkey, prefs->foldernum, &status, prefs->signum, prefs->spamkey, *local);
+	messagenum = mail_store_message(prefs->usernum, prefs->signet, prefs->foldernum, &status, prefs->signum, prefs->spamkey, *local);
 	user_unlock(prefs->usernum);
 
 	// Error check.

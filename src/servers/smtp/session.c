@@ -74,9 +74,8 @@ void smtp_session_destroy(connection_t *con) {
 	return;
 }
 
-// HIGH: Wtf is this?
-// Check whether the usernum on the inbound structure has already been used.
 /**
+ * @brief	Check whether the usernum on the inbound structure has already been used.
  */
 bool_t smtp_check_duplicate_recipient(connection_t *con, uint64_t usernum) {
 
@@ -231,7 +230,8 @@ void smtp_free_inbound(smtp_inbound_prefs_t *inbound) {
 	smtp_inbound_prefs_t *holder;
 
 	while (inbound) {
-		st_cleanup(inbound->pubkey, inbound->rcptto, inbound->address, inbound->domain, inbound->forwarded, inbound->spamsig);
+		st_cleanup(inbound->rcptto, inbound->address, inbound->domain, inbound->forwarded, inbound->spamsig);
+		prime_cleanup(inbound->signet);
 		inx_cleanup(inbound->filters);
 		holder = inbound;
 		inbound = (smtp_inbound_prefs_t *)holder->next;

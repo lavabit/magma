@@ -114,6 +114,7 @@ int_t smtp_fetch_inbound(stringer_t *address, smtp_inbound_prefs_t **output) {
 	table_t *result;
 	placer_t domain;
 	MYSQL_BIND parameters[1];
+	stringer_t *signet = NULL;
 	int_t locked, filters, local;
 	smtp_inbound_prefs_t *inbound;
 	smtp_inbound_filter_t *filter;
@@ -234,9 +235,14 @@ int_t smtp_fetch_inbound(stringer_t *address, smtp_inbound_prefs_t **output) {
 	// We should only decode and store the public key if the account has storage security enabled. Otherwise the
 	// mail_store_message() function will interpret the presence of the key to mean encryption has been enabled.
 	if (inbound->secure && res_field_length(row, 30)) {
-		inbound->pubkey = base64_decode_mod(PLACER(res_field_block(row, 30), res_field_length(row, 30)), NULL);
+		if (!(signet = base64_decode_mod(PLACER(res_field_block(row, 30), res_field_length(row, 30)), NULL)) ||
+			!(inbound->signet = prime_set(signet, BINARY, NONE))) {
+			log_pedantic("Unable to parse the signet for a secure account. { address = %.*s }", st_length_int(address),	st_char_get(address));
+		}
+
+		st_cleanup(signet);
 	}
-#ifdef MAGMA_PEDANTIC
+#ifdef MAGMA_SMTP_PEDANTIC
 	else if (inbound->secure) {
 		log_pedantic("Secure storage was enabled, but no public key was found for the account. { address = %.*s }", st_length_int(address),
 			st_char_get(address));

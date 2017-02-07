@@ -8,6 +8,77 @@
 
 #include "magma.h"
 
+stringer_t * protocol_type(connection_t *con) {
+
+	static stringer_t *protocols[] = {
+
+		// These protocols are available over TCP and TLS.
+		CONSTANT("POPS"),
+		CONSTANT("POP"),
+		CONSTANT("IMAPS"),
+		CONSTANT("IMAP"),
+		CONSTANT("HTTPS"),
+		CONSTANT("HTTP"),
+		CONSTANT("SMTPS"),
+		CONSTANT("SMTP"),
+
+		// DMTP requires TLS.
+		CONSTANT("DMTP"),
+
+		// These protocols are always TCP (at least until a STARTTLS command is issued).
+		CONSTANT("SUBMISSION"),
+		CONSTANT("MOLTEN"),
+
+		// Error handling.
+		CONSTANT("UNKNOWN"),
+		CONSTANT("ERROR")
+	};
+	stringer_t *result = protocols[12];
+
+	// Pedantic sanity checks of the passed in data.
+	log_check(con == NULL);
+	log_check(con->server == NULL);
+
+	if (!con || !con->server) {
+		return result;
+	}
+
+	switch (con->server->protocol) {
+
+		case (POP):
+			if (con->server->network.type == TLS_PORT) result = protocols[0];
+			else result = protocols[1];
+			break;
+		case (IMAP):
+			if (con->server->network.type == TLS_PORT) result = protocols[2];
+			else result = protocols[3];
+			break;
+		case (HTTP):
+			if (con->server->network.type == TLS_PORT) result = protocols[4];
+			else result = protocols[5];
+			break;
+		case (SMTP):
+			if (con->server->network.type == TLS_PORT) result = protocols[6];
+			else result = protocols[7];
+			break;
+		case (DMTP):
+			result = protocols[8];
+			break;
+		case (SUBMISSION):
+			result = protocols[9];
+			break;
+		case (MOLTEN):
+			result = protocols[10];
+			break;
+		default:
+			result =  protocols[11];
+			break;
+	}
+
+	return result;
+
+}
+
 /**
  * @brief	Initialize all protocol modules, and prime their command arrays for binary searching.
  * @return	This function always returns true.
@@ -38,45 +109,45 @@ void protocol_enqueue(connection_t *con) {
 
 	switch (con->server->protocol) {
 
-	case (POP):
-		stats_increment_by_name("pop.connections.total");
-		if (con_secure(con) == 1) stats_increment_by_name("pop.connections.secure");
-		function = &pop_init;
-		break;
-	case (IMAP):
-		stats_increment_by_name("imap.connections.total");
-		if (con_secure(con) == 1) stats_increment_by_name("imap.connections.secure");
-		function = &imap_init;
-		break;
-	case (HTTP):
-		stats_increment_by_name("http.connections.total");
-		if (con_secure(con) == 1) stats_increment_by_name("http.connections.secure");
-		function = &http_init;
-		break;
-	case (SMTP):
-		stats_increment_by_name("smtp.connections.total");
-		if (con_secure(con) == 1) stats_increment_by_name("smtp.connections.secure");
-		function = &smtp_init;
-		break;
-	case (DMTP):
-		stats_increment_by_name("dmtp.connections.total");
-		if (con_secure(con) == 1) stats_increment_by_name("dmtp.connections.secure");
-		function = &dmtp_init;
-		break;
-	case (SUBMISSION):
-		stats_increment_by_name("smtp.connections.total");
-		if (con_secure(con) == 1) stats_increment_by_name("smtp.connections.secure");
-		function = &submission_init;
-		break;
-	case (MOLTEN):
-		stats_increment_by_name("molten.connections.total");
-		if (con_secure(con) == 1) stats_increment_by_name("molten.connections.secure");
-		function = &molten_init;
-		break;
-	default:
-		log_pedantic("Protocol enqueue was passed a connection using an unsupported or unknown protocol.");
-		con_destroy(con);
-		return;
+		case (POP):
+			stats_increment_by_name("pop.connections.total");
+			if (con_secure(con) == 1) stats_increment_by_name("pop.connections.secure");
+			function = &pop_init;
+			break;
+		case (IMAP):
+			stats_increment_by_name("imap.connections.total");
+			if (con_secure(con) == 1) stats_increment_by_name("imap.connections.secure");
+			function = &imap_init;
+			break;
+		case (HTTP):
+			stats_increment_by_name("http.connections.total");
+			if (con_secure(con) == 1) stats_increment_by_name("http.connections.secure");
+			function = &http_init;
+			break;
+		case (SMTP):
+			stats_increment_by_name("smtp.connections.total");
+			if (con_secure(con) == 1) stats_increment_by_name("smtp.connections.secure");
+			function = &smtp_init;
+			break;
+		case (DMTP):
+			stats_increment_by_name("dmtp.connections.total");
+			if (con_secure(con) == 1) stats_increment_by_name("dmtp.connections.secure");
+			function = &dmtp_init;
+			break;
+		case (SUBMISSION):
+			stats_increment_by_name("smtp.connections.total");
+			if (con_secure(con) == 1) stats_increment_by_name("smtp.connections.secure");
+			function = &submission_init;
+			break;
+		case (MOLTEN):
+			stats_increment_by_name("molten.connections.total");
+			if (con_secure(con) == 1) stats_increment_by_name("molten.connections.secure");
+			function = &molten_init;
+			break;
+		default:
+			log_pedantic("Protocol enqueue was passed a connection using an unsupported or unknown protocol.");
+			con_destroy(con);
+			return;
 	}
 
 	enqueue(function, con);
@@ -100,7 +171,8 @@ void protocol_secure(connection_t *con) {
 	// Create a new TLS object.
 	if (!(con->network.tls = tls_server_alloc(con->server, con->network.sockd, BIO_NOCLOSE))) {
 
-		log_pedantic("The TLS connection attempt failed.");
+		log_pedantic("The TLS connection attempt failed. { ip = %s / port = %u / protocol = %.*s }", st_char_get(con_addr_presentation(con, MANAGEDBUF(256))),
+			con->server->network.port, st_length_int(protocol_type(con)), st_char_get(protocol_type(con)));
 
 		// We manually free the connection structure since calling con_destroy() would improperly decrement the statistical counters.
 		if (con->network.tls) tls_free(con->network.tls);

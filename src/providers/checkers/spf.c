@@ -124,7 +124,13 @@ int_t spf_check(ip_t *ip, stringer_t *helo, stringer_t *mailfrom) {
 	mail_domain_get(mailfrom, &domain);
 	stats_adjust_by_name("provider.spf.checked", 1);
 
-	if (pool_pull(spf_pool, &item) != PL_RESERVED) {
+	if (!ip || st_empty(helo, mailfrom)) {
+		log_pedantic("SPF check error, invalid parameters supplied.");
+		stats_adjust_by_name("provider.spf.error", 1);
+		return -1;
+	}
+
+	else if (pool_pull(spf_pool, &item) != PL_RESERVED) {
 		stats_adjust_by_name("provider.spf.error", 1);
 		return -1;
 	}

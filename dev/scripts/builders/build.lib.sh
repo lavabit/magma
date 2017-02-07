@@ -362,6 +362,10 @@ spf2() {
 			cd "$M_SOURCES/spf2"; error
 			cat "$M_PATCHES/spf2/"remove-libreplace.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
 			cat "$M_PATCHES/spf2/"autoreconf-on-el6.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			cat "$M_PATCHES/spf2/"expand_hostname_buffer.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			cat "$M_PATCHES/spf2/"fix_use_after_free.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			cat "$M_PATCHES/spf2/"handle_redirect_mechanism.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
+			cat "$M_PATCHES/spf2/"return_reason_for_dns_failure.patch | patch -p1 --verbose &>> "$M_LOGS/spf2.txt"; error
 		;;
 		spf2-build)
 			cd "$M_SOURCES/spf2"; error

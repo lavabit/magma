@@ -193,6 +193,16 @@ bool_t servers_validate(void) {
 	bool_t result = true;
 
 	for (uint32_t i = 0; i < MAGMA_SERVER_INSTANCES; i++) {
+
+		// Any combination logic required for the server instance should go here. For example, DMTP server
+		// instances require a valid TLS configuration. Which means providing a TLS certificate and specifying
+		// a port configuration of TLS.
+		if (magma.servers[i]->protocol == DMTP &&
+			(st_empty(magma.servers[i]->tls.certificate) || magma.servers[i]->network.type != TLS_PORT)) {
+			log_critical("DMTP server instances require a valid TLS configuration.");
+			result = false;
+		}
+
 		for (uint64_t j = 0; magma.servers[i] && j < sizeof(server_keys) / sizeof(server_keys_t); j++) {
 
 			// Do some very basic file-system validation on TLS certificates
@@ -484,14 +494,16 @@ bool_t servers_set_value(server_keys_t *setting, server_t *server, stringer_t *v
 				*((M_PROTOCOL *)(((char *)server) + setting->offset)) = HTTP;
 			else if (!st_cmp_ci_eq(value, CONSTANT("SMTP")))
 				*((M_PROTOCOL *)(((char *)server) + setting->offset)) = SMTP;
-			else if (!st_cmp_ci_eq(value, CONSTANT("DMTP")))
-				*((M_PROTOCOL *)(((char *)server) + setting->offset)) = DMTP;
 			else if (!st_cmp_ci_eq(value, CONSTANT("POP")))
 				*((M_PROTOCOL *)(((char *)server) + setting->offset)) = POP;
 			else if (!st_cmp_ci_eq(value, CONSTANT("IMAP")))
 				*((M_PROTOCOL *)(((char *)server) + setting->offset)) = IMAP;
 			else if (!st_cmp_ci_eq(value, CONSTANT("SUBMISSION")))
 				*((M_PROTOCOL *)(((char *)server) + setting->offset)) = SUBMISSION;
+			else if (!st_cmp_ci_eq(value, CONSTANT("DMTP"))) {
+				*((M_PROTOCOL *)(((char *)server) + setting->offset)) = DMTP;
+				server->network.type = TLS_PORT;
+			}
 			else {
 				log_critical("The %.*s is an invalid protocol.", st_length_int(value), st_char_get(value));
 				result = false;
@@ -500,10 +512,10 @@ bool_t servers_set_value(server_keys_t *setting, server_t *server, stringer_t *v
 		else if (!st_cmp_ci_eq(NULLER(setting->name), CONSTANT(".network.type"))) {
 			if (st_empty(value))
 				*((M_PORT *)(((char *)server) + setting->offset)) = setting->norm.val.u64;
-			else if (!st_cmp_ci_eq(value, CONSTANT("TCP")))
-				*((M_PORT *)(((char *)server) + setting->offset)) = TCP_PORT;
 			else if (!st_cmp_ci_eq(value, CONSTANT("TLS")))
 				*((M_PORT *)(((char *)server) + setting->offset)) = TLS_PORT;
+			else if (!st_cmp_ci_eq(value, CONSTANT("TCP")))
+				*((M_PORT *)(((char *)server) + setting->offset)) = TCP_PORT;
 			else {
 				log_critical("The port type %.*s is invalid. The value must be TCP or TLS.", st_length_int(value), st_char_get(value));
 				result = false;

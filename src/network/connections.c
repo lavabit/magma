@@ -83,6 +83,14 @@ void con_destroy(connection_t *con) {
 				stats_decrement_by_name("smtp.connections.total");
 				smtp_session_destroy(con);
 				break;
+			case (DMTP):
+				if (con->network.tls) {
+					stats_decrement_by_name("dmtp.connections.secure");
+				}
+
+				stats_decrement_by_name("dmtp.connections.total");
+				dmtp_session_destroy(con);
+				break;
 			case (SUBMISSION):
 				if (con->network.tls) {
 					stats_decrement_by_name("smtp.connections.secure");

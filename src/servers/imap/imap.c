@@ -106,9 +106,8 @@ void imap_logout(connection_t *con) {
 void imap_login(connection_t *con) {
 
 	int_t state = 1;
-	uint64_t fails = 0;
 	auth_t *auth = NULL;
-	stringer_t *subnet = NULL, *key = NULL;
+	stringer_t *subnet = NULL, *key = NULL, *ip = NULL;
 
 	// The LOGIN command is only valid in the non-authenticated state.
 	if (con->imap.session_state != 0) {
@@ -123,7 +122,7 @@ void imap_login(connection_t *con) {
 	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu.%.*s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
 
 	// For now we hard code the maximum number of failed logins.
-	if (st_populated(key) && cache_increment(key, 0, 0, 86400) >= 16) {
+	if (st_populated(key) && cache_increment(key, 1, 1, 86400) >= 16) {
 		con_print(con, "%.*s NO [ALERT] The maximum number of failed login attempts has been reached. Please try again tomorrow.\r\n",
 			st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		con->protocol.violations++;
@@ -152,20 +151,16 @@ void imap_login(connection_t *con) {
 				st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		}
 
-		log_info("Failed login attempt. { ip = %s / username = %.*s / protocol = IMAP }", st_char_get(con_addr_presentation(con, MANAGEDBUF(256))),
+		ip = con_addr_presentation(con, MANAGEDBUF(256));
+		log_info("Failed login attempt. { ip = %s / username = %.*s / protocol = IMAP }", ip ? st_char_get(ip) : "MISSING",
 			st_length_int(imap_get_st_ar(con->imap.arguments, 0)), st_char_get(imap_get_st_ar(con->imap.arguments, 0)));
-
-		// If we have a valid key, we increment the failed login counter.
-		if (st_populated(key) && (fails = cache_increment(key, 1, 1, 86400)) >= 16) {
-			log_info("Subnet banned. { subnet = %s / fails = %lu }", st_char_get(con_addr_subnet(con, MANAGEDBUF(256))), fails);
-		}
 
 		con->protocol.violations++;
 		return;
 	}
 
 	// Check if the account is locked.
-	if (auth->status.locked) {
+	else if (auth->status.locked) {
 
 		// The CONTACTADMIN response code is provided by RFC 5530 which states: "The user should contact the system administrator or support."
 		if (auth->status.locked == 1) {
@@ -195,7 +190,7 @@ void imap_login(connection_t *con) {
 	}
 
 	// Pull the user info out.
-	if ((state = meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification, META_PROTOCOL_IMAP,
+	else if ((state = meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification, META_PROTOCOL_IMAP,
 		META_GET_MESSAGES | META_GET_KEYS | META_GET_FOLDERS, &(con->imap.user)))) {
 
 		// The UNAVAILABLE response code is provided by RFC 5530 which states: "Temporary failure because a subsystem is down."
@@ -214,6 +209,9 @@ void imap_login(connection_t *con) {
 	else if (st_populated(con->imap.username)) {
 		st_free(con->imap.username);
 	}
+
+	// If we have a valid login, we decrement the login counter.
+	if (st_populated(key)) cache_decrement(key, 1, 0, MEMCACHED_EXPIRATION_NOT_ADD);
 
 	// Store the username and usernum as part of the session.
 	con->imap.username = st_dupe(auth->username);

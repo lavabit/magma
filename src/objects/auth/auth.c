@@ -190,6 +190,11 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 		return -1;
 	}
 
+	// We require at least 4 characters for the password, otheriwse the load will slow down the server.
+	else if (st_length_get(password) < 4) {
+		return 1;
+	}
+
 	// TODO: Differentiate between errors and invalid usernames.
 	if (!(auth = auth_challenge(username))) {
 		log_error("Failed to load the user challenge parameters. { username = %.*s }", st_length_int(username), st_char_get(username));

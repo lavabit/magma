@@ -64,6 +64,9 @@ void signal_shutdown(int signal) {
 	// We assume the server is being shutdown for a good reason.
 	log_critical("Signal received. The Magma daemon is attempting a graceful exit. { signal = %s }", signal_name(signal, working, 32));
 
+	// Clear the thread structure or we'll get a segfault when we attempt the thread join operation.
+	mm_wipe(&status_thread, sizeof(pthread_t));
+
 	// Set the status flag so all the worker threads exit nicely.
 	thread_launch(&status_thread, &status_signal, NULL);
 
@@ -122,7 +125,7 @@ void signal_shutdown(int signal) {
 		}
 	}
 
-	thread_join(status_thread);
+//	thread_join(status_thread);
 	return;
 }
 

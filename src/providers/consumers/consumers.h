@@ -17,6 +17,7 @@ typedef struct {
 /// cache.c
 int_t         cache_add(stringer_t *key, stringer_t *object, time_t expiration);
 int_t         cache_append(stringer_t *key, stringer_t *object, time_t expiration);
+uint64_t      cache_decrement(stringer_t *key, uint64_t offset, uint64_t initial, time_t expiration);
 int_t         cache_delete(stringer_t *key);
 void          cache_flush(void);
 stringer_t *  cache_get(stringer_t *key);

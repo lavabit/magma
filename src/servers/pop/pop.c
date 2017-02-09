@@ -168,9 +168,8 @@ void pop_user(connection_t *con) {
 void pop_pass(connection_t *con) {
 
 	int_t state;
-	uint64_t fails = 0;
 	auth_t *auth = NULL;
-	stringer_t *password = NULL, *subnet = NULL, *key = NULL;
+	stringer_t *password = NULL, *subnet = NULL, *key = NULL, *ip = NULL;
 
 	// The PASS command is only available in the pre-authentication state.
 	if (con->pop.session_state != 0) {
@@ -185,7 +184,7 @@ void pop_pass(connection_t *con) {
 	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu.%.*s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
 
 	// For now we hard code the maximum number of failed logins.
-	if (st_populated(key) && cache_increment(key, 0, 0, 86400) >= 16) {
+	if (st_populated(key) && cache_increment(key, 1, 1, 86400) >= 16) {
 		con_write_bl(con, "-ERR [SYS/TEMP] The maximum number of failed login attempts has been reached. Please try again later.\r\n", 103);
 		con->protocol.violations++;
 		return;
@@ -214,13 +213,9 @@ void pop_pass(connection_t *con) {
 
 		st_free(password);
 
-		log_info("Failed login attempt. { ip = %s / username = %.*s / protocol = POP }", st_char_get(con_addr_presentation(con, MANAGEDBUF(256))),
-			st_length_int(con->pop.username), st_char_get(con->pop.username));
-
-		// If we have a valid key, we increment the failed login counter.
-		if (st_populated(key) && (fails = cache_increment(key, 1, 1, 86400)) >= 16) {
-			log_info("Subnet banned. { subnet = %s / fails = %lu }", st_char_get(con_addr_subnet(con, MANAGEDBUF(256))), fails);
-		}
+		ip = con_addr_presentation(con, MANAGEDBUF(256));
+		log_info("Failed login attempt. { ip = %s / username = %.*s / protocol = POP }", ip ? st_char_get(ip) : "MISSING",
+			st_length_int(imap_get_st_ar(con->imap.arguments, 0)), st_char_get(imap_get_st_ar(con->imap.arguments, 0)));
 
 		con->protocol.violations++;
 		return;
@@ -252,6 +247,9 @@ void pop_pass(connection_t *con) {
 		auth_free(auth);
 		return;
 	}
+
+	// If we have a valid login, we decrement the login counter.
+	if (st_populated(key)) cache_decrement(key, 1, 0, MEMCACHED_EXPIRATION_NOT_ADD);
 
 	// Pull the user info out.
 	if ((state = meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification, META_PROTOCOL_POP,

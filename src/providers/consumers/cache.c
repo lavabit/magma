@@ -370,24 +370,63 @@ int_t cache_delete(stringer_t *key) {
 /**
  * @brief	Increment the value stored with a key by memcached by a specified offset.
  * @see		memcached_increment_with_initial()
+ * @note	If the expiration valuse is MEMCACHED_EXPIRATION_NOT_ADD the key won't be added, but the initial value will be
+ * 				used as the return value.
  * @param	key			a managed string containing the name of the memcached key to be adjusted.
  * @param	offset		the offset by which the specified key's value should be incremented.
  * @param	initial		the initial value to seed the key if it does not already exist.
  * @param	expiration	the time, in seconds, when the cached key will expire.
- * @return	0 on failure, or the new incremented value of the data associated with the key, on success.
+ * @return	0 on failure, or the newly incremented value associated with the key, or the initial value, on success.
  */
 uint64_t cache_increment(stringer_t *key, uint64_t offset, uint64_t initial, time_t expiration) {
 
 	uint32_t pool;
-	uint64_t output;
+	uint64_t output = initial;
 	memcached_return_t val;
 
 	if (st_empty(key) || (pool_pull(cache_pool, &pool)) != PL_RESERVED) {
 		return 0;
 	}
 	// Try incrementing. If we can't, try creating the key.
-	else if ((val = memcached_increment_with_initial_d(pool_get_obj(cache_pool, pool), st_char_get(key), st_length_get(key), offset, initial, expiration, &output)) != MEMCACHED_SUCCESS) {
-		log_pedantic("Unable to increment the %.*s object. {%s}", st_length_int(key), st_char_get(key), memcached_strerror_d(pool_get_obj(cache_pool, pool), val));
+	else if ((val = memcached_increment_with_initial_d(pool_get_obj(cache_pool, pool), st_char_get(key), st_length_get(key),
+		offset, initial, expiration, &output)) != MEMCACHED_SUCCESS && expiration != MEMCACHED_EXPIRATION_NOT_ADD) {
+
+		log_pedantic("Unable to increment the %.*s object. { error = %s }", st_length_int(key), st_char_get(key),
+			memcached_strerror_d(pool_get_obj(cache_pool, pool), val));
+		pool_release(cache_pool, pool);
+		return 0;
+	}
+
+	pool_release(cache_pool, pool);
+	return output;
+}
+
+
+/**
+ * @brief	Decrement the value stored with a key inside memcached, using the specified offset.
+ * @see		memcached_decrement_with_initial()
+ * @note	If the expiration valuse is MEMCACHED_EXPIRATION_NOT_ADD the key won't be added, but the initial value will be
+ * 				used as the return value.
+ * @param	key			a managed string containing the name of the memcached key to be adjusted.
+ * @param	offset		the offset by which the specified key's value should be decremented.
+ * @param	initial		the initial value to seed the key with it does not already exist.
+ * @param	expiration	the time, in seconds, when the cached key will expire.
+ * @return	0 on failure, or the newly decremented value associated with the key, or the initial value, on success.
+ */
+uint64_t cache_decrement(stringer_t *key, uint64_t offset, uint64_t initial, time_t expiration) {
+
+	uint32_t pool;
+	uint64_t output = initial;
+	memcached_return_t val;
+
+	if (st_empty(key) || (pool_pull(cache_pool, &pool)) != PL_RESERVED) {
+		return 0;
+	}
+	// Try decrementing. If we can't, try creating the key.
+	else if ((val = memcached_decrement_with_initial_d(pool_get_obj(cache_pool, pool), st_char_get(key), st_length_get(key),
+		offset, initial, expiration, &output)) != MEMCACHED_SUCCESS && expiration != MEMCACHED_EXPIRATION_NOT_ADD) {
+
+		log_pedantic("Unable to decrement the %.*s object. { error = %s }", st_length_int(key), st_char_get(key), memcached_strerror_d(pool_get_obj(cache_pool, pool), val));
 		pool_release(cache_pool, pool);
 		return 0;
 	}

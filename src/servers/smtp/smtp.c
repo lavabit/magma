@@ -325,7 +325,7 @@ void smtp_auth_plain(connection_t *con) {
 
 		ip = con_addr_presentation(con, MANAGEDBUF(256));
 		log_info("Failed login attempt. { ip = %s / username = %.*s / protocol = SMTP }", ip ? st_char_get(ip) : "MISSING",
-			st_length_int(imap_get_st_ar(con->imap.arguments, 0)), st_char_get(imap_get_st_ar(con->imap.arguments, 0)));
+			st_length_int(&username), st_char_get(&username));
 
 		con->protocol.violations++;
 		return;
@@ -445,7 +445,7 @@ void smtp_auth_login(connection_t *con) {
 
 		ip = con_addr_presentation(con, MANAGEDBUF(256));
 		log_info("Failed login attempt. { ip = %s / username = %.*s / protocol = SMTP }", ip ? st_char_get(ip) : "MISSING",
-			st_length_int(imap_get_st_ar(con->imap.arguments, 0)), st_char_get(imap_get_st_ar(con->imap.arguments, 0)));
+			st_length_int(username), st_char_get(username));
 
 		st_cleanup(username, password);
 		con->protocol.violations++;

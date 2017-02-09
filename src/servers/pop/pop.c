@@ -215,7 +215,7 @@ void pop_pass(connection_t *con) {
 
 		ip = con_addr_presentation(con, MANAGEDBUF(256));
 		log_info("Failed login attempt. { ip = %s / username = %.*s / protocol = POP }", ip ? st_char_get(ip) : "MISSING",
-			st_length_int(imap_get_st_ar(con->imap.arguments, 0)), st_char_get(imap_get_st_ar(con->imap.arguments, 0)));
+			st_length_int(con->pop.username), st_char_get(con->pop.username));
 
 		con->protocol.violations++;
 		return;

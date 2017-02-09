@@ -10,9 +10,9 @@
 bool_t check_compress_sthread(check_compress_opt_t *opts) {
 
 	size_t rlen;
-	stringer_t *output;
-	compress_t *compress;
-	unsigned char *original;
+	stringer_t *output = NULL;
+	compress_t *compress = NULL;
+	unsigned char *original = NULL;
 
 	for (uint64_t i = 0; status() && i < COMPRESS_CHECK_ITERATIONS; i++) {
 

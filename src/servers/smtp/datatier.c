@@ -115,9 +115,9 @@ int_t smtp_fetch_inbound(stringer_t *address, smtp_inbound_prefs_t **output) {
 	placer_t domain;
 	MYSQL_BIND parameters[1];
 	stringer_t *signet = NULL;
-	int_t locked, filters, local;
-	smtp_inbound_prefs_t *inbound;
-	smtp_inbound_filter_t *filter;
+	int_t locked, filters, local = -1;
+	smtp_inbound_prefs_t *inbound = NULL;
+	smtp_inbound_filter_t *filter = NULL;
 	multi_t key = {
 		.type = M_TYPE_UINT64, .val.u64 = 0
 	};

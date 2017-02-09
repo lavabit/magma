@@ -117,7 +117,7 @@ void http_parse_context(connection_t *con, stringer_t *application, stringer_t *
 	json_error_t err;
 	placer_t pair, name, value;
 	json_t *object = NULL, *val;
-	int_t result;
+	int_t result = -1;
 
 	// Look for the session token as a cookie.
 	if (con->http.cookie) {

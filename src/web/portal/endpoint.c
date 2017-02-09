@@ -749,13 +749,13 @@ void portal_endpoint_folders_remove(connection_t *con) {
  */
 void portal_endpoint_folders_rename(connection_t *con) {
 
-	int_t state, context;
 	json_error_t err;
-	chr_t *rename = NULL, *method;
 	uint64_t foldernum;
-	magma_folder_t *active_c;
-	meta_folder_t *active_m;
-	stringer_t *original = NULL, *srename;
+	int_t state, context;
+	meta_folder_t *active_m = NULL;
+	magma_folder_t *active_c = NULL;
+	chr_t *rename = NULL, *method = NULL;
+	stringer_t *original = NULL, *srename = NULL;
 
 	// Check the session state. Method has 3 parameters.
 	if (!portal_validate_request (con, PORTAL_ENDPOINT_ERROR_FOLDERS_RENAME, "folders.rename", true, 3)) {
@@ -1141,18 +1141,17 @@ void portal_endpoint_messages_copy(connection_t *con) {
 
 void portal_endpoint_messages_flag(connection_t *con) {
 
-	inx_t *list;
-	chr_t *method;
 	uint32_t bits;
 	json_error_t err;
 	int_t action, ret;
+	inx_t *list = NULL;
+	chr_t *method = NULL;
 	bool_t commit = true;
 	inx_cursor_t *cursor;
-	meta_message_t *active;
 	uint64_t folder, count;
-	json_t *flags = NULL, *messages, *collection = NULL, *entry;
+	meta_message_t *active = NULL;
 	multi_t key = { .type = M_TYPE_UINT64, .val.u64 = 0 };
-
+	json_t *flags = NULL, *messages, *collection = NULL, *entry = NULL;
 
 	// Check the session state. Method can have 3 or 4 parameters.
 	if (!portal_validate_request (con, PORTAL_ENDPOINT_ERROR_MESSAGES_FLAG, "messages.flag", true, 0)) {
@@ -1578,13 +1577,13 @@ void portal_endpoint_messages_tags(connection_t *con) {
 void portal_endpoint_messages_tag(connection_t *con) {
 
 	int_t action;
-	inx_t *list;
-	chr_t *method;
 	json_error_t err;
+	inx_t *list = NULL;
+	chr_t *method = NULL;
 	bool_t commit = true;
-	meta_message_t *active;
-	inx_cursor_t *cursor;
-	uint64_t folder, mess_count, tag_count;
+	inx_cursor_t *cursor = NULL;
+	meta_message_t *active = NULL;
+	uint64_t folder = 0, mess_count = 0, tag_count = 0;
 	json_t *tags = NULL, *messages, *collection, *entry;
 	multi_t key = { .type = M_TYPE_UINT64, .val.u64 = 0 };
 

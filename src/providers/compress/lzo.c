@@ -85,11 +85,11 @@ stringer_t * decompress_block_lzo(stringer_t *block) {
  */
 stringer_t * decompress_lzo(compress_t *compressed) {
 
-	int ret;
-	void *bptr;
-	uint64_t hash, rlen, blen;
+	int_t ret = 0;
+	void *bptr = NULL;
 	stringer_t *result = NULL;
-	compress_head_t *head;
+	compress_head_t *head = NULL;
+	uint64_t hash = 0, rlen = 0, blen = 0;
 
 	if (!(head = (compress_head_t *)compressed)) {
 		log_info("Invalid compression header. {compress_head = NULL}");

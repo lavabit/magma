@@ -10,10 +10,10 @@
 
 #define PORTAL_STATISTICS_TIMEOUT	300 /* check if more than 5 minutes old */
 
-pthread_mutex_t portal_statistics_mutex = PTHREAD_MUTEX_INITIALIZER;
+statistics_vp_t portal_stats[12];
 time_t statistics_last_updated = 0;
+pthread_mutex_t portal_statistics_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-statistics_vp_t portal_stats[portal_stat_users_num_statements];
 
 /**
  * @brief	Initialize the prepared sql statements used by the portal statistics page.
@@ -21,7 +21,7 @@ statistics_vp_t portal_stats[portal_stat_users_num_statements];
  */
 void statistics_init(void) {
 
-	mm_wipe(&portal_stats,sizeof(portal_stats));
+	mm_wipe(&portal_stats, sizeof(portal_stats));
 
 	portal_stats[portal_stat_total_users].stmt = stmts.statistics_get_total_users;
 	portal_stats[portal_stat_users_checked_email_today].stmt = stmts.statistics_get_users_checked_email_today;
@@ -34,7 +34,7 @@ void statistics_init(void) {
 	portal_stats[portal_stat_emails_sent_week].stmt = stmts.statistics_get_emails_sent_week;
 	portal_stats[portal_stat_users_registered_today].stmt = stmts.statistics_get_users_registered_today;
 	portal_stats[portal_stat_users_registered_week].stmt = stmts.statistics_get_users_registered_week;
-	portal_stats[portal_stat_users_num_statements].stmt = stmts.statistics_get_total_users;
+	portal_stats[portal_stat_users_registered_total].stmt = stmts.statistics_get_total_users;
 }
 
 /**

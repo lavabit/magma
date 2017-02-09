@@ -106,31 +106,37 @@ stringer_t * con_reverse_check(connection_t *con, uint32_t timeout) {
  */
 void con_reverse_lookup(connection_t *con) {
 
-	void *addr;
 	int_t ecode;
+	void *addr = NULL;
 	stringer_t *domain;
-	sa_family_t family;
-	struct sockaddr_in6 address;
 	struct hostent host, *hostp;
+	sa_family_t family = AF_UNSPEC;
 	socklen_t len = sizeof(struct sockaddr_in6);
+	struct sockaddr *address = MEMORYBUF(sizeof(struct sockaddr_in6));
 
 	// Perform the lookup.
-	if (getpeername(con->network.sockd, &address, &len)) {
+	if (getpeername(con->network.sockd, address, &len)) {
 		con_reverse_status(con, REVERSE_ERROR);
 		con_destroy(con);
 		return;
 	}
 
-	if (address.sin6_family == AF_INET6) {
-		family = address.sin6_family;
-		addr = (void *)&(address.sin6_addr);
+	else if (len == sizeof(struct sockaddr_in6) && ((struct sockaddr_in6 *)address)->sin6_family == AF_INET6) {
+		family = ((struct sockaddr_in6 *)address)->sin6_family;
+		addr = &(((struct sockaddr_in6 *)address)->sin6_addr);
 	}
-	else if (address.sin6_family == AF_INET) {
-		family = address.sin6_family;
-		addr = (void *)&(((struct sockaddr_in *)&address)->sin_addr);
+	else if (len == sizeof(struct sockaddr_in) && ((struct sockaddr_in *)address)->sin_family == AF_INET) {
+		family = ((struct sockaddr_in *)address)->sin_family;
+		addr = &(((struct sockaddr_in *)address)->sin_addr);
+	}
+	else {
+		con_reverse_status(con, REVERSE_ERROR);
+		con_destroy(con);
+		return;
 	}
 
-	if (!(gethostbyaddr_r(addr, len, family, &host, bufptr, buflen, &hostp, &ecode)) &&
+	// Only perform the reverse address lookup if the socket IP address is determined above.
+	if (!(gethostbyaddr_r(addr, len, family, &host, MEMORYBUF(1024), 1024, &hostp, &ecode)) &&
 		(len = ns_length_get(host.h_name)) && (domain = st_import(host.h_name, len))) {
 		con_reverse_domain(con, domain, REVERSE_COMPLETE);
 	}
@@ -139,6 +145,5 @@ void con_reverse_lookup(connection_t *con) {
 	}
 
 	con_destroy(con);
-
 	return;
 }

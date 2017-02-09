@@ -483,8 +483,8 @@ int_t st_append_out(size_t align, stringer_t **s, stringer_t *append) {
  */
 stringer_t * st_alloc_opts(uint32_t opts, size_t len) {
 
-	int handle;
 	void *joint;
+	int handle = -1;
 	size_t avail = 0;
 	stringer_t *result = NULL;
 	void (*release)(void *buffer) = opts & SECURE ? &mm_sec_free : &mm_free;

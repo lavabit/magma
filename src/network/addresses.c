@@ -36,7 +36,6 @@
  * @param	src		a pointer to the source IP address object to be copied.
  * @param	NULL on failure, or a pointer to the destination IP address buffer on success.
  */
-// QUESTION: Should return NULL if !src?
 ip_t * ip_copy(ip_t *dst, ip_t *src) {
 
 	if (dst && src) {
@@ -390,7 +389,7 @@ bool_t ip_address_equal(ip_t *ip1, ip_t *ip2) {
 ip_t * con_addr(connection_t *con, ip_t *output) {
 
 	ip_t *result;
-	struct sockaddr_in6 address;
+	struct sockaddr *address = MEMORYBUF(sizeof(struct sockaddr_in6));
 	socklen_t len = sizeof(struct sockaddr_in6);
 
 	if (!(result = output) && !(result = mm_alloc(sizeof(ip_t)))) {
@@ -399,7 +398,7 @@ ip_t * con_addr(connection_t *con, ip_t *output) {
 	}
 
 	// Extract the socket structure.
-	else if (getpeername(con->network.sockd, &(address), &len)) {
+	else if (getpeername(con->network.sockd, address, &len)) {
 
 		if (!output) {
 			mm_free(result);
@@ -409,12 +408,12 @@ ip_t * con_addr(connection_t *con, ip_t *output) {
 	}
 
 	// Classify and copy to the result.
-	else if (len == sizeof(struct sockaddr_in6) && address.sin6_family == AF_INET6) {
-		mm_copy(&(result->ip6), &(address.sin6_addr), sizeof(struct in6_addr));
+	else if (len == sizeof(struct sockaddr_in6) && ((struct sockaddr_in6 *)address)->sin6_family == AF_INET6) {
+		mm_copy(&(result->ip6), &(((struct sockaddr_in6 *)address)->sin6_addr), sizeof(struct in6_addr));
 		result->family = AF_INET6;
 	}
-	else if (len == sizeof(struct sockaddr_in) && ((struct sockaddr_in *)&address)->sin_family == AF_INET) {
-		mm_copy(&(result->ip4), &(((struct sockaddr_in *)&address)->sin_addr), sizeof(struct in_addr));
+	else if (len == sizeof(struct sockaddr_in) && ((struct sockaddr_in *)address)->sin_family == AF_INET) {
+		mm_copy(&(result->ip4), &(((struct sockaddr_in *)address)->sin_addr), sizeof(struct in_addr));
 		result->family = AF_INET;
 	}
 
@@ -665,8 +664,8 @@ bool_t ip_str_subnet(chr_t *substr, subnet_t *out) {
  */
 bool_t ip_matches_subnet(subnet_t *subnet, ip_t *addr) {
 
-	uint_t byteno = 0, bitno;
 	uchr_t this_mask;
+	uint_t byteno = 0, bitno = 0;
 
 	if (subnet->address.family != addr->family) {
 		return false;

@@ -49,7 +49,6 @@ void dmtp_process(connection_t *con) {
 
 	command_t *command, client = { .function = NULL };
 
-	// QUESTION: Is this the only comparison?
 	if (con_read_line(con, false) < 0) {
 		con->command = NULL;
 		enqueue(&dmtp_quit, con);

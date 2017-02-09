@@ -213,8 +213,8 @@ int64_t con_read(connection_t *con) {
 int64_t client_read_line(client_t *client) {
 
 	ssize_t bytes;
+	int_t sslerr = -1;
 	bool_t line = false;
-	int sslerr;
 
 	if (!client || client->sockd == -1) {
 		client->status = 1;
@@ -295,14 +295,11 @@ int64_t client_read_line(client_t *client) {
 	return pl_length_get(client->line);
 }
 
-/**
-
- */
 int64_t client_read(client_t *client) {
 
 	ssize_t bytes;
 	bool_t blocking;
-	int sslerr;
+	int_t sslerr = -1;
 
 	if (!client || client->sockd == -1) {
 		client->status = -1;

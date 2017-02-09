@@ -23,7 +23,7 @@
 int64_t con_write_bl(connection_t *con, char *block, size_t length) {
 
 	ssize_t written, position = 0;
-	int sslerr;
+	int sslerr = -1;
 
 	if (!con || con->network.sockd == -1) {
 		con->network.status = -1;
@@ -195,8 +195,8 @@ int64_t client_write(client_t *client, stringer_t *s) {
 
 	uchr_t *block;
 	size_t length;
+	int sslerr = -1;
 	ssize_t written, position = 0;
-	int sslerr;
 
 	if (!client || client->sockd == -1) {
 		client->status = -1;
@@ -274,8 +274,8 @@ int64_t client_write(client_t *client, stringer_t *s) {
 int64_t client_print(client_t *client, chr_t *format, ...) {
 
 	va_list args;
-	int64_t result;
 	stringer_t *buffer;
+	int64_t result = -1;
 
 	if (!client || client->sockd == -1) {
 		return -1;

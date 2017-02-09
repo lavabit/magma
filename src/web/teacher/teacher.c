@@ -165,8 +165,9 @@ void teacher_add_cookie(connection_t *con, teacher_data_t *teach) {
 	// Add approximately one year to the expiration.
 	sm_time += 31556926L;
 
-	// Error check. This will catch dates after 2038, if the time_t bug hasn't been fixed by then. (Does not apply to some 64 bit systems.)
-	if (sm_time <= current) {
+	// Error check. This will catch dates after 2038, if the time_t bug hasn't been fixed by then, or in the year 292277026596
+	// if a 64 bit time value is used. This assumes magmad will run for that long.
+	if (difftime(sm_time, current) != 31556926UL) {
 		log_pedantic("Date wrap around error. The time_t datatype is not large enough to hold the plan expiration.");
 		return;
 	}

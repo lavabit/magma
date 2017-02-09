@@ -44,7 +44,7 @@ END_TEST
 //! Compression Engine Tests
 START_TEST (check_compress_lzo_s) {
 
-	bool_t outcome;
+	bool_t outcome = true;
 	check_compress_opt_t opts = {
 		.engine = COMPRESS_ENGINE_LZO
 	};

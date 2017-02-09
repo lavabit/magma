@@ -67,7 +67,7 @@ int_t prime_unpack_fields(prime_object_t *object, stringer_t *fields) {
 	placer_t payload;
 	uint32_t count = 0;
 	prime_reader_t reader;
-	int_t type, bytes, size;
+	int_t type = -1, bytes = 0, size = 0;
 
 	if (!object || prime_reader_open(fields, &reader)) {
 		return -1;

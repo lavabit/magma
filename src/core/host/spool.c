@@ -110,8 +110,8 @@ int_t spool_check(stringer_t *path) {
 int_t spool_mktemp(int_t spool, chr_t *prefix) {
 
 	time_t now;
-	int_t fd, err_info;
-	stringer_t *path, *template, *base = NULL;
+	int_t fd = -1, err_info;
+	stringer_t *path = NULL, *template = NULL, *base = NULL;
 
 	if (!prefix) prefix = "magma";
 

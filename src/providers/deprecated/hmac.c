@@ -22,8 +22,8 @@ stringer_t * hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, strin
 
 	int_t olen;
 	uint_t rlen;
-	uint32_t opts;
 	HMAC_CTX hmac;
+	uint32_t opts = 0;
 	stringer_t *result = NULL;
 
 	// Ensure a digest pointer was passed in and that we can retrieve the output length.
@@ -36,7 +36,7 @@ stringer_t * hmac_digest(digest_t *digest, stringer_t *s, stringer_t *key, strin
 		return NULL;
 	}
 	else if (st_empty(s)) {
-		log_pedantic("The input string does not appear to have any data ready for encoding. {%slen = %zu}", s ? "" : "s = NULL / ",	s ? st_length_get(s) : 0);
+		log_pedantic("The input string does not appear to have any data ready for encoding. { %slen = %zu }", s ? "" : "s = NULL / ", s ? st_length_get(s) : 0);
 		return NULL;
 	}
 

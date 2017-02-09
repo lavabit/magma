@@ -103,8 +103,9 @@ scramble_t * deprecated_scramble_import(stringer_t *s) {
 
 	void *bptr;
 	scramble_t *buffer;
-	uint64_t blen, vlen;
 	scramble_head_t *head;
+	uint64_t blen = 0, vlen = 0;
+
 #ifdef MAGMA_PEDANTIC
 	uint32_t hash = 0;
 #endif

@@ -11,7 +11,6 @@ int (*deflateEnd_d)(z_streamp strm) = NULL;
 int (*deflate_d)(z_streamp strm, int flush) = NULL;
 int (*deflateInit2__d)(z_streamp strm, int level, int method, int windowBits, int memLevel, int strategy, const char *version, int stream_size) = NULL;
 
-
 /**
  * @brief	Return the version string of zlib.
  * @return	a pointer to a character string containing the zlib version information.
@@ -44,11 +43,11 @@ bool_t lib_load_zlib(void) {
  */
 stringer_t * decompress_zlib(compress_t *compressed) {
 
-	int ret;
-	void *bptr;
-	uint64_t hash, rlen, blen;
+	int_t ret = 0;
+	void *bptr = NULL;
 	stringer_t *result = NULL;
-	compress_head_t *head;
+	compress_head_t *head = NULL;
+	uint64_t hash = 0, rlen = 0, blen = 0;
 
 	if (!(head = (compress_head_t *)compressed)) {
 		log_info("Invalid compression header. {compress_head = NULL}");

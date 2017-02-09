@@ -56,9 +56,9 @@ void signal_shutdown(int signal) {
 	char working[64];
 	struct stat64 info;
 	struct rlimit64 limits;
-	struct sockaddr_in6 saddr;
-	socklen_t len = sizeof(struct sockaddr_in6);
 	pthread_t status_thread;
+	struct sockaddr *saddr = MEMORYBUF(sizeof(struct sockaddr_in6));
+	socklen_t len = sizeof(struct sockaddr_in6);
 	const struct timespec split = { .tv_sec = 0, .tv_nsec = 100000000 }, single = { .tv_sec = 1, .tv_nsec = 0 };
 
 	// We assume the server is being shutdown for a good reason.
@@ -95,19 +95,28 @@ void signal_shutdown(int signal) {
 		mm_wipe(&info, sizeof(struct stat64));
 		mm_wipe(&saddr, sizeof(struct sockaddr_in6));
 
+		/// LOW: This only compares the port number for the sockets. We should also ensure the socket is owned by magmad, and/or
+		/// that the server used INADDR_ANY or IN6ADDR_ANY_INIT, otherwise the logic below will close sockets that could be owned by
+		/// other processes on the system that are using the same port number, while bound to a different IP interface.
 		// Look for socket descriptors using ports assigned to server instances and close them.
-		if (!fstat64(fd, &info) && S_ISSOCK(info.st_mode) && !getsockname(fd, &saddr, &len)) {
+		if (!fstat64(fd, &info) && S_ISSOCK(info.st_mode) && !getsockname(fd, saddr, &len)) {
 
-			if (len == sizeof(struct sockaddr_in6) && saddr.sin6_family == AF_INET6 && servers_get_count_using_port(ntohs(saddr.sin6_port))) {
-				mm_copy(&(ip.ip6), &(saddr.sin6_addr), sizeof(struct in6_addr));
+			if (len == sizeof(struct sockaddr_in6) && ((struct sockaddr_in6 *)saddr)->sin6_family == AF_INET6 &&
+				servers_get_count_using_port(ntohs(((struct sockaddr_in6 *)saddr)->sin6_port))) {
+
+				mm_copy(&(ip.ip6), &(((struct sockaddr_in6 *)saddr)->sin6_addr), sizeof(struct in6_addr));
 				ip.family = AF_INET6;
-				log_info("%s:%u is being shutdown.", st_char_get(ip_presentation(&ip, PLACER(working, 64))), ntohs(saddr.sin6_port));
+				log_info("%s:%u is being shutdown.", st_char_get(ip_presentation(&ip, PLACER(working, 64))),
+					ntohs(((struct sockaddr_in6 *)saddr)->sin6_port));
 				close(fd);
 			}
-			else if (len == sizeof(struct sockaddr_in) && ((struct sockaddr_in *)&saddr)->sin_family == AF_INET && servers_get_count_using_port(ntohs(((struct sockaddr_in *)&saddr)->sin_port))) {
-				mm_copy(&(ip.ip4), &(((struct sockaddr_in *)&saddr)->sin_addr), sizeof(struct in_addr));
+			else if (len == sizeof(struct sockaddr_in) && (((struct sockaddr_in *)saddr)->sin_family == AF_INET &&
+				servers_get_count_using_port(ntohs(((struct sockaddr_in *)saddr)->sin_port)))) {
+
+				mm_copy(&(ip.ip4), &(((struct sockaddr_in *)saddr)->sin_addr), sizeof(struct in_addr));
 				ip.family = AF_INET;
-				log_info("%s:%u is being shutdown.", st_char_get(ip_presentation(&ip, PLACER(working, 64))), ntohs(((struct sockaddr_in *)&saddr)->sin_port));
+				log_info("%s:%u is being shutdown.", st_char_get(ip_presentation(&ip, PLACER(working, 64))),
+					ntohs(((struct sockaddr_in *)saddr)->sin_port));
 				close(fd);
 			}
 		}

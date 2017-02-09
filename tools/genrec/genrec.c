@@ -59,14 +59,14 @@ static void usage(const char *progname) {
 int main(int argc, char *argv[]) {
 
 	X509 *cert = NULL;
-	ED25519_KEY *key;
+	int opt, maxprint;
+	FILE *certfp = NULL;
+	ED25519_KEY *key = NULL;
 	ed25519_signature sigbuf;
-	FILE *certfp;
 	unsigned char certhash[SHA_512_SIZE];
 	char *pubb64, *certfile = NULL, *tls_hmac = NULL, *syndicates = NULL, *dx = NULL, *expiry = NULL, *pubkey = NULL, dimebuf[4096];
 	dime_msg_policy msg_policy = msg_experimental;
 	dime_sub_policy sub_policy = sub_strict;
-	int opt, maxprint;
 	unsigned int version = DIME_VERSION_NO;
 	size_t i, dlen;
 

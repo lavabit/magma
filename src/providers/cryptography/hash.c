@@ -11,7 +11,7 @@ stringer_t * hash_digest(digest_t *digest, stringer_t *s, stringer_t *output) {
 
 	int_t olen;
 	uint_t rlen;
-	uint32_t opts;
+	uint32_t opts = 0;
 	EVP_MD_CTX ctx;
 	stringer_t *result = NULL;
 

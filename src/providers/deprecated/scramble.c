@@ -104,7 +104,7 @@ scramble_t * scramble_import(stringer_t *s) {
 
 	void *bptr;
 	scramble_t *buffer;
-	uint64_t blen, vlen;
+	uint64_t blen = 0, vlen = 0;
 	scramble_head_t *head;
 #ifdef MAGMA_PEDANTIC
 	uint32_t hash = 0;

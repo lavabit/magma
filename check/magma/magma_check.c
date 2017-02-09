@@ -52,7 +52,7 @@ Suite * suite_check_barrister(chr_t *testname) {
 
 	TCase *tc;
 	void *handle;
-	void (*unittest)(int);
+	void *unittest;
 	Suite *s = suite_create("\tBarrister");;
 
 	// By calling dlopen() with NULL for the filename, we are attempting to establish a handle for the currently running executable image.

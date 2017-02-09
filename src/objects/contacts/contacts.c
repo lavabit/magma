@@ -224,7 +224,7 @@ int_t contact_remove(contact_t *contact, uint64_t usernum, uint64_t foldernum) {
 int_t contact_move(contact_folder_t *source, contact_folder_t *target, contact_t *contact, uint64_t usernum) {
 
 	inx_t *swap;
-	contact_t *dupe;
+	contact_t *dupe = NULL;
 	multi_t multi = { .type = M_TYPE_UINT64, .val.u64 = 0 };
 
 	if (!contact || !contact->contactnum || !usernum || !source || !source->foldernum || !target || !target->foldernum) {

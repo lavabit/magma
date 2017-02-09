@@ -21,7 +21,7 @@ stringer_t * deprecated_hmac_digest(digest_t *digest, stringer_t *s, stringer_t 
 
 	int_t olen;
 	uint_t rlen;
-	uint32_t opts;
+	uint32_t opts = 0;
 	HMAC_CTX hmac;
 	stringer_t *result = NULL;
 

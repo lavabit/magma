@@ -7,7 +7,7 @@
 
 #include "magma.h"
 
-extern statistics_vp_t portal_stats[portal_stat_users_num_statements];
+extern statistics_vp_t portal_stats[12];
 
 /**
  * @brief	Display the statistics page to the requesting connection.

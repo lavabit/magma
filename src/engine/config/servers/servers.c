@@ -197,8 +197,8 @@ bool_t servers_validate(void) {
 		// Any combination logic required for the server instance should go here. For example, DMTP server
 		// instances require a valid TLS configuration. Which means providing a TLS certificate and specifying
 		// a port configuration of TLS.
-		if (magma.servers[i]->protocol == DMTP &&
-			(st_empty(magma.servers[i]->tls.certificate) || magma.servers[i]->network.type != TLS_PORT)) {
+		if (magma.servers[i] && magma.servers[i]->protocol == DMTP &&
+			(ns_empty(magma.servers[i]->tls.certificate) || magma.servers[i]->network.type != TLS_PORT)) {
 			log_critical("DMTP server instances require a valid TLS configuration.");
 			result = false;
 		}

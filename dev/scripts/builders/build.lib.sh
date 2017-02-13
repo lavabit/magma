@@ -39,7 +39,6 @@ fi
 error() {
 	if [ $? -ne 0 ]; then
 		tput sgr0; tput setaf 1
-		#printf "\n\n$COMMAND failed...\n\n";
 		date +"%n%n$COMMAND failed at %r on %x%n%n"
 		tput sgr0
 		exit 1
@@ -1925,7 +1924,42 @@ tokyocabinet() {
 
 combine() {
 
+	echo ""
+	printf "Creating the shared object... "
+	
 	rm -f "$M_SO" &>> "$M_LOGS/combine.txt"; error
+	
+	if [[ ! -f "$M_SOURCES/gd/.libs/libgd.a" || 
+		! -f "$M_SOURCES/png/.libs/libpng16.a" || 
+		! -f "$M_SOURCES/lzo/src/.libs/liblzo2.a" || 
+		! -f "$M_SOURCES/jpeg/.libs/libjpeg.a" || 
+		! -f "$M_SOURCES/spf2/src/libspf2/.libs/libspf2.a" || 
+		! -f "$M_SOURCES/curl/lib/.libs/libcurl.a" || 
+		! -f "$M_SOURCES/xml2/.libs/libxml2.a" || 
+		! -f "$M_SOURCES/dkim/libopendkim/.libs/libopendkim.a" || 
+		! -f "$M_SOURCES/zlib/.libs/libz.a" || 
+		! -f "$M_SOURCES/zlib/libz.a" || 
+		! -f "$M_SOURCES/bzip2/libbz2.a" || 
+		! -f "$M_SOURCES/dspam/src/.libs/libdspam.a" || 
+		! -f "$M_SOURCES/mysql/libmysql_r/.libs/libmysqlclient_r.a" || 
+		! -f "$M_SOURCES/geoip/libGeoIP/.libs/libGeoIP.a" || 
+		! -f "$M_SOURCES/clamav/libclamav/.libs/libclamav.a" || 
+		! -f "$M_SOURCES/clamav/libclamav/.libs/libclamunrar.a" || 
+		! -f "$M_SOURCES/clamav/libclamav/.libs/libclamunrar_iface.a" || 
+		! -f "$M_SOURCES/clamav/libltdl/.libs/libltdlc.a" || 
+		! -f "$M_SOURCES/openssl/libcrypto.a" || 
+		! -f "$M_SOURCES/openssl/libssl.a" || 
+		! -f "$M_SOURCES/jansson/src/.libs/libjansson.a" || 
+		! -f "$M_SOURCES/freetype/objs/.libs/libfreetype.a" || 
+		! -f "$M_SOURCES/utf8proc/libutf8proc.a" || 
+		! -f "$M_SOURCES/memcached/libmemcached/.libs/libmemcached.a" || 
+		! -f "$M_SOURCES/tokyocabinet/libtokyocabinet.a" ]]; then
+		printf " a required dependency is missing. \n\nCreate the dependencies by running \"build.lib.sh all\" and then try again."
+		tput sgr0; tput setaf 1
+		date +"%n%nFinished $COMMAND failed at %r on %x%n%n"
+		tput sgr0
+		exit 1
+	fi
 
 	rm -rf "$M_OBJECTS/gd" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/gd" &>> "$M_LOGS/combine.txt"; error
@@ -2066,7 +2100,15 @@ combine() {
 load() {
 
 	echo ""
-	printf "Checking shared object... "
+	printf "Checking the shared object... "
+
+	if [ ! -f "$M_SO" ]; then
+		printf " the magmad.so file is missing.\n\nCreate the shared object by running \"build.lib.sh all\" and then try again."
+		tput sgr0; tput setaf 1
+		date +"%n%nFinished $COMMAND failed at %r on %x%n%n"
+		tput sgr0
+		exit 1
+	fi
 
 	mkdir -p "$M_CHECK"; error
 	cd "$M_CHECK"; error
@@ -2105,7 +2147,7 @@ load() {
 
 	# Compile the source files. If an error occurs at compile time it is probably because we have a mismatch somewhere.
 	gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_INCLUDES $M_SO \
-		-g3 -rdynamic -Wall -Wextra -Werror -o magma.open.check magma.open.check.c magma.open.symbols.c -ldl
+		-g3 -rdynamic -Wall -Wextra -Werror -o magma.open.check magma.open.check.c magma.open.symbols.c -ldl; error
 
 	# If errors are generated from invalid symbols, this should print out the specific lines that are invalid.
 	if [ $? -ne 0 ]; then

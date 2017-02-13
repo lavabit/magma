@@ -1937,7 +1937,6 @@ combine() {
 		! -f "$M_SOURCES/curl/lib/.libs/libcurl.a" || 
 		! -f "$M_SOURCES/xml2/.libs/libxml2.a" || 
 		! -f "$M_SOURCES/dkim/libopendkim/.libs/libopendkim.a" || 
-		! -f "$M_SOURCES/zlib/.libs/libz.a" || 
 		! -f "$M_SOURCES/zlib/libz.a" || 
 		! -f "$M_SOURCES/bzip2/libbz2.a" || 
 		! -f "$M_SOURCES/dspam/src/.libs/libdspam.a" || 
@@ -2004,12 +2003,7 @@ combine() {
 	rm -rf "$M_OBJECTS/zlib" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/zlib" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/zlib" &>> "$M_LOGS/combine.txt"; error
-
-	if [[ $ZLIB == "1.2.3" ]]; then
-		ar xv "$M_SOURCES/zlib/.libs/libz.a" &>> "$M_LOGS/combine.txt"; error
-	else
-		ar xv "$M_SOURCES/zlib/libz.a" &>> "$M_LOGS/combine.txt"; error
-	fi
+	ar xv "$M_SOURCES/zlib/libz.a" &>> "$M_LOGS/combine.txt"; error
 
 	rm -rf "$M_OBJECTS/bzip2" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/bzip2" &>> "$M_LOGS/combine.txt"; error
@@ -2094,7 +2088,7 @@ combine() {
 	#	"$M_OBJECTS"/memcached/*.o "$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o
 	#	"$M_OBJECTS"/utf8proc/*.o &>> "$M_LOGS/combine.txt"; error
 
-	date +"Finished creating the shared object at %r on %x"
+	date +"%n%nFinished creating the shared object at %r on %x%n%n"
 }
 
 load() {

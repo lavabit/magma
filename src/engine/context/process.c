@@ -121,8 +121,8 @@ void process_stop(void) {
 	}
 
 #endif
-	// QUESTION: Shouldn't this be sizeof(stoppers)/sizeof(void *) also?
-	if (magma.init > sizeof(stoppers)) {
+
+	if (magma.init >  sizeof(stoppers) / sizeof(void *)) {
 		log_critical("The run level exceeds the number of shutdown tasks.");
 		return;
 	}

@@ -22,7 +22,7 @@ void signal_segfault(int signal) {
 	struct sigaction clear;
 
 	// Log it.
-	log_options(M_LOG_CRITICAL | M_LOG_STACK_TRACE, "Memory corruption has been detected. Attempting to print a back trace and exit. {signal = %s}",
+	log_options(M_LOG_CRITICAL | M_LOG_STACK_TRACE, "Memory corruption has been detected. Attempting to print a back trace and exit. { signal = %s }",
 			signal_name(signal, signame, 32));
 
 	// Configure the structure to return a signal to its default handler via the sigaction call below.
@@ -85,6 +85,8 @@ void signal_shutdown(int signal) {
 	// Then sleep for one second before forcibly shutting down the client connections.
 	nanosleep(&single, NULL);
 
+	thread_join(status_thread);
+
 	// Now go through and shutdown all client connections.
 	if (getrlimit64(RLIMIT_NOFILE, &limits)) {
 		log_critical("Unable to determine the maximum legal file descriptor.");
@@ -125,7 +127,8 @@ void signal_shutdown(int signal) {
 		}
 	}
 
-//	thread_join(status_thread);
+	// Signals the worker threads, so they unblock and see the underlying connection has been shutdown.
+	queue_signal();
 	return;
 }
 
@@ -138,7 +141,7 @@ void signal_shutdown(int signal) {
 void signal_status(int signal) {
 	chr_t signame[32];
 	if (status()) {
-		log_info("This worker thread was signaled but the status function doesn't indicate a shutdown is in progress. {signal = %s}",
+		log_info("This worker thread was signaled but the status function doesn't indicate a shutdown is in progress. { signal = %s }",
 			signal_name(signal, signame, 32));
 	}
 	return;

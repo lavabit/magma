@@ -84,7 +84,7 @@ int_t thread_join(pthread_t thread) {
 	int_t ret = pthread_join(thread, NULL);
 
 	if (ret) {
-		log_pedantic("Could not join to the requested thread. {pthread_join = %i}", ret);
+		log_pedantic("Could not join to the requested thread. { pthread_join = %i }", ret);
 	}
 
 	return ret;
@@ -102,7 +102,7 @@ int_t thread_result(pthread_t thread, void **result) {
 	int_t ret = pthread_join(thread, result);
 
 	if (ret) {
-		log_pedantic("Could not join to the requested thread. {pthread_join = %i}", ret);
+		log_pedantic("Could not join to the requested thread. { pthread_join = %i }", ret);
 	}
 
 	return ret;

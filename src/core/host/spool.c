@@ -248,7 +248,9 @@ int_t spool_cleanup(void) {
  */
 void spool_stop(void) {
 
+#ifdef MAGMA_PEDANTIC
 	uint64_t before = spool_files_cleaned;
+#endif
 
 	// Since spool_cleanup pulls the base path from the current config, we skip straight to the traversal logic using the base path we stored during startup.
 	if (spool_base && ftw(st_char_get(spool_base), spool_check_file, 32)) {

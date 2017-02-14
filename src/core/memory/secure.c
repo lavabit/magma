@@ -356,10 +356,9 @@ void mm_sec_stop(void) {
  */
 bool_t mm_sec_start(void) {
 
+	uchr_t *bndptr;
 	size_t alignment;
 	secured_t *chunk;
-	uchr_t *bndptr;
-	chr_t buf[1024];
 
 	if (!(secure.enabled = magma.secure.memory.enable)) {
 		log_pedantic("Secure memory management disabled.");
@@ -378,7 +377,7 @@ bool_t mm_sec_start(void) {
 
 	// Ensure the default length for secure memory slabs is greater than zero and is aligned by the page table size.
 	if ((secure.slab.length = (magma.secure.memory.length + alignment - 1) & ~(alignment - 1)) < MM_SEC_POOL_LENGTH_MIN) {
-		log_pedantic("The secure memory pool size is too small. {length = %zu / min = %i}", secure.slab.length, MM_SEC_POOL_LENGTH_MIN);
+		log_pedantic("The secure memory pool size is too small. { length = %zu / min = %i }", secure.slab.length, MM_SEC_POOL_LENGTH_MIN);
 		return false;
 	}
 
@@ -387,7 +386,7 @@ bool_t mm_sec_start(void) {
 
 	// Request an anonymous memory mapping that is aligned according to the system page size. Were asking the kernel to lock returned block into memory.
 	if ((secure.slab.data_true = mmap64(NULL, secure.slab.length_true, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_LOCKED, -1, 0)) == MAP_FAILED) {
-		log_pedantic("Unable to memory map an anonymous file. {%s}", strerror_r(errno, buf, 1024));
+		log_pedantic("Unable to memory map an anonymous file. { error = %s }", strerror_r(errno, MEMORYBUF(1024), 1024));
 		return false;
 	}
 

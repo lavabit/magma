@@ -173,9 +173,9 @@ stringer_t * prime_pem_wrap(stringer_t *object, stringer_t *output) {
 		return NULL;
 	}
 
-	else if (st_write(result, begin, NULLER(PRIME_PEM_LINE_WRAP_CHARS), encoded, NULLER("="),
+	else if ((written = st_write(result, begin, NULLER(PRIME_PEM_LINE_WRAP_CHARS), encoded, NULLER("="),
 		base64_encode_wrap(PLACER(&big_endian_crc, 3), PRIME_PEM_LINE_WRAP_LENGTH, PRIME_PEM_LINE_WRAP_TYPE, MANAGEDBUF(4 + PRIME_PEM_LINE_WRAP_TYPE)),
-		end, NULLER(PRIME_PEM_LINE_WRAP_CHARS)) != length) {
+		end, NULLER(PRIME_PEM_LINE_WRAP_CHARS))) != length) {
 		log_pedantic("The PRIME object failed to encode properly. { expected = %zu / actual = %i }", length, written);
 		if (!output) st_free(result);
 		st_free(encoded);

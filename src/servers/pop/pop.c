@@ -299,7 +299,7 @@ void pop_pass(connection_t *con) {
 	}
 
 	// User logging.
-	log_info("User %.*s logged in from %s via POP. { poprefs = %lu, imaprefs = %lu, messages = %lu }",
+	log_info("User %.*s logged in from %s via POP. { poprefs = %lu / imaprefs = %lu / messages = %lu }",
 		st_length_int(con->pop.username), st_char_get(con->pop.username), st_char_get(con_addr_presentation(con, MANAGEDBUF(256))),
 		con->pop.user->refs.pop, con->pop.user->refs.imap, con->pop.user->messages ? inx_count(con->pop.user->messages) : 0);
 

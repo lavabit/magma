@@ -7,72 +7,49 @@
 
 #include "magma_check.h"
 
-START_TEST(check_bsearch)
-	{
+START_TEST(check_bsearch) {
 
-		bool_t outcome;
-		char *errmsg = NULL;
-		log_unit("%-64.64s", "CORE / STRINGS / BSEARCH / SINGLE THREADED:");
+	log_disable();
+	bool_t result = true;
+	stringer_t *errmsg = NULL;
 
-		if (!check_bsearch_months(1, "jan"))
-			errmsg = "bsearch() failed";
-		else if (!check_bsearch_months(2, "feb"))
-			errmsg = "bsearch() failed";
-		else if (!check_bsearch_months(3, "mar"))
-			errmsg = "bsearch() failed";
-		else if (!check_bsearch_months(4, "apr"))
-			errmsg = "bsearch() failed";
-		else if (!check_bsearch_months(5, "may"))
-			errmsg = "bsearch() failed";
-		else if (!check_bsearch_months(6, "jun"))
-			errmsg = "bsearch() failed";
-		else if (!check_bsearch_months(7, "jul"))
-			errmsg = "bsearch() failed";
-		else if (!check_bsearch_months(8, "aug"))
-			errmsg = "bsearch() failed";
-		else if (!check_bsearch_months(9, "sep"))
-			errmsg = "bsearch() failed";
-		else if (!check_bsearch_months(10, "oct"))
-			errmsg = "bsearch() failed";
-		else if (!check_bsearch_months(11, "nov"))
-			errmsg = "bsearch() failed";
-		else if (!check_bsearch_months(12, "dec"))
-			errmsg = "bsearch() failed";
+	if (!check_bsearch_months(1, "jan") ||
+		!check_bsearch_months(2, "feb") ||
+		!check_bsearch_months(3, "mar") ||
+		!check_bsearch_months(4, "apr") ||
+		!check_bsearch_months(5, "may") ||
+		!check_bsearch_months(6, "jun") ||
+		!check_bsearch_months(7, "jul") ||
+		!check_bsearch_months(8, "aug") ||
+		!check_bsearch_months(9, "sep") ||
+		!check_bsearch_months(10, "oct") ||
+		!check_bsearch_months(11, "nov") ||
+		!check_bsearch_months(12, "dec") ||
 
-		else if (check_bsearch_months(1, "january"))
-			errmsg = "bsearch() failed";
-		else if (check_bsearch_months(2, "february"))
-			errmsg = "bsearch() failed";
-		else if (check_bsearch_months(3, "march"))
-			errmsg = "bsearch() failed";
-		else if (check_bsearch_months(4, "april"))
-			errmsg = "bsearch() failed";
-		else if (check_bsearch_months(5, "mayil"))
-			errmsg = "bsearch() failed";
-		else if (check_bsearch_months(6, "june"))
-			errmsg = "bsearch() failed";
-		else if (check_bsearch_months(7, "july"))
-			errmsg = "bsearch() failed";
-		else if (check_bsearch_months(8, "august"))
-			errmsg = "bsearch() failed";
-		else if (check_bsearch_months(9, "september"))
-			errmsg = "bsearch() failed";
-		else if (check_bsearch_months(10, "october"))
-			errmsg = "bsearch() failed";
-		else if (check_bsearch_months(11, "november"))
-			errmsg = "bsearch() failed";
-		else if (check_bsearch_months(12, "december")) errmsg = "bsearch() failed";
-
-		outcome = errmsg ? false : true;
-		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
-		fail_unless(outcome, errmsg);
+		check_bsearch_months(1, "january") ||
+		check_bsearch_months(2, "february") ||
+		check_bsearch_months(3, "march") ||
+		check_bsearch_months(4, "april") ||
+		check_bsearch_months(5, "mayil") ||
+		check_bsearch_months(6, "june") ||
+		check_bsearch_months(7, "july") ||
+		check_bsearch_months(8, "august") ||
+		check_bsearch_months(9, "september") ||
+		check_bsearch_months(10, "october") ||
+		check_bsearch_months(11, "november") ||
+		check_bsearch_months(12, "december")) {
+		errmsg = NULLER("bsearch() failed");
+		result = false;
 	}
+
+	log_test("CORE / STRINGS / BSEARCH / SINGLE THREADED:", errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
+}
 END_TEST
 
-START_TEST (check_compare)
-	{
+START_TEST (check_compare) {
 
-		bool_t outcome;
+		bool_t result;
 		char *errmsg = NULL;
 		log_unit("%-64.64s", "CORE / STRINGS / COMPARE / SINGLE THREADED:");
 
@@ -114,9 +91,9 @@ START_TEST (check_compare)
 			errmsg = "type() did not return M_TYPE_FLOAT";
 		else if (st_cmp_cs_eq(NULLER(type(M_TYPE_DOUBLE)), CONSTANT("M_TYPE_DOUBLE"))) errmsg = "type() did not return M_TYPE_DOUBLE";
 
-		outcome = errmsg ? false : true;
-		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
-		fail_unless(outcome, errmsg);
+		result = errmsg ? false : true;
+		log_unit("%10.10s\n", (result ? "PASSED" : "FAILED"));
+		fail_unless(result, errmsg);
 
 	}
 END_TEST
@@ -124,30 +101,30 @@ END_TEST
 START_TEST (check_inx_linked_s)
 	{
 
-		bool_t outcome = true;
+		bool_t result = true;
 		char *errmsg = NULL;
 		log_unit("%-64.64s", "CORE / INDEX / LINKED / SINGLE THREADED:");
 		if (status()) {
-			outcome = check_indexes_linked_simple(&errmsg);
+			result = check_indexes_linked_simple(&errmsg);
 		}
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, errmsg);
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, errmsg);
 	}
 END_TEST
 
 START_TEST (check_inx_linked_m)
 	{
-		bool_t outcome = true;
+		bool_t result = true;
 		check_inx_opt_t *opts = NULL;
 
 		log_unit("%-64.64s", "CORE / INDEX / LINKED / MULTITHREADED:");
 
 		if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(M_INX_LINKED, &mm_free)))) {
-			outcome = false;
+			result = false;
 		}
 		else if (status()) {
 			opts->type = M_INX_LINKED;
-			outcome = check_inx_mthread(opts);
+			result = check_inx_mthread(opts);
 		}
 
 		if (opts) {
@@ -155,72 +132,72 @@ START_TEST (check_inx_linked_m)
 			mm_free(opts);
 		}
 
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_inx_linked_m failed");
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, "check_inx_linked_m failed");
 	}
 END_TEST
 
 START_TEST (check_inx_tree_s)
 	{
-		bool_t outcome = true;
+		bool_t result = true;
 		char *errmsg = NULL;
 		log_unit("%-64.64s", "CORE / INDEX / TREE / SINGLE THREADED:");
 		if (status()) {
-			outcome = check_indexes_tree_simple(&errmsg);
+			result = check_indexes_tree_simple(&errmsg);
 		}
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, errmsg);
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, errmsg);
 	}
 END_TEST
 
 START_TEST (check_inx_tree_m)
 	{
-		bool_t outcome = true;
+		bool_t result = true;
 		check_inx_opt_t *opts = NULL;
 
 		log_unit("%-64.64s", "CORE / INDEX / TREE / MULTITHREADED:");
 
 		if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(M_INX_TREE, &mm_free)))) {
-			outcome = false;
+			result = false;
 		}
 		else if (status()) {
-			outcome = check_inx_mthread(opts);
+			result = check_inx_mthread(opts);
 		}
 
 		if (opts) {
 			inx_cleanup(opts->inx);
 			mm_free(opts);
 		}
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_inx_tree_m failed");
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, "check_inx_tree_m failed");
 	}
 END_TEST
 
 START_TEST (check_inx_hashed_s)
 	{
-		bool_t outcome = true;
+		bool_t result = true;
 		char *errmsg = NULL;
 		log_unit("%-64.64s", "CORE / INDEX / HASHED / SINGLE THREADED:");
 		if (status()) {
-			outcome = check_indexes_hashed_simple(&errmsg);
+			result = check_indexes_hashed_simple(&errmsg);
 		}
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, errmsg);
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, errmsg);
 	}
 END_TEST
 
 START_TEST (check_inx_hashed_m)
 	{
-		bool_t outcome = true;
+		bool_t result = true;
 		check_inx_opt_t *opts = NULL;
 
 		log_unit("%-64.64s", "CORE / INDEX / HASHED / MULTITHREADED:");
 
 		if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(M_INX_HASHED, &mm_free)))) {
-			outcome = false;
+			result = false;
 		}
 		else if (status()) {
-			outcome = check_inx_mthread(opts);
+			result = check_inx_mthread(opts);
 		}
 
 		if (opts) {
@@ -228,36 +205,36 @@ START_TEST (check_inx_hashed_m)
 			mm_free(opts);
 		}
 
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_inx_hashed_m failed");
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, "check_inx_hashed_m failed");
 	}
 END_TEST
 
 START_TEST (check_inx_linked_cursor_s)
 	{
-		bool_t outcome = true;
+		bool_t result = true;
 		char *errmsg = NULL;
 		log_unit("%-64.64s", "CORE / INDEX / LINKED CURSOR / SINGLE THREADED:");
 		if (status()) {
-			outcome = check_indexes_linked_cursor(&errmsg);
+			result = check_indexes_linked_cursor(&errmsg);
 		}
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, errmsg);
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, errmsg);
 	}
 END_TEST
 
 START_TEST (check_inx_linked_cursor_m)
 	{
-		bool_t outcome = true;
+		bool_t result = true;
 		check_inx_opt_t *opts = NULL;
 
 		log_unit("%-64.64s", "CORE / INDEX / LINKED CURSOR / MULTITHREADED:");
 
 		if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(M_INX_LINKED, &mm_free)) || !check_inx_mthread(opts))) {
-			outcome = false;
+			result = false;
 		}
 		else if (status()) {
-			outcome = check_inx_cursor_mthread(opts);
+			result = check_inx_cursor_mthread(opts);
 		}
 
 		if (opts) {
@@ -265,36 +242,36 @@ START_TEST (check_inx_linked_cursor_m)
 			mm_free(opts);
 		}
 
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_inx_linked_cursor_m failed");
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, "check_inx_linked_cursor_m failed");
 	}
 END_TEST
 
 START_TEST (check_inx_tree_cursor_s)
 	{
-		bool_t outcome = true;
+		bool_t result = true;
 		char *errmsg = NULL;
 		log_unit("%-64.64s", "CORE / INDEX / TREE CURSOR / SINGLE THREADED:");
 		if (status()) {
-			outcome = check_indexes_tree_cursor(&errmsg);
+			result = check_indexes_tree_cursor(&errmsg);
 		}
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, errmsg);
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, errmsg);
 	}
 END_TEST
 
 START_TEST (check_inx_tree_cursor_m)
 	{
-		bool_t outcome = true;
+		bool_t result = true;
 		check_inx_opt_t *opts = NULL;
 
 		log_unit("%-64.64s", "CORE / INDEX / TREE CURSOR / MULTITHREADED:");
 
 		if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(M_INX_TREE, &mm_free)) || !check_inx_mthread(opts))) {
-			outcome = false;
+			result = false;
 		}
 		else if (status()) {
-			outcome = check_inx_cursor_mthread(opts);
+			result = check_inx_cursor_mthread(opts);
 		}
 
 		if (opts) {
@@ -302,36 +279,36 @@ START_TEST (check_inx_tree_cursor_m)
 			mm_free(opts);
 		}
 
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_inx_tree_cursor_m failed");
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, "check_inx_tree_cursor_m failed");
 	}
 END_TEST
 
 START_TEST (check_inx_hashed_cursor_s)
 	{
-		bool_t outcome = true;
+		bool_t result = true;
 		char *errmsg = NULL;
 		log_unit("%-64.64s", "CORE / INDEX / HASHED CURSOR / SINGLE THREADED:");
 		if (status()) {
-			outcome = check_indexes_hashed_cursor(&errmsg);
+			result = check_indexes_hashed_cursor(&errmsg);
 		}
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, errmsg);
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, errmsg);
 	}
 END_TEST
 
 START_TEST (check_inx_hashed_cursor_m)
 	{
-		bool_t outcome = true;
+		bool_t result = true;
 		check_inx_opt_t *opts = NULL;
 
 		log_unit("%-64.64s", "CORE / INDEX / HASHED CURSOR / MULTITHREADED:");
 
 		if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(M_INX_HASHED, &mm_free)) || !check_inx_mthread(opts))) {
-			outcome = false;
+			result = false;
 		}
 		else if (status()) {
-			outcome = check_inx_cursor_mthread(opts);
+			result = check_inx_cursor_mthread(opts);
 		}
 
 		if (opts) {
@@ -339,8 +316,8 @@ START_TEST (check_inx_hashed_cursor_m)
 			mm_free(opts);
 		}
 
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_inx_hashed_cursor_m failed");
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, "check_inx_hashed_cursor_m failed");
 	}
 END_TEST
 
@@ -349,7 +326,7 @@ START_TEST (check_constants)
 
 		uint64_t total;
 		char *errmsg = NULL;
-		bool_t outcome = true;
+		bool_t result = true;
 
 		log_unit("%-64.64s", "CORE / STRINGS / CONSTANTS / SINGLE THREADED:");
 
@@ -358,17 +335,17 @@ START_TEST (check_constants)
 		}
 
 		if (total != 5366) {
-			outcome = false;
+			result = false;
 		}
 
-		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
-		fail_unless(outcome, errmsg);
+		log_unit("%10.10s\n", (result ? "PASSED" : "FAILED"));
+		fail_unless(result, errmsg);
 	}
 END_TEST
 
 START_TEST (check_allocation) {
 	char *errmsg = NULL;
-	bool_t outcome = true;
+	bool_t result = true;
 
 	log_unit("%-64.64s", "CORE / STRINGS / ALLOCATION / SINGLE THREADED:");
 
@@ -385,15 +362,15 @@ START_TEST (check_allocation) {
 		MANAGED_T | JOINTED | SECURE) || !check_string_alloc(MAPPED_T | JOINTED | SECURE)) errmsg
 		= "Secure allocation of jointed types failed.";
 
-	outcome = errmsg ? false : true;
-	log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
-	fail_unless(outcome, errmsg);
+	result = errmsg ? false : true;
+	log_unit("%10.10s\n", (result ? "PASSED" : "FAILED"));
+	fail_unless(result, errmsg);
 }
 END_TEST
 
 START_TEST (check_reallocation)	{
 	char *errmsg = NULL;
-	bool_t outcome = true;
+	bool_t result = true;
 
 	log_unit("%-64.64s", "CORE / STRINGS / REALLOCATION / SINGLE THREADED:");
 
@@ -410,15 +387,15 @@ START_TEST (check_reallocation)	{
 		MANAGED_T | JOINTED | SECURE) || !check_string_realloc(MAPPED_T | JOINTED | SECURE)) errmsg
 		= "Secure reallocation of jointed types failed.";
 
-	outcome = errmsg ? false : true;
-	log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
-	fail_unless(outcome, errmsg);
+	result = errmsg ? false : true;
+	log_unit("%10.10s\n", (result ? "PASSED" : "FAILED"));
+	fail_unless(result, errmsg);
 }
 END_TEST
 
 START_TEST (check_duplication) {
 	char *errmsg = NULL;
-	bool_t outcome = true;
+	bool_t result = true;
 
 	log_unit("%-64.64s", "CORE / STRINGS / DUPLICATION / SINGLE THREADED:");
 
@@ -435,38 +412,38 @@ START_TEST (check_duplication) {
 		MANAGED_T | JOINTED | SECURE) || !check_string_dupe(MAPPED_T | JOINTED | SECURE)) errmsg
 		= "Secure duplication of jointed types failed.";
 
-	outcome = errmsg ? false : true;
-	log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
-	fail_unless(outcome, errmsg);
+	result = errmsg ? false : true;
+	log_unit("%10.10s\n", (result ? "PASSED" : "FAILED"));
+	fail_unless(result, errmsg);
 }
 END_TEST
 
 START_TEST (check_merge) {
 	char *errmsg = NULL;
-	bool_t outcome = true;
+	bool_t result = true;
 
 	log_unit("%-64.64s", "CORE / STRINGS / MERGE / SINGLE THREADED:");
 
 	if (!check_string_merge()) errmsg = "The stringer merge function failed.";
 
-	outcome = errmsg ? false : true;
-	log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
-	fail_unless(outcome, errmsg);
+	result = errmsg ? false : true;
+	log_unit("%10.10s\n", (result ? "PASSED" : "FAILED"));
+	fail_unless(result, errmsg);
 }
 END_TEST
 
 START_TEST (check_print)
 	{
 		char *errmsg = NULL;
-		bool_t outcome = true;
+		bool_t result = true;
 
 		log_unit("%-64.64s", "CORE / STRINGS / PRINT / SINGLE THREADED:");
 
 		if (!check_string_print()) errmsg = "The stringer print function failed.";
 
-		outcome = errmsg ? false : true;
-		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
-		fail_unless(outcome, errmsg);
+		result = errmsg ? false : true;
+		log_unit("%10.10s\n", (result ? "PASSED" : "FAILED"));
+		fail_unless(result, errmsg);
 
 	}
 END_TEST
@@ -474,15 +451,15 @@ END_TEST
 START_TEST (check_write)
 	{
 		char *errmsg = NULL;
-		bool_t outcome = true;
+		bool_t result = true;
 
 		log_unit("%-64.64s", "CORE / STRINGS / WRITE / SINGLE THREADED:");
 
 		if (!check_string_write()) errmsg = "The stringer write function failed.";
 
-		outcome = errmsg ? false : true;
-		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
-		fail_unless(outcome, errmsg);
+		result = errmsg ? false : true;
+		log_unit("%10.10s\n", (result ? "PASSED" : "FAILED"));
+		fail_unless(result, errmsg);
 
 	}
 END_TEST
@@ -499,12 +476,12 @@ START_TEST (check_digits)
 		int64_t i64;
 		uint64_t ui64;
 
-		bool_t outcome = true;
+		bool_t result = true;
 		char *errmsg = NULL, buf[1024];
 
 		log_unit("%-64.64s", "CORE / PARSERS / DIGITS / SINGLE THREADED:");
 
-		for (uint64_t i = 0; status() && outcome && i < 8192; i++) {
+		for (uint64_t i = 0; status() && result && i < 8192; i++) {
 
 			i8 = rand_get_int8();
 			i16 = rand_get_int16();
@@ -517,29 +494,29 @@ START_TEST (check_digits)
 			ui64 = rand_get_uint64();
 
 			if (int8_digits(i8) != snprintf(buf, 1024, "%hhi", i8))
-				outcome = false;
+				result = false;
 			else if (int16_digits(i16) != snprintf(buf, 1024, "%hi", i16))
-				outcome = false;
+				result = false;
 			else if (int32_digits(i32) != snprintf(buf, 1024, "%i", i32))
-				outcome = false;
+				result = false;
 			else if (int64_digits(i64) != snprintf(buf, 1024, "%li", i64))
-				outcome = false;
+				result = false;
 
 			else if (uint8_digits(ui8) != snprintf(buf, 1024, "%hhu", ui8))
-				outcome = false;
+				result = false;
 			else if (uint16_digits(ui16) != snprintf(buf, 1024, "%hu", ui16))
-				outcome = false;
+				result = false;
 			else if (uint32_digits(ui32) != snprintf(buf, 1024, "%u", ui32))
-				outcome = false;
-			else if (uint64_digits(ui64) != snprintf(buf, 1024, "%lu", ui64)) outcome = false;
+				result = false;
+			else if (uint64_digits(ui64) != snprintf(buf, 1024, "%lu", ui64)) result = false;
 		}
 
 		// Error check
-		if (!outcome) errmsg = "The digit counters didn't match the print function!";
+		if (!result) errmsg = "The digit counters didn't match the print function!";
 
-		outcome = errmsg ? false : true;
-		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
-		fail_unless(outcome, errmsg);
+		result = errmsg ? false : true;
+		log_unit("%10.10s\n", (result ? "PASSED" : "FAILED"));
+		fail_unless(result, errmsg);
 
 	}
 END_TEST
@@ -547,7 +524,7 @@ END_TEST
 START_TEST (check_clamp)
 	{
 		chr_t *errmsg = NULL;
-		bool_t outcome = true;
+		bool_t result = true;
 
 		log_unit("%-64.64s", "CORE / PARSERS / CLAMP / SINGLE THREADED:");
 
@@ -556,7 +533,7 @@ START_TEST (check_clamp)
 			(errmsg = check_clamp_max()) ||
 			(errmsg = check_clamp_min_max_equal()) ||
 			(errmsg = check_clamp_randomizer()))) {
-			outcome = false;
+			result = false;
 		}
 		else {
 
@@ -564,14 +541,14 @@ START_TEST (check_clamp)
 			// disable logging while the test case is running.
 			log_disable();
 			if (status() && (errmsg = check_clamp_min_max_invalid())) {
-				outcome = false;
+				result = false;
 			}
 			log_enable();
 
 		}
 
-		log_unit("%10.10s\n", (outcome ? "PASSED" : "FAILED"));
-		fail_unless(outcome, errmsg);
+		log_unit("%10.10s\n", (result ? "PASSED" : "FAILED"));
+		fail_unless(result, errmsg);
 		ns_cleanup(errmsg);
 	}
 END_TEST
@@ -579,7 +556,7 @@ END_TEST
 START_TEST (check_capitalization)
 	{
 		char *errmsg = NULL;
-		bool_t outcome = true;
+		bool_t result = true;
 		stringer_t *copy, *letters = CONSTANT("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
 
 		log_unit("%-64.64s", "CORE / PARSERS / CASE / SINGLE THREADED:");
@@ -619,9 +596,9 @@ START_TEST (check_capitalization)
 			}
 		}
 
-		outcome = errmsg ? false : true;
-		log_unit("%10.10s\n", (outcome ? "PASSED" : status() ? "FAILED" : "SKIPPED"));
-		fail_unless(outcome, errmsg);
+		result = errmsg ? false : true;
+		log_unit("%10.10s\n", (result ? "PASSED" : status() ? "FAILED" : "SKIPPED"));
+		fail_unless(result, errmsg);
 
 	}
 END_TEST
@@ -629,7 +606,7 @@ END_TEST
 START_TEST (check_classify)
 	{
 		char *errmsg = NULL;
-		bool_t outcome = true;
+		bool_t result = true;
 
 		log_unit("%-64.64s", "CORE / CLASSIFY / ASCII / SINGLE THREADED:");
 
@@ -643,24 +620,24 @@ START_TEST (check_classify)
 			}
 		}
 
-		outcome = errmsg ? false : true;
-		log_unit("%10.10s\n", (outcome ? "PASSED" : status() ? "FAILED" : "SKIPPED"));
-		fail_unless(outcome, errmsg);
+		result = errmsg ? false : true;
+		log_unit("%10.10s\n", (result ? "PASSED" : status() ? "FAILED" : "SKIPPED"));
+		fail_unless(result, errmsg);
 	}
 END_TEST
 
 START_TEST (check_qp)
 	{
 		char *errmsg = NULL;
-		bool_t outcome = true;
+		bool_t result = true;
 
 		log_unit("%-64.64s", "CORE / ENCODING / QUOTED PRINTABLE / SINGLE THREADED:");
 
 		if (!check_encoding_qp()) errmsg = "The quoted printable encoding functions failed.";
 
-		outcome = errmsg ? false : true;
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, errmsg);
+		result = errmsg ? false : true;
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, errmsg);
 
 	}
 END_TEST
@@ -668,15 +645,15 @@ END_TEST
 START_TEST (check_hex)
 	{
 		char *errmsg = NULL;
-		bool_t outcome = true;
+		bool_t result = true;
 
 		log_unit("%-64.64s", "CORE / ENCODING / HEX / SINGLE THREADED:");
 
 		if (!check_encoding_hex()) errmsg = "The hex encoding functions failed.";
 
-		outcome = errmsg ? false : true;
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, errmsg);
+		result = errmsg ? false : true;
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, errmsg);
 
 	}
 END_TEST
@@ -684,15 +661,15 @@ END_TEST
 START_TEST (check_url)
 	{
 		char *errmsg = NULL;
-		bool_t outcome = true;
+		bool_t result = true;
 
 		log_unit("%-64.64s", "CORE / ENCODING / URL / SINGLE THREADED:");
 
 		if (!check_encoding_url()) errmsg = "The URL encoding functions failed.";
 
-		outcome = errmsg ? false : true;
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, errmsg);
+		result = errmsg ? false : true;
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, errmsg);
 
 	}
 END_TEST
@@ -700,7 +677,7 @@ END_TEST
 START_TEST (check_base64)
 	{
 		char *errmsg = NULL;
-		bool_t outcome = true;
+		bool_t result = true;
 
 		log_unit("%-64.64s", "CORE / ENCODING / BASE64 / SINGLE THREADED:");
 
@@ -713,9 +690,9 @@ START_TEST (check_base64)
 		else if (!check_encoding_base64_mod(true))
 			errmsg = "The modified base64 encoding functions failed.";
 
-		outcome = errmsg ? false : true;
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, errmsg);
+		result = errmsg ? false : true;
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, errmsg);
 
 	}
 END_TEST
@@ -723,15 +700,15 @@ END_TEST
 START_TEST (check_zbase32)
 	{
 		char *errmsg = NULL;
-		bool_t outcome = true;
+		bool_t result = true;
 
 		log_unit("%-64.64s", "CORE / ENCODING / ZBASE32 / SINGLE THREADED:");
 
 		if (!check_encoding_zbase32()) errmsg = "The zbase32 encoding functions failed.";
 
-		outcome = errmsg ? false : true;
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, errmsg);
+		result = errmsg ? false : true;
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, errmsg);
 	}
 END_TEST
 
@@ -812,38 +789,38 @@ END_TEST
 
 START_TEST (check_signames_s)
 	{
-		bool_t outcome = true;
+		bool_t result = true;
 
 		log_unit("%-64.64s", "CORE / HOST / SIGNAL NAMES / SINGLE THREADED:");
 
 		if (status()) {
-			outcome = check_system_signames();
+			result = check_system_signames();
 		}
 
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_signames_s failed");
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, "check_signames_s failed");
 	}
 END_TEST
 
 START_TEST (check_errnames_s)
 	{
-		bool_t outcome = true;
+		bool_t result = true;
 
 		log_unit("%-64.64s", "CORE / HOST / ERROR NAMES / SINGLE THREADED:");
 
 		if (status()) {
-			outcome = check_system_errnonames();
+			result = check_system_errnonames();
 		}
 
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_errnames_s failed");
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, "check_errnames_s failed");
 	}
 END_TEST
 
 START_TEST (check_nbo_s)
 	{
 
-		bool_t outcome = true;
+		bool_t result = true;
 
 		bool_t (*checks[])(void) = {
 			&check_nbo_parameters,
@@ -861,21 +838,21 @@ START_TEST (check_nbo_s)
 
 		for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof((checks)[0]); ++i) {
 			log_disable();
-			if(!(outcome = checks[i]())) {
+			if(!(result = checks[i]())) {
 				err = errors[i];
 			}
 			log_enable();
 		}
 
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, st_data_get(err));
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, st_data_get(err));
 	}
 END_TEST
 
 START_TEST (check_bitwise)
 	{
 
-		bool_t outcome = true;
+		bool_t result = true;
 
 		bool_t (*checks[])(void) = {
 			&check_bitwise_parameters,
@@ -895,14 +872,14 @@ START_TEST (check_bitwise)
 
 		for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof((checks)[0]); ++i) {
 			log_disable();
-			if(!(outcome = checks[i]())) {
+			if(!(result = checks[i]())) {
 				err = errors[i];
 			}
 			log_enable();
 		}
 
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, st_data_get(err));
+		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
+		fail_unless(result, st_data_get(err));
 	}
 END_TEST
 

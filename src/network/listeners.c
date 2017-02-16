@@ -165,6 +165,6 @@ bool_t net_init(server_t *server) {
  * @return	This function returns no value.
  */
 void net_shutdown(server_t *server) {
-
 	close(server->network.sockd);
+	return;
 }

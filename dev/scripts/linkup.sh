@@ -35,6 +35,7 @@ process "magma.loop.sh" "magma.loop"
 process "magma.stat.sh" "magma.stat"
 process "magma.watcher.sh" "magma.watcher"
 process "magma.killhard.sh" "magma.killhard"
+process "magma.callgrind.sh" "magma.callgrind"
 
 process "check.vg.sh" "check.vg"
 process "check.run.sh" "check.run"

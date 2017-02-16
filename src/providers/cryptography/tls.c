@@ -85,12 +85,19 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 	}
 
 	// High security connections get 4096 bit prime when generating a DH session key.
-	else if (magma.iface.cryptography.dhparams_large_keys) {
+	else if (magma.iface.cryptography.dhparams_rotate && magma.iface.cryptography.dhparams_large_keys) {
 		SSL_CTX_set_tmp_dh_callback_d(local->tls.context, dh_exchange_4096);
 	}
 	// Otherwise use a 2048 bit prime when generating a DH session key.
-	else {
+	else if (magma.iface.cryptography.dhparams_rotate && !magma.iface.cryptography.dhparams_large_keys) {
 		SSL_CTX_set_tmp_dh_callback_d(local->tls.context, dh_exchange_2048);
+	}
+	// Other use the static DH paramters.
+	else if (!magma.iface.cryptography.dhparams_rotate && magma.iface.cryptography.dhparams_large_keys) {
+		SSL_CTX_set_tmp_dh_callback_d(local->tls.context, dh_static_4096);
+	}
+	else {
+		SSL_CTX_set_tmp_dh_callback_d(local->tls.context, dh_static_2048);
 	}
 
 	/// TODO: The SSL_CTX_set_tmp_ecdh_callback() may no longer be needed with SSL_CTX_set_ecdh_auto(). More research is needed.

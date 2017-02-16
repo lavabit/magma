@@ -21,6 +21,7 @@ int dh_params_generate_callback(int p, int n, BN_GENCB *cb) {
 	return (status() ? 1 : 0);
 }
 
+/// TODO: Spawn a thread at startup to generate the keys, and block the dh_exchange functions below from returning until its done.
 void dh_params_generate(void) {
 
 	DH *holder;
@@ -249,6 +250,14 @@ DH *dh_params_4096(void) {
 	}
 
 	return dh;
+}
+
+DH * dh_static_2048(SSL *ssl, int is_export, int keylength) {
+	return dh_params_2048();
+}
+
+DH * dh_static_4096(SSL *ssl, int is_export, int keylength) {
+	return dh_params_4096();
 }
 
 /**

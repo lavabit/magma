@@ -13,7 +13,7 @@ cd $BASE/../../
 MAGMA_DIST=`pwd`
 
 process() {
-	SRC=`find $MAGMA_DIST/ -name $1`
+	SRC=`find $MAGMA_DIST/dev/scripts/ -name $1`
 	mkdir --parents "$HOME/bin"
 	rm -f "$HOME/bin/$2"
 	ln -s "$SRC" "$HOME/bin/$2"

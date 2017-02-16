@@ -24,18 +24,13 @@ res/sql/Hostname.sql
 
 # Compiled Binaries
 /magmad
-/magmad.pg
 /magmad.so
 /magmad.check
-/magmad.check.pg
 /dime
 /signet
 /genrec
 /dime.check
 /lib/check/magma.open.check
-
-# GProf Output
-/gmon.out
 
 # Tool Compiler Artifacts and Binaries
 dev/tools/pwtool/pwtool
@@ -43,4 +38,11 @@ dev/tools/runner/runner
 dev/tools/testde/testde
 dev/tools/lockdown/lockdown
 dev/tools/shabench/shabench
+
+
+# Profiler Artifacts and Binaries
+/gmon.out
+/magmad.pg
+/magmad.pg.so
+/magmad.check.pg
 

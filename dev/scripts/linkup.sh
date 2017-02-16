@@ -58,6 +58,7 @@ process "sslnet.sh" "sslnet"
 process "sslweb.sh" "sslweb"
 
 process "mycon.sh" "mycon"
+process "mua.reset.sh" "mua.reset"
 process "schema.dump.sh" "schema.dump"
 process "schema.reset.sh" "schema.reset"
 process "schema.init.sh" "schema.init"

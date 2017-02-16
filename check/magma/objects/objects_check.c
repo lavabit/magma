@@ -69,12 +69,13 @@ START_TEST (check_object_serials_s)
 }
 END_TEST
 
-START_TEST (check_warehouse_domains_s)
-{
-	char *errmsg = NULL;
-	bool_t outcome = true;
+START_TEST (check_warehouse_domains_s) {
 
-	log_unit("%-64.64s", "OBJECTS / WAREHOUSE / DOMAINS / SINGLE THREADED:");
+    log_disable();
+    bool_t result = true;
+	stringer_t *errmsg = NULL;
+
+	//log_unit("%-64.64s", "OBJECTS / WAREHOUSE / DOMAINS / SINGLE THREADED:");
 
 	if (status() && (domain_wildcard(CONSTANT("lavabit.com")) != 0 || domain_dkim(CONSTANT("lavabit.com")) != 1 ||	domain_spf(CONSTANT("lavabit.com")) != 1 ||
 		domain_wildcard(CONSTANT("mailshack.com")) != 0 || domain_dkim(CONSTANT("mailshack.com")) != 1 ||	domain_spf(CONSTANT("mailshack.com")) != 1 ||
@@ -99,13 +100,14 @@ START_TEST (check_warehouse_domains_s)
 		domain_wildcard(PLACER("texasteenage.org", 16)) != 1 || domain_dkim(PLACER("texasteenage.org", 16)) != 0 ||	domain_spf(PLACER("texasteenage.org", 16)) != 0 ||
 		domain_wildcard(PLACER("ronweb.net", 10)) != 1 || domain_dkim(PLACER("ronweb.net", 10)) != 1 ||	domain_spf(PLACER("ronweb.net", 10)) != 1 ||
 		domain_wildcard(PLACER("slashdot.org", 12)) != -1 || domain_dkim(PLACER("slashdot.org", 12)) != -1 ||	domain_spf(PLACER("slashdot.org", 12)) != -1)) {
-		errmsg = "Domain checks failed.";
-		outcome = false;
+      errmsg = NULLER("Domain checks failed.");
+		result = false;
 	}
 
-	outcome = errmsg ? false : true;
-	log_unit("%10.10s\n", (outcome ? "PASSED" : status() ? "FAILED" : "SKIPPED"));
-	fail_unless(outcome, errmsg);
+	//log_unit("%10.10s\n", (outcome ? "PASSED" : status() ? "FAILED" : "SKIPPED"));
+  log_test("OBJECTS / WAREHOUSE / DOMAINS / SINGLE THREADED:", errmsg);
+  ck_assert_msg(result, st_char_get(errmsg));
+	//fail_unless(outcome, errmsg);
 
 }
 END_TEST

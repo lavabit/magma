@@ -1,1 +1,1 @@
-UPDATE Hosts SET hostname = 'dark.local' WHERE hostnum = 1;
+UPDATE Hosts SET hostname = 'magma.build.box' WHERE hostnum = 1;

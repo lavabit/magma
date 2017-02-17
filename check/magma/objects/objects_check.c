@@ -70,7 +70,7 @@ START_TEST (check_object_serials_s) {
 		serial_increment(OBJECT_MESSAGES, UINT64_MAX) != 1 ||
 		serial_increment(OBJECT_MESSAGES, UINT64_MAX) != 2 ||
 		serial_get(OBJECT_MESSAGES, UINT64_MAX) != 2 ||
-		serial_reset(OBJECT_MESSAGES, UINT64_MAX != 1))) {
+		serial_reset(OBJECT_MESSAGES, UINT64_MAX) != 1)) {
 		errmsg = NULLER("The interface for handling serial numbers failed at an edge case.");
 		result = false;
 	}

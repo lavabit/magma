@@ -20,6 +20,7 @@ extern chr_t *virus_check_data_path;
 
 //! Generic Provider Symbol Tests
 START_TEST (check_symbols_s) {
+	log_disable();
 	void *local = NULL;
 	chr_t *errmsg = NULL, *liberr = NULL;
 
@@ -44,131 +45,175 @@ END_TEST
 //! Compression Engine Tests
 START_TEST (check_compress_lzo_s) {
 
+	log_disable();
 	bool_t outcome = true;
+	stringer_t *errmsg = NULL;
 	check_compress_opt_t opts = {
 		.engine = COMPRESS_ENGINE_LZO
 	};
 
-	log_unit("%-64.64s", "COMPRESSION / LZO / SINGLE THREADED:");
-
-	if (status()) {
-		outcome = check_compress_sthread(&opts);
+	if (!check_compress_sthread(&opts)) {
+		outcome = false;
+		errmsg = NULLER("The single-threaded LZO compression test failed.");
 	}
 
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, "check_compress_sthread failed");
-
+	log_test("COMPRESSION / LZO / SINGLE THREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
 
 START_TEST (check_compress_lzo_m) {
 
-	bool_t outcome;
+	log_disable();
+	bool_t outcome = true;
+	stringer_t *errmsg = NULL;
 	check_compress_opt_t opts = {
 		.engine = COMPRESS_ENGINE_LZO
 	};
-	log_unit("%-64.64s", "COMPRESSION / LZO / MULTITHREADED:");
-	outcome = check_compress_mthread(&opts);
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, "check_compress_mthread failed");
+
+	if (!check_compress_mthread(&opts)) {
+		outcome = false;
+		errmsg = NULLER("The multi-threaded LZO compression test failed.");
+	}
+
+	log_test("COMPRESSION / LZO / MULTITHREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
 
 START_TEST (check_compress_zlib_s) {
 
-	bool_t outcome;
+	log_disable();
+	bool_t outcome = true;
+	stringer_t *errmsg = NULL;
 	check_compress_opt_t opts = {
 		.engine = COMPRESS_ENGINE_ZLIB
 	};
-	log_unit("%-64.64s", "COMPRESSION / ZLIB / SINGLE THREADED:");
-	outcome = check_compress_sthread(&opts);
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, "check_compress_sthread failed");
 
+	if (!check_compress_sthread(&opts)) {
+		outcome = false;
+		errmsg = NULLER("The single-threaded ZLIB compression test failed.");
+	}
+
+	log_test("COMPRESSION / ZLIB / SINGLE THREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
 
 START_TEST (check_compress_zlib_m) {
 
-	bool_t outcome;
+	log_disable();
+	bool_t outcome = true;
+	stringer_t *errmsg = NULL;
 	check_compress_opt_t opts = {
 		.engine = COMPRESS_ENGINE_ZLIB
 	};
-	log_unit("%-64.64s", "COMPRESSION / ZLIB / MULTITHREADED:");
-	outcome = check_compress_mthread(&opts);
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, "check_compress_mthread failed");
 
+	if (!check_compress_mthread(&opts)) {
+		outcome = false;
+		errmsg = NULLER("The multi-threaded ZLIB compression test failed.");
+	}
+
+	log_test("COMPRESSION / ZLIB / MULTITHREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
 
 START_TEST (check_compress_bzip_s) {
 
-	bool_t outcome;
+	log_disable();
+	bool_t outcome = true;
+	stringer_t *errmsg = NULL;
 	check_compress_opt_t opts = {
 		.engine = COMPRESS_ENGINE_BZIP
 	};
-	log_unit("%-64.64s", "COMPRESSION / BZIP / SINGLE THREADED:");
-	outcome = check_compress_sthread(&opts);
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, "check_compress_sthread failed");
+
+	if (!check_compress_sthread(&opts)) {
+		outcome = false;
+		errmsg = NULLER("The single-threaded BZIP compression test failed.");
+	}
+
+	log_test("COMPRESSION / BZIP / SINGLE THREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
 
 START_TEST (check_compress_bzip_m) {
 
-	bool_t outcome;
+	log_disable();
+	bool_t outcome = true;
+	stringer_t *errmsg = NULL;
 	check_compress_opt_t opts = {
 		.engine = COMPRESS_ENGINE_BZIP
 	};
-	log_unit("%-64.64s", "COMPRESSION / BZIP / MULTITHREADED:");
-	outcome = check_compress_mthread(&opts);
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, "check_compress_mthread failed");
 
+	if (!check_compress_mthread(&opts)) {
+		outcome = false;
+		errmsg = NULLER("The multi-threaded BZIP compression test failed.");
+	}
+
+	log_test("COMPRESSION / BZIP / MULTITHREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
 
 //! Storage Tank Tests
 START_TEST (check_tank_lzo_s) {
 
-	bool_t outcome;
+	log_disable();
+	bool_t outcome = true;
+	stringer_t *errmsg = NULL;
 	check_tank_opt_t opts = {
 		.engine = TANK_COMPRESS_LZO
 	};
-	log_unit("%-64.64s", "TANK / LZO / SINGLE THREADED:");
-	outcome = check_tokyo_tank_sthread(&opts);
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, "check_tokyo_tank_sthread failed");
-	tank_maintain();
 
+	if (!check_tokyo_tank_sthread(&opts)) {
+		outcome = false;
+		errmsg = NULLER("The single-threaded LZO storage tank test failed.");
+	}
+
+	log_test("TANK / LZO / SINGLE THREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
+	tank_maintain();
 }
 END_TEST
 
 START_TEST (check_tank_lzo_m) {
 
-	bool_t outcome;
+	log_disable();
+	bool_t outcome = true;
+	stringer_t *errmsg = NULL;
 	check_tank_opt_t opts = {
 		.engine = TANK_COMPRESS_LZO
 	};
-	log_unit("%-64.64s", "TANK / LZO / MULTITHREADED:");
-	outcome = check_tokyo_tank_mthread(&opts);
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, "check_tokyo_tank_mthread failed");
+
+	if (!check_tokyo_tank_mthread(&opts)) {
+		outcome = false;
+		errmsg = NULLER("The multi-threaded LZO storage tank test failed.");
+	}
+
+	log_test("TANK / LZO / MULTITHREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
 	tank_maintain();
 }
 END_TEST
 
 START_TEST (check_tank_zlib_s) {
 
-		bool_t outcome;
+		log_disable();
+		bool_t outcome = true;
+		stringer_t *errmsg = NULL;
 		check_tank_opt_t opts = {
 			.engine = TANK_COMPRESS_ZLIB
 		};
-		log_unit("%-64.64s", "TANK / ZLIB / SINGLE THREADED:");
-		outcome = check_tokyo_tank_sthread(&opts);
-		log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(outcome, "check_tokyo_tank_sthread failed");
+
+		if (!check_tokyo_tank_sthread(&opts)) {
+			outcome = false;
+			errmsg = NULLER("The single-threaded ZLIB storage tank test failed.");
+		}
+
+		log_test("TANK / ZLIB / SINGLE THREADED:", errmsg);
+		ck_assert_msg(outcome, st_char_get(errmsg));
 		tank_maintain();
 
 	}
@@ -176,43 +221,60 @@ END_TEST
 
 START_TEST (check_tank_zlib_m) {
 
-	bool_t outcome;
+	log_disable();
+	bool_t outcome = true;
+	stringer_t *errmsg = NULL;
 	check_tank_opt_t opts = {
 		.engine = TANK_COMPRESS_ZLIB
 	};
-	log_unit("%-64.64s", "TANK / ZLIB / MULTITHREADED:");
-	outcome = check_tokyo_tank_mthread(&opts);
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, "check_tokyo_tank_mthread failed");
+
+	if (!check_tokyo_tank_mthread(&opts)) {
+		outcome = false;
+		errmsg = NULLER("The multi-threaded ZLIB storage tank test failed.");
+	}
+
+	log_test("TANK / ZLIB / MULTITHREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
 	tank_maintain();
 }
 END_TEST
 
 START_TEST (check_tank_bzip_s) {
 
-	bool_t outcome;
+	log_disable();
+	bool_t outcome = true;
+	stringer_t *errmsg = NULL;
 	check_tank_opt_t opts = {
 		.engine = TANK_COMPRESS_BZIP
 	};
-	log_unit("%-64.64s", "TANK / BZIP / SINGLE THREADED:");
-	outcome = check_tokyo_tank_sthread(&opts);
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, "check_tokyo_tank_sthread failed");
-	tank_maintain();
 
+	if (!check_tokyo_tank_sthread(&opts)) {
+		outcome = false;
+		errmsg = NULLER("The single-threaded BZIP storage tank test failed.");
+	}
+
+	log_test("TANK / BZIP / SINGLE THREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
+	tank_maintain();
 }
 END_TEST
 
 START_TEST (check_tank_bzip_m) {
 
-	bool_t outcome;
+	log_disable();
+	bool_t outcome = true;
+	stringer_t *errmsg = NULL;
 	check_tank_opt_t opts = {
 		.engine = TANK_COMPRESS_BZIP
 	};
-	log_unit("%-64.64s", "TANK / BZIP / MULTITHREADED:");
-	outcome = check_tokyo_tank_mthread(&opts);
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, "check_tokyo_tank_mthread failed");
+
+	if (!check_tokyo_tank_mthread(&opts)) {
+		outcome = false;
+		errmsg = NULLER("The multi-threaded BZIP storage tank test failed.");
+	}
+
+	log_test("TANK / BZIP / MULTITHREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
 	tank_maintain();
 
 }
@@ -220,69 +282,71 @@ END_TEST
 
 //! Cryptography Tests
 START_TEST (check_ecies_s) {
-	bool_t outcome;
-	log_unit("%-64.64s", "CRYPTOGRAPHY / ECIES / SINGLE THREADED:");
-	outcome = check_ecies_sthread();
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, "check_ecies_sthread failed");
+
+	log_disable();
+	bool_t outcome = true;
+	stringer_t *errmsg = NULL;
+
+	if (!check_ecies_sthread()) {
+		outcome = false;
+		errmsg = NULLER("The ECIES test failed.");
+	}
+
+	log_test("CRYPTOGRAPHY / ECIES / SINGLE THREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
 
 START_TEST (check_hash_s) {
+
+	log_disable();
 	bool_t outcome = true;
-	chr_t errmsg[1024];
+	chr_t errbuffer[1024];
 
 	// Note that MD2 and WHIRLPOOL are not available. Although WHIRLPOOL may be available as whirlpool.
 	chr_t *digest_list[] = {
 		"MD4", "MD5", "SHA", "SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "RIPEMD160"
 	};
 
-	mm_wipe(errmsg, sizeof(errmsg));
-
-	log_unit("%-64.64s", "CRYPTOGRAPHY / HASH / SINGLE THREADED:");
+	mm_wipe(errbuffer, sizeof(errbuffer));
 
 	if (status() && !(outcome = check_hash_simple())) {
-		snprintf(errmsg, 1024, "digest methods failed to return the expected result...");
+		snprintf(errbuffer, 1024, "digest methods failed to return the expected result...");
 	}
 
 	for (uint64_t i = 0; status() && outcome == true && i < (sizeof(digest_list) / sizeof(chr_t *)); i++) {
 		if (!(outcome = check_hash_sthread(digest_list[i]))) {
-			snprintf(errmsg, 1024, "%s failed...", digest_list[i]);
+			snprintf(errbuffer, 1024, "%s failed...", digest_list[i]);
 		}
 	}
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, errmsg);
+
+	log_test("CRYPTOGRAPHY / HASH / SINGLE THREADED:", NULLER(errbuffer));
+	ck_assert_msg(outcome, errbuffer);
 }
 END_TEST
 
 START_TEST (check_hmac_s) {
 
+	log_disable();
 	bool_t outcome = true;
-
 	bool_t (*checks[])(void) = {
 		&check_hmac_parameters,
 		&check_hmac_simple
 	};
-
 	stringer_t *err = NULL;
-
 	stringer_t *errors[] = {
 		NULLER("check_hmac_parameters failed"),
 		NULLER("check_hmac_simple failed")
 	};
 
-	log_unit("%-64.64s", "CRYPTOGRAPHY / HMAC / SINGLE THREADED:");
-
 	for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof((checks)[0]); ++i) {
-		log_disable();
 		if(!(outcome = checks[i]())) {
 			err = errors[i];
 		}
-		log_enable();
 	}
 
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, st_data_get(err));
+	log_test("CRYPTOGRAPHY / HMAC / SINGLE THREADED:", err);
+	ck_assert_msg(outcome, st_char_get(err));
 }
 END_TEST
 
@@ -327,41 +391,43 @@ START_TEST (check_symmetric_s) {
 END_TEST
 
 START_TEST (check_scramble_s) {
-	bool_t outcome;
 
-	log_unit("%-64.64s", "CRYPTOGRAPHY / SCRAMBLE / SINGLE THREADED:");
-	outcome = check_scramble_sthread();
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, "check_scramble_sthread failed");
+	log_disable();
+	bool_t outcome;
+	stringer_t *errmsg = NULL;
+
+	if (!check_scramble_sthread()) {
+		outcome = false;
+		errmsg = NULLER("Failed to check scrable single-threaded.");
+	}
+
+	log_test("CRYPTOGRAPHY / SCRAMBLE / SINGLE THREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
 
 START_TEST (check_rand_s) {
 
+	log_disable();
 	stringer_t *errmsg = NULL;
-	log_unit("%-64.64s", "CRYPTOGRAPHY / RAND / SINGLE THREADED:");
 
-	if (status()) {
-		errmsg = check_rand_sthread();
-	}
+	errmsg = check_rand_sthread();
 
-	log_unit("%10.10s\n", (!errmsg ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(!errmsg, st_char_get(errmsg));
+	log_test("CRYPTOGRAPHY / RAND / SINGLE THREADED:", errmsg);
+	ck_assert_msg(!errmsg, st_char_get(errmsg));
 	st_cleanup(errmsg);
 }
 END_TEST
 
 START_TEST (check_rand_m) {
 
+	log_disable();
 	stringer_t *errmsg = NULL;
-	log_unit("%-64.64s", "CRYPTOGRAPHY / RAND / MULTITHREADED:");
 
-	if (status()) {
-		errmsg = check_rand_mthread();
-	}
+	errmsg = check_rand_mthread();
 
-	log_unit("%10.10s\n", (!errmsg ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(!errmsg, st_char_get(errmsg));
+	log_test("CRYPTOGRAPHY / RAND / MULTITHREADED:", errmsg);
+	ck_assert_msg(!errmsg, st_char_get(errmsg));
 	st_cleanup(errmsg);
 }
 END_TEST
@@ -433,62 +499,57 @@ END_TEST
 //! Virus Checker Tests
 START_TEST (check_virus_s) {
 
-	chr_t *errmsg = NULL;
-	log_unit("%-64.64s", "CHECKERS / VIRUS / SINGLE THREADED:");
+	log_disable();
+	stringer_t *errmsg = NULL;
 
-
-	if (status() && magma.iface.virus.available) {
-		log_disable();
-		errmsg = check_virus_sthread(virus_check_data_path);
-		log_enable();
+	if (magma.iface.virus.available) {
+		errmsg = NULLER(check_virus_sthread(virus_check_data_path));
 	}
 
-	log_unit("%10.10s\n", (!errmsg ? (status() && magma.iface.virus.available ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(!errmsg, errmsg);
-
+	log_test("CHECKERS / VIRUS / SINGLE THREADED:", status() ? errmsg  : NULLER("SKIPPED"));
+	ck_assert_msg(!magma.iface.virus.available, NULLER("The virus checker test failed."));
 }
 END_TEST
 
 //! Spam Checker Tests
 START_TEST (check_dspam_mail_s) {
 
+	log_disable();
 	bool_t outcome = true;
+	stringer_t *errmsg = NULL;
 
-	log_unit("%-64.64s", "CHECKERS / DSPAM / MAIL / SINGLE THREADED:");
-
-	if (status()) {
-		outcome = check_dspam_mail_sthread(NULL);
+	if (status() && !check_dspam_mail_sthread(NULL)) {
+		outcome = false;
+		errmsg = NULLER("check_dspam_mail_s failed");
 	}
 
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, "check_dspam_mail_s failed");
+	log_test("CHECKERS / DSPAM / MAIL / SINGLE THREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
 
 START_TEST (check_dspam_bin_s) {
 
+	log_disable();
 	bool_t outcome = true;
+	stringer_t *errmsg = NULL;
 
-	log_unit("%-64.64s", "CHECKERS / DSPAM / BINARY / SINGLE THREADED:");
-
-	if (status()) {
-		log_disable();
-		outcome = check_dspam_binary_sthread(NULL);
-		log_enable();
+	if (status() && !check_dspam_binary_sthread(NULL)) {
+		outcome = false;
+		errmsg = NULLER("check_dspam_bin_s failed");
 	}
 
-	log_unit("%10.10s\n", (outcome ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-	fail_unless(outcome, "check_dspam_bin_s failed");
+	log_test("CHECKERS / DSPAM / BINARY / SINGLE THREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
 
 //! DKIM Tests
 START_TEST (check_dkim_s) {
 
+	log_disable();
 	bool_t result = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
-
-	log_disable();
 
 	// If the DKIM engine isn't enabled, then we'll skip the unit test.
 	if (!(result = magma.dkim.enabled)) st_sprint(errmsg, "SKIPPED");
@@ -506,6 +567,7 @@ END_TEST
 //! Encoding/Parser Tests
 START_TEST (check_unicode_s) {
 
+	log_disable();
 	bool_t result = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 

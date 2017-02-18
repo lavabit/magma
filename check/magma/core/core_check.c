@@ -49,92 +49,94 @@ END_TEST
 
 START_TEST (check_compare) {
 
-		bool_t result;
-		char *errmsg = NULL;
-		log_unit("%-64.64s", "CORE / STRINGS / COMPARE / SINGLE THREADED:");
+	log_disable();
+	stringer_t *errmsg = NULL;
 
-		if (st_cmp_cs_eq(NULLER(type(M_TYPE_MULTI)), CONSTANT("M_TYPE_MULTI")))
-			errmsg = "type() did not return M_TYPE_MULTI";
+	log_unit("%-64.64s", "CORE / STRINGS / COMPARE / SINGLE THREADED:");
 
-		else if (st_cmp_cs_eq(NULLER(type(M_TYPE_ENUM)), CONSTANT("M_TYPE_ENUM")))
-			errmsg = "type() did not return M_TYPE_ENUM";
-		else if (st_cmp_cs_eq(NULLER(type(M_TYPE_BOOLEAN)), CONSTANT("M_TYPE_BOOLEAN")))
-			errmsg = "type() did not return M_TYPE_BOOLEAN";
-		else if (st_cmp_cs_eq(NULLER(type(M_TYPE_BLOCK)), CONSTANT("M_TYPE_BLOCK")))
-			errmsg = "type() did not return M_TYPE_BLOCK";
-		else if (st_cmp_cs_eq(NULLER(type(M_TYPE_NULLER)), CONSTANT("M_TYPE_NULLER")))
-			errmsg = "type() did not return M_TYPE_NULLER";
-		else if (st_cmp_cs_eq(NULLER(type(M_TYPE_PLACER)), CONSTANT("M_TYPE_PLACER")))
-			errmsg = "type() did not return M_TYPE_PLACER";
-		else if (st_cmp_cs_eq(NULLER(type(M_TYPE_STRINGER)), CONSTANT("M_TYPE_STRINGER")))
-			errmsg = "type() did not return M_TYPE_STRINGER";
+	if (st_cmp_cs_eq(NULLER(type(M_TYPE_MULTI)), CONSTANT("M_TYPE_MULTI")))
+		errmsg = NULLER("type() did not return M_TYPE_MULTI");
 
-		else if (st_cmp_cs_eq(NULLER(type(M_TYPE_INT8)), CONSTANT("M_TYPE_INT8")))
-			errmsg = "type() did not return M_TYPE_INT8";
-		else if (st_cmp_cs_eq(NULLER(type(M_TYPE_INT16)), CONSTANT("M_TYPE_INT16")))
-			errmsg = "type() did not return M_TYPE_INT16";
-		else if (st_cmp_cs_eq(NULLER(type(M_TYPE_INT32)), CONSTANT("M_TYPE_INT32")))
-			errmsg = "type() did not return M_TYPE_INT32";
-		else if (st_cmp_cs_eq(NULLER(type(M_TYPE_INT64)), CONSTANT("M_TYPE_INT64")))
-			errmsg = "type() did not return M_TYPE_INT64";
+	else if (st_cmp_cs_eq(NULLER(type(M_TYPE_ENUM)), CONSTANT("M_TYPE_ENUM")))
+		errmsg = NULLER("type() did not return M_TYPE_ENUM");
+	else if (st_cmp_cs_eq(NULLER(type(M_TYPE_BOOLEAN)), CONSTANT("M_TYPE_BOOLEAN")))
+		errmsg = NULLER("type() did not return M_TYPE_BOOLEAN");
+	else if (st_cmp_cs_eq(NULLER(type(M_TYPE_BLOCK)), CONSTANT("M_TYPE_BLOCK")))
+		errmsg = NULLER("type() did not return M_TYPE_BLOCK");
+	else if (st_cmp_cs_eq(NULLER(type(M_TYPE_NULLER)), CONSTANT("M_TYPE_NULLER")))
+		errmsg = NULLER("type() did not return M_TYPE_NULLER");
+	else if (st_cmp_cs_eq(NULLER(type(M_TYPE_PLACER)), CONSTANT("M_TYPE_PLACER")))
+		errmsg = NULLER("type() did not return M_TYPE_PLACER");
+	else if (st_cmp_cs_eq(NULLER(type(M_TYPE_STRINGER)), CONSTANT("M_TYPE_STRINGER")))
+		errmsg = NULLER("type() did not return M_TYPE_STRINGER");
 
-		else if (st_cmp_cs_eq(NULLER(type(M_TYPE_UINT8)), CONSTANT("M_TYPE_UINT8")))
-			errmsg = "type() did not return M_TYPE_UINT8";
-		else if (st_cmp_cs_eq(NULLER(type(M_TYPE_UINT16)), CONSTANT("M_TYPE_UINT16")))
-			errmsg = "type() did not return M_TYPE_UINT16";
-		else if (st_cmp_cs_eq(NULLER(type(M_TYPE_UINT32)), CONSTANT("M_TYPE_UINT32")))
-			errmsg = "type() did not return M_TYPE_UINT32";
-		else if (st_cmp_cs_eq(NULLER(type(M_TYPE_UINT64)), CONSTANT("M_TYPE_UINT64")))
-			errmsg = "type() did not return M_TYPE_UINT64";
+	else if (st_cmp_cs_eq(NULLER(type(M_TYPE_INT8)), CONSTANT("M_TYPE_INT8")))
+		errmsg = NULLER("type() did not return M_TYPE_INT8");
+	else if (st_cmp_cs_eq(NULLER(type(M_TYPE_INT16)), CONSTANT("M_TYPE_INT16")))
+		errmsg = NULLER("type() did not return M_TYPE_INT16");
+	else if (st_cmp_cs_eq(NULLER(type(M_TYPE_INT32)), CONSTANT("M_TYPE_INT32")))
+		errmsg = NULLER("type() did not return M_TYPE_INT32");
+	else if (st_cmp_cs_eq(NULLER(type(M_TYPE_INT64)), CONSTANT("M_TYPE_INT64")))
+		errmsg = NULLER("type() did not return M_TYPE_INT64");
 
-		else if (st_cmp_cs_eq(NULLER(type(M_TYPE_FLOAT)), CONSTANT("M_TYPE_FLOAT")))
-			errmsg = "type() did not return M_TYPE_FLOAT";
-		else if (st_cmp_cs_eq(NULLER(type(M_TYPE_DOUBLE)), CONSTANT("M_TYPE_DOUBLE"))) errmsg = "type() did not return M_TYPE_DOUBLE";
+	else if (st_cmp_cs_eq(NULLER(type(M_TYPE_UINT8)), CONSTANT("M_TYPE_UINT8")))
+		errmsg = NULLER("type() did not return M_TYPE_UINT8");
+	else if (st_cmp_cs_eq(NULLER(type(M_TYPE_UINT16)), CONSTANT("M_TYPE_UINT16")))
+		errmsg = NULLER("type() did not return M_TYPE_UINT16");
+	else if (st_cmp_cs_eq(NULLER(type(M_TYPE_UINT32)), CONSTANT("M_TYPE_UINT32")))
+		errmsg = NULLER("type() did not return M_TYPE_UINT32");
+	else if (st_cmp_cs_eq(NULLER(type(M_TYPE_UINT64)), CONSTANT("M_TYPE_UINT64")))
+		errmsg = NULLER("type() did not return M_TYPE_UINT64");
 
-		result = errmsg ? false : true;
-		log_unit("%10.10s\n", (result ? "PASSED" : "FAILED"));
-		fail_unless(result, errmsg);
+	else if (st_cmp_cs_eq(NULLER(type(M_TYPE_FLOAT)), CONSTANT("M_TYPE_FLOAT")))
+		errmsg = NULLER("type() did not return M_TYPE_FLOAT");
+	else if (st_cmp_cs_eq(NULLER(type(M_TYPE_DOUBLE)), CONSTANT("M_TYPE_DOUBLE")))
+		errmsg = NULLER("type() did not return M_TYPE_DOUBLE");
 
-	}
+	log_test("CORE / STRINGS / COMPARE / SINGLE THREADED:", errmsg);
+	ck_assert_msg(errmsg, st_char_get(errmsg));
+}
 END_TEST
 
-START_TEST (check_inx_linked_s)
-	{
+START_TEST (check_inx_linked_s) {
 
-		bool_t result = true;
-		char *errmsg = NULL;
-		log_unit("%-64.64s", "CORE / INDEX / LINKED / SINGLE THREADED:");
-		if (status()) {
-			result = check_indexes_linked_simple(&errmsg);
-		}
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, errmsg);
-	}
+	log_disable();
+	stringer_t *errmsg = NULL;
+
+	check_indexes_linked_simple(&errmsg);
+
+	log_test("CORE / INDEX / LINKED / SINGLE THREADED:", errmsg);
+	ck_assert_msg(errmsg, st_char_get(errmsg));
+}
 END_TEST
 
-START_TEST (check_inx_linked_m)
-	{
-		bool_t result = true;
-		check_inx_opt_t *opts = NULL;
+// TODO
+START_TEST (check_inx_linked_m) {
 
-		log_unit("%-64.64s", "CORE / INDEX / LINKED / MULTITHREADED:");
+	log_disable();
+	bool_t outcome = true;
+	stringer_t *errmsg = NULL;
+	check_inx_opt_t *opts = NULL;
 
-		if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(M_INX_LINKED, &mm_free)))) {
-			result = false;
-		}
-		else if (status()) {
-			opts->type = M_INX_LINKED;
-			result = check_inx_mthread(opts);
-		}
+	log_unit("%-64.64s", "CORE / INDEX / LINKED / MULTITHREADED:");
 
-		if (opts) {
-			inx_cleanup(opts->inx);
-			mm_free(opts);
-		}
-
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, "check_inx_linked_m failed");
+	if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(M_INX_LINKED, &mm_free)))) {
+		outcome = false;
+		errmsg = NULLER("Index linked ")
 	}
+	else if (status()) {
+		opts->type = M_INX_LINKED;
+		outcome = check_inx_mthread(opts);
+	}
+
+	if (opts) {
+		inx_cleanup(opts->inx);
+		mm_free(opts);
+	}
+
+	log_test("CORE / INDEX / LINKED / SINGLE THREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
+}
 END_TEST
 
 START_TEST (check_inx_tree_s)

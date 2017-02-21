@@ -520,7 +520,7 @@ START_TEST (check_dspam_mail_s) {
 
 	if (status() && !check_dspam_mail_sthread()) {
 		outcome = false;
-		errmsg = NULLER("check_dspam_mail_s failed");
+		errmsg = NULLER("The check_dspam_mail_s test failed");
 	}
 
 	log_test("CHECKERS / DSPAM / MAIL / SINGLE THREADED:", errmsg);

@@ -9,7 +9,7 @@
 
 int_t case_timeout = RUN_TEST_CASE_TIMEOUT;
 bool_t do_virus_check = true, do_tank_check = true, do_dspam_check = true, do_spf_check = true;
-chr_t *virus_check_data_path = NULL, *tank_check_data_path = NULL, *dspam_check_data_path = NULL, *barrister_unit_test = NULL;
+chr_t *barrister_unit_test = NULL;
 
 /**
  * @brief Enable the log so we can print status information. We're only concerned with whether the
@@ -188,27 +188,6 @@ int_t check_args_parse(int argc, char *argv[]) {
 			}
 
 		}
-		else if (!st_cmp_cs_eq(NULLER(argv[i]), PLACER("--virus-path", 12))) {
-
-			if (!(virus_check_data_path = check_next_opt(argv, &i, argc))) {
-				do_virus_check = false;
-			}
-
-		}
-		else if (!st_cmp_cs_eq(NULLER(argv[i]), PLACER("--tank-path", 11))) {
-
-			if (!(tank_check_data_path = check_next_opt(argv, &i, argc))) {
-				do_tank_check = false;
-			}
-
-		}
-		else if (!st_cmp_cs_eq(NULLER(argv[i]), PLACER("--dspam-path", 12))) {
-
-			if (!(dspam_check_data_path = check_next_opt(argv, &i, argc))) {
-				do_dspam_check = false;
-			}
-
-		}
 		else if (!st_cmp_cs_eq(NULLER(argv[i]), PLACER("--disable-spf", 13))) {
 			do_spf_check = false;
 			i++;
@@ -256,24 +235,10 @@ int main(int argc, char *argv[]) {
 	if ((result = check_args_parse(argc, argv)) != 1) {
 		exit(result ? EXIT_FAILURE : EXIT_SUCCESS);
 	}
-
-	if (do_virus_check && !virus_check_data_path) {
-		virus_check_data_path = ns_dupe(VIRUS_CHECK_DATA_PATH);
-	}
-
-	if (do_tank_check && !tank_check_data_path) {
-		tank_check_data_path = ns_dupe(TANK_CHECK_DATA_PATH);
-	}
-
-	if (do_dspam_check && !dspam_check_data_path) {
-		dspam_check_data_path = ns_dupe(DSPAM_CHECK_DATA_PATH);
-	}
-
 	if (!process_start()) {
 		log_error("Initialization error. Exiting.\n");
 		status_set(-1);
 		process_stop();
-		ns_cleanup( virus_check_data_path, tank_check_data_path, dspam_check_data_path);
 		exit(EXIT_FAILURE);
 	}
 	// Only during development...
@@ -343,7 +308,7 @@ int main(int argc, char *argv[]) {
 	// Cleanup and free the resources allocated by the magma code.
 	process_stop();
 
-	ns_cleanup(barrister_unit_test, virus_check_data_path, tank_check_data_path, dspam_check_data_path);
+	ns_cleanup(barrister_unit_test);
 	exit((failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE);
 
 }

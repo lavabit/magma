@@ -503,7 +503,7 @@ START_TEST (check_virus_s) {
 	stringer_t *errmsg = NULL;
 
 	if (magma.iface.virus.available) {
-		errmsg = NULLER(check_virus_sthread(virus_check_data_path));
+		errmsg = NULLER(check_virus_sthread());
 	}
 
 	log_test("CHECKERS / VIRUS / SINGLE THREADED:", status() ? errmsg  : NULLER("SKIPPED"));
@@ -518,7 +518,7 @@ START_TEST (check_dspam_mail_s) {
 	bool_t outcome = true;
 	stringer_t *errmsg = NULL;
 
-	if (status() && !check_dspam_mail_sthread(NULL)) {
+	if (status() && !check_dspam_mail_sthread()) {
 		outcome = false;
 		errmsg = NULLER("check_dspam_mail_s failed");
 	}
@@ -534,7 +534,7 @@ START_TEST (check_dspam_bin_s) {
 	bool_t outcome = true;
 	stringer_t *errmsg = NULL;
 
-	if (status() && !check_dspam_binary_sthread(NULL)) {
+	if (status() && !check_dspam_binary_sthread()) {
 		outcome = false;
 		errmsg = NULLER("check_dspam_bin_s failed");
 	}

@@ -76,15 +76,11 @@ Suite * suite_check_sample(void);
 #define TANK_CHECK_DATA_UNUM 1L
 #define TANK_CHECK_DATA_MTHREADS 2 // Disabled
 #define TANK_CHECK_DATA_CLEANUP true
-#define TANK_CHECK_DATA_PATH "dev/corpus/"
 
 #define DSPAM_CHECK_SIZE_MIN 1024
 #define DSPAM_CHECK_SIZE_MAX (2 * 1024)
 #define DSPAM_CHECK_DATA_UNUM 1L
 #define DSPAM_CHECK_ITERATIONS 128
-#define DSPAM_CHECK_DATA_PATH "dev/corpus/"
-
-#define VIRUS_CHECK_DATA_PATH "dev/corpus/"
 
 // Controls the size of the compression test block.
 #define COMPRESS_CHECK_SIZE_MIN 1024 // 1 kilobyte
@@ -153,16 +149,12 @@ Suite * suite_check_sample(void);
 #define TANK_CHECK_DATA_UNUM 1L
 #define TANK_CHECK_DATA_MTHREADS 8
 #define TANK_CHECK_DATA_CLEANUP true
-#define TANK_CHECK_DATA_PATH "dev/corpus"
 
 #define DSPAM_CHECK_DATA_UNUM 1L
 #define DSPAM_CHECK_ITERATIONS 8192
 #define DSPAM_CHECK_SIZE_MIN 1024
 #define DSPAM_CHECK_SIZE_MAX (16 * 1024)
 //#define DSPAM_CHECK_SIZE_MAX (1 * 1024 * 1024) // 1 megabyte
-#define DSPAM_CHECK_DATA_PATH "dev/corpus"
-
-#define VIRUS_CHECK_DATA_PATH "dev/corpus"
 
 #define COMPRESS_CHECK_MTHREADS 8
 #define COMPRESS_CHECK_ITERATIONS 256

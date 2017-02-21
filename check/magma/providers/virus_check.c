@@ -7,7 +7,7 @@
 
 #include "magma_check.h"
 
-chr_t * check_virus_sthread() {
+chr_t * check_virus_sthread(void) {
 
 	stringer_t *data = NULL;
 	uint32_t max = check_message_max();

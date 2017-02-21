@@ -63,7 +63,7 @@ bool_t check_dspam_mail_sthread(void) {
 		}
 
 		// Process the email message.
-		if ((outcome = dspam_check(DSPAM_CHECK_DATA_UNUM, st_char_get(data), &signature)) == -1 || !signature) {
+		if ((outcome = dspam_check(DSPAM_CHECK_DATA_UNUM, data, &signature)) == -1 || !signature) {
 			log_unit("There was a dspam_check error. { message = %i }", i);
 			st_cleanup(signature);
 			st_cleanup(data);

@@ -94,19 +94,19 @@ START_TEST (check_compare) {
 		errmsg = NULLER("type() did not return M_TYPE_DOUBLE");
 
 	log_test("CORE / STRINGS / COMPARE / SINGLE THREADED:", errmsg);
-	ck_assert_msg(errmsg, st_char_get(errmsg));
+	ck_assert_msg(!errmsg, st_char_get(errmsg));
 }
 END_TEST
 
 START_TEST (check_inx_linked_s) {
 
 	log_disable();
-	stringer_t *errmsg = NULL;
+	char *errmsg = NULL;
 
 	check_indexes_linked_simple(&errmsg);
 
-	log_test("CORE / INDEX / LINKED / SINGLE THREADED:", errmsg);
-	ck_assert_msg(errmsg, st_char_get(errmsg));
+	log_test("CORE / INDEX / LINKED / SINGLE THREADED:", NULLER(errmsg));
+	ck_assert_msg(NULLER(errmsg), errmsg);
 }
 END_TEST
 
@@ -118,11 +118,9 @@ START_TEST (check_inx_linked_m) {
 	stringer_t *errmsg = NULL;
 	check_inx_opt_t *opts = NULL;
 
-	log_unit("%-64.64s", "CORE / INDEX / LINKED / MULTITHREADED:");
-
 	if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(M_INX_LINKED, &mm_free)))) {
 		outcome = false;
-		errmsg = NULLER("Index linked ")
+		errmsg = NULLER("Index linked");
 	}
 	else if (status()) {
 		opts->type = M_INX_LINKED;
@@ -134,755 +132,715 @@ START_TEST (check_inx_linked_m) {
 		mm_free(opts);
 	}
 
-	log_test("CORE / INDEX / LINKED / SINGLE THREADED:", errmsg);
+	log_test("CORE / INDEX / LINKED / MULTITHREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
 
-START_TEST (check_inx_tree_s)
-	{
-		bool_t result = true;
-		char *errmsg = NULL;
-		log_unit("%-64.64s", "CORE / INDEX / TREE / SINGLE THREADED:");
-		if (status()) {
-			result = check_indexes_tree_simple(&errmsg);
-		}
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, errmsg);
+START_TEST (check_inx_tree_s) {
+
+	log_disable();
+	bool_t outcome = true;
+	char *errmsg = NULL;
+
+	if (!check_indexes_tree_simple(&errmsg)) {
+		outcome = false;
 	}
+
+	log_test("CORE / INDEX / TREE / SINGLE THREADED:", NULLER(errmsg));
+	ck_assert_msg(outcome, errmsg);
+}
 END_TEST
 
-START_TEST (check_inx_tree_m)
-	{
-		bool_t result = true;
-		check_inx_opt_t *opts = NULL;
+START_TEST (check_inx_tree_m) {
 
-		log_unit("%-64.64s", "CORE / INDEX / TREE / MULTITHREADED:");
+	log_disable();
+	bool_t outcome = true;
+	stringer_t *errmsg = NULL;
+	check_inx_opt_t *opts = NULL;
 
-		if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(M_INX_TREE, &mm_free)))) {
-			result = false;
-		}
-		else if (status()) {
-			result = check_inx_mthread(opts);
-		}
-
-		if (opts) {
-			inx_cleanup(opts->inx);
-			mm_free(opts);
-		}
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, "check_inx_tree_m failed");
+	if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(M_INX_TREE, &mm_free)))) {
+		outcome = false;
+		errmsg = NULLER("The check index tree multi-threaded test failed.");
 	}
+	else if (status()) {
+		outcome = check_inx_mthread(opts);
+	}
+
+	if (opts) {
+		inx_cleanup(opts->inx);
+		mm_free(opts);
+	}
+
+	log_test("CORE / INDEX / TREE / MULTITHREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
+}
 END_TEST
 
-START_TEST (check_inx_hashed_s)
-	{
-		bool_t result = true;
-		char *errmsg = NULL;
-		log_unit("%-64.64s", "CORE / INDEX / HASHED / SINGLE THREADED:");
-		if (status()) {
-			result = check_indexes_hashed_simple(&errmsg);
-		}
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, errmsg);
+START_TEST (check_inx_hashed_s) {
+
+	log_disable();
+	bool_t outcome = true;
+	char *errmsg = NULL;
+
+	if (!check_indexes_hashed_simple(&errmsg)) {
+		outcome = false;
 	}
+
+	log_test("CORE / INDEX / HASHED / SINGLE THREADED:", NULLER(errmsg));
+	ck_assert_msg(outcome, errmsg);
+}
 END_TEST
 
-START_TEST (check_inx_hashed_m)
-	{
-		bool_t result = true;
-		check_inx_opt_t *opts = NULL;
+START_TEST (check_inx_hashed_m) {
 
-		log_unit("%-64.64s", "CORE / INDEX / HASHED / MULTITHREADED:");
+	log_disable();
+	bool_t outcome = true;
+	stringer_t *errmsg = NULL;
+	check_inx_opt_t *opts = NULL;
 
-		if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(M_INX_HASHED, &mm_free)))) {
-			result = false;
-		}
-		else if (status()) {
-			result = check_inx_mthread(opts);
-		}
-
-		if (opts) {
-			inx_cleanup(opts->inx);
-			mm_free(opts);
-		}
-
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, "check_inx_hashed_m failed");
+	if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(M_INX_HASHED, &mm_free)))) {
+		outcome = false;
+		errmsg = NULLER("The check index hashed multi-threaded test failed.");
 	}
+	else if (!check_inx_mthread(opts)) {
+		outcome = false;
+		errmsg = NULLER("The check index hashed multi-threaded test failed.");
+	}
+
+	if (opts) {
+		inx_cleanup(opts->inx);
+		mm_free(opts);
+	}
+
+	log_test("CORE / INDEX / HASHED / MULTITHREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
+}
 END_TEST
 
-START_TEST (check_inx_linked_cursor_s)
-	{
-		bool_t result = true;
-		char *errmsg = NULL;
-		log_unit("%-64.64s", "CORE / INDEX / LINKED CURSOR / SINGLE THREADED:");
-		if (status()) {
-			result = check_indexes_linked_cursor(&errmsg);
-		}
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, errmsg);
-	}
+START_TEST (check_inx_linked_cursor_s) {
+
+	log_disable();
+	bool_t outcome = true;
+	char *errmsg = NULL;
+
+	outcome = check_indexes_linked_cursor(&errmsg);
+
+	log_test("CORE / INDEX / LINKED CURSOR / SINGLE THREADED:", NULLER(errmsg));
+	ck_assert_msg(outcome, errmsg);
+}
 END_TEST
 
-START_TEST (check_inx_linked_cursor_m)
-	{
-		bool_t result = true;
-		check_inx_opt_t *opts = NULL;
+START_TEST (check_inx_linked_cursor_m) {
 
-		log_unit("%-64.64s", "CORE / INDEX / LINKED CURSOR / MULTITHREADED:");
+	log_disable();
+	bool_t outcome = true;
+	stringer_t *errmsg = NULL;
+	check_inx_opt_t *opts = NULL;
 
-		if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(M_INX_LINKED, &mm_free)) || !check_inx_mthread(opts))) {
-			result = false;
-		}
-		else if (status()) {
-			result = check_inx_cursor_mthread(opts);
-		}
 
-		if (opts) {
-			inx_cleanup(opts->inx);
-			mm_free(opts);
-		}
-
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, "check_inx_linked_cursor_m failed");
+	if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(M_INX_LINKED, &mm_free)) || !check_inx_mthread(opts))) {
+		outcome = false;
+		errmsg = NULLER("The check index linked cursor multi-threaded test failed.");
 	}
+	else if (!check_inx_cursor_mthread(opts)) {
+		outcome = false;
+		errmsg = NULLER("The check index linked cursor multi-threaded test failed.");
+	}
+
+	if (opts) {
+		inx_cleanup(opts->inx);
+		mm_free(opts);
+	}
+
+	log_test("CORE / INDEX / LINKED CURSOR / MULTITHREADED:", NULLER(errmsg));
+	ck_assert_msg(outcome, errmsg);
+}
 END_TEST
 
-START_TEST (check_inx_tree_cursor_s)
-	{
-		bool_t result = true;
-		char *errmsg = NULL;
-		log_unit("%-64.64s", "CORE / INDEX / TREE CURSOR / SINGLE THREADED:");
-		if (status()) {
-			result = check_indexes_tree_cursor(&errmsg);
-		}
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, errmsg);
+START_TEST (check_inx_tree_cursor_s) {
+
+	log_disable();
+	bool_t outcome = true;
+	char *errmsg = NULL;
+
+	if (!check_indexes_tree_cursor(&errmsg)) {
+		outcome = false;
 	}
+
+	log_test("CORE / INDEX / TREE CURSOR / SINGLE THREADED:", NULLER(errmsg));
+	ck_assert_msg(outcome, errmsg);
+}
 END_TEST
 
-START_TEST (check_inx_tree_cursor_m)
-	{
-		bool_t result = true;
-		check_inx_opt_t *opts = NULL;
+START_TEST (check_inx_tree_cursor_m) {
 
-		log_unit("%-64.64s", "CORE / INDEX / TREE CURSOR / MULTITHREADED:");
+	log_disable();
+	bool_t outcome = true;
+	stringer_t *errmsg = NULL;
+	check_inx_opt_t *opts = NULL;
 
-		if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(M_INX_TREE, &mm_free)) || !check_inx_mthread(opts))) {
-			result = false;
-		}
-		else if (status()) {
-			result = check_inx_cursor_mthread(opts);
-		}
-
-		if (opts) {
-			inx_cleanup(opts->inx);
-			mm_free(opts);
-		}
-
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, "check_inx_tree_cursor_m failed");
+	if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(M_INX_TREE, &mm_free)) || !check_inx_mthread(opts))) {
+		outcome = false;
+		errmsg = NULLER("The check index linked cursor multi-threaded test failed.");
 	}
+	else if (!check_inx_cursor_mthread(opts)) {
+		outcome = false;
+		errmsg = NULLER("The check index linked cursor multi-threaded test failed.");
+	}
+
+	if (opts) {
+		inx_cleanup(opts->inx);
+		mm_free(opts);
+	}
+
+	log_test("CORE / INDEX / TREE CURSOR / MULTITHREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
+}
 END_TEST
 
-START_TEST (check_inx_hashed_cursor_s)
-	{
-		bool_t result = true;
-		char *errmsg = NULL;
-		log_unit("%-64.64s", "CORE / INDEX / HASHED CURSOR / SINGLE THREADED:");
-		if (status()) {
-			result = check_indexes_hashed_cursor(&errmsg);
-		}
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, errmsg);
+START_TEST (check_inx_hashed_cursor_s) {
+
+	log_disable();
+	bool_t outcome = true;
+	char *errmsg = NULL;
+
+	if (!check_indexes_hashed_cursor(&errmsg)) {
+		outcome = false;
 	}
+
+	log_test("CORE / INDEX / HASHED CURSOR / SINGLE THREADED:", NULLER(errmsg));
+	ck_assert_msg(outcome, errmsg);
+}
 END_TEST
 
-START_TEST (check_inx_hashed_cursor_m)
-	{
-		bool_t result = true;
-		check_inx_opt_t *opts = NULL;
+START_TEST (check_inx_hashed_cursor_m) {
 
-		log_unit("%-64.64s", "CORE / INDEX / HASHED CURSOR / MULTITHREADED:");
+	log_disable();
+	bool_t outcome = true;
+	stringer_t *errmsg = NULL;
+	check_inx_opt_t *opts = NULL;
 
-		if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(M_INX_HASHED, &mm_free)) || !check_inx_mthread(opts))) {
-			result = false;
-		}
-		else if (status()) {
-			result = check_inx_cursor_mthread(opts);
-		}
-
-		if (opts) {
-			inx_cleanup(opts->inx);
-			mm_free(opts);
-		}
-
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, "check_inx_hashed_cursor_m failed");
+	if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(M_INX_HASHED, &mm_free)) || !check_inx_mthread(opts))) {
+		outcome = false;
+		errmsg = NULLER("The check index hashed cursor multi-threaded test failed.");
 	}
+	else if (!check_inx_cursor_mthread(opts)) {
+		outcome = false;
+		errmsg = NULLER("The check index hashed cursor multi-threaded test failed.");
+	}
+
+	if (opts) {
+		inx_cleanup(opts->inx);
+		mm_free(opts);
+	}
+
+	log_test("CORE / INDEX / HASHED CURSOR / MULTITHREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
+}
 END_TEST
 
-START_TEST (check_constants)
-	{
+START_TEST (check_constants) {
 
-		uint64_t total;
-		char *errmsg = NULL;
-		bool_t result = true;
+	log_disable();
+	uint64_t total;
+	stringer_t *errmsg = NULL;
+	bool_t outcome = true;
 
-		log_unit("%-64.64s", "CORE / STRINGS / CONSTANTS / SINGLE THREADED:");
-
-		for (unsigned int i = total = 0; string_check_constant && i < st_length_get(string_check_constant); i++) {
-			total += *(st_char_get(string_check_constant) + i);
-		}
-
-		if (total != 5366) {
-			result = false;
-		}
-
-		log_unit("%10.10s\n", (result ? "PASSED" : "FAILED"));
-		fail_unless(result, errmsg);
+	for (unsigned int i = total = 0; string_check_constant && i < st_length_get(string_check_constant); i++) {
+		total += *(st_char_get(string_check_constant) + i);
 	}
+
+	if (total != 5366) {
+		outcome = false;
+		errmsg = NULLER("The single-threaded check string constants test failed.");
+	}
+
+	log_test("CORE / STRINGS / CONSTANTS / SINGLE THREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
+}
 END_TEST
 
 START_TEST (check_allocation) {
-	char *errmsg = NULL;
-	bool_t result = true;
 
-	log_unit("%-64.64s", "CORE / STRINGS / ALLOCATION / SINGLE THREADED:");
+	log_disable();
+	stringer_t *errmsg = NULL;
 
 	if (!check_string_alloc(NULLER_T | CONTIGUOUS | HEAP) || !check_string_alloc(BLOCK_T | CONTIGUOUS | HEAP) || !check_string_alloc(
-		MANAGED_T | CONTIGUOUS | HEAP)) errmsg = "Standard allocation checks failed.";
+		MANAGED_T | CONTIGUOUS | HEAP)) errmsg = NULLER("Standard allocation checks failed.");
 
 	if (!check_string_alloc(NULLER_T | JOINTED | HEAP) || !check_string_alloc(BLOCK_T | JOINTED | HEAP) || !check_string_alloc(
-		MANAGED_T | JOINTED | HEAP) || !check_string_alloc(MAPPED_T | JOINTED | HEAP)) errmsg = "Jointed allocation checks failed.";
+		MANAGED_T | JOINTED | HEAP) || !check_string_alloc(MAPPED_T | JOINTED | HEAP)) errmsg = NULLER("Jointed allocation checks failed.");
 
 	if (!check_string_alloc(NULLER_T | CONTIGUOUS | SECURE) || !check_string_alloc(BLOCK_T | CONTIGUOUS | SECURE) || !check_string_alloc(
-		MANAGED_T | CONTIGUOUS | SECURE)) errmsg = "Secure allocation of contiguous types failed.";
+		MANAGED_T | CONTIGUOUS | SECURE)) errmsg = NULLER("Secure allocation of contiguous types failed.");
 
 	if (!check_string_alloc(NULLER_T | JOINTED | SECURE) || !check_string_alloc(BLOCK_T | JOINTED | SECURE) || !check_string_alloc(
 		MANAGED_T | JOINTED | SECURE) || !check_string_alloc(MAPPED_T | JOINTED | SECURE)) errmsg
-		= "Secure allocation of jointed types failed.";
+		= NULLER("Secure allocation of jointed types failed.");
 
-	result = errmsg ? false : true;
-	log_unit("%10.10s\n", (result ? "PASSED" : "FAILED"));
-	fail_unless(result, errmsg);
+	log_test("CORE / STRINGS / ALLOCATION / SINGLE THREADED:", errmsg);
+	ck_assert_msg(!errmsg, st_char_get(errmsg));
 }
 END_TEST
 
 START_TEST (check_reallocation)	{
-	char *errmsg = NULL;
-	bool_t result = true;
 
-	log_unit("%-64.64s", "CORE / STRINGS / REALLOCATION / SINGLE THREADED:");
+	log_disable();
+	stringer_t *errmsg = NULL;
 
 	if (!check_string_realloc(NULLER_T | CONTIGUOUS | HEAP) || !check_string_realloc(BLOCK_T | CONTIGUOUS | HEAP) || !check_string_realloc(
-		MANAGED_T | CONTIGUOUS | HEAP)) errmsg = "Standard reallocation checks failed.";
+		MANAGED_T | CONTIGUOUS | HEAP)) errmsg = NULLER("Standard reallocation checks failed.");
 
 	if (!check_string_realloc(NULLER_T | JOINTED | HEAP) || !check_string_realloc(BLOCK_T | JOINTED | HEAP) || !check_string_realloc(
-		MANAGED_T | JOINTED | HEAP) || !check_string_realloc(MAPPED_T | JOINTED | HEAP)) errmsg = "Jointed reallocation checks failed.";
+		MANAGED_T | JOINTED | HEAP) || !check_string_realloc(MAPPED_T | JOINTED | HEAP)) errmsg = NULLER("Jointed reallocation checks failed.");
 
 	if (!check_string_realloc(NULLER_T | CONTIGUOUS | SECURE) || !check_string_realloc(BLOCK_T | CONTIGUOUS | SECURE)
-		|| !check_string_realloc(MANAGED_T | CONTIGUOUS | SECURE)) errmsg = "Secure reallocation of contiguous types failed.";
+		|| !check_string_realloc(MANAGED_T | CONTIGUOUS | SECURE)) errmsg = NULLER("Secure reallocation of contiguous types failed.");
 
 	if (!check_string_realloc(NULLER_T | JOINTED | SECURE) || !check_string_realloc(BLOCK_T | JOINTED | SECURE) || !check_string_realloc(
 		MANAGED_T | JOINTED | SECURE) || !check_string_realloc(MAPPED_T | JOINTED | SECURE)) errmsg
-		= "Secure reallocation of jointed types failed.";
+		= NULLER("Secure reallocation of jointed types failed.");
 
-	result = errmsg ? false : true;
-	log_unit("%10.10s\n", (result ? "PASSED" : "FAILED"));
-	fail_unless(result, errmsg);
+	log_test("CORE / STRINGS / REALLOCATION / SINGLE THREADED:", errmsg);
+	ck_assert_msg(!errmsg, st_char_get(errmsg));
 }
 END_TEST
 
 START_TEST (check_duplication) {
-	char *errmsg = NULL;
-	bool_t result = true;
 
-	log_unit("%-64.64s", "CORE / STRINGS / DUPLICATION / SINGLE THREADED:");
+	log_disable();
+	stringer_t *errmsg = NULL;
 
 	if (!check_string_dupe(NULLER_T | CONTIGUOUS | HEAP) || !check_string_dupe(BLOCK_T | CONTIGUOUS | HEAP) || !check_string_dupe(
-		MANAGED_T | CONTIGUOUS | HEAP)) errmsg = "Standard duplication checks failed.";
+		MANAGED_T | CONTIGUOUS | HEAP)) errmsg = NULLER("Standard duplication checks failed.");
 
 	if (!check_string_dupe(NULLER_T | JOINTED | HEAP) || !check_string_dupe(BLOCK_T | JOINTED | HEAP) || !check_string_dupe(
-		MANAGED_T | JOINTED | HEAP) || !check_string_dupe(MAPPED_T | JOINTED | HEAP)) errmsg = "Jointed duplication checks failed.";
+		MANAGED_T | JOINTED | HEAP) || !check_string_dupe(MAPPED_T | JOINTED | HEAP)) errmsg = NULLER("Jointed duplication checks failed.");
 
 	if (!check_string_dupe(NULLER_T | CONTIGUOUS | SECURE) || !check_string_dupe(BLOCK_T | CONTIGUOUS | SECURE) || !check_string_dupe(
-		MANAGED_T | CONTIGUOUS | SECURE)) errmsg = "Secure duplication of contiguous types failed.";
+		MANAGED_T | CONTIGUOUS | SECURE)) errmsg = NULLER("Secure duplication of contiguous types failed.");
 
 	if (!check_string_dupe(NULLER_T | JOINTED | SECURE) || !check_string_dupe(BLOCK_T | JOINTED | SECURE) || !check_string_dupe(
 		MANAGED_T | JOINTED | SECURE) || !check_string_dupe(MAPPED_T | JOINTED | SECURE)) errmsg
-		= "Secure duplication of jointed types failed.";
+		= NULLER("Secure duplication of jointed types failed.");
 
-	result = errmsg ? false : true;
-	log_unit("%10.10s\n", (result ? "PASSED" : "FAILED"));
-	fail_unless(result, errmsg);
+	log_test("CORE / STRINGS / DUPLICATION / SINGLE THREADED:", errmsg);
+	ck_assert_msg(!errmsg, st_char_get(errmsg));
 }
 END_TEST
 
 START_TEST (check_merge) {
-	char *errmsg = NULL;
-	bool_t result = true;
 
-	log_unit("%-64.64s", "CORE / STRINGS / MERGE / SINGLE THREADED:");
+	log_disable();
+	stringer_t *errmsg = NULL;
 
-	if (!check_string_merge()) errmsg = "The stringer merge function failed.";
+	if (!check_string_merge()) errmsg = NULLER("The stringer merge function failed.");
 
-	result = errmsg ? false : true;
-	log_unit("%10.10s\n", (result ? "PASSED" : "FAILED"));
-	fail_unless(result, errmsg);
+	log_test("CORE / STRINGS / MERGE / SINGLE THREADED:", errmsg);
+	ck_assert_msg(!errmsg, st_char_get(errmsg));
 }
 END_TEST
 
-START_TEST (check_print)
-	{
-		char *errmsg = NULL;
-		bool_t result = true;
+START_TEST (check_print) {
 
-		log_unit("%-64.64s", "CORE / STRINGS / PRINT / SINGLE THREADED:");
+	log_disable();
+	stringer_t *errmsg = NULL;
 
-		if (!check_string_print()) errmsg = "The stringer print function failed.";
+	if (!check_string_print()) errmsg = NULLER("The stringer print function failed.");
 
-		result = errmsg ? false : true;
-		log_unit("%10.10s\n", (result ? "PASSED" : "FAILED"));
-		fail_unless(result, errmsg);
+	log_test("CORE / STRINGS / PRINT / SINGLE THREADED:", errmsg);
+	ck_assert_msg(!errmsg, st_char_get(errmsg));
 
-	}
+}
 END_TEST
 
-START_TEST (check_write)
-	{
-		char *errmsg = NULL;
-		bool_t result = true;
+START_TEST (check_write) {
 
-		log_unit("%-64.64s", "CORE / STRINGS / WRITE / SINGLE THREADED:");
+	log_disable();
+	stringer_t *errmsg = NULL;
 
-		if (!check_string_write()) errmsg = "The stringer write function failed.";
+	if (!check_string_write()) errmsg = NULLER("The stringer write function failed.");
 
-		result = errmsg ? false : true;
-		log_unit("%10.10s\n", (result ? "PASSED" : "FAILED"));
-		fail_unless(result, errmsg);
-
-	}
+	log_test("CORE / STRINGS / WRITE / SINGLE THREADED:", errmsg);
+	ck_assert_msg(!errmsg, st_char_get(errmsg));
+}
 END_TEST
 
-START_TEST (check_digits)
-	{
+START_TEST (check_digits) {
 
-		int8_t i8;
-		uint8_t ui8;
-		int16_t i16;
-		uint16_t ui16;
-		int32_t i32;
-		uint32_t ui32;
-		int64_t i64;
-		uint64_t ui64;
+	log_disable();
+	int8_t i8;
+	uint8_t ui8;
+	int16_t i16;
+	uint16_t ui16;
+	int32_t i32;
+	uint32_t ui32;
+	int64_t i64;
+	uint64_t ui64;
 
-		bool_t result = true;
-		char *errmsg = NULL, buf[1024];
+	char buf[1024];
+	stringer_t *errmsg;
+	bool_t outcome = true;
 
-		log_unit("%-64.64s", "CORE / PARSERS / DIGITS / SINGLE THREADED:");
+	for (uint64_t i = 0; status() && outcome && i < 8192; i++) {
 
-		for (uint64_t i = 0; status() && result && i < 8192; i++) {
+		i8 = rand_get_int8();
+		i16 = rand_get_int16();
+		i32 = rand_get_int32();
+		i64 = rand_get_int64();
 
-			i8 = rand_get_int8();
-			i16 = rand_get_int16();
-			i32 = rand_get_int32();
-			i64 = rand_get_int64();
+		ui8 = rand_get_uint8();
+		ui16 = rand_get_uint16();
+		ui32 = rand_get_uint32();
+		ui64 = rand_get_uint64();
 
-			ui8 = rand_get_uint8();
-			ui16 = rand_get_uint16();
-			ui32 = rand_get_uint32();
-			ui64 = rand_get_uint64();
+		if (int8_digits(i8) != snprintf(buf, 1024, "%hhi", i8))
+			outcome = false;
+		else if (int16_digits(i16) != snprintf(buf, 1024, "%hi", i16))
+			outcome = false;
+		else if (int32_digits(i32) != snprintf(buf, 1024, "%i", i32))
+			outcome = false;
+		else if (int64_digits(i64) != snprintf(buf, 1024, "%li", i64))
+			outcome = false;
 
-			if (int8_digits(i8) != snprintf(buf, 1024, "%hhi", i8))
-				result = false;
-			else if (int16_digits(i16) != snprintf(buf, 1024, "%hi", i16))
-				result = false;
-			else if (int32_digits(i32) != snprintf(buf, 1024, "%i", i32))
-				result = false;
-			else if (int64_digits(i64) != snprintf(buf, 1024, "%li", i64))
-				result = false;
-
-			else if (uint8_digits(ui8) != snprintf(buf, 1024, "%hhu", ui8))
-				result = false;
-			else if (uint16_digits(ui16) != snprintf(buf, 1024, "%hu", ui16))
-				result = false;
-			else if (uint32_digits(ui32) != snprintf(buf, 1024, "%u", ui32))
-				result = false;
-			else if (uint64_digits(ui64) != snprintf(buf, 1024, "%lu", ui64)) result = false;
-		}
-
-		// Error check
-		if (!result) errmsg = "The digit counters didn't match the print function!";
-
-		result = errmsg ? false : true;
-		log_unit("%10.10s\n", (result ? "PASSED" : "FAILED"));
-		fail_unless(result, errmsg);
-
+		else if (uint8_digits(ui8) != snprintf(buf, 1024, "%hhu", ui8))
+			outcome = false;
+		else if (uint16_digits(ui16) != snprintf(buf, 1024, "%hu", ui16))
+			outcome = false;
+		else if (uint32_digits(ui32) != snprintf(buf, 1024, "%u", ui32))
+			outcome = false;
+		else if (uint64_digits(ui64) != snprintf(buf, 1024, "%lu", ui64))
+			outcome = false;
 	}
+
+	// Error check
+	if (!outcome) errmsg = NULLER("The digit counters didn't match the print function!");
+
+	log_test("CORE / PARSERS / DIGITS / SINGLE THREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
+
+}
 END_TEST
 
-START_TEST (check_clamp)
-	{
-		chr_t *errmsg = NULL;
-		bool_t result = true;
+START_TEST (check_clamp) {
 
-		log_unit("%-64.64s", "CORE / PARSERS / CLAMP / SINGLE THREADED:");
+	log_disable();
+	chr_t *errmsg = NULL;
+	bool_t outcome = true;
 
-		// If any of the test cases return an error message, the unit test is considered a failure.
-		if (status() && ((errmsg = check_clamp_min()) ||
-			(errmsg = check_clamp_max()) ||
-			(errmsg = check_clamp_min_max_equal()) ||
-			(errmsg = check_clamp_randomizer()))) {
-			result = false;
-		}
-		else {
-
-			// This test case is intentionally using invalid values, so to avoid logging all the meaningless errors, we have to
-			// disable logging while the test case is running.
-			log_disable();
-			if (status() && (errmsg = check_clamp_min_max_invalid())) {
-				result = false;
-			}
-			log_enable();
-
-		}
-
-		log_unit("%10.10s\n", (result ? "PASSED" : "FAILED"));
-		fail_unless(result, errmsg);
-		ns_cleanup(errmsg);
+	// If any of the test cases return an error message, the unit test is considered a failure.
+	if (status() && ((errmsg = check_clamp_min()) ||
+		(errmsg = check_clamp_max()) ||
+		(errmsg = check_clamp_min_max_equal()) ||
+		(errmsg = check_clamp_randomizer()))) {
+		outcome = false;
 	}
+	else {
+
+		// This test case is intentionally using invalid values, so to avoid logging all the meaningless errors, we have to
+		// disable logging while the test case is running.
+		if (status() && (errmsg = check_clamp_min_max_invalid())) {
+			outcome = false;
+		}
+	}
+
+	log_test("CORE / PARSERS / CLAMP / SINGLE THREADED:", NULLER(errmsg));
+	ck_assert_msg(outcome, errmsg);
+	ns_cleanup(errmsg);
+}
 END_TEST
 
-START_TEST (check_capitalization)
-	{
-		char *errmsg = NULL;
-		bool_t result = true;
-		stringer_t *copy, *letters = CONSTANT("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+START_TEST (check_capitalization) {
 
-		log_unit("%-64.64s", "CORE / PARSERS / CASE / SINGLE THREADED:");
+	log_disable();
+	char *errmsg = NULL;
+	stringer_t *copy, *letters = CONSTANT("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
 
-		// Lowercase string.
-		if (status() && (copy = st_dupe_opts(MANAGED_T | CONTIGUOUS | HEAP, letters))) {
-			lower_st(copy);
-			for (size_t i = 0; status() && !errmsg && i < st_length_get(copy); i++) {
-				if (!islower(*(st_char_get(copy) + i))) {
-					errmsg = "The lowercase string function failed.";
-				}
-			}
-			st_free(copy);
-		}
-		else if (status()){
-			errmsg = "The lowercase string function failed.";
-		}
-
-		// Uppercase string.
-		if (status() && !errmsg && (copy = st_dupe_opts(MANAGED_T | CONTIGUOUS | HEAP, letters))) {
-			upper_st(copy);
-			for (size_t i = 0; status() && !errmsg && i < st_length_get(copy); i++) {
-				if (!isupper(*(st_char_get(copy) + i))) {
-					errmsg = "The uppercase string function failed.";
-				}
-			}
-			st_free(copy);
-		}
-		else if (status() && !errmsg) {
-			errmsg = "The uppercase string function failed.";
-		}
-
-		// Uppercase/lowercase all of the possible character codes.
-		for (uchr_t c = 0; status() && !errmsg && c < UCHAR_MAX; c++) {
-			if (tolower(c) != lower_chr(c) || toupper(c) != upper_chr(c)) {
-				errmsg = "The uppercase/lowercase character functions failed.";
+	// Lowercase string.
+	if (status() && (copy = st_dupe_opts(MANAGED_T | CONTIGUOUS | HEAP, letters))) {
+		lower_st(copy);
+		for (size_t i = 0; status() && !errmsg && i < st_length_get(copy); i++) {
+			if (!islower(*(st_char_get(copy) + i))) {
+				errmsg = "The lowercase string function failed.";
 			}
 		}
-
-		result = errmsg ? false : true;
-		log_unit("%10.10s\n", (result ? "PASSED" : status() ? "FAILED" : "SKIPPED"));
-		fail_unless(result, errmsg);
-
+		st_free(copy);
 	}
-END_TEST
+	else if (status()){
+		errmsg = "The lowercase string function failed.";
+	}
 
-START_TEST (check_classify)
-	{
-		char *errmsg = NULL;
-		bool_t result = true;
-
-		log_unit("%-64.64s", "CORE / CLASSIFY / ASCII / SINGLE THREADED:");
-
-		for (uchr_t c = 0; status() && !errmsg && c < UCHAR_MAX; c++) {
-			if ((isalnum(c) ? true : false) != chr_alphanumeric(c) || (isascii(c) ? true : false) != chr_ascii(c) ||
-				(isblank(c) ? true : false) != chr_blank(c) || (islower(c) ? true : false) != chr_lower(c) ||
-				(isdigit(c) ? true : false) != chr_numeric(c)	|| (isprint(c) ? true : false) != chr_printable(c) ||
-				(isupper(c) ? true : false) != chr_upper(c) || (isspace(c) ? true : false) != chr_whitespace(c) ||
-				(ispunct(c) ? true : false) != chr_punctuation(c)) {
-				errmsg = "The ASCII classification functions failed.";
+	// Uppercase string.
+	if (status() && !errmsg && (copy = st_dupe_opts(MANAGED_T | CONTIGUOUS | HEAP, letters))) {
+		upper_st(copy);
+		for (size_t i = 0; status() && !errmsg && i < st_length_get(copy); i++) {
+			if (!isupper(*(st_char_get(copy) + i))) {
+				errmsg = "The uppercase string function failed.";
 			}
 		}
-
-		result = errmsg ? false : true;
-		log_unit("%10.10s\n", (result ? "PASSED" : status() ? "FAILED" : "SKIPPED"));
-		fail_unless(result, errmsg);
+		st_free(copy);
 	}
+	else if (status() && !errmsg) {
+		errmsg = "The uppercase string function failed.";
+	}
+
+	// Uppercase/lowercase all of the possible character codes.
+	for (uchr_t c = 0; status() && !errmsg && c < UCHAR_MAX; c++) {
+		if (tolower(c) != lower_chr(c) || toupper(c) != upper_chr(c)) {
+			errmsg = "The uppercase/lowercase character functions failed.";
+		}
+	}
+
+	log_test("CORE / PARSERS / CASE / SINGLE THREADED:", NULLER(errmsg));
+	ck_assert_msg(!errmsg, errmsg);
+
+}
 END_TEST
 
-START_TEST (check_qp)
-	{
-		char *errmsg = NULL;
-		bool_t result = true;
+START_TEST (check_classify) {
 
-		log_unit("%-64.64s", "CORE / ENCODING / QUOTED PRINTABLE / SINGLE THREADED:");
+	log_disable();
+	stringer_t *errmsg = NULL;
 
-		if (!check_encoding_qp()) errmsg = "The quoted printable encoding functions failed.";
-
-		result = errmsg ? false : true;
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, errmsg);
-
+	for (uchr_t c = 0; status() && !errmsg && c < UCHAR_MAX; c++) {
+		if ((isalnum(c) ? true : false) != chr_alphanumeric(c) || (isascii(c) ? true : false) != chr_ascii(c) ||
+			(isblank(c) ? true : false) != chr_blank(c) || (islower(c) ? true : false) != chr_lower(c) ||
+			(isdigit(c) ? true : false) != chr_numeric(c)	|| (isprint(c) ? true : false) != chr_printable(c) ||
+			(isupper(c) ? true : false) != chr_upper(c) || (isspace(c) ? true : false) != chr_whitespace(c) ||
+			(ispunct(c) ? true : false) != chr_punctuation(c)) {
+			errmsg = NULLER("The ASCII classification functions failed.");
+		}
 	}
+
+	log_test("CORE / CLASSIFY / ASCII / SINGLE THREADED:", errmsg);
+	ck_assert_msg(!errmsg, st_char_get(errmsg));
+}
 END_TEST
 
-START_TEST (check_hex)
-	{
-		char *errmsg = NULL;
-		bool_t result = true;
+START_TEST (check_qp) {
 
-		log_unit("%-64.64s", "CORE / ENCODING / HEX / SINGLE THREADED:");
+	log_disable();
+	stringer_t *errmsg = NULL;
 
-		if (!check_encoding_hex()) errmsg = "The hex encoding functions failed.";
+	if (!check_encoding_qp()) errmsg = NULLER("The quoted printable encoding functions failed.");
 
-		result = errmsg ? false : true;
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, errmsg);
+	log_test("CORE / ENCODING / QUOTED PRINTABLE / SINGLE THREADED:", errmsg);
+	ck_assert_msg(!errmsg, st_char_get(errmsg));
 
-	}
+}
 END_TEST
 
-START_TEST (check_url)
-	{
-		char *errmsg = NULL;
-		bool_t result = true;
+START_TEST (check_hex) {
 
-		log_unit("%-64.64s", "CORE / ENCODING / URL / SINGLE THREADED:");
+	log_disable();
+	stringer_t *errmsg = NULL;
 
-		if (!check_encoding_url()) errmsg = "The URL encoding functions failed.";
+	if (!check_encoding_hex()) errmsg = NULLER("The hex encoding functions failed.");
 
-		result = errmsg ? false : true;
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, errmsg);
-
-	}
+	log_test("CORE / ENCODING / HEX / SINGLE THREADED:", errmsg);
+	ck_assert_msg(!errmsg, st_char_get(errmsg));
+}
 END_TEST
 
-START_TEST (check_base64)
-	{
-		char *errmsg = NULL;
-		bool_t result = true;
+START_TEST (check_url) {
 
-		log_unit("%-64.64s", "CORE / ENCODING / BASE64 / SINGLE THREADED:");
+	log_disable();
+	stringer_t *errmsg = NULL;
 
-		if (!check_encoding_base64(false))
-			errmsg = "The base64 encoding functions failed.";
-		else if (!check_encoding_base64(true))
-			errmsg = "The base64 secure encoding functions failed.";
-		else if (!check_encoding_base64_mod(false))
-			errmsg = "The modified base64 encoding functions failed.";
-		else if (!check_encoding_base64_mod(true))
-			errmsg = "The modified base64 encoding functions failed.";
+	if (!check_encoding_url()) errmsg = NULLER("The URL encoding functions failed.");
 
-		result = errmsg ? false : true;
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, errmsg);
-
-	}
+	log_test("CORE / ENCODING / URL / SINGLE THREADED:", errmsg);
+	ck_assert_msg(!errmsg, st_char_get(errmsg));
+}
 END_TEST
 
-START_TEST (check_zbase32)
-	{
-		char *errmsg = NULL;
-		bool_t result = true;
+START_TEST (check_base64) {
 
-		log_unit("%-64.64s", "CORE / ENCODING / ZBASE32 / SINGLE THREADED:");
+	log_disable();
+	stringer_t *errmsg = NULL;
 
-		if (!check_encoding_zbase32()) errmsg = "The zbase32 encoding functions failed.";
+	if (!check_encoding_base64(false))
+		errmsg = NULLER("The base64 encoding functions failed.");
+	else if (!check_encoding_base64(true))
+		errmsg = NULLER("The base64 secure encoding functions failed.");
+	else if (!check_encoding_base64_mod(false))
+		errmsg = NULLER("The modified base64 encoding functions failed.");
+	else if (!check_encoding_base64_mod(true))
+		errmsg = NULLER("The modified base64 encoding functions failed.");
 
-		result = errmsg ? false : true;
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, errmsg);
-	}
+	log_test("CORE / ENCODING / BASE64 / SINGLE THREADED:", errmsg);
+	ck_assert_msg(!errmsg, st_char_get(errmsg));
+}
+END_TEST
+
+START_TEST (check_zbase32) {
+
+	log_disable();
+	stringer_t *errmsg = NULL;
+
+	if (!check_encoding_zbase32()) errmsg = NULLER("The zbase32 encoding functions failed.");
+
+	log_test("CORE / ENCODING / ZBASE32 / SINGLE THREADED:", errmsg);
+	ck_assert_msg(!errmsg, st_char_get(errmsg));
+}
 END_TEST
 
 START_TEST (check_checksum)
-	{
+{
 
-		stringer_t *errmsg = NULL;
+	log_disable();
+	stringer_t *errmsg = NULL;
 
-		if (status() && !check_checksum_fuzz_sthread()) {
-			errmsg = NULLER("Checksum fuzz test failed.");
-		}
-		else if (status() && !check_checksum_fixed_sthread()) {
-			errmsg = NULLER("Checksum output failed to match the expected value.");
-		}
-		else if (status() && !check_checksum_loop_sthread()) {
-			errmsg = NULLER("Checksum output failed to match the expected value.");
-		}
-
-		log_test("CORE / MEMORY / CHECKSUMS / SINGLE THREADED:", errmsg);
-		fail_unless(!errmsg, st_char_get(errmsg));
-
+	if (status() && !check_checksum_fuzz_sthread()) {
+		errmsg = NULLER("Checksum fuzz test failed.");
 	}
+	else if (status() && !check_checksum_fixed_sthread()) {
+		errmsg = NULLER("Checksum output failed to match the expected value.");
+	}
+	else if (status() && !check_checksum_loop_sthread()) {
+		errmsg = NULLER("Checksum output failed to match the expected value.");
+	}
+
+	log_test("CORE / MEMORY / CHECKSUMS / SINGLE THREADED:", errmsg);
+	ck_assert_msg(!errmsg, st_char_get(errmsg));
+}
 END_TEST
 
-START_TEST (check_secmem)
-	{
-		size_t bsize;
-		void *blocks[1024];
-		chr_t *errmsg = NULL;
+START_TEST (check_secmem) {
 
-		log_unit("%-64.64s", "CORE / MEMORY / SECURE ADDRESS RANGE / SINGLE THREADED:");
-		log_disable();
+	log_disable();
+	size_t bsize;
+	void *blocks[1024];
+	stringer_t *errmsg = NULL;
 
-		if (status() && magma.secure.memory.enable && (bsize = (magma.secure.memory.length / 1024))) {
+	if (status() && magma.secure.memory.enable && (bsize = (magma.secure.memory.length / 1024))) {
 
-			// Now try and trigger an overflow.
-			for (size_t i = 0; i < 1024; i++) {
-				blocks[i] = mm_sec_alloc(bsize + 16);
-			}
+		// Now try and trigger an overflow.
+		for (size_t i = 0; i < 1024; i++) {
+			blocks[i] = mm_sec_alloc(bsize + 16);
+		}
 
-			for (size_t i = 0; i < 1024; i++) {
-				if (blocks[i]) {
-					mm_sec_free(blocks[i]);
-					blocks[i] = NULL;
-				}
-			}
-
-			// Now try and trigger a single byte overflow.
-			for (size_t i = 0; i < 1024; i++) {
-				blocks[i] = mm_sec_alloc(bsize + 1);
-			}
-
-			for (size_t i = 0; i < 1024; i++) {
-				if (blocks[i]) {
-					mm_sec_free(blocks[i]);
-					blocks[i] = NULL;
-				}
-			}
-
-			// Now were going to request randomly sized blocks.
-			for (size_t i = 0; i < 1024; i++) {
-				blocks[i] = mm_sec_alloc(bsize + rand_get_uint32() % 32);
-			}
-
-			for (size_t i = 0; i < 1024; i++) {
-				if (blocks[i]) {
-					mm_sec_free(blocks[i]);
-					blocks[i] = NULL;
-				}
+		for (size_t i = 0; i < 1024; i++) {
+			if (blocks[i]) {
+				mm_sec_free(blocks[i]);
+				blocks[i] = NULL;
 			}
 		}
 
-		log_enable();
-		log_unit("%10.10s\n", (!errmsg ? (status() && magma.secure.memory.enable && (magma.secure.memory.length / 1024) ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(!errmsg, errmsg);
+		// Now try and trigger a single byte overflow.
+		for (size_t i = 0; i < 1024; i++) {
+			blocks[i] = mm_sec_alloc(bsize + 1);
+		}
+
+		for (size_t i = 0; i < 1024; i++) {
+			if (blocks[i]) {
+				mm_sec_free(blocks[i]);
+				blocks[i] = NULL;
+			}
+		}
+
+		// Now were going to request randomly sized blocks.
+		for (size_t i = 0; i < 1024; i++) {
+			blocks[i] = mm_sec_alloc(bsize + rand_get_uint32() % 32);
+		}
+
+		for (size_t i = 0; i < 1024; i++) {
+			if (blocks[i]) {
+				mm_sec_free(blocks[i]);
+				blocks[i] = NULL;
+			}
+		}
 	}
+
+	log_test("CORE / MEMORY / SECURE ADDRESS RANGE / SINGLE THREADED:",
+			!errmsg ? (status() && magma.secure.memory.enable && (magma.secure.memory.length / 1024)
+					? errmsg : NULLER("SKIPPED")) : errmsg);
+	ck_assert_msg(!errmsg, st_char_get(errmsg));
+}
 END_TEST
 
-START_TEST (check_signames_s)
-	{
-		bool_t result = true;
+START_TEST (check_signames_s) {
 
-		log_unit("%-64.64s", "CORE / HOST / SIGNAL NAMES / SINGLE THREADED:");
+	log_disable();
+	stringer_t *errmsg = NULL;
 
-		if (status()) {
-			result = check_system_signames();
-		}
+	if (!check_system_signames()) errmsg = NULLER("The single-threaded check system signames test failed.");
 
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, "check_signames_s failed");
-	}
+	log_test("CORE / HOST / SIGNAL NAMES / SINGLE THREADED:", errmsg);
+	ck_assert_msg(!errmsg, st_char_get(errmsg));
+}
 END_TEST
 
-START_TEST (check_errnames_s)
-	{
-		bool_t result = true;
+START_TEST (check_errnames_s) {
 
-		log_unit("%-64.64s", "CORE / HOST / ERROR NAMES / SINGLE THREADED:");
+	log_disable();
+	stringer_t *errmsg = NULL;
 
-		if (status()) {
-			result = check_system_errnonames();
-		}
+	if (!check_system_errnonames()) errmsg = NULLER("The single-threaded check system errnonames test failed.");
 
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, "check_errnames_s failed");
-	}
+	log_test("CORE / HOST / ERROR NAMES / SINGLE THREADED:", errmsg);
+	ck_assert_msg(!errmsg, st_char_get(errmsg));
+}
 END_TEST
 
-START_TEST (check_nbo_s)
-	{
+START_TEST (check_nbo_s) {
 
-		bool_t result = true;
+	log_disable();
+	bool_t outcome = true;
 
-		bool_t (*checks[])(void) = {
-			&check_nbo_parameters,
-			&check_nbo_simple
-		};
+	bool_t (*checks[])(void) = {
+		&check_nbo_parameters,
+		&check_nbo_simple
+	};
 
-		stringer_t *err = NULL;
+	stringer_t *err = NULL;
 
-		stringer_t *errors[] = {
-			NULLER("check_nbo_parameters failed"),
-			NULLER("check_nbo_simple failed")
-		};
+	stringer_t *errors[] = {
+		NULLER("check_nbo_parameters failed"),
+		NULLER("check_nbo_simple failed")
+	};
 
-		log_unit("%-64.64s", "CORE / NETWORK BYTE ORDER / SINGLE THREADED:");
-
-		for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof((checks)[0]); ++i) {
-			log_disable();
-			if(!(result = checks[i]())) {
-				err = errors[i];
-			}
-			log_enable();
+	for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof((checks)[0]); ++i) {
+		if(!(outcome = checks[i]())) {
+			err = errors[i];
 		}
-
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, st_data_get(err));
 	}
+
+	log_test("CORE / NETWORK BYTE ORDER / SINGLE THREADED:", st_data_get(err));
+	ck_assert_msg(outcome, st_data_get(err));
+}
 END_TEST
 
 START_TEST (check_bitwise)
-	{
+{
 
-		bool_t result = true;
+	log_disable();
+	bool_t outcome = true;
 
-		bool_t (*checks[])(void) = {
-			&check_bitwise_parameters,
-			&check_bitwise_determinism,
-			&check_bitwise_simple
-		};
+	bool_t (*checks[])(void) = {
+		&check_bitwise_parameters,
+		&check_bitwise_determinism,
+		&check_bitwise_simple
+	};
 
-		stringer_t *err = NULL;
+	stringer_t *err = NULL;
 
-		stringer_t *errors[] = {
-			NULLER("check_bitwise_parameters failed"),
-			NULLER("check_bitwise_determinism failed"),
-			NULLER("check_bitwise_simple failed")
-		};
+	stringer_t *errors[] = {
+		NULLER("check_bitwise_parameters failed"),
+		NULLER("check_bitwise_determinism failed"),
+		NULLER("check_bitwise_simple failed")
+	};
 
-		log_unit("%-64.64s", "CORE / STRINGS / BITWISE / SINGLE THREADED:");
-
-		for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof((checks)[0]); ++i) {
-			log_disable();
-			if(!(result = checks[i]())) {
-				err = errors[i];
-			}
-			log_enable();
+	for(uint_t i = 0; status() && !err && i < sizeof(checks)/sizeof((checks)[0]); ++i) {
+		if(!(outcome = checks[i]())) {
+			err = errors[i];
 		}
-
-		log_unit("%10.10s\n", (result ? (status() ? "PASSED" : "SKIPPED") : "FAILED"));
-		fail_unless(result, st_data_get(err));
 	}
+
+	log_test("CORE / STRINGS / BITWISE / SINGLE THREADED:", st_data_get(err));
+	ck_assert_msg(outcome, st_data_get(err));
+}
 END_TEST
 
 Suite * suite_check_core(void) {

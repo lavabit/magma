@@ -393,7 +393,7 @@ END_TEST
 START_TEST (check_scramble_s) {
 
 	log_disable();
-	bool_t outcome;
+	bool_t outcome = true;
 	stringer_t *errmsg = NULL;
 
 	if (!check_scramble_sthread()) {

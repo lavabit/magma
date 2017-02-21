@@ -7,8 +7,6 @@
 
 #include "magma_check.h"
 
-extern chr_t *tank_check_data_path;
-
 /**
  * Verifies that we can read all of the data out of the storage tank correctly.
  *
@@ -117,120 +115,56 @@ bool_t check_tokyo_tank_verify(inx_t *check_collection) {
  * @param location The directory path to search for files.
  * @return Returns false if an error occurs, otherwise true.
  */
-bool_t check_tokyo_tank_load(char *location, inx_t *check_collection, check_tank_opt_t *opts) {
+bool_t check_tokyo_tank_load(inx_t *check_collection, check_tank_opt_t *opts) {
 
-	int fd;
 	multi_t key;
-	DIR *working;
-	struct stat info;
 	check_tank_obj_t *obj;
-	struct dirent *entry;
-	char file[1024], *buffer;
+	bool_t outcome = true;
+	stringer_t *data = NULL;
+	uint32_t max = check_message_max();
 
-	if (!(working = opendir(location))) {
-		log_unit("Unable to open the data path. {location = %s}", location);
-		return false;
-	}
+	for (uint32_t i = 0; i < max && outcome && status(); i++) {
 
-	while (status() && (entry = readdir(working))) {
-
-		// Reset.
-		errno = 0;
-		bzero(file, 1024);
-		bzero(&info, sizeof(struct stat));
-
-		// Build an absolute path.
-		snprintf(file, 1024, "%s%s%s", location, "/", entry->d_name);
-
-		// If we hit a directory, recursively call the load function.
-		if (entry->d_type == DT_DIR && *(entry->d_name) != '.') {
-			if (!check_tokyo_tank_load(file, check_collection, opts)) {
-				return false;
-			}
+		// Retrieve data for the current message.
+		if (!(data = check_message_get(i))) {
+			log_unit("Failed to get the message data. { message = %i }", i);
+			outcome = false;
 		}
-		// Otherwise if its a regular file try storing it.
-		else if (entry->d_type == DT_REG && *(entry->d_name) != '.') {
 
-			// Read the file.
-			if ((fd = open(file, O_RDONLY)) < 0) {
-				log_unit("%s - open error", file);
-				closedir(working);
-				return false;
-			}
+		// Data used for verification.
+		if (!(obj = mm_alloc(sizeof(check_tank_obj_t)))) {
+			log_unit("Allocating check_tank_obj_t failed. { message = %i }", i);
+			outcome = false;
+		}
 
-			// How big is the file?
-			if (fstat(fd, &info) != 0) {
-				log_unit("%s - stat error", file);
-				closedir(working);
-				close(fd);
-				return false;
-			}
+		obj->adler32 = hash_adler32(st_char_get(data), st_length_int(data));
+		obj->fletcher32 = hash_fletcher32(st_char_get(data), st_length_int(data));
+		obj->crc32 = crc32_checksum(st_char_get(data), st_length_int(data));
+		obj->crc64 = crc64_checksum(st_char_get(data), st_length_int(data));
+		obj->murmur32 = hash_murmur32(st_char_get(data), st_length_int(data));
+		obj->murmur64 = hash_murmur64(st_char_get(data), st_length_int(data));
 
-			// Allocate a buffer.
-			if (!(buffer = mm_alloc(info.st_size + 1))) {
-				log_unit("%s - malloc error", file);
-				closedir(working);
-				close(fd);
-				return false;
-			}
+		// Request the next storage tank.
+		obj->tnum = tank_cycle();
 
-			// Clear the buffer.
-			memset(buffer, 0, info.st_size + 1);
+		// Try storing the file data.
+		if (!(obj->onum = tank_store(TANK_CHECK_DATA_HNUM, obj->tnum, TANK_CHECK_DATA_UNUM, data, opts->engine))) {
+			log_unit("The tank_store function failed. { message = %i }", i);
+			outcome = false;
+		}
 
-			// Read the file.
-			if (read(fd, buffer, info.st_size) != info.st_size) {
-				log_unit("%s - read error", file);
-				closedir(working);
-				mm_free(buffer);
-				close(fd);
-				return false;
-			}
+		st_cleanup(data);
 
-			close(fd);
+		key = mt_set_type(key, M_TYPE_UINT64);
+		key.val.u64 = obj->onum;
 
-			// Data used for verification.
-			if (!(obj = mm_alloc(sizeof(check_tank_obj_t)))) {
-				log_unit("check_tank allocation failed for the file %s", file);
-				closedir(working);
-				mm_free(buffer);
-				return false;
-			}
-
-			obj->adler32 = hash_adler32(buffer, info.st_size);
-			obj->fletcher32 = hash_fletcher32(buffer, info.st_size);
-			obj->crc32 = crc32_checksum(buffer, info.st_size);
-			obj->crc64 = crc64_checksum(buffer, info.st_size);
-			obj->murmur32 = hash_murmur32(buffer, info.st_size);
-			obj->murmur64 = hash_murmur64(buffer, info.st_size);
-
-			// Request the next storage tank.
-			obj->tnum = tank_cycle();
-
-			// Try storing the file data.
-			if (!(obj->onum = tank_store(TANK_CHECK_DATA_HNUM, obj->tnum, TANK_CHECK_DATA_UNUM, PLACER(buffer, info.st_size), opts->engine))) {
-				log_unit("tank_store failed for the file %s", file);
-				closedir(working);
-				mm_free(buffer);
-				mm_free(obj);
-				return false;
-			}
-
-			mm_free(buffer);
-
-			key = mt_set_type(key, M_TYPE_UINT64);
-			key.val.u64 = obj->onum;
-
-			if (!inx_insert(check_collection, key, obj)) {
-				log_unit("inx_insert failed for the file %s", file);
-				closedir(working);
-				mm_free(obj);
-				return false;
-			}
+		if (!inx_insert(check_collection, key, obj)) {
+			log_unit("The inx_insert function failed. { message = %i }", i);
+			outcome = false;
 		}
 	}
 
-	closedir(working);
-	return true;
+	return outcome;
 }
 
 bool_t check_tokyo_tank(check_tank_opt_t *opts) {
@@ -241,7 +175,7 @@ bool_t check_tokyo_tank(check_tank_opt_t *opts) {
 		return false;
 	}
 
-	else if (!check_tokyo_tank_load(tank_check_data_path, check_collection, opts)) {
+	else if (!check_tokyo_tank_load(check_collection, opts)) {
 		inx_free(check_collection);
 		return false;
 	}

@@ -7,12 +7,10 @@
 
 #include "magma_check.h"
 
-extern chr_t *dspam_check_data_path;
-
-bool_t check_dspam_binary_sthread(chr_t *location) {
+bool_t check_dspam_binary_sthread(void) {
 
 	size_t len;
-	int_t outcome;
+	int_t result;
 	stringer_t *buffer, *signature;
 
 	for (uint_t i = 0; status() && i < DSPAM_CHECK_ITERATIONS; i++) {
@@ -32,7 +30,7 @@ bool_t check_dspam_binary_sthread(chr_t *location) {
 		st_replace(&buffer, PLACER("\0", 1), PLACER("\255", 1));
 
 		// Process the email message. Ignore process errors since were feeding in random data. But if the buffer is processed, assume the signature is valid or error.
-		if ((outcome = dspam_check(DSPAM_CHECK_DATA_UNUM, buffer, &signature)) != -1 && signature && !dspam_train(DSPAM_CHECK_DATA_UNUM, outcome == 1 ? 1 : 0, signature)) {
+		if ((result = dspam_check(DSPAM_CHECK_DATA_UNUM, buffer, &signature)) != -1 && signature && !dspam_train(DSPAM_CHECK_DATA_UNUM, result == 1 ? 1 : 0, signature)) {
 			st_free(signature);
 			st_free(buffer);
 			return false;
@@ -45,62 +43,40 @@ bool_t check_dspam_binary_sthread(chr_t *location) {
 	return true;
 }
 
-bool_t check_dspam_mail_sthread(chr_t *location) {
+bool_t check_dspam_mail_sthread(void) {
 
-	DIR *working;
 	int_t outcome;
-	struct dirent *entry;
-	stringer_t *buffer, *signature;
-	char path[MAGMA_FILEPATH_MAX + 1];
+	uint32_t max = check_message_max();
+	stringer_t *signature, *data = NULL;
 
-//	uint64_t class = 0, train = 0;
+	//	uint64_t class = 0, train = 0;
 
-	if (!(working = opendir(location ? location : dspam_check_data_path))) {
-		log_unit("Unable to open the data path. { location = %s / errno = %i / strerror = %s }", location ? location : dspam_check_data_path, errno, strerror_r(errno, MEMORYBUF(1024), 1024));
-		return false;
-	}
-
-	while (status() && (entry = readdir(working))) {
+	for (uint32_t i = 0; status() && i < max; i++) {
 
 		// Reset.
 		signature = NULL;
-		mm_wipe(path, sizeof(path));
 
-		// Build an absolute path.
-		snprintf(path, 1024, "%s%s%s", location ? location : dspam_check_data_path, "/", entry->d_name);
-
-		// If we hit a directory, recursively call the load function.
-		if (entry->d_type == DT_DIR && *(entry->d_name) != '.') {
-			if (!check_dspam_mail_sthread(path)) {
-				return false;
-			}
+		// Retrieve data for the current message.
+		if (!(data = check_message_get(i))) {
+			log_unit("Failed to get the message data. { message = %i }", i);
+			return false;
 		}
-		// Otherwise if its a regular file try storing it.
-		else if (entry->d_type == DT_REG && *(entry->d_name) != '.') {
 
-			if (!(buffer = file_load(path))) {
-				log_unit("%s - read error", path);
-				closedir(working);
-				return false;
-			}
+		// Process the email message.
+		if ((outcome = dspam_check(DSPAM_CHECK_DATA_UNUM, st_char_get(data), &signature)) == -1 || !signature) {
+			log_unit("There was a dspam_check error. { message = %i }", i);
+			st_cleanup(signature);
+			st_cleanup(data);
+			return false;
+		}
 
-			// Process the email message.
-			if ((outcome = dspam_check(DSPAM_CHECK_DATA_UNUM, buffer, &signature)) == -1 || !signature) {
-				log_unit("dspam_check error");
-				st_cleanup(signature);
-				closedir(working);
-				st_free(buffer);
-				return false;
-			}
-
-			// Every 16 or so messages tell the library it made a mistake.
-			if ((rand_get_uint8() % 16) == 0 && !dspam_train(DSPAM_CHECK_DATA_UNUM, outcome == 1 ? 1 : 0, signature)) {
-				log_unit("dspam_training error");
-				st_free(signature);
-				closedir(working);
-				st_free(buffer);
-				return false;
-			}
+		// Every 16 or so messages tell the library it made a mistake.
+		if ((rand_get_uint8() % 16) == 0 && !dspam_train(DSPAM_CHECK_DATA_UNUM, outcome == 1 ? 1 : 0, signature)) {
+			log_unit("There was a dspam_training error. { message = %i }", i);
+			st_free(signature);
+			st_cleanup(data);
+			return false;
+		}
 
 //			if ((rand_get_uint8() % 16) == 0) {
 //
@@ -123,11 +99,9 @@ bool_t check_dspam_mail_sthread(chr_t *location) {
 //				log_unit("CLASSIFIED = %lu / TRAINED = %lu", class, train);
 //			}
 
-			st_free(signature);
-			st_free(buffer);
-		}
+		st_cleanup(data);
+		st_free(signature);
 	}
 
-	closedir(working);
 	return true;
 }

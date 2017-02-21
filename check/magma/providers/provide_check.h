@@ -35,7 +35,7 @@ stringer_t *  check_rand_sthread(void);
 /// tank_check.c
 bool_t   check_tokyo_tank(check_tank_opt_t *opts);
 bool_t   check_tokyo_tank_cleanup(inx_t *check_collection);
-bool_t   check_tokyo_tank_load(char *location, inx_t *check_collection, check_tank_opt_t *opts);
+bool_t   check_tokyo_tank_load(inx_t *check_collection, check_tank_opt_t *opts);
 bool_t   check_tokyo_tank_mthread(check_tank_opt_t *opts);
 void     check_tokyo_tank_mthread_cnv(check_tank_opt_t *opts);
 bool_t   check_tokyo_tank_sthread(check_tank_opt_t *opts);
@@ -45,14 +45,14 @@ bool_t   check_tokyo_tank_verify(inx_t *check_collection);
 bool_t   check_scramble_sthread(void);
 
 /// dspam_check.c
-bool_t   check_dspam_binary_sthread(chr_t *location);
-bool_t   check_dspam_mail_sthread(chr_t *location);
+bool_t   check_dspam_binary_sthread(void);
+bool_t   check_dspam_mail_sthread(void);
 
 /// provide_check.c
 Suite *      suite_check_provide(void);
 
 /// virus_check.c
-chr_t *  check_virus_sthread(chr_t *location);
+chr_t *  check_virus_sthread(void);
 
 /// ecies_check.c
 void     check_ecies_cleanup(EC_KEY *key, cryptex_t *ciphered, stringer_t *hex_pub, stringer_t *hex_priv, unsigned char *text, unsigned char *copy, unsigned char *original);

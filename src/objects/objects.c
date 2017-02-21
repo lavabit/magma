@@ -18,12 +18,12 @@ object_cache_t objects = {
  */
 bool_t obj_cache_start(void) {
 
-	if (!(objects.meta = inx_alloc(M_INX_HASHED | M_INX_LOCK_MANUAL, &meta_free))) {
+	if (!(objects.meta = inx_alloc(M_INX_TREE | M_INX_LOCK_MANUAL, &meta_free))) {
 		log_critical("Unable to initialize the meta information cache.");
 		return false;
 	}
 
-	if (!(objects.sessions = inx_alloc(M_INX_HASHED | M_INX_LOCK_MANUAL, &sess_destroy))) {
+	if (!(objects.sessions = inx_alloc(M_INX_TREE | M_INX_LOCK_MANUAL, &sess_destroy))) {
 		log_critical("Unable to initialize the session cache.");
 		return false;
 	}

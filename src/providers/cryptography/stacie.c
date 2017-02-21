@@ -337,10 +337,11 @@ stringer_t * stacie_hashed_key_derive(stringer_t *base, uint32_t rounds, stringe
 		return NULL;
 	}
 
-	// We set the key length here since it's a fixed output size, and we're going to use the key an input value
+	// We set the key length here since it's a fixed output size, and we're going to use the key as an input value
 	// after the first round.
 	if (!(key_data = st_data_get(key)) || (key_len = st_length_set(key, 64)) != 64) {
 		st_cleanup(key);
+		return NULL;
 	}
 
 	// Initialize the context. We only need to do this once.

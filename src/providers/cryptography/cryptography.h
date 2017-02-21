@@ -235,5 +235,7 @@ DH *   dh_params_2048(void);
 DH *   dh_params_4096(void);
 void   dh_params_generate(void);
 int    dh_params_generate_callback(int p, int n, BN_GENCB *cb);
+DH *   dh_static_2048(SSL *ssl, int is_export, int keylength);
+DH *   dh_static_4096(SSL *ssl, int is_export, int keylength);
 
 #endif

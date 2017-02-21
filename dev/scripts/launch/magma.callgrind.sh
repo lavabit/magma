@@ -41,7 +41,7 @@ valgrind --tool=callgrind \
 --callgrind-out-file=$HOME/Desktop/callgrind.out \
 --suppressions=/usr/lib64/valgrind/default.supp \
 --suppressions=$MAGMA_DIST/sandbox/etc/magma.suppressions \
-$MAGMA_DIST/magmad.check $MAGMA_DIST/sandbox/etc/magma.sandbox.config 
+$MAGMA_DIST/magmad $MAGMA_DIST/sandbox/etc/magma.sandbox.config 
 
 export VPID=$!
 export VLOG=$HOME/Desktop/callgrind.out

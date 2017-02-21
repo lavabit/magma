@@ -51,12 +51,12 @@ void signal_segfault(int signal) {
  */
 void signal_shutdown(int signal) {
 
-	//int fd = 0;
 	ip_t ip;
 	char working[64];
 	struct stat64 info;
 	struct rlimit64 limits;
 	pthread_t status_thread;
+	server_t *server = NULL;
 	struct sockaddr *saddr = MEMORYBUF(sizeof(struct sockaddr_in6));
 	socklen_t len = sizeof(struct sockaddr_in6);
 	const struct timespec split = { .tv_sec = 0, .tv_nsec = 100000000 }, single = { .tv_sec = 1, .tv_nsec = 0 };
@@ -70,23 +70,33 @@ void signal_shutdown(int signal) {
 	// Set the status flag so all the worker threads exit nicely.
 	thread_launch(&status_thread, &status_signal, NULL);
 
-	// We give threads 0.1 seconds to ensure the status update is queued and awaiting the lock.
+	// Loop through and shutdown all of the socket descriptors used to listen for incomoing connections.
+	for (uint64_t i = 0; i < MAGMA_SERVER_INSTANCES; i++) {
+		if ((server = magma.servers[i]) && server->enabled && server->network.sockd > 0) {
+			shutdown(server->network.sockd, SHUT_RDWR);
+		}
+	}
+//
+//	// We give threads 0.1 seconds to ensure the status update is queued and awaiting the lock.
 	nanosleep(&split, NULL);
-
-	// Signals the worker threads, so they unblock.
-	queue_signal();
-
-	// We give threads 0.1 seconds to let the status update.
-	nanosleep(&split, NULL);
-
-	// Signals the worker threads, so they unblock one more time and see the updated status, thus exiting normally.
-	queue_signal();
-
-	// Then sleep for one second before forcibly shutting down the client connections.
+//
+//	// Signals the worker threads, so they unblock.
+//	queue_signal();
+//
+//	// We give threads 0.1 seconds to let the status update.
+//	nanosleep(&split, NULL);
+//
+//	// Signals the worker threads, so they unblock one more time and see the updated status, thus exiting normally.
+//	queue_signal();
+//
+//	// Then sleep for one second before forcibly shutting down the client connections.
+	nanosleep(&single, NULL);
+	nanosleep(&single, NULL);
 	nanosleep(&single, NULL);
 
 	thread_join(status_thread);
-
+	exit(1);
+	return;
 	// Now go through and shutdown all client connections.
 	if (getrlimit64(RLIMIT_NOFILE, &limits)) {
 		log_critical("Unable to determine the maximum legal file descriptor.");
@@ -113,7 +123,8 @@ void signal_shutdown(int signal) {
 				ip.family = AF_INET6;
 				log_info("%s:%u is being shutdown.", st_char_get(ip_presentation(&ip, PLACER(working, 64))),
 					ntohs(((struct sockaddr_in6 *)saddr)->sin6_port));
-				close(fd);
+				shutdown(fd, SHUT_RDWR);
+				//close(fd);
 			}
 			else if (len == sizeof(struct sockaddr_in) && (((struct sockaddr_in *)saddr)->sin_family == AF_INET &&
 				servers_get_count_using_port(ntohs(((struct sockaddr_in *)saddr)->sin_port)))) {
@@ -122,7 +133,8 @@ void signal_shutdown(int signal) {
 				ip.family = AF_INET;
 				log_info("%s:%u is being shutdown.", st_char_get(ip_presentation(&ip, PLACER(working, 64))),
 					ntohs(((struct sockaddr_in *)saddr)->sin_port));
-				close(fd);
+				shutdown(fd, SHUT_RDWR);
+				//close(fd);
 			}
 		}
 	}
@@ -175,16 +187,17 @@ void signal_refresh(int signal) {
  */
 bool_t signal_thread_start(void) {
 
-	struct sigaction status;
-
-	// Zero out the signal structure and setup the normal shutdown handler.
-	mm_wipe(&status, sizeof(struct sigaction));
-	status.sa_handler = signal_status;
-	status.sa_flags = 0;
-	if (sigemptyset(&status.sa_mask) || sigaction(SIGALRM, &status, NULL)) {
-		log_info("Could not setup the thread status signal handler.");
-		return false;
-	}
+//	struct sigaction status;
+//
+//	/// TODO: Disabling this signal handler to see if it fixes the shutdown issue.
+//	// Zero out the signal structure and setup the normal shutdown handler.
+//	mm_wipe(&status, sizeof(struct sigaction));
+//	status.sa_handler = signal_status;
+//	status.sa_flags = 0;
+//	if (sigemptyset(&status.sa_mask) || sigaction(SIGALRM, &status, NULL)) {
+//		log_info("Could not setup the thread status signal handler.");
+//		return false;
+//	}
 
 	return true;
 }

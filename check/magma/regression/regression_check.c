@@ -7,9 +7,13 @@
 #include "magma_check.h"
 
 bool_t check_regression_file_descriptors_leak_mthread(void) {
-	stringer_t *m = st_alloc_opts(MAPPED_T | JOINTED | HEAP, 1024);
-	st_free(m);
-	return true;
+	stringer_t *m;
+	if (!(m = st_alloc_opts(MAPPED_T | JOINTED | HEAP, 1024))) {
+		return false;
+	} else {
+		st_free(m);
+		return true;
+	}
 }
 
 START_TEST (check_regression_file_descriptors_leak_m) {

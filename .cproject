@@ -2458,6 +2458,7 @@
 		</configuration>
 		<configuration configurationName="Magma Check"/>
 		<configuration configurationName="Magma Daemon"/>
+		<configuration configurationName="PProf"/>
 		<configuration configurationName="Daemon"/>
 		<configuration configurationName="Profiled"/>
 		<configuration configurationName="Check">
@@ -2473,6 +2474,7 @@
 			<resource resourceType="FOLDER" workspacePath="/magma/src"/>
 			<resource resourceType="FOLDER" workspacePath="/magma/check"/>
 		</configuration>
+		<configuration configurationName="GProf"/>
 		<configuration configurationName="DIME Check"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>

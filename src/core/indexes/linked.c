@@ -133,11 +133,10 @@ void * linked_find(void *inx, multi_t key) {
  * @param	key		a multi-type key value to lookup the record that will be deleted from the linked list.
  * @return	true on success or false on failure.
  */
-// Find a record and remove it from the linked list.
 bool_t linked_delete(void *inx, multi_t key) {
 
 	inx_t *index = inx;
-	linked_node_t *node;
+	linked_node_t *node = NULL;
 
 	if (index == NULL || index->index == NULL || index->count == 0) {
 		return false;
@@ -158,10 +157,18 @@ bool_t linked_delete(void *inx, multi_t key) {
 	if (index->index == node) {
 		index->index = node->next;
 	}
-	else if (node && node->prev) {
+
+	// Handle the special case where this is the last node.
+	if (index->last == node) {
+		index->last = node->prev;
+	}
+
+	// Handle situations where this node is in the middle of a list, by connecting the previous node with the next node.
+	if (node && node->prev) {
 		((linked_node_t *)node->prev)->next = node->next;
 	}
 
+	// And the next node with the previous node.
 	if (node && node->next) {
 		((linked_node_t *)node->next)->prev = node->prev;
 	}
@@ -175,12 +182,12 @@ bool_t linked_delete(void *inx, multi_t key) {
 
 /**
  * @brief	Create and append a new record to the end of a linked list.
+ * @note	note	In the future this should be updated so the key value is used to insert the record in the correct spot.
  * @param	inx		a pointer to the linked list that will store the new record.
  * @param	key		a multi-type key value that will be associated with the newly created record.
  * @param	data	a pointer to the data that will be associated with the new record.
  * @return	true on success or false on failure.
  */
-// Append something to the linked list.
 bool_t linked_insert(void *inx, multi_t key, void *data) {
 
 	inx_t *index = inx;
@@ -196,16 +203,75 @@ bool_t linked_insert(void *inx, multi_t key, void *data) {
 		return false;
 	}
 
+	// In this situation the first node is also the last node.
 	if (index->index == NULL) {
-		index->index = node;
+		index->index = index->last = node;
 	}
 	else {
+
+		// Grab the first record in the linked list.
 		holder = index->index;
+
+		/// TODO: We are simply looking for the end. The append variation handles this use case. Insert should be using the
+		/// key value to find the appropriate place to insert the record.
+		// Iterate through the list until we reach the end.
 		while (holder->next != NULL) {
 			holder = (linked_node_t *)holder->next;
 		}
+
 		node->prev = (struct linked_node_t *)holder;
 		holder->next = (struct linked_node_t *)node;
+
+		/// TODO: When the logic is altered to do a comparison, and insert nodes in the proper place this assignment will
+		/// need to become a conditional.
+		index->last = (struct linked_node_t *)node;
+	}
+
+	index->count++;
+	index->serial++;
+	return true;
+}
+
+/**
+ * @brief	Create and append a new record to the end of a linked list.
+ * @note	This function deppends on the inx layer to track the list ending via the last variable.
+ * @param	inx		a pointer to the linked list that will store the new record.
+ * @param	key		a multi-type key value that will be associated with the newly created record.
+ * @param	data	a pointer to the data that will be associated with the new record.
+ * @return	true on success or false on failure.
+ */
+bool_t linked_append(void *inx, multi_t key, void *data) {
+
+	inx_t *index = inx;
+	linked_node_t *holder, *node;
+
+	if ((node = mm_alloc(sizeof(linked_node_t))) == NULL) {
+		log_info("Unable to allocate %zu bytes for a linked node.", sizeof(linked_node_t));
+		return false;
+	}
+	else if ((node->record = linked_record_alloc(key, data)) == NULL) {
+		log_info("Unable to allocate an index record.");
+		mm_free(node);
+		return false;
+	}
+
+	// In this situation the first node is also the last node.
+	if (index->index == NULL) {
+		index->index = index->last = node;
+	}
+	else {
+
+		// Append works by assuming the last variable is pointing to the last node. If that assumption ever becomes a fallacy
+		// evil will befall the land. Or more accurately, it will create memory leaks, and possibly lead to segmentation faults.
+		holder = index->last;
+#ifdef MAGMA_PEDANTIC
+		if (holder->next != NULL) {
+			log_pedantic("Appending to a linked list where the last variable doesn't appear to be the last node.");
+		}
+#endif
+		node->prev = (struct linked_node_t *)holder;
+		holder->next = (struct linked_node_t *)node;
+		index->last = (struct linked_node_t *)node;
 	}
 
 	index->count++;
@@ -428,7 +494,9 @@ void linked_truncate(void *inx) {
 		node = next;
 	}
 
-	index->index = NULL;
+	index->serial++;
+	index->count = 0;
+	index->index = index->last = NULL;
 	return;
 }
 
@@ -464,12 +532,16 @@ inx_t * linked_alloc(uint64_t options, void *data_free) {
 
 	if ((result = mm_alloc(sizeof(inx_t))) == NULL) return NULL;
 
+	result->last = NULL;
+	result->index = NULL;
+
 	result->options = options;
 	result->data_free = data_free;
 	result->index_free = linked_free;
 	result->index_truncate = linked_truncate;
 
 	result->find = linked_find;
+	result->append = linked_append;
 	result->insert = linked_insert;
 	result->delete = linked_delete;
 

@@ -12,6 +12,10 @@ cd $BASE/../../../
 
 MAGMA_DIST=`pwd`
 
+if [ -e "$MAGMA_DIST/magmad.pprof.out" ] && [ -f "$MAGMA_DIST/magmad.pprof.out" ]; then
+	rm --force "$MAGMA_DIST/magmad.pprof.out"
+fi
+
 CPUPROFILE="$MAGMA_DIST/magmad.pprof.out" $MAGMA_DIST/magmad.pprof $MAGMA_DIST/sandbox/etc/magma.sandbox.config
 
 if [ -e "$MAGMA_DIST/magmad.pprof.out" ] && [ -f "$MAGMA_DIST/magmad.pprof.out" ]; then

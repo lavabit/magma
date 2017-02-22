@@ -130,6 +130,33 @@ uint64_t inx_serial(inx_t *inx) {
 }
 
 /**
+ * @brief	Append a new record onto an inx holder.
+ * @note	This function only provides benefits for some inx types (like linked lists). For other index types, it simply
+ * 			functions as an alias for the insert function.
+ * @param	inx		a pointer to the inx object that will hold the record.
+ * @param	key		a multi-type value specifying the identifier of the record to be inserted.
+ * @param	data	a pointer to the data associated with the new key.
+ * @return	true if the new record was inserted successfully or false on failure.
+ */
+bool_t inx_append(inx_t *inx, multi_t key, void *data) {
+
+	bool_t result;
+
+#ifdef MAGMA_PEDANTIC
+	if (!inx || !(inx->append)) {
+		log_pedantic("Invalid index or function pointer.");
+		return false;
+	}
+#endif
+
+	inx_auto_write(inx);
+	result = inx->append(inx, key, data);
+	inx_auto_unlock(inx);
+
+	return result;
+}
+
+/**
  * @brief	Insert a new record into an inx holder.
  * @param	inx		a pointer to the inx object that will hold the record.
  * @param	key		a multi-type value specifying the identifier of the record to be inserted.
@@ -140,12 +167,12 @@ bool_t inx_insert(inx_t *inx, multi_t key, void *data) {
 
 	bool_t result;
 
-//#ifdef MAGMA_PEDANTIC
+#ifdef MAGMA_PEDANTIC
 	if (!inx || !(inx->insert)) {
 		log_pedantic("Invalid index or function pointer.");
 		return false;
 	}
-//#endif
+#endif
 
 	inx_auto_write(inx);
 	result = inx->insert(inx, key, data);

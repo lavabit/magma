@@ -33,7 +33,7 @@ int_t imap_append_message(connection_t *con, meta_folder_t *folder, uint32_t fla
 	new->size = st_length_get(message);
 	snprintf(new->server, 33, "%.*s", st_length_int(magma.storage.active), st_char_get(magma.storage.active));
 
-	if (inx_insert(con->imap.user->messages, key, new) != true) {
+	if (inx_append(con->imap.user->messages, key, new) != true) {
 		mm_free(new);
 	}
 
@@ -94,7 +94,7 @@ int_t imap_message_copier(connection_t *con, meta_message_t *message, uint64_t t
 		log_pedantic("orig->size = %zu && new->size = %zu", message->size, new->size);
 	}
 
-	if (inx_insert(con->imap.user->messages, key, new) != true) {
+	if (inx_append(con->imap.user->messages, key, new) != true) {
 		mm_free(new);
 	}
 

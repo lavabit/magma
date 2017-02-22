@@ -1641,7 +1641,7 @@ void imap_fetch(connection_t *con) {
 				}
 			}
 
-			// Now output the size, if its present.
+			// Now output the size, if it is present.
 			iterate = response;
 			while (iterate != NULL) {
 				if (!st_cmp_cs_eq(iterate->key, PLACER("RFC822.SIZE", 11))) {

@@ -48,14 +48,15 @@ bool_t meta_data_fetch_folder_messages(uint64_t usernum, message_folder_t *folde
 	// Loop through each of the row and create a message record.
 	while ((row = res_row_next(result))) {
 
-		if (!(record = message_alloc(res_field_uint64(row, 0), res_field_uint64(row, 1), res_field_uint64(row, 2), res_field_uint64(row, 3), res_field_uint32(row, 4),
-			PLACER(res_field_block(row, 5), res_field_length(row, 5)), res_field_uint32(row, 6))) || !(key.val.u64 = record->message.num) || !inx_insert(folder->records, key, record)) {
-			log_info("The index refused to accept a message record. { message = %lu }", res_field_uint64(row, 0));
+		if (!(record = message_alloc(res_field_uint64(row, 0), res_field_uint64(row, 1), res_field_uint64(row, 2),
+			res_field_uint64(row, 3), res_field_uint32(row, 4), PLACER(res_field_block(row, 5),
+			res_field_length(row, 5)), res_field_uint32(row, 6))) || !(key.val.u64 = record->message.num) ||
+			!inx_append(folder->records, key, record)) {
 
-			if (record) {
-				message_free(record);
-			}
+			log_error("The messages index refused to accept a metadata record. { usernum = %lu / message = %lu }",
+				usernum, res_field_uint64(row, 0));
 
+			if (record) message_free(record);
 			res_table_free(result);
 			return false;
 		}
@@ -68,7 +69,7 @@ bool_t meta_data_fetch_folder_messages(uint64_t usernum, message_folder_t *folde
 }
 
 /**
- * @brief	Fetch  the tags for a specified message from the database.
+ * @brief	Fetch the tags for a specified message from the database.
  * @note	The results of the operation will be stored in the specified meta message object's "tags" member.
  * @param	message		the meta message object for which the tags will be looked up.
  * @return	This function returns no value.
@@ -126,9 +127,16 @@ bool_t meta_data_fetch_messages(meta_user_t *user) {
 		return false;
 	}
 
-	// If were updating, free the existing list of messages.
-	inx_cleanup(user->messages);
-	user->messages = NULL;
+	// If we're updating an existing index, free the current collection of messages.
+	if (user->messages) {
+		inx_truncate(user->messages);
+	}
+
+	// Otherwise we need to allocate an index to hold the result, and abort if the allocation fails.
+	else if (!(user->messages = inx_alloc(M_INX_LINKED, &meta_message_free))) {
+		log_error("Could not create a linked list for the messages.");
+		return false;
+	}
 
 	mm_wipe(parameters, sizeof(parameters));
 
@@ -144,12 +152,6 @@ bool_t meta_data_fetch_messages(meta_user_t *user) {
 	else if (!(row = res_row_next(result))) {
 		res_table_free(result);
 		return true;
-	}
-
-	if (!(user->messages = inx_alloc(M_INX_LINKED, &meta_message_free))) {
-		log_error("Could not create a linked list for the messages.");
-		res_table_free(result);
-		return false;
 	}
 
 	while (row) {
@@ -188,7 +190,7 @@ bool_t meta_data_fetch_messages(meta_user_t *user) {
 		key.val.u64 = message->messagenum;
 
 		// Add this message to the structure.
-		if (!inx_insert(user->messages, key, message)) {
+		if (!inx_append(user->messages, key, message)) {
 			log_error("Could not append the message to the linked list.");
 			mm_free(message);
 			res_table_free(result);

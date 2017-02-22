@@ -285,11 +285,15 @@ inx_t * tree_alloc(uint64_t options, void *data_free) {
 	if (!(result = mm_alloc(sizeof(inx_t)))) {
 		log_pedantic("Unable to allocate a new inx structure. {sizeof(inx_t) = %zu}", sizeof(inx_t));
 		return NULL;
-	} else if (!(result->index = tcndbnew2_d(cmp, NULL))) {
+	}
+	else if (!(result->index = tcndbnew2_d(cmp, NULL))) {
 		log_pedantic("Unable to create a new tree index structure. {tcndbnew2 = NULL}");
 		mm_free(result);
 		return NULL;
 	}
+
+	// The last variable is only applicable to linked lists.
+	result->last = NULL;
 
 	result->options = options;
 	result->data_free = data_free;
@@ -297,6 +301,7 @@ inx_t * tree_alloc(uint64_t options, void *data_free) {
 	result->index_truncate = tree_truncate;
 
 	result->find = tree_find;
+	result->append = tree_insert;
 	result->insert = tree_insert;
 	result->delete = tree_delete;
 

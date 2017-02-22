@@ -1259,7 +1259,7 @@ inx_t * imap_duplicate_messages(inx_t *messages) {
 				inx_free(output);
 				return NULL;
 			}
-			else if (!(key.val.u64 = active->messagenum) || !inx_insert(output, key, duplicate)) {
+			else if (!(key.val.u64 = active->messagenum) || !inx_append(output, key, duplicate)) {
 				log_error("Unable to add the duplicate message to our list.");
 				meta_message_free(duplicate);
 				inx_cursor_free(cursor);
@@ -1402,7 +1402,7 @@ inx_t * imap_narrow_messages(inx_t *messages, uint64_t selected, stringer_t *ran
 				if (active->foldernum == selected && ((uid == 0 && ++number >= start && (asterisk == 1 || number <= end)) ||
 					(uid == 1 && active->messagenum >= start && (asterisk == 1 || active->messagenum <= end)))) {
 					key.val.u64 = active->messagenum;
-					inx_insert(output, key, active);
+					inx_append(output, key, active);
 				}
 
 			}

@@ -7,7 +7,6 @@
 
 #include "magma.h"
 
-
 /**
  * @brief	Free a meta message object (and its tags).
  * @return	This function returns no value.

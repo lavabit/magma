@@ -594,7 +594,7 @@ inx_t * imap_search_messages(connection_t *con) {
 			if (active->foldernum == con->imap.selected &&
 					imap_search_messages_inner(con->imap.user, &message, &header, active, con->imap.arguments, 0) == 1 &&
 					(key.val.u64 = active->messagenum) && (duplicate = meta_message_dupe(active)) &&
-					inx_insert(output, key, duplicate) != true) {
+					inx_append(output, key, duplicate) != true) {
 				meta_message_free(duplicate);
 			}
 

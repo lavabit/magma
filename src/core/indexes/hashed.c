@@ -496,10 +496,14 @@ inx_t * hashed_alloc(uint64_t options, void *data_free) {
 
 	if ((result = mm_alloc(sizeof(inx_t))) == NULL) {
 		return NULL;
-	} else if (!(result->index = mm_alloc(sizeof(hashed_index_t) + (sizeof(hashed_bucket_t *) * MAGMA_HASHED_BUCKETS)))) {
+	}
+	else if (!(result->index = mm_alloc(sizeof(hashed_index_t) + (sizeof(hashed_bucket_t *) * MAGMA_HASHED_BUCKETS)))) {
 		mm_free(result);
 		return NULL;
 	}
+
+	// The last variable is only applicable to linked lists.
+	result->last = NULL;
 
 	result->options = options;
 	result->data_free = data_free;
@@ -508,6 +512,7 @@ inx_t * hashed_alloc(uint64_t options, void *data_free) {
 	((hashed_index_t *)(result->index))->buckets = MAGMA_HASHED_BUCKETS;
 
 	result->find = hashed_find;
+	result->append = hashed_insert;
 	result->insert = hashed_insert;
 	result->delete = hashed_delete;
 

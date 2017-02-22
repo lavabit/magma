@@ -34,7 +34,7 @@ typedef enum {
 typedef struct {
 
 	// Data and record count
-	void *index;
+	void *index, *last;
 	pthread_rwlock_t lock;
 	uint64_t count, serial, automatic, options, references;
 
@@ -45,6 +45,7 @@ typedef struct {
 
 	bool_t (*delete)(void *index, multi_t envelope);
 	bool_t (*insert)(void *index, multi_t envelope, void *data);
+	bool_t (*append)(void *index, multi_t envelope, void *data);
 
 	void * (*find)(void *index, multi_t envelope);
 
@@ -75,6 +76,7 @@ void *          inx_cursor_value_next(inx_cursor_t *cursor);
 
 /// inx.c
 inx_t *    inx_alloc(uint64_t options, void *data_free);
+bool_t     inx_append(inx_t *inx, multi_t key, void *data);
 void       inx_auto_read(inx_t *inx);
 void       inx_auto_unlock(inx_t *inx);
 void       inx_auto_write(inx_t *inx);

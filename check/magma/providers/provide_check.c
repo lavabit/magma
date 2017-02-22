@@ -76,7 +76,7 @@ START_TEST (check_compress_lzo_m) {
 		errmsg = NULLER("The multi-threaded LZO compression test failed.");
 	}
 
-	log_test("COMPRESSION / LZO / MULTITHREADED:", errmsg);
+	log_test("COMPRESSION / LZO / MULTI THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
@@ -114,7 +114,7 @@ START_TEST (check_compress_zlib_m) {
 		errmsg = NULLER("The multi-threaded ZLIB compression test failed.");
 	}
 
-	log_test("COMPRESSION / ZLIB / MULTITHREADED:", errmsg);
+	log_test("COMPRESSION / ZLIB / MULTI THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
@@ -152,7 +152,7 @@ START_TEST (check_compress_bzip_m) {
 		errmsg = NULLER("The multi-threaded BZIP compression test failed.");
 	}
 
-	log_test("COMPRESSION / BZIP / MULTITHREADED:", errmsg);
+	log_test("COMPRESSION / BZIP / MULTI THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
@@ -192,7 +192,7 @@ START_TEST (check_tank_lzo_m) {
 		errmsg = NULLER("The multi-threaded LZO storage tank test failed.");
 	}
 
-	log_test("TANK / LZO / MULTITHREADED:", errmsg);
+	log_test("TANK / LZO / MULTI THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 	tank_maintain();
 }
@@ -233,7 +233,7 @@ START_TEST (check_tank_zlib_m) {
 		errmsg = NULLER("The multi-threaded ZLIB storage tank test failed.");
 	}
 
-	log_test("TANK / ZLIB / MULTITHREADED:", errmsg);
+	log_test("TANK / ZLIB / MULTI THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 	tank_maintain();
 }
@@ -273,7 +273,7 @@ START_TEST (check_tank_bzip_m) {
 		errmsg = NULLER("The multi-threaded BZIP storage tank test failed.");
 	}
 
-	log_test("TANK / BZIP / MULTITHREADED:", errmsg);
+	log_test("TANK / BZIP / MULTI THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 	tank_maintain();
 
@@ -426,7 +426,7 @@ START_TEST (check_rand_m) {
 
 	errmsg = check_rand_mthread();
 
-	log_test("CRYPTOGRAPHY / RAND / MULTITHREADED:", errmsg);
+	log_test("CRYPTOGRAPHY / RAND / MULTI THREADED:", errmsg);
 	ck_assert_msg(!errmsg, st_char_get(errmsg));
 	st_cleanup(errmsg);
 }

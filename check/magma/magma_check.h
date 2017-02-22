@@ -32,6 +32,7 @@
 #include "users/users_check.h"
 #include "mail/mail_check.h"
 #include "smtp/smtp_check.h"
+#include "regression/regression_check.h"
 
 extern int case_timeout;
 
@@ -114,6 +115,8 @@ Suite * suite_check_sample(void);
 
 #define OBJECT_CHECK_ITERATIONS 16
 
+#define REGRESSION_CHECK_FILE_DESCRIPTORS_LEAK_MTHREADS 8
+
 //! Exhaustive Test
 #else
 
@@ -193,5 +196,7 @@ Suite * suite_check_sample(void);
 //#define SYMMETRIC_CHECK_SIZE_MAX (1 * 1024 * 1024) // 1 megabyte
 
 #define OBJECT_CHECK_ITERATIONS 256
+
+#define REGRESSION_CHECK_FILE_DESCRIPTORS_LEAK_MTHREADS 32
 
 #endif

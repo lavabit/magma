@@ -187,17 +187,17 @@ void signal_refresh(int signal) {
  */
 bool_t signal_thread_start(void) {
 
-//	struct sigaction status;
-//
-//	/// TODO: Disabling this signal handler to see if it fixes the shutdown issue.
-//	// Zero out the signal structure and setup the normal shutdown handler.
-//	mm_wipe(&status, sizeof(struct sigaction));
-//	status.sa_handler = signal_status;
-//	status.sa_flags = 0;
-//	if (sigemptyset(&status.sa_mask) || sigaction(SIGALRM, &status, NULL)) {
-//		log_info("Could not setup the thread status signal handler.");
-//		return false;
-//	}
+	struct sigaction status;
+
+	/// TODO: Disabling this signal handler to see if it fixes the shutdown issue.
+	// Zero out the signal structure and setup the normal shutdown handler.
+	mm_wipe(&status, sizeof(struct sigaction));
+	status.sa_handler = signal_status;
+	status.sa_flags = 0;
+	if (sigemptyset(&status.sa_mask) || sigaction(SIGALRM, &status, NULL)) {
+		log_info("Could not setup the thread status signal handler.");
+		return false;
+	}
 
 	return true;
 }

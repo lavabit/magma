@@ -177,3 +177,79 @@ bool_t check_inx_cursor_mthread(check_inx_opt_t *opts) {
 	mm_free(threads);
 	return result;
 }
+
+bool_t check_inx_append_sthread(MAGMA_INDEX inx_type, stringer_t *errmsg) {
+
+	void *val;
+	uint64_t rnum;
+	char snum[64];
+	bool_t outcome = true;
+	check_inx_opt_t *opts;
+	multi_t last_key, key;
+
+	if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(inx_type, &mm_free)))) {
+		errmsg = NULLER("An error occured during initial allocation in the inx check append single-threaded test.");
+		outcome = false;
+	}
+	else {
+		// add to the index, alternating insert and append
+		for (uint64_t i = 0; status() && outcome && i < 20; i++) {
+
+			rnum += (rand_get_uint64()) + 1;
+			snprintf(snum, 64, "%lu", rnum);
+
+			if (!(val = ns_dupe(snum))) {
+				errmsg = NULLER("An error occured with the ns_dupe function.");
+				outcome = false;
+			}
+
+			mm_wipe(&key, sizeof(multi_t));
+			key.val.u64 = rnum;
+			key.type = M_TYPE_UINT64;
+
+			if (i % 4 == 0) {
+				if (!inx_insert(opts->inx, key, val)) {
+					errmsg = NULLER("An error occured during inx_insert");
+					mm_free(val);
+					outcome = false;
+				}
+				last_key = key;
+			} else if (i % 2 == 0) {
+				if (!inx_insert(opts->inx, key, val)) {
+					errmsg = NULLER("An error occured during inx_append");
+					mm_free(val);
+					outcome = false;
+				}
+				last_key = key;
+			} else {
+				if (!inx_append(opts->inx, key, val)) {
+					errmsg = NULLER("An error occured during inx_append");
+					mm_free(val);
+					outcome = false;
+				}
+				if (!inx_delete(opts->inx, key) || !inx_delete(opts->inx, last_key)) {
+					outcome = false;
+				}
+			}
+
+			if (i == 9) inx_truncate(opts->inx);
+		}
+	}
+
+	if (!inx_count(opts->inx)) {
+		outcome = false;
+		errmsg = NULLER("The index was not properly cleared.");
+	}
+
+	if (opts) {
+		inx_cleanup(opts->inx);
+		mm_free(opts);
+	}
+
+	return outcome;
+}
+
+// TODO: implement this test
+bool_t check_inx_append_mthread(MAGMA_INDEX type, stringer_t *errmsg) {
+	return true;
+}

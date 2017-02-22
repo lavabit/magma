@@ -46,6 +46,8 @@ bool_t    check_inx_cursor_sthread(check_inx_opt_t *opts);
 bool_t    check_inx_mthread(check_inx_opt_t *opts);
 void		  check_inx_mthread_cnv(check_inx_opt_t *opts);
 bool_t    check_inx_sthread(check_inx_opt_t *opts);
+bool_t 	  check_inx_append_sthread(MAGMA_INDEX, stringer_t*);
+bool_t 	  check_inx_append_mthread(MAGMA_INDEX, stringer_t*);
 
 /// linked_check.c
 bool_t   check_indexes_linked_cursor(char **errmsg);

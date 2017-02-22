@@ -14,7 +14,7 @@ MAGMA_DIST=`pwd`
 
 # add for suppressions --gen-suppressions=all
 # self modifying code --smc-check=[none,stack,all]
-#
+# track file descriptors --track-fds=yes
 
 valgrind --tool=memcheck \
 --trace-children=yes \
@@ -30,7 +30,6 @@ valgrind --tool=memcheck \
 --smc-check=none \
 --fullpath-after= \
 --leak-check=yes \
---track-fds=yes \
 --show-reachable=yes \
 --leak-resolution=high \
 --workaround-gcc296-bugs=no \

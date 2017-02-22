@@ -42,7 +42,12 @@ dev/tools/shabench/shabench
 
 # Profiler Artifacts and Binaries
 /gmon.out
-/magmad.pg
-/magmad.pg.so
-/magmad.check.pg
+/magmad.gprof
+/magmad.gprof.so
+/magmad.check.gprof
+
+/magmad.pprof
+/magmad.pprof.out
+/magmad.check.pprof
+/magmad.check.pprof.out
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Name: build.lib.sh
+# Name: build.lib.gprof.sh
 # Author: Ladar Levison
 #
 # Description: Used to compile the external dependencies required by magma, and combine them into the magmad.so shared object file. 
@@ -36,8 +36,8 @@ fi
 # Read in the build parameters.
 . "$M_PROJECT_ROOT/dev/scripts/builders/build.lib.params.sh"
 
-# Override the default magmad.so name, and make it magmad.pg.so
-M_SO="$M_PROJECT_ROOT/magmad.pg.so"
+# Override the default magmad.so name, and make it magmad.gprof.so
+M_SO="$M_PROJECT_ROOT/magmad.gprof.so"
 
 error() {
 	if [ $? -ne 0 ]; then

@@ -215,7 +215,7 @@ bool_t check_inx_append_sthread(MAGMA_INDEX inx_type, stringer_t *errmsg) {
 				}
 				last_key = key;
 			} else if (i % 2 == 0) {
-				if (!inx_insert(opts->inx, key, val)) {
+				if (!inx_append(opts->inx, key, val)) {
 					errmsg = NULLER("An error occured during inx_append");
 					mm_free(val);
 					outcome = false;
@@ -236,7 +236,7 @@ bool_t check_inx_append_sthread(MAGMA_INDEX inx_type, stringer_t *errmsg) {
 		}
 	}
 
-	if (!inx_count(opts->inx)) {
+	if (inx_count(opts->inx) != 0) {
 		outcome = false;
 		errmsg = NULLER("The index was not properly cleared.");
 	}

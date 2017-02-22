@@ -344,13 +344,13 @@ START_TEST (check_inx_append_s) {
 
 	log_disable();
 	bool_t outcome = true;
-	char *errmsg = NULL;
+	stringer_t *errmsg = NULL;
 
-	outcome = check_inx_append_sthread(M_INX_TREE, &errmsg);
-	if (outcome) outcome = check_inx_append_sthread(M_INX_HASHED, &errmsg);
-	if (outcome) outcome = check_inx_append_sthread(M_INX_LINKED, &errmsg);
+	outcome = check_inx_append_sthread(M_INX_TREE, errmsg);
+	if (outcome) outcome = check_inx_append_sthread(M_INX_HASHED, errmsg);
+	if (outcome) outcome = check_inx_append_sthread(M_INX_LINKED, errmsg);
 
-	log_test("CORE / INDEX / APPEND / SINGLE THREADED:", NULLER(errmsg));
+	log_test("CORE / INDEX / APPEND / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, errmsg);
 }
 END_TEST
@@ -360,7 +360,7 @@ START_TEST (check_inx_append_m) {
 
 	log_disable();
 	bool_t outcome = true;
-	char *errmsg = NULL;
+	stringer_t *errmsg = NULL;
 
 	outcome = check_inx_append_mthread(M_INX_TREE, &errmsg);
 	if (outcome) outcome = check_inx_append_mthread(M_INX_HASHED, &errmsg);
@@ -915,8 +915,8 @@ Suite * suite_check_core(void) {
 	testcase(s, tc, "Indexes / Hashed Cursor/M", check_inx_hashed_cursor_m);
 	testcase(s, tc, "Indexes / Tree Cursor/S", check_inx_tree_cursor_s);
 	testcase(s, tc, "Indexes / Tree Cursor/M", check_inx_tree_cursor_m);
-	testcase(s, tc, "Indexes / Append /S", check_inx_append_s);
-	testcase(s, tc, "Indexes / Append /M", check_inx_append_m);
+	testcase(s, tc, "Indexes / Append/S", check_inx_append_s);
+	testcase(s, tc, "Indexes / Append/M", check_inx_append_m);
 
 	return s;
 }

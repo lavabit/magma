@@ -54,7 +54,7 @@ bool_t check_mail_load_sthread(stringer_t *errmsg) {
 			result = false;
 		}
 
-		while (result && cursor && (active = inx_cursor_value_next(cursor))) {
+		for (uint64_t j = 0; result && cursor && (active = inx_cursor_value_next(cursor)) && j < MAIL_CHECK_LOAD_MAX; j++) {
 			if (!(message = mail_load_message(active,  user,  NULL, false))) {
 				st_sprint(errmsg, "User message failed to load properly. { usernum = %lu / message = %lu }",
 					user->usernum, active->messagenum);

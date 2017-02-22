@@ -298,6 +298,7 @@ int main(int argc, char *argv[]) {
 		srunner_add_suite(sr, suite_check_users());
 		srunner_add_suite(sr, suite_check_mail());
 		srunner_add_suite(sr, suite_check_smtp());
+		srunner_add_suite(sr, suite_check_regression());
 	}
 
 	// If were being run under Valgrind, we need to disable forking and increase the default timeout.

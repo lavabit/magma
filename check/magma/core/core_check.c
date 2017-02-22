@@ -132,7 +132,7 @@ START_TEST (check_inx_linked_m) {
 		mm_free(opts);
 	}
 
-	log_test("CORE / INDEX / LINKED / MULTITHREADED:", errmsg);
+	log_test("CORE / INDEX / LINKED / MULTI THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
@@ -172,7 +172,7 @@ START_TEST (check_inx_tree_m) {
 		mm_free(opts);
 	}
 
-	log_test("CORE / INDEX / TREE / MULTITHREADED:", errmsg);
+	log_test("CORE / INDEX / TREE / MULTI THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
@@ -213,7 +213,7 @@ START_TEST (check_inx_hashed_m) {
 		mm_free(opts);
 	}
 
-	log_test("CORE / INDEX / HASHED / MULTITHREADED:", errmsg);
+	log_test("CORE / INDEX / HASHED / MULTI THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
@@ -253,7 +253,7 @@ START_TEST (check_inx_linked_cursor_m) {
 		mm_free(opts);
 	}
 
-	log_test("CORE / INDEX / LINKED CURSOR / MULTITHREADED:", NULLER(errmsg));
+	log_test("CORE / INDEX / LINKED CURSOR / MULTI THREADED:", NULLER(errmsg));
 	ck_assert_msg(outcome, errmsg);
 }
 END_TEST
@@ -294,7 +294,7 @@ START_TEST (check_inx_tree_cursor_m) {
 		mm_free(opts);
 	}
 
-	log_test("CORE / INDEX / TREE CURSOR / MULTITHREADED:", errmsg);
+	log_test("CORE / INDEX / TREE CURSOR / MULTI THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
@@ -335,7 +335,7 @@ START_TEST (check_inx_hashed_cursor_m) {
 		mm_free(opts);
 	}
 
-	log_test("CORE / INDEX / HASHED CURSOR / MULTITHREADED:", errmsg);
+	log_test("CORE / INDEX / HASHED CURSOR / MULTI THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
@@ -480,7 +480,7 @@ START_TEST (check_digits) {
 	uint64_t ui64;
 
 	char buf[1024];
-	stringer_t *errmsg;
+	stringer_t *errmsg = NULL;
 	bool_t outcome = true;
 
 	for (uint64_t i = 0; status() && outcome && i < 8192; i++) {

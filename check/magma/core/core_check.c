@@ -344,30 +344,30 @@ START_TEST (check_inx_append_s) {
 
 	log_disable();
 	bool_t outcome = true;
-	stringer_t *errmsg = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	outcome = check_inx_append_sthread(M_INX_TREE, errmsg);
 	if (outcome) outcome = check_inx_append_sthread(M_INX_HASHED, errmsg);
 	if (outcome) outcome = check_inx_append_sthread(M_INX_LINKED, errmsg);
 
 	log_test("CORE / INDEX / APPEND / SINGLE THREADED:", errmsg);
-	ck_assert_msg(outcome, errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
 
 
 START_TEST (check_inx_append_m) {
 
-	log_disable();
+	//log_disable();
 	bool_t outcome = true;
-	stringer_t *errmsg = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 
-	outcome = check_inx_append_mthread(M_INX_TREE, &errmsg);
-	if (outcome) outcome = check_inx_append_mthread(M_INX_HASHED, &errmsg);
-	if (outcome) outcome = check_inx_append_mthread(M_INX_LINKED, &errmsg);
+	outcome = check_inx_append_mthread(M_INX_TREE, errmsg);
+	if (outcome) outcome = check_inx_append_mthread(M_INX_HASHED, errmsg);
+	if (outcome) outcome = check_inx_append_mthread(M_INX_LINKED, errmsg);
 
-	log_test("CORE / INDEX / APPEND / MULTI THREADED:", NULLER("SKIPPED"));
-	ck_assert_msg(outcome, errmsg);
+	log_test("CORE / INDEX / APPEND / MULTI THREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
 

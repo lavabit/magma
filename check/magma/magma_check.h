@@ -49,7 +49,7 @@ Suite * suite_check_sample(void);
 #define RUN_TEST_CASE_TIMEOUT 100
 #define PROFILE_TEST_CASE_TIMEOUT 1000
 
-#define INX_CHECK_MTHREADS 0
+#define INX_CHECK_MTHREADS 2
 #define INX_CHECK_OBJECTS 1024
 
 #define TREE_INSERTS_CHECK 128

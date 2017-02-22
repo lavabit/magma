@@ -6,14 +6,29 @@
 
 #include "magma_check.h"
 
-bool_t check_regression_file_descriptors_leak_mthread(void) {
+void check_regression_file_descriptors_leak_test(void) {
+
 	stringer_t *m;
-	if (!(m = st_alloc_opts(MAPPED_T | JOINTED | HEAP, 1024))) {
-		return false;
-	} else {
-		st_free(m);
-		return true;
+	bool_t *outcome;
+
+	if (!thread_start() || !(outcome = mm_alloc(sizeof(bool_t)))) {
+		log_error("Unable to setup the thread context.");
+		pthread_exit(NULL);
+		return;
 	}
+
+	if (!(m = st_alloc_opts(MAPPED_T | JOINTED | HEAP, 1024))) {
+		*outcome = false;
+	}
+	else {
+		st_free(m);
+		*outcome = true;
+	}
+
+	thread_stop();
+	pthread_exit(outcome);
+	return;
+
 }
 
 START_TEST (check_regression_file_descriptors_leak_m) {
@@ -28,13 +43,14 @@ START_TEST (check_regression_file_descriptors_leak_m) {
 	if (!(threads = mm_alloc(sizeof(pthread_t) * REGRESSION_CHECK_FILE_DESCRIPTORS_LEAK_MTHREADS))) {
 		errmsg = NULLER("Thread allocation failed.");
 		outcome = false;
-	} else {
+	}
+	else {
 		path = st_quick(MANAGEDBUF(255), "/proc/%i/fd/", process_my_pid());
 		folders_before = folder_count(path, false, false);
 
 		// fork a bunch of processes that open file descriptors
 		for (uint64_t counter = 0; counter < REGRESSION_CHECK_FILE_DESCRIPTORS_LEAK_MTHREADS; counter++) {
-			if (thread_launch(threads + counter, &check_regression_file_descriptors_leak_mthread, NULL)) {
+			if (thread_launch(threads + counter, &check_regression_file_descriptors_leak_test, NULL)) {
 				errmsg = NULLER("Thread launch failed.");
 				outcome = false;
 			}
@@ -49,6 +65,9 @@ START_TEST (check_regression_file_descriptors_leak_m) {
 			else if (!result) {
 				if (!errmsg) errmsg = NULLER("Thread test failed.");
 				outcome = false;
+			}
+			else {
+				mm_free(result);
 			}
 		}
 

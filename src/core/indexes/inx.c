@@ -19,7 +19,6 @@ void inx_unlock(inx_t *inx) {
 	return;
 }
 
-
 void inx_auto_unlock(inx_t *inx) {
 	if (inx->automatic) {
 		rwlock_unlock(&(inx->lock));
@@ -123,7 +122,7 @@ uint64_t inx_serial(inx_t *inx) {
 #endif
 
 	inx_auto_read(inx);
-	serial = inx->count;
+	serial = inx->serial;
 	inx_auto_unlock(inx);
 
 	return serial;

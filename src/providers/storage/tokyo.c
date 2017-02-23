@@ -25,7 +25,7 @@ bool_t lib_load_tokyo(void) {
 			M_BIND(tchdberrmsg), M_BIND(tchdbtune), M_BIND(tchdbputasync), M_BIND(tchdbopen), M_BIND(tchdbsetmutex), M_BIND(tchdbout),
 			M_BIND(tchdbpath), M_BIND(tchdbget), M_BIND(tcfree), M_BIND(tchdbrnum),	M_BIND(tchdbfsiz), M_BIND(tchdbsetdfunit),
 			M_BIND(tchdbdefrag), M_BIND(tchdboptimize),	M_BIND(tcndbget3), M_BIND(tcndbiternext2), M_BIND(tcndbiterinit), M_BIND(tcndbdup),
-			M_BIND(tcversion)
+			M_BIND(tcversion), M_BIND(tctreeclear)
 	};
 
 	if (!lib_symbols(sizeof(tokyo) / sizeof(symbol_t), tokyo)) {

@@ -150,6 +150,7 @@ bool_t linked_delete(void *inx, multi_t key) {
 
 	// We didn't find the correct node, or the index is corrupted.
 	if (node == NULL || node->record == NULL) {
+//		log_pedantic("Couldn't find the node.");
 		return false;
 	}
 
@@ -494,9 +495,10 @@ void linked_truncate(void *inx) {
 		node = next;
 	}
 
-	index->serial++;
-	index->count = 0;
 	index->index = index->last = NULL;
+	index->count = 0;
+	index->serial++;
+
 	return;
 }
 

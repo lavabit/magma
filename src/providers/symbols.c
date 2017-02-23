@@ -447,6 +447,7 @@ void (*tcndbdel_d)(TCNDB *tree) = NULL;
 bool (*tchdbclose_d)(TCHDB *hdb) = NULL;
 void (*tclistdel_d)(TCLIST *list) = NULL;
 TCNDB * (*tcndbdup_d)(TCNDB *ndb) = NULL;
+void (*tctreeclear_d)(TCTREE *tree) = NULL;
 bool (*tchdbsetmutex_d)(TCHDB *hdb) = NULL;
 uint64_t (*tchdbfsiz_d)(TCHDB *hdb) = NULL;
 uint64_t (*tchdbrnum_d)(TCHDB *hdb) = NULL;

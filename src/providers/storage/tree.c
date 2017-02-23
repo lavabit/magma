@@ -52,11 +52,11 @@ void * tree_find(void *inx, multi_t key) {
 
 bool_t tree_delete(void *inx, multi_t key) {
 
-	int ksp, vsp;
 	multi_t dupe;
-	void *vp, *kp;
 	inx_t *index = inx;
+	int ksp = 0, vsp = 0;
 	bool_t result = false;
+	void *vp = NULL, *kp = NULL;
 
 	if (index == NULL || index->index == NULL || index->count == 0) {
 		return false;
@@ -207,10 +207,10 @@ void * tree_cursor_alloc(inx_t *inx) {
  */
 void tree_truncate(void *inx) {
 
-	void *val;
-	TCLIST *list;
-	multi_t *key;
-	int count, length;
+	void *val = NULL;
+	TCLIST *list = NULL;
+	multi_t *key = NULL;
+	int count = 0, length = 0;
 	inx_t *index = inx;
 
 	if (index == NULL || index->index == NULL) {
@@ -242,6 +242,11 @@ void tree_truncate(void *inx) {
 	}
 
 	tclistdel_d(list);
+
+	tctreeclear_d(((TCNDB *)index->index)->tree);
+	index->count = 0;
+	index->serial++;
+
 	return;
 }
 

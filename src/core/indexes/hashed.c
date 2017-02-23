@@ -478,6 +478,9 @@ void hashed_truncate(void *inx) {
 		}
 	}
 
+	index->count = 0;
+	index->serial++;
+
 	return;
 }
 

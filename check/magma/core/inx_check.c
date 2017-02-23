@@ -181,51 +181,60 @@ bool_t check_inx_cursor_mthread(check_inx_opt_t *opts) {
 bool_t check_inx_append_helper(inx_t *inx) {
 
 	void *val;
-	char snum[64];
+	chr_t snum[64];
 	bool_t outcome = true;
-	multi_t last_key, key;
-	uint64_t offset = (uint64_t)thread_get_thread_id() * 20;
+	multi_t last = mt_get_null(), key = mt_get_null();
+	uint64_t offset = (uint64_t)thread_get_thread_id() * INX_CHECK_OBJECTS;
 
-	// add to the index, alternating insert and append, and deleting occasionally
-	for (uint64_t i = 0; status() && outcome && i < 20; i++) {
+	key = mt_set_type(key, M_TYPE_UINT64);
+	last = mt_set_type(last, M_TYPE_UINT64);
 
+	// Add to the index, alternating insert and then append, while occasionally truncating and/or deleting.
+	for (uint64_t i = 0; status() && outcome && i < INX_CHECK_OBJECTS; i++) {
+
+		key.val.u64 = offset + i;
 		snprintf(snum, 64, "%lu", offset + i);
+		inx_lock_write(inx);
 
 		if (!(val = ns_dupe(snum))) {
 			outcome = false;
 		}
-
-		mm_wipe(&key, sizeof(multi_t));
-		key.val.u64 = offset + i;
-		key.type = M_TYPE_UINT64;
-
-		if (i % 4 == 0) {
+		else if (i % 4 == 0) {
 			if (!inx_insert(inx, key, val)) {
-				mm_free(val);
 				outcome = false;
+				ns_free(val);
 			}
-			mm_copy(&last_key, &key, sizeof(multi_t));
+			else {
+				last = mt_dupe(key);
+			}
 		}
 		else if (i % 2 == 0) {
 			if (!inx_append(inx, key, val)) {
-				mm_free(val);
 				outcome = false;
+				ns_free(val);
 			}
-			mm_copy(&last_key, &key, sizeof(multi_t));
+			else {
+				last = mt_dupe(key);
+			}
 		}
 		else {
 			if (!inx_append(inx, key, val)) {
-				mm_free(val);
 				outcome = false;
+				ns_free(val);
 			}
-			if (!inx_delete(inx, key) || !inx_delete(inx, last_key)) {
-				outcome = false;
-			}
-			mm_wipe(&last_key, sizeof(multi_t));
+			inx_delete(inx, key);
+			inx_delete(inx, last);
+			last.val.u64 = 0;
 		}
 
-		if (i == 9) inx_truncate(inx);
+		if (i == 73) inx_truncate(inx);
+
+		inx_unlock(inx);
 	}
+
+	inx_lock_write(inx);
+	inx_truncate(inx);
+	inx_unlock(inx);
 
 	return outcome;
 }
@@ -235,24 +244,21 @@ bool_t check_inx_append_sthread(MAGMA_INDEX inx_type, stringer_t *errmsg) {
 	inx_t *inx = NULL;
 	bool_t outcome = true;
 
-	if (status() && (!(inx = inx_alloc(inx_type, &mm_free)))) {
+	if (status() && (!(inx = inx_alloc(inx_type | M_INX_LOCK_MANUAL, &ns_free)))) {
 		st_sprint(errmsg, "An error occured during initial allocation in the inx check append single-threaded test.");
 		outcome = false;
 	}
 	else if(!check_inx_append_helper(inx)) {
-		st_sprint(errmsg, "An error occured within check_inx_append_helper.");
+		st_sprint(errmsg, "An error occured inside append test helper.");
 		outcome = false;
 	}
 
-	if (inx_count(inx) != 0) {
-		outcome = false;
+	if (inx_count(inx) != 0 && outcome) {
 		st_sprint(errmsg, "The index was not properly cleared.");
+		outcome = false;
 	}
 
-	if (inx) {
-		inx_cleanup(inx);
-	}
-
+	inx_cleanup(inx);
 	return outcome;
 }
 
@@ -280,14 +286,16 @@ bool_t check_inx_append_mthread(MAGMA_INDEX inx_type, stringer_t *errmsg) {
 	bool_t outcome = true;
 	pthread_t *threads = NULL;
 
-	if (status() && (!(inx = inx_alloc(inx_type, &mm_free)))) {
-		st_sprint(errmsg, "An error occured during initial allocation in the inx check append single-threaded test.");
+	if (status() && (!(inx = inx_alloc(inx_type | M_INX_LOCK_MANUAL, &ns_free)))) {
+		st_sprint(errmsg, "An error occured during initial allocation in the inx check append multi-threaded test.");
 		outcome = false;
-	} else {
+	}
+	else {
 
 		if (!INX_CHECK_MTHREADS || !(threads = mm_alloc(sizeof(pthread_t) * INX_CHECK_MTHREADS))) {
 			outcome = false;
-		} else {
+		}
+		else {
 
 			for (uint64_t counter = 0; counter < INX_CHECK_MTHREADS; counter++) {
 				if (thread_launch(threads + counter, &check_inx_append_mthread_test, inx)) {
@@ -298,17 +306,17 @@ bool_t check_inx_append_mthread(MAGMA_INDEX inx_type, stringer_t *errmsg) {
 
 			for (uint64_t counter = 0; counter < INX_CHECK_MTHREADS; counter++) {
 				if (thread_result(*(threads + counter), &result) || !result || !*(bool_t *)result) {
-					st_sprint(errmsg, "One of the append_check threads returned false");
+					if (st_empty(errmsg)) st_sprint(errmsg, "One of the append check threads returned false.");
 					outcome = false;
-				} else {
-					mm_free(result);
 				}
+
+				mm_cleanup(result);
 			}
 
 			mm_free(threads);
 		}
 
-		if (inx_count(inx) != 0) {
+		if (inx_count(inx) != 0 && st_empty(errmsg)) {
 			st_sprint(errmsg, "The index was not properly cleared.");
 			outcome = false;
 		}

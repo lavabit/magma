@@ -916,7 +916,6 @@ Suite * suite_check_core(void) {
 	testcase(s, tc, "Indexes / Tree Cursor/M", check_inx_tree_cursor_m);
 	testcase(s, tc, "Indexes / Append/S", check_inx_append_s);
 	testcase(s, tc, "Indexes / Append/M", check_inx_append_m);
-	tcase_set_timeout(tc, 600);
 
 	return s;
 }

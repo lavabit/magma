@@ -13,7 +13,7 @@
  * 			relay server must wait in order to be able to send more messages to the same recipient address again.
  * @param	con		the connection to have its remote address checked against the user's greylist.
  * @param	prefs	the smtp inbound preferences of the user
- * @return 	-1 on an internal server error, 0 if the message must wait longer, and 1 if the check was passed.
+ * @return 	-1 on an internal server error, 0 if the sender must wait longer, and 1 if the check was passed.
  */
 int_t smtp_check_greylist(connection_t *con, smtp_inbound_prefs_t *prefs) {
 

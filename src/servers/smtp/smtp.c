@@ -693,7 +693,6 @@ void smtp_rcpt_to(connection_t *con) {
 	if (result->greylist == 1) {
 
 		// Check the greylist and see if this IP has tried to e-mail this user before.
-		// This function will only return zero if no rows are found matching, but will add an entry for next time.
 		if (smtp_check_greylist(con, result) == 0) {
 			con_print(con, "451 MAILBOX UNAVAILABLE - PLEASE TRY AGAIN IN %u %s\r\n", result->greytime, result->greytime != 1 ? "MINUTES" : "MINUTE");
 			smtp_free_inbound(result);

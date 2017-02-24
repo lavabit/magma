@@ -186,6 +186,19 @@ START_TEST (check_smtp_authentication_s) {
 }
 END_TEST
 
+START_TEST (check_smtp_checkers_greylist_s) {
+
+	//log_disable();
+	bool_t outcome = true;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	outcome = check_smtp_checkers_greylist_sthread(errmsg);
+
+	log_test("SMTP / CHECKERS / GREYLIST / SINGLE THREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
+}
+END_TEST
+
 Suite * suite_check_smtp(void) {
 
 	TCase *tc;
@@ -193,6 +206,7 @@ Suite * suite_check_smtp(void) {
 
 	testcase(s, tc, "SMTP Inbound Processing/S", check_smtp_inbound_creation_s);
 	testcase(s, tc, "SMTP Authentication/S", check_smtp_authentication_s);
+	testcase(s, tc, "SMTP Checkers Greylist/S", check_smtp_checkers_greylist_s);
 
 	return s;
 }

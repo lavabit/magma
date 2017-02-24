@@ -11,17 +11,13 @@
  * @brief	Check to see if a transmitting address is in a user's greylist.
  * @note	The greylist is configured in the Dispatch table and specifies the minimum time, in minutes, that a transmitting smtp
  * 			relay server must wait in order to be able to send more messages to the same recipient address again.
- *
- *
- *
- *
  * @param	con		the connection to have its remote address checked against the user's greylist.
  * @param	prefs	the smtp inbound preferences of the user
- * @return -1 on general error, -2 if the check failed, and 1 if the check was passed.
+ * @return 	-1 on an internal server error, 0 if the message must wait longer, and 1 if the check was passed.
  */
 int_t smtp_check_greylist(connection_t *con, smtp_inbound_prefs_t *prefs) {
 
-	int_t result = -2;
+	int_t result = 0;
 	uint64_t now, stamp, updated;
 	stringer_t *value = NULL, *addr = MANAGEDBUF(128), *key = MANAGEDBUF(256);
 
@@ -50,11 +46,8 @@ int_t smtp_check_greylist(connection_t *con, smtp_inbound_prefs_t *prefs) {
 		updated = *(((uint64_t *)st_data_get(value)) + 1);
 
 		// If the different between now and the stamp is converted to minutes and greater than greytime, let the message through.
-		if (((stamp - now) / 60) > prefs->greytime) {
+		if (((now - stamp) / 60) > prefs->greytime) {
 			result = 1;
-		}
-		else {
-			result = -2;
 		}
 
 		// QUESTION: This logic seems off.
@@ -64,16 +57,17 @@ int_t smtp_check_greylist(connection_t *con, smtp_inbound_prefs_t *prefs) {
 			cache_set(key, value, 2592000);
 		}
 	}
+
 	// If no value was found in the database, store the current time. Errors result in a neutral return code.
-	else if (!(value = st_alloc_opts(BLOCK_T | CONTIGUOUS | HEAP, 16)) || (*((uint64_t *)st_data_get(value)) = now) ||
-		(*(((uint64_t *)st_data_get(value)) + 1) = now) || cache_set(key, value, 2592000) != 1) {
+	else if (!(value = st_alloc_opts(BLOCK_T | CONTIGUOUS | HEAP, 16)) || !(*((uint64_t *)st_data_get(value)) = now) ||
+		!(*(((uint64_t *)st_data_get(value)) + 1) = now) || (cache_set(key, value, 2592000) != 1)) {
 		log_pedantic("Unable to set greylist attempt record.");
 		result = -1;
 	}
 
 	// If no value was found in the cache, and it was created successfully, we'll end up here, so make the sender wait and retry.
 	else {
-		result = -2;
+		result = 0;
 	}
 
 	st_cleanup(value);

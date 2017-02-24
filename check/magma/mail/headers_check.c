@@ -7,16 +7,15 @@
 
 bool_t check_mail_headers_sthread(stringer_t *errmsg) {
 
+	connection_t con;
 	bool_t result = true;
-	uint32_t max = check_message_max();
 	stringer_t *data = NULL;
 	smtp_message_t *parsed = NULL;
-	connection_t con;
+	uint32_t max = check_message_max();
 
 	mm_wipe(&con, sizeof(connection_t));
 	con.smtp.authenticated = true;
 	con.smtp.mailfrom = NULLER("check@example.com");
-
 
 	for (uint32_t i = 0; i < max && result && status(); i++) {
 
@@ -35,7 +34,7 @@ bool_t check_mail_headers_sthread(stringer_t *errmsg) {
 			result = false;
 		}
 
-		else if (mail_add_required_headers(&con, parsed)) {
+		else if (!mail_add_required_headers(&con, parsed)) {
 			st_sprint(errmsg, "Mail message header cleanup failed to add the required headers. { message = %i }", i);
 			result = false;
 		}

@@ -50,7 +50,6 @@ int_t smtp_check_greylist(connection_t *con, smtp_inbound_prefs_t *prefs) {
 			result = 1;
 		}
 
-		// QUESTION: This logic seems off.
 		// If the updated time is more than 1 day old, set the value in cache again so it won't be expired.
 		if ((now - 86400) > updated) {
 			*(((uint64_t *)st_data_get(value)) + 1) = now;
@@ -60,18 +59,12 @@ int_t smtp_check_greylist(connection_t *con, smtp_inbound_prefs_t *prefs) {
 
 	// If no value was found in the database, store the current time. Errors result in a neutral return code.
 	else if (!(value = st_alloc_opts(BLOCK_T | CONTIGUOUS | HEAP, 16)) || !(*((uint64_t *)st_data_get(value)) = now) ||
-		!(*(((uint64_t *)st_data_get(value)) + 1) = now) || (cache_set(key, value, 2592000) != 1)) {
+		!(*(((uint64_t *)st_data_get(value)) + 1) = now) || cache_set(key, value, 2592000) != 1) {
 		log_pedantic("Unable to set greylist attempt record.");
 		result = -1;
 	}
 
-	// If no value was found in the cache, and it was created successfully, we'll end up here, so make the sender wait and retry.
-	else {
-		result = 0;
-	}
-
 	st_cleanup(value);
-
 	return result;
 }
 

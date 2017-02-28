@@ -1,3 +1,9 @@
+/**
+ * @file /check/magma/servers/smtp/checkers_check.c
+ *
+ * @brief SMTP checkers test functions.
+ */
+
 #include "magma_check.h"
 
 bool_t check_smtp_checkers_greylist_sthread(stringer_t *errmsg) {

@@ -48,7 +48,7 @@ void net_listen(void) {
 	while (status()) {
 
 		// Get back a list of sockets ready for data.
-		if ((ready = epoll_wait(ed, &events[0], MAGMA_SERVER_INSTANCES, 100)) < 0 && errno != EINTR) {
+		if ((ready = epoll_wait(ed, &events[0], MAGMA_SERVER_INSTANCES, 100000)) < 0 && errno != EINTR) {
 			log_info("The connection accepter returned an error. { epoll_wait = -1 / error = %s }", strerror_r(errno, bufptr, buflen));
 		}
 		// Skip socket processing if a timeout occurs.

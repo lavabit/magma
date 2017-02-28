@@ -70,14 +70,14 @@ bool_t      servers_config(stringer_t *name, stringer_t *value);
 bool_t      servers_encryption_start(void);
 void        servers_encryption_stop(void);
 void        servers_free(void);
-server_t * 	servers_get_by_socket(int sockd);
+server_t *  servers_get_by_protocol(uint32_t protocol, bool_t tls);
+server_t *  servers_get_by_socket(int sockd);
 uint64_t    servers_get_count_using_port(uint32_t port);
 bool_t      servers_network_start(void);
 void        servers_network_stop(void);
+void        servers_output_help(void);
 void        servers_output_settings(void);
 bool_t      servers_set_value(server_keys_t *setting, server_t *server, stringer_t *value);
 bool_t      servers_validate(void);
-void		servers_output_help(void);
-
 
 #endif

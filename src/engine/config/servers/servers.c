@@ -35,9 +35,39 @@ server_t * servers_get_by_socket(int sockd) {
 
 	server_t *result = NULL;
 
-	for (uint64_t i = 0; result == NULL && i < MAGMA_SERVER_INSTANCES; i++)
-		if (magma.servers[i] && magma.servers[i]->network.sockd == sockd)
+	for (uint64_t i = 0; result == NULL && i < MAGMA_SERVER_INSTANCES; i++) {
+		if (magma.servers[i] && magma.servers[i]->network.sockd == sockd) {
 			result = magma.servers[i];
+		}
+	}
+
+	return result;
+}
+
+/**
+ * @brief	Lookup the server instance associated with a particular protocol type.
+ * @note	This function doesn't allow you to specify which server instance to return, if more than one is available.
+ * @param	protocol	the enumerated protocol type being looked up.
+ * @param	tls			whether the server instance should be a TCP server, or a TLS server instance.
+ * @return	NULL if no server instances are configured, or a pointer to the server structure for a protocol.
+ */
+server_t * servers_get_by_protocol(uint32_t protocol, bool_t tls) {
+
+	server_t *result = NULL;
+	M_PORT type = (tls ? TLS_PORT : TCP_PORT);
+
+	if (protocol != SMTP && protocol != SUBMISSION && protocol != POP && protocol != IMAP &&
+		protocol != HTTP && protocol != DMTP && protocol != MOLTEN) {
+		log_pedantic("Requested a server instance for an unrecognized protocol type.");
+		return NULL;
+	}
+
+	for (uint64_t i = 0; result == NULL && i < MAGMA_SERVER_INSTANCES; i++) {
+		if (magma.servers[i] && magma.servers[i]->protocol == protocol &&
+			magma.servers[i]->enabled == true && magma.servers[i]->network.type == type) {
+			result = magma.servers[i];
+		}
+	}
 
 	return result;
 }

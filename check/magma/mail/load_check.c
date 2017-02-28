@@ -17,7 +17,7 @@ bool_t check_mail_load_sthread(stringer_t *errmsg) {
 	mail_message_t *message = NULL;
 	stringer_t *usernames[] = { PLACER("magma", 5) }, *passwords[] = { PLACER("password", 8) };
 
-	// The registration check must be run frist, otherwise we won't have a user to check against.
+	// The registration check must be run first, otherwise we won't have a user to check against.
 //	if (status() && (!check_username || !check_password)) {
 //		check_users_register_s(0);
 //		usernames[1] = check_username;
@@ -43,6 +43,7 @@ bool_t check_mail_load_sthread(stringer_t *errmsg) {
 				st_length_int(usernames[i]), st_char_get(usernames[i]), st_length_int(passwords[i]), st_char_get(passwords[i]));
 			result = false;
 		}
+
 		else if (!(folder = meta_folders_by_name(user->folders, NULLER("Inbox")))) {
 			st_sprint(errmsg, "User Inbox appears to be missing. { username =  %.*s / password = %.*s }",
 				st_length_int(usernames[i]), st_char_get(usernames[i]), st_length_int(passwords[i]), st_char_get(passwords[i]));

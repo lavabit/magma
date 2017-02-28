@@ -1980,11 +1980,6 @@
 							<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.741361349" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 						</tool>
 					</fileInfo>
-					<fileInfo id="cdt.managedbuild.toolchain.gnu.base.1042491499.540148943.235966157" name="smtp_check.c" rcbsApplicability="disable" resourcePath="check/magma/smtp/smtp_check.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.base.832138411.1669025179">
-						<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.832138411.1669025179" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base.832138411">
-							<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.2105128312" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
-						</tool>
-					</fileInfo>
 					<fileInfo id="cdt.managedbuild.toolchain.gnu.base.1042491499.540148943.1384250172" name="mail_check.c" rcbsApplicability="disable" resourcePath="check/magma/mail/mail_check.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.base.832138411.956363518">
 						<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.832138411.956363518" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base.832138411">
 							<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.380588301" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
@@ -2529,6 +2524,92 @@
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.1042491499;cdt.managedbuild.toolchain.gnu.base.1042491499.748127844;cdt.managedbuild.tool.gnu.c.compiler.base.404305589;cdt.managedbuild.tool.gnu.c.compiler.input.102438972">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerFileProfile"/>
 		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.1042491499.540148943.5250294.1566775600">
+			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerFileProfile"/>
+			<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
+				<buildOutputProvider>
+					<openAction enabled="true" filePath=""/>
+					<parser enabled="true"/>
+				</buildOutputProvider>
+				<scannerInfoProvider id="specsFile">
+					<runAction arguments="-E -P -v -dD ${plugin_state_location}/${specs_file}" command="gcc" useDefault="true"/>
+					<parser enabled="true"/>
+				</scannerInfoProvider>
+			</profile>
+			<profile id="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfile">
+				<buildOutputProvider>
+					<openAction enabled="true" filePath=""/>
+					<parser enabled="true"/>
+				</buildOutputProvider>
+				<scannerInfoProvider id="specsFile">
+					<runAction arguments="-E -P -v -dD ${plugin_state_location}/${specs_file}" command="gcc" useDefault="true"/>
+					<parser enabled="true"/>
+				</scannerInfoProvider>
+			</profile>
+			<profile id="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileCPP">
+				<buildOutputProvider>
+					<openAction enabled="true" filePath=""/>
+					<parser enabled="true"/>
+				</buildOutputProvider>
+				<scannerInfoProvider id="specsFile">
+					<runAction arguments="-E -P -v -dD ${plugin_state_location}/specs.cpp" command="g++" useDefault="true"/>
+					<parser enabled="true"/>
+				</scannerInfoProvider>
+			</profile>
+			<profile id="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC">
+				<buildOutputProvider>
+					<openAction enabled="true" filePath=""/>
+					<parser enabled="true"/>
+				</buildOutputProvider>
+				<scannerInfoProvider id="specsFile">
+					<runAction arguments="-E -P -v -dD ${plugin_state_location}/specs.c" command="gcc" useDefault="true"/>
+					<parser enabled="true"/>
+				</scannerInfoProvider>
+			</profile>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.1042491499.540148943.5250294">
+			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerFileProfile"/>
+			<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
+				<buildOutputProvider>
+					<openAction enabled="true" filePath=""/>
+					<parser enabled="true"/>
+				</buildOutputProvider>
+				<scannerInfoProvider id="specsFile">
+					<runAction arguments="-E -P -v -dD ${plugin_state_location}/${specs_file}" command="gcc" useDefault="true"/>
+					<parser enabled="true"/>
+				</scannerInfoProvider>
+			</profile>
+			<profile id="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfile">
+				<buildOutputProvider>
+					<openAction enabled="true" filePath=""/>
+					<parser enabled="true"/>
+				</buildOutputProvider>
+				<scannerInfoProvider id="specsFile">
+					<runAction arguments="-E -P -v -dD ${plugin_state_location}/${specs_file}" command="gcc" useDefault="true"/>
+					<parser enabled="true"/>
+				</scannerInfoProvider>
+			</profile>
+			<profile id="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileCPP">
+				<buildOutputProvider>
+					<openAction enabled="true" filePath=""/>
+					<parser enabled="true"/>
+				</buildOutputProvider>
+				<scannerInfoProvider id="specsFile">
+					<runAction arguments="-E -P -v -dD ${plugin_state_location}/specs.cpp" command="g++" useDefault="true"/>
+					<parser enabled="true"/>
+				</scannerInfoProvider>
+			</profile>
+			<profile id="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC">
+				<buildOutputProvider>
+					<openAction enabled="true" filePath=""/>
+					<parser enabled="true"/>
+				</buildOutputProvider>
+				<scannerInfoProvider id="specsFile">
+					<runAction arguments="-E -P -v -dD ${plugin_state_location}/specs.c" command="gcc" useDefault="true"/>
+					<parser enabled="true"/>
+				</scannerInfoProvider>
+			</profile>
+		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.1042491499.1834931754">
 			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerFileProfile"/>
 			<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
@@ -2583,7 +2664,7 @@
 			</profile>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.1042491499.540148943">
-			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerFileProfile"/>
+			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 			<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
 				<buildOutputProvider>
 					<openAction enabled="true" filePath=""/>

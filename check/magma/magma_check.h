@@ -33,6 +33,7 @@
 #include "mail/mail_check.h"
 #include "servers/smtp/smtp_check.h"
 #include "regression/regression_check.h"
+#include "config/config_check.h"
 
 extern int case_timeout;
 

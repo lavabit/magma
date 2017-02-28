@@ -11,9 +11,9 @@
 
 START_TEST (check_smtp_accept_store_message_s) {
 
-	//log_disable();
+	log_disable();
 	bool_t outcome = true;
-	stringer_t *errmsg = MANAGEDBUF(1024);
+	stringer_t *errmsg = MANAGEDBUF(2048);
 
 	outcome = check_smtp_accept_store_message_sthread(errmsg);
 

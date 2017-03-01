@@ -28,7 +28,7 @@ START_TEST (check_config_server_get_by_protocol_s) {
 		}
 	}
 
-	log_test("CONFIG / SERVER / GET BY PROTOCOL / SINGLE THREADED:", errmsg);
+	log_test("CONFIG / SERVER / PROTOCOL / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
@@ -38,7 +38,7 @@ Suite * suite_check_config(void) {
 	TCase *tc;
 	Suite *s = suite_create("\tConfig");
 
-	testcase(s, tc, "Config Server Get By Protocol/S", check_config_server_get_by_protocol_s);
+	testcase(s, tc, "Config / Protocol /S", check_config_server_get_by_protocol_s);
 
 	return s;
 }

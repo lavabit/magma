@@ -96,11 +96,6 @@ bool_t check_smtp_accept_store_spamsig_sthread(stringer_t *errmsg) {
 	return true;
 }
 
-// TODO
-bool_t check_smtp_accept_accept_message_sthread(stringer_t *errmsg) {
-	return true;
-}
-
 
 
 

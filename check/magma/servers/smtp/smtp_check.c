@@ -57,8 +57,6 @@ START_TEST (check_smtp_network_simple_s) {
 }
 END_TEST
 
-/// smtp/accept.c
-
 START_TEST (check_smtp_accept_store_message_s) {
 
 	log_disable();
@@ -67,7 +65,7 @@ START_TEST (check_smtp_accept_store_message_s) {
 
 	outcome = check_smtp_accept_store_message_sthread(errmsg);
 
-	log_test("SMTP / ACCEPT / STORE MESSAGE / SINGLE THREADED:", errmsg);
+	log_test("SMTP / ACCEPT / STORAGE / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
@@ -93,26 +91,10 @@ START_TEST (check_smtp_accept_store_spamsig_s) {
 
 	outcome = check_smtp_accept_store_spamsig_sthread(errmsg);
 
-	log_test("SMTP / ACCEPT / STORE SPAMSIG / SINGLE THREADED:", NULLER("SKIPPED"));
+	log_test("SMTP / ACCEPT / SIGNATURES / SINGLE THREADED:", NULLER("SKIPPED"));
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
-
-START_TEST (check_smtp_accept_accept_message_s) {
-
-	log_disable();
-	bool_t outcome = true;
-	stringer_t *errmsg = MANAGEDBUF(1024);
-
-	outcome = check_smtp_accept_accept_message_sthread(errmsg);
-
-	log_test("SMTP / ACCEPT / ACCEPT MESSAGE / SINGLE THREADED:", NULLER("SKIPPED"));
-	ck_assert_msg(outcome, st_char_get(errmsg));
-}
-END_TEST
-
-
-/// smtp/checkers.c
 
 START_TEST (check_smtp_checkers_greylist_s) {
 
@@ -122,7 +104,7 @@ START_TEST (check_smtp_checkers_greylist_s) {
 
 	outcome = check_smtp_checkers_greylist_sthread(errmsg);
 
-	log_test("SMTP / CHECKERS / GREYLIST / SINGLE THREADED:", errmsg);
+	log_test("SMTP / GREYLIST / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
@@ -132,20 +114,10 @@ Suite * suite_check_smtp(void) {
 	TCase *tc;
 	Suite *s = suite_create("\tSMTP");
 
-<<<<<<< HEAD
-	testcase(s, tc, "SMTP Network Simple Check", check_smtp_network_simple_s);
-	testcase(s, tc, "SMTP Accept Store Message/S", check_smtp_accept_store_message_s);
-	testcase(s, tc, "SMTP Accept Rollout/S", check_smtp_accept_rollout_s);
-	testcase(s, tc, "SMTP Accept Store Spamsig/S", check_smtp_accept_store_spamsig_s);
-	testcase(s, tc, "SMTP Accept Accept Message/S", check_smtp_accept_accept_message_s);
-=======
-	testcase(s, tc, "SMTP Accept Store Message/S", check_smtp_accept_store_message_s);
-	testcase(s, tc, "SMTP Accept Store Message/S", check_smtp_accept_rollout_s);
-	testcase(s, tc, "SMTP Accept Store Message/S", check_smtp_accept_store_spamsig_s);
-	testcase(s, tc, "SMTP Accept Store Message/S", check_smtp_accept_accept_message_s);
->>>>>>> develop
-	testcase(s, tc, "SMTP Checkers Greylist/S", check_smtp_checkers_greylist_s);
-
+	testcase(s, tc, "SMTP / Accept/S", check_smtp_accept_store_message_s);
+	testcase(s, tc, "SMTP / Rollout/S", check_smtp_accept_rollout_s);
+	testcase(s, tc, "SMTP / Signatres/S", check_smtp_accept_store_spamsig_s);
+	testcase(s, tc, "SMTP / Greylist/S", check_smtp_checkers_greylist_s);
 	return s;
 }
 

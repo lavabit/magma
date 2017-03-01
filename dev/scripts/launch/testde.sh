@@ -15,4 +15,4 @@ MAGMA_DIST=`pwd`
 export MAGMA_LIBRARY=$MAGMA_DIST/magmad.so
 export MAGMA_STORAGE=$MAGMA_DIST/sandbox/storage/local
 
-$MAGMA_DIST/dev/tools/testde/.debug/testde $1
+$MAGMA_DIST/dev/tools/testde/testde $1

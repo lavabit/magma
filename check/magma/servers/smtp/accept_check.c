@@ -9,100 +9,79 @@
 
 bool_t check_smtp_accept_store_message_sthread(stringer_t *errmsg) {
 
-	prime_t *prime;
 	bool_t outcome = true;
-	stringer_t *data= NULL;
-	smtp_inbound_prefs_t prefs;
+	stringer_t *data = NULL;
 	uint32_t max = check_message_max();
+	prime_t *key = NULL, *request = NULL, *signet = NULL;
 	uint64_t messagenums[max], messagesizes[max], fail_count = 0;
 	uint64_t messages_checkpoint = serial_get(OBJECT_MESSAGES, 1);
+	smtp_inbound_prefs_t prefs;
 
+	mm_wipe(&messagenums, sizeof(messagenums));
 	mm_wipe(&prefs, sizeof(smtp_inbound_prefs_t));
 
-	if (!(prime = prime_alloc(PRIME_USER_SIGNET, NONE))) {
-		outcome = false;
-		st_sprint(errmsg, "Failed to allocate signet.");
-	}
+	prefs.usernum = 1;
+	prefs.foldernum = 1;
 
-	else {
-		prime->signet.user = user_signet_alloc();
-		prime->signet.user->encryption = secp256k1_generate();
-	}
-
-	// try using improperly formed prefs or null data
-	if (outcome && smtp_store_message(&prefs, &data) != -1) {
-		outcome = false;
+	// Try using improperly formed prefs or NULL data.
+	if (smtp_store_message(&prefs, &data) != -1) {
 		st_sprint(errmsg, "Failed to return -1 when given improperly formed prefs or null data.");
-	}
-	else {
-		prefs.usernum = 1;
-		prefs.foldernum = 1;
-		prefs.signum = 0;
-		prefs.spamkey = 0;
+		return false;
 	}
 
-	for (uint32_t i = 0; outcome && status() && i < max-2; i+=2) {
+	// Generate an ephemeral signet for use in this test case.
+	if (!(key = prime_key_generate(PRIME_USER_KEY, NONE)) || !(request = prime_request_generate(key, NULL)) ||
+			!(signet = prime_request_sign(request, org_key))) {
+		st_sprint(errmsg, "Failed to allocate signet.");
+		prime_cleanup(request);
+		prime_cleanup(signet);
+		prime_cleanup(key);
+		return false;
+	}
 
-		prefs.signet = NULL;
+	for (uint32_t i = 0; outcome && status() && i < max; i++) {
 
+		// For odd message numbers, use encryption.
+		if (i % 2) {
+			prefs.signet = signet;
+		}
+		else {
+			prefs.signet = NULL;
+		}
+
+		// Now grab the message data and store it.
 		if (!(data = check_message_get(i))) {
-			outcome = false;
 			st_sprint(errmsg, "Failed to get the message data. { message = %i }", i);
-		}
-
-		else if (outcome && (smtp_store_message(&prefs, &data) != 1)) {
 			outcome = false;
-			st_cleanup(data);
-			st_sprint(errmsg, "Failed to store naked message.");
 		}
 
+		else if (smtp_store_message(&prefs, &data) != 1) {
+			st_sprint(errmsg, "Failed to store naked message.");
+			outcome = false;
+		}
 		else if ((messagenums[i] = prefs.messagenum) && (messagesizes[i] = sizeof(*data)) &&
 				serial_get(OBJECT_MESSAGES, prefs.usernum) != (messages_checkpoint += 1)) {
-			outcome = false;
-			st_cleanup(data);
 			st_sprint(errmsg, "Failed to increment messages checkpoint value.");
-		}
-
-		else {
-			st_cleanup(data);
-		}
-
-
-		if (outcome && !(data = check_message_get(i+1))) {
 			outcome = false;
-			st_cleanup(data);
-			st_sprint(errmsg, "Failed to get the message data. { message = %i }", i+1);
 		}
 
-		else if ((prefs.signet = prime) && smtp_store_message(&prefs, &data) != 1) {
-			outcome = false;
-			st_cleanup(data);
-			st_sprint(errmsg, "Failed to store encrypted message.");
-		}
-
-		else if ((messagenums[i+1] = prefs.messagenum) && (messagesizes[i+1] = sizeof(*data)) &&
-				serial_get(OBJECT_MESSAGES, prefs.usernum) != (messages_checkpoint += 1)) {
-			outcome = false;
-			st_cleanup(data);
-			st_sprint(errmsg, "Failed to increment messages checkpoint value.");
-		}
-
-		else {
-			st_cleanup(data);
-		}
+		st_cleanup(data);
+		data = NULL;
 	}
 
 	// remove messages to see if they existed
-	for (size_t i = 0; i < max-2; i++) {
-		if (!(mail_remove_message(1, messagenums[i], messagesizes[i], NULL))) fail_count++;
+	for (size_t i = 0; i < max; i++) {
+		if (messagenums[i] != 0 && !(mail_remove_message(1, messagenums[i], messagesizes[i], NULL))) fail_count++;
 	}
 
 	if (fail_count) {
-		outcome = false;
 		st_sprint(errmsg, "Failed to remove message(s) that should exist. { fail_count = %lu }", fail_count);
+		outcome = false;
 	}
 
-	if (prime) prime_cleanup(prime);
+	prime_free(request);
+	prime_free(signet);
+	prime_free(key);
 
 	return outcome;
 }

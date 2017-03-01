@@ -141,7 +141,7 @@ uint64_t mail_store_message(uint64_t usernum, prime_t *signet, uint64_t foldernu
 
 	// Insert a record into the database.
 	if ((messagenum = mail_db_insert_message(usernum, foldernum, *status, st_length_int(message), signum, sigkey, transaction)) == 0) {
-		log_pedantic("Could not create a record in the database. mail_db_insert_message = 0");
+		log_pedantic("Could not create a record in the database. { mail_db_insert_message = 0 }");
 		tran_rollback(transaction);
 		compress_cleanup(reduced);
 		prime_cleanup(encrypted);

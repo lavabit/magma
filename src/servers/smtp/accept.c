@@ -17,7 +17,7 @@ int_t smtp_store_message(smtp_inbound_prefs_t *prefs, stringer_t **local) {
 	uint32_t status = 0;
 	uint64_t messagenum;
 
-	if (prefs->usernum == 0 || local == NULL || prefs->foldernum == 0) {
+	if (prefs->usernum == 0 || prefs->foldernum == 0 || local == NULL || *local == NULL) {
 		log_pedantic("An invalid message or session was passed in for storage.");
 		return -1;
 	}

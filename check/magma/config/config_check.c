@@ -8,6 +8,7 @@
 
 START_TEST (check_config_server_get_by_protocol_s) {
 
+	log_disable();
 	bool_t outcome = true;
 	server_t *server = NULL;
 	stringer_t *errmsg = NULL;

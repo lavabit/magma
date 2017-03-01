@@ -63,6 +63,11 @@ bool_t check_smtp_accept_store_message_sthread(stringer_t *errmsg) {
 			st_sprint(errmsg, "Failed to increment messages checkpoint value.");
 		}
 
+		else {
+			st_cleanup(data);
+		}
+
+
 		if (outcome && !(data = check_message_get(i+1))) {
 			outcome = false;
 			st_cleanup(data);

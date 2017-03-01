@@ -132,11 +132,18 @@ Suite * suite_check_smtp(void) {
 	TCase *tc;
 	Suite *s = suite_create("\tSMTP");
 
+<<<<<<< HEAD
 	testcase(s, tc, "SMTP Network Simple Check", check_smtp_network_simple_s);
 	testcase(s, tc, "SMTP Accept Store Message/S", check_smtp_accept_store_message_s);
 	testcase(s, tc, "SMTP Accept Rollout/S", check_smtp_accept_rollout_s);
 	testcase(s, tc, "SMTP Accept Store Spamsig/S", check_smtp_accept_store_spamsig_s);
 	testcase(s, tc, "SMTP Accept Accept Message/S", check_smtp_accept_accept_message_s);
+=======
+	testcase(s, tc, "SMTP Accept Store Message/S", check_smtp_accept_store_message_s);
+	testcase(s, tc, "SMTP Accept Store Message/S", check_smtp_accept_rollout_s);
+	testcase(s, tc, "SMTP Accept Store Message/S", check_smtp_accept_store_spamsig_s);
+	testcase(s, tc, "SMTP Accept Store Message/S", check_smtp_accept_accept_message_s);
+>>>>>>> develop
 	testcase(s, tc, "SMTP Checkers Greylist/S", check_smtp_checkers_greylist_s);
 
 	return s;

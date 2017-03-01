@@ -1,7 +1,7 @@
 /**
  * @file /check/magma/config/config_check.h
  *
- * @brief config test functions.
+ * @brief Check the magma config logic and related functions.
  */
 
 #ifndef CONFIG_CHECK_H

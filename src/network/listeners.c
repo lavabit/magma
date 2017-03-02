@@ -15,14 +15,12 @@
  */
 void net_listen(void) {
 
-	server_t *server;
+	server_t *server = NULL;
 	int ed, ready, connection;
 	struct epoll_event epoll_context, events[MAGMA_SERVER_INSTANCES];
 
-	mm_wipe(&epoll_context, sizeof(struct epoll_event));
-
 	if ((ed = epoll_create(MAGMA_SERVER_INSTANCES)) == -1) {
-		log_critical("The epoll_create() call returned an error. {%s}", strerror_r(errno, bufptr, buflen));
+		log_critical("The epoll_create() call returned an error. { error = %s }", strerror_r(errno, MEMORYBUF(1024), 1024));
 		status_set(-2);
 		return;
 	}
@@ -31,11 +29,13 @@ void net_listen(void) {
 	for (uint64_t i = 0; i < MAGMA_SERVER_INSTANCES; i++) {
 
 		if ((server = magma.servers[i]) && server->enabled) {
+
+			mm_wipe(&epoll_context, sizeof(struct epoll_event));
 			epoll_context.events = EPOLLIN | EPOLLET;
 			epoll_context.data.fd = server->network.sockd;
 
 			if ((epoll_ctl(ed, EPOLL_CTL_ADD, server->network.sockd, &epoll_context)) == -1) {
-				log_info("The epoll_ctl() call returned an error. {%s}", strerror_r(errno, bufptr, buflen));
+				log_info("The epoll_ctl() call returned an error. { error = %s }", strerror_r(errno, MEMORYBUF(1024), 1024));
 				status_set(-2);
 				return;
 			}
@@ -49,8 +49,9 @@ void net_listen(void) {
 
 		// Get back a list of sockets ready for data.
 		if ((ready = epoll_wait(ed, &events[0], MAGMA_SERVER_INSTANCES, 100000)) < 0 && errno != EINTR) {
-			log_info("The connection accepter returned an error. { epoll_wait = -1 / error = %s }", strerror_r(errno, bufptr, buflen));
+			log_info("The connection accepter returned an error. { epoll_wait = -1 / error = %s }", strerror_r(errno, MEMORYBUF(1024), 1024));
 		}
+
 		// Skip socket processing if a timeout occurs.
 		else if (ready > 0) {
 
@@ -58,8 +59,9 @@ void net_listen(void) {
 
 				// Determine which server instance is responsible for the requested port.
 				if (!(server = servers_get_by_socket(events[i].data.fd))) {
-					log_info("Unable to locate the server structure for a socket descriptor. {%i}", events[i].data.fd);
+					log_info("Unable to locate the server structure for a socket descriptor. { socket = %i }", events[i].data.fd);
 				}
+
 				// Don't bother trying to accept connections on sockets indicating an error event.
 				else if (!(events[i].events & (EPOLLERR | EPOLLHUP))) {
 
@@ -71,7 +73,7 @@ void net_listen(void) {
 						}
 						// Keep calling accept until we get an error, but only log errors that are unexpected.
 						else if (errno != EAGAIN && errno == EWOULDBLOCK) {
-							log_info("Socket connection attempt failed. { accept = -1 / error = %s}", strerror_r(errno, bufptr, buflen));
+							log_info("Socket connection attempt failed. { accept = -1 / error = %s }", strerror_r(errno, MEMORYBUF(1024), 1024));
 						}
 
 					} while (connection != -1);
@@ -81,6 +83,7 @@ void net_listen(void) {
 		}
 	}
 
+	// Close the epoll descriptor.
 	close(ed);
 
 	return;

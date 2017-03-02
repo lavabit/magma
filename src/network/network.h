@@ -134,7 +134,7 @@ client_t *  client_connect(chr_t *host, uint32_t port);
 int_t       client_secure(client_t *client);
 int_t       client_status(client_t *client);
 
-/// options.c#include "smtp.h"
+/// options.c
 
 bool_t   net_set_buffer_length(int sd, int buffer_recv, int buffer_send);
 bool_t   net_set_keepalive(int sd, bool_t keepalive, int_t idle, int_t interval, int_t tolerance);

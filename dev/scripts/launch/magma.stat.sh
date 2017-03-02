@@ -13,10 +13,10 @@ if [ -z "$PID" ]; then
 	exit 2
 fi
 
-printf "stats\r\nquit\r\n" | nc -w 120 localhost 6000
+printf "stats\r\nquit\r\n" | nc -w 120s localhost 6000
 if [ "$?" != "0" ]; then
 	sleep 5
-	printf "stats\r\nquit\r\n" | nc -w 120 localhost 6000
+	printf "stats\r\nquit\r\n" | nc -w 120s localhost 6000
 fi
 if [ "$?" != "0" ]; then
 	echo "error fetching magma statistics"

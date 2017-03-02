@@ -506,7 +506,7 @@ START_TEST (check_virus_s) {
 		errmsg = NULLER(check_virus_sthread());
 	}
 
-	log_test("CHECKERS / VIRUS / SINGLE THREADED:", status() ? errmsg  : NULLER("SKIPPED"));
+	log_test("CHECKERS / VIRUS / SINGLE THREADED:", (status() || !magma.iface.virus.available) ? errmsg : NULLER("SKIPPED"));
 	ck_assert_msg(!magma.iface.virus.available, NULLER("The virus checker test failed."));
 }
 END_TEST

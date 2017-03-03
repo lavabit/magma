@@ -286,29 +286,22 @@ bool_t smtp_add_bypass_entry(stringer_t *subnet) {
  */
 bool_t smtp_bypass_check(connection_t *con) {
 
-	inx_cursor_t *cursor;
-	subnet_t *subnet;
 	ip_t remote;
 	bool_t result = false;
+	subnet_t *subnet = NULL;
+	inx_cursor_t *cursor = NULL;
 
 	if (!magma.smtp.bypass_subnets || !con_addr(con, &remote)) {
 		return false;
 	}
-
-	if (!(cursor = inx_cursor_alloc(magma.smtp.bypass_subnets))) {
+	else if (!(cursor = inx_cursor_alloc(magma.smtp.bypass_subnets))) {
 		return false;
 	}
 
-	while ((subnet = inx_cursor_value_next(cursor))) {
-
-		if (ip_matches_subnet (subnet, &remote)) {
-			result = true;
-			break;
-		}
-
+	while (!result && (subnet = inx_cursor_value_next(cursor))) {
+		if (ip_matches_subnet(subnet, &remote)) result = true;
 	}
 
 	inx_cursor_free(cursor);
-
 	return result;
 }

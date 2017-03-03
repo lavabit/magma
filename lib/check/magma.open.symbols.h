@@ -545,6 +545,7 @@ extern void (*tcndbdel_d)(TCNDB *tree);
 extern bool (*tchdbclose_d)(TCHDB *hdb);
 extern void (*tclistdel_d)(TCLIST *list);
 extern TCNDB * (*tcndbdup_d)(TCNDB *ndb);
+extern void (*tctreeclear_d)(TCTREE *tree);
 extern bool (*tchdbsetmutex_d)(TCHDB *hdb);
 extern uint64_t (*tchdbfsiz_d)(TCHDB *hdb);
 extern uint64_t (*tchdbrnum_d)(TCHDB *hdb);

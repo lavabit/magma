@@ -411,6 +411,7 @@ void (*tcndbdel_d)(TCNDB *tree) = NULL;
 bool (*tchdbclose_d)(TCHDB *hdb) = NULL;
 void (*tclistdel_d)(TCLIST *list) = NULL;
 TCNDB * (*tcndbdup_d)(TCNDB *ndb) = NULL;
+void (*tctreeclear_d)(TCTREE *tree) = NULL;
 bool (*tchdbsetmutex_d)(TCHDB *hdb) = NULL;
 uint64_t (*tchdbfsiz_d)(TCHDB *hdb) = NULL;
 uint64_t (*tchdbrnum_d)(TCHDB *hdb) = NULL;
@@ -947,6 +948,7 @@ if ((*(void **)&(tcndbdel_d) = dlsym(magma, "tcndbdel")) == NULL) return "tcndbd
 if ((*(void **)&(tchdbclose_d) = dlsym(magma, "tchdbclose")) == NULL) return "tchdbclose";
 if ((*(void **)&(tclistdel_d) = dlsym(magma, "tclistdel")) == NULL) return "tclistdel";
 if ((*(void **)&(tcndbdup_d) = dlsym(magma, "tcndbdup")) == NULL) return "tcndbdup";
+if ((*(void **)&(tctreeclear_d) = dlsym(magma, "tctreeclear")) == NULL) return "tctreeclear";
 if ((*(void **)&(tchdbsetmutex_d) = dlsym(magma, "tchdbsetmutex")) == NULL) return "tchdbsetmutex";
 if ((*(void **)&(tchdbfsiz_d) = dlsym(magma, "tchdbfsiz")) == NULL) return "tchdbfsiz";
 if ((*(void **)&(tchdbrnum_d) = dlsym(magma, "tchdbrnum")) == NULL) return "tchdbrnum";

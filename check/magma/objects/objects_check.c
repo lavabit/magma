@@ -7,7 +7,6 @@
 
 #include "magma_check.h"
 
-
 START_TEST (check_object_serials_s) {
 
 	log_disable();
@@ -120,16 +119,10 @@ END_TEST
 
 Suite * suite_check_objects(void) {
 
-	TCase *tc;
 	Suite *s = suite_create("\tObjects");
 
-	/*testcase(s, tc, "Address Processing/S", check_credential_address_s);
-	testcase(s, tc, "Username Processing/S", check_credential_username_s);
-	testcase(s, tc, "Credential Processing/S", check_credential_mail_creation_s);
-	testcase(s, tc, "Credential Processing/S", check_credential_auth_creation_s);*/
-
-	testcase(s, tc, "Object Serials/S", check_object_serials_s);
-	testcase(s, tc, "Object Warehouse Domains/S", check_warehouse_domains_s);
+	suite_check_testcase(s, "OBJECTS", "Object Serials/S", check_object_serials_s);
+	suite_check_testcase(s, "OBJECTS", "Object Warehouse Domains/S", check_warehouse_domains_s);
 
 	return s;
 }

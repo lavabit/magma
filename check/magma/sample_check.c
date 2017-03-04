@@ -117,11 +117,10 @@ END_TEST
 
 Suite * suite_check_sample(void) {
 
-	TCase *tc;
 	Suite *s = suite_create("\tSample");
 
-	testcase(s, tc, "Component/S", check_component_s);
-	testcase(s, tc, "Component/S", check_component_m);
+	suite_check_testcase(s, "COMPONENT", "Component/S", check_component_s);
+	suite_check_testcase(s, "COMPONENT", "Component/S", check_component_m);
 
 	return s;
 

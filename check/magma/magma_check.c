@@ -50,7 +50,6 @@ Suite * suite_check_magma(void) {
  */
 Suite * suite_check_barrister(chr_t *testname) {
 
-	TCase *tc;
 	void *handle;
 	void *unittest;
 	Suite *s = suite_create("\tBarrister");;
@@ -66,11 +65,22 @@ Suite * suite_check_barrister(chr_t *testname) {
 		log_info("%s", dlerror());
 	}
 	else {
-		testcase(s, tc, testname, unittest);
+		suite_check_testcase(s, "", testname, unittest);
 	}
 
 	dlclose(handle);
 	return s;
+}
+
+void suite_check_testcase(Suite *s, const char *tags, const char *name, TFun func) {
+
+	TCase *tc = NULL;
+
+	tcase_add_test((tc = tcase_create(name)), func);
+	tcase_set_timeout(tc, case_timeout);
+	tcase_set_tags(tc, tags);
+	suite_add_tcase(s, tc);
+	return;
 }
 
 /***

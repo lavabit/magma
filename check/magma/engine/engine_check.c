@@ -36,10 +36,9 @@ END_TEST
 
 Suite * suite_check_engine(void) {
 
-	TCase *tc;
 	Suite *s = suite_create("\tEngine");
 
-	testcase(s, tc, "Engine System Interfaces/S", check_engine_context_system_s);
+	suite_check_testcase(s, "ENGINE", "Engine System Interfaces/S", check_engine_context_system_s);
 
 	return s;
 }

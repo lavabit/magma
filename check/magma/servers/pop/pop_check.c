@@ -95,9 +95,8 @@ END_TEST
 
 Suite * suite_check_pop(void) {
 
-	TCase *tc;
 	Suite *s = suite_create("\tPOP");
 
-	testcase(s, tc, "POP Network Simple Check/S", check_pop_network_simple_s);
+	suite_check_testcase(s, "POP", "POP Network Simple Check/S", check_pop_network_simple_s);
 	return s;
 }

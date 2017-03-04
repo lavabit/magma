@@ -588,66 +588,63 @@ END_TEST
 
 Suite * suite_check_provide(void) {
 
-	TCase *tc;
 	Suite *s = suite_create("\tProviders");
 
-	testcase(s, tc, "Provider Symbols/S", check_symbols_s);
+	suite_check_testcase(s, "PROVIDERS", "Provider Symbols/S", check_symbols_s);
 
-	testcase(s, tc, "Parsers Unicode/S", check_unicode_s);
+	suite_check_testcase(s, "PROVIDERS", "Parsers Unicode/S", check_unicode_s);
 
-	testcase(s, tc, "Compression LZO/S", check_compress_lzo_s);
-	testcase(s, tc, "Compression LZO/M", check_compress_lzo_m);
-	testcase(s, tc, "Compression ZLIB/S", check_compress_zlib_s);
-	testcase(s, tc, "Compression ZLIB/M", check_compress_zlib_m);
-	testcase(s, tc, "Compression BZIP/S", check_compress_bzip_s);
-	testcase(s, tc, "Compression BZIP/M", check_compress_bzip_m);
+	suite_check_testcase(s, "PROVIDERS", "Compression LZO/S", check_compress_lzo_s);
+	suite_check_testcase(s, "PROVIDERS", "Compression LZO/M", check_compress_lzo_m);
+	suite_check_testcase(s, "PROVIDERS", "Compression ZLIB/S", check_compress_zlib_s);
+	suite_check_testcase(s, "PROVIDERS", "Compression ZLIB/M", check_compress_zlib_m);
+	suite_check_testcase(s, "PROVIDERS", "Compression BZIP/S", check_compress_bzip_s);
+	suite_check_testcase(s, "PROVIDERS", "Compression BZIP/M", check_compress_bzip_m);
 
-	testcase(s, tc, "Cryptography RAND/S", check_rand_s);
-	testcase(s, tc, "Cryptography RAND/M", check_rand_m);
-	testcase(s, tc, "Cryptography ECIES/S", check_ecies_s);
-	testcase(s, tc, "Cryptography HASH/S", check_hash_s);
-	testcase(s, tc, "Cryptography HMAC/S", check_hmac_s);
-	testcase(s, tc, "Cryptography SYMMETRIC/S", check_symmetric_s);
-	testcase(s, tc, "Cryptography SCRAMBLE/S", check_scramble_s);
+	suite_check_testcase(s, "PROVIDERS", "Cryptography RAND/S", check_rand_s);
+	suite_check_testcase(s, "PROVIDERS", "Cryptography RAND/M", check_rand_m);
+	suite_check_testcase(s, "PROVIDERS", "Cryptography ECIES/S", check_ecies_s);
+	suite_check_testcase(s, "PROVIDERS", "Cryptography HASH/S", check_hash_s);
+	suite_check_testcase(s, "PROVIDERS", "Cryptography HMAC/S", check_hmac_s);
+	suite_check_testcase(s, "PROVIDERS", "Cryptography SYMMETRIC/S", check_symmetric_s);
+	suite_check_testcase(s, "PROVIDERS", "Cryptography SCRAMBLE/S", check_scramble_s);
 
 	// Tank functionality is temporarily disabled.
 	if (do_tank_check) {
-		testcase(s, tc, "Tank LZO/S", check_tank_lzo_s);
-		testcase(s, tc, "Tank LZO/M", check_tank_lzo_m);
-		testcase(s, tc, "Tank ZLIB/S", check_tank_zlib_s);
-		testcase(s, tc, "Tank ZLIB/M", check_tank_zlib_m);
-		testcase(s, tc, "Tank BZIP/S", check_tank_bzip_s);
-		testcase(s, tc, "Tank BZIP/M", check_tank_bzip_m);
+		suite_check_testcase(s, "PROVIDERS", "Tank LZO/S", check_tank_lzo_s);
+		suite_check_testcase(s, "PROVIDERS", "Tank LZO/M", check_tank_lzo_m);
+		suite_check_testcase(s, "PROVIDERS", "Tank ZLIB/S", check_tank_zlib_s);
+		suite_check_testcase(s, "PROVIDERS", "Tank ZLIB/M", check_tank_zlib_m);
+		suite_check_testcase(s, "PROVIDERS", "Tank BZIP/S", check_tank_bzip_s);
+		suite_check_testcase(s, "PROVIDERS", "Tank BZIP/M", check_tank_bzip_m);
 	}
 	else {
 		log_unit("Skipping tank checks...\n");
 	}
 
 	if (do_spf_check) {
-		testcase(s, tc, "SPF/S", check_spf_s);
+		suite_check_testcase(s, "PROVIDERS", "SPF/S", check_spf_s);
 	}
 	else {
 		log_unit("Skipping SPF checks...\n");
 	}
 
-	testcase(s, tc, "DKIM/S", check_dkim_s);
+	suite_check_testcase(s, "PROVIDERS", "DKIM/S", check_dkim_s);
 
 	if (do_virus_check) {
-		testcase(s, tc, "Virus/S", check_virus_s);
+		suite_check_testcase(s, "PROVIDERS", "Virus/S", check_virus_s);
 	}
 	else {
 		log_unit("Skipping virus checks...\n");
 	}
 
 	if (do_dspam_check) {
-		testcase(s, tc, "DSPAM Mail/S", check_dspam_mail_s);
-		testcase(s, tc, "DSPAM Binary/S", check_dspam_bin_s);
+		suite_check_testcase(s, "PROVIDERS", "DSPAM Mail/S", check_dspam_mail_s);
+		suite_check_testcase(s, "PROVIDERS", "DSPAM Binary/S", check_dspam_bin_s);
 	}
 	else {
 		log_unit("Skipping DSPAM checks...\n");
 	}
-
-	tcase_set_timeout(tc, 120);
 
 	return s;
 }

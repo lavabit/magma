@@ -64,9 +64,9 @@ END_TEST
 
 Suite * suite_check_imap(void) {
 
-	TCase *tc;
 	Suite *s = suite_create("\tIMAP");
 
-	testcase(s, tc, "IMAP Network Simple Check/S", check_imap_network_simple_s);
+	suite_check_testcase(s, "IMAP", "IMAP Network Simple Check/S", check_imap_network_simple_s);
+
 	return s;
 }

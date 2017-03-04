@@ -477,26 +477,22 @@ END_TEST
 
 Suite * suite_check_prime(void) {
 
-	TCase *tc;
 	Suite *s = suite_create("\tPRIME");
 
-	testcase(s, tc, "STACIE/S", check_stacie_s);
+	suite_check_testcase(s, "PRIME", "STACIE/S", check_stacie_s);
 
-	testcase(s, tc, "PRIME ed25519/S", check_prime_ed25519_s);
-	testcase(s, tc, "PRIME secp256k1/S", check_prime_secp256k1_s);
-	testcase(s, tc, "PRIME Primitives/S", check_prime_primitives_s);
-	testcase(s, tc, "PRIME Keys/S", check_prime_keys_s);
-	testcase(s, tc, "PRIME Signets/S", check_prime_signets_s);
+	suite_check_testcase(s, "PRIME", "PRIME ed25519/S", check_prime_ed25519_s);
+	suite_check_testcase(s, "PRIME", "PRIME secp256k1/S", check_prime_secp256k1_s);
+	suite_check_testcase(s, "PRIME", "PRIME Primitives/S", check_prime_primitives_s);
+	suite_check_testcase(s, "PRIME", "PRIME Keys/S", check_prime_keys_s);
+	suite_check_testcase(s, "PRIME", "PRIME Signets/S", check_prime_signets_s);
 
-	testcase(s, tc, "PRIME Ephemeral Chunks/S", check_prime_chunk_ephemeral_s);
-	testcase(s, tc, "PRIME Encrypted Chunks/S", check_prime_chunk_encrypted_s);
-	testcase(s, tc, "PRIME Signature Chunks/S", check_prime_chunk_signature_s);
+	suite_check_testcase(s, "PRIME", "PRIME Ephemeral Chunks/S", check_prime_chunk_ephemeral_s);
+	suite_check_testcase(s, "PRIME", "PRIME Encrypted Chunks/S", check_prime_chunk_encrypted_s);
+	suite_check_testcase(s, "PRIME", "PRIME Signature Chunks/S", check_prime_chunk_signature_s);
 
-	testcase(s, tc, "PRIME Naked Messages/S", check_prime_message_naked_s);
-	testcase(s, tc, "PRIME Native Messages/S", check_prime_message_native_s);
-
-
-	tcase_set_timeout(tc, 120);
+	suite_check_testcase(s, "PRIME", "PRIME Naked Messages/S", check_prime_message_naked_s);
+	suite_check_testcase(s, "PRIME", "PRIME Native Messages/S", check_prime_message_native_s);
 
 	return s;
 }

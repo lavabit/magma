@@ -149,7 +149,7 @@ START_TEST (check_smtp_accept_greylist_s) {
 	bool_t outcome = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
-	outcome = check_smtp_checkers_greylist_sthread(errmsg);
+	if (status()) outcome = check_smtp_checkers_greylist_sthread(errmsg);
 
 	log_test("SMTP / ACCEPT / GREYLIST / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
@@ -158,14 +158,13 @@ END_TEST
 
 Suite * suite_check_smtp(void) {
 
-	TCase *tc;
 	Suite *s = suite_create("\tSMTP");
 
-	testcase(s, tc, "SMTP Storage/S", check_smtp_accept_store_message_s);
-	testcase(s, tc, "SMTP Rollout/S", check_smtp_accept_rollout_s);
-	testcase(s, tc, "SMTP Signatres/S", check_smtp_accept_store_spamsig_s);
-	testcase(s, tc, "SMTP Greylist/S", check_smtp_accept_greylist_s);
-	testcase(s, tc, "SMTP Network Simple Check/S", check_smtp_network_simple_s);
+	suite_check_testcase(s, "SMTP", "SMTP Storage/S", check_smtp_accept_store_message_s);
+	suite_check_testcase(s, "SMTP", "SMTP Rollout/S", check_smtp_accept_rollout_s);
+	suite_check_testcase(s, "SMTP", "SMTP Signatres/S", check_smtp_accept_store_spamsig_s);
+	suite_check_testcase(s, "SMTP", "SMTP Greylist/S", check_smtp_accept_greylist_s);
+	suite_check_testcase(s, "SMTP", "SMTP Network Simple Check/S", check_smtp_network_simple_s);
 
 	return s;
 }

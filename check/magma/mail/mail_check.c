@@ -52,12 +52,11 @@ END_TEST
 
 Suite * suite_check_mail(void) {
 
-	TCase *tc;
 	Suite *s = suite_create("\tMail");
 
-	testcase(s, tc, "Mail Store/S", check_mail_store_s);
-	testcase(s, tc, "Mail Load/S", check_mail_load_s);
-	testcase(s, tc, "Mail Headers/S", check_mail_headers_s);
+	suite_check_testcase(s, "MAIL", "Mail Store/S", check_mail_store_s);
+	suite_check_testcase(s, "MAIL", "Mail Load/S", check_mail_load_s);
+	suite_check_testcase(s, "MAIL", "Mail Headers/S", check_mail_headers_s);
 
 	return s;
 }

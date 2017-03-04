@@ -86,11 +86,10 @@ START_TEST (check_regression_file_descriptors_leak_m) {
 END_TEST
 
 Suite * suite_check_regression(void) {
-	TCase *tc;
+
 	Suite *s = suite_create("\tRegression");
 
-	testcase(s, tc, "Regression File Descriptors Leak/M", check_regression_file_descriptors_leak_m);
+	suite_check_testcase(s, "REGRESSION", "Regression File Descriptors Leak/M", check_regression_file_descriptors_leak_m);
 
-	tcase_set_timeout(tc, 120);
 	return s;
 }

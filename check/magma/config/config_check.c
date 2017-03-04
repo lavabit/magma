@@ -43,10 +43,9 @@ END_TEST
 
 Suite * suite_check_config(void) {
 
-	TCase *tc;
 	Suite *s = suite_create("\tConfig");
 
-	testcase(s, tc, "Config / Protocol /S", check_config_server_get_by_protocol_s);
+	suite_check_testcase(s, "CONFIG", "Config / Protocol /S", check_config_server_get_by_protocol_s);
 
 	return s;
 }

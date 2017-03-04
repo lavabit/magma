@@ -169,21 +169,20 @@ END_TEST
 
 Suite * suite_check_users(void) {
 
-	TCase *tc;
 	Suite *s = suite_create("\tUsers");
 
-	testcase(s, tc, "Auth Usernames/S", check_users_auth_username_s);
-	testcase(s, tc, "Auth Addresses/S", check_users_auth_address_s);
-	testcase(s, tc, "Auth Legacy/S", check_users_auth_legacy_s);
-	testcase(s, tc, "Auth Stacie/S", check_users_auth_stacie_s);
-	testcase(s, tc, "Auth Challenge/S", check_users_auth_challenge_s);
-	testcase(s, tc, "Auth Response/S", check_users_auth_response_s);
-	testcase(s, tc, "Auth Login/S", check_users_auth_login_s);
+	suite_check_testcase(s, "USERS", "Auth Usernames/S", check_users_auth_username_s);
+	suite_check_testcase(s, "USERS", "Auth Addresses/S", check_users_auth_address_s);
+	suite_check_testcase(s, "USERS", "Auth Legacy/S", check_users_auth_legacy_s);
+	suite_check_testcase(s, "USERS", "Auth Stacie/S", check_users_auth_stacie_s);
+	suite_check_testcase(s, "USERS", "Auth Challenge/S", check_users_auth_challenge_s);
+	suite_check_testcase(s, "USERS", "Auth Response/S", check_users_auth_response_s);
+	suite_check_testcase(s, "USERS", "Auth Login/S", check_users_auth_login_s);
 
-	testcase(s, tc, "Register/S", check_users_register_s);
+	suite_check_testcase(s, "USERS", "Register/S", check_users_register_s);
 
-	testcase(s, tc, "Meta Valid/S", check_users_meta_valid_s);
-	testcase(s, tc, "Meta Invalid/S", check_users_meta_invalid_s);
+	suite_check_testcase(s, "USERS", "Meta Valid/S", check_users_meta_valid_s);
+	suite_check_testcase(s, "USERS", "Meta Invalid/S", check_users_meta_invalid_s);
 
 	return s;
 }

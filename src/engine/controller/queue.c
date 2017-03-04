@@ -86,8 +86,14 @@ void dequeue(void) {
 	}
 
 	do {
+
+		// Wait until the semaphore indicates a job is queued.
 		sem_wait(&queue.sema);
 
+		// Track how many worker threads are being used.
+		stats_increment_by_name("core.threads.working");
+
+		// Lock the queue stack until we finish with it.
 		mutex_lock(&queue.lock);
 		work = queue.items;
 
@@ -106,6 +112,9 @@ void dequeue(void) {
 
 			mm_free(work);
 		}
+
+		// Decrement the busy thread counter.
+		stats_decrement_by_name("core.threads.working");
 
 	// Continue processing until the work queue is empty and the status tracker indicates a shutdown.
 	} while (work || status());
@@ -165,7 +174,7 @@ bool_t queue_init(void) {
 			return false;
 		}
 
-		stats_increment_by_name("core.threading.workers");
+		stats_increment_by_name("core.threads.allocated");
 	}
 
 	return true;
@@ -185,7 +194,7 @@ void queue_shutdown(void) {
 
 		if (queue.workers + i) {
 			thread_join(*(queue.workers + i));
-			stats_decrement_by_name("core.threading.workers");
+			stats_decrement_by_name("core.threads.allocated");
 		}
 
 	}

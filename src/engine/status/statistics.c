@@ -17,7 +17,8 @@ struct {
 			"default",
 
 			// Core Statistics
-			"core.threading.workers",
+			"core.threads.allocated",
+			"core.threads.working",
 
 			// SMTP Statistics
 			"smtp.connections.total",

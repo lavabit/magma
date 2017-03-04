@@ -40,15 +40,16 @@ START_TEST (check_regression_file_descriptors_leak_m) {
 	stringer_t *errmsg = NULL, *path = NULL;
 	int_t folders_before, folder_difference = 0;
 
-	if (!(threads = mm_alloc(sizeof(pthread_t) * REGRESSION_CHECK_FILE_DESCRIPTORS_LEAK_MTHREADS))) {
+	if (status() && !(threads = mm_alloc(sizeof(pthread_t) * REGRESSION_CHECK_FILE_DESCRIPTORS_LEAK_MTHREADS))) {
 		errmsg = NULLER("Thread allocation failed.");
 		outcome = false;
 	}
-	else {
+	else if (status()) {
+
 		path = st_quick(MANAGEDBUF(255), "/proc/%i/fd/", process_my_pid());
 		folders_before = folder_count(path, false, false);
 
-		// fork a bunch of processes that open file descriptors
+		// Fork a bunch of processes that open file descriptors.
 		for (uint64_t counter = 0; counter < REGRESSION_CHECK_FILE_DESCRIPTORS_LEAK_MTHREADS; counter++) {
 			if (thread_launch(threads + counter, &check_regression_file_descriptors_leak_test, NULL)) {
 				errmsg = NULLER("Thread launch failed.");
@@ -56,7 +57,7 @@ START_TEST (check_regression_file_descriptors_leak_m) {
 			}
 		}
 
-		// join them, each process should handle its own cleanup
+		// Join them, each process should handle its own cleanup.
 		for (uint64_t counter = 0; counter < REGRESSION_CHECK_FILE_DESCRIPTORS_LEAK_MTHREADS; counter++) {
 			if (thread_result(*(threads + counter), &result)) {
 				if (!errmsg) errmsg = NULLER("Thread join error.");
@@ -79,9 +80,10 @@ START_TEST (check_regression_file_descriptors_leak_m) {
 		}
 	}
 
+	mm_free(threads);
+
 	log_test("REGRESSION / FILE DESCRIPTORS LEAK / MULTI THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
-	mm_free(threads);
 }
 END_TEST
 

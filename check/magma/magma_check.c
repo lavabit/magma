@@ -324,6 +324,10 @@ int main(int argc, char *argv[]) {
 	// Cleanup and free the resources allocated by the check code.
 	status_set(-1);
 	srunner_free(sr);
+
+	// Cleanup the background listening thread.
+	thread_cancel(*net_listen_thread);
+	thread_join(*net_listen_thread);
 	mm_free(net_listen_thread);
 
 	// Cleanup and free the resources allocated by the magma code.

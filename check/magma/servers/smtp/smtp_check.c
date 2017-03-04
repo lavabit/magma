@@ -110,7 +110,7 @@ START_TEST (check_smtp_accept_store_message_s) {
 	bool_t outcome = true;
 	stringer_t *errmsg = MANAGEDBUF(2048);
 
-	outcome = check_smtp_accept_store_message_sthread(errmsg);
+	if (status()) outcome = check_smtp_accept_store_message_sthread(errmsg);
 
 	log_test("SMTP / ACCEPT / STORAGE / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
@@ -123,7 +123,7 @@ START_TEST (check_smtp_accept_rollout_s) {
 	bool_t outcome = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
-	outcome = check_smtp_accept_rollout_sthread(errmsg);
+	if (status()) outcome = check_smtp_accept_rollout_sthread(errmsg);
 
 	log_test("SMTP / ACCEPT / ROLLOUT / SINGLE THREADED:", NULLER("SKIPPED"));
 	ck_assert_msg(outcome, st_char_get(errmsg));
@@ -136,7 +136,7 @@ START_TEST (check_smtp_accept_store_spamsig_s) {
 	bool_t outcome = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
-	outcome = check_smtp_accept_store_spamsig_sthread(errmsg);
+	if (status()) outcome = check_smtp_accept_store_spamsig_sthread(errmsg);
 
 	log_test("SMTP / ACCEPT / SIGNATURES / SINGLE THREADED:", NULLER("SKIPPED"));
 	ck_assert_msg(outcome, st_char_get(errmsg));

@@ -10,50 +10,97 @@
 START_TEST (check_smtp_network_simple_s) {
 
 	log_disable();
-
-//	FILE *buf_d;
-	bool_t outcome = true;
-//	const int port = 7000;
-//	int socket_descriptor;
-//	struct sockaddr_in pin;
+//	client_t *client = NULL;
 	stringer_t *errmsg = NULL;
-//	struct linger linger_timeout;
-//	struct hostent *server_host_name;
+//	// In the future we want to programatically determine this by protocol.
+//	const uint32_t port = 7000;
 //
-//	server_host_name = gethostbyname("localhost");
-//
-//	mm_wipe(&pin, sizeof(pin));
-//	pin.sin_family = AF_INET;
-//	pin.sin_addr.s_addr = htonl(INADDR_ANY);
-//	pin.sin_addr.s_addr = ((struct in_addr *) (server_host_name->h_addr))->s_addr;
-//	pin.sin_port = htons(port);
-//
-//	if ((socket_descriptor = socket(AF_INET,SOCK_STREAM, 0)) == -1) {
-//		outcome = false;
-//		errmsg = NULLER("Failed to open socket.");
+//	if (!(client = client_connect("localhost", port))) {
+//		errmsg = NULLER("Failed to establish a client connection.");
+//	}
+//	else if (client_read_line(client) <= 0 || client->status != 1 || pl_empty(client->line) || *pl_char_get(client->line) != '2') {
+//		errmsg = NULLER("Failed to return successful status initially.");
 //	}
 //
-//	else if ((connect(socket_descriptor, (void *) &pin, sizeof(pin))) == -1) {
-//		outcome = false;
-//		errmsg = NULLER("Failed to connect to socket.");
+//	log_pedantic("Initial >>> %.*s <<<", pl_length_int(pl_trim_end(client->line)), pl_char_get(client->line));
+//
+//	// Test EHLO.
+//	if (client_print(client, "EHLO princess\r\n") <= 0) {
+//		errmsg = NULLER("Failed to write the EHLO command.");
+//	}
+//	else if (client_read_line(client) <= 0 || client->status != 1 || pl_empty(client->line) || *pl_char_get(client->line) != '2') {
+//		errmsg = NULLER("Failed to return successful status after EHLO.");
 //	}
 //
-//	else if (!(linger_timeout.l_onoff = 1) || !(linger_timeout.l_linger = 1) ||
-//			setsockopt(socket_descriptor, SOL_SOCKET, SO_LINGER,
-//			&linger_timeout, sizeof(linger_timeout)) != 0) {
-//		outcome = false;
-//		errmsg = NULLER("Failed to set main socket timeout.");
+//	log_pedantic("EHLO >>> %.*s <<<", pl_length_int(pl_trim_end(client->line)), pl_char_get(client->line));
+//
+//	// Test HELO.
+//	if (client_print(client, "HELO princess\r\n") <= 0) {
+//		errmsg = NULLER("Failed to write the HELO command.");
+//	}
+//	else if (client_read_line(client) <= 0 || client->status != 1 || pl_empty(client->line) || *pl_char_get(client->line) != '2') {
+//		errmsg = NULLER("Failed to return successful status after HELO.");
 //	}
 //
-//	else {
-//		buf_d = fdopen(socket_descriptor, "a+");
-//		outcome = (buf_d, errmsg);
-//		fclose(buf_d);
-//		fflush(stdout);
+//	log_pedantic("HELO >>> %.*s <<<", pl_length_int(pl_trim_end(client->line)), pl_char_get(client->line));
+//
+//	// Test MAIL.
+//	if (client_print(client, "MAIL FROM: <>\r\n") <= 0) {
+//		errmsg = NULLER("Failed to write the MAIL command.");
+//	}
+//	else if (client_read_line(client) <= 0 || client->status != 1 || pl_empty(client->line) || *pl_char_get(client->line) != '2') {
+//		errmsg = NULLER("Failed to return successful status after MAIL.");
+//	}
+//
+//	log_pedantic("MAIL FROM >>> %.*s <<<", pl_length_int(pl_trim_end(client->line)), pl_char_get(client->line));
+//
+//	// Test RCPT.
+//	if (client_print(client, "RCPT TO: <ladar@lavabit.com>\r\n") <= 0) {
+//		errmsg = NULLER("Failed to write the RCPT command.");
+//	}
+//	else if (client_read_line(client) <= 0 || client->status != 1 || pl_empty(client->line) || *pl_char_get(client->line) != '2') {
+//		errmsg = NULLER("Failed to return successful status after RCPT.");
+//	}
+//
+//	log_pedantic("RCPT TO >>> %.*s <<<", pl_length_int(pl_trim_end(client->line)), pl_char_get(client->line));
+//
+//	// Test DATA.
+//	if (client_print(client, "DATA\r\n") <= 0) {
+//		errmsg = NULLER("Failed to write the DATA command.");
+//	}
+//	else if (client_read_line(client) <= 0 || client->status != 1 || pl_empty(client->line) || *pl_char_get(client->line) != '3') {
+//		errmsg = NULLER("Failed to return successful status after DATA.");
+//	}
+//
+//	log_pedantic("DATA >>> %.*s <<<", pl_length_int(pl_trim_end(client->line)), pl_char_get(client->line));
+//
+//	// Test sending the contents of an email.
+//	if (client_print(client, "FROM: Magma\nSUBJECT: Unit Tests\nAren't unit tests great?\n.\r\n") <= 0) {
+//		errmsg = NULLER("Failed to write email contents.");
+//	}
+//	else if (client_read_line(client) <= 0 || client->status != 1 || pl_empty(client->line) || *pl_char_get(client->line) != '2') {
+//		errmsg = NULLER("Failed to return successful status after sending email contents.");
+//	}
+//
+//	log_pedantic("contents of email >>> %.*s <<<", pl_length_int(pl_trim_end(client->line)), pl_char_get(client->line));
+//
+//	if (client) {
+//
+//		// Test QUIT
+//		if (client_print(client, "QUIT\r\n") <= 0) {
+//			errmsg = NULLER("Failed to write email contents.");
+//		}
+//		else if (client_read_line(client) <= 0 || client->status != 1 || pl_empty(client->line) || *pl_char_get(client->line) != '2') {
+//			errmsg = NULLER("Failed to return successful status after sending email contents.");
+//		}
+//
+//		log_pedantic("QUIT >>> %.*s <<<", pl_length_int(pl_trim_end(client->line)), pl_char_get(client->line));
+//
+//		client_close(client);
 //	}
 
 	log_test("SMTP / NETWORK / SIMPLE CHECK:", NULLER("SKIPPED"));
-	ck_assert_msg(outcome, st_char_get(errmsg));
+	ck_assert_msg(!errmsg, st_char_get(errmsg));
 }
 END_TEST
 
@@ -114,10 +161,11 @@ Suite * suite_check_smtp(void) {
 	TCase *tc;
 	Suite *s = suite_create("\tSMTP");
 
-	testcase(s, tc, "SMTP / Accept/S", check_smtp_accept_store_message_s);
-	testcase(s, tc, "SMTP / Rollout/S", check_smtp_accept_rollout_s);
-	testcase(s, tc, "SMTP / Signatres/S", check_smtp_accept_store_spamsig_s);
-	testcase(s, tc, "SMTP / Greylist/S", check_smtp_checkers_greylist_s);
+	testcase(s, tc, "SMTP Network Simple Check/S", check_smtp_network_simple_s);
+	testcase(s, tc, "SMTP Accept/S", check_smtp_accept_store_message_s);
+	testcase(s, tc, "SMTP Rollout/S", check_smtp_accept_rollout_s);
+	testcase(s, tc, "SMTP Signatres/S", check_smtp_accept_store_spamsig_s);
+	testcase(s, tc, "SMTP Greylist/S", check_smtp_checkers_greylist_s);
 	return s;
 }
 

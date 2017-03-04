@@ -221,6 +221,7 @@ int main(int argc, char *argv[]) {
 
 	SRunner *sr;
 	int_t failed = 0, result;
+	pthread_t *net_listen_thread = NULL;
 	time_t prog_start, test_start, test_end;
 
 	if (process_kill(PLACER("magmad", 6), SIGTERM, 10) < 0 || process_kill(PLACER("magmad.check", 12), SIGTERM, 10) < 0) {
@@ -235,12 +236,17 @@ int main(int argc, char *argv[]) {
 	if ((result = check_args_parse(argc, argv)) != 1) {
 		exit(result ? EXIT_FAILURE : EXIT_SUCCESS);
 	}
+
 	if (!process_start()) {
 		log_error("Initialization error. Exiting.\n");
 		status_set(-1);
 		process_stop();
 		exit(EXIT_FAILURE);
 	}
+
+	// Run net_listen in the background.
+	net_listen_thread = thread_alloc(net_listen, NULL);
+
 	// Only during development...
 	cache_flush();
 
@@ -264,6 +270,8 @@ int main(int argc, char *argv[]) {
 		srunner_add_suite(sr, suite_check_users());
 		srunner_add_suite(sr, suite_check_mail());
 		srunner_add_suite(sr, suite_check_smtp());
+		srunner_add_suite(sr, suite_check_pop());
+		srunner_add_suite(sr, suite_check_imap());
 		srunner_add_suite(sr, suite_check_regression());
 	}
 
@@ -306,6 +314,7 @@ int main(int argc, char *argv[]) {
 	// Cleanup and free the resources allocated by the check code.
 	status_set(-1);
 	srunner_free(sr);
+	mm_free(net_listen_thread);
 
 	// Cleanup and free the resources allocated by the magma code.
 	process_stop();

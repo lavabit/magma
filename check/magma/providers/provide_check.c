@@ -500,14 +500,15 @@ END_TEST
 START_TEST (check_virus_s) {
 
 	log_disable();
-	stringer_t *errmsg = NULL;
+	bool_t result = true;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 
-	if (magma.iface.virus.available) {
-		errmsg = NULLER(check_virus_sthread());
+	if (status() && magma.iface.virus.available) {
+		result = check_virus_sthread(errmsg);
 	}
 
-	log_test("CHECKERS / VIRUS / SINGLE THREADED:", (status() || !magma.iface.virus.available) ? errmsg : NULLER("SKIPPED"));
-	ck_assert_msg(!magma.iface.virus.available, NULLER("The virus checker test failed."));
+	log_test("CHECKERS / VIRUS / SINGLE THREADED:", (magma.iface.virus.available ? errmsg : NULLER("SKIPPED")));
+	ck_assert_msg(result, st_char_get(errmsg));
 }
 END_TEST
 

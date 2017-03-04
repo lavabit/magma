@@ -244,10 +244,10 @@ int main(int argc, char *argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
-	// Run net_listen in the background.
+	// Run the network listener using a background thread.
 	net_listen_thread = thread_alloc(net_listen, NULL);
 
-	// Only during development...
+	// During development, we flush the cache system before running the unit tests.
 	cache_flush();
 
 	// Unit Test Config

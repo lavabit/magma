@@ -52,7 +52,7 @@ bool_t   check_dspam_mail_sthread(void);
 Suite *      suite_check_provide(void);
 
 /// virus_check.c
-chr_t *  check_virus_sthread(void);
+bool_t check_virus_sthread(stringer_t *errmsg);
 
 /// ecies_check.c
 void     check_ecies_cleanup(EC_KEY *key, cryptex_t *ciphered, stringer_t *hex_pub, stringer_t *hex_priv, unsigned char *text, unsigned char *copy, unsigned char *original);

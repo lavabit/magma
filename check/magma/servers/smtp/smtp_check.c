@@ -166,6 +166,7 @@ Suite * suite_check_smtp(void) {
 	testcase(s, tc, "SMTP Rollout/S", check_smtp_accept_rollout_s);
 	testcase(s, tc, "SMTP Signatres/S", check_smtp_accept_store_spamsig_s);
 	testcase(s, tc, "SMTP Greylist/S", check_smtp_checkers_greylist_s);
+
 	return s;
 }
 

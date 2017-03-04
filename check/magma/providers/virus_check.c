@@ -7,7 +7,7 @@
 
 #include "magma_check.h"
 
-chr_t * check_virus_sthread(void) {
+ bool_t check_virus_sthread(stringer_t *errmsg) {
 
 	stringer_t *data = NULL;
 	uint32_t max = check_message_max();
@@ -16,17 +16,17 @@ chr_t * check_virus_sthread(void) {
 
 		// Retrieve data for the current message.
 		if (!(data = check_message_get(i))) {
-			log_info("Failed to get the message data. { message = %i }", i);
-			return "check_message_get() error";
+			st_sprint(errmsg, "Failed to get the message data. { message = %i }", i);
+			return false;
 		}
 
-		if (virus_check(data) == -1) {
-			log_info("There was a virus check error. { message = %i }", i);
-			return "virus check error";
+		else if (virus_check(data) == -1) {
+			st_sprint(errmsg, "The virus checker returned an error. { message = %i }", i);
+			return false;
 		}
 
 		st_cleanup(data);
 	}
 
-	return NULL;
+	return true;
 }

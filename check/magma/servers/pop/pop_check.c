@@ -87,7 +87,8 @@ START_TEST (check_pop_network_simple_s) {
 //	}
 
 
-	log_test("POP / NETWORK / SIMPLE CHECK:", errmsg);
+//	log_test("POP / NETWORK / SIMPLE CHECK:", errmsg);
+	log_test("POP / NETWORK / SIMPLE CHECK:", NULLER("SKIPPED"));
 	ck_assert_msg(!errmsg, st_char_get(errmsg));
 }
 END_TEST

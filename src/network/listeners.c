@@ -33,6 +33,7 @@ void net_listen(void) {
 			mm_wipe(&epoll_context, sizeof(struct epoll_event));
 			epoll_context.events = EPOLLIN | EPOLLET;
 			epoll_context.data.fd = server->network.sockd;
+			epoll_context.data.ptr = server;
 
 			if ((epoll_ctl(ed, EPOLL_CTL_ADD, server->network.sockd, &epoll_context)) == -1) {
 				log_info("The epoll_ctl() call returned an error. { error = %s }", strerror_r(errno, MEMORYBUF(1024), 1024));

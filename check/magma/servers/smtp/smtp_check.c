@@ -7,11 +7,19 @@
 
 #include "magma_check.h"\
 
+/**
+ * Calls client_read_line on a client until the last line is found, checking for errors.
+ *
+ * @param client The client to read from (which should be connected to an SMTP server).
+ *
+ * @return Returns true if client_read_line was successful until the last line was found.
+ * Otherwise returns false.
+ */
 bool_t smtp_client_read_line_to_end(client_t *client) {
-	while (pl_char_get(client->line)[3] != ' ') {
-		if (client_read_line(client) <= 0) return false;
+	while (client_read_line(client) > 0) {
+		if (pl_char_get(client->line)[3] == ' ') return true;
 	}
-	return true;
+	return false;
 }
 
 START_TEST (check_smtp_network_simple_s) {
@@ -26,53 +34,47 @@ START_TEST (check_smtp_network_simple_s) {
 	if (status() && !(client = client_connect("localhost", port))) {
 		errmsg = NULLER("Failed to establish a client connection.");
 	}
-	else if (client_read_line(client) <= 0 || client->status != 1 || pl_empty(client->line) ||
-			*pl_char_get(client->line) != '2' || !smtp_client_read_line_to_end(client)) {
+	else if (!smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
 		errmsg = NULLER("Failed to return successful status initially.");
 	}
 
-	// Test EHLO.
+	// Test the EHLO command.
 	else if (status() && client_print(client, "EHLO princess\r\n") <= 0) {
 		errmsg = NULLER("Failed to write the EHLO command.");
 	}
-	else if (client_read_line(client) <= 0 || client->status != 1 || pl_empty(client->line) ||
-			*pl_char_get(client->line) != '2' || !smtp_client_read_line_to_end(client)) {
+	else if (!smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
 		errmsg = NULLER("Failed to return successful status after EHLO.");
 	}
 
-	// Test HELO.
+	// Test the HELO command.
 	else if (status() && client_print(client, "HELO princess\r\n") <= 0) {
 		errmsg = NULLER("Failed to write the HELO command.");
 	}
-	else if (client_read_line(client) <= 0 || client->status != 1 || pl_empty(client->line) ||
-			*pl_char_get(client->line) != '2' || !smtp_client_read_line_to_end(client)) {
+	else if (!smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
 		errmsg = NULLER("Failed to return successful status after HELO.");
 	}
 
-	// Test MAIL.
+	// Test the MAIL command.
 	else if (status() && client_print(client, "MAIL FROM: <>\r\n") <= 0) {
 		errmsg = NULLER("Failed to write the MAIL command.");
 	}
-	else if (client_read_line(client) <= 0 || client->status != 1 || pl_empty(client->line) ||
-			*pl_char_get(client->line) != '2' || !smtp_client_read_line_to_end(client)) {
+	else if (!smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
 		errmsg = NULLER("Failed to return successful status after MAIL.");
 	}
 
-	// Test RCPT.
+	// Test the RCPT command.
 	else if (status() && client_print(client, "RCPT TO: <ladar@lavabit.com>\r\n") <= 0) {
 		errmsg = NULLER("Failed to write the RCPT command.");
 	}
-	else if (client_read_line(client) <= 0 || client->status != 1 || pl_empty(client->line) ||
-			*pl_char_get(client->line) != '2' || !smtp_client_read_line_to_end(client)) {
+	else if (!smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
 		errmsg = NULLER("Failed to return successful status after RCPT.");
 	}
 
-	// Test DATA.
+	// Test the DATA command.
 	else if (status() && client_print(client, "DATA\r\n") <= 0) {
 		errmsg = NULLER("Failed to write the DATA command.");
 	}
-	else if (client_read_line(client) <= 0 || client->status != 1 || pl_empty(client->line) ||
-			*pl_char_get(client->line) != '3' || !smtp_client_read_line_to_end(client)) {
+	else if (!smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '3') {
 		errmsg = NULLER("Failed to return successful status after DATA.");
 	}
 
@@ -80,17 +82,15 @@ START_TEST (check_smtp_network_simple_s) {
 	else if (status() && client_print(client, "FROM: Magma\nSUBJECT: Unit Tests\nAren't unit tests great?\n.\r\n") <= 0) {
 		errmsg = NULLER("Failed to write email contents.");
 	}
-	else if (client_read_line(client) <= 0 || client->status != 1 || pl_empty(client->line) ||
-			*pl_char_get(client->line) != '2' || !smtp_client_read_line_to_end(client)) {
+	else if (!smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
 		errmsg = NULLER("Failed to return successful status after sending email contents.");
 	}
 
-	// Test QUIT.
+	// Test the QUIT command.
 	else if (status() && client_print(client, "QUIT\r\n") <= 0) {
 		errmsg = NULLER("Failed to write email contents.");
 	}
-	else if (client_read_line(client) <= 0 || client->status != 1 || pl_empty(client->line) ||
-			*pl_char_get(client->line) != '2' || !smtp_client_read_line_to_end(client)) {
+	else if (!smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
 		errmsg = NULLER("Failed to return successful status after sending email contents.");
 	}
 

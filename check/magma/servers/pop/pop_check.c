@@ -42,7 +42,7 @@ bool_t check_pop_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to establish a client connection.");
 		outcome = false;
 	}
-	if (status() && outcome && !check_pop_client_read_lines_to_end(client, false) || client->status != 1) {
+	if (status() && outcome && (!check_pop_client_read_lines_to_end(client, false) || (client->status != 1))) {
 		st_sprint(errmsg, "Failed to return successful status initially.");
 		outcome = false;
 	}
@@ -52,7 +52,7 @@ bool_t check_pop_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write the USER command.");
 		outcome = false;
 	}
-	if (status() && outcome && !check_pop_client_read_lines_to_end(client, false) || client->status != 1) {
+	if (status() && outcome && (!check_pop_client_read_lines_to_end(client, false) || (client->status != 1))) {
 		st_sprint(errmsg, "Failed to return successful status after USER.");
 		outcome = false;
 	}
@@ -62,7 +62,7 @@ bool_t check_pop_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write the PASS command.");
 		outcome = false;
 	}
-	if (status() && outcome && !check_pop_client_read_lines_to_end(client, false) || client->status != 1) {
+	if (status() && outcome && (!check_pop_client_read_lines_to_end(client, false) || (client->status != 1))) {
 		st_sprint(errmsg, "Failed to return successful status after PASS.");
 		outcome = false;
 	}
@@ -72,7 +72,7 @@ bool_t check_pop_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write the LIST command.");
 		outcome = false;
 	}
-	if (status() && outcome && !check_pop_client_read_lines_to_end(client, true) || client->status != 1) {
+	if (status() && outcome && (!check_pop_client_read_lines_to_end(client, true) || (client->status != 1))) {
 		st_sprint(errmsg, "Failed to return successful status after LIST.");
 		outcome = false;
 	}
@@ -82,7 +82,7 @@ bool_t check_pop_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write the RETR command.");
 		outcome = false;
 	}
-	if (status() && outcome && !check_pop_client_read_lines_to_end(client, true) || client->status != 1) {
+	if (status() && outcome && (!check_pop_client_read_lines_to_end(client, true) || (client->status != 1))) {
 		st_sprint(errmsg, "Failed to return successful status after RETR.");
 		outcome = false;
 	}
@@ -92,7 +92,7 @@ bool_t check_pop_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write the DELE command.");
 		outcome = false;
 	}
-	if (status() && outcome && !check_pop_client_read_lines_to_end(client, false) || client->status != 1) {
+	if (status() && outcome && (!check_pop_client_read_lines_to_end(client, false) || (client->status != 1))) {
 		st_sprint(errmsg, "Failed to return successful status after DELE.");
 		outcome = false;
 	}
@@ -102,7 +102,7 @@ bool_t check_pop_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write the QUIT command.");
 		outcome = false;
 	}
-	if (status() && outcome && !check_pop_client_read_lines_to_end(client, false) || client->status != 1) {
+	if (status() && outcome && (!check_pop_client_read_lines_to_end(client, false) || (client->status != 1))) {
 		st_sprint(errmsg, "Failed to return successful status after QUIT.");
 		outcome = false;
 	}

@@ -32,7 +32,7 @@ bool_t check_smtp_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to establish a client connection.");
 		outcome = false;
 	}
-	if (status() && outcome && !check_smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
+	if (status() && outcome && (!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
 		st_sprint(errmsg, "Failed to return successful status initially.");
 		outcome = false;
 	}
@@ -42,7 +42,7 @@ bool_t check_smtp_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write the EHLO command.");
 		outcome = false;
 	}
-	if (status() && outcome && !check_smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
+	if (status() && outcome && (!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
 		st_sprint(errmsg, "Failed to return successful status after EHLO.");
 		outcome = false;
 	}
@@ -52,7 +52,7 @@ bool_t check_smtp_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write the HELO command.");
 		outcome = false;
 	}
-	if (status() && outcome && !check_smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
+	if (status() && outcome && (!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
 		st_sprint(errmsg, "Failed to return successful status after HELO.");
 		outcome = false;
 	}
@@ -62,7 +62,7 @@ bool_t check_smtp_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write the MAIL command.");
 		outcome = false;
 	}
-	if (status() && outcome && !check_smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
+	if (status() && outcome && (!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
 		st_sprint(errmsg, "Failed to return successful status after MAIL.");
 		outcome = false;
 	}
@@ -72,7 +72,7 @@ bool_t check_smtp_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write the RCPT command.");
 		outcome = false;
 	}
-	if (status() && outcome && !check_smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
+	if (status() && outcome && (!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
 		st_sprint(errmsg, "Failed to return successful status after RCPT.");
 		outcome = false;
 	}
@@ -82,7 +82,7 @@ bool_t check_smtp_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write the DATA command.");
 		outcome = false;
 	}
-	if (status() && outcome && !check_smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '3') {
+	if (status() && outcome && (!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '3'))) {
 		st_sprint(errmsg, "Failed to return successful status after DATA.");
 		outcome = false;
 	}
@@ -92,7 +92,7 @@ bool_t check_smtp_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write email contents.");
 		outcome = false;
 	}
-	if (status() && outcome && !check_smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
+	if (status() && outcome && (!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
 		st_sprint(errmsg, "Failed to return successful status after sending email contents.");
 		outcome = false;
 	}
@@ -102,7 +102,7 @@ bool_t check_smtp_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write email contents.");
 		outcome = false;
 	}
-	if (status() && outcome && !check_smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
+	if (status() && outcome && (!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
 		st_sprint(errmsg, "Failed to return successful status after sending email contents.");
 		outcome = false;
 	}

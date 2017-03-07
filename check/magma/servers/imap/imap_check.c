@@ -39,7 +39,7 @@ bool_t check_imap_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to establish a client connection.");
 		outcome = false;
 	}
-	if (status() && outcome && !check_imap_client_read_lines_to_end(client, "*") || client->status != 1) {
+	if (status() && outcome && (!check_imap_client_read_lines_to_end(client, "*") || (client->status != 1))) {
 		st_sprint(errmsg, "Failed to return successful status initially.");
 		outcome = false;
 	}
@@ -49,7 +49,7 @@ bool_t check_imap_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write the A1 LOGIN command.");
 		outcome = false;
 	}
-	if (status() && outcome && !check_imap_client_read_lines_to_end(client, "A1") || client->status != 1) {
+	if (status() && outcome && (!check_imap_client_read_lines_to_end(client, "A1") || (client->status != 1))) {
 		st_sprint(errmsg, "Failed to return successful status after LOGIN.");
 		outcome = false;
 	}
@@ -59,7 +59,7 @@ bool_t check_imap_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write the A2 SELECT command.");
 		outcome = false;
 	}
-	if (status() && outcome && !check_imap_client_read_lines_to_end(client, "A2") || client->status != 1) {
+	if (status() && outcome && (!check_imap_client_read_lines_to_end(client, "A2") || (client->status != 1))) {
 		st_sprint(errmsg, "Failed to return successful status after SELECT.");
 		outcome = false;
 	}
@@ -69,7 +69,7 @@ bool_t check_imap_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write the A3 FETCH command.");
 		outcome = false;
 	}
-	if (status() && outcome && !check_imap_client_read_lines_to_end(client, "A3") || client->status != 1) {
+	if (status() && outcome && (!check_imap_client_read_lines_to_end(client, "A3") || (client->status != 1))) {
 		st_sprint(errmsg, "Failed to return successful status after SELECT.");
 		outcome = false;
 	}
@@ -79,7 +79,7 @@ bool_t check_imap_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write the A4 LOGOUT command.");
 		outcome = false;
 	}
-	if (status() && outcome && !check_imap_client_read_lines_to_end(client, "A4") || client->status != 1) {
+	if (status() && outcome && (!check_imap_client_read_lines_to_end(client, "A4") || (client->status != 1))) {
 		st_sprint(errmsg, "Failed to return successful status after LOGOUT.");
 		outcome = false;
 	}

@@ -89,9 +89,9 @@ client_t * client_connect(chr_t *host, uint32_t port) {
 			return NULL;
 		}
 
-		 if (!(ret = connect(sd, info->ai_addr, info->ai_addrlen))) {
-			 break;
-		 }
+		if (!(ret = connect(sd, info->ai_addr, info->ai_addrlen))) {
+			break;
+		}
 
 		close(sd);
 		info = info->ai_next;

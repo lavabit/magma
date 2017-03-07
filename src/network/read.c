@@ -26,18 +26,18 @@ int64_t con_read_line(connection_t *con, bool_t block) {
 	bool_t line = false;
 
 	if (!con || con->network.sockd == -1) {
-		con->network.status = -1;
+		if (con) con->network.status = -1;
 		return -1;
 	}
 
 	// Check for an existing network buffer. If there isn't one, try creating it.
-	if (!con->network.buffer && !con_init_network_buffer(con)) {
+	else if (!con->network.buffer && !con_init_network_buffer(con)) {
 		con->network.status = -1;
 		return -1;
 	}
 
 	// Check if we have received more data than just what is in the current line of input.
-	if (pl_length_get(con->network.line) && st_length_get(con->network.buffer) > pl_length_get(con->network.line)) {
+	else if (pl_length_get(con->network.line) && st_length_get(con->network.buffer) > pl_length_get(con->network.line)) {
 
 		// If so, move the unused "new" data after the current line marker to the front of the buffer.
 		mm_move(st_data_get(con->network.buffer), st_data_get(con->network.buffer) + pl_length_get(con->network.line),
@@ -124,18 +124,18 @@ int64_t con_read(connection_t *con) {
 	bool_t blocking;
 
 	if (!con || con->network.sockd == -1) {
-		con->network.status = -1;
+		if (con) con->network.status = -1;
 		return -1;
 	}
 
 	// Check for an existing network buffer. If there isn't one, try creating it.
-	if (!con->network.buffer && !con_init_network_buffer(con)) {
+	else if (!con->network.buffer && !con_init_network_buffer(con)) {
 		con->network.status = -1;
 		return -1;
 	}
 
 	// Check for data past the current line buffer.
-	if (pl_length_get(con->network.line) && st_length_get(con->network.buffer) > pl_length_get(con->network.line)) {
+	else if (pl_length_get(con->network.line) && st_length_get(con->network.buffer) > pl_length_get(con->network.line)) {
 
 		// Move the unused data to the front of the buffer.
 		mm_move(st_data_get(con->network.buffer), st_data_get(con->network.buffer) + pl_length_get(con->network.line),
@@ -217,12 +217,12 @@ int64_t client_read_line(client_t *client) {
 	bool_t line = false;
 
 	if (!client || client->sockd == -1) {
-		client->status = 1;
+		if (client) client->status = 1;
 		return -1;
 	}
 
 	// Check for data past the current line buffer.
-	if (pl_length_get(client->line) && st_length_get(client->buffer) > pl_length_get(client->line)) {
+	else if (pl_length_get(client->line) && st_length_get(client->buffer) > pl_length_get(client->line)) {
 
 		// Move the unused data to the front of the buffer.
 		mm_move(st_data_get(client->buffer), st_data_get(client->buffer) + pl_length_get(client->line), st_length_get(client->buffer) - pl_length_get(client->line));
@@ -302,12 +302,12 @@ int64_t client_read(client_t *client) {
 	int_t sslerr = -1;
 
 	if (!client || client->sockd == -1) {
-		client->status = -1;
+		if (client) client->status = -1;
 		return -1;
 	}
 
 	// Check for data past the current line buffer.
-	if (pl_length_get(client->line) && st_length_get(client->buffer) > pl_length_get(client->line)) {
+	else if (pl_length_get(client->line) && st_length_get(client->buffer) > pl_length_get(client->line)) {
 
 		// Move the unused data to the front of the buffer.
 		mm_move(st_data_get(client->buffer), st_data_get(client->buffer) + pl_length_get(client->line), st_length_get(client->buffer) - pl_length_get(client->line));

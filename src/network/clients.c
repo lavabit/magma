@@ -59,10 +59,10 @@ client_t * client_connect(chr_t *host, uint32_t port) {
 	client_t *result;
 	chr_t service[20];
 	int_t sd = -1, ret;
-	struct addrinfo hints, *info = NULL;
+	struct addrinfo hints, *info = NULL, *holder = NULL;
 
 	 memset(&hints, 0, sizeof(struct addrinfo));
-	 hints.ai_family = AF_UNSPEC;    // IPv4 or IPv6
+	 hints.ai_family = AF_UNSPEC;     // IPv4 or IPv6
 	 hints.ai_socktype = SOCK_STREAM; // TCP stream socket
 	 hints.ai_flags = AI_NUMERICSERV; // Require a numeric service (aka port) number.
 
@@ -70,38 +70,41 @@ client_t * client_connect(chr_t *host, uint32_t port) {
 
 	// Resolve the hostname.
 	if ((ret = getaddrinfo(host, service, &hints, &info)) || !info || info->ai_socktype != SOCK_STREAM) {
-		log_pedantic("Unable to resolve the host %s:%u and create a client connection. {getaddrinfo = %i / errno = %s}", host, port, ret, strerror_r(errno, MEMORYBUF(256), 256));
-
-		if (info) {
-			freeaddrinfo(info);
-		}
-
+		log_pedantic("Unable to resolve the host %s:%u and create a client connection. { getaddrinfo = %i / errno = %s }",
+			host, port, ret, strerror_r(errno, MEMORYBUF(256), 256));
+		if (info) freeaddrinfo(info);
 		return NULL;
 	}
 
-	// We need to loop through all addresses because we may get an ipv6 address we don't want to connect to, etc.
-	while (info) {
+	// We need to loop through all addresses because we may get an multiple IP addresses, and some of
+	// those addresses may be invalid, or inaccessible. We use a disposable "holder" variable as the iterator,
+	// so we still call freeaddrinfo on the original info variable, otherwise we will create a memory leak.
+	holder = info;
+
+	while (holder) {
 
 		// Create a socket.
-		if ((sd = socket(info->ai_family, info->ai_socktype, info->ai_protocol)) == -1) {
-			log_pedantic("Unable to create a socket connection with the host %s:%u. {socket = -1 / errno = %s}", host, port, strerror_r(errno, MEMORYBUF(256), 256));
+		if ((sd = socket(holder->ai_family, holder->ai_socktype, holder->ai_protocol)) == -1) {
+			log_pedantic("Unable to create a socket connection with the host %s:%u. { socket = -1 / errno = %s }",
+				host, port, strerror_r(errno, MEMORYBUF(1024), 1024));
 			freeaddrinfo(info);
 			return NULL;
 		}
 
-		 if (!(ret = connect(sd, info->ai_addr, info->ai_addrlen))) {
-			 break;
-		 }
+		if (!(ret = connect(sd, holder->ai_addr, holder->ai_addrlen))) {
+			break;
+		}
 
 		close(sd);
-		info = info->ai_next;
+		holder = holder->ai_next;
 	}
 
 	// Free the address info.
 	freeaddrinfo(info);
 
 	if (ret != 0) {
-		log_pedantic("We were unable to connect with the host %s:%u. {connect = %i / errno = %s}", host, port, ret, strerror_r(errno, MEMORYBUF(256), 256));
+		log_pedantic("We were unable to connect with the host %s:%u. { connect = %i / errno = %s }",
+			host, port, ret, strerror_r(errno, MEMORYBUF(1024), 1024));
 		close(sd);
 		return NULL;
 	}

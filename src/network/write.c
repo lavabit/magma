@@ -26,7 +26,7 @@ int64_t con_write_bl(connection_t *con, char *block, size_t length) {
 	int sslerr = -1;
 
 	if (!con || con->network.sockd == -1) {
-		con->network.status = -1;
+		if (con) con->network.status = -1;
 		return -1;
 	}
 	else if (!block || !length) {
@@ -142,7 +142,7 @@ int64_t con_print(connection_t *con, chr_t *format, ...) {
 	int64_t result;
 
 	if (!con || con->network.sockd == -1) {
-		con->network.status = -1;
+		if (con) con->network.status = -1;
 		return -1;
 	}
 	else if (!format) {
@@ -199,7 +199,7 @@ int64_t client_write(client_t *client, stringer_t *s) {
 	ssize_t written, position = 0;
 
 	if (!client || client->sockd == -1) {
-		client->status = -1;
+		if (client) client->status = -1;
 		return -1;
 	}
 	else if (st_empty_out(s, &block, &length) || !block || !length) {
@@ -278,6 +278,7 @@ int64_t client_print(client_t *client, chr_t *format, ...) {
 	int64_t result = -1;
 
 	if (!client || client->sockd == -1) {
+		if (client) client->status = -1;
 		return -1;
 	}
 	else if (!format) {

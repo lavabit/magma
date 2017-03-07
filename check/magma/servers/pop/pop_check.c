@@ -16,11 +16,18 @@
  * @return Returns true if client_read_line was successful for the number of lines
  * specified in num and there was no -ERR. Otherwise returns false.
  */
-bool_t pop_client_read_lines(client_t *client, uint32_t num) {
+bool_t check_pop_client_read_lines(client_t *client, uint32_t num) {
 	for (uint32_t i = 0; i < num; i++) {
-		if (client_read_line(client) <= 0 || *pl_char_get(client->line) == '-') return false;
+		if (client_read_line(client) <= 0 || st_cmp_cs_starts(&client->line, NULLER("-ERR")) == 0) return false;
 	}
 	return true;
+}
+
+bool_t check_pop_client_read_to_period(client_t *client) {
+	while (client_read_line(client) > 0) {
+		if (pl_char_get(client->line)[3] == '.') return true;
+	}
+	return false;
 }
 
 START_TEST (check_pop_network_simple_s) {
@@ -34,60 +41,56 @@ START_TEST (check_pop_network_simple_s) {
 	if (status() && (!(client = client_connect("localhost", port)))) {
 		errmsg = NULLER("Failed to establish a client connection.");
 	}
-	else if (!pop_client_read_lines(client, 1) || client->status != 1) {
+	else if (!check_pop_client_read_lines(client, 1) || client->status != 1) {
 		errmsg = NULLER("Failed to return successful status initially.");
 	}
 
 	// Test the USER command.
-	else if (status() && client_write(client, PLACER("USER princess\r\n", 15)) <= 0) {
+	if (status() && client_print(client, "USER princess\r\n") <= 0) {
 		errmsg = NULLER("Failed to write the USER command.");
 	}
-	else if (!pop_client_read_lines(client, 1) || client->status != 1) {
+	else if (!check_pop_client_read_lines(client, 1) || client->status != 1) {
 		errmsg = NULLER("Failed to return successful status after USER.");
 	}
 
 	// Test the PASS command.
-	else if (status() && client_write(client, PLACER("PASS password\r\n", 15)) <= 0) {
+	if (status() && client_print(client, "PASS password\r\n") <= 0) {
 		errmsg = NULLER("Failed to write the PASS command.");
 	}
-	else if (!pop_client_read_lines(client, 1) || client->status != 1) {
+	else if (!check_pop_client_read_lines(client, 1) || client->status != 1) {
 		errmsg = NULLER("Failed to return successful status after PASS.");
 	}
 
-	// TODO: Make this a fixture test that populates the princess account with a set amount of mail beforehand.
-	/*
 	// Test the LIST command.
-	else if (status() && client_write(client, PLACER("LIST\r\n", 6)) <= 0) {
+	if (status() && client_print(client, "LIST\r\n") <= 0) {
 		errmsg = NULLER("Failed to write the LIST command.");
 	}
-	else if (client_read_line(client) <= 0 || client->status != 1 || pl_char_get(client->line)[0] != '1') {
+	else if (!check_pop_client_read_to_period(client) || client->status != 1) {
 		errmsg = NULLER("Failed to return successful status after LIST.");
 	}
 
 	// Test the RETR command.
-	else if (status() && client_write(client, PLACER("RETR 1\r\n", 8)) <= 0) {
+	if (status() && client_print(client, "RETR 1\r\n") <= 0) {
 		errmsg = NULLER("Failed to write the RETR command.");
 	}
-	else if (client_read_line(client) <= 0 || client->status != 1 || pl_char_get(client->line)[1] != 'O' ||
-			pl_char_get(client->line)[2] != 'K') {
+	else if (!check_pop_client_read_lines(client, 2) || client->status != 1) {
 		errmsg = NULLER("Failed to return successful status after RETR.");
 	}
 
 	// Test the DELE command.
-	else if (status() && client_write(client, PLACER("DELE 1\r\n", 8)) <= 0) {
+	if (status() && client_print(client, "DELE 1\r\n") <= 0) {
 		errmsg = NULLER("Failed to write the DELE command.");
 	}
 	else if (client_read_line(client) <= 0 || client->status != 1 || pl_char_get(client->line)[1] != 'O' ||
 			pl_char_get(client->line)[2] != 'K') {
 		errmsg = NULLER("Failed to return successful status after DELE.");
 	}
-	*/
 
 	// Test the QUIT command.
-	else if (status() && client_write(client, PLACER("QUIT\r\n", 6)) <= 0) {
+	if (status() && client_print(client, "QUIT\r\n") <= 0) {
 		errmsg = NULLER("Failed to write the QUIT command.");
 	}
-	else if (!pop_client_read_lines(client, 1) || client->status != 1) {
+	else if (!check_pop_client_read_lines(client, 1) || client->status != 1) {
 		errmsg = NULLER("Failed to return successful status after QUIT.");
 	}
 

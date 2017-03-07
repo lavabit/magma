@@ -15,7 +15,7 @@
  * @return Returns true if client_read_line was successful until the last line was found.
  * Otherwise returns false.
  */
-bool_t smtp_client_read_line_to_end(client_t *client) {
+bool_t check_smtp_client_read_line_to_end(client_t *client) {
 	while (client_read_line(client) > 0) {
 		if (pl_char_get(client->line)[3] == ' ') return true;
 	}
@@ -34,7 +34,7 @@ START_TEST (check_smtp_network_simple_s) {
 	if (status() && !(client = client_connect("localhost", port))) {
 		errmsg = NULLER("Failed to establish a client connection.");
 	}
-	else if (!smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
+	else if (!check_smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
 		errmsg = NULLER("Failed to return successful status initially.");
 	}
 
@@ -42,7 +42,7 @@ START_TEST (check_smtp_network_simple_s) {
 	else if (status() && client_print(client, "EHLO princess\r\n") <= 0) {
 		errmsg = NULLER("Failed to write the EHLO command.");
 	}
-	else if (!smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
+	else if (!check_smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
 		errmsg = NULLER("Failed to return successful status after EHLO.");
 	}
 
@@ -50,7 +50,7 @@ START_TEST (check_smtp_network_simple_s) {
 	else if (status() && client_print(client, "HELO princess\r\n") <= 0) {
 		errmsg = NULLER("Failed to write the HELO command.");
 	}
-	else if (!smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
+	else if (!check_smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
 		errmsg = NULLER("Failed to return successful status after HELO.");
 	}
 
@@ -58,7 +58,7 @@ START_TEST (check_smtp_network_simple_s) {
 	else if (status() && client_print(client, "MAIL FROM: <>\r\n") <= 0) {
 		errmsg = NULLER("Failed to write the MAIL command.");
 	}
-	else if (!smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
+	else if (!check_smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
 		errmsg = NULLER("Failed to return successful status after MAIL.");
 	}
 
@@ -66,7 +66,7 @@ START_TEST (check_smtp_network_simple_s) {
 	else if (status() && client_print(client, "RCPT TO: <ladar@lavabit.com>\r\n") <= 0) {
 		errmsg = NULLER("Failed to write the RCPT command.");
 	}
-	else if (!smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
+	else if (!check_smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
 		errmsg = NULLER("Failed to return successful status after RCPT.");
 	}
 
@@ -74,15 +74,15 @@ START_TEST (check_smtp_network_simple_s) {
 	else if (status() && client_print(client, "DATA\r\n") <= 0) {
 		errmsg = NULLER("Failed to write the DATA command.");
 	}
-	else if (!smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '3') {
+	else if (!check_smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '3') {
 		errmsg = NULLER("Failed to return successful status after DATA.");
 	}
 
 	// Test sending the contents of an email.
-	else if (status() && client_print(client, "FROM: Magma\nSUBJECT: Unit Tests\nAren't unit tests great?\n.\r\n") <= 0) {
+	else if (status() && client_print(client, "FROM: Princess\nSUBJECT: Unit Tests\nAren't unit tests great?\n.\r\n") <= 0) {
 		errmsg = NULLER("Failed to write email contents.");
 	}
-	else if (!smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
+	else if (!check_smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
 		errmsg = NULLER("Failed to return successful status after sending email contents.");
 	}
 
@@ -90,7 +90,7 @@ START_TEST (check_smtp_network_simple_s) {
 	else if (status() && client_print(client, "QUIT\r\n") <= 0) {
 		errmsg = NULLER("Failed to write email contents.");
 	}
-	else if (!smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
+	else if (!check_smtp_client_read_line_to_end(client) || client->status != 1 || *pl_char_get(client->line) != '2') {
 		errmsg = NULLER("Failed to return successful status after sending email contents.");
 	}
 

@@ -304,9 +304,11 @@ int main(int argc, char *argv[]) {
 	// Execute
 	log_unit("--------------------------------------------------------------------------\n");
 
+	log_disable();
 	test_start = time(NULL);
 	srunner_run_all(sr, CK_SILENT);
 	test_end = time(NULL);
+	log_enable();
 
 	// Output timing.
 	log_unit("--------------------------------------------------------------------------\n");

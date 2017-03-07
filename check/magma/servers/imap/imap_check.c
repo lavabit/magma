@@ -16,26 +16,30 @@
  * specified in num and there was no error. Otherwise returns false.
  */
 bool_t check_imap_client_read_lines_to_end(client_t *client, chr_t *token) {
-	stringer_t *last_line = st_merge("ss", NULLER(token), NULLER(" OK"));
-	while (client_read_line(client) > 0) {
-		if (st_cmp_cs_starts(&client->line, last_line) == 0) return true;
+
+	bool_t outcome = false;
+	stringer_t *n_token = NULLER(token), *n_ok = NULLER(" OK");
+	stringer_t *last_line = st_merge("ss", n_token, n_ok);
+
+	while (!outcome && client_read_line(client) > 0) {
+		if (st_cmp_cs_starts(&client->line, last_line) == 0) outcome = true;
 	}
-	st_cleanup(last_line);
-	return false;
+
+	st_cleanup(n_token, n_ok, last_line);
+	return outcome;
 }
 
 bool_t check_imap_network_simple_sthread(stringer_t *errmsg) {
 
 	bool_t outcome = true;
 	client_t *client = NULL;
-	const uint32_t port = 9000;
 
 	// Check the initial response.
-	if (status() && !(client = client_connect("localhost", port))) {
+	if (status() && !(client = client_connect("localhost", 9000))) {
 		st_sprint(errmsg, "Failed to establish a client connection.");
 		outcome = false;
 	}
-	else if (!check_imap_client_read_lines_to_end(client, "*") || client->status != 1) {
+	if (status() && outcome && !check_imap_client_read_lines_to_end(client, "*") || client->status != 1) {
 		st_sprint(errmsg, "Failed to return successful status initially.");
 		outcome = false;
 	}
@@ -45,7 +49,7 @@ bool_t check_imap_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write the A1 LOGIN command.");
 		outcome = false;
 	}
-	else if (!check_imap_client_read_lines_to_end(client, "A1") || client->status != 1) {
+	if (status() && outcome && !check_imap_client_read_lines_to_end(client, "A1") || client->status != 1) {
 		st_sprint(errmsg, "Failed to return successful status after LOGIN.");
 		outcome = false;
 	}
@@ -55,7 +59,7 @@ bool_t check_imap_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write the A2 SELECT command.");
 		outcome = false;
 	}
-	else if (!check_imap_client_read_lines_to_end(client, "A2") || client->status != 1) {
+	if (status() && outcome && !check_imap_client_read_lines_to_end(client, "A2") || client->status != 1) {
 		st_sprint(errmsg, "Failed to return successful status after SELECT.");
 		outcome = false;
 	}
@@ -65,7 +69,7 @@ bool_t check_imap_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write the A3 FETCH command.");
 		outcome = false;
 	}
-	else if (!check_imap_client_read_lines_to_end(client, "A3") || client->status != 1) {
+	if (status() && outcome && !check_imap_client_read_lines_to_end(client, "A3") || client->status != 1) {
 		st_sprint(errmsg, "Failed to return successful status after SELECT.");
 		outcome = false;
 	}
@@ -75,7 +79,7 @@ bool_t check_imap_network_simple_sthread(stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to write the A4 LOGOUT command.");
 		outcome = false;
 	}
-	else if (!check_imap_client_read_lines_to_end(client, "A4") || client->status != 1) {
+	if (status() && outcome && !check_imap_client_read_lines_to_end(client, "A4") || client->status != 1) {
 		st_sprint(errmsg, "Failed to return successful status after LOGOUT.");
 		outcome = false;
 	}

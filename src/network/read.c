@@ -102,7 +102,7 @@ int64_t con_read_line(connection_t *con, bool_t block) {
 			line = true;
 		}
 
-	} while (status() && !line && st_length_get(con->network.buffer) != st_avail_get(con->network.buffer));
+	} while (!line && st_length_get(con->network.buffer) != st_avail_get(con->network.buffer));
 
 	if (st_length_get(con->network.buffer) > 0) {
 		con->network.status = 1;
@@ -188,7 +188,7 @@ int64_t con_read(connection_t *con) {
 			break;
 		}
 
-	} while (status() && blocking && !st_length_get(con->network.buffer));
+	} while (blocking && !st_length_get(con->network.buffer));
 
 	// If there is data in the buffer process it. Otherwise if the buffer is empty and the connection appears to be closed
 	// (as indicated by a return value of 0), then return -1 to let the caller know the connection is dead.

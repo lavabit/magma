@@ -127,7 +127,7 @@ void http_process(connection_t *con) {
 
 	int_t state;
 
-	if (((state = con_read_line(con, false)) == -1) || (state == -2)) {
+	if (((state = con_read_line(con, true)) == -1) || (state == -2)) {
 		enqueue(&http_close, con);
 		return;
 	}

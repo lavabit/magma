@@ -24,91 +24,91 @@ bool_t check_smtp_client_read_line_to_end(client_t *client) {
 
 bool_t check_smtp_network_simple_sthread(stringer_t *errmsg) {
 
-	bool_t outcome = true;
 	client_t *client = NULL;
 
 	// Test the initial response.
-	if (status() && !(client = client_connect("localhost", 7000))) {
+	if (!(client = client_connect("localhost", 7000))) {
 		st_sprint(errmsg, "Failed to establish a client connection.");
-		outcome = false;
+		return false;
 	}
-	if (status() && outcome && (!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
+	else if ((!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
 		st_sprint(errmsg, "Failed to return successful status initially.");
-		outcome = false;
+		return false;
 	}
 
 	// Test the EHLO command.
-	if (status() && outcome && client_print(client, "EHLO princess\r\n") <= 0) {
+	if (client_print(client, "EHLO princess\r\n") <= 0) {
 		st_sprint(errmsg, "Failed to write the EHLO command.");
-		outcome = false;
+		return false;
 	}
-	if (status() && outcome && (!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
+	else if ((!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
 		st_sprint(errmsg, "Failed to return successful status after EHLO.");
-		outcome = false;
+		return false;
 	}
 
 	// Test the HELO command.
-	if (status() && outcome && client_print(client, "HELO princess\r\n") <= 0) {
+	if (client_print(client, "HELO princess\r\n") <= 0) {
 		st_sprint(errmsg, "Failed to write the HELO command.");
-		outcome = false;
+		return false;
 	}
-	if (status() && outcome && (!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
+	else if ((!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
 		st_sprint(errmsg, "Failed to return successful status after HELO.");
-		outcome = false;
+		return false;
 	}
 
 	// Test the MAIL command.
-	if (status() && outcome && client_print(client, "MAIL FROM: <>\r\n") <= 0) {
+	if (client_print(client, "MAIL FROM: <>\r\n") <= 0) {
 		st_sprint(errmsg, "Failed to write the MAIL command.");
-		outcome = false;
+		return false;
 	}
-	if (status() && outcome && (!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
+	else if ((!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
 		st_sprint(errmsg, "Failed to return successful status after MAIL.");
-		outcome = false;
+		return false;
 	}
 
 	// Test the RCPT command.
-	if (status() && outcome && client_print(client, "RCPT TO: <ladar@lavabit.com>\r\n") <= 0) {
+	if (client_print(client, "RCPT TO: <princess@example.com>\r\n") <= 0) {
 		st_sprint(errmsg, "Failed to write the RCPT command.");
-		outcome = false;
+		return false;
 	}
-	if (status() && outcome && (!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
+	else if ((!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
 		st_sprint(errmsg, "Failed to return successful status after RCPT.");
-		outcome = false;
+		return false;
 	}
 
 	// Test the DATA command.
-	if (status() && outcome && client_print(client, "DATA\r\n") <= 0) {
+	if (client_print(client, "DATA\r\n") <= 0) {
 		st_sprint(errmsg, "Failed to write the DATA command.");
-		outcome = false;
+		return false;
 	}
-	if (status() && outcome && (!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '3'))) {
+	else if ((!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '3'))) {
 		st_sprint(errmsg, "Failed to return successful status after DATA.");
-		outcome = false;
+		return false;
 	}
 
 	// Test sending the contents of an email.
-	if (status() && outcome && client_print(client, "FROM: Princess\nSUBJECT: Unit Tests\nAren't unit tests great?\n.\r\n") <= 0) {
+	if (client_print(client, "FROM: Princess\nSUBJECT: Unit Tests\nAren't unit tests great?\n.\r\n") <= 0) {
 		st_sprint(errmsg, "Failed to write email contents.");
-		outcome = false;
+		return false;
 	}
-	if (status() && outcome && (!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
+	if ((!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
 		st_sprint(errmsg, "Failed to return successful status after sending email contents.");
-		outcome = false;
+		return false;
 	}
 
 	// Test the QUIT command.
-	if (status() && outcome && client_print(client, "QUIT\r\n") <= 0) {
+	if (client_print(client, "QUIT\r\n") <= 0) {
 		st_sprint(errmsg, "Failed to write email contents.");
-		outcome = false;
+		return false;
 	}
-	if (status() && outcome && (!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
+	if ((!check_smtp_client_read_line_to_end(client) || (client->status != 1) || (*pl_char_get(client->line) != '2'))) {
 		st_sprint(errmsg, "Failed to return successful status after sending email contents.");
-		outcome = false;
+		return false;
 	}
 
 	client_close(client);
-	return outcome;
+
+	return true;
 }
 
 START_TEST (check_smtp_network_simple_s) {

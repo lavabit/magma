@@ -91,7 +91,91 @@ bool_t check_smtp_checkers_greylist_sthread(stringer_t *errmsg) {
 bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg) {
 
 	bool_t outcome = true;
+	smtp_inbound_prefs_t prefs;
+	stringer_t *from = NULL, *subject = NULL, *date = NULL, *to = NULL, *return_path = NULL, *envelope_to = NULL,
+			*delivery_date = NULL, *received = NULL, *dkim_sig = NULL, *domainkey_sig = NULL, *message_id = NULL,
+			*mime_version = NULL, *content_type = NULL, *x_spam_status = NULL, *x_spam_level = NULL,
+			*message_body = NULL, *combined = NULL;
 
+	mm_wipe(&prefs, sizeof(smtp_inbound_prefs_t));
+
+	// Set default values.
+	from 			= NULLER("From: Princess (princess@lavabit.com)\n");
+	subject 		= NULLER("Subject: Unit Test: SMTP Filters\n");
+	date 			= NULLER("Date: March 7th, 2017 5:55:55 PM CST\n");
+	to 				= NULLER("To: ladar@lavabit.com\n");
+	return_path 	= NULLER("Return-Path: <princess@lavabit.com>\n");
+	envelope_to 	= NULLER("Envelope-To: ladar@lavabit.com\n");
+	delivery_date 	= NULLER("Delivery-Date: Tue, 7 Mar 2017 18:55:55-0600\n");
+	received 		= NULLER("Received: \n");
+	dkim_sig 		= NULLER("Dkim-Signature: \n");
+	domainkey_sig 	= NULLER("Domainkey-Signature: \n");
+	message_id 		= NULLER("Message-Id: <>\n");
+	mime_version 	= NULLER("Mime-Version: 1.0\n");
+	content_type 	= NULLER("Content-Type: \n");
+	x_spam_status 	= NULLER("X-Spam-Status: \n");
+	x_spam_level 	= NULLER("X-Spam-Level: \n");
+	message_body 	= NULLER("Message Body: Hello World!\n");
+
+	// Test if it returns -1 on error.
+	combined = st_merge("ssssssssssssssss", from, subject, date, to, return_path, envelope_to, delivery_date, received,
+			dkim_sig, domainkey_sig, message_id, mime_version, content_type, x_spam_status, x_spam_level, message_body);
+
+	if (status() && outcome && smtp_check_filters(&prefs, &combined) != 1) {
+		st_sprint(errmsg, "Failed to return 1 when no action was taken.");
+		outcome = false;
+	}
+	st_free(combined);
+
+	// Test if it returns -2 when the message is supposed to be deleted.
+	combined = st_merge("ssssssssssssssss", from, subject, date, to, return_path, envelope_to, delivery_date, received,
+			dkim_sig, domainkey_sig, message_id, mime_version, content_type, x_spam_status, x_spam_level, message_body);
+
+	if (status() && outcome && smtp_check_filters(&prefs, &combined) != 2) {
+		st_sprint(errmsg, "Failed to return 1 when no action was taken.");
+		outcome = false;
+	}
+	st_free(combined);
+
+	// Test if it returns 1 when no action is taken.
+	combined = st_merge("ssssssssssssssss", from, subject, date, to, return_path, envelope_to, delivery_date, received,
+			dkim_sig, domainkey_sig, message_id, mime_version, content_type, x_spam_status, x_spam_level, message_body);
+
+	if (status() && outcome && smtp_check_filters(&prefs, &combined) != 1) {
+		st_sprint(errmsg, "Failed to return 1 when no action was taken.");
+		outcome = false;
+	}
+	st_free(combined);
+
+	// Test if it returns 2 when the message should go to a new folder.
+	combined = st_merge("ssssssssssssssss", from, subject, date, to, return_path, envelope_to, delivery_date, received,
+			dkim_sig, domainkey_sig, message_id, mime_version, content_type, x_spam_status, x_spam_level, message_body);
+
+	if (status() && outcome && smtp_check_filters(&prefs, &combined) != 2) {
+		st_sprint(errmsg, "Failed to return 1 when no action was taken.");
+		outcome = false;
+	}
+	st_free(combined);
+
+	// Test if it returns 3 when the message content is modified.
+	combined = st_merge("ssssssssssssssss", from, subject, date, to, return_path, envelope_to, delivery_date, received,
+			dkim_sig, domainkey_sig, message_id, mime_version, content_type, x_spam_status, x_spam_level, message_body);
+
+	if (status() && outcome && smtp_check_filters(&prefs, &combined) != 3) {
+		st_sprint(errmsg, "Failed to return 1 when no action was taken.");
+		outcome = false;
+	}
+	st_free(combined);
+
+	// Test if it returns 4 when the message is marked as read.
+	combined = st_merge("ssssssssssssssss", from, subject, date, to, return_path, envelope_to, delivery_date, received,
+			dkim_sig, domainkey_sig, message_id, mime_version, content_type, x_spam_status, x_spam_level, message_body);
+
+	if (status() && outcome && smtp_check_filters(&prefs, &combined) != 4) {
+		st_sprint(errmsg, "Failed to return 1 when no action was taken.");
+		outcome = false;
+	}
+	st_free(combined);
 
 	return outcome;
 

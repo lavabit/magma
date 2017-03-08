@@ -152,7 +152,8 @@ END_TEST
 
 START_TEST (check_smtp_checkers_filters_s) {
 
-	log_disable();
+//	log_disable();
+	log_enable();
 	bool_t outcome = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 

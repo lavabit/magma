@@ -158,7 +158,6 @@ void          con_reverse_lookup(connection_t *con);
 void          con_reverse_status(connection_t *con, int_t status);
 
 /// listeners.c
-int      net_accept(int sd);
 bool_t   net_init(server_t *server);
 void     net_listen(void);
 void     net_shutdown(server_t *server);

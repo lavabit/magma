@@ -28,87 +28,99 @@ bool_t check_pop_client_read_lines_to_end(client_t *client, bool_t multiline) {
 	else if (client_read_line(client) <= 0 || st_cmp_cs_starts(&client->line, NULLER("-ERR")) == 0) {
 		return false;
 	}
-	else {
-		return true;
-	}
+	return true;
 }
 
 bool_t check_pop_network_simple_sthread(stringer_t *errmsg) {
 
-	bool_t outcome = true;
 	client_t *client = NULL;
 
-	if (status() && !(client = client_connect("localhost", 8000))) {
+	// Connect the client.
+	if (!(client = client_connect("localhost", 8000))) {
 		st_sprint(errmsg, "Failed to establish a client connection.");
-		outcome = false;
+		return false;
 	}
-	if (status() && outcome && (!check_pop_client_read_lines_to_end(client, false) || (client->status != 1))) {
+	else if (!check_pop_client_read_lines_to_end(client, false) || (client->status != 1)) {
 		st_sprint(errmsg, "Failed to return successful status initially.");
-		outcome = false;
+		client_close(client);
+		return false;
 	}
 
 	// Test the USER command.
-	if (status() && outcome && client_print(client, "USER princess\r\n") <= 0) {
+	if (client_print(client, "USER princess\r\n") <= 0) {
 		st_sprint(errmsg, "Failed to write the USER command.");
-		outcome = false;
+		client_close(client);
+		return false;
 	}
-	if (status() && outcome && (!check_pop_client_read_lines_to_end(client, false) || (client->status != 1))) {
+	else if (!check_pop_client_read_lines_to_end(client, false) || (client->status != 1)) {
 		st_sprint(errmsg, "Failed to return successful status after USER.");
-		outcome = false;
+		client_close(client);
+		return false;
 	}
 
 	// Test the PASS command.
-	if (status() && outcome && client_print(client, "PASS password\r\n") <= 0) {
+	if (client_print(client, "PASS password\r\n") <= 0) {
 		st_sprint(errmsg, "Failed to write the PASS command.");
-		outcome = false;
+		client_close(client);
+		return false;
 	}
-	if (status() && outcome && (!check_pop_client_read_lines_to_end(client, false) || (client->status != 1))) {
+	else if (!check_pop_client_read_lines_to_end(client, false) || (client->status != 1)) {
 		st_sprint(errmsg, "Failed to return successful status after PASS.");
-		outcome = false;
+		client_close(client);
+		return false;
 	}
 
 	// Test the LIST command.
-	if (status() && outcome && client_print(client, "LIST\r\n") <= 0) {
+	if (client_print(client, "LIST\r\n") <= 0) {
 		st_sprint(errmsg, "Failed to write the LIST command.");
-		outcome = false;
+		client_close(client);
+		return false;
 	}
-	if (status() && outcome && (!check_pop_client_read_lines_to_end(client, true) || (client->status != 1))) {
+	else if (!check_pop_client_read_lines_to_end(client, true) || (client->status != 1)) {
 		st_sprint(errmsg, "Failed to return successful status after LIST.");
-		outcome = false;
+		client_close(client);
+		return false;
 	}
 
 	// Test the RETR command.
-	if (status() && outcome && client_print(client, "RETR 1\r\n") <= 0) {
+	if (client_print(client, "RETR 1\r\n") <= 0) {
 		st_sprint(errmsg, "Failed to write the RETR command.");
-		outcome = false;
+		client_close(client);
+		return false;
 	}
-	if (status() && outcome && (!check_pop_client_read_lines_to_end(client, true) || (client->status != 1))) {
+	else if (!check_pop_client_read_lines_to_end(client, true) || (client->status != 1)) {
 		st_sprint(errmsg, "Failed to return successful status after RETR.");
-		outcome = false;
+		client_close(client);
+		return false;
 	}
 
 	// Test the DELE command.
-	if (status() && outcome && client_print(client, "DELE 1\r\n") <= 0) {
+	if (client_print(client, "DELE 1\r\n") <= 0) {
 		st_sprint(errmsg, "Failed to write the DELE command.");
-		outcome = false;
+		client_close(client);
+		return false;
 	}
-	if (status() && outcome && (!check_pop_client_read_lines_to_end(client, false) || (client->status != 1))) {
+	else if (!check_pop_client_read_lines_to_end(client, false) || (client->status != 1)) {
 		st_sprint(errmsg, "Failed to return successful status after DELE.");
-		outcome = false;
+		client_close(client);
+		return false;
 	}
 
 	// Test the QUIT command.
-	if (status() && outcome && client_print(client, "QUIT\r\n") <= 0) {
+	if (client_print(client, "QUIT\r\n") <= 0) {
 		st_sprint(errmsg, "Failed to write the QUIT command.");
-		outcome = false;
+		client_close(client);
+		return false;
 	}
-	if (status() && outcome && (!check_pop_client_read_lines_to_end(client, false) || (client->status != 1))) {
+	else if (!check_pop_client_read_lines_to_end(client, false) || (client->status != 1)) {
 		st_sprint(errmsg, "Failed to return successful status after QUIT.");
-		outcome = false;
+		client_close(client);
+		return false;
 	}
 
 	client_close(client);
-	return outcome;
+
+	return true;
 }
 
 START_TEST (check_pop_network_simple_s) {

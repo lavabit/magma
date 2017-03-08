@@ -95,8 +95,7 @@ void signal_shutdown(int signal) {
 	nanosleep(&single, NULL);
 
 	thread_join(status_thread);
-	exit(1);
-	return;
+
 	// Now go through and shutdown all client connections.
 	if (getrlimit64(RLIMIT_NOFILE, &limits)) {
 		log_critical("Unable to determine the maximum legal file descriptor.");

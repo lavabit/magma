@@ -88,7 +88,7 @@ bool_t check_smtp_checkers_greylist_sthread(stringer_t *errmsg) {
 	return true;
 }
 
-bool_t check_smtp_checkers_filters_test(stringer_t *errmsg, int_t action, int_t location, int_t expected) {
+bool_t check_smtp_checkers_filters_test(stringer_t *errmsg, int_t action, int_t expected) {
 
 	size_t fields_num = 15;
 	multi_t key = mt_get_null();
@@ -109,46 +109,32 @@ bool_t check_smtp_checkers_filters_test(stringer_t *errmsg, int_t action, int_t 
 	// Set default fields and values;
 	fields[0] 	= NULLER("From:");
 	values[0] 	= NULLER(" Princess (princess@lavabit.com)\r\n");
-
 	fields[1] 	= NULLER("Subject");
 	values[1] 	= NULLER(": Unit Test: SMTP Filters\r\n");
-
 	fields[2] 	= NULLER("Date");
 	values[2] 	= NULLER(": March 7th, 2017 5:55:55 PM CST\r\n");
-
 	fields[3] 	= NULLER("To");
 	values[3] 	= NULLER(": ladar@lavabit.com\r\n");
-
 	fields[4] 	= NULLER("Return-Path");
 	values[4] 	= NULLER(": <princess@lavabit.com>\r\n");
-
 	fields[5] 	= NULLER("Envelope-To");
 	values[5] 	= NULLER(": ladar@lavabit.com\n");
-
 	fields[6] 	= NULLER("Delivery-Date");
 	values[6] 	= NULLER(": Tue, 7 Mar 2017 18:55:55-0600\r\n");
-
 	fields[7] 	= NULLER("Received");
 	values[7] 	= NULLER(": from unit.test.lavabit.com \r\n");
-
 	fields[8] 	= NULLER("Dkim-Signature");
 	values[8] 	= NULLER(": abcdefghijklm \r\n");
-
 	fields[9] 	= NULLER("Domainkey-Signature");
 	values[9] 	= NULLER(": nopqrstuvwxyz \r\n");
-
 	fields[10] 	= NULLER("Message-Id");
 	values[10]	= NULLER(": <111111111111111111>\r\n");
-
 	fields[11] 	= NULLER("Mime-Version");
 	values[11] 	= NULLER(": 1.0\r\n");
-
 	fields[12] 	= NULLER("Content-Type");
 	values[12] 	= NULLER(": multipart/alternative \r\n");
-
 	fields[13] 	= NULLER("X-Spam-Status");
 	values[13] 	= NULLER(": score=5\r\n");
-
 	fields[14] 	= NULLER("X-Spam-Level");
 	values[14] 	= NULLER(": **\r\n");
 
@@ -162,85 +148,89 @@ bool_t check_smtp_checkers_filters_test(stringer_t *errmsg, int_t action, int_t 
 	// Test if it returns 1 when no action is taken.
 	filter->expression = NULLER("//g");
 	filter->location = SMTP_FILTER_LOCATION_ENTIRE;
-	if (status() && outcome && (smtp_check_filters(&prefs, &combined) != 1)) {
+	if (status() && (smtp_check_filters(&prefs, &combined) != 1)) {
 		st_sprint(errmsg, "Failed to return 1 when no action was taken.");
-		outcome = false;
+		return false;
 	}
 
 	// Test if it returns -1 on broken regex.
 	filter->expression = NULLER("[this[is[not[valid[regex[");
-	if (status() && outcome && (smtp_check_filters(&prefs, &combined) != -1)) {
+	if (status() && (smtp_check_filters(&prefs, &combined) != -1)) {
 		st_sprint(errmsg, "Failed to return -1 when regex is broken.");
-		outcome = false;
+		return false;
 	}
 
 	// First test the delete action.
-	filter->action = SMTP_FILTER_ACTION_DELETE;
+	filter->action = action;
 
 	// Test if it returns -2 when the message is supposed to be deleted and not when there is no match (header).
 	filter->expression = NULLER("Princess");
 	filter->location = SMTP_FILTER_LOCATION_HEADER;
-	if (status() && outcome && (smtp_check_filters(&prefs, &combined) != -2)) {
+	if (status() && (smtp_check_filters(&prefs, &combined) != expected)) {
 		st_sprint(errmsg, "Failed to return -2 when the regex matches the header and the action is delete.");
-		outcome = false;
+		return false;
 	}
 	filter->expression = NULLER("This is not in the header.");
-	if (status() && outcome && !(smtp_check_filters(&prefs, &combined) != -2)) {
+	if (status() && !(smtp_check_filters(&prefs, &combined) != expected)) {
 		st_sprint(errmsg, "Failed to return -2 when the regex does not match the header and the action is delete.");
-		outcome = false;
+		return false;
 	}
 
 	// Test if it returns -2 when the message is supposed to be deleted and not when there is no match (body).
 	filter->expression = NULLER("Hello World!");
 	filter->location = SMTP_FILTER_LOCATION_BODY;
-	if (status() && outcome && (smtp_check_filters(&prefs, &combined) != -2)) {
+	if (status() && (smtp_check_filters(&prefs, &combined) != expected)) {
 		st_sprint(errmsg, "Failed to return -2 when the regex matches the body and the action is delete.");
-		outcome = false;
+		return false;
 	}
 	filter->expression = NULLER("This is not in the body.");
-	if (status() && outcome && !(smtp_check_filters(&prefs, &combined) != -2)) {
+	if (status() && !(smtp_check_filters(&prefs, &combined) != expected)) {
 		st_sprint(errmsg, "Failed to not return -2 when the regex does not match the body and the action is delete.");
-		outcome = false;
+		return false;
 	}
 
 	// Test if it returns -2 when the message is supposed to be deleted and not when there is no match (entire).
 	filter->expression = NULLER("March 7th");
 	filter->location = SMTP_FILTER_LOCATION_ENTIRE;
-	if (status() && outcome && (smtp_check_filters(&prefs, &combined) != -2)) {
+	if (status() && (smtp_check_filters(&prefs, &combined) != expected)) {
 		st_sprint(errmsg, "Failed to return -2 when the regex matches everything and the action is delete.");
-		outcome = false;
+		return false;
 	}
 	filter->expression = NULLER("This is not in the entire message.");
-	if (status() && outcome && !(smtp_check_filters(&prefs, &combined) != -2)) {
+	if (status() && !(smtp_check_filters(&prefs, &combined) != expected)) {
 		st_sprint(errmsg, "Failed to not return -2 when the regex does not match everything and the action is delete.");
-		outcome = false;
+		return false;
 	}
 
 	// Test if it returns -2 when the message is supposed to be deleted and not when there is no match (fields).
 	filter->location = SMTP_FILTER_LOCATION_FIELD;
 	for (size_t i = 0; i < fields_num; i++) {
-		filter->field = fields[i];
 		filter->expression = values[i];
-		if (status() && outcome && (smtp_check_filters(&prefs, &combined) != -2)) {
-			st_sprint(errmsg, "Failed to return -2 when the regex matches the field %s.", st_char_get(fields[i]));
-			outcome = false;
+		filter->field = fields[i];
+		if (status() && (smtp_check_filters(&prefs, &combined) != expected)) {
+			st_sprint(errmsg, "Failed to return -2 when the regex matches the field %s.", st_char_get(filter->field));
+			return false;
 		}
 		filter->expression = NULLER("This is not in any of the fields.");
-		if (status() && outcome && !(smtp_check_filters(&prefs, &combined) != -2)) {
-			st_sprint(errmsg, "Failed to not return -2 when the regex does not match the field %s.", st_char_get(fields[i]));
-			outcome = false;
+		if (status() && !(smtp_check_filters(&prefs, &combined) != expected)) {
+			st_sprint(errmsg, "Failed to not return -2 when the regex does not match the field %s.", st_char_get(filter->field));
+			return false;
 		}
 	}
 
 	inx_cleanup(prefs.filters);
 	st_cleanup(combined);
+
+	return true;
 }
 
 bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg) {
 
 	bool_t outcome = true;
 
-
+	if (status()) outcome = check_smtp_checkers_filters_test(errmsg, SMTP_FILTER_ACTION_DELETE, -2);
+	if (status() && outcome) outcome = check_smtp_checkers_filters_test(errmsg, SMTP_FILTER_ACTION_MOVE, 2);
+	if (status() && outcome) outcome = check_smtp_checkers_filters_test(errmsg, SMTP_FILTER_ACTION_MARK_READ, 4);
 
 	return outcome;
 

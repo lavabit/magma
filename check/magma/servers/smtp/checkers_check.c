@@ -88,94 +88,159 @@ bool_t check_smtp_checkers_greylist_sthread(stringer_t *errmsg) {
 	return true;
 }
 
+bool_t check_smtp_checkers_filters_test(stringer_t *errmsg, int_t action, int_t location, int_t expected) {
+
+	size_t fields_num = 15;
+	multi_t key = mt_get_null();
+	smtp_inbound_prefs_t prefs;
+	smtp_inbound_filter_t *filter = NULL;
+	stringer_t *fields[15] = { NULL }, *values[15] = { NULL }, *combined = NULL, *body = NULL;
+
+	mm_wipe(&prefs, sizeof(smtp_inbound_prefs_t));
+	prefs.filters = inx_alloc(M_INX_LINKED, &mm_free);
+	prefs.usernum = 2;
+	prefs.mark = 0;
+
+	if (!(filter = mm_alloc(sizeof(smtp_inbound_filter_t)))) return false;
+	key = mt_set_type(key, M_TYPE_UINT64);
+	key.val.u64 = rand_get_int64();
+	inx_insert(prefs.filters, key, filter);
+
+	// Set default fields and values;
+	fields[0] 	= NULLER("From:");
+	values[0] 	= NULLER(" Princess (princess@lavabit.com)\r\n");
+
+	fields[1] 	= NULLER("Subject");
+	values[1] 	= NULLER(": Unit Test: SMTP Filters\r\n");
+
+	fields[2] 	= NULLER("Date");
+	values[2] 	= NULLER(": March 7th, 2017 5:55:55 PM CST\r\n");
+
+	fields[3] 	= NULLER("To");
+	values[3] 	= NULLER(": ladar@lavabit.com\r\n");
+
+	fields[4] 	= NULLER("Return-Path");
+	values[4] 	= NULLER(": <princess@lavabit.com>\r\n");
+
+	fields[5] 	= NULLER("Envelope-To");
+	values[5] 	= NULLER(": ladar@lavabit.com\n");
+
+	fields[6] 	= NULLER("Delivery-Date");
+	values[6] 	= NULLER(": Tue, 7 Mar 2017 18:55:55-0600\r\n");
+
+	fields[7] 	= NULLER("Received");
+	values[7] 	= NULLER(": from unit.test.lavabit.com \r\n");
+
+	fields[8] 	= NULLER("Dkim-Signature");
+	values[8] 	= NULLER(": abcdefghijklm \r\n");
+
+	fields[9] 	= NULLER("Domainkey-Signature");
+	values[9] 	= NULLER(": nopqrstuvwxyz \r\n");
+
+	fields[10] 	= NULLER("Message-Id");
+	values[10]	= NULLER(": <111111111111111111>\r\n");
+
+	fields[11] 	= NULLER("Mime-Version");
+	values[11] 	= NULLER(": 1.0\r\n");
+
+	fields[12] 	= NULLER("Content-Type");
+	values[12] 	= NULLER(": multipart/alternative \r\n");
+
+	fields[13] 	= NULLER("X-Spam-Status");
+	values[13] 	= NULLER(": score=5\r\n");
+
+	fields[14] 	= NULLER("X-Spam-Level");
+	values[14] 	= NULLER(": **\r\n");
+
+	body 		= NULLER("\r\n Hello World!\r\n");
+
+	combined = st_merge("sssssssssssssssssssssssssssssss", fields[0], values[0], fields[1], values[1],
+			fields[2], values[2], fields[3], values[3], fields[4], values[4], fields[5], values[5], fields[6],
+			values[6], fields[7], values[7], fields[8], values[8], fields[9], values[9], fields[10], values[10],
+			fields[11], values[11], fields[12], values[12], fields[13], values[13], fields[14], values[14], body);
+
+	// Test if it returns 1 when no action is taken.
+	filter->expression = NULLER("//g");
+	filter->location = SMTP_FILTER_LOCATION_ENTIRE;
+	if (status() && outcome && (smtp_check_filters(&prefs, &combined) != 1)) {
+		st_sprint(errmsg, "Failed to return 1 when no action was taken.");
+		outcome = false;
+	}
+
+	// Test if it returns -1 on broken regex.
+	filter->expression = NULLER("[this[is[not[valid[regex[");
+	if (status() && outcome && (smtp_check_filters(&prefs, &combined) != -1)) {
+		st_sprint(errmsg, "Failed to return -1 when regex is broken.");
+		outcome = false;
+	}
+
+	// First test the delete action.
+	filter->action = SMTP_FILTER_ACTION_DELETE;
+
+	// Test if it returns -2 when the message is supposed to be deleted and not when there is no match (header).
+	filter->expression = NULLER("Princess");
+	filter->location = SMTP_FILTER_LOCATION_HEADER;
+	if (status() && outcome && (smtp_check_filters(&prefs, &combined) != -2)) {
+		st_sprint(errmsg, "Failed to return -2 when the regex matches the header and the action is delete.");
+		outcome = false;
+	}
+	filter->expression = NULLER("This is not in the header.");
+	if (status() && outcome && !(smtp_check_filters(&prefs, &combined) != -2)) {
+		st_sprint(errmsg, "Failed to return -2 when the regex does not match the header and the action is delete.");
+		outcome = false;
+	}
+
+	// Test if it returns -2 when the message is supposed to be deleted and not when there is no match (body).
+	filter->expression = NULLER("Hello World!");
+	filter->location = SMTP_FILTER_LOCATION_BODY;
+	if (status() && outcome && (smtp_check_filters(&prefs, &combined) != -2)) {
+		st_sprint(errmsg, "Failed to return -2 when the regex matches the body and the action is delete.");
+		outcome = false;
+	}
+	filter->expression = NULLER("This is not in the body.");
+	if (status() && outcome && !(smtp_check_filters(&prefs, &combined) != -2)) {
+		st_sprint(errmsg, "Failed to not return -2 when the regex does not match the body and the action is delete.");
+		outcome = false;
+	}
+
+	// Test if it returns -2 when the message is supposed to be deleted and not when there is no match (entire).
+	filter->expression = NULLER("March 7th");
+	filter->location = SMTP_FILTER_LOCATION_ENTIRE;
+	if (status() && outcome && (smtp_check_filters(&prefs, &combined) != -2)) {
+		st_sprint(errmsg, "Failed to return -2 when the regex matches everything and the action is delete.");
+		outcome = false;
+	}
+	filter->expression = NULLER("This is not in the entire message.");
+	if (status() && outcome && !(smtp_check_filters(&prefs, &combined) != -2)) {
+		st_sprint(errmsg, "Failed to not return -2 when the regex does not match everything and the action is delete.");
+		outcome = false;
+	}
+
+	// Test if it returns -2 when the message is supposed to be deleted and not when there is no match (fields).
+	filter->location = SMTP_FILTER_LOCATION_FIELD;
+	for (size_t i = 0; i < fields_num; i++) {
+		filter->field = fields[i];
+		filter->expression = values[i];
+		if (status() && outcome && (smtp_check_filters(&prefs, &combined) != -2)) {
+			st_sprint(errmsg, "Failed to return -2 when the regex matches the field %s.", st_char_get(fields[i]));
+			outcome = false;
+		}
+		filter->expression = NULLER("This is not in any of the fields.");
+		if (status() && outcome && !(smtp_check_filters(&prefs, &combined) != -2)) {
+			st_sprint(errmsg, "Failed to not return -2 when the regex does not match the field %s.", st_char_get(fields[i]));
+			outcome = false;
+		}
+	}
+
+	inx_cleanup(prefs.filters);
+	st_cleanup(combined);
+}
+
 bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg) {
 
 	bool_t outcome = true;
-	smtp_inbound_prefs_t prefs;
-	stringer_t *from = NULL, *subject = NULL, *date = NULL, *to = NULL, *return_path = NULL, *envelope_to = NULL,
-			*delivery_date = NULL, *received = NULL, *dkim_sig = NULL, *domainkey_sig = NULL, *message_id = NULL,
-			*mime_version = NULL, *content_type = NULL, *x_spam_status = NULL, *x_spam_level = NULL,
-			*message_body = NULL, *combined = NULL;
 
-	mm_wipe(&prefs, sizeof(smtp_inbound_prefs_t));
 
-	// Set default values.
-	from 			= NULLER("From: Princess (princess@lavabit.com)\n");
-	subject 		= NULLER("Subject: Unit Test: SMTP Filters\n");
-	date 			= NULLER("Date: March 7th, 2017 5:55:55 PM CST\n");
-	to 				= NULLER("To: ladar@lavabit.com\n");
-	return_path 	= NULLER("Return-Path: <princess@lavabit.com>\n");
-	envelope_to 	= NULLER("Envelope-To: ladar@lavabit.com\n");
-	delivery_date 	= NULLER("Delivery-Date: Tue, 7 Mar 2017 18:55:55-0600\n");
-	received 		= NULLER("Received: \n");
-	dkim_sig 		= NULLER("Dkim-Signature: \n");
-	domainkey_sig 	= NULLER("Domainkey-Signature: \n");
-	message_id 		= NULLER("Message-Id: <>\n");
-	mime_version 	= NULLER("Mime-Version: 1.0\n");
-	content_type 	= NULLER("Content-Type: \n");
-	x_spam_status 	= NULLER("X-Spam-Status: \n");
-	x_spam_level 	= NULLER("X-Spam-Level: \n");
-	message_body 	= NULLER("Message Body: Hello World!\n");
-
-	// Test if it returns -1 on error.
-	combined = st_merge("ssssssssssssssss", from, subject, date, to, return_path, envelope_to, delivery_date, received,
-			dkim_sig, domainkey_sig, message_id, mime_version, content_type, x_spam_status, x_spam_level, message_body);
-
-	if (status() && outcome && smtp_check_filters(&prefs, &combined) != 1) {
-		st_sprint(errmsg, "Failed to return 1 when no action was taken.");
-		outcome = false;
-	}
-	st_free(combined);
-
-	// Test if it returns -2 when the message is supposed to be deleted.
-	combined = st_merge("ssssssssssssssss", from, subject, date, to, return_path, envelope_to, delivery_date, received,
-			dkim_sig, domainkey_sig, message_id, mime_version, content_type, x_spam_status, x_spam_level, message_body);
-
-	if (status() && outcome && smtp_check_filters(&prefs, &combined) != 2) {
-		st_sprint(errmsg, "Failed to return 1 when no action was taken.");
-		outcome = false;
-	}
-	st_free(combined);
-
-	// Test if it returns 1 when no action is taken.
-	combined = st_merge("ssssssssssssssss", from, subject, date, to, return_path, envelope_to, delivery_date, received,
-			dkim_sig, domainkey_sig, message_id, mime_version, content_type, x_spam_status, x_spam_level, message_body);
-
-	if (status() && outcome && smtp_check_filters(&prefs, &combined) != 1) {
-		st_sprint(errmsg, "Failed to return 1 when no action was taken.");
-		outcome = false;
-	}
-	st_free(combined);
-
-	// Test if it returns 2 when the message should go to a new folder.
-	combined = st_merge("ssssssssssssssss", from, subject, date, to, return_path, envelope_to, delivery_date, received,
-			dkim_sig, domainkey_sig, message_id, mime_version, content_type, x_spam_status, x_spam_level, message_body);
-
-	if (status() && outcome && smtp_check_filters(&prefs, &combined) != 2) {
-		st_sprint(errmsg, "Failed to return 1 when no action was taken.");
-		outcome = false;
-	}
-	st_free(combined);
-
-	// Test if it returns 3 when the message content is modified.
-	combined = st_merge("ssssssssssssssss", from, subject, date, to, return_path, envelope_to, delivery_date, received,
-			dkim_sig, domainkey_sig, message_id, mime_version, content_type, x_spam_status, x_spam_level, message_body);
-
-	if (status() && outcome && smtp_check_filters(&prefs, &combined) != 3) {
-		st_sprint(errmsg, "Failed to return 1 when no action was taken.");
-		outcome = false;
-	}
-	st_free(combined);
-
-	// Test if it returns 4 when the message is marked as read.
-	combined = st_merge("ssssssssssssssss", from, subject, date, to, return_path, envelope_to, delivery_date, received,
-			dkim_sig, domainkey_sig, message_id, mime_version, content_type, x_spam_status, x_spam_level, message_body);
-
-	if (status() && outcome && smtp_check_filters(&prefs, &combined) != 4) {
-		st_sprint(errmsg, "Failed to return 1 when no action was taken.");
-		outcome = false;
-	}
-	st_free(combined);
 
 	return outcome;
 

@@ -7,15 +7,14 @@
 
 #include "magma_check.h"
 
-bool_t check_smtp_accept_store_message_sthread(stringer_t *errmsg) {
+bool_t check_smtp_accept_message_sthread(stringer_t *errmsg) {
 
 	bool_t outcome = true;
 	stringer_t *data = NULL;
+	smtp_inbound_prefs_t prefs;
 	uint32_t max = check_message_max();
 	prime_t *key = NULL, *request = NULL, *signet = NULL;
-	uint64_t messagenums[max], messagesizes[max], fail_count = 0;
-	uint64_t messages_checkpoint = serial_get(OBJECT_MESSAGES, 1);
-	smtp_inbound_prefs_t prefs;
+	uint64_t messagenums[max], messagesizes[max], fail_count = 0, messages_checkpoint = serial_get(OBJECT_MESSAGES, 1);
 
 	mm_wipe(&messagenums, sizeof(messagenums));
 	mm_wipe(&prefs, sizeof(smtp_inbound_prefs_t));
@@ -84,16 +83,6 @@ bool_t check_smtp_accept_store_message_sthread(stringer_t *errmsg) {
 	prime_free(key);
 
 	return outcome;
-}
-
-// TODO
-bool_t check_smtp_accept_rollout_sthread(stringer_t *errmsg) {
-	return true;
-}
-
-// TODO
-bool_t check_smtp_accept_store_spamsig_sthread(stringer_t *errmsg) {
-	return true;
 }
 
 

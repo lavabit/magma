@@ -110,7 +110,6 @@ START_TEST (check_inx_linked_s) {
 }
 END_TEST
 
-// TODO
 START_TEST (check_inx_linked_m) {
 
 	log_disable();
@@ -119,8 +118,8 @@ START_TEST (check_inx_linked_m) {
 	check_inx_opt_t *opts = NULL;
 
 	if (status() && (!(opts = mm_alloc(sizeof(check_inx_opt_t))) || !(opts->inx = inx_alloc(M_INX_LINKED, &mm_free)))) {
-		outcome = false;
 		errmsg = NULLER("Index linked");
+		outcome = false;
 	}
 	else if (status()) {
 		opts->type = M_INX_LINKED;

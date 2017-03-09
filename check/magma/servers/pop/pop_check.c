@@ -6,90 +6,133 @@
 
 #include "magma_check.h"
 
+/**
+ * Calls client_read_line on a client either once or until it reaches a period only line,
+ * checking for errors.
+ *
+ * @param client The client to read from (which should be connected to a POP server).
+ * @param multiline Whether or not the response to be read is multiline.
+ *
+ * @return Returns true if client_read_line was successful for the number of lines
+ * specified in num and there was no -ERR. Otherwise returns false.
+ */
+bool_t check_pop_client_read_lines_to_end(client_t *client, bool_t multiline) {
+	// If the response is multiline, loop until a single period line is found.
+	if (multiline) {
+		while (client_read_line(client) > 0) {
+			if (st_cmp_cs_eq(&client->line, NULLER(".\r\n"))) return true;
+		}
+		return false;
+	}
+	// Else, check only the next line for errors.
+	else if (client_read_line(client) <= 0 || st_cmp_cs_starts(&client->line, NULLER("-ERR")) == 0) {
+		return false;
+	}
+	return true;
+}
+
+bool_t check_pop_network_simple_sthread(stringer_t *errmsg) {
+
+	client_t *client = NULL;
+
+	// Connect the client.
+	if (!(client = client_connect("localhost", 8000))) {
+		st_sprint(errmsg, "Failed to establish a client connection.");
+		return false;
+	}
+	else if (!check_pop_client_read_lines_to_end(client, false) || (client->status != 1)) {
+		st_sprint(errmsg, "Failed to return successful status initially.");
+		client_close(client);
+		return false;
+	}
+
+	// Test the USER command.
+	if (client_print(client, "USER princess\r\n") <= 0) {
+		st_sprint(errmsg, "Failed to write the USER command.");
+		client_close(client);
+		return false;
+	}
+	else if (!check_pop_client_read_lines_to_end(client, false) || (client->status != 1)) {
+		st_sprint(errmsg, "Failed to return successful status after USER.");
+		client_close(client);
+		return false;
+	}
+
+	// Test the PASS command.
+	if (client_print(client, "PASS password\r\n") <= 0) {
+		st_sprint(errmsg, "Failed to write the PASS command.");
+		client_close(client);
+		return false;
+	}
+	else if (!check_pop_client_read_lines_to_end(client, false) || (client->status != 1)) {
+		st_sprint(errmsg, "Failed to return successful status after PASS.");
+		client_close(client);
+		return false;
+	}
+
+	// Test the LIST command.
+	if (client_print(client, "LIST\r\n") <= 0) {
+		st_sprint(errmsg, "Failed to write the LIST command.");
+		client_close(client);
+		return false;
+	}
+	else if (!check_pop_client_read_lines_to_end(client, true) || (client->status != 1)) {
+		st_sprint(errmsg, "Failed to return successful status after LIST.");
+		client_close(client);
+		return false;
+	}
+
+	// Test the RETR command.
+	if (client_print(client, "RETR 1\r\n") <= 0) {
+		st_sprint(errmsg, "Failed to write the RETR command.");
+		client_close(client);
+		return false;
+	}
+	else if (!check_pop_client_read_lines_to_end(client, true) || (client->status != 1)) {
+		st_sprint(errmsg, "Failed to return successful status after RETR.");
+		client_close(client);
+		return false;
+	}
+
+	// Test the DELE command.
+	if (client_print(client, "DELE 1\r\n") <= 0) {
+		st_sprint(errmsg, "Failed to write the DELE command.");
+		client_close(client);
+		return false;
+	}
+	else if (!check_pop_client_read_lines_to_end(client, false) || (client->status != 1)) {
+		st_sprint(errmsg, "Failed to return successful status after DELE.");
+		client_close(client);
+		return false;
+	}
+
+	// Test the QUIT command.
+	if (client_print(client, "QUIT\r\n") <= 0) {
+		st_sprint(errmsg, "Failed to write the QUIT command.");
+		client_close(client);
+		return false;
+	}
+	else if (!check_pop_client_read_lines_to_end(client, false) || (client->status != 1)) {
+		st_sprint(errmsg, "Failed to return successful status after QUIT.");
+		client_close(client);
+		return false;
+	}
+
+	client_close(client);
+
+	return true;
+}
+
 START_TEST (check_pop_network_simple_s) {
 
 	log_disable();
-//	client_t *client = NULL;
-	stringer_t *errmsg = NULL;
-//	// In the future we want to programatically determine this by protocol.
-//	const uint32_t port = 8000;
-//
-//	if (!(client = client_connect("localhost", port)) || client_secure(client) != 0) {
-//		errmsg = NULLER("Failed to establish a client connection.");
-//	}
-//	else if (client_read_line(client) <= 0 || client->status != 1 || pl_char_get(client->line)[2] != 'O' ||
-//			pl_char_get(client->line)[2] != 'K') {
-//		errmsg = NULLER("Failed to return successful status initially.");
-//		log_pedantic("%s", pl_char_get(client->line));
-//	}
-//
-//	// Test USER
-//	else if (client_write(client, PLACER("USER princess\r\n", 15)) <= 0) {
-//		errmsg = NULLER("Failed to write the USER command.");
-//	}
-//	else if (client_read_line(client) <= 0 || client->status != 1 || pl_char_get(client->line)[1] != 'O' ||
-//			pl_char_get(client->line)[2] != 'K') {
-//		errmsg = NULLER("Failed to return successful status after USER.");
-//		log_pedantic("> %s <", pl_char_get(client->line));
-//	}
-//
-//	// Test PASS
-//	else if (client_write(client, PLACER("PASS password\r\n", 15)) <= 0) {
-//		errmsg = NULLER("Failed to write the PASS command.");
-//	}
-//	else if (client_read_line(client) <= 0 || client->status != 1 || pl_char_get(client->line)[1] != 'O' ||
-//			pl_char_get(client->line)[2] != 'K') {
-//		errmsg = NULLER("Failed to return successful status after PASS.");
-//		log_pedantic("> %s <", pl_char_get(client->line));
-//	}
-//
-//	// Test LIST
-//	else if (client_write(client, PLACER("LIST\r\n", 6)) <= 0) {
-//		errmsg = NULLER("Failed to write the LIST command.");
-//	}
-//	else if (client_read_line(client) <= 0 || client->status != 1 || pl_char_get(client->line)[0] != '1') {
-//		errmsg = NULLER("Failed to return successful status after LIST.");
-//		log_pedantic("> %s <", pl_char_get(client->line));
-//	}
-//
-//	// Test RETR
-//	else if (client_write(client, PLACER("RETR 1\r\n", 8)) <= 0) {
-//		errmsg = NULLER("Failed to write the RETR command.");
-//	}
-//	else if (client_read_line(client) <= 0 || client->status != 1 || pl_char_get(client->line)[1] != 'O' ||
-//			pl_char_get(client->line)[2] != 'K') {
-//		errmsg = NULLER("Failed to return successful status after RETR.");
-//		log_pedantic("> %s <", pl_char_get(client->line));
-//	}
-//
-//	// Test DELE
-//	else if (client_write(client, PLACER("DELE 1\r\n", 8)) <= 0) {
-//		errmsg = NULLER("Failed to write the DELE command.");
-//	}
-//	else if (client_read_line(client) <= 0 || client->status != 1 || pl_char_get(client->line)[1] != 'O' ||
-//			pl_char_get(client->line)[2] != 'K') {
-//		errmsg = NULLER("Failed to return successful status after DELE.");
-//		log_pedantic("> %s <", pl_char_get(client->line));
-//	}
-//
-//	if (client) {
-//
-//		// Test QUIT
-//		if (client_write(client, PLACER("QUIT\r\n", 6)) <= 0) {
-//			errmsg = NULLER("Failed to write the LIST command.");
-//		}
-//		else if (client_read_line(client) <= 0 || client->status != 1 || pl_char_get(client->line)[1] != 'O' ||
-//				pl_char_get(client->line)[2] != 'K') {
-//			errmsg = NULLER("Failed to return successful status after QUIT.");
-//		}
-//
-//		if (client) client_close(client);
-//	}
+	bool_t outcome = true;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 
+	if (status()) outcome = check_pop_network_simple_sthread(errmsg);
 
-//	log_test("POP / NETWORK / SIMPLE CHECK:", errmsg);
-	log_test("POP / NETWORK / SIMPLE CHECK:", NULLER("SKIPPED"));
-	ck_assert_msg(!errmsg, st_char_get(errmsg));
+	log_test("POP / NETWORK / SIMPLE CHECK:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
 

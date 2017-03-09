@@ -15,7 +15,7 @@ bool_t check_mail_load_sthread(stringer_t *errmsg) {
 	inx_cursor_t *cursor = NULL;
 	meta_message_t *active = NULL;
 	mail_message_t *message = NULL;
-	stringer_t *usernames[] = { PLACER("magma", 5) }, *passwords[] = { PLACER("password", 8) };
+	stringer_t *usernames[] = { PLACER("princess", 8) }, *passwords[] = { PLACER("password", 8) };
 
 	// The registration check must be run first, otherwise we won't have a user to check against.
 //	if (status() && (!check_username || !check_password)) {

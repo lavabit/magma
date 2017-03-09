@@ -6,7 +6,7 @@
 
 #include "magma_check.h"
 
-START_TEST (check_pop_network_simple_s) {
+START_TEST (check_pop_network_basic_s) {
 
 	log_disable();
 	bool_t outcome = true;
@@ -18,7 +18,7 @@ START_TEST (check_pop_network_simple_s) {
 		outcome = false;
 	}
 	else if (status()) {
-		outcome = check_pop_network_simple_sthread(errmsg, server->network.port);
+		outcome = check_pop_network_basic_sthread(errmsg, server->network.port);
 	}
 
 	log_test("POP / NETWORK / BASIC / SINGLE THREADED:", errmsg);

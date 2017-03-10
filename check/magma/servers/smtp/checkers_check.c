@@ -91,13 +91,59 @@ bool_t check_smtp_checkers_greylist_sthread(stringer_t *errmsg) {
 bool_t check_smtp_checkers_regex_sthread(stringer_t *errmsg) {
 
 	chr_t *expressions[] = {
-			"http\\:\\/\\/www\\.lavabit\\.com\\ ",
-			"lavabit\\ ",
-			"expr\\ with\\ spaces",
-			"expr\\ with\\ trailing\\ backslash\\ ",
-			"\\ levabit\\ ",
-			"\\*\\*\\ regex\\ with\\ wildcards\\ \\*",
-			"regex\\ \\*\\ with\\ \\*\\ wildcards"
+			"85\\.155\\.166\\.44\\.dyn\\.user\\.ono\\.com\\",
+			"http\\:\\/\\/www\\.yourlogcabins\\.com\\",
+			"82\\.128\\.33\\.161\\]\\ \\(port\\=2680\\ helo\\=User\\)\\ by\\ 4\\.mx\\.freenet\\.de\\ with\\ esmtpa\\ \\(ID\\ danielch",
+			"\\[41\\.222\\.192\\.83\\]\\ \\(helo\\=User\\)\\ by\\ server45\\.serverparksteenbergen\\.nl\\ with\\ esmtpa\\ \\(Exim\\",
+			"server45\\.serverparksteenbergen\\.nl\\ \\(77\\.243\\.231\\.36",
+			"LU7FDZ\\",
+			"fresh\\",
+			"redbox\\",
+			"tiger\\",
+			"Vicodin\\ fling\\ medications\\",
+			"noreply\\@message\\.myspace\\.com\\",
+			"Subscription\\",
+			"Unsubscribe\\",
+			"http\\:\\/\\/www\\.ameba\\.jp\\/\\",
+			"lblanchard\\@ocean\\-institute\\.org\\",
+			"email\\.tcm\\.com\\",
+			"\\*\\.tcm\\.com\\",
+			"tcm\\.com\\",
+			"Turner\\ Classic\\",
+			"Turner\\ Classic\\",
+			"LOTTERY\\ WINNER\\ WINNING\\ BLACKHOLED\\ SCAM\\ LUCKY\\ \\/LUCKY\\ WINNER\\/\\ WON\\ ONLINE\\",
+			"lucky\\+winner\\ CONGRATULATION\\ CONGRATULATIONS\\ DEAL\\ CHEAP\\ WIN\\",
+			"Linda\\ Blanchard\\",
+			"online836745\\@telkomsa\\.net\\,\\ adbplc78\\@gmail\\.com\\,\\ inside\\.all\\@uol\\.com\\.br\\,\\ a2\\-shark1\\.uol\\",
+			"bra\\",
+			"\\ an\\",
+			"MortgageAssistance411\\",
+			"weekend\\ cash\\",
+			"Manner\\ Shultz\\ Group\\",
+			"Finance\\ Depat\\.\\",
+			"LUMINEERS\\",
+			"Auto\\ Price\\ Finder\\",
+			"flight\\ simulator\\",
+			"The\\ Pimsleur\\ Approach\\",
+			"Start\\ on\\ a\\ new\\-career\\",
+			"World\\ Marketing\\",
+			"Stop\\ paying\\ off\\ the\\ tobacco\\",
+			"Mailer\\'s\\ graphics\\",
+			"Dr\\.Oz\\-watch\\",
+			"verify\\ credit\\ free\\ account\\ anonymous\\ info\\ revealing\\ phone\\ picture\\ Whats\\ whats\\ wats\\ wat\\",
+			"Do\\ you\\ know\\",
+			"Gordon\\,\\ you\\ have\\",
+			"rich\\",
+			"Do\\ you\\ know\\",
+			"R\\-help\\ Digest\\,\\ Vol\\",
+			"\\\"Woodcraft\\\"\\ \\<Woodcraft\\@woodcraftnews\\.com\\>\\",
+			"Cambridge\\ SoundWorks\\",
+			"IZUALO\\",
+			"Receipt\\ for\\ your\\ PayPal\\ payment\\ to\\",
+			"ashley\\ madison\\ married\\ affair\\ wives\\ pleasurable\\ gal\\ nsa\\ fun\\ dangerous\\ risky\\ scared\\ cost\\",
+			"eLoan\\ Plus\\",
+			"cafepress\\",
+			"\\/\\^From\\:\\.\\*\\(gmxmagazin\\\\\\@gmx\\\\\\-gmbh\\\\\\.de\\|mailings\\\\\\@gmx\\\\\\-gmbh\\\\\\.de\\|\\.\\*gmxred\\.\\*\\|elsa"
 	};
 	struct re_pattern_buffer regbuff;
 	mm_wipe(&regbuff, sizeof(struct re_pattern_buffer));
@@ -105,7 +151,7 @@ bool_t check_smtp_checkers_regex_sthread(stringer_t *errmsg) {
 	for (size_t i = 0; i < (sizeof(expressions)/sizeof(chr_t*)); i++) {
 		if (regcomp(&regbuff, expressions[i], REG_ICASE) != 0) {
 			st_sprint(errmsg, "Regular expression compilation failed. { expression = %s }", expressions[i]);
-			return false;;
+			return false;
 		}
 	}
 

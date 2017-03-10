@@ -113,6 +113,8 @@ bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg, int_t action, int
 	key.val.u64 = rand_get_int64();
 	inx_insert(prefs.filters, key, filter);
 	filter->action = action;
+	filter->foldernum = 1;
+	filter->label = NULLER("JUNK:");
 
 	// Test if it returns 1 when no action is taken.
 	filter->location = SMTP_FILTER_LOCATION_ENTIRE;
@@ -133,12 +135,12 @@ bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg, int_t action, int
 	filter->expression = NULLER("Princess");
 	filter->location = SMTP_FILTER_LOCATION_HEADER;
 	if (status() && (smtp_check_filters(&prefs, &message) != expected)) {
-		st_sprint(errmsg, "Failed to return -2 when the regex matches the header and the action is delete.");
+		st_sprint(errmsg, "Failed to return -2 when the regex matches the header. { action = %x }", action);
 		return false;
 	}
 	filter->expression = NULLER("This is not in the header.");
 	if (status() && !(smtp_check_filters(&prefs, &message) != expected)) {
-		st_sprint(errmsg, "Failed to return -2 when the regex does not match the header and the action is delete.");
+		st_sprint(errmsg, "Failed to return -2 when the regex does not match the header. { action = %x }", action);
 		return false;
 	}
 
@@ -146,12 +148,12 @@ bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg, int_t action, int
 	filter->expression = NULLER("the message body");
 	filter->location = SMTP_FILTER_LOCATION_BODY;
 	if (status() && (smtp_check_filters(&prefs, &message) != expected)) {
-		st_sprint(errmsg, "Failed to return -2 when the regex matches the body and the action is delete.");
+		st_sprint(errmsg, "Failed to return -2 when the regex matches the body. { action = %x }", action);
 		return false;
 	}
 	filter->expression = NULLER("This is not in the body.");
 	if (status() && !(smtp_check_filters(&prefs, &message) != expected)) {
-		st_sprint(errmsg, "Failed to not return -2 when the regex does not match the body and the action is delete.");
+		st_sprint(errmsg, "Failed to not return -2 when the regex does not match the body. { action = %x }", action);
 		return false;
 	}
 
@@ -159,12 +161,12 @@ bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg, int_t action, int
 	filter->expression = NULLER("March 7th");
 	filter->location = SMTP_FILTER_LOCATION_ENTIRE;
 	if (status() && (smtp_check_filters(&prefs, &message) != expected)) {
-		st_sprint(errmsg, "Failed to return -2 when the regex matches everything and the action is delete.");
+		st_sprint(errmsg, "Failed to return -2 when the regex matches everything. { action = %x }", action);
 		return false;
 	}
 	filter->expression = NULLER("This is not in the entire message.");
 	if (status() && !(smtp_check_filters(&prefs, &message) != expected)) {
-		st_sprint(errmsg, "Failed to not return -2 when the regex does not match everything and the action is delete.");
+		st_sprint(errmsg, "Failed to not return -2 when the regex does not match anything. { action = %x }", action);
 		return false;
 	}
 

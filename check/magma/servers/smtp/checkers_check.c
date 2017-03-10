@@ -94,13 +94,14 @@ bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg, int_t action, int
 	smtp_inbound_prefs_t prefs;
 	smtp_inbound_filter_t *filter = NULL;
 	stringer_t *message = NULLER( \
-			"From: Princess (princess@lavabit.com\r\n" \
+			"From: Princess (princess@example.com\r\n" \
 			"To: ladar@lavabit.com\r\n" \
 			"Date: March 7th, 2017 5:55:55 PM CST\r\n" \
 			"Subject: SMTP Filters Unit Test\r\n" \
 			"\r\n" \
-			"This is the message body.");
-	chr_t *fields[] = { "From", "To", "Date", "Subject" }, *exprs[] = { "Princess", "lavabit", "March", "Filters" };
+			"This is the message body.\r\n" \
+			".\r\n");
+	chr_t *fields[] = { "From", "To", "Date", "Subject" }, *exprs[] = { "Princess", "ladar", "March", "Filters" };
 
 	mm_wipe(&prefs, sizeof(smtp_inbound_prefs_t));
 	prefs.filters = inx_alloc(M_INX_LINKED, &mm_free);
@@ -171,16 +172,16 @@ bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg, int_t action, int
 	filter->location = SMTP_FILTER_LOCATION_FIELD;
 	for (size_t i = 0; i < (sizeof(fields)/sizeof(chr_t*)); i++) {
 
-		filter->field = PLACER(fields[i], (sizeof(fields[i])/sizeof(chr_t)));
-		filter->expression = PLACER(exprs[i], (sizeof(exprs[i])/sizeof(chr_t)));
+		filter->field = NULLER(fields[i]);
+		filter->expression = NULLER(exprs[i]);
 
 		if (status() && (smtp_check_filters(&prefs, &message) != expected)) {
-			st_sprint(errmsg, "Failed to return -2 when the regex matches the field %s.", st_char_get(filter->field));
+			st_sprint(errmsg, "Failed to return -2 when the regex matches. { field = \"%s\" }", fields[i]);
 			return false;
 		}
 		filter->expression = NULLER("This is not in any of the fields.");
 		if (status() && !(smtp_check_filters(&prefs, &message) != expected)) {
-			st_sprint(errmsg, "Failed to not return -2 when the regex does not match the field %s.", st_char_get(filter->field));
+			st_sprint(errmsg, "Failed to not return -2 when the regex does not match. { field = \"%s\" }", fields[i]);
 			return false;
 		}
 	}

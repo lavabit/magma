@@ -151,7 +151,7 @@ stringer_t * mail_header_fetch_all(stringer_t *header, stringer_t *key) {
 	int_t found = 0;
 	size_t headlen, keylen;
 	chr_t *start, *holder;
-	stringer_t *output = NULL, *value;
+	stringer_t *output = NULL, *value = NULL;
 
 	if (st_empty(header) || st_empty(key)) {
 		return NULL;
@@ -169,7 +169,7 @@ stringer_t * mail_header_fetch_all(stringer_t *header, stringer_t *key) {
 		while (found == 0 && headlen > keylen) {
 
 			// See if this line starts with our key.
-			if (!mm_cmp_ci_eq(holder, key, keylen) && *(holder + keylen) == ':') {
+			if (!mm_cmp_ci_eq(holder, st_char_get(key), keylen) && *(holder + keylen) == ':') {
 				found = 1;
 			}
 

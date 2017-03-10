@@ -64,7 +64,7 @@ void imap_process(connection_t *con) {
 	command_t *command, client = { .function = NULL };
 
 	// If the connection indicates an error occurred, or the socket was closed by the client we send the connection to the logout function.
-	if (((state = con_read_line(con, false)) < 0) || (state == -2)) {
+	if (((state = con_read_line(con, true)) < 0) || (state == -2)) {
 		con->command = NULL;
 		enqueue(&imap_logout, con);
 		return;

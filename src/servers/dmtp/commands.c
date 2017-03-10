@@ -49,7 +49,7 @@ void dmtp_process(connection_t *con) {
 
 	command_t *command, client = { .function = NULL };
 
-	if (con_read_line(con, false) < 0) {
+	if (con_read_line(con, true) < 0) {
 		con->command = NULL;
 		enqueue(&dmtp_quit, con);
 		return;

@@ -123,7 +123,6 @@ void signal_shutdown(int signal) {
 				log_info("%s:%u is being shutdown.", st_char_get(ip_presentation(&ip, PLACER(working, 64))),
 					ntohs(((struct sockaddr_in6 *)saddr)->sin6_port));
 				shutdown(fd, SHUT_RDWR);
-				//close(fd);
 			}
 			else if (len == sizeof(struct sockaddr_in) && (((struct sockaddr_in *)saddr)->sin_family == AF_INET &&
 				servers_get_count_using_port(ntohs(((struct sockaddr_in *)saddr)->sin_port)))) {
@@ -133,7 +132,6 @@ void signal_shutdown(int signal) {
 				log_info("%s:%u is being shutdown.", st_char_get(ip_presentation(&ip, PLACER(working, 64))),
 					ntohs(((struct sockaddr_in *)saddr)->sin_port));
 				shutdown(fd, SHUT_RDWR);
-				//close(fd);
 			}
 		}
 	}

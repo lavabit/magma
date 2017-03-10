@@ -12,6 +12,7 @@ bool_t check_smtp_accept_message_sthread(stringer_t *errmsg);
 
 /// checkers_check.c
 bool_t check_smtp_checkers_greylist_sthread(stringer_t *errmsg);
+bool_t check_smtp_checkers_regex_sthread(stringer_t *errmsg);
 bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg, int_t action, int_t expected);
 
 /// smtp_check_network.c

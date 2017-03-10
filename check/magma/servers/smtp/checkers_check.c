@@ -88,6 +88,30 @@ bool_t check_smtp_checkers_greylist_sthread(stringer_t *errmsg) {
 	return true;
 }
 
+bool_t check_smtp_checkers_regex_sthread(stringer_t *errmsg) {
+
+	chr_t *expressions[] = {
+			"http\\:\\/\\/www\\.lavabit\\.com\\ ",
+			"lavabit\\ ",
+			"expr\\ with\\ spaces",
+			"expr\\ with\\ trailing\\ backslash\\ ",
+			"\\ levabit\\ ",
+			"\\*\\*\\ regex\\ with\\ wildcards\\ \\*",
+			"regex\\ \\*\\ with\\ \\*\\ wildcards"
+	};
+	struct re_pattern_buffer regbuff;
+	mm_wipe(&regbuff, sizeof(struct re_pattern_buffer));
+
+	for (size_t i = 0; i < (sizeof(expressions)/sizeof(chr_t*)); i++) {
+		if (regcomp(&regbuff, expressions[i], REG_ICASE) != 0) {
+			st_sprint(errmsg, "Regular expression compilation failed. { expression = %s }", expressions[i]);
+			return false;;
+		}
+	}
+
+	return true;
+}
+
 bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg, int_t action, int_t expected) {
 
 	multi_t key = mt_get_null();
@@ -189,7 +213,6 @@ bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg, int_t action, int
 	}
 
 	inx_cleanup(prefs.filters);
-	st_cleanup(message);
 
 	return true;
 }

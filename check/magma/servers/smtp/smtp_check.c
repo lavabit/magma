@@ -60,7 +60,8 @@ START_TEST (check_smtp_checkers_filters_s) {
 	bool_t outcome = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
-	if (status()) 				outcome = check_smtp_checkers_filters_sthread(errmsg, SMTP_FILTER_ACTION_DELETE, -2);
+	if (status()) 				outcome = check_smtp_checkers_regex_sthread(errmsg);
+	if (status() && outcome) 	outcome = check_smtp_checkers_filters_sthread(errmsg, SMTP_FILTER_ACTION_DELETE, -2);
 	if (status() && outcome) 	outcome = check_smtp_checkers_filters_sthread(errmsg, SMTP_FILTER_ACTION_MOVE, 2);
 	if (status() && outcome) 	outcome = check_smtp_checkers_filters_sthread(errmsg, SMTP_FILTER_ACTION_LABEL, 3);
 	if (status() && outcome) 	outcome = check_smtp_checkers_filters_sthread(errmsg, SMTP_FILTER_ACTION_MARK_READ, 4);

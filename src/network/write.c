@@ -22,11 +22,10 @@
  */
 int64_t con_write_bl(connection_t *con, char *block, size_t length) {
 
+	int_t counter = 0;
 	ssize_t written, position = 0;
-	int sslerr = -1;
 
-	if (!con || con->network.sockd == -1) {
-		if (con) con->network.status = -1;
+	if (!con || con->network.sockd == -1 || con_status(con) < 0) {
 		return -1;
 	}
 	else if (!block || !length) {
@@ -34,54 +33,36 @@ int64_t con_write_bl(connection_t *con, char *block, size_t length) {
 		return 0;
 	}
 
-	// Loop until bytes have been written to the socket.
+	// Loop until all of the bytes have been sent to the client.
 	do {
 
 		if (con->network.tls) {
+
 			written = tls_write(con->network.tls, block + position, length);
-			sslerr = SSL_get_error_d(con->network.tls, written);
+
+			// Check for errors on SSL writes.
+			if (written < 0) {
+				con->network.status = -1;
+				return -1;
+			}
 		}
 		else {
 			written = send(con->network.sockd, block + position, length, 0);
-		}
 
-		// Check for errors on SSL writes.
-		if (con->network.tls) {
-
-			// If 0 bytes were written, and it wasn't related to a shutdown, or if < 0 was returned and there was no more data waiting to be written, it's an error.
-			if ((!written && sslerr != SSL_ERROR_NONE && sslerr != SSL_ERROR_ZERO_RETURN) || ((written < 0) && sslerr != SSL_ERROR_WANT_WRITE)) {
+			// Check for errors on non-SSL writes in the traditional way.
+			if (written <= 0 && tcp_status(con->network.sockd)) {
 				con->network.status = -1;
 				return -1;
 			}
-			else if (!written) {
-				con->network.status = 2;
-				return -2;
-			}
-		// Check for errors on non-SSL writes in the traditional way.
-		}
-		else if (written < 0) {
-
-			if (errno == ECONNRESET) {
-				con->network.status = 2;
-				return -2;
-			}
-			else if (errno != EAGAIN) {
-				con->network.status = -1;
-				return -1;
-			}
-
 		}
 
+		// Handle progress by advancing our position tracker.
 		if (written > 0) {
 			length -= written;
 			position += written;
 		}
 
-	} while (length);
-
-#ifdef MAGMA_PEDANTIC
-	if (written < 0) log_pedantic("write = %li {%s}", written, strerror_r(errno, bufptr, buflen));
-#endif
+	} while (length && counter++ < 128 && status());
 
 	if (written > 0) {
 		con->network.status = 1;

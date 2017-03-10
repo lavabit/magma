@@ -81,7 +81,8 @@ bool_t lib_load_openssl(void) {
 		M_BIND(ERR_put_error), M_BIND(EVP_aes_256_gcm), M_BIND(EC_KEY_get_conv_form), M_BIND(EC_KEY_set_conv_form), M_BIND(BN_bn2mpi),
 		M_BIND(BN_mpi2bn), M_BIND(BN_bn2dec), M_BIND(EC_POINT_mul), M_BIND(BN_CTX_new), M_BIND(BN_CTX_start), M_BIND(BN_CTX_free),
 		M_BIND(EC_POINT_cmp), M_BIND(BN_cmp), M_BIND(ED25519_keypair), M_BIND(ED25519_sign), M_BIND(ED25519_verify), M_BIND(ED25519_keypair_from_seed),
-		M_BIND(CRYPTO_set_mem_functions), M_BIND(CRYPTO_set_locked_mem_functions), M_BIND(DH_check), M_BIND(SSL_get_read_ahead), M_BIND(SSL_set_read_ahead)
+		M_BIND(CRYPTO_set_mem_functions), M_BIND(CRYPTO_set_locked_mem_functions), M_BIND(DH_check), M_BIND(SSL_get_read_ahead),
+		M_BIND(SSL_set_read_ahead), M_BIND(SSL_peek)
 	};
 
 	if (!lib_symbols(sizeof(openssl) / sizeof(symbol_t), openssl)) {

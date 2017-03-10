@@ -258,7 +258,7 @@ void tls_free(TLS *tls) {
 }
 
 /**
- * @brief	Checks whether an TLS tunnel has been shut down or not.
+ * @brief	Checks whether a TLS connection has been shut down or not.
  * @see		SSL_get_shutdown()
  * @param	tls		the TLS connection to be shut down.
  * @return	0 if the connection is alive and well, or SSL_SENT_SHUTDOWN/SSL_RECEIVED_SHUTDOWN
@@ -267,7 +267,10 @@ int tls_status(TLS *tls) {
 
 	int_t result = 0;
 
-	if (tls) result = SSL_get_shutdown_d(tls);
+	// Look for a clean shut down of the TLS connection.
+	if (tls) {
+		result = SSL_get_shutdown_d(tls);
+	}
 
 	return result;
 }
@@ -282,8 +285,10 @@ int tls_status(TLS *tls) {
  */
 int tls_read(TLS *tls, void *buffer, int length, bool_t block) {
 
+	long popped = 0;
 	chr_t *message = MEMORYBUF(1024);
 	int result = 0, err = 0, local = 0;
+	stringer_t *merged = NULL, *ip = NULL;
 
 	errno = 0;
 	ERR_clear_error_d();
@@ -304,22 +309,69 @@ int tls_read(TLS *tls, void *buffer, int length, bool_t block) {
 
 		if ((err = SSL_get_error_d(tls, result)) != SSL_ERROR_WANT_READ) {
 			if ((local = errno) != 0) {
-				log_pedantic("TLS read error. { result = %i / errno = %i / message = %s }", result, local, strerror_r(local, message, 1024));
+				ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+				log_pedantic("TLS read error. { ip = %.*s / result = %i / errno = %i / message = %s }",
+					st_length_int(ip), st_char_get(ip), result, local, strerror_r(local, message, 1024));
+				result = tcp_error(local);
+			}
+			else if (result < 0) {
+				ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+				log_pedantic("TLS read error. { ip = %.*s / result = %i / errno = 0 }", st_length_int(ip), st_char_get(ip), result);
 			}
 			else {
-				ERR_error_string_n_d(err, message, 1024);
-				log_pedantic("TLS read error. { result = %i / error = %i / message = %s }", result, err, message);
+
+				// Loop through and create an error message using all of the errors in the TLS error queue.
+				while ((popped = ERR_get_error_d())) {
+					ERR_error_string_n_d(err, message, 1024);
+					merged = st_append_opts(1024, merged, st_quick(MANAGEDBUF(256), "%s( error = %li / message = %s ) ",
+						(merged ? "/ " : ""), popped, message));
+				}
+
+				if (!merged) {
+					ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+					log_pedantic("TLS read error. { ip = %.*s / result = %i / error = %i / message = NULL }",
+						st_length_int(ip), st_char_get(ip), result, err);
+				}
+				else {
+					ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+					log_pedantic("TLS read error. { ip = %.*s / result = %i / error = %i / message = %.*s }",
+						st_length_int(ip), st_char_get(ip), result, err, st_length_int(merged), st_char_get(merged));
+					st_free(merged);
+				}
 			}
 		}
 	}
 	else if (block && (result = SSL_read_d(tls, buffer, length)) <= 0) {
 		if ((err = SSL_get_error_d(tls, result)) != SSL_ERROR_WANT_READ) {
 			if ((local = errno) != 0) {
-				log_pedantic("TLS read error. { result = %i / errno = %i / message = %s }", result, local, strerror_r(local, message, 1024));
+				ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+				log_pedantic("TLS read error. { ip = %.*s / result = %i / errno = %i / message = %s }",
+					st_length_int(ip), st_char_get(ip), result, local, strerror_r(local, message, 1024));
+				result = tcp_error(local);
+			}
+			else if (result < 0) {
+				ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+				log_pedantic("TLS read error. { ip = %.*s / result = %i / errno = 0 }",
+					st_length_int(ip), st_char_get(ip), result);
 			}
 			else {
-				ERR_error_string_n_d(err, message, 1024);
-				log_pedantic("TLS read error. { result = %i / error = %i / message = %s }", result, err, message);
+
+				// Loop through and create an error message using all of the errors in the TLS error queue.
+				while ((popped = ERR_get_error_d())) {
+					ERR_error_string_n_d(err, message, 1024);
+					merged = st_append_opts(1024, merged, st_quick(MANAGEDBUF(256), "%s( error = %li / message = %s ) ", (merged ? "/ " : ""), popped, message));
+				}
+
+				if (!merged) {
+					ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+					log_pedantic("TLS read error. { ip = %.*s / result = %i / error = %i / message = NULL }",
+						st_length_int(ip), st_char_get(ip), result, err);
+				}
+				else {
+					log_pedantic("TLS read error. { ip = %.*s / result = %i / error = %i / message = %.*s }",
+						st_length_int(ip), st_char_get(ip), result, err, st_length_int(merged), st_char_get(merged));
+					st_free(merged);
+				}
 			}
 		}
 	}
@@ -336,8 +388,10 @@ int tls_read(TLS *tls, void *buffer, int length, bool_t block) {
  */
 int tls_write(TLS *tls, const void *buffer, int length) {
 
+	long popped = 0;
 	chr_t *message = MEMORYBUF(1024);
 	int result = -1, err = 0, local = 0;
+	stringer_t *merged = NULL, *ip = NULL;
 
 	errno = 0;
 	ERR_clear_error_d();
@@ -347,13 +401,36 @@ int tls_write(TLS *tls, const void *buffer, int length) {
 		return -1;
 	}
 	else if ((result = SSL_write_d(tls, buffer, length)) <= 0) {
+
 		if ((err = SSL_get_error_d(tls, result)) != SSL_ERROR_WANT_WRITE) {
 			if ((local = errno) != 0) {
-				log_pedantic("TLS write error. { result = %i / errno = %i / message = %s }", result, local, strerror_r(local, message, 1024));
+				ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+				log_pedantic("TLS write error. { ip = %.*s / result = %i / errno = %i / message = %s }",
+					st_length_int(ip), st_char_get(ip), result, local, strerror_r(local, message, 1024));
+				result = tcp_error(local);
+			}
+			else if (result < 0) {
+				ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+				log_pedantic("TLS write error. { ip = %.*s / result = %i / errno = 0 }", st_length_int(ip), st_char_get(ip), result);
 			}
 			else {
-				ERR_error_string_n_d(err, message, 1024);
-				log_pedantic("TLS write error. { result = %i / error = %i / message = %s }", result, err, message);
+
+				// Loop through and create an error message using all of the errors in the TLS error queue.
+				while ((popped = ERR_get_error_d())) {
+					ERR_error_string_n_d(err, message, 1024);
+					merged = st_append_opts(1024, merged, st_quick(MANAGEDBUF(256), "%s( error = %li / message = %s ) ", (merged ? "/ " : ""), popped, message));
+				}
+
+				if (!merged) {
+					ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+					log_pedantic("TLS write error. { ip = %.*s / result = %i / error = %i / message = NULL }", st_length_int(ip), st_char_get(ip), result, err);
+				}
+				else {
+					ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+					log_pedantic("TLS write error. { ip = %.*s / result = %i / error = %i / message = %.*s }",
+						 st_length_int(ip), st_char_get(ip), result, err, st_length_int(merged), st_char_get(merged));
+					st_free(merged);
+				}
 			}
 		}
 	}
@@ -404,7 +481,7 @@ int tls_print(SSL *tls, const char *format, va_list args) {
 
 	do {
 
-		if ((bytes = tls_write(tls, buffer + position, length - position)) <= 0 && tls_status(tls)) {
+		if ((bytes = tls_write(tls, buffer + position, length - position)) < 0) {
 			mm_free(buffer);
 			return -1;
 		}

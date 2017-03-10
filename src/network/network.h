@@ -5,29 +5,7 @@
  * @brief	The types and functions for abstracting access to network functionality.
  */
 
-#if defined(GET_IP_T_DEFINITION) || !defined(MAGMA_NETWORK_H)
-	#ifndef GOT_IP_T_DEFINITION
-		typedef struct {
-			sa_family_t family;
-			union {
-				struct in_addr ip4;
-				struct in6_addr ip6;
-				void *ip;
-			};
-		} ip_t;
-
-		typedef struct {
-			uint32_t mask;
-			ip_t address;
-		} subnet_t;
-	#define GOT_IP_T_DEFINITION
-	#endif
-#endif
-
-
-#ifdef GET_IP_T_DEFINITION
-#undef GET_IP_T_DEFINITION
-#elif !defined(MAGMA_NETWORK_H)
+#ifndef MAGMA_NETWORK_H
 #define MAGMA_NETWORK_H
 
 #include "meta.h"
@@ -85,6 +63,7 @@ typedef struct {
 		stringer_t *buffer; /* The connection buffer. */
 
 		struct {
+			ip_t *ip;
 			int_t status;
 			stringer_t *domain;
 		} reverse;

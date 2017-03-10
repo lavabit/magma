@@ -14,7 +14,7 @@ bool_t check_smtp_accept_message_sthread(stringer_t *errmsg);
 bool_t check_smtp_checkers_greylist_sthread(stringer_t *errmsg);
 bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg);
 
-/// smtp_check.h
+/// smtp_check_network.c
 bool_t check_smtp_client_read_line_to_end(client_t *client);
 bool_t check_smtp_network_simple_sthread(stringer_t *errmsg, uint32_t port);
 

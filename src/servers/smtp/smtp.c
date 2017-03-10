@@ -832,7 +832,7 @@ int_t smtp_data_read(connection_t *con, stringer_t **message) {
 	buffer = st_char_get(result);
 	read = con_read(con);
 
-	while (checker != 4 && status() && read > 0) {
+	while (checker != 4 && read > 0 && status()) {
 
 		// Setup the stream.
 		stream = st_data_get(con->network.buffer);
@@ -937,7 +937,7 @@ int_t smtp_data_read(connection_t *con, stringer_t **message) {
 	}
 
 	// The server is shutting down or the client disconnected.
-	if (status() != 1) {
+	if (!status()) {
 		st_free(result);
 		return -3;
 	}

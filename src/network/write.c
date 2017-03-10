@@ -38,7 +38,7 @@ int64_t con_write_bl(connection_t *con, char *block, size_t length) {
 	do {
 
 		if (con->network.tls) {
-			written = ssl_write(con->network.tls, block + position, length);
+			written = tls_write(con->network.tls, block + position, length);
 			sslerr = SSL_get_error_d(con->network.tls, written);
 		}
 		else {
@@ -211,7 +211,7 @@ int64_t client_write(client_t *client, stringer_t *s) {
 	do {
 
 		if (client->tls) {
-			written = ssl_write(client->tls, block + position, length);
+			written = tls_write(client->tls, block + position, length);
 			sslerr = SSL_get_error_d(client->tls, written);
 		}
 		else {

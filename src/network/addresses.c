@@ -208,6 +208,7 @@ stringer_t * ip_presentation(ip_t *address, stringer_t *output) {
 	if (!output || st_valid_tracked(opts)) {
 		st_length_set(result, ns_length_get(st_char_get(result)));
 	}
+
 	return result;
 }
 

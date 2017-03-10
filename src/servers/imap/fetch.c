@@ -1360,9 +1360,11 @@ inx_t * imap_narrow_messages(inx_t *messages, uint64_t selected, stringer_t *ran
 		// Parse the end.
 		if (!pl_empty(end_token) && *(pl_char_get(end_token)) == '*') {
 			asterisk = 1;
-		} else if (pl_empty(end_token)) {
+		}
+		else if (pl_empty(end_token)) {
 			end = start;
-		} else {
+		}
+		else {
 
 			if (!uint64_conv_st(&end_token, &end)) {
 				log_pedantic("range parsing error = %.*s", st_length_int(range), st_char_get(range));

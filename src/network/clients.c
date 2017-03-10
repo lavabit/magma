@@ -38,7 +38,7 @@ int_t client_status(client_t *client) {
 }
 
 /**
- * @brief	Establish an ssl connection with a network client instance.
+ * @brief	Establish an TLS connection with a network client instance.
  * @param	client	a pointer to the network client object to have its transport security upgraded.
  * @return	-1 on failure or 0 on success.
  */

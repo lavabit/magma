@@ -86,6 +86,13 @@ typedef void * cipher_t;
 typedef char * cryptex_t;
 typedef stringer_t scramble_t;
 
+// Allows the inclusion of this PRIME header without having to include the OpenSSL headers.
+#ifdef HEADER_OPENSSL_TYPES_H
+typedef SSL TLS;
+#else
+typedef void TLS;
+#endif
+
 /// ciphers.c
 cipher_t *  cipher_id(int_t id);
 cipher_t *  cipher_name(stringer_t *name);
@@ -167,15 +174,15 @@ void             ssl_thread_stop(void);
 bool_t           ssl_verify_privkey(const char *keyfile);
 
 /// tls.c
-int      ssl_print(SSL *ssl, const char *format, va_list args);
-int      ssl_read(SSL *ssl, void *buffer, int length, bool_t block);
+int      tls_print(TLS *tls, const char *format, va_list args);
+int      tls_read(TLS *tls, void *buffer, int length, bool_t block);
 bool_t   ssl_server_create(void *server, uint_t security_level);
 void     ssl_server_destroy(void *server);
-int      ssl_write(SSL *ssl, const void *buffer, int length);
+int      tls_write(TLS *tls, const void *buffer, int length);
 void *   tls_client_alloc(int_t sockd);
-void     tls_free(SSL *ssl);
-SSL *    tls_server_alloc(void *server, int sockd, int flags);
-int      tls_status(SSL *ssl);
+void     tls_free(TLS *tls);
+TLS *    tls_server_alloc(void *server, int sockd, int flags);
+int      tls_status(TLS *tls);
 
 /// random.c
 bool_t        rand_start(void);

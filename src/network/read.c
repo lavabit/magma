@@ -22,7 +22,8 @@
  */
 int64_t con_read_line(connection_t *con, bool_t block) {
 
-	ssize_t bytes;
+	int_t counter = 0;
+	ssize_t bytes = 0;
 	bool_t line = false;
 
 	if (!con || con->network.sockd == -1) {
@@ -66,15 +67,12 @@ int64_t con_read_line(connection_t *con, bool_t block) {
 		if (con->network.tls) {
 
 			// If bytes is zero or below and the library isn't asking for another read, then an error occurred.
-			bytes = ssl_read(con->network.tls, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
+			bytes = tls_read(con->network.tls, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
 				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), block);
 
-			if (bytes <= 0 && bytes != SSL_ERROR_WANT_READ) {
+			if (bytes <= 0 && tls_status(con->network.tls)) {
 				con->network.status = -1;
 				return -1;
-			}
-			else if (bytes <= 0) {
-				return 0;
 			}
 		}
 		else {
@@ -102,7 +100,7 @@ int64_t con_read_line(connection_t *con, bool_t block) {
 			line = true;
 		}
 
-	} while (!line && st_length_get(con->network.buffer) != st_avail_get(con->network.buffer));
+	} while (!line && counter++ < 128 && st_length_get(con->network.buffer) != st_avail_get(con->network.buffer) && status());
 
 	if (st_length_get(con->network.buffer) > 0) {
 		con->network.status = 1;
@@ -120,8 +118,9 @@ int64_t con_read_line(connection_t *con, bool_t block) {
  */
 int64_t con_read(connection_t *con) {
 
-	ssize_t bytes;
-	bool_t blocking;
+	int_t counter = 0;
+	ssize_t bytes = 0;
+	bool_t blocking = true;
 
 	if (!con || con->network.sockd == -1) {
 		if (con) con->network.status = -1;
@@ -147,7 +146,9 @@ int64_t con_read(connection_t *con) {
 		// Clear the line buffer.
 		con->network.line = pl_null();
 
-		return st_length_get(con->network.buffer);
+		if (st_length_get(con->network.buffer)) {
+			return st_length_get(con->network.buffer);
+		}
 
 	}
 	// Otherwise reset the buffer and line lengths to zero.
@@ -163,10 +164,10 @@ int64_t con_read(connection_t *con) {
 		// Read bytes off the network. If data is already in the buffer this should be a non-blocking read operation so we can
 		// return the already buffered data without delay.
 		if (con->network.tls) {
-			bytes = ssl_read(con->network.tls, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
-				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), blocking);
+			bytes = tls_read(con->network.tls, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
+				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), true);
 
-			if (!bytes && tls_status(con->network.tls)) {
+			if (bytes <= 0 && tls_status(con->network.tls)) {
 				con->network.status = -1;
 				return -1;
 			}
@@ -183,12 +184,9 @@ int64_t con_read(connection_t *con) {
 
 		if (bytes > 0) {
 			st_length_set(con->network.buffer, st_length_get(con->network.buffer) + bytes);
-		// Or break out of the loop because we've been shutdown.
-		} else if (!bytes) {
-			break;
 		}
 
-	} while (blocking && !st_length_get(con->network.buffer));
+	} while (blocking && counter++ < 128 && !st_length_get(con->network.buffer) && status());
 
 	// If there is data in the buffer process it. Otherwise if the buffer is empty and the connection appears to be closed
 	// (as indicated by a return value of 0), then return -1 to let the caller know the connection is dead.
@@ -247,7 +245,7 @@ int64_t client_read_line(client_t *client) {
 
 		// Read bytes off the network. Skip past any existing data in the buffer.
 		if (client->tls) {
-			bytes = ssl_read(client->tls, st_char_get(client->buffer) + st_length_get(client->buffer), st_avail_get(client->buffer) - st_length_get(client->buffer), true);
+			bytes = tls_read(client->tls, st_char_get(client->buffer) + st_length_get(client->buffer), st_avail_get(client->buffer) - st_length_get(client->buffer), true);
 			sslerr = SSL_get_error_d(client->tls, bytes);
 		}
 		else {
@@ -331,7 +329,7 @@ int64_t client_read(client_t *client) {
 		// Read bytes off the network. If data is already in the buffer this should be a non-blocking read operation so we can
 		// return the already buffered data without delay.
 		if (client->tls) {
-			bytes = ssl_read(client->tls, st_char_get(client->buffer) + st_length_get(client->buffer), st_avail_get(client->buffer) - st_length_get(client->buffer), blocking);
+			bytes = tls_read(client->tls, st_char_get(client->buffer) + st_length_get(client->buffer), st_avail_get(client->buffer) - st_length_get(client->buffer), blocking);
 			sslerr = SSL_get_error_d(client->tls, bytes);
 		}
 		else {

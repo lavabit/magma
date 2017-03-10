@@ -208,6 +208,7 @@ stringer_t * ip_presentation(ip_t *address, stringer_t *output) {
 	if (!output || st_valid_tracked(opts)) {
 		st_length_set(result, ns_length_get(st_char_get(result)));
 	}
+
 	return result;
 }
 
@@ -393,7 +394,7 @@ ip_t * con_addr(connection_t *con, ip_t *output) {
 	socklen_t len = sizeof(struct sockaddr_in6);
 
 	if (!(result = output) && !(result = mm_alloc(sizeof(ip_t)))) {
-		log_pedantic("The output buffer memory allocation request failed. {requested = %zu}", sizeof(ip_t));
+		log_pedantic("The output buffer memory allocation request failed. { requested = %zu }", sizeof(ip_t));
 		return NULL;
 	}
 
@@ -407,7 +408,7 @@ ip_t * con_addr(connection_t *con, ip_t *output) {
 		return NULL;
 	}
 
-	// Classify and copy to the result.
+	// Classify and copy to the IP information.
 	else if (len == sizeof(struct sockaddr_in6) && ((struct sockaddr_in6 *)address)->sin6_family == AF_INET6) {
 		mm_copy(&(result->ip6), &(((struct sockaddr_in6 *)address)->sin6_addr), sizeof(struct in6_addr));
 		result->family = AF_INET6;

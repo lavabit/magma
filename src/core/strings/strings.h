@@ -124,7 +124,6 @@ uchr_t *  st_uchar_get(stringer_t *s);
 void      st_wipe(stringer_t *s);
 stringer_t *  st_set(stringer_t *s, uint8_t set, size_t len);
 
-
 // Creation/Destruction
 void st_free(stringer_t *s);
 //void st_cleanup(stringer_t *s);

@@ -5,6 +5,8 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/rand.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
 
 #include "core/core.h"
 #include "providers/symbols.h"

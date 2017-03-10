@@ -26,7 +26,7 @@ int64_t con_read_line(connection_t *con, bool_t block) {
 	ssize_t bytes = 0;
 	bool_t line = false;
 
-	if (!con || con->network.sockd == -1) {
+	if (!con || con->network.sockd == -1 || con_status(con) < 0) {
 		if (con) con->network.status = -1;
 		return -1;
 	}
@@ -70,7 +70,7 @@ int64_t con_read_line(connection_t *con, bool_t block) {
 			bytes = tls_read(con->network.tls, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
 				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), block);
 
-			if (bytes <= 0 && tls_status(con->network.tls)) {
+			if (bytes < 0) {
 				con->network.status = -1;
 				return -1;
 			}
@@ -80,13 +80,9 @@ int64_t con_read_line(connection_t *con, bool_t block) {
 				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), (block ? 0 : MSG_DONTWAIT));
 
 			// Check for errors on non-SSL reads in the traditional way.
-			if (bytes <= 0 && errno != EINTR && errno != EAGAIN && errno != EWOULDBLOCK) {
+			if (bytes <= 0 && tcp_status(con->network.sockd)) {
 				con->network.status = -1;
 				return -1;
-			}
-			else if (!bytes) {
-				con->network.status = 2;
-				return -2;
 			}
 
 		}
@@ -100,7 +96,7 @@ int64_t con_read_line(connection_t *con, bool_t block) {
 			line = true;
 		}
 
-	} while (!line && counter++ < 128 && st_length_get(con->network.buffer) != st_avail_get(con->network.buffer) && status());
+	} while (!line && block && counter++ < 128 && st_length_get(con->network.buffer) != st_avail_get(con->network.buffer) && status());
 
 	if (st_length_get(con->network.buffer) > 0) {
 		con->network.status = 1;
@@ -122,7 +118,7 @@ int64_t con_read(connection_t *con) {
 	ssize_t bytes = 0;
 	bool_t blocking = true;
 
-	if (!con || con->network.sockd == -1) {
+	if (!con || con->network.sockd == -1 || con_status(con) < 0) {
 		if (con) con->network.status = -1;
 		return -1;
 	}
@@ -167,7 +163,7 @@ int64_t con_read(connection_t *con) {
 			bytes = tls_read(con->network.tls, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
 				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), true);
 
-			if (bytes <= 0 && tls_status(con->network.tls)) {
+			if (bytes < 0) {
 				con->network.status = -1;
 				return -1;
 			}
@@ -176,10 +172,10 @@ int64_t con_read(connection_t *con) {
 			bytes = recv(con->network.sockd, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
 				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), blocking ? 0 : MSG_DONTWAIT);
 
-			 if (bytes < 0 && errno != EINTR && errno != EAGAIN && errno != EWOULDBLOCK) {
-					con->network.status = -1;
-					return -1;
-				}
+			if (bytes <= 0 && tcp_status(con->network.sockd)) {
+				con->network.status = -1;
+				return -1;
+			}
 		}
 
 		if (bytes > 0) {
@@ -201,7 +197,6 @@ int64_t con_read(connection_t *con) {
 	return st_length_get(con->network.buffer);
 }
 
-// LOW: If the buffer already contains a complete line and the socket status indicates a connection we should still perform a non-blocking read.
 /**
  * @brief	Read a line of input from a network client session.
  *

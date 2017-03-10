@@ -193,10 +193,10 @@ void smtp_quit(connection_t *con) {
 	if (con_status(con) == 2) {
 		con_write_bl(con, "451 Unexpected connection shutdown detected. Goodbye.\r\n", 55);
 	}
-	else if (con_status(con) >= 0) {
+	else if (con_status(con) > 0) {
 		con_write_bl(con, "221 BYE\r\n", 9);
 	}
-	else {
+	else if (con_status(con) == 0){
 		con_write_bl(con, "421 Network connection failure.\r\n", 33);
 	}
 

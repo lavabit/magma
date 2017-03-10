@@ -1,4 +1,5 @@
-
+#include <arpa/inet.h>
+#include <sys/socket.h>
 #include "core/core.h"
 
 #include "dime/common/misc.h"

@@ -1825,7 +1825,7 @@ void imap_capability(connection_t *con) {
 }
 
 /**
- * @brief	The main imap entry point for all inbound client connections, as dispatched by the generic protocol handler (display
+ * @brief	The main IMAP entry point for all inbound client connections, as dispatched by the generic protocol handler (display
  * 			banner greeting).
  *
  * @param	con		a pointer to the connection object of the newly connected client.

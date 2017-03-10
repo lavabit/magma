@@ -2,7 +2,7 @@
 /**
  * @file /magma/check/magma/servers/smtp/smtp_check_helpers.c
  *
- * @brief Functions used to test POP connections over a network connection.
+ * @brief Functions used to test SMTP connections over a network connection.
  *
  */
 
@@ -17,6 +17,8 @@
  * Otherwise returns false.
  */
 bool_t check_smtp_client_read_line_to_end(client_t *client) {
+
+	// TODO: Add a timeout mechanism to client_read_line and update this function.
 	while (client_read_line(client) > 0) {
 		if (pl_char_get(client->line)[3] == ' ') return true;
 	}

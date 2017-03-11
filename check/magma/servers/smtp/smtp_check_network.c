@@ -24,14 +24,14 @@ bool_t check_smtp_client_read_line_to_end(client_t *client) {
 	return false;
 }
 
-bool_t check_smtp_network_simple_sthread(stringer_t *errmsg, uint32_t port) {
+bool_t check_smtp_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t secure) {
 
 	size_t location = 0;
 	client_t *client = NULL;
 
-	// Test the connect banner.
-	if (!(client = client_connect("localhost", port)) || !net_set_timeout(client->sockd, 20, 20) ||
-		client_read_line(client) <= 0 || client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("220")) ||
+	// Connect the client.
+	if (!(client = client_connect("localhost", port)) || (secure && client_secure(client)) ||
+		!net_set_timeout(client->sockd, 20, 20) || client_read_line(client) <= 0 || client_status(client) != 1 ||
 		!st_search_cs(&(client->line), NULLER(" ESMTP "), &location)) {
 
 		st_sprint(errmsg, "Failed to connect with the SMTP server.");
@@ -46,7 +46,6 @@ bool_t check_smtp_network_simple_sthread(stringer_t *errmsg, uint32_t port) {
 		client_close(client);
 		return false;
 	}
-
 
 	// Test the EHLO command.
 	else if (client_print(client, "EHLO localhost\r\n") != 16 || !check_smtp_client_read_line_to_end(client) ||

@@ -258,6 +258,38 @@ void tls_free(TLS *tls) {
 }
 
 /**
+ * @brief	Return the name of the TLS cipher suite assoicated with a connection.
+ * @see		SSL_CIPHER_get_name()
+ * @param 	tls the TLS connection being inspected.
+ * @param	output	a managed string to receive the encoded output; if passed as NULL, an output buffer will be allocated
+ *				which must be freed by the caller.
+ * @return	a pointer to the result, or NULL if an error occurs.
+ */
+ stringer_t * tls_cipher(TLS *tls, stringer_t *output) {
+
+	 SSL_CIPHER *cipher = NULL;
+	 stringer_t *result = NULL;
+	 chr_t *version = NULL, *name = NULL;
+
+	 if (!(cipher = SSL_get_current_cipher_d(tls))) {
+		 return NULL;
+	 }
+	 else if (!(version = SSL_CIPHER_get_version_d(cipher))) {
+		 return NULL;
+	 }
+	 else if ((name = (chr_t )SSL_CIPHER_get_name_d(cipher))) {
+		 return NULL;
+	 }
+	 else if (!(result = st_output(output, 128))) {
+		 return NULL;
+	 }
+
+	 st_sprint(result, "%s-%s", version, name);
+
+	 return result;
+ }
+
+/**
  * @brief	Checks whether a TLS connection has been shut down or not.
  * @see		SSL_get_shutdown()
  * @param	tls		the TLS connection to be shut down.
@@ -445,7 +477,7 @@ int tls_write(TLS *tls, const void *buffer, int length) {
  * @param	va_list	a variable argument list containing the data parameters associated with the format string.
  * @return	-1 on error, or the number of bytes written to the SSL connection.
  */
-int tls_print(SSL *tls, const char *format, va_list args) {
+int tls_print(TLS *tls, const char *format, va_list args) {
 
 	va_list copy;
 	size_t length = 0;

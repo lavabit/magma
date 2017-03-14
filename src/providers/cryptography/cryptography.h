@@ -174,15 +174,16 @@ void             ssl_thread_stop(void);
 bool_t           ssl_verify_privkey(const char *keyfile);
 
 /// tls.c
-int      tls_print(TLS *tls, const char *format, va_list args);
-int      tls_read(TLS *tls, void *buffer, int length, bool_t block);
-bool_t   ssl_server_create(void *server, uint_t security_level);
-void     ssl_server_destroy(void *server);
-int      tls_write(TLS *tls, const void *buffer, int length);
-void *   tls_client_alloc(int_t sockd);
-void     tls_free(TLS *tls);
-TLS *    tls_server_alloc(void *server, int sockd, int flags);
-int      tls_status(TLS *tls);
+bool_t        ssl_server_create(void *server, uint_t security_level);
+void          ssl_server_destroy(void *server);
+stringer_t *  tls_cipher(TLS *tls, stringer_t *output);
+void *        tls_client_alloc(int_t sockd);
+void          tls_free(TLS *tls);
+int           tls_print(TLS *tls, const char *format, va_list args);
+int           tls_read(TLS *tls, void *buffer, int length, bool_t block);
+TLS *         tls_server_alloc(void *server, int sockd, int flags);
+int           tls_status(TLS *tls);
+int           tls_write(TLS *tls, const void *buffer, int length);
 
 /// random.c
 bool_t        rand_start(void);

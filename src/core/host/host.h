@@ -52,6 +52,20 @@
 
 #define MAGMA_PROC_PATH "/proc"
 
+typedef struct {
+	sa_family_t family;
+	union {
+		struct in_addr ip4;
+		struct in6_addr ip6;
+		void *ip;
+	};
+} ip_t;
+
+typedef struct {
+	uint32_t mask;
+	ip_t address;
+} subnet_t;
+
 // The spool_start function uses a for loop to validate the spool directory tree. If additional spool locations are enumerated, make sure that function is updated.
 enum {
 	MAGMA_SPOOL_BASE = 0,
@@ -98,7 +112,6 @@ const    chr_t * color_yellow_intense(void);
 const    chr_t * color_yellow_intense_bold(void);
 const    chr_t * color_yellow_underline(void);
 
-
 /// files.c
 stringer_t *  file_load(char *name);
 int_t         file_read(char *name, stringer_t *output);
@@ -106,6 +119,12 @@ int_t         get_temp_file_handle(chr_t *pdir, stringer_t **tmpname);
 bool_t        file_accessible(const chr_t *path);
 bool_t        file_readwritable(const chr_t *path);
 bool_t        file_world_accessible(const chr_t *path);
+
+/// tcp.c
+ip_t *        tcp_addr_ip(int sockd, ip_t *output);
+stringer_t *  tcp_addr_st(int sockd, stringer_t *output);
+int_t         tcp_error(int error);
+int_t         tcp_status(int sockd);
 
 /// host.c
 stringer_t *  host_platform(stringer_t *output);

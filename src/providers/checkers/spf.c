@@ -109,10 +109,11 @@ void spf_stop(void) {
  * TODO: We really need to change these return values to account for 0
  * @return	-2 on spf check fail, -1 on other failure, and 1 on spf pass.
  */
-int_t spf_check(ip_t *ip, stringer_t *helo, stringer_t *mailfrom) {
+int_t spf_check(void *ip, stringer_t *helo, stringer_t *mailfrom) {
 
 	uint32_t item;
 	placer_t domain;
+	ip_t *addr = ip;
 #ifdef MAGMA_SPF_DEBUG
 	SPF_reason_t reason;
 #endif
@@ -144,9 +145,9 @@ int_t spf_check(ip_t *ip, stringer_t *helo, stringer_t *mailfrom) {
 	}
 
 	// Set the IP address for the request.
-	else if ((ip->family == AF_INET && (error = SPF_request_set_ipv4_d(spf_request, ip->ip4)) != SPF_E_SUCCESS) ||
-		(ip->family == AF_INET6 && (error = SPF_request_set_ipv6_d(spf_request, ip->ip6)) != SPF_E_SUCCESS) ||
-		(ip->family != AF_INET && ip->family != AF_INET6)) {
+	else if ((addr->family == AF_INET && (error = SPF_request_set_ipv4_d(spf_request, addr->ip4)) != SPF_E_SUCCESS) ||
+		(addr->family == AF_INET6 && (error = SPF_request_set_ipv6_d(spf_request, addr->ip6)) != SPF_E_SUCCESS) ||
+		(addr->family != AF_INET && addr->family != AF_INET6)) {
 		SPF_request_free_d(spf_request);
 		pool_release(spf_pool, item);
 		log_pedantic("SPF context configuration error. { error = %s }", SPF_strerror_d(error));

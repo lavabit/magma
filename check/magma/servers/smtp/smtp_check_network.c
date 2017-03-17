@@ -18,7 +18,6 @@
  */
 bool_t check_smtp_client_read_line_to_end(client_t *client) {
 
-	// TODO: Add a timeout mechanism to client_read_line and update this function.
 	while (client_read_line(client) > 0) {
 		if (pl_char_get(client->line)[3] == ' ') return true;
 	}
@@ -31,8 +30,8 @@ bool_t check_smtp_network_simple_sthread(stringer_t *errmsg, uint32_t port) {
 	client_t *client = NULL;
 
 	// Test the connect banner.
-	if (!(client = client_connect("localhost", port)) || client_read_line(client) <= 0 ||
-		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("220")) ||
+	if (!(client = client_connect("localhost", port)) || !net_set_timeout(client->sockd, 20, 20) ||
+		client_read_line(client) <= 0 || client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("220")) ||
 		!st_search_cs(&(client->line), NULLER(" ESMTP "), &location)) {
 
 		st_sprint(errmsg, "Failed to connect with the SMTP server.");

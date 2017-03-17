@@ -119,6 +119,7 @@ imap_arguments_t * imap_get_ar_ar(imap_arguments_t *array, size_t element) {
 
 	return result;
 }
+
 /*
 // Mailbox names can contain base64 data that needs to be decoded. Base64 data is inside the &- characters.
 stringer_t * imap_string_to_mailbox(stringer_t *string) {
@@ -137,7 +138,6 @@ stringer_t * imap_mailbox_to_string(stringer_t *mailbox) {
 }
 
 */
-
 
 /**
  * @brief	Extract the contents of an atomic string and advance the position of the parser stream.

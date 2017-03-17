@@ -385,7 +385,8 @@ session_t *sess_create(connection_t *con, stringer_t *path, stringer_t *applicat
 		log_pedantic("Unable to initialize reference lock for new user session.");
 		mm_free(output);
 		return NULL;
-	} else if (!(output->compositions = inx_alloc(M_INX_LINKED, &sess_release_composition))) {
+	}
+	else if (!(output->compositions = inx_alloc(M_INX_LINKED, &sess_release_composition))) {
 		log_pedantic("Unable to allocate space for user session's compositions.");
 		mm_free(output);
 		return NULL;

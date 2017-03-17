@@ -7,11 +7,10 @@
 
 #include "magma.h"
 
-
 /**
  * @brief	Get the status of a network client.
  * @param	client	a pointer to the network client object to be queried.
- * @return	-1 on error state, 0 for unknown status, or 1 if connected.
+ * @return	 -1 on network errors, 0 for an unknown status, 1 for connected, and 2 for a graceful shutdown.
  */
 int_t client_status(client_t *client) {
 
@@ -21,11 +20,25 @@ int_t client_status(client_t *client) {
 		result = client->status;
 	}
 
+
+	// If the status is positive, and tls_status returns 0, we use the existing status state.
+	if (client && client->tls && client->status >= 0 && !tls_status(client->tls)) {
+		result = client->status;
+	}
+	// If the status is positive, and tcp_status returns 0, we use the existing status state.
+	else if (client && client->sockd != -1 && client->status >= 0 && !tcp_status(client->sockd)) {
+		result = client->status;
+	}
+	// We return -1 if the status is already negative, or connection is otherwise invalid.
+	else {
+		result = client->status = -1;
+	}
+
 	return result;
 }
 
 /**
- * @brief	Establish an ssl connection with a network client instance.
+ * @brief	Establish an TLS connection with a network client instance.
  * @param	client	a pointer to the network client object to have its transport security upgraded.
  * @return	-1 on failure or 0 on success.
  */

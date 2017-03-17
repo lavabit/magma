@@ -8,13 +8,13 @@
 #include "magma.h"
 
 /**
- * @brief	Setup an SSL CTX for a server.
+ * @brief	Setup an TLS CTX for a server.
  *
  * @note	The server is passed as a void pointer because the provider layer doesn't comprehend protocol specific
  * 			server instances.
  *
- * @param server_t	the SSL context will be assigned to the provided server context.
- * @param security_level	an integer which will be used to control how the SSL context is configured:
+ * @param server_t	the TLS context will be assigned to the provided server context.
+ * @param security_level	an integer which will be used to control how the TLS context is configured:
  * 							0 = accept any type of SSL or TLS protocol version, and offer broad cipher support.
  * 							1 = require TLSv1 and above, refuse SSLv2 and SSLv3 connections, use any reasonably secure cipher.
  * (reccomended)			2 = require TLSv1 and above, refuse SSLv2 and SSLv3 connections, only use ciphers which provide forward secrecy.
@@ -83,6 +83,10 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 		log_critical("Could not enable the automatic, default selection of the strongest curve.");
 		return false;
 	}
+	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_MODE, SSL_MODE_AUTO_RETRY, NULL) != SSL_MODE_AUTO_RETRY) {
+		log_critical("Could not enable automatic retry for read and write operations.");
+		return false;
+	}
 
 	// High security connections get 4096 bit prime when generating a DH session key.
 	else if (magma.iface.cryptography.dhparams_rotate && magma.iface.cryptography.dhparams_large_keys) {
@@ -107,7 +111,7 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 }
 
 /**
- * @brief	Destroy an SSL context associated with a server.
+ * @brief	Destroy an TLS context associated with a server.
  * @param	server	the server to be deactivated.
  * @return	This function returns no value.
  */
@@ -127,14 +131,14 @@ void ssl_server_destroy(void *server) {
 }
 
 /**
- * @brief	Create an SSL session for a file descriptor, and accept the client TLS/SSL handshake.
+ * @brief	Create a TLS session for a file descriptor, and accept the client TLS/SSL handshake.
  * @see		SSL_accept()
  * @see		BIO_new_socket()
  * @param	server	a server object which contains the underlying SSL context.
  * @param	sockd	the file descriptor of the TCP connection to be made SSL-ready.
  * @param	flags	passed to BIO_new_socket(), determines whether the socket is shut down when the BIO is freed.
  */
-SSL * tls_server_alloc(void *server, int sockd, int flags) {
+TLS * tls_server_alloc(void *server, int sockd, int flags) {
 
 	SSL *tls;
 	BIO *bio;
@@ -144,18 +148,20 @@ SSL * tls_server_alloc(void *server, int sockd, int flags) {
 #ifdef MAGMA_PEDANTIC
 	if (!local) {
 		log_pedantic("Passed a NULL server pointer.");
-	} else if (!local->tls.context) {
+	}
+	else if (!local->tls.context) {
 		log_pedantic("Passed a NULL SSL context pointer.");
 	}
 	else if (sockd < 0) {
-		log_pedantic("Passed an invalid socket. {sockd = %i}", sockd);
+		log_pedantic("Passed an invalid socket. { sockd = %i }", sockd);
 	}
 #endif
 
 	if (!local || !local->tls.context || sockd < 0) {
 		return NULL;
-	} else if (!(tls = SSL_new_d(local->tls.context)) || !(bio = BIO_new_socket_d(sockd, flags))) {
-		log_pedantic("SSL/BIO allocation error. {error = %s}", ssl_error_string(MEMORYBUF(256), 256));
+	}
+	else if (!(tls = SSL_new_d(local->tls.context)) || !(bio = BIO_new_socket_d(sockd, flags))) {
+		log_pedantic("TLS/BIO allocation error. { error = %s }", ssl_error_string(MEMORYBUF(256), 256));
 
 		if (tls) {
 			SSL_free_d(tls);
@@ -167,7 +173,7 @@ SSL * tls_server_alloc(void *server, int sockd, int flags) {
 	SSL_set_bio_d(tls, bio, bio);
 
 	if ((result = SSL_accept_d(tls)) != 1) {
-		log_pedantic("SSL accept error. { accept = %i / error = %s }", result, ssl_error_string(MEMORYBUF(256), 256));
+		log_pedantic("TLS accept error. { accept = %i / error = %s }", result, ssl_error_string(MEMORYBUF(256), 256));
 		SSL_free_d(tls);
 		return NULL;
 	}
@@ -176,7 +182,7 @@ SSL * tls_server_alloc(void *server, int sockd, int flags) {
 }
 
 /**
- * @brief	Establish an SSL client wrapper around a socket descriptor.
+ * @brief	Establish an TLS client wrapper around a socket descriptor.
  * @param	sockd	the file descriptor of the socket to have its transport security level upgraded.
  * @return	NULL on failure or a pointer to the SSL handle of the file descriptor if SSL negotiation was successful.
  */
@@ -188,11 +194,11 @@ void * tls_client_alloc(int_t sockd) {
 	long options = (SSL_OP_ALL | SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION | SSL_MODE_AUTO_RETRY);
 
 	if (!(ctx = SSL_CTX_new_d(SSLv23_client_method_d()))) {
-		log_pedantic("Could not create a valid SSL context. {error = %s}", ssl_error_string(MEMORYBUF(512), 512));
+		log_pedantic("Could not create a valid TLS context. { error = %s }", ssl_error_string(MEMORYBUF(512), 512));
 		return NULL;
 	}
 	else if ((SSL_CTX_ctrl_d(ctx, SSL_CTRL_OPTIONS, options, NULL) & options) != options) {
-		log_pedantic("Could set the options mask on the SSL context. {error = %s}", ssl_error_string(MEMORYBUF(512), 512));
+		log_pedantic("Could set the options mask on the TLS context. { error = %s }", ssl_error_string(MEMORYBUF(512), 512));
 		SSL_CTX_free_d(ctx);
 		return NULL;
 	}
@@ -206,12 +212,12 @@ void * tls_client_alloc(int_t sockd) {
 	// SSL_CTX_set_verify(result.context, mode, cert_verify_callback);
 
 	else if (!(result = SSL_new_d(ctx))) {
-		log_pedantic("Could create the SSL client connection context. {error = %s}", ssl_error_string(MEMORYBUF(512), 512));
+		log_pedantic("Could create the TLS client connection context. { error = %s }", ssl_error_string(MEMORYBUF(512), 512));
 		SSL_CTX_free_d(ctx);
 		return NULL;
 	}
 	else if (!(bio = BIO_new_socket_d(sockd, BIO_NOCLOSE))) {
-		log_pedantic("Could not create the SSL client BIO context. {error = %s}", ssl_error_string(MEMORYBUF(512), 512));
+		log_pedantic("Could not create the TLS client BIO context. { error = %s }", ssl_error_string(MEMORYBUF(512), 512));
 		SSL_free_d(result);
 		SSL_CTX_free_d(ctx);
 		return NULL;
@@ -221,7 +227,7 @@ void * tls_client_alloc(int_t sockd) {
 	SSL_CTX_free_d(ctx);
 
 	if (SSL_connect_d(result) != 1) {
-		log_pedantic("Could not establish an SSL connection with the client. {error = %s}", ssl_error_string(MEMORYBUF(512), 512));
+		log_pedantic("Could not establish an TLS connection with the client. { error = %s }", ssl_error_string(MEMORYBUF(512), 512));
 		SSL_free_d(result);
 		return NULL;
 	}
@@ -230,182 +236,260 @@ void * tls_client_alloc(int_t sockd) {
 }
 
 /**
- * @brief	Shutdown and free an SSL connection.
- * @param	ssl		the SSL connection to be shut down.
+ * @brief	Shutdown and free an TLS connection.
+ * @param	TLS		the TLS connection to be shut down.
  * @return	This function returns no value.
  */
-void tls_free(SSL *ssl) {
+void tls_free(TLS *tls) {
 
 #ifdef MAGMA_PEDANTIC
-	if (!ssl) {
-		log_pedantic("Passed a NULL SSL pointer.");
+	if (!tls) {
+		log_pedantic("Passed an invalid TLS pointer.");
 	}
 #endif
 
-	if (ssl) {
+	if (tls) {
 		ERR_remove_thread_state_d(0);
-		SSL_shutdown_d(ssl);
-		SSL_free_d(ssl);
+		SSL_shutdown_d(tls);
+		SSL_free_d(tls);
 	}
 
 	return;
 }
 
 /**
- * @brief	Checks whether an SSL tunnel has been shut down or not.
+ * @brief	Checks whether a TLS connection has been shut down or not.
  * @see		SSL_get_shutdown()
- * @param	ssl		the SSL connection to be shut down.
+ * @param	tls		the TLS connection to be shut down.
  * @return	0 if the connection is alive and well, or SSL_SENT_SHUTDOWN/SSL_RECEIVED_SHUTDOWN
  */
-int tls_status(SSL *ssl) {
+int tls_status(TLS *tls) {
 
 	int_t result = 0;
-	if (ssl) {
-		result = SSL_get_shutdown_d(ssl);
+
+	// Look for a clean shut down of the TLS connection.
+	if (tls) {
+		result = SSL_get_shutdown_d(tls);
 	}
+
 	return result;
 }
 
-
 /**
- * @brief	Read data from an SSL connection.
- * @param	ssl		the SSL connection from which the data will be read.
+ * @brief	Read data from a TLS connection.
+ * @param	tls		the TLS connection from which the data will be read.
  * @param	buffer	a pointer to the buffer where the read data will be stored.
  * @param	length	the length, in bytes, of the amount of data to be read.
  * @param	block	a boolean variable specifying whether the read operation should block.
  * @return	-1 on failure, 0 if the connection has been closed, or the number of bytes read from the connection on success.
  */
-int ssl_read(SSL *ssl, void *buffer, int length, bool_t block) {
+int tls_read(TLS *tls, void *buffer, int length, bool_t block) {
 
-	int result = 0, sslerr;
+	long popped = 0;
+	chr_t *message = MEMORYBUF(1024);
+	int result = 0, err = 0, local = 0;
+	stringer_t *merged = NULL, *ip = NULL;
 
-	if (!ssl || !buffer || !length) {
-		log_pedantic("Passed invalid data for the SSL_read function.");
+	errno = 0;
+	ERR_clear_error_d();
+
+	if (!tls || !buffer || !length) {
+		log_pedantic("Passed invalid parameters for a call to the TLS read function.");
 		return -1;
 	}
 
-	if (!block) {
+	// In the future, when we switch to OpenSSL v1.1.0 around the year ~2032, we should look into using an
+	// asynchronous SSL context to facilitate our non-blocking read/write operations. Look to configure the
+	// context using SSL_CTX_set_mode(SSL_CTX *ctx, long mode) with mode set to SSL_MODE_ASYNC.
+	else if (!block && (result = SSL_read_d(tls, buffer, length)) <= 0) {
 
-		// In the future, when we switch to OpenSSL v1.1.0 around the year ~2032, we should look into using an
-		// asynchronous SSL context to facilitate our non-blocking read/write operations. Look to configure the
-		// context using SSL_CTX_set_mode(SSL_CTX *ctx, long mode) with mode set to SSL_MODE_ASYNC.
+		// Consult SSL_peek / SSL_want / SSL_get_read_ahead / SSL_set_read_ahead
 
-		// Method One.
-		//int fd = SSL_get_rfd_d(ssl);
-		//if (recv(fd, buffer, length, MSG_PEEK | MSG_DONTWAIT) != 0) {
-			result = SSL_read_d(ssl, buffer, length);
-			if (result <= 0 && (sslerr = SSL_get_error_d(ssl, result)) != SSL_ERROR_WANT_READ) {
-				ERR_error_string_n_d(sslerr, bufptr, buflen);
-				log_pedantic("SSL_read error. { result = %i / error = %s }", result, bufptr);
+		log_pedantic("Non-blocking TLS read calls aren't fully implemented yet.");
+
+		if ((err = SSL_get_error_d(tls, result)) != SSL_ERROR_WANT_READ) {
+			if ((local = errno) != 0) {
+				ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+				log_pedantic("TLS read error. { ip = %.*s / result = %i / errno = %i / message = %s }",
+					st_length_int(ip), st_char_get(ip), result, local, strerror_r(local, message, 1024));
+				result = tcp_error(local);
 			}
 			else if (result < 0) {
-				result = 0;
+				ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+				log_pedantic("TLS read error. { ip = %.*s / result = %i / errno = 0 }", st_length_int(ip), st_char_get(ip), result);
 			}
-		//}
-		//else {
-		//	result = 0;
-		//}
+			else {
 
-		// Method two.
-//		if (SSL_want_d(ssl) == SSL_READING || SSL_pending_d(ssl) > 0) {
-//			result = SSL_read_d(ssl, buffer, length);
-//		}
+				// Loop through and create an error message using all of the errors in the TLS error queue.
+				while ((popped = ERR_get_error_d())) {
+					ERR_error_string_n_d(err, message, 1024);
+					merged = st_append_opts(1024, merged, st_quick(MANAGEDBUF(256), "%s( error = %li / message = %s ) ",
+						(merged ? "/ " : ""), popped, message));
+				}
 
-		// If our socket is blocking and we get this error it's not really an error.. it just means we need to try again.
-
-
-	}
-	else if (block && (result = SSL_read_d(ssl, buffer, length)) <= 0) {
-		if ((sslerr = SSL_get_error_d(ssl, result)) != SSL_ERROR_WANT_READ) {
-			ERR_error_string_n_d(sslerr, bufptr, buflen);
-			log_pedantic("SSL_read error. { result = %i / error = %s }", result, bufptr);
+				if (!merged) {
+					ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+					log_pedantic("TLS read error. { ip = %.*s / result = %i / error = %i / message = NULL }",
+						st_length_int(ip), st_char_get(ip), result, err);
+				}
+				else {
+					ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+					log_pedantic("TLS read error. { ip = %.*s / result = %i / error = %i / message = %.*s }",
+						st_length_int(ip), st_char_get(ip), result, err, st_length_int(merged), st_char_get(merged));
+					st_free(merged);
+				}
+			}
 		}
-		else {
-			result = 0;
-		}
-
 	}
-	else if (result < 0) {
-		log_pedantic("SSL connection cleanly shutdown.");
+	else if (block && (result = SSL_read_d(tls, buffer, length)) <= 0) {
+		if ((err = SSL_get_error_d(tls, result)) != SSL_ERROR_WANT_READ) {
+			if ((local = errno) != 0) {
+				ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+				log_pedantic("TLS read error. { ip = %.*s / result = %i / errno = %i / message = %s }",
+					st_length_int(ip), st_char_get(ip), result, local, strerror_r(local, message, 1024));
+				result = tcp_error(local);
+			}
+			else if (result < 0) {
+				ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+				log_pedantic("TLS read error. { ip = %.*s / result = %i / errno = 0 }",
+					st_length_int(ip), st_char_get(ip), result);
+			}
+			else {
+
+				// Loop through and create an error message using all of the errors in the TLS error queue.
+				while ((popped = ERR_get_error_d())) {
+					ERR_error_string_n_d(err, message, 1024);
+					merged = st_append_opts(1024, merged, st_quick(MANAGEDBUF(256), "%s( error = %li / message = %s ) ", (merged ? "/ " : ""), popped, message));
+				}
+
+				if (!merged) {
+					ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+					log_pedantic("TLS read error. { ip = %.*s / result = %i / error = %i / message = NULL }",
+						st_length_int(ip), st_char_get(ip), result, err);
+				}
+				else {
+					log_pedantic("TLS read error. { ip = %.*s / result = %i / error = %i / message = %.*s }",
+						st_length_int(ip), st_char_get(ip), result, err, st_length_int(merged), st_char_get(merged));
+					st_free(merged);
+				}
+			}
+		}
 	}
 
 	return result;
 }
 
 /**
- * @brief	Write data to an open SSL connection.
- * @param	ssl		the SSL connection to which the data will be written.
+ * @brief	Write data to an open TLS connection.
+ * @param	tls		the TLS connection to which the data will be written.
  * @param	buffer	a pointer to the buffer containing the data to be written.
  * @param	length	the length, in bytes, of the data to be written.
- * @return	-1 on error, or the number of bytes written to the SSL connection.
+ * @return	-1 on error, or the number of bytes written to the TLS connection.
  */
-int ssl_write(SSL *ssl, const void *buffer, int length) {
+int tls_write(TLS *tls, const void *buffer, int length) {
 
-	int result = -1, sslerr;
+	long popped = 0;
+	chr_t *message = MEMORYBUF(1024);
+	int result = -1, err = 0, local = 0;
+	stringer_t *merged = NULL, *ip = NULL;
 
-	if (!ssl || !buffer || !length) {
-		log_pedantic("Passed invalid data for the SSL_write function.");
+	errno = 0;
+	ERR_clear_error_d();
+
+	if (!tls || !buffer || !length) {
+		log_pedantic("Passed invalid parameters for a call to the TLS write function.");
 		return -1;
 	}
-	else if ((result = SSL_write_d(ssl, buffer, length)) <= 0) {
+	else if ((result = SSL_write_d(tls, buffer, length)) <= 0) {
 
-		// This might not really be an "error" ...
-		if ((sslerr = SSL_get_error_d(ssl, result)) != SSL_ERROR_WANT_WRITE) {
-			log_pedantic("SSL_write error. {sslerr = %i / error = %s}", sslerr, ssl_error_string(bufptr, buflen));
+		if ((err = SSL_get_error_d(tls, result)) != SSL_ERROR_WANT_WRITE) {
+			if ((local = errno) != 0) {
+				ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+				log_pedantic("TLS write error. { ip = %.*s / result = %i / errno = %i / message = %s }",
+					st_length_int(ip), st_char_get(ip), result, local, strerror_r(local, message, 1024));
+				result = tcp_error(local);
+			}
+			else if (result < 0) {
+				ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+				log_pedantic("TLS write error. { ip = %.*s / result = %i / errno = 0 }", st_length_int(ip), st_char_get(ip), result);
+			}
+			else {
+
+				// Loop through and create an error message using all of the errors in the TLS error queue.
+				while ((popped = ERR_get_error_d())) {
+					ERR_error_string_n_d(err, message, 1024);
+					merged = st_append_opts(1024, merged, st_quick(MANAGEDBUF(256), "%s( error = %li / message = %s ) ", (merged ? "/ " : ""), popped, message));
+				}
+
+				if (!merged) {
+					ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+					log_pedantic("TLS write error. { ip = %.*s / result = %i / error = %i / message = NULL }", st_length_int(ip), st_char_get(ip), result, err);
+				}
+				else {
+					ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
+					log_pedantic("TLS write error. { ip = %.*s / result = %i / error = %i / message = %.*s }",
+						 st_length_int(ip), st_char_get(ip), result, err, st_length_int(merged), st_char_get(merged));
+					st_free(merged);
+				}
+			}
 		}
-
-	}
-	else if (!result) {
-		log_pedantic("SSL connection cleanly shutdown.");
 	}
 
 	return result;
 }
 
 /**
- * @brief	Write formatted data to an SSL connection.
- * @param	ssl		the SSL connection to which the data will be written.
+ * @brief	Write formatted data to an TLS connection.
+ * @param	tls		the SSL connection to which the data will be written.
  * @param	format	a format string specifying the data to be written to the SSL connection.
  * @param	va_list	a variable argument list containing the data parameters associated with the format string.
  * @return	-1 on error, or the number of bytes written to the SSL connection.
  */
-int ssl_print(SSL *ssl, const char *format, va_list args) {
+int tls_print(SSL *tls, const char *format, va_list args) {
 
-	int result;
-	char *buffer;
-	size_t length;
 	va_list copy;
+	size_t length = 0;
+	chr_t *buffer = NULL;
+	int result = 0, counter = 0, bytes = 0, position = 0;
 
-	if (!ssl) {
-		return -1;
-	} else if (!format) {
-		return 0;
+	if (!tls || !format) {
+		return (!tls ? -1 : 0);
 	}
 
-	// We need to make a copy of the arguments list in case we need to run vsnprintf twice.
+	// We need to make a copy of the arguments so we can run vsnprintf twice.
 	va_copy(copy, args);
 
-	// See if the string will fit inside the standard thread buffer.
-	if ((length = vsnprintf(bufptr, buflen, format, args)) < buflen) {
-		va_end(copy);
-		return ssl_write(ssl, bufptr, length);
+	// Calculate the length of the result so we can allocate an appropriately sized buffer.
+	length = vsnprintf(NULL, 0, format, copy);
+	va_end(copy);
+
+	// Make sure the print function succeeded.
+	if (length <= 0) {
+		return length;
 	}
 
 	// Allocate a large enough buffer.
 	else if (!(buffer = mm_alloc(length + 1))) {
-		va_end(copy);
 		return -1;
 	}
 
-	// Try building the string again.
-	else if (vsnprintf(buffer, length, format, copy) != length) {
+	// Build the output string.
+	else if (vsnprintf(buffer, length + 1, format, args) != length) {
 		mm_free(buffer);
-		va_end(copy);
 		return -1;
 	}
 
-	result = ssl_write(ssl, buffer, length);
-	va_end(copy);
+	do {
+
+		if ((bytes = tls_write(tls, buffer + position, length - position)) < 0) {
+			mm_free(buffer);
+			return -1;
+		}
+
+		position += bytes;
+
+	} while (position != length && counter++ < 128 && status());
+
 	mm_free(buffer);
 
 	return result;

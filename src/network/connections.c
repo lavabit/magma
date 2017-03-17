@@ -27,14 +27,23 @@ int_t con_secure(connection_t *con) {
 /**
  * @brief	Return the status of a specified connection.
  * @param	con		the input client connection.
- * @return	-1 on error, 0 for unknown status, 1 for connected, or 2 if the socket has been shutting down.
+ * @return  -1 on network errors, 0 for an unknown status, 1 for connected, and 2 for a graceful shutdown.
  */
 int_t con_status(connection_t *con) {
 
 	int_t result = -1;
 
-	if (con && con->network.sockd != -1) {
+	// If the status is positive, and tls_status returns 0, we use the existing status state.
+	if (con && con->network.tls && con->network.status >= 0 && !tls_status(con->network.tls)) {
 		result = con->network.status;
+	}
+	// If the status is positive, and tcp_status returns 0, we use the existing status state.
+	else if (con && con->network.sockd >= -1 && con->network.status >= 0 && !tcp_status(con->network.sockd)) {
+		result = con->network.status;
+	}
+	// We return -1 if the status is already negative, or connection is otherwise invalid.
+	else {
+		result = con->network.status = -1;
 	}
 
 	return result;
@@ -120,6 +129,7 @@ void con_destroy(connection_t *con) {
 		}
 
 		st_cleanup(con->network.buffer);
+		mm_cleanup(con->network.reverse.ip);
 		st_cleanup(con->network.reverse.domain);
 		mutex_destroy(&(con->lock));
 		mm_free(con);
@@ -201,8 +211,9 @@ connection_t * con_init(int cond, server_t *server) {
 		return NULL;
 	}
 
-	con->network.sockd = cond;
 	con->server = server;
+	con->network.sockd = cond;
+	con->network.reverse.ip = tcp_addr_ip(cond, NULL);
 	con_increment_refs(con);
 
 	return con;

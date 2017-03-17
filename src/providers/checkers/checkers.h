@@ -8,9 +8,6 @@
 #ifndef MAGMA_PROVIDERS_CHECKERS_H
 #define MAGMA_PROVIDERS_CHECKERS_H
 
-#define GET_IP_T_DEFINITION
-#include "network/network.h"
-
 #define IP_RANDOMIZER_POOL 1024
 
 #define IP_RANDOMIZER_PUSH_MIN 4
@@ -31,7 +28,6 @@ enum {
 	DOMESTIC = 0,
 	FOREIGN = 1
 };
-
 
 /// clamav.c
 bool_t lib_load_clamav(void);
@@ -67,7 +63,7 @@ chr_t *  lib_version_dspam(void);
 bool_t lib_load_spf(void);
 const chr_t * lib_version_spf(void);
 bool_t spf_start(void);
-int_t spf_check(ip_t *ip, stringer_t *helo, stringer_t *mailfrom);
+int_t spf_check(void *ip, stringer_t *helo, stringer_t *mailfrom);
 void spf_stop(void);
 
 #endif

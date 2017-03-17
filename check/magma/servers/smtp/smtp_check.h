@@ -10,6 +10,9 @@
 /// accept_check.c
 bool_t check_smtp_accept_message_sthread(stringer_t *errmsg);
 
+/// auth_check.c
+bool_t check_smtp_auth_from_field_sthread(stringer_t *errmsg);
+
 /// checkers_check.c
 bool_t check_smtp_checkers_greylist_sthread(stringer_t *errmsg);
 bool_t check_smtp_checkers_regex_sthread(stringer_t *errmsg);

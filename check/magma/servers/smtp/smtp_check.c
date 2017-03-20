@@ -102,10 +102,30 @@ START_TEST (check_smtp_network_auth_plain_s) {
 		outcome = false;
 	}
 	else if (status()) {
-		outcome = check_smtp_network_auth_plain_sthread(errmsg, server->network.port);
+		outcome = check_smtp_network_auth_sthread(errmsg, server->network.port, false);
 	}
 
 	log_test("SMTP / NETWORK / AUTH PLAIN / SINGLE THREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
+}
+END_TEST
+
+START_TEST (check_smtp_network_auth_login_s) {
+
+	log_disable();
+	bool_t outcome = true;
+	server_t *server = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	if (!(server = servers_get_by_protocol(SMTP, false))) {
+		st_sprint(errmsg, "No SMTP servers were configured and available for testing.");
+		outcome = false;
+	}
+	else if (status()) {
+		outcome = check_smtp_network_auth_sthread(errmsg, server->network.port, true);
+	}
+
+	log_test("SMTP / NETWORK / AUTH LOGIN / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
@@ -120,6 +140,7 @@ Suite * suite_check_smtp(void) {
 	suite_check_testcase(s, "SMTP", "SMTP Network Basic/ TCP/S", check_smtp_network_basic_tcp_s);
 	suite_check_testcase(s, "SMTP", "SMTP Network Basic/ TLS/S", check_smtp_network_basic_tls_s);
 	suite_check_testcase(s, "SMTP", "SMTP Network Auth Plain/S", check_smtp_network_auth_plain_s);
+	suite_check_testcase(s, "SMTP", "SMTP Network Auth Login/S", check_smtp_network_auth_login_s);
 
 	return s;
 }

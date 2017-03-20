@@ -30,13 +30,14 @@ bool_t check_imap_client_read_lines_to_end(client_t *client, chr_t *tag) {
 	return outcome;
 }
 
-bool_t check_imap_network_basic_sthread(stringer_t *errmsg, uint32_t port) {
+bool_t check_imap_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t secure) {
 
 	client_t *client = NULL;
 
 	// Check the initial response.
-	if (!(client = client_connect("localhost", port)) || !net_set_timeout(client->sockd, 20, 20) ||
-		client_read_line(client) <= 0 || (client->status != 1) || st_cmp_cs_starts(&(client->line), NULLER("* OK"))) {
+	if (!(client = client_connect("localhost", port)) || (secure && (client_secure(client) == -1)) ||
+		!net_set_timeout(client->sockd, 20, 20) || client_read_line(client) <= 0 || (client->status != 1) ||
+		st_cmp_cs_starts(&(client->line), NULLER("* OK"))) {
 
 		st_sprint(errmsg, "Failed to connect with the IMAP server.");
 		client_close(client);

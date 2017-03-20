@@ -17,7 +17,7 @@ START_TEST (check_pop_network_basic_tcp_s) {
 		st_sprint(errmsg, "No POP servers were configured to support TCP connections.");
 		outcome = false;
 	}
-	else if (status() && check_pop_network_basic_sthread(errmsg, tcp->network.port, false)) {
+	else if (status() && !check_pop_network_basic_sthread(errmsg, tcp->network.port, false)) {
 		outcome = false;
 	}
 

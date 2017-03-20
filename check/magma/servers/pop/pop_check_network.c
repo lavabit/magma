@@ -27,7 +27,7 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 	client_t *client = NULL;
 
 	// Connect the client.
-	if (!(client = client_connect("localhost", port)) || (secure && client_secure(client)) ||
+	if (!(client = client_connect("localhost", port)) || (secure && (client_secure(client) == -1)) ||
 		!net_set_timeout(client->sockd, 20, 20) || client_read_line(client) <= 0 || client_status(client) != 1 ||
 		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 

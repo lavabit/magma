@@ -90,7 +90,7 @@ START_TEST (check_smtp_checkers_filters_s) {
 }
 END_TEST
 
-START_TEST (check_smtp_auth_from_field_s) {
+START_TEST (check_smtp_network_auth_plain_s) {
 
 	log_disable();
 	bool_t outcome = true;
@@ -102,10 +102,10 @@ START_TEST (check_smtp_auth_from_field_s) {
 		outcome = false;
 	}
 	else if (status()) {
-		outcome = check_smtp_auth_from_field_sthread(errmsg, server->network.port);
+		outcome = check_smtp_network_auth_plain_sthread(errmsg, server->network.port);
 	}
 
-	log_test("SMTP / NETWORK / AUTH / FROM FIELD / SINGLE THREADED:", errmsg);
+	log_test("SMTP / NETWORK / AUTH PLAIN / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
@@ -119,7 +119,7 @@ Suite * suite_check_smtp(void) {
 	suite_check_testcase(s, "SMTP", "SMTP Checkers Filters/S", check_smtp_checkers_filters_s);
 	suite_check_testcase(s, "SMTP", "SMTP Network Basic/ TCP/S", check_smtp_network_basic_tcp_s);
 	suite_check_testcase(s, "SMTP", "SMTP Network Basic/ TLS/S", check_smtp_network_basic_tls_s);
-	suite_check_testcase(s, "SMTP", "SMTP Network Auth From Field/S", check_smtp_auth_from_field_s);
+	suite_check_testcase(s, "SMTP", "SMTP Network Auth Plain/S", check_smtp_network_auth_plain_s);
 
 	return s;
 }

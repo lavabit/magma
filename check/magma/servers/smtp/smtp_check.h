@@ -16,11 +16,12 @@ bool_t check_smtp_checkers_regex_sthread(stringer_t *errmsg);
 bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg, int_t action, int_t expected);
 
 /// smtp_check_network.c
-bool_t check_smtp_client_read_line_to_end(client_t *client);
+bool_t check_smtp_client_read_end(client_t *client);
+bool_t check_smtp_client_mail_rcpt_data(client_t *client, chr_t *from, chr_t *to, stringer_t *errmsg);
+bool_t check_smtp_client_quit_cleanup(client_t *client, stringer_t *errmsg);
 bool_t check_smtp_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t secure);
-bool_t check_smtp_auth_from_field_sthread(stringer_t *errmsg, uint32_t port);
+bool_t check_smtp_network_auth_plain_sthread(stringer_t *errmsg, uint32_t port);
 
 Suite * suite_check_smtp(void);
 
 #endif
-

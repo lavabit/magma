@@ -16,12 +16,62 @@
  * @return Returns true if client_read_line was successful until the last line was found.
  * Otherwise returns false.
  */
-bool_t check_smtp_client_read_line_to_end(client_t *client) {
+bool_t check_smtp_client_read_end(client_t *client) {
 
 	while (client_read_line(client) > 0) {
 		if (pl_char_get(client->line)[3] == ' ') return true;
 	}
 	return false;
+}
+
+bool_t check_smtp_client_mail_rcpt_data(client_t *client, chr_t *from, chr_t *to, stringer_t *errmsg) {
+
+	chr_t *line_from = "MAIL FROM: <%s>\r\n", *line_to = "RCPT TO: <%s>\r\n";
+	size_t size_from = strlen(line_from) + strlen(from) -2, size_to = strlen(line_to) + strlen(to) -2;
+
+	// Issue MAIL command.
+	if (client_print(client, line_from, from) != size_from || !check_smtp_client_read_end(client) ||
+		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("250"))) {
+		st_sprint(errmsg, "Failed to return successful status after MAIL.");
+		return false;
+	}
+
+	// Issue RCPT command.
+	else if (client_print(client, line_to, to) != size_to || !check_smtp_client_read_end(client) ||
+		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("250"))) {
+		st_sprint(errmsg, "Failed to return successful status after RCPT.");
+		return false;
+	}
+
+	// Issue DATA command.
+	else if (client_print(client, "DATA\r\n") != 6 || !check_smtp_client_read_end(client) ||
+		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("354"))) {
+		st_sprint(errmsg, "Failed to return a proceed status code after DATA.");
+		return false;
+	}
+
+	return true;
+}
+
+bool_t check_smtp_client_quit_cleanup(client_t *client, stringer_t *errmsg) {
+
+	// Test the QUIT command.
+	if (client_print(client, "QUIT\r\n") != 6 || client_read_line(client) <= 0 ||
+		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("221"))) {
+		st_sprint(errmsg, "Failed to return successful status following the QUIT command.");
+		client_close(client);
+		return false;
+	}
+
+	else if (client_read_line(client) > 0) {
+		st_sprint(errmsg, "The server failed to close the connection after issuing a QUIT command.");
+		client_close(client);
+		return false;
+	}
+
+	client_close(client);
+
+	return true;
 }
 
 bool_t check_smtp_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t secure) {
@@ -49,7 +99,7 @@ bool_t check_smtp_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_
 
 
 	// Test the EHLO command.
-	else if (client_print(client, "EHLO localhost\r\n") != 16 || !check_smtp_client_read_line_to_end(client) ||
+	else if (client_print(client, "EHLO localhost\r\n") != 16 || !check_smtp_client_read_end(client) ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("250"))) {
 		st_sprint(errmsg, "Failed to return successful status after EHLO.");
 		client_close(client);
@@ -108,7 +158,7 @@ bool_t check_smtp_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_
 	return true;
 }
 
-bool_t check_smtp_auth_from_field_sthread(stringer_t *errmsg, uint32_t port) {
+bool_t check_smtp_network_auth_plain_sthread(stringer_t *errmsg, uint32_t port) {
 
 	size_t location = 0;
 	client_t *client = NULL;
@@ -123,13 +173,49 @@ bool_t check_smtp_auth_from_field_sthread(stringer_t *errmsg, uint32_t port) {
 		return false;
 	}
 	// Issue EHLO.
-	else if (client_print(client, "EHLO localhost\r\n") != 16 || !check_smtp_client_read_line_to_end(client) ||
+	else if (client_print(client, "EHLO localhost\r\n") != 16 || !check_smtp_client_read_end(client) ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("250"))) {
 
 		st_sprint(errmsg, "Failed to return successful status after EHLO.");
 		client_close(client);
 		return false;
 	}
+	// Issue AUTH with incorrect credentials.
+	else if (client_print(client, "AUTH PLAIN bWFnbWEAbWFnbWEAaW52YWxpZHBhc3N3b3Jk\r\n") != 49 ||
+		!check_smtp_client_read_end(client) || client_status(client) != 1 ||
+		st_cmp_cs_starts(&(client->line), NULLER("535"))) {
 
-	return true;
+		st_sprint(errmsg, "Failed to return error status after AUTH with incorrect credentials.");
+		client_close(client);
+		return false;
+	}
+	// Issue AUTH with correct credentials.
+	else if (client_print(client, "AUTH PLAIN bWFnbWEAbWFnbWEAcGFzc3dvcmQ=\r\n") != 41 ||
+		!check_smtp_client_read_end(client) || client_status(client) != 1 ||
+		st_cmp_cs_starts(&(client->line), NULLER("235"))) {
+
+		st_sprint(errmsg, "Failed to return successful status after AUTH with correct credentials.");
+		client_close(client);
+		return false;
+	}
+	// Try sending mail from an unauthenticated account (ladar@lavabit.com).
+	else if (!check_smtp_client_mail_rcpt_data(client, "ladar@lavabit.com", "princess@example.com", errmsg) ||
+		client_print(client, ".\r\n") != 3 || !check_smtp_client_read_end(client) || client_status(client) != 1 ||
+		st_cmp_cs_starts(&(client->line), NULLER("550"))) {
+
+		if (!errmsg) st_sprint(errmsg, "Failed to return an error status after sending from an unauthenticated account.");
+		client_close(client);
+		return false;
+	}
+	// Try sending mail from the authenticated account (magma@lavabit.com).
+	else if (!check_smtp_client_mail_rcpt_data(client, "magma@lavabit.com", "princess@example.com", errmsg) ||
+		client_print(client, ".\r\n") != 3 || !check_smtp_client_read_end(client) || client_status(client) != 1 ||
+		st_cmp_cs_starts(&(client->line), NULLER("250"))) {
+
+		if (!errmsg) st_sprint(errmsg, "Failed to return successful status after sending from an authenticated account.");
+		client_close(client);
+		return false;
+	}
+
+	return check_smtp_client_quit_cleanup(client, errmsg);
 }

@@ -2395,7 +2395,7 @@ all() {
 	$M_BUILD "combine"; error
 	$M_BUILD "load"; error
 	$M_BUILD "keys"; error
-	$M_BUILD "check"; error
+	$M_BUILD "check"
 	date +"%nFinished at %r on %x%n"
 	date +"Finished at %r on %x" &>> "$M_LOGS/build.txt"
 }

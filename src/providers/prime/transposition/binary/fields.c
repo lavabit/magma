@@ -113,7 +113,7 @@ stringer_t * prime_field_write(uint16_t type, prime_field_type_t field, size_t s
 	}
 
 	// Figure out how big the field heading is.
-	if (!(size_len = prime_field_size_length(field)) < 0 || st_empty_out(data, &payload, &payload_len)) {
+	if ((size_len = prime_field_size_length(field)) < 0 || st_empty_out(data, &payload, &payload_len)) {
 		log_pedantic("Invalid variables were provided to the PRIME heading writer.");
 		return NULL;
 	}

@@ -25,6 +25,7 @@ void mm_sec_cleanup(void *block);
 bool_t mm_sec_secured(void *block);
 void * mm_sec_alloc(size_t len);
 void * mm_sec_realloc(void *orig, size_t len);
+bool_t mm_sec_stats(size_t *total, size_t *bytes, size_t *items);
 
 /// memory.c
 void *   mm_alloc(size_t len);

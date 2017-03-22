@@ -66,16 +66,8 @@ bool_t check_http_content_length_test(client_t *client, uint32_t content_length,
 
 	uint32_t total = 0;
 
-	if (!check_http_read_to_empty(client)) {
-		st_sprint(errmsg, "Failed to read to first empty line.");
-	}
-
 	while (total < content_length) {
 		total += client_read_line(client);
-	}
-
-	if (!check_http_read_to_empty(client)) {
-		st_sprint(errmsg, "Failed to read to last empty line.");
 	}
 
 	return (total == content_length);
@@ -96,13 +88,14 @@ bool_t check_http_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_
 	}
 	// Test submitting a GET request.
 	else if (client_print(client, "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n") != 35 || client_status(client) != 1 ||
-		(content_length = check_http_content_length_get(client, errmsg))) {
+		!(content_length = check_http_content_length_get(client, errmsg))) {
 
 		if (!errmsg) st_sprint(errmsg, "Failed to return a valid GET response.");
 		return false;
 	}
 	// Test the response.
 	else if (check_http_content_length_test(client, content_length, errmsg)) {
+		if (!errmsg) st_sprint(errmsg, "The content length and actual body length of the GET response did not match.");
 		return false;
 	}
 

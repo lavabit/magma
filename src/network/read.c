@@ -201,7 +201,7 @@ int64_t con_read(connection_t *con) {
  * @brief	Read a line of input from a network client session.
  *
  *
- * @return
+ * @return	The length of the line read.
  */
 int64_t client_read_line(client_t *client) {
 

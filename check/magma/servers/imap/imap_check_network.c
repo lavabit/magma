@@ -9,13 +9,13 @@
 #include "magma_check.h"
 
 /**
- * @brief Calls client_read_line on a client until it finds a line matching "<token> OK"
+ * @brief 	Calls client_read_line on a client until it finds a line matching "<token> OK".
  *
- * @param client The client to read from (which should be connected to an IMAP server).
- * @param token The unique token that identifies the current imap command dialogue.
+ * @param client 	The client to read from (which should be connected to an IMAP server).
+ * @param token 	The unique token that identifies the current imap command dialogue.
  *
- * @return Returns true if client_read_line was successful until the last line was found.
- * 		specified in num and there was no error. Otherwise returns false.
+ * @return 	Returns true if client_read_line was successful until the last line was found.
+ * 			specified in num and there was no error. Otherwise returns false.
  */
 bool_t check_imap_client_read_lines_to_end(client_t *client, chr_t *tag) {
 

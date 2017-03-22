@@ -9,10 +9,10 @@
 #include "magma_check.h"
 
 /**
- * Calls client_read_line on a client until it reaches a period only line.
+ * Calls 	client_read_line on a client until it reaches a period only line.
  *
- * @param client The client to read from (which should be connected to a POP server).
- * @return true if a line containing a single period is found, false if not.
+ * @param 	client 	The client to read from (which should be connected to a POP server).
+ * @return 	true if a line containing a single period is found, false if not.
  */
 bool_t check_pop_client_read_lines_to_end(client_t *client) {
 

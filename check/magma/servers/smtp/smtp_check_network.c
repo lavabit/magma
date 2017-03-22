@@ -10,7 +10,7 @@
 
 /**
  * @brief 	Calls client_read_line on a client until the last line is found
- * @param 	client The client_t* to read from (which should be connected to an SMTP server).
+ * @param 	client 	The client_t* to read from (which should be connected to an SMTP server).
  * @return 	Returns true if client_read_line was successful until the last line was found.
  * 			Otherwise returns false.
  */
@@ -24,11 +24,11 @@ bool_t check_smtp_client_read_end(client_t *client) {
 
 /**
  * @brief 	Submits the MAIL TO, RCPT FROM, and DATA commands to the passed client using the passed params
- * @param 	client The client to write the commands to. It should be connected to an SMTP server and have
- * 			had HELO/EHLO issued previously.
- * @baram 	from A chr_t* holding the value to be inserted in the MAIL FROM command
- * @param 	to A chr_t* holding the value to be inserted in the RCPT TO command
- * @param 	errmsg A stringer_t* that will have the error message printed to it in the event of an error
+ * @param 	client 	The client to write the commands to. It should be connected to an SMTP server and have
+ * 					had HELO/EHLO issued previously.
+ * @baram 	from 	A chr_t* holding the value to be inserted in the MAIL FROM command
+ * @param 	to 		A chr_t* holding the value to be inserted in the RCPT TO command
+ * @param 	errmsg 	A stringer_t* that will have the error message printed to it in the event of an error
  * @return 	True if no errors, false otherwise
  */
 bool_t check_smtp_client_mail_rcpt_data(client_t *client, chr_t *from, chr_t *to, stringer_t *errmsg) {
@@ -62,11 +62,11 @@ bool_t check_smtp_client_mail_rcpt_data(client_t *client, chr_t *from, chr_t *to
 
 /**
  * @brief 	Submits the AUTH PLAIN command to the passed client using the passed parameters
- * @param 	client A client_t* connected to an SMTP server that has had the HELO/EHLO command
- * 			already submitted
- * @param 	auth The user authentication string
- * @param 	errmsg A stringer_t* that will have the error message printed to it in the event of
- * 			and error
+ * @param 	client 	A client_t* connected to an SMTP server that has had the HELO/EHLO command
+ * 					already submitted
+ * @param 	auth 	The user authentication string
+ * @param 	errmsg 	A stringer_t* that will have the error message printed to it in the event of
+ * 					and error
  * @return 	True if no errors, false otherwise
  */
 bool_t check_smtp_client_auth_plain(client_t *client, chr_t *auth, stringer_t *errmsg) {
@@ -86,12 +86,12 @@ bool_t check_smtp_client_auth_plain(client_t *client, chr_t *auth, stringer_t *e
 
 /**
  * @brief 	Submits the AUTH LOGIN command to the passed client using the passed parameters
- * @param 	client A client_t* connected to an SMTP server that has had the HELO/EHLO command
- * 			already submitted
- * @param 	user A chr_t* containing the username of the user
- * @param 	pass A chr_t* containing the password of the user
- * @param 	errmsg A stringer_t* that will have the error message printed to it in the event of
- * 			and error
+ * @param 	client 	A client_t* connected to an SMTP server that has had the HELO/EHLO command
+ * 					already submitted
+ * @param 	user 	A chr_t* containing the username of the user
+ * @param 	pass 	A chr_t* containing the password of the user
+ * @param 	errmsg 	A stringer_t* that will have the error message printed to it in the event of
+ * 					and error
  * @return 	True if no errors, false otherwise
  */
 bool_t check_smtp_client_auth_login(client_t *client, chr_t *user, chr_t *pass, stringer_t *errmsg) {
@@ -120,10 +120,10 @@ bool_t check_smtp_client_auth_login(client_t *client, chr_t *user, chr_t *pass, 
 
 /**
  * @brief 	Submits the QUIT command to the passed client and checks for errors
- * @param 	client The client_t* to submit the command to, it should be connected
- * 			to an smtp server
- * @param 	errmsg A stringer_t* that will have the error message printed to it in
- * 			the event of an error
+ * @param 	client 	The client_t* to submit the command to, it should be connected
+ * 					to an smtp server
+ * @param 	errmsg 	A stringer_t* that will have the error message printed to it in
+ * 					the event of an error
  * @return 	True if no errors, false otherwise
  */
 bool_t check_smtp_client_quit(client_t *client, stringer_t *errmsg) {

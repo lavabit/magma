@@ -17,8 +17,11 @@ START_TEST (check_imap_network_basic_tcp_s) {
 		st_sprint(errmsg, "No IMAP servers were configured to support TCP connections.");
 		outcome = false;
 	}
-	else if (status()) {
-		outcome = check_imap_network_basic_sthread(errmsg, server->network.port, false);
+	else if (status() && !check_imap_network_basic_sthread(errmsg, server->network.port, false)) {
+		outcome = false;
+	}
+	else {
+		errmsg = NULL;
 	}
 
 	log_test("IMAP / NETWORK / BASIC / TCP / SINGLE THREADED:", errmsg);
@@ -37,8 +40,11 @@ START_TEST (check_imap_network_basic_tls_s) {
 		st_sprint(errmsg, "No IMAP servers were configured to support TLS connections.");
 		outcome = false;
 	}
-	else if (status()) {
-		outcome = check_imap_network_basic_sthread(errmsg, server->network.port, true);
+	else if (status() && !check_imap_network_basic_sthread(errmsg, server->network.port, true)) {
+		outcome = false;
+	}
+	else {
+		errmsg = NULL;
 	}
 
 	log_test("IMAP / NETWORK / BASIC / TLS / SINGLE THREADED:", errmsg);

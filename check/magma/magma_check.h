@@ -34,6 +34,7 @@
 #include "servers/smtp/smtp_check.h"
 #include "servers/pop/pop_check.h"
 #include "servers/imap/imap_check.h"
+#include "servers/http/http_check.h"
 #include "regression/regression_check.h"
 #include "config/config_check.h"
 

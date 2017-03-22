@@ -10,7 +10,7 @@
 /**
  * @brief	Perform a case-sensitive check to see if one string starts with another.
  * @param	s		the managed string to have its beginning characters examined.
- * @param	ends	the managed string to be compared against the beginning of s.
+ * @param	starts	the managed string to be compared against the beginning of s.
  * @return	-1 if s < starts, 1 if starts < s or 0 if s begins with starts.
  */
 int_t st_cmp_cs_starts(stringer_t *s, stringer_t *starts) {

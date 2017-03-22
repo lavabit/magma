@@ -18,8 +18,11 @@ START_TEST (check_smtp_network_basic_tcp_s) {
 		st_sprint(errmsg, "No SMTP servers were configured to support TCP connections.");
 		outcome = false;
 	}
-	else if (status()) {
-		outcome = check_smtp_network_basic_sthread(errmsg, server->network.port, false);
+	else if (status() && !check_smtp_network_basic_sthread(errmsg, server->network.port, false)) {
+		outcome = false;
+	}
+	else {
+		errmsg = NULL;
 	}
 
 	log_test("SMTP / NETWORK / BASIC / TCP / SINGLE THREADED:", errmsg);
@@ -38,8 +41,11 @@ START_TEST (check_smtp_network_basic_tls_s) {
 		st_sprint(errmsg, "No SMTP servers were configured to support TLS connections.");
 		outcome = false;
 	}
-	else if (status()) {
-		outcome = check_smtp_network_basic_sthread(errmsg, server->network.port, true);
+	else if (status() && !check_smtp_network_basic_sthread(errmsg, server->network.port, true)) {
+		outcome = false;
+	}
+	else {
+		errmsg = NULL;
 	}
 
 	log_test("SMTP / NETWORK / BASIC / TLS / SINGLE THREADED:", errmsg);
@@ -54,6 +60,7 @@ START_TEST (check_smtp_accept_store_message_s) {
 	stringer_t *errmsg = MANAGEDBUF(2048);
 
 	outcome = check_smtp_accept_message_sthread(errmsg);
+	if (outcome) errmsg = NULL;
 
 	log_test("SMTP / ACCEPT / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
@@ -67,6 +74,7 @@ START_TEST (check_smtp_checkers_greylist_s) {
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	outcome = check_smtp_checkers_greylist_sthread(errmsg);
+	if (outcome) errmsg = NULL;
 
 	log_test("SMTP / CHECKERS / GREYLIST / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
@@ -85,6 +93,8 @@ START_TEST (check_smtp_checkers_filters_s) {
 	if (status() && outcome) outcome = check_smtp_checkers_filters_sthread(errmsg, SMTP_FILTER_ACTION_LABEL, 3);
 	if (status() && outcome) outcome = check_smtp_checkers_filters_sthread(errmsg, SMTP_FILTER_ACTION_MARK_READ, 4);
 
+	if (outcome) errmsg = NULL;
+
 	log_test("SMTP / CHECKERS / FILTERS / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
@@ -101,8 +111,11 @@ START_TEST (check_smtp_network_auth_plain_s) {
 		st_sprint(errmsg, "No SMTP servers were configured and available for testing.");
 		outcome = false;
 	}
-	else if (status()) {
-		outcome = check_smtp_network_auth_sthread(errmsg, server->network.port, false);
+	else if (status() && !check_smtp_network_auth_sthread(errmsg, server->network.port, false)) {
+		outcome = false;
+	}
+	else {
+		errmsg = NULL;
 	}
 
 	log_test("SMTP / NETWORK / AUTH PLAIN / SINGLE THREADED:", errmsg);
@@ -121,8 +134,11 @@ START_TEST (check_smtp_network_auth_login_s) {
 		st_sprint(errmsg, "No SMTP servers were configured and available for testing.");
 		outcome = false;
 	}
-	else if (status()) {
-		outcome = check_smtp_network_auth_sthread(errmsg, server->network.port, true);
+	else if (status() && !check_smtp_network_auth_sthread(errmsg, server->network.port, true)) {
+		outcome = false;
+	}
+	else {
+		errmsg = NULL;
 	}
 
 	log_test("SMTP / NETWORK / AUTH LOGIN / SINGLE THREADED:", errmsg);

@@ -1,0 +1,67 @@
+
+/**
+ * @file /magma/check/magma/servers/http/http_check_network.c
+ *
+ * @brief Functions used to test SMTP connections over a network connection.
+ *
+ */
+
+#include "magma_check.h"
+
+/**
+ * @brief 	Reads lines from client and returns the value of Content-Length
+ *
+ * This function reads lines from the passed client until it finds the Content-Length
+ * line, at which point it parses the value and returns it.
+ *
+ * @param 	client A client_t containing the response of an HTTP request
+ * @return 	The value of Content-Length in the HTTP message header.
+ */
+size_t check_http_content_length_get(client_t *client, stringer_t *errmsg) {
+
+	size_t location = 0;
+	uint32_t content_length;
+	placer_t cl_placer = pl_null();
+
+	while (st_cmp_ci_starts(&(client->line), NULLER("Content-Type:")) != 0) client_read_line(client);
+
+	if (!st_search_chr(&(client->line), ' ', &location)) {
+		st_sprint(errmsg, "The Content-Length line is improperly formed.");
+	}
+	else if (pl_empty(cl_placer = pl_init(pl_data_get(client->line), pl_length_get(client->line) - location))) {
+		st_sprint(errmsg, "Failed to initialize content length placer.");
+	}
+	else if (!pl_inc(&cl_placer, pl_length_get(client->line) - location)) {
+		st_sprint(errmsg, "Failed to increment placer to location of content-length value.");
+	}
+	else if (uint32_conv_st(&cl_placer, &content_length)) {
+		st_sprint(errmsg, "Failed to convert the content-length string to a uint32");
+	}
+
+	return content_length;
+}
+
+bool_t check_http_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t secure) {
+
+	size_t content_length;
+	client_t *client = NULL;
+
+	// Test the connect banner.
+	if (!(client = client_connect("localhost", port)) || (secure && (client_secure(client) == -1)) ||
+		client_status(client) != 1) {
+
+		st_sprint(errmsg, "Failed to connect with the HTTP server.");
+		client_close(client);
+		return false;
+	}
+	else if (client_print(client, "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n") != 35 || client_status(client) != 1 ||
+		(content_length = check_http_content_length_get(client, errmsg))) {
+
+		if (!errmsg) st_sprint(errmsg, "Failed to return a valid GET response.");
+		return false;
+	}
+
+	client_close(client);
+
+	return true;
+}

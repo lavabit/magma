@@ -36,7 +36,7 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 		return false;
 	}
 
-	// Test the USER command.
+	// Test the USER and PASS commands with incorrect credentials.
 	else if (client_print(client, "USER princess\r\n") != 15 || client_read_line(client) <= 0 ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
@@ -44,8 +44,22 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 		client_close(client);
 		return false;
 	}
+	else if (client_print(client, "PASS lavabit\r\n") != 14 || client_read_line(client) <= 0 ||
+		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("-ERR"))) {
 
-	// Test the PASS command.
+		st_sprint(errmsg, "Failed to return an error state after PASS with incorrect credentials.");
+		client_close(client);
+		return false;
+	}
+
+	// Test the USER and PASS commands with correct credentials.
+	else if (client_print(client, "USER princess\r\n") != 15 || client_read_line(client) <= 0 ||
+		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
+
+		st_sprint(errmsg, "Failed to return a successful state after USER.");
+		client_close(client);
+		return false;
+	}
 	else if (client_print(client, "PASS password\r\n") != 15 || client_read_line(client) <= 0 ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 

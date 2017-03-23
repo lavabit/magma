@@ -39,7 +39,7 @@ uint32_t check_http_content_length_get(client_t *client, stringer_t *errmsg) {
 	while (st_cmp_ci_starts(&(client->line), NULLER("Content-Length:")) != 0) client_read_line(client);
 
 	if (!st_search_chr(&(client->line), ' ', &location)) {
-		st_sprint(errmsg, "The Content-Length line is improperly formed.");
+		st_sprint(errmsg, "The Content-Length line was improperly formed.");
 	}
 	else if (pl_empty(cl_placer = pl_init(pl_data_get(client->line) + location, pl_length_get(client->line) - location))) {
 		st_sprint(errmsg, "Failed to initialize content length placer.");

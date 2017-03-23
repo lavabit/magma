@@ -9,8 +9,8 @@
 START_TEST (check_pop_network_basic_tcp_s) {
 
 	log_disable();
-	bool_t outcome = true;
 	server_t *tcp = NULL;
+	bool_t outcome = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	if (status() && !(tcp = servers_get_by_protocol(POP, false))) {
@@ -30,8 +30,8 @@ END_TEST
 START_TEST (check_pop_network_basic_tls_s) {
 
 	log_disable();
-	bool_t outcome = true;
 	server_t *tls = NULL;
+	bool_t outcome = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	if (status() && !(tls = servers_get_by_protocol(POP, true))) {

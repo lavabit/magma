@@ -93,3 +93,16 @@ bool_t check_imap_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_
 
 	return true;
 }
+
+
+bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port) {
+
+	bool_t outcome = true;
+	return outcome;
+}
+
+bool_t check_imap_network_fetch_sthread(stringer_t *errmsg, uint32_t port) {
+
+	bool_t outcome = true;
+	return outcome;
+}

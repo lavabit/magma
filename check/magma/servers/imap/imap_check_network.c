@@ -197,6 +197,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A2 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH ALL.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH ANSWERED
@@ -204,6 +205,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A3 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH ANSWERED.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH BCC <string>
@@ -211,6 +213,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A4 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH BCC.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH BEFORE <date>
@@ -219,6 +222,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A5 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH BEFORE.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH BODY <string>
@@ -226,6 +230,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A6 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH BODY.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH CC <string>
@@ -233,6 +238,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A7 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH CC.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH DELETED
@@ -240,6 +246,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A8 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH DELETED.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH DRAFT
@@ -247,6 +254,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A9 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH DRAFT.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH FLAGGED
@@ -254,6 +262,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A10 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH FLAGGED.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH FROM <string>
@@ -261,6 +270,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A11 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH FROM.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH HEADER <field> <string>
@@ -268,6 +278,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A12 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH HEADER.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH KEYWORD <flag>
@@ -275,6 +286,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A13 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH KEYWORD.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH LARGER <n>
@@ -282,6 +294,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A14 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH LARGER.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH NEW
@@ -289,6 +302,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A15 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH NEW.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH NOT <search-key>
@@ -296,6 +310,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A16 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH NOT.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH OLD
@@ -303,6 +318,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A17 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH OLD.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH ON <date>
@@ -311,6 +327,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A18 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH ON.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH OR <search-key> <search-key>
@@ -318,6 +335,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A19 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH OR.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH RECENT
@@ -325,6 +343,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A20 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH RECENT.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH SEEN
@@ -332,6 +351,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A21 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH SEEN.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH SENTBEFORE <date>
@@ -339,6 +359,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A22 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH SENTBEFORE.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH SENTON <date>
@@ -346,6 +367,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A23 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH SENTON.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH SENTSINCE <date>
@@ -353,6 +375,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A24 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH SENTSINCE.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH SINCE <date>
@@ -360,6 +383,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A25 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH SINCE.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH SMALLER <n>
@@ -367,6 +391,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A26 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH SMALLER.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH SUBJECT <string>
@@ -374,6 +399,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A27 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH SUBJECT.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH TEXT <string>
@@ -381,6 +407,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A28 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH TEXT.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH TO <string>
@@ -388,6 +415,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A29 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH TO.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH UID <sequence set>
@@ -395,6 +423,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A30 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH UID.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH UNANSWERED
@@ -402,6 +431,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A31 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH UNANSWERED.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH UNDELETED
@@ -409,6 +439,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A32 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH UNDELETED.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH UNDRAFT
@@ -416,6 +447,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A33 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH UNDRAFT.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH UNFLAGGED
@@ -423,6 +455,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A34 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH UNFLAGGED.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH UNKEYWORD <flag>
@@ -430,6 +463,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A35 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH UNKEYWORD.");
+		client_close(client);
 		return false;
 	}
 	// Test SEARCH UNSEEN
@@ -437,6 +471,13 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A36 OK Search complete.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after SEARCH UNSEEN.");
+		client_close(client);
+		return false;
+	}
+
+	else if (!check_imap_client_close_logout(client, errmsg)) {
+
+		client_close(client);
 		return false;
 	}
 
@@ -466,20 +507,53 @@ bool_t check_imap_network_fetch_sthread(stringer_t *errmsg, uint32_t port, bool_
 	}
 	// Test FETCH 1 (BODY.PEEK[HEADER]) and make sure the message is not marked as seen
 	else if (client_print(client, "A2 FETCH 1 (BODY.PEEK[HEADER])\r\n") <= 0 || !check_imap_client_read_end(client, "A2") ||
-			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A2 OK Search complete.\r\n"))) {
+			client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("A2 OK"))) {
 
 		st_sprint(errmsg, "Failed to return a successful status after FETCH 1 (BODY.PEEK[HEADER]).");
+		client_close(client);
 		return false;
 	}
 	// Test FETCH 1 (BODY [HEADER])
+	else if (client_print(client, "A3 FETCH 1 (BODY [HEADER])\r\n") <= 0 || !check_imap_client_read_end(client, "A3") ||
+			client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("A3 OK"))) {
 
+		st_sprint(errmsg, "Failed to return a successful status after FETCH 1 BODY [HEADER].");
+		client_close(client);
+		return false;
+	}
 	// Test FETCH 1 (BODY[])
+	else if (client_print(client, "A4 FETCH 1 (BODY [])\r\n") <= 0 || !check_imap_client_read_end(client, "A4") ||
+			client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("A4 OK"))) {
 
+		st_sprint(errmsg, "Failed to return a successful status after FETCH 1 (BODY []).");
+		client_close(client);
+		return false;
+	}
 	// Test FETCH 1 (FLAGS BODY[HEADER.FIELDS (DATE FROM SUBJECT)])
+	else if (client_print(client, "A5 FETCH 1 (FLAGS BODY[HEADER.FIELDS (DATE FROM SUBJECT)])\r\n") <= 0 ||
+		!check_imap_client_read_end(client, "A5") || client_status(client) != 1 || st_cmp_cs_starts(&(client->line),
+		NULLER("A5 OK"))) {
 
+		st_sprint(errmsg, "Failed to return a successful status after FETCH 1 (FLAGS BODY[HEADER.FIELDS (DATE FROM SUBJECT)]).");
+		client_close(client);
+		return false;
+	}
 	// Test FETCH 1:* FLAGS
+	else if (client_print(client, "A6 FETCH 1:* FLAGS\r\n") <= 0 || !check_imap_client_read_end(client, "A6") ||
+			client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("A6 OK"))) {
 
+		st_sprint(errmsg, "Failed to return a successful status after FETCH 1 1:* FLAGS.");
+		client_close(client);
+		return false;
+	}
 	// Test FETCH 1:* INTERNALDATE
+	else if (client_print(client, "A7 FETCH 1:* INTERNALDATE\r\n") <= 0 || !check_imap_client_read_end(client, "A7") ||
+			client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("A7 OK"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after FETCH 1:* INTERNALDATE.");
+		client_close(client);
+		return false;
+	}
 
 	return true;
 }

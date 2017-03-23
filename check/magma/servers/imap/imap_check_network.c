@@ -75,7 +75,7 @@ bool_t check_imap_client_login(client_t *client, chr_t *user, chr_t *pass, chr_t
 bool_t check_imap_client_select(client_t *client, chr_t *folder, chr_t *tag, stringer_t *errmsg) {
 
 	// Test the SELECT command.
-	if (client_print(client, "A2 SELECT Inbox\r\n") <= 0 || !check_imap_client_read_end(client, tag) ||
+	if (client_print(client, "%s SELECT Inbox\r\n", tag) <= 0 || !check_imap_client_read_end(client, tag) ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER(tag))) {
 
 		st_sprint(errmsg, "Failed to return a successful state after SELECT.");
@@ -188,6 +188,257 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 	else if (!check_imap_client_login(client, "princess", "password", "A0", errmsg)) {
 		return false;
 	}
+	// Test the SELECT command.
+	else if (!check_imap_client_select(client, "Inbox", "A1", errmsg)) {
+		return false;
+	}
+	// Test SEARCH ALL
+	else if (client_print(client, "A2 SEARCH ALL\r\n") <= 0 || !check_imap_client_read_end(client, "A2") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A2 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH ALL.");
+		return false;
+	}
+	// Test SEARCH ANSWERED
+	else if (client_print(client, "A3 SEARCH ANSWERED\r\n") <= 0 || !check_imap_client_read_end(client, "A3") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A3 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH ANSWERED.");
+		return false;
+	}
+	// Test SEARCH BCC <string>
+	else if (client_print(client, "A4 SEARCH BCC\r\n") <= 0 || !check_imap_client_read_end(client, "A4") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A4 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH BCC.");
+		return false;
+	}
+	// Test SEARCH BEFORE <date>
+	// MID: replace the hard coded date with a dynamic one based on the current date.
+	else if (client_print(client, "A5 SEARCH BEFORE 01-Apr-2017\r\n") <= 0 || !check_imap_client_read_end(client, "A5") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A5 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH BEFORE.");
+		return false;
+	}
+	// Test SEARCH BODY <string>
+	else if (client_print(client, "A6 SEARCH BODY Hello\r\n") <= 0 || !check_imap_client_read_end(client, "A6") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A6 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH BODY.");
+		return false;
+	}
+	// Test SEARCH CC <string>
+	else if (client_print(client, "A7 SEARCH CC\r\n") <= 0 || !check_imap_client_read_end(client, "A7") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A7 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH CC.");
+		return false;
+	}
+	// Test SEARCH DELETED
+	else if (client_print(client, "A8 SEARCH DELETED\r\n") <= 0 || !check_imap_client_read_end(client, "A8") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A8 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH DELETED.");
+		return false;
+	}
+	// Test SEARCH DRAFT
+	else if (client_print(client, "A9 SEARCH DRAFT\r\n") <= 0 || !check_imap_client_read_end(client, "A9") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A9 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH DRAFT.");
+		return false;
+	}
+	// Test SEARCH FLAGGED
+	else if (client_print(client, "A10 SEARCH FLAGGED\r\n") <= 0 || !check_imap_client_read_end(client, "A10") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A10 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH FLAGGED.");
+		return false;
+	}
+	// Test SEARCH FROM <string>
+	else if (client_print(client, "A11 SEARCH FROM ladar@lavabit.com\r\n") <= 0 || !check_imap_client_read_end(client, "A11") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A11 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH FROM.");
+		return false;
+	}
+	// Test SEARCH HEADER <field> <string>
+	else if (client_print(client, "A12 SEARCH HEADER lavabit\r\n") <= 0 || !check_imap_client_read_end(client, "A12") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A12 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH HEADER.");
+		return false;
+	}
+	// Test SEARCH KEYWORD <flag>
+	else if (client_print(client, "A13 SEARCH KEYWORD Seen\r\n") <= 0 || !check_imap_client_read_end(client, "A13") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A13 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH KEYWORD.");
+		return false;
+	}
+	// Test SEARCH LARGER <n>
+	else if (client_print(client, "A14 SEARCH LARGER 1024\r\n") <= 0 || !check_imap_client_read_end(client, "A14") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A14 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH LARGER.");
+		return false;
+	}
+	// Test SEARCH NEW
+	else if (client_print(client, "A15 SEARCH NEW\r\n") <= 0 || !check_imap_client_read_end(client, "A15") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A15 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH NEW.");
+		return false;
+	}
+	// Test SEARCH NOT <search-key>
+	else if (client_print(client, "A16 SEARCH NOT Seen\r\n") <= 0 || !check_imap_client_read_end(client, "A16") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A16 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH NOT.");
+		return false;
+	}
+	// Test SEARCH OLD
+	else if (client_print(client, "A17 SEARCH OLD\r\n") <= 0 || !check_imap_client_read_end(client, "A17") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A17 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH OLD.");
+		return false;
+	}
+	// Test SEARCH ON <date>
+	// MID: The hard coded date needs to be changed to a dynamic one based on the current date.
+	else if (client_print(client, "A18 SEARCH ON 23-Mar-2017\r\n") <= 0 || !check_imap_client_read_end(client, "A18") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A18 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH ON.");
+		return false;
+	}
+	// Test SEARCH OR <search-key> <search-key>
+	else if (client_print(client, "A19 SEARCH OR Seen Flagged\r\n") <= 0 || !check_imap_client_read_end(client, "A19") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A19 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH OR.");
+		return false;
+	}
+	// Test SEARCH RECENT
+	else if (client_print(client, "A20 SEARCH RECENT\r\n") <= 0 || !check_imap_client_read_end(client, "A20") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A20 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH RECENT.");
+		return false;
+	}
+	// Test SEARCH SEEN
+	else if (client_print(client, "A21 SEARCH SEEN\r\n") <= 0 || !check_imap_client_read_end(client, "A21") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A21 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH SEEN.");
+		return false;
+	}
+	// Test SEARCH SENTBEFORE <date>
+	else if (client_print(client, "A22 SEARCH SENTBEFORE 23-Mar-2017\r\n") <= 0 || !check_imap_client_read_end(client, "A22") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A22 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH SENTBEFORE.");
+		return false;
+	}
+	// Test SEARCH SENTON <date>
+	else if (client_print(client, "A23 SEARCH 23-Mar-2017\r\n") <= 0 || !check_imap_client_read_end(client, "A23") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A23 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH SENTON.");
+		return false;
+	}
+	// Test SEARCH SENTSINCE <date>
+	else if (client_print(client, "A24 SEARCH SENTSINCE 01-Jan-2017\r\n") <= 0 || !check_imap_client_read_end(client, "A24") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A24 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH SENTSINCE.");
+		return false;
+	}
+	// Test SEARCH SINCE <date>
+	else if (client_print(client, "A25 SEARCH SINCE 01-Jan-2017\r\n") <= 0 || !check_imap_client_read_end(client, "A25") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A25 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH SINCE.");
+		return false;
+	}
+	// Test SEARCH SMALLER <n>
+	else if (client_print(client, "A26 SEARCH SMALLER 30960\r\n") <= 0 || !check_imap_client_read_end(client, "A26") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A26 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH SMALLER.");
+		return false;
+	}
+	// Test SEARCH SUBJECT <string>
+	else if (client_print(client, "A27 SEARCH SUBJECT lavabit\r\n") <= 0 || !check_imap_client_read_end(client, "A27") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A27 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH SUBJECT.");
+		return false;
+	}
+	// Test SEARCH TEXT <string>
+	else if (client_print(client, "A28 SEARCH TEXT lavabit\r\n") <= 0 || !check_imap_client_read_end(client, "A28") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A28 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH TEXT.");
+		return false;
+	}
+	// Test SEARCH TO <string>
+	else if (client_print(client, "A29 SEARCH TO ladar@lavabit.com\r\n") <= 0 || !check_imap_client_read_end(client, "A29") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A29 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH TO.");
+		return false;
+	}
+	// Test SEARCH UID <sequence set>
+	else if (client_print(client, "A30 SEARCH UID 1\r\n") <= 0 || !check_imap_client_read_end(client, "A30") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A30 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH UID.");
+		return false;
+	}
+	// Test SEARCH UNANSWERED
+	else if (client_print(client, "A31 SEARCH UNANSWERED\r\n") <= 0 || !check_imap_client_read_end(client, "A31") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A31 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH UNANSWERED.");
+		return false;
+	}
+	// Test SEARCH UNDELETED
+	else if (client_print(client, "A32 SEARCH UNDELETED\r\n") <= 0 || !check_imap_client_read_end(client, "A32") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A32 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH UNDELETED.");
+		return false;
+	}
+	// Test SEARCH UNDRAFT
+	else if (client_print(client, "A33 SEARCH UNDRAFT\r\n") <= 0 || !check_imap_client_read_end(client, "A33") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A33 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH UNDRAFT.");
+		return false;
+	}
+	// Test SEARCH UNFLAGGED
+	else if (client_print(client, "A34 SEARCH UNFLAGGED\r\n") <= 0 || !check_imap_client_read_end(client, "A34") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A34 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH UNFLAGGED.");
+		return false;
+	}
+	// Test SEARCH UNKEYWORD <flag>
+	else if (client_print(client, "A35 SEARCH UNKEYWORD Seen\r\n") <= 0 || !check_imap_client_read_end(client, "A35") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A35 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH UNKEYWORD.");
+		return false;
+	}
+	// Test SEARCH UNSEEN
+	else if (client_print(client, "A36 SEARCH UNSEEN\r\n") <= 0 || !check_imap_client_read_end(client, "A36") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A36 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after SEARCH UNSEEN.");
+		return false;
+	}
 
 	return true;
 }
@@ -209,6 +460,26 @@ bool_t check_imap_network_fetch_sthread(stringer_t *errmsg, uint32_t port, bool_
 	else if (!check_imap_client_login(client, "princess", "password", "A0", errmsg)) {
 		return false;
 	}
+	// Test the SELECT command.
+	else if (!check_imap_client_select(client, "Inbox", "A1", errmsg)) {
+		return false;
+	}
+	// Test FETCH 1 (BODY.PEEK[HEADER]) and make sure the message is not marked as seen
+	else if (client_print(client, "A2 FETCH 1 (BODY.PEEK[HEADER])\r\n") <= 0 || !check_imap_client_read_end(client, "A2") ||
+			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), NULLER("A2 OK Search complete.\r\n"))) {
+
+		st_sprint(errmsg, "Failed to return a successful status after FETCH 1 (BODY.PEEK[HEADER]).");
+		return false;
+	}
+	// Test FETCH 1 (BODY [HEADER])
+
+	// Test FETCH 1 (BODY[])
+
+	// Test FETCH 1 (FLAGS BODY[HEADER.FIELDS (DATE FROM SUBJECT)])
+
+	// Test FETCH 1:* FLAGS
+
+	// Test FETCH 1:* INTERNALDATE
 
 	return true;
 }

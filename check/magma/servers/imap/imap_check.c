@@ -63,7 +63,7 @@ START_TEST (check_imap_network_search_s) {
 		st_sprint(errmsg, "No IMAP servers were configured to support TCP connections.");
 		outcome = false;
 	}
-	else if (status() && !check_imap_network_search_sthread(errmsg, server->network.port)) {
+	else if (status() && !check_imap_network_search_sthread(errmsg, server->network.port, false)) {
 		outcome = false;
 	}
 	else {
@@ -86,7 +86,7 @@ START_TEST (check_imap_network_fetch_s) {
 		st_sprint(errmsg, "No IMAP servers were configured to support TCP connections.");
 		outcome = false;
 	}
-	else if (status() && !check_imap_network_fetch_sthread(errmsg, server->network.port)) {
+	else if (status() && !check_imap_network_fetch_sthread(errmsg, server->network.port, false)) {
 		outcome = false;
 	}
 	else {

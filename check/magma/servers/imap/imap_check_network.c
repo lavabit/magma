@@ -42,11 +42,11 @@ bool_t check_imap_client_read_end(client_t *client, chr_t *tag) {
  */
 bool_t check_imap_client_login(client_t *client, chr_t *user, chr_t *pass, chr_t *tag, stringer_t *errmsg) {
 
-	stringer_t *login_line;
+	stringer_t *login_line = NULL;
 	uint32_t login_line_len = ns_length_get(tag) + ns_length_get(user) + ns_length_get(pass) + 10;
 
 	// Construct the login command
-	if (!(login_line = st_merge("nsnsns", tag, NULLER(" LOGIN "), user, NULLER(' '), pass, NULLER("\r\n")))) {
+	if (!(login_line = st_merge("nsnsns", tag, NULLER(" LOGIN "), user, NULLER(" "), pass, NULLER("\r\n")))) {
 
 		st_sprint(errmsg, "Failed to construct the login command.");
 		return false;
@@ -171,7 +171,7 @@ bool_t check_imap_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_
 }
 
 
-bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port) {
+bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool_t secure) {
 
 	client_t *client = NULL;
 
@@ -185,14 +185,14 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port) {
 		return false;
 	}
 	// Test the LOGIN command.
-	else if (!check_imap_client_login(client, "princess", "password", errmsg)) {
+	else if (!check_imap_client_login(client, "princess", "password", "A0", errmsg)) {
 		return false;
 	}
 
 	return true;
 }
 
-bool_t check_imap_network_fetch_sthread(stringer_t *errmsg, uint32_t port) {
+bool_t check_imap_network_fetch_sthread(stringer_t *errmsg, uint32_t port, bool_t secure) {
 
 	client_t *client = NULL;
 
@@ -206,7 +206,7 @@ bool_t check_imap_network_fetch_sthread(stringer_t *errmsg, uint32_t port) {
 		return false;
 	}
 	// Test the LOGIN command.
-	else if (!check_imap_client_login(client, "princess", "password", errmsg)) {
+	else if (!check_imap_client_login(client, "princess", "password", "A0", errmsg)) {
 		return false;
 	}
 

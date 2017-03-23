@@ -278,7 +278,7 @@ bool_t check_smtp_network_auth_sthread(stringer_t *errmsg, uint32_t port, bool_t
 		client_print(client, ".\r\n") != 3 || !check_smtp_client_read_end(client) || client_status(client) != 1 ||
 		st_cmp_cs_starts(&(client->line), NULLER("250"))) {
 
-		if (!errmsg) st_sprint(errmsg, "Failed to return successful status after sending from an authenticated account.");
+		if (st_empty(errmsg)) st_sprint(errmsg, "Failed to return successful status after sending from an authenticated account.");
 		client_close(client);
 		return false;
 	}

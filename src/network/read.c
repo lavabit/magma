@@ -76,8 +76,9 @@ int64_t con_read_line(connection_t *con, bool_t block) {
 				cipher = tls_cipher(con->network.tls, MANAGEDBUF(128));
 				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
 
-				log_pedantic("TLS read operation failed. { ip = %.*s / %.*s / result = %zi%s%.*s }", st_length_int(ip), st_char_get(ip),
-					st_length_int(cipher), st_char_get(cipher), bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
+				log_pedantic("TLS read operation failed. { ip = %.*s / protocol = %s / %.*s / result = %zi%s%.*s }",
+					st_length_int(ip), st_char_get(ip), st_char_get(protocol_type(con)), st_length_int(cipher), st_char_get(cipher),
+					bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
 
 				int_t tlserr = SSL_get_error_d(con->network.tls, bytes);
 				if (tlserr != SSL_ERROR_NONE && tlserr != SSL_ERROR_WANT_READ && tlserr != SSL_ERROR_WANT_WRITE) {
@@ -183,8 +184,9 @@ int64_t con_read(connection_t *con) {
 				cipher = tls_cipher(con->network.tls, MANAGEDBUF(128));
 				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
 
-				log_pedantic("TLS read operation failed. { ip = %.*s / %.*s / result = %zi%s%.*s }", st_length_int(ip), st_char_get(ip),
-					st_length_int(cipher), st_char_get(cipher), bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
+				log_pedantic("TLS read operation failed. { ip = %.*s / protocol = %s / %.*s / result = %zi%s%.*s }",
+					st_length_int(ip), st_char_get(ip), st_char_get(protocol_type(con)), st_length_int(cipher), st_char_get(cipher),
+					bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
 
 				int_t tlserr = SSL_get_error_d(con->network.tls, bytes);
 				if (tlserr != SSL_ERROR_NONE && tlserr != SSL_ERROR_WANT_READ && tlserr != SSL_ERROR_WANT_WRITE) {

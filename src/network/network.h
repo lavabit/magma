@@ -150,4 +150,6 @@ int64_t   con_write_ns(connection_t *con, char *string);
 int64_t   con_write_pl(connection_t *con, placer_t string);
 int64_t   con_write_st(connection_t *con, stringer_t *string);
 
+stringer_t * protocol_type(connection_t *con);
+
 #endif

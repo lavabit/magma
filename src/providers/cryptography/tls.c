@@ -40,7 +40,7 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 	}
 	else if (security_level == 2) {
 		//options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_COMPRESSION);
-		options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_MODE_AUTO_RETRY | SSL_OP_CIPHER_SERVER_PREFERENCE;
+		options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_MODE_AUTO_RETRY | SSL_OP_CIPHER_SERVER_PREFERENCE | SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS;
 		ciphers = MAGMA_CIPHERS_MEDIUM;
 	}
 	else if (security_level >= 3) {
@@ -81,10 +81,10 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 		return false;
 	}
 
-//	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_ECDH_AUTO, 1, NULL) != 1) {
-//		log_critical("Could not enable the automatic, default selection of the strongest curve.");
-//		return false;
-//	}
+	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_ECDH_AUTO, 1, NULL) != 1) {
+		log_critical("Could not enable the automatic, default selection of the strongest curve.");
+		return false;
+	}
 
 	// High security connections get 4096 bit prime when generating a DH session key.
 	else if (magma.iface.cryptography.dhparams_rotate && magma.iface.cryptography.dhparams_large_keys) {
@@ -102,10 +102,10 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 		SSL_CTX_set_tmp_dh_callback_d(local->tls.context, dh_static_2048);
 	}
 
-//	SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_READ_AHEAD, 1, NULL);
+	SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_READ_AHEAD, 1, NULL);
 
 	/// TODO: The SSL_CTX_set_tmp_ecdh_callback() may no longer be needed with SSL_CTX_set_ecdh_auto(). More research is needed.
-//	SSL_CTX_set_tmp_ecdh_callback_d(local->tls.context, ssl_ecdh_exchange_callback);
+	SSL_CTX_set_tmp_ecdh_callback_d(local->tls.context, ssl_ecdh_exchange_callback);
 
 	return true;
 }

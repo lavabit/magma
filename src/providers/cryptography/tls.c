@@ -39,7 +39,7 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 		ciphers = SSL_DEFAULT_CIPHER_LIST;
 	}
 	else if (security_level == 2) {
-		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION);
+		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_COMPRESSION);
 		ciphers = MAGMA_CIPHERS_MEDIUM;
 	}
 	else if (security_level >= 3) {

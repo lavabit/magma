@@ -39,7 +39,8 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 		ciphers = SSL_DEFAULT_CIPHER_LIST;
 	}
 	else if (security_level == 2) {
-		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_COMPRESSION);
+		//options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_COMPRESSION);
+		options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_MODE_AUTO_RETRY | SSL_OP_CIPHER_SERVER_PREFERENCE;
 		ciphers = MAGMA_CIPHERS_MEDIUM;
 	}
 	else if (security_level >= 3) {
@@ -62,6 +63,11 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 		log_critical("Could set the options mask on the TLS context.");
 		return false;
 	}
+	// Use the cipher list selected above.
+	else if (SSL_CTX_set_cipher_list_d(local->tls.context, ciphers) != 1) {
+		log_critical("Could not load the default collection of ciphers.");
+		return false;
+	}
 	else if (SSL_CTX_use_certificate_chain_file_d(local->tls.context, local->tls.certificate) != 1) {
 		log_critical("Could not create a valid TLS certificate chain using the file %s.", local->tls.certificate);
 		return false;
@@ -74,15 +80,11 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 		log_critical("Could not verify the SSL private key. Make sure a valid private key is in the file %s.", local->tls.certificate);
 		return false;
 	}
-	// We had some compatibility issues enabling PFS, so this needs to be resolved soon.
-	else if (SSL_CTX_set_cipher_list_d(local->tls.context, ciphers) != 1) {
-		log_critical("Could not load the default collection of ciphers.");
-		return false;
-	}
-	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_ECDH_AUTO, 1, NULL) != 1) {
-		log_critical("Could not enable the automatic, default selection of the strongest curve.");
-		return false;
-	}
+
+//	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_ECDH_AUTO, 1, NULL) != 1) {
+//		log_critical("Could not enable the automatic, default selection of the strongest curve.");
+//		return false;
+//	}
 
 	// High security connections get 4096 bit prime when generating a DH session key.
 	else if (magma.iface.cryptography.dhparams_rotate && magma.iface.cryptography.dhparams_large_keys) {
@@ -100,7 +102,7 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 		SSL_CTX_set_tmp_dh_callback_d(local->tls.context, dh_static_2048);
 	}
 
-	SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_READ_AHEAD, 1, NULL);
+//	SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_READ_AHEAD, 1, NULL);
 
 	/// TODO: The SSL_CTX_set_tmp_ecdh_callback() may no longer be needed with SSL_CTX_set_ecdh_auto(). More research is needed.
 //	SSL_CTX_set_tmp_ecdh_callback_d(local->tls.context, ssl_ecdh_exchange_callback);

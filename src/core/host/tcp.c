@@ -61,7 +61,7 @@ int_t tcp_status(int sockd) {
 		result = tcp_error(error);
 	}
 
-	log_pedantic("tcp status = %i / errno = %i", result, error);
+//	log_pedantic("tcp status = %i / errno = %i", result, error);
 
 	return result;
 }

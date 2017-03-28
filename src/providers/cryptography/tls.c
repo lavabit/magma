@@ -83,10 +83,6 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 		log_critical("Could not enable the automatic, default selection of the strongest curve.");
 		return false;
 	}
-	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_MODE, SSL_MODE_AUTO_RETRY, NULL) != SSL_MODE_AUTO_RETRY) {
-		log_critical("Could not enable automatic retry for read and write operations.");
-		return false;
-	}
 
 	// High security connections get 4096 bit prime when generating a DH session key.
 	else if (magma.iface.cryptography.dhparams_rotate && magma.iface.cryptography.dhparams_large_keys) {
@@ -104,8 +100,10 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 		SSL_CTX_set_tmp_dh_callback_d(local->tls.context, dh_static_2048);
 	}
 
+	SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_READ_AHEAD, 1, NULL);
+
 	/// TODO: The SSL_CTX_set_tmp_ecdh_callback() may no longer be needed with SSL_CTX_set_ecdh_auto(). More research is needed.
-	SSL_CTX_set_tmp_ecdh_callback_d(local->tls.context, ssl_ecdh_exchange_callback);
+//	SSL_CTX_set_tmp_ecdh_callback_d(local->tls.context, ssl_ecdh_exchange_callback);
 
 	return true;
 }
@@ -267,6 +265,7 @@ void tls_free(TLS *tls) {
  */
  stringer_t * tls_cipher(TLS *tls, stringer_t *output) {
 
+	 int_t bits = 0;
 	 SSL_CIPHER *cipher = NULL;
 	 stringer_t *result = NULL;
 	 chr_t *version = NULL, *name = NULL;
@@ -274,17 +273,21 @@ void tls_free(TLS *tls) {
 	 if (!(cipher = SSL_get_current_cipher_d(tls))) {
 		 return NULL;
 	 }
-	 else if (!(version = SSL_CIPHER_get_version_d(cipher))) {
+	 else if (!(version = (chr_t *)SSL_get_version_d(tls))) {
 		 return NULL;
 	 }
-	 else if ((name = (chr_t )SSL_CIPHER_get_name_d(cipher))) {
+	 else if (!(name = (chr_t *)SSL_CIPHER_get_name_d(cipher))) {
+		 return NULL;
+	 }
+	 else if (!SSL_CIPHER_get_bits_d(cipher, &bits)) {
 		 return NULL;
 	 }
 	 else if (!(result = st_output(output, 128))) {
 		 return NULL;
 	 }
-
-	 st_sprint(result, "%s-%s", version, name);
+//	 st_sprint(result, "version = %s / bits = %i / suite = %s", (st_cmp_cs_eq(NULLER(version), PLACER("TLSv1", 5)) ? version : "TLSv1.0"),
+//		 bits, name);
+	 st_sprint(result, "version = %s / suite = %s", (st_cmp_cs_eq(NULLER(version), PLACER("TLSv1", 5)) ? version : "TLSv1.0"), name);
 
 	 return result;
  }
@@ -307,6 +310,81 @@ int tls_status(TLS *tls) {
 	return result;
 }
 
+stringer_t * tls_error(TLS *tls, int_t code, stringer_t *output) {
+
+	long popped = 0;
+	int tlserr = 0, syserr = 0;
+	chr_t *message = MEMORYBUF(1024);
+	stringer_t *merged = NULL, *result = NULL;
+
+	if (!(result = st_output(output, 128))) {
+		log_pedantic("Unable to record the TLS error because the output buffer is invalid.");
+		return NULL;
+	}
+	// Ensure we have an error condition.
+	else if ((tlserr = SSL_get_error_d(tls, code)) == SSL_ERROR_NONE || tlserr == SSL_ERROR_WANT_READ || tlserr == SSL_ERROR_WANT_WRITE) {
+		if (tlserr == SSL_ERROR_NONE) {
+			st_sprint(result, "error = %i / message = SSL_ERROR_NONE", tlserr);
+		}
+		else if (tlserr == SSL_ERROR_WANT_READ) {
+			st_sprint(result, "error = %i / message = SSL_ERROR_WANT_READ", tlserr);
+		}
+		else if (tlserr == SSL_ERROR_WANT_WRITE) {
+			st_sprint(result, "error = %i / message = SSL_ERROR_WANT_WRITE", tlserr);
+		}
+	}
+
+	// We'll need to record something, so make sure we have an output buffer.
+//	else if (!(result = st_output(output, 128))) {
+//		log_pedantic("Unable to record the TLS error because the output buffer is invalid.");
+//		return NULL;
+//	}
+
+	// If errno isn't 0, then we have a system level error.
+	else if ((syserr = errno) != 0) {
+		st_sprint(result, "errno = %i / message = %s", syserr, strerror_r(syserr, message, 1024));
+	}
+	// If the result variable was less than 0, but errno was 0, print it here.
+	else if (code < 0) {
+		st_sprint(result, "errno = 0");
+	}
+	// If result is 0, then we need to build the error message.
+	else {
+
+		if (tlserr == SSL_ERROR_ZERO_RETURN) {
+			st_sprint(result, "error = %i / message = Connection shut down.", tlserr);
+		}
+
+		else if (tlserr == SSL_ERROR_SYSCALL) {
+			ERR_error_string_n_d(ERR_get_error_d(), message, 1024);
+			st_sprint(result, "error = %i / errno = 0 / message = %s", tlserr, message);
+		}
+
+		else if (tlserr == SSL_ERROR_SSL) {
+			// Loop through and create an error message using all of the errors in the TLS error queue.
+			while ((popped = ERR_get_error_d())) {
+				ERR_error_string_n_d(popped, message, 1024);
+				merged = st_append_opts(1024, merged,
+					st_quick(MANAGEDBUF(512), "%s( error = %li / message = %s ) ", (merged ? "/ " : ""), popped, message));
+			};
+
+			if (!merged) {
+				st_sprint(result, "error = %i / message = NULL", tlserr);
+			}
+			else {
+				st_sprint(result, "error = %i / message = %.*s", tlserr, st_length_int(merged), st_char_get(merged));
+				st_free(merged);
+			}
+		}
+
+		else {
+			st_sprint(result, "error = %i", tlserr);
+		}
+	}
+
+	return result;
+}
+
 /**
  * @brief	Read data from a TLS connection.
  * @param	tls		the TLS connection from which the data will be read.
@@ -317,10 +395,7 @@ int tls_status(TLS *tls) {
  */
 int tls_read(TLS *tls, void *buffer, int length, bool_t block) {
 
-	long popped = 0;
-	chr_t *message = MEMORYBUF(1024);
-	int result = 0, err = 0, local = 0;
-	stringer_t *merged = NULL, *ip = NULL;
+	int result = 0;
 
 	errno = 0;
 	ERR_clear_error_d();
@@ -333,79 +408,15 @@ int tls_read(TLS *tls, void *buffer, int length, bool_t block) {
 	// In the future, when we switch to OpenSSL v1.1.0 around the year ~2032, we should look into using an
 	// asynchronous SSL context to facilitate our non-blocking read/write operations. Look to configure the
 	// context using SSL_CTX_set_mode(SSL_CTX *ctx, long mode) with mode set to SSL_MODE_ASYNC.
-	else if (!block && (result = SSL_read_d(tls, buffer, length)) <= 0) {
+	else if (!block) {
 
 		// Consult SSL_peek / SSL_want / SSL_get_read_ahead / SSL_set_read_ahead
-
 		log_pedantic("Non-blocking TLS read calls aren't fully implemented yet.");
 
-		if ((err = SSL_get_error_d(tls, result)) != SSL_ERROR_WANT_READ) {
-			if ((local = errno) != 0) {
-				ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
-				log_pedantic("TLS read error. { ip = %.*s / result = %i / errno = %i / message = %s }",
-					st_length_int(ip), st_char_get(ip), result, local, strerror_r(local, message, 1024));
-				result = tcp_error(local);
-			}
-			else if (result < 0) {
-				ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
-				log_pedantic("TLS read error. { ip = %.*s / result = %i / errno = 0 }", st_length_int(ip), st_char_get(ip), result);
-			}
-			else {
-
-				// Loop through and create an error message using all of the errors in the TLS error queue.
-				while ((popped = ERR_get_error_d())) {
-					ERR_error_string_n_d(err, message, 1024);
-					merged = st_append_opts(1024, merged, st_quick(MANAGEDBUF(256), "%s( error = %li / message = %s ) ",
-						(merged ? "/ " : ""), popped, message));
-				}
-
-				if (!merged) {
-					ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
-					log_pedantic("TLS read error. { ip = %.*s / result = %i / error = %i / message = NULL }",
-						st_length_int(ip), st_char_get(ip), result, err);
-				}
-				else {
-					ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
-					log_pedantic("TLS read error. { ip = %.*s / result = %i / error = %i / message = %.*s }",
-						st_length_int(ip), st_char_get(ip), result, err, st_length_int(merged), st_char_get(merged));
-					st_free(merged);
-				}
-			}
-		}
+		result = SSL_read_d(tls, buffer, length);
 	}
-	else if (block && (result = SSL_read_d(tls, buffer, length)) <= 0) {
-		if ((err = SSL_get_error_d(tls, result)) != SSL_ERROR_WANT_READ) {
-			if ((local = errno) != 0) {
-				ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
-				log_pedantic("TLS read error. { ip = %.*s / result = %i / errno = %i / message = %s }",
-					st_length_int(ip), st_char_get(ip), result, local, strerror_r(local, message, 1024));
-				result = tcp_error(local);
-			}
-			else if (result < 0) {
-				ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
-				log_pedantic("TLS read error. { ip = %.*s / result = %i / errno = 0 }",
-					st_length_int(ip), st_char_get(ip), result);
-			}
-			else {
-
-				// Loop through and create an error message using all of the errors in the TLS error queue.
-				while ((popped = ERR_get_error_d())) {
-					ERR_error_string_n_d(err, message, 1024);
-					merged = st_append_opts(1024, merged, st_quick(MANAGEDBUF(256), "%s( error = %li / message = %s ) ", (merged ? "/ " : ""), popped, message));
-				}
-
-				if (!merged) {
-					ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
-					log_pedantic("TLS read error. { ip = %.*s / result = %i / error = %i / message = NULL }",
-						st_length_int(ip), st_char_get(ip), result, err);
-				}
-				else {
-					log_pedantic("TLS read error. { ip = %.*s / result = %i / error = %i / message = %.*s }",
-						st_length_int(ip), st_char_get(ip), result, err, st_length_int(merged), st_char_get(merged));
-					st_free(merged);
-				}
-			}
-		}
+	else {
+		result = SSL_read_d(tls, buffer, length);
 	}
 
 	return result;
@@ -418,12 +429,9 @@ int tls_read(TLS *tls, void *buffer, int length, bool_t block) {
  * @param	length	the length, in bytes, of the data to be written.
  * @return	-1 on error, or the number of bytes written to the TLS connection.
  */
-int tls_write(TLS *tls, const void *buffer, int length) {
+int tls_write(TLS *tls, const void *buffer, int length, bool_t block) {
 
-	long popped = 0;
-	chr_t *message = MEMORYBUF(1024);
-	int result = -1, err = 0, local = 0;
-	stringer_t *merged = NULL, *ip = NULL;
+	int result = -1;
 
 	errno = 0;
 	ERR_clear_error_d();
@@ -432,39 +440,11 @@ int tls_write(TLS *tls, const void *buffer, int length) {
 		log_pedantic("Passed invalid parameters for a call to the TLS write function.");
 		return -1;
 	}
-	else if ((result = SSL_write_d(tls, buffer, length)) <= 0) {
-
-		if ((err = SSL_get_error_d(tls, result)) != SSL_ERROR_WANT_WRITE) {
-			if ((local = errno) != 0) {
-				ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
-				log_pedantic("TLS write error. { ip = %.*s / result = %i / errno = %i / message = %s }",
-					st_length_int(ip), st_char_get(ip), result, local, strerror_r(local, message, 1024));
-				result = tcp_error(local);
-			}
-			else if (result < 0) {
-				ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
-				log_pedantic("TLS write error. { ip = %.*s / result = %i / errno = 0 }", st_length_int(ip), st_char_get(ip), result);
-			}
-			else {
-
-				// Loop through and create an error message using all of the errors in the TLS error queue.
-				while ((popped = ERR_get_error_d())) {
-					ERR_error_string_n_d(err, message, 1024);
-					merged = st_append_opts(1024, merged, st_quick(MANAGEDBUF(256), "%s( error = %li / message = %s ) ", (merged ? "/ " : ""), popped, message));
-				}
-
-				if (!merged) {
-					ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
-					log_pedantic("TLS write error. { ip = %.*s / result = %i / error = %i / message = NULL }", st_length_int(ip), st_char_get(ip), result, err);
-				}
-				else {
-					ip = tcp_addr_st(SSL_get_fd_d(tls), MANAGEDBUF(256));
-					log_pedantic("TLS write error. { ip = %.*s / result = %i / error = %i / message = %.*s }",
-						 st_length_int(ip), st_char_get(ip), result, err, st_length_int(merged), st_char_get(merged));
-					st_free(merged);
-				}
-			}
-		}
+	else if (!block) {
+		result = SSL_write_d(tls, buffer, length);
+	}
+	else {
+		result = SSL_write_d(tls, buffer, length);
 	}
 
 	return result;
@@ -513,7 +493,7 @@ int tls_print(TLS *tls, const char *format, va_list args) {
 
 	do {
 
-		if ((bytes = tls_write(tls, buffer + position, length - position)) < 0) {
+		if ((bytes = tls_write(tls, buffer + position, length - position, true)) < 0) {
 			mm_free(buffer);
 			return -1;
 		}

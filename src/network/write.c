@@ -24,6 +24,7 @@ int64_t con_write_bl(connection_t *con, char *block, size_t length) {
 
 	int_t counter = 0;
 	ssize_t written, position = 0;
+	stringer_t *ip = NULL, *cipher = NULL, *error = NULL;
 
 	if (!con || con->network.sockd == -1 || con_status(con) < 0) {
 		return -1;
@@ -38,12 +39,25 @@ int64_t con_write_bl(connection_t *con, char *block, size_t length) {
 
 		if (con->network.tls) {
 
-			written = tls_write(con->network.tls, block + position, length);
+			written = tls_write(con->network.tls, block + position, length, true);
 
 			// Check for errors on SSL writes.
-			if (written < 0) {
-				con->network.status = -1;
-				return -1;
+			if (written <= 0) {
+				error = tls_error(con->network.tls, written, MANAGEDBUF(512));
+				cipher = tls_cipher(con->network.tls, MANAGEDBUF(128));
+				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
+
+				log_pedantic("TLS write operation failed. { ip = %.*s / %.*s / result = %zi%s%.*s }", st_length_int(ip), st_char_get(ip),
+					st_length_int(cipher), st_char_get(cipher), written, (error ? " / " : ""), st_length_int(error), st_char_get(error));
+
+				int_t tlserr = SSL_get_error_d(con->network.tls, written);
+				if (tlserr != SSL_ERROR_NONE && tlserr != SSL_ERROR_WANT_READ && tlserr != SSL_ERROR_WANT_WRITE) {
+					con->network.status = -1;
+					return -1;
+				}
+				else {
+					written = 0;
+				}
 			}
 		}
 		else {
@@ -192,7 +206,7 @@ int64_t client_write(client_t *client, stringer_t *s) {
 	do {
 
 		if (client->tls) {
-			written = tls_write(client->tls, block + position, length);
+			written = tls_write(client->tls, block + position, length, true);
 			sslerr = SSL_get_error_d(client->tls, written);
 		}
 		else {

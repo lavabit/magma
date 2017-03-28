@@ -25,6 +25,7 @@ int64_t con_read_line(connection_t *con, bool_t block) {
 	int_t counter = 0;
 	ssize_t bytes = 0;
 	bool_t line = false;
+	stringer_t *ip = NULL, *cipher = NULL, *error = NULL;
 
 	if (!con || con->network.sockd == -1 || con_status(con) < 0) {
 		if (con) con->network.status = -1;
@@ -70,9 +71,22 @@ int64_t con_read_line(connection_t *con, bool_t block) {
 			bytes = tls_read(con->network.tls, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
 				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), block);
 
-			if (bytes < 0) {
-				con->network.status = -1;
-				return -1;
+			if (bytes <= 0) {
+				error = tls_error(con->network.tls, bytes, MANAGEDBUF(512));
+				cipher = tls_cipher(con->network.tls, MANAGEDBUF(128));
+				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
+
+				log_pedantic("TLS read operation failed. { ip = %.*s / %.*s / result = %zi%s%.*s }", st_length_int(ip), st_char_get(ip),
+					st_length_int(cipher), st_char_get(cipher), bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
+
+				int_t tlserr = SSL_get_error_d(con->network.tls, bytes);
+				if (tlserr != SSL_ERROR_NONE && tlserr != SSL_ERROR_WANT_READ && tlserr != SSL_ERROR_WANT_WRITE) {
+					con->network.status = -1;
+					return -1;
+				}
+				else {
+					bytes = 0;
+				}
 			}
 		}
 		else {
@@ -117,6 +131,7 @@ int64_t con_read(connection_t *con) {
 	int_t counter = 0;
 	ssize_t bytes = 0;
 	bool_t blocking = true;
+	stringer_t *ip = NULL, *cipher = NULL, *error = NULL;
 
 	if (!con || con->network.sockd == -1 || con_status(con) < 0) {
 		if (con) con->network.status = -1;
@@ -163,9 +178,22 @@ int64_t con_read(connection_t *con) {
 			bytes = tls_read(con->network.tls, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
 				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), true);
 
-			if (bytes < 0) {
-				con->network.status = -1;
-				return -1;
+			if (bytes <= 0) {
+				error = tls_error(con->network.tls, bytes, MANAGEDBUF(512));
+				cipher = tls_cipher(con->network.tls, MANAGEDBUF(128));
+				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
+
+				log_pedantic("TLS read operation failed. { ip = %.*s / %.*s / result = %zi%s%.*s }", st_length_int(ip), st_char_get(ip),
+					st_length_int(cipher), st_char_get(cipher), bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
+
+				int_t tlserr = SSL_get_error_d(con->network.tls, bytes);
+				if (tlserr != SSL_ERROR_NONE && tlserr != SSL_ERROR_WANT_READ && tlserr != SSL_ERROR_WANT_WRITE) {
+					con->network.status = -1;
+					return -1;
+				}
+				else {
+					bytes = 0;
+				}
 			}
 		}
 		else {

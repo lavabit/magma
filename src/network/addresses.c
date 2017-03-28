@@ -120,7 +120,7 @@ uint32_t ip_word(ip_t *address, int_t position) {
 
 /**
  * @brief	Display the simple subnet string for an IP address.
- * @note	IPv4 addresses will yield a /24 subnet address, and IPv6 addresses will result in a /48 subnet address.
+ * @note	IPv4 addresses will yield a /24 subnet address, and IPv6 addresses will result in a /64 subnet address.
  * 			Neither address will be displayed with the trailing zero-octet(s).
  * @param	address		a pointer to the ip address to be examined.
  * @param	output		a pointer to a managed string to receive the subnet string, or if passed as NULL, it will be allocated for the caller.
@@ -147,13 +147,17 @@ stringer_t * ip_subnet(ip_t *address, stringer_t *output) {
 		return NULL;
 	}
 
-	// Store the memory address where the output should be written.
+	// For IPv4 addresses use the first 24 bits, out of the total 32 bits available.
 	if (address->family == AF_INET) {
-		len = st_sprint(result, "%hhu.%hhu.%hhu", (0x000000ff & address->ip4.s_addr), ((0x0000ff00 & address->ip4.s_addr) >> 8), ((0x00ff0000 & address->ip4.s_addr) >> 16));
+		len = st_sprint(result, "%hhu.%hhu.%hhu", (0x000000ff & address->ip4.s_addr), ((0x0000ff00 & address->ip4.s_addr) >> 8),
+			((0x00ff0000 & address->ip4.s_addr) >> 16));
 	}
+	// For IPv6 addresses use the first 64 bits, out of the total 128 bits available. The first 64 bits should contain the
+	// routing prefix, plus the subnet id.
 	else if (address->family == AF_INET6) {
-		len = st_sprint(result, "%02x%02x:%02x%02x:%02x%02x", address->ip6.__in6_u.__u6_addr8[0], address->ip6.__in6_u.__u6_addr8[1], address->ip6.__in6_u.__u6_addr8[2],
-			address->ip6.__in6_u.__u6_addr8[3], address->ip6.__in6_u.__u6_addr8[4], address->ip6.__in6_u.__u6_addr8[5]);
+		len = st_sprint(result, "%02x%02x:%02x%02x:%02x%02x:%02x%02x", address->ip6.__in6_u.__u6_addr8[0], address->ip6.__in6_u.__u6_addr8[1],
+			address->ip6.__in6_u.__u6_addr8[2], address->ip6.__in6_u.__u6_addr8[3], address->ip6.__in6_u.__u6_addr8[4],
+			address->ip6.__in6_u.__u6_addr8[5], address->ip6.__in6_u.__u6_addr8[6], address->ip6.__in6_u.__u6_addr8[7]);
 	}
 
 	if (!len || len > INET6_ADDRSTRLEN) {
@@ -241,7 +245,6 @@ stringer_t * ip_standard(ip_t *address, stringer_t *output) {
 	}
 
 	// Store the memory address where the output should be written.
-	// QUESTION: This should probably be architecture independent.
 	if (address->family == AF_INET) {
 		len = st_sprint(result, "%hhu.%hhu.%hhu.%hhu", (0x000000ff & address->ip4.s_addr), 	((0x0000ff00 & address->ip4.s_addr) >> 8),
 			((0x00ff0000 & address->ip4.s_addr) >> 16), ((0xff000000 & address->ip4.s_addr) >> 24));
@@ -389,33 +392,39 @@ bool_t ip_address_equal(ip_t *ip1, ip_t *ip2) {
  */
 ip_t * con_addr(connection_t *con, ip_t *output) {
 
-	ip_t *result;
-	struct sockaddr *address = MEMORYBUF(sizeof(struct sockaddr_in6));
-	socklen_t len = sizeof(struct sockaddr_in6);
+//	ip_t *result;
+//	struct sockaddr *address = MEMORYBUF(sizeof(struct sockaddr_in6));
+//	socklen_t len = sizeof(struct sockaddr_in6);
 
-	if (!(result = output) && !(result = mm_alloc(sizeof(ip_t)))) {
-		log_pedantic("The output buffer memory allocation request failed. { requested = %zu }", sizeof(ip_t));
-		return NULL;
-	}
-
-	// Extract the socket structure.
-	else if (getpeername(con->network.sockd, address, &len)) {
-
-		if (!output) {
-			mm_free(result);
-		}
-
-		return NULL;
-	}
+//	if (!(result = output) && !(result = mm_alloc(sizeof(ip_t)))) {
+//		log_pedantic("The output buffer memory allocation request failed. { requested = %zu }", sizeof(ip_t));
+//		return NULL;
+//	}
+//
+//	// Extract the socket structure.
+//	else if (getpeername(con->network.sockd, address, &len)) {
+//
+//		if (!output) {
+//			mm_free(result);
+//		}
+//
+//		return NULL;
+//	}
 
 	// Classify and copy to the IP information.
-	else if (len == sizeof(struct sockaddr_in6) && ((struct sockaddr_in6 *)address)->sin6_family == AF_INET6) {
-		mm_copy(&(result->ip6), &(((struct sockaddr_in6 *)address)->sin6_addr), sizeof(struct in6_addr));
-		result->family = AF_INET6;
-	}
-	else if (len == sizeof(struct sockaddr_in) && ((struct sockaddr_in *)address)->sin_family == AF_INET) {
-		mm_copy(&(result->ip4), &(((struct sockaddr_in *)address)->sin_addr), sizeof(struct in_addr));
-		result->family = AF_INET;
+//	else if (len == sizeof(struct sockaddr_in6) && ((struct sockaddr_in6 *)address)->sin6_family == AF_INET6) {
+//		mm_copy(&(result->ip6), &(((struct sockaddr_in6 *)address)->sin6_addr), sizeof(struct in6_addr));
+//		result->family = AF_INET6;
+//	}
+//	else if (len == sizeof(struct sockaddr_in) && ((struct sockaddr_in *)address)->sin_family == AF_INET) {
+//		mm_copy(&(result->ip4), &(((struct sockaddr_in *)address)->sin_addr), sizeof(struct in_addr));
+//		result->family = AF_INET;
+//	}
+
+	ip_t *result = NULL;
+
+	if (con) {
+		result = con->network.reverse.ip;
 	}
 
 	return result;

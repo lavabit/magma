@@ -191,11 +191,11 @@ int64_t client_write(client_t *client, stringer_t *s) {
 
 	uchr_t *block;
 	size_t length;
-	int sslerr = -1;
+	int_t counter = 0;
 	ssize_t written, position = 0;
+	stringer_t *ip = NULL, *cipher = NULL, *error = NULL;
 
-	if (!client || client->sockd == -1) {
-		if (client) client->status = -1;
+	if (!client || client->sockd == -1 || client_status(client) < 0) {
 		return -1;
 	}
 	else if (st_empty_out(s, &block, &length) || !block || !length) {
@@ -207,50 +207,46 @@ int64_t client_write(client_t *client, stringer_t *s) {
 	do {
 
 		if (client->tls) {
+
 			written = tls_write(client->tls, block + position, length, true);
-			sslerr = SSL_get_error_d(client->tls, written);
+
+			// Check for errors on SSL writes.
+			if (written <= 0) {
+				error = tls_error(client->tls, written, MANAGEDBUF(512));
+				cipher = tls_cipher(client->tls, MANAGEDBUF(128));
+				ip = ip_presentation(client->ip, MANAGEDBUF(INET6_ADDRSTRLEN));
+
+				log_pedantic("TLS write operation failed. { ip = %.*s / %.*s / result = %zi%s%.*s }",
+					st_length_int(ip), st_char_get(ip), st_length_int(cipher), st_char_get(cipher), written, (error ? " / " : ""),
+					st_length_int(error), st_char_get(error));
+
+				int_t tlserr = SSL_get_error_d(client->tls, written);
+				if (tlserr != SSL_ERROR_NONE && tlserr != SSL_ERROR_WANT_READ && tlserr != SSL_ERROR_WANT_WRITE) {
+					client->status = -1;
+					return -1;
+				}
+				else {
+					written = 0;
+				}
+			}
 		}
 		else {
 			written = send(client->sockd, block + position, length, 0);
-		}
 
-		// Check for errors on SSL writes.
-		if (client->tls) {
-
-			// If 0 bytes were written, and it wasn't related to a shutdown, or if < 0 was returned and there was no more data waiting to be written, it's an error.
-			if ((!written && sslerr != SSL_ERROR_NONE && sslerr != SSL_ERROR_ZERO_RETURN) || ((written < 0) && sslerr != SSL_ERROR_WANT_WRITE)) {
+			// Check for errors on non-SSL writes in the traditional way.
+			if (written <= 0 && tcp_status(client->sockd)) {
 				client->status = -1;
 				return -1;
 			}
-			else if (!written) {
-				client->status = 2;
-				return -2;
-			}
-		// Check for errors on non-SSL writes in the traditional way.
-		}
-		else if (written < 0) {
-
-			if (errno == ECONNRESET) {
-				client->status = 2;
-				return -2;
-			}
-			else if (errno != EAGAIN) {
-				client->status = -1;
-				return -1;
-			}
-
 		}
 
-		if (written > 0) {
-			length -= written;
-			position += written;
-		}
 
-	} while (length);
+	if (written > 0) {
+		length -= written;
+		position += written;
+	}
 
-#ifdef MAGMA_PEDANTIC
-	if (written < 0) log_pedantic("write = %li {%s}", written, strerror_r(errno, bufptr, buflen));
-#endif
+	} while (length && counter++ < 128 && status());
 
 	if (written > 0) {
 		client->status = 1;

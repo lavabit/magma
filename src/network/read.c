@@ -176,8 +176,10 @@ int64_t con_read(connection_t *con) {
 		// Read bytes off the network. If data is already in the buffer this should be a non-blocking read operation so we can
 		// return the already buffered data without delay.
 		if (con->network.tls) {
+
+			// If bytes is zero or below and the library isn't asking for another read, then an error occurred.
 			bytes = tls_read(con->network.tls, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
-				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), true);
+				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), blocking);
 
 			if (bytes <= 0) {
 				error = tls_error(con->network.tls, bytes, MANAGEDBUF(512));
@@ -185,8 +187,8 @@ int64_t con_read(connection_t *con) {
 				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
 
 				log_pedantic("TLS read operation failed. { ip = %.*s / protocol = %s / %.*s / result = %zi%s%.*s }",
-					st_length_int(ip), st_char_get(ip), st_char_get(protocol_type(con)), st_length_int(cipher), st_char_get(cipher),
-					bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
+					st_length_int(ip), st_char_get(ip), st_char_get(protocol_type(con)), st_length_int(cipher),
+					st_char_get(cipher), bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
 
 				int_t tlserr = SSL_get_error_d(con->network.tls, bytes);
 				if (tlserr != SSL_ERROR_NONE && tlserr != SSL_ERROR_WANT_READ && tlserr != SSL_ERROR_WANT_WRITE) {
@@ -200,12 +202,14 @@ int64_t con_read(connection_t *con) {
 		}
 		else {
 			bytes = recv(con->network.sockd, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
-				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), blocking ? 0 : MSG_DONTWAIT);
+				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), (blocking ? 0 : MSG_DONTWAIT));
 
+			// Check for errors on non-SSL reads in the traditional way.
 			if (bytes <= 0 && tcp_status(con->network.sockd)) {
 				con->network.status = -1;
 				return -1;
 			}
+
 		}
 
 		if (bytes > 0) {
@@ -235,9 +239,10 @@ int64_t con_read(connection_t *con) {
  */
 int64_t client_read_line(client_t *client) {
 
-	ssize_t bytes;
-	int_t sslerr = -1;
-	bool_t line = false;
+	int_t counter = 0;
+	ssize_t bytes = 0;
+	bool_t blocking = true, line = false;
+	stringer_t *ip = NULL, *cipher = NULL, *error = NULL;
 
 	if (!client || client->sockd == -1) {
 		if (client) client->status = 1;
@@ -270,28 +275,40 @@ int64_t client_read_line(client_t *client) {
 
 		// Read bytes off the network. Skip past any existing data in the buffer.
 		if (client->tls) {
-			bytes = tls_read(client->tls, st_char_get(client->buffer) + st_length_get(client->buffer), st_avail_get(client->buffer) - st_length_get(client->buffer), true);
-			sslerr = SSL_get_error_d(client->tls, bytes);
+
+			// If bytes is zero or below and the library isn't asking for another read, then an error occurred.
+			bytes = tls_read(client->tls, st_char_get(client->buffer) + st_length_get(client->buffer),
+				st_avail_get(client->buffer) - st_length_get(client->buffer), blocking);
+
+			if (bytes <= 0) {
+				error = tls_error(client->tls, bytes, MANAGEDBUF(512));
+				cipher = tls_cipher(client->tls, MANAGEDBUF(128));
+				ip = ip_presentation(client->ip, MANAGEDBUF(INET6_ADDRSTRLEN));
+
+				log_pedantic("TLS read operation failed. { ip = %.*s / %.*s / result = %zi%s%.*s }",
+					st_length_int(ip), st_char_get(ip), st_length_int(cipher), st_char_get(cipher),
+					bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
+
+				int_t tlserr = SSL_get_error_d(client->tls, bytes);
+				if (tlserr != SSL_ERROR_NONE && tlserr != SSL_ERROR_WANT_READ && tlserr != SSL_ERROR_WANT_WRITE) {
+					client->status = -1;
+					return -1;
+				}
+				else {
+					bytes = 0;
+				}
+			}
 		}
 		else {
-			bytes = recv(client->sockd, st_char_get(client->buffer) + st_length_get(client->buffer), st_avail_get(client->buffer) - st_length_get(client->buffer), 0);
-		}
+			bytes = recv(client->sockd, st_char_get(client->buffer) + st_length_get(client->buffer),
+				st_avail_get(client->buffer) - st_length_get(client->buffer), (blocking ? 0 : MSG_DONTWAIT));
 
-		// Check for errors on SSL reads.
-		if (client->tls) {
-
-			// If 0 bytes were read, and it wasn't related to a shutdown, or if < 0 was returned and there was no more data waiting, it's an error.
-			if ((!bytes && sslerr != SSL_ERROR_NONE && sslerr != SSL_ERROR_ZERO_RETURN) ||
-				((bytes < 0) && sslerr != SSL_ERROR_WANT_READ)) {
+			// Check for errors on non-SSL reads in the traditional way.
+			if (bytes <= 0 && tcp_status(client->sockd)) {
 				client->status = -1;
 				return -1;
 			}
-		}
 
-		// Check for errors on non-SSL reads in the traditional way.
-		else if (bytes < 0 && errno != EINTR && errno != EAGAIN && errno != EWOULDBLOCK) {
-			client->status = -1;
-			return -1;
 		}
 
 		if (bytes > 0) {
@@ -302,14 +319,8 @@ int64_t client_read_line(client_t *client) {
 		if (!st_empty(client->buffer) && !pl_empty((client->line = line_pl_st(client->buffer, 0)))) {
 			line = true;
 		}
-		// Otherwise if the connection has been closed (as indicated by a return value of 0) the line will never terminate. As such
-		// the best course of action is to return an error code up the stack to indicate the disconnect.
-		else if (!bytes) {
-			client->status = 2;
-			return -2;
-		}
 
-	} while (status() && !line && st_length_get(client->buffer) != st_avail_get(client->buffer));
+	} while (!line && counter++ < 128 && st_length_get(client->buffer) != st_avail_get(client->buffer) && status());
 
 	if (st_length_get(client->buffer) > 0) {
 		client->status = 1;
@@ -320,12 +331,12 @@ int64_t client_read_line(client_t *client) {
 
 int64_t client_read(client_t *client) {
 
-	ssize_t bytes;
-	bool_t blocking;
-	int_t sslerr = -1;
+	int_t counter = 0;
+	ssize_t bytes = 0;
+	bool_t blocking = true;
+	stringer_t *ip = NULL, *cipher = NULL, *error = NULL;
 
-	if (!client || client->sockd == -1) {
-		if (client) client->status = -1;
+	if (!client || client->sockd == -1 || client_status(client) < 0) {
 		return -1;
 	}
 
@@ -354,37 +365,47 @@ int64_t client_read(client_t *client) {
 		// Read bytes off the network. If data is already in the buffer this should be a non-blocking read operation so we can
 		// return the already buffered data without delay.
 		if (client->tls) {
-			bytes = tls_read(client->tls, st_char_get(client->buffer) + st_length_get(client->buffer), st_avail_get(client->buffer) - st_length_get(client->buffer), blocking);
-			sslerr = SSL_get_error_d(client->tls, bytes);
+
+			// If bytes is zero or below and the library isn't asking for another read, then an error occurred.
+			bytes = tls_read(client->tls, st_char_get(client->buffer) + st_length_get(client->buffer),
+				st_avail_get(client->buffer) - st_length_get(client->buffer), blocking);
+
+			if (bytes <= 0) {
+				error = tls_error(client->tls, bytes, MANAGEDBUF(512));
+				cipher = tls_cipher(client->tls, MANAGEDBUF(128));
+				ip = ip_presentation(client->ip, MANAGEDBUF(INET6_ADDRSTRLEN));
+
+				log_pedantic("TLS read operation failed. { ip = %.*s / %.*s / result = %zi%s%.*s }",
+					st_length_int(ip), st_char_get(ip), st_length_int(cipher), st_char_get(cipher), bytes,
+					(error ? " / " : ""), st_length_int(error), st_char_get(error));
+
+				int_t tlserr = SSL_get_error_d(client->tls, bytes);
+				if (tlserr != SSL_ERROR_NONE && tlserr != SSL_ERROR_WANT_READ && tlserr != SSL_ERROR_WANT_WRITE) {
+					client->status = -1;
+					return -1;
+				}
+				else {
+					bytes = 0;
+				}
+			}
 		}
 		else {
-			bytes = recv(client->sockd, st_char_get(client->buffer) + st_length_get(client->buffer), st_avail_get(client->buffer) - st_length_get(client->buffer),
-				blocking ? 0 : MSG_DONTWAIT);
-		}
+			bytes = recv(client->sockd, st_char_get(client->buffer) + st_length_get(client->buffer),
+				st_avail_get(client->buffer) - st_length_get(client->buffer), (blocking ? 0 : MSG_DONTWAIT));
 
-		// Check for errors on SSL reads.
-		if (client->tls) {
-
-			// If 0 bytes were read, and it wasn't related to a shutdown, or if < 0 was returned and there was no more data waiting, it's an error.
-			if ((!bytes && sslerr != SSL_ERROR_NONE && sslerr != SSL_ERROR_ZERO_RETURN) ||
-				((bytes < 0) && sslerr != SSL_ERROR_WANT_READ)) {
+			// Check for errors on non-SSL reads in the traditional way.
+			if (bytes <= 0 && tcp_status(client->sockd)) {
 				client->status = -1;
 				return -1;
 			}
-		// Check for errors on non-SSL reads in the traditional way.
-		} else if (bytes < 0 && errno != EINTR && errno != EAGAIN && errno != EWOULDBLOCK) {
-			client->status = -1;
-			return -1;
+
 		}
 
 		if (bytes > 0) {
 			st_length_set(client->buffer, st_length_get(client->buffer) + bytes);
-		// Or break out of the loop because we've been shutdown.
-		} else if (!bytes) {
-			break;
 		}
 
-	} while (status() && blocking && !st_length_get(client->buffer));
+	} while (blocking && counter++ < 128 && !st_length_get(client->buffer) && status());
 
 	// If there is data in the buffer process it. Otherwise if the buffer is empty and the connection appears to be closed
 	// (as indicated by a return value of 0), then return -1 to let the caller know the connection is dead.

@@ -69,26 +69,26 @@ int_t client_secure(client_t *client) {
  */
 client_t * client_connect(chr_t *host, uint32_t port) {
 
-	client_t *result;
+	ip_t *ip = NULL;
 	chr_t service[20];
 	int_t sd = -1, ret;
+	client_t *result = NULL;
 	struct addrinfo hints, *info = NULL, *holder = NULL;
 
-	 memset(&hints, 0, sizeof(struct addrinfo));
-	 hints.ai_family = AF_UNSPEC;     // IPv4 or IPv6
-	 hints.ai_socktype = SOCK_STREAM; // TCP stream socket
-	 hints.ai_flags = AI_NUMERICSERV; // Require a numeric service (aka port) number.
+	memset(&hints, 0, sizeof(struct addrinfo));
+	hints.ai_family = AF_UNSPEC;     // IPv4 or IPv6
+	hints.ai_socktype = SOCK_STREAM; // TCP stream socket
+	hints.ai_flags = AI_NUMERICSERV; // Require a numeric service (aka port) number.
 
-	 snprintf(service, 20, "%u", port);
+	snprintf(service, 20, "%u", port);
 
 	// Resolve the hostname.
 	if ((ret = getaddrinfo(host, service, &hints, &info)) || !info || info->ai_socktype != SOCK_STREAM) {
-		log_pedantic("Unable to resolve the host %s:%u and create a client connection. { getaddrinfo = %i / errno = %s }",
-			host, port, ret, strerror_r(errno, MEMORYBUF(256), 256));
+		log_pedantic("Unable to resolve the host %s:%u and create a client connection. { getaddrinfo = %i / errno = %s }", host,
+			port, ret, strerror_r(errno, MEMORYBUF(256), 256));
 		if (info) freeaddrinfo(info);
-		return NULL;
+		return NULL ;
 	}
-
 	// We need to loop through all addresses because we may get an multiple IP addresses, and some of
 	// those addresses may be invalid, or inaccessible. We use a disposable "holder" variable as the iterator,
 	// so we still call freeaddrinfo on the original info variable, otherwise we will create a memory leak.
@@ -104,35 +104,56 @@ client_t * client_connect(chr_t *host, uint32_t port) {
 			return NULL;
 		}
 
+		// Attemot a socket connection. If the connection is established, we'll store the IP information in a ip_t structure,
+		// and set the holder variable to NULL so the loop exits.
 		if (!(ret = connect(sd, holder->ai_addr, holder->ai_addrlen))) {
-			break;
-		}
 
-		close(sd);
-		holder = holder->ai_next;
+			if (!(ip = mm_alloc(sizeof(ip_t)))) {
+				log_pedantic("Unable to store the IP information for the connected host.");
+			}
+			else if (holder->ai_addrlen == sizeof(struct sockaddr_in6) && holder->ai_family == AF_INET6) {
+				mm_copy(&(ip->ip6), &(((struct sockaddr_in6 *)holder->ai_addr)->sin6_addr), sizeof(struct in6_addr));
+				ip->family = AF_INET6;
+			}
+			else if (holder->ai_addrlen == sizeof(struct sockaddr_in) && holder->ai_family == AF_INET) {
+				mm_copy(&(ip->ip4), &(((struct sockaddr_in *)holder->ai_addr)->sin_addr), sizeof(struct in_addr));
+				ip->family = AF_INET;
+			}
+			else {
+				log_pedantic("Unrecognized peer address. { family = %i / length = %u }",  holder->ai_family, holder->ai_addrlen);
+				mm_free(ip);
+				ip = NULL;
+			}
+
+			holder = NULL;
+
+		}
+		// Otherwise, if the connection attempt fails, close the socket descriptor, and if another address record exists, advance
+		// and try the next candidate.
+		else {
+			holder = holder->ai_next;
+			close(sd);
+		}
 	}
 
 	// Free the address info.
 	freeaddrinfo(info);
 
-	if (ret != 0) {
+	if (ret) {
 		log_pedantic("We were unable to connect with the host %s:%u. { connect = %i / errno = %s }",
 			host, port, ret, strerror_r(errno, MEMORYBUF(1024), 1024));
 		close(sd);
 		return NULL;
 	}
 
-	if (!(result = mm_alloc(sizeof(client_t))) || !(result->buffer = st_alloc(8192))) {
+	else if (!(result = mm_alloc(sizeof(client_t))) || !(result->buffer = st_alloc(8192))) {
 		log_pedantic("Unable to allocate memory for the client connection context.");
-
-		if (result) {
-			mm_free(result);
-		}
-
+		mm_cleanup(result, ip);
 		close(sd);
 		return NULL;
 	}
 
+	result->ip = ip;
 	result->sockd = sd;
 	result->status = 1;
 	result->line.opts = PLACER_T | JOINTED | STACK | FOREIGNDATA;
@@ -157,6 +178,7 @@ void client_close(client_t *client) {
 			close(client->sockd);
 		}
 
+		mm_cleanup(client->ip);
 		st_cleanup(client->buffer);
 		mm_free(client);
 	}

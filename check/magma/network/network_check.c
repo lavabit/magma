@@ -18,6 +18,5 @@ Suite * suite_check_network(void) {
 	suite_check_testcase(s, "NETWORK", "Network / Address / Segment / S", check_address_segment_s);
 	suite_check_testcase(s, "NETWORK", "Network / Address / Octet / S", check_address_octet_s);
 
-
 	return s;
 }

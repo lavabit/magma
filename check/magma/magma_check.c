@@ -283,6 +283,7 @@ int main(int argc, char *argv[]) {
 		srunner_add_suite(sr, suite_check_pop());
 		srunner_add_suite(sr, suite_check_imap());
 		srunner_add_suite(sr, suite_check_http());
+		srunner_add_suite(sr, suite_check_json());
 		srunner_add_suite(sr, suite_check_regression());
 	}
 

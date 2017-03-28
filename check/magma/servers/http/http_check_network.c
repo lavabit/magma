@@ -73,6 +73,38 @@ bool_t check_http_content_length_test(client_t *client, uint32_t content_length,
 	return (total == content_length);
 }
 
+/**
+ * @brief	Reads lines from the client, checking if each of the options are present.
+ *
+ * @param	client	A client_t* that should be connected to an HTTP server and has had the OPTIONS request
+ * 					submitted already.
+ * @param	options	An array of chr_t* containing the options that should be in the response.
+ * @return	True if all of the options were present, false otherwise.
+ */
+bool_t check_http_options(client_t *client, chr_t *options[], stringer_t *errmsg) {
+
+	bool_t opts_present[sizeof(options)/sizeof(chr_t*)] = { false };
+
+	while (st_cmp_ci_starts(&client->line, NULLER("\r\n")) != 0) {
+		for (size_t i = 0; i < (sizeof(options)/sizeof(chr_t*)); i++) {
+			if (st_cmp_cs_starts(&client->line, NULLER(options[i]))) {
+				opts_present[i] = true;
+				break;
+			}
+		}
+		client_read_line(client);
+	}
+
+	for (size_t i = 0; i < (sizeof(opts_present)/sizeof(bool_t)); i++) {
+		if (!opts_present[i]) {
+			st_sprint(errmsg, "One of the HTTP options was not present in the response. { option = \"%s\" }", options[i]);
+			return false;
+		}
+	}
+
+	return true;
+}
+
 bool_t check_http_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t secure) {
 
 	size_t content_length;
@@ -87,16 +119,52 @@ bool_t check_http_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_
 		return false;
 	}
 	// Test submitting a GET request.
-	else if (client_print(client, "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n") != 35 || client_status(client) != 1 ||
+	else if (client_print(client, "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n") != 37 || client_status(client) != 1 ||
 		!(content_length = check_http_content_length_get(client, errmsg))) {
 
 		if (st_empty(errmsg)) st_sprint(errmsg, "Failed to return a valid GET response.");
+		client_close(client);
 		return false;
 	}
 	// Test the response.
 	else if (check_http_content_length_test(client, content_length, errmsg)) {
 
 		if (st_empty(errmsg)) st_sprint(errmsg, "The content length and actual body length of the GET response did not match.");
+		client_close(client);
+		return false;
+	}
+
+	client_close(client);
+
+	return true;
+}
+
+bool_t check_http_network_options_sthread(stringer_t *errmsg, uint32_t port, bool_t secure) {
+
+	client_t *client = NULL;
+	chr_t *options[] = {
+		"Connection: close",
+		"Content-Length: 0",
+		"Content-Type: text/plain",
+		"Allow: GET, POST, OPTIONS",
+		"Access-Control-Max-Age: 86400",
+		"Access-Control-Allow-Origin: *",
+		"Access-Control-Allow-Credentials: true"
+	};
+
+	// Test the connection.
+	if (!(client = client_connect("localhost", port)) || (secure && (client_secure(client) == -1)) ||
+		client_status(client) != 1) {
+
+		st_sprint(errmsg, "Failed to connect with the HTTP server.");
+		client_close(client);
+		return false;
+	}
+	// Test OPTIONS
+	else if (client_print(client, "OPTIONS /portal/camel HTTP/1.1\r\n\r\n") != 34 || client_status(client) != 1 ||
+		!check_http_options(client, options, errmsg)) {
+
+		client_close(client);
 		return false;
 	}
 

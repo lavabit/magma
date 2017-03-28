@@ -31,22 +31,24 @@ int_t con_secure(connection_t *con) {
  */
 int_t con_status(connection_t *con) {
 
-	int_t result = -1;
+	return con->network.status;
 
-	// If the status is positive, and tls_status returns 0, we use the existing status state.
-	if (con && con->network.tls && con->network.status >= 0 && !tls_status(con->network.tls)) {
-		result = con->network.status;
-	}
-	// If the status is positive, and tcp_status returns 0, we use the existing status state.
-	else if (con && con->network.sockd >= -1 && con->network.status >= 0 && !tcp_status(con->network.sockd)) {
-		result = con->network.status;
-	}
-	// We return -1 if the status is already negative, or connection is otherwise invalid.
-	else {
-		result = con->network.status = -1;
-	}
-
-	return result;
+//	int_t result = -1;
+//
+//	// If the status is positive, and tls_status returns 0, we use the existing status state.
+//	if (con && con->network.tls && con->network.status >= 0 && !tls_status(con->network.tls)) {
+//		result = con->network.status;
+//	}
+//	// If the status is positive, and tcp_status returns 0, we use the existing status state.
+//	else if (con && con->network.sockd >= -1 && con->network.status >= 0 && !tcp_status(con->network.sockd)) {
+//		result = con->network.status;
+//	}
+//	// We return -1 if the status is already negative, or connection is otherwise invalid.
+//	else {
+//		result = con->network.status = -1;
+//	}
+//
+//	return result;
 }
 
 /**

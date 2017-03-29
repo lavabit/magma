@@ -232,45 +232,37 @@ int_t smtp_client_send_rcptto(client_t *client, stringer_t *rcptto) {
  */
 int_t smtp_client_send_data(client_t *client, stringer_t *message) {
 
-	chr_t *holder;
-	size_t length;
+	int64_t sent = 0, line = 0;
 
-	if (!(length = st_length_get(message))) {
-		log_pedantic("An invalid message length was discovered.");
-		return -1;
+	// Send the DATA command and confirm the proceed response was recieved in response.
+	if ((sent = client_write(client, PLACER("DATA\r\n", 6))) != 6 || (line = client_read_line(client)) <= 0 || !pl_starts_with_char(client->line, '3')) {
+		log_pedantic("A%serror occurred while trying to send the DATA command.%s", (sent != 6 || line <= 0 ? " network " : "n "),
+			(sent == 6 && line > 0 ? st_char_get(st_quick(MANAGEDBUF(1024), " { response = %.*s }", st_length_int(&(client->line)),
+			st_char_get(&(client->line)))) : ""));
+		return (sent != 6 || line <= 0 ? -1 : -2);
 	}
 
-	client_write(client, PLACER("DATA\r\n", 6));
+	// Dot stuff the message using the string replace function, which requires a message be stored in a jointed
+	// buffer, that can be dynamially reallocated if necessary.
+	st_replace(&(message), PLACER("\n.", 2), PLACER("\n..", 3));
 
-	if (client_read_line(client) <= 0) {
-		log_pedantic("An error occurred while attempting to send the DATA command.");
-		return -1;
-	}
-	else if (*(st_char_get(client->buffer)) != '3') {
-		log_pedantic("An error occurred while attempting to send the DATA command. {response = %.*s}",
-			 st_length_int(&(client->line)), st_char_get(&(client->line)));
-		return -2;
+	// Send the message and confirm all of the bytes were sent.
+	if ((sent = client_write(client, message)) != st_length_get(message)) {
+		log_pedantic("Message relay failed. { sent = %li / size = %zu }", sent, st_length_get(message));
 	}
 
-	client_write(client, message);
-
-	holder = st_char_get(message);
-
-	if (length < 2 || *(holder + length - 2) != '\r' || *(holder + length - 2) != '\n') {
-		client_write(client, PLACER("\r\n.\r\n", 5));
-	}
-	else {
-		client_write(client, PLACER(".\r\n", 3));
+	// If the message doesn't end witha line break, we'll send a line terminator here, so the termination sequence sent below
+	// will appear on a line by itself.
+	if (!st_cmp_cs_ends(message, PLACER("\n", 1))) {
+		client_write(client, PLACER("\r\n", 2));
 	}
 
-	if (client_read_line(client) <= 0) {
-		log_pedantic("A network error occurred while attempting to transmit the message.");
-		return -1;
-	}
-	else if (*(st_char_get(client->buffer)) != '2') {
-		log_pedantic("An error occurred while attempting to transmit the message. {response = %.*s}",
-			 st_length_int(&(client->line)), st_char_get(&(client->line)));
-		return -2;
+	// Read in the result code to see if the message was relayed successfully. If it fails, print the resulting response message.
+	if ((sent = client_write(client, PLACER(".\r\n", 3))) != 3 || (line = client_read_line(client)) <= 0 || !pl_starts_with_char(client->line, '2')) {
+		log_pedantic("A%serror occurred while attempting to transmit the message.%s", (sent != 3 || line <= 0 ? " network " : "n "),
+			(sent == 6 && line > 0 ? st_char_get(st_quick(MANAGEDBUF(1024), " { response = %.*s }", st_length_int(&(client->line)),
+			st_char_get(&(client->line)))) : ""));
+		return (sent != 3 || line <= 0 ? -1 : -2);
 	}
 
 	return 1;

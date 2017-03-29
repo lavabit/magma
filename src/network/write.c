@@ -47,7 +47,7 @@ int64_t con_write_bl(connection_t *con, char *block, size_t length) {
 				cipher = tls_cipher(con->network.tls, MANAGEDBUF(128));
 				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
 
-				log_pedantic("TLS write operation failed. { ip = %.*s / protocol = %s / %.*s / result = %zi%s%.*s }",
+				log_pedantic("TLS server write operation failed. { ip = %.*s / protocol = %s / %.*s / result = %zi%s%.*s }",
 					st_length_int(ip), st_char_get(ip), st_char_get(protocol_type(con)), st_length_int(cipher), st_char_get(cipher),
 					written, (error ? " / " : ""), st_length_int(error), st_char_get(error));
 
@@ -62,10 +62,20 @@ int64_t con_write_bl(connection_t *con, char *block, size_t length) {
 			}
 		}
 		else {
+
+			errno = 0;
+
 			written = send(con->network.sockd, block + position, length, 0);
 
 			// Check for errors on non-SSL writes in the traditional way.
-			if (written <= 0 && tcp_status(con->network.sockd)) {
+			if (written <= 0) {// && tcp_status(con->network.sockd)) {
+
+				int_t local = errno;
+				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
+
+				log_pedantic("TCP server write operation failed. { ip = %.*s / result = %zi / error = %i / message = %s }",
+					st_length_int(ip), st_char_get(ip), written, local, strerror_r(local, MEMORYBUF(1024), 1024));
+
 				con->network.status = -1;
 				return -1;
 			}
@@ -77,7 +87,7 @@ int64_t con_write_bl(connection_t *con, char *block, size_t length) {
 			position += written;
 		}
 
-	} while (length && counter++ < 128 && status());
+	} while (length && counter++ < 8192 && status());
 
 	if (written > 0) {
 		con->network.status = 1;
@@ -216,7 +226,7 @@ int64_t client_write(client_t *client, stringer_t *s) {
 				cipher = tls_cipher(client->tls, MANAGEDBUF(128));
 				ip = ip_presentation(client->ip, MANAGEDBUF(INET6_ADDRSTRLEN));
 
-				log_pedantic("TLS write operation failed. { ip = %.*s / %.*s / result = %zi%s%.*s }",
+				log_pedantic("TLS client write operation failed. { ip = %.*s / %.*s / result = %zi%s%.*s }",
 					st_length_int(ip), st_char_get(ip), st_length_int(cipher), st_char_get(cipher), written, (error ? " / " : ""),
 					st_length_int(error), st_char_get(error));
 
@@ -231,22 +241,31 @@ int64_t client_write(client_t *client, stringer_t *s) {
 			}
 		}
 		else {
-			written = send(client->sockd, block + position, length, 0);
 
-			// Check for errors on non-SSL writes in the traditional way.
-			if (written <= 0 && tcp_status(client->sockd)) {
+			errno = 0;
+
+			written = write(client->sockd, block + position, length);
+			//written = send(client->sockd, block + position, length, 0);
+
+			if (written <= 0) {// && tcp_status(con->network.sockd)) {
+
+				int_t local = errno;
+				ip = ip_presentation(client->ip, MANAGEDBUF(INET6_ADDRSTRLEN));
+
+				log_pedantic("TCP client write operation failed. { ip = %.*s / result = %zi / error = %i / message = %s }",
+					st_length_int(ip), st_char_get(ip), written, local, strerror_r(local, MEMORYBUF(1024), 1024));
+
 				client->status = -1;
 				return -1;
 			}
 		}
 
+		if (written > 0) {
+			length -= written;
+			position += written;
+		}
 
-	if (written > 0) {
-		length -= written;
-		position += written;
-	}
-
-	} while (length && counter++ < 128 && status());
+	} while (length && counter++ < 8192 && status());
 
 	if (written > 0) {
 		client->status = 1;

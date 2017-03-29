@@ -76,7 +76,7 @@ int64_t con_read_line(connection_t *con, bool_t block) {
 				cipher = tls_cipher(con->network.tls, MANAGEDBUF(128));
 				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
 
-				log_pedantic("TLS read operation failed. { ip = %.*s / protocol = %s / %.*s / result = %zi%s%.*s }",
+				log_pedantic("TLS server read operation failed. { ip = %.*s / protocol = %s / %.*s / result = %zi%s%.*s }",
 					st_length_int(ip), st_char_get(ip), st_char_get(protocol_type(con)), st_length_int(cipher), st_char_get(cipher),
 					bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
 
@@ -91,11 +91,20 @@ int64_t con_read_line(connection_t *con, bool_t block) {
 			}
 		}
 		else {
+
+			errno = 0;
+
 			bytes = recv(con->network.sockd, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
 				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), (block ? 0 : MSG_DONTWAIT));
 
-			// Check for errors on non-SSL reads in the traditional way.
-			if (bytes <= 0 && tcp_status(con->network.sockd)) {
+			if (bytes <= 0) {// && tcp_status(con->network.sockd)) {
+
+				int_t local = errno;
+				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
+
+				log_pedantic("TCP server read operation failed. { ip = %.*s / result = %zi / error = %i / message = %s }",
+					st_length_int(ip), st_char_get(ip), bytes, local, strerror_r(local, MEMORYBUF(1024), 1024));
+
 				con->network.status = -1;
 				return -1;
 			}
@@ -111,7 +120,7 @@ int64_t con_read_line(connection_t *con, bool_t block) {
 			line = true;
 		}
 
-	} while (!line && block && counter++ < 128 && st_length_get(con->network.buffer) != st_avail_get(con->network.buffer) && status());
+	} while (!line && block && counter++ < 8192 && st_length_get(con->network.buffer) != st_avail_get(con->network.buffer) && status());
 
 	if (st_length_get(con->network.buffer) > 0) {
 		con->network.status = 1;
@@ -186,7 +195,7 @@ int64_t con_read(connection_t *con) {
 				cipher = tls_cipher(con->network.tls, MANAGEDBUF(128));
 				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
 
-				log_pedantic("TLS read operation failed. { ip = %.*s / protocol = %s / %.*s / result = %zi%s%.*s }",
+				log_pedantic("TLS server read operation failed. { ip = %.*s / protocol = %s / %.*s / result = %zi%s%.*s }",
 					st_length_int(ip), st_char_get(ip), st_char_get(protocol_type(con)), st_length_int(cipher),
 					st_char_get(cipher), bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
 
@@ -201,11 +210,21 @@ int64_t con_read(connection_t *con) {
 			}
 		}
 		else {
+
+			errno = 0;
+
 			bytes = recv(con->network.sockd, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
 				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), (blocking ? 0 : MSG_DONTWAIT));
 
 			// Check for errors on non-SSL reads in the traditional way.
-			if (bytes <= 0 && tcp_status(con->network.sockd)) {
+			if (bytes <= 0) {// && tcp_status(con->network.sockd)) {
+
+				int_t local = errno;
+				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
+
+				log_pedantic("TCP server read operation failed. { ip = %.*s / result = %zi / error = %i / message = %s }",
+					st_length_int(ip), st_char_get(ip), bytes, local, strerror_r(local, MEMORYBUF(1024), 1024));
+
 				con->network.status = -1;
 				return -1;
 			}
@@ -216,7 +235,7 @@ int64_t con_read(connection_t *con) {
 			st_length_set(con->network.buffer, st_length_get(con->network.buffer) + bytes);
 		}
 
-	} while (blocking && counter++ < 128 && !st_length_get(con->network.buffer) && status());
+	} while (blocking && counter++ < 8192 && !st_length_get(con->network.buffer) && status());
 
 	// If there is data in the buffer process it. Otherwise if the buffer is empty and the connection appears to be closed
 	// (as indicated by a return value of 0), then return -1 to let the caller know the connection is dead.
@@ -285,7 +304,7 @@ int64_t client_read_line(client_t *client) {
 				cipher = tls_cipher(client->tls, MANAGEDBUF(128));
 				ip = ip_presentation(client->ip, MANAGEDBUF(INET6_ADDRSTRLEN));
 
-				log_pedantic("TLS read operation failed. { ip = %.*s / %.*s / result = %zi%s%.*s }",
+				log_pedantic("TLS client read operation failed. { ip = %.*s / %.*s / result = %zi%s%.*s }",
 					st_length_int(ip), st_char_get(ip), st_length_int(cipher), st_char_get(cipher),
 					bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
 
@@ -300,11 +319,21 @@ int64_t client_read_line(client_t *client) {
 			}
 		}
 		else {
+
+			errno = 0;
+
 			bytes = recv(client->sockd, st_char_get(client->buffer) + st_length_get(client->buffer),
 				st_avail_get(client->buffer) - st_length_get(client->buffer), (blocking ? 0 : MSG_DONTWAIT));
 
 			// Check for errors on non-SSL reads in the traditional way.
-			if (bytes <= 0 && tcp_status(client->sockd)) {
+			if (bytes <= 0) {// && tcp_status(client->sockd)) {
+
+				int_t local = errno;
+				ip = ip_presentation(client->ip, MANAGEDBUF(INET6_ADDRSTRLEN));
+
+				log_pedantic("TCP client read operation failed. { ip = %.*s / result = %zi / error = %i / message = %s }",
+					st_length_int(ip), st_char_get(ip), bytes, local, strerror_r(local, MEMORYBUF(1024), 1024));
+
 				client->status = -1;
 				return -1;
 			}
@@ -320,7 +349,7 @@ int64_t client_read_line(client_t *client) {
 			line = true;
 		}
 
-	} while (!line && counter++ < 128 && st_length_get(client->buffer) != st_avail_get(client->buffer) && status());
+	} while (!line && counter++ < 8192 && st_length_get(client->buffer) != st_avail_get(client->buffer) && status());
 
 	if (st_length_get(client->buffer) > 0) {
 		client->status = 1;
@@ -375,7 +404,7 @@ int64_t client_read(client_t *client) {
 				cipher = tls_cipher(client->tls, MANAGEDBUF(128));
 				ip = ip_presentation(client->ip, MANAGEDBUF(INET6_ADDRSTRLEN));
 
-				log_pedantic("TLS read operation failed. { ip = %.*s / %.*s / result = %zi%s%.*s }",
+				log_pedantic("TLS client read operation failed. { ip = %.*s / %.*s / result = %zi%s%.*s }",
 					st_length_int(ip), st_char_get(ip), st_length_int(cipher), st_char_get(cipher), bytes,
 					(error ? " / " : ""), st_length_int(error), st_char_get(error));
 
@@ -390,11 +419,21 @@ int64_t client_read(client_t *client) {
 			}
 		}
 		else {
+
+			errno = 0;
+
 			bytes = recv(client->sockd, st_char_get(client->buffer) + st_length_get(client->buffer),
 				st_avail_get(client->buffer) - st_length_get(client->buffer), (blocking ? 0 : MSG_DONTWAIT));
 
 			// Check for errors on non-SSL reads in the traditional way.
-			if (bytes <= 0 && tcp_status(client->sockd)) {
+			if (bytes <= 0) {// && tcp_status(client->sockd)) {
+
+				int_t local = errno;
+				ip = ip_presentation(client->ip, MANAGEDBUF(INET6_ADDRSTRLEN));
+
+				log_pedantic("TCP client read operation failed. { ip = %.*s / result = %zi / error = %i / message = %s }",
+					st_length_int(ip), st_char_get(ip), bytes, local, strerror_r(local, MEMORYBUF(1024), 1024));
+
 				client->status = -1;
 				return -1;
 			}
@@ -405,7 +444,7 @@ int64_t client_read(client_t *client) {
 			st_length_set(client->buffer, st_length_get(client->buffer) + bytes);
 		}
 
-	} while (blocking && counter++ < 128 && !st_length_get(client->buffer) && status());
+	} while (blocking && counter++ < 8192 && !st_length_get(client->buffer) && status());
 
 	// If there is data in the buffer process it. Otherwise if the buffer is empty and the connection appears to be closed
 	// (as indicated by a return value of 0), then return -1 to let the caller know the connection is dead.

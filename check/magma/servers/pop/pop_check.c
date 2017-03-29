@@ -9,15 +9,15 @@
 START_TEST (check_pop_network_basic_tcp_s) {
 
 	log_disable();
-	bool_t outcome = true;
 	server_t *tcp = NULL;
+	bool_t outcome = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	if (status() && !(tcp = servers_get_by_protocol(POP, false))) {
 		st_sprint(errmsg, "No POP servers were configured to support TCP connections.");
 		outcome = false;
 	}
-	else if (status() && check_pop_network_basic_sthread(errmsg, tcp->network.port, false)) {
+	else if (status() && !check_pop_network_basic_sthread(errmsg, tcp->network.port, false)) {
 		outcome = false;
 	}
 
@@ -29,8 +29,8 @@ END_TEST
 START_TEST (check_pop_network_basic_tls_s) {
 
 	log_disable();
-	bool_t outcome = true;
 	server_t *tls = NULL;
+	bool_t outcome = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	if (status() && !(tls = servers_get_by_protocol(POP, true))) {
@@ -50,8 +50,8 @@ Suite * suite_check_pop(void) {
 
 	Suite *s = suite_create("\tPOP");
 
-	suite_check_testcase(s, "POP", "POP Network Basic / TCP/S", check_pop_network_basic_tcp_s);
-	suite_check_testcase(s, "POP", "POP Network Basic / TLS/S", check_pop_network_basic_tls_s);
+	suite_check_testcase(s, "POP", "POP Network Basic TCP/S", check_pop_network_basic_tcp_s);
+	suite_check_testcase(s, "POP", "POP Network Basic TLS/S", check_pop_network_basic_tls_s);
 
 	return s;
 }

@@ -228,40 +228,64 @@ int_t smtp_client_send_rcptto(client_t *client, stringer_t *rcptto) {
  * @brief	Issue a DATA command to an smtp server, and wait for a successful response.
  * @param	client		a pointer to the network client to issue the DATA command.
  * @param	message		a pointer to a managed string containing the body of the message to be sent.
- * @return	-2 if the remote server rejected the command, -1 on general network failure, or 1 on success.
+ * @param	dotstuffed	a boolean to where true indicates the supplied message has already been dotstuffed.
+ * @return	-3 for internal errors, -2 if the remote server rejected the command, -1 on general network failure, or 1 on success.
  */
-int_t smtp_client_send_data(client_t *client, stringer_t *message) {
+int_t smtp_client_send_data(client_t *client, stringer_t *message, bool_t dotstuffed) {
 
 	int64_t sent = 0, line = 0;
+	stringer_t *duplicate = NULL;
+
+	if (st_empty(message)) {
+		log_pedantic("The naked mail relay was asked to send an empty message buffer.");
+		return -3;
+	}
+
+	// If the message hasn't been dotstuffed already, we take care of that here. Note that if the duplicate variable holds a
+	// non-NULL value, then the message was copied, and must be freed before the function returns, or memory will be leaked.
+	else if (!dotstuffed) {
+
+		// Duplicate the input message and then escape it by adding a leading period to any line which starts with a
+		// period. Note the replace function requires that the message be stored in a jointed, memory mapped buffer for
+		// easy resizing.
+		if (!(duplicate = st_dupe_opts(MAPPED_T | JOINTED | HEAP, message)) || st_replace(&duplicate, PLACER("\n.", 2), PLACER("\n..", 3)) < 0) {
+			log_pedantic("The naked mail message could not be properly dot stuffed in preparation for sending.");
+			return -3;
+		}
+
+		message = duplicate;
+	}
 
 	// Send the DATA command and confirm the proceed response was recieved in response.
 	if ((sent = client_write(client, PLACER("DATA\r\n", 6))) != 6 || (line = client_read_line(client)) <= 0 || !pl_starts_with_char(client->line, '3')) {
 		log_pedantic("A%serror occurred while trying to send the DATA command.%s", (sent != 6 || line <= 0 ? " network " : "n "),
 			(sent == 6 && line > 0 ? st_char_get(st_quick(MANAGEDBUF(1024), " { response = %.*s }", st_length_int(&(client->line)),
 			st_char_get(&(client->line)))) : ""));
+		st_cleanup(duplicate);
 		return (sent != 6 || line <= 0 ? -1 : -2);
 	}
 
-	// Dot stuff the message using the string replace function, which requires a message be stored in a jointed
-	// buffer, that can be dynamially reallocated if necessary.
-	st_replace(&(message), PLACER("\n.", 2), PLACER("\n..", 3));
-
 	// Send the message and confirm all of the bytes were sent.
-	if ((sent = client_write(client, message)) != st_length_get(message)) {
-		log_pedantic("Message relay failed. { sent = %li / size = %zu }", sent, st_length_get(message));
+	else if ((sent = client_write(client, message)) != st_length_get(message)) {
+		log_pedantic("Message relay failed. { sent = %li / total = %zu }", sent, st_length_get(message));
+		st_cleanup(duplicate);
+		return -1;
 	}
 
 	// If the message doesn't end witha line break, we'll send a line terminator here, so the termination sequence sent below
 	// will appear on a line by itself.
-	if (!st_cmp_cs_ends(message, PLACER("\n", 1))) {
+	else if (!st_cmp_cs_ends(message, PLACER("\n", 1))) {
 		client_write(client, PLACER("\r\n", 2));
 	}
+
+	// The message is no longer needed, so if we duplicated it above, we can free the duplicate here.
+	st_cleanup(duplicate);
 
 	// Read in the result code to see if the message was relayed successfully. If it fails, print the resulting response message.
 	if ((sent = client_write(client, PLACER(".\r\n", 3))) != 3 || (line = client_read_line(client)) <= 0 || !pl_starts_with_char(client->line, '2')) {
 		log_pedantic("A%serror occurred while attempting to transmit the message.%s", (sent != 3 || line <= 0 ? " network " : "n "),
-			(sent == 6 && line > 0 ? st_char_get(st_quick(MANAGEDBUF(1024), " { response = %.*s }", st_length_int(&(client->line)),
-			st_char_get(&(client->line)))) : ""));
+			(sent == 3 && line > 0 ? st_char_get(st_quick(MANAGEDBUF(1024), " { response = %.*s }", pl_length_int(client->line),
+			pl_char_get(client->line))) : ""));
 		return (sent != 3 || line <= 0 ? -1 : -2);
 	}
 

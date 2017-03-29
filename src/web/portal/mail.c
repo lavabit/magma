@@ -148,7 +148,7 @@ bool_t portal_smtp_relay_message(stringer_t *from, inx_t *to, stringer_t *data, 
 	}
 
 	// Send the the message.
-	if ((state = smtp_client_send_data(client, data)) != 1) {
+	if ((state = smtp_client_send_data(client, data, true)) != 1) {
 		*errmsg = "Error occurred while sending email message body.";
 		smtp_client_close(client);
 		return false;

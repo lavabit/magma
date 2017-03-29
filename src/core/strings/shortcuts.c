@@ -26,13 +26,14 @@ placer_t pl_null(void) {
  *               specified data.
  */
 placer_t *pl_init_by_addr(placer_t *result, void *data, size_t len) {
+
 	if (result == NULL) {
-		log_error("NULL result pointer passed to pl_replace");
+		log_error("NULL result pointer passed to pl_init_by_addr.");
 		return NULL;
 	}
 
 	if (data == NULL) {
-		log_error("NULL data pointer passed to pl_replace");
+		log_error("NULL data pointer passed to pl_init_by_addr");
 		return NULL;
 	}
 

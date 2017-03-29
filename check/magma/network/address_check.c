@@ -10,11 +10,33 @@
 void check_address_standard_s (int _i CK_ATTRIBUTE_UNUSED) {
 
 	log_disable();
-	tcase_fn_start ("check_address_standard_s", __FILE__, __LINE__);
-
 	stringer_t *buffer;
 	stringer_t *errmsg = NULL;
-	ip_t ip[4] = { {AF_INET,{.ip4={0x0100007f}}}, {AF_INET,{.ip4={0xffffffff}}}, {AF_INET6,{.ip6=in6addr_loopback}}, {AF_INET6,{.ip6=in6addr_any}} };
+	ip_t ip[4] = {
+		{
+			AF_INET, {
+				.ip4 = {
+					0x0100007f
+				}
+			}
+		}, {
+			AF_INET, {
+				.ip4 = {
+					0xffffffff
+				}
+			}
+		}, {
+			AF_INET6, {
+				.ip6 = in6addr_loopback
+			}
+		}, {
+			AF_INET6, {
+				.ip6 = in6addr_any
+			}
+		}
+	};
+
+	tcase_fn_start ("check_address_standard_s", __FILE__, __LINE__);
 
 	if (status() && (buffer = st_alloc(INET6_ADDRSTRLEN))) {
 
@@ -38,11 +60,33 @@ void check_address_standard_s (int _i CK_ATTRIBUTE_UNUSED) {
 void check_address_presentation_s (int _i CK_ATTRIBUTE_UNUSED) {
 
 	log_disable();
-	tcase_fn_start ("check_address_presentation_s", __FILE__, __LINE__);
-
 	stringer_t *buffer;
 	stringer_t *errmsg = NULL;
-	ip_t ip[4] = { {AF_INET,{.ip4={0x0100007f}}}, {AF_INET,{.ip4={0xffffffff}}}, {AF_INET6,{.ip6=in6addr_loopback}}, {AF_INET6,{.ip6=in6addr_any}} };
+	ip_t ip[4] = {
+		{
+			AF_INET, {
+				.ip4 = {
+					0x0100007f
+				}
+			}
+		}, {
+			AF_INET, {
+				.ip4 = {
+					0xffffffff
+				}
+			}
+		}, {
+			AF_INET6, {
+				.ip6 = in6addr_loopback
+			}
+		}, {
+			AF_INET6, {
+				.ip6 = in6addr_any
+			}
+		}
+	};
+
+	tcase_fn_start ("check_address_presentation_s", __FILE__, __LINE__);
 
 	if (status() && (buffer = st_alloc(INET6_ADDRSTRLEN))) {
 
@@ -66,11 +110,34 @@ void check_address_presentation_s (int _i CK_ATTRIBUTE_UNUSED) {
 void check_address_reversed_s (int _i CK_ATTRIBUTE_UNUSED) {
 
 	log_disable();
-	tcase_fn_start ("check_address_reversed_s", __FILE__, __LINE__);
 
 	stringer_t *buffer;
 	stringer_t *errmsg = NULL;
-	ip_t ip[4] = { {AF_INET,{.ip4={0x0100007f}}}, {AF_INET,{.ip4={0xffffffff}}}, {AF_INET6,{.ip6=in6addr_loopback}}, {AF_INET6,{.ip6=in6addr_any}} };
+	ip_t ip[4] = {
+		{
+			AF_INET, {
+				.ip4 = {
+					0x0100007f
+				}
+			}
+		}, {
+			AF_INET, {
+				.ip4 = {
+					0xffffffff
+				}
+			}
+		}, {
+			AF_INET6, {
+				.ip6 = in6addr_loopback
+			}
+		}, {
+			AF_INET6, {
+				.ip6 = in6addr_any
+			}
+		}
+	};
+
+	tcase_fn_start ("check_address_reversed_s", __FILE__, __LINE__);
 
 	if (status() && (buffer = st_alloc(INET6_ADDRSTRLEN * 4))) {
 
@@ -94,11 +161,33 @@ void check_address_reversed_s (int _i CK_ATTRIBUTE_UNUSED) {
 void check_address_subnet_s (int _i CK_ATTRIBUTE_UNUSED) {
 
 	log_disable();
-	tcase_fn_start ("check_address_subnet_s", __FILE__, __LINE__);
-
 	stringer_t *buffer;
 	stringer_t *errmsg = NULL;
-	ip_t ip[4] = { {AF_INET,{.ip4={0x0100007f}}}, {AF_INET,{.ip4={0xffffffff}}}, {AF_INET6,{.ip6=in6addr_loopback}}, {AF_INET6,{.ip6=in6addr_any}} };
+	ip_t ip[4] = {
+		{
+			AF_INET, {
+				.ip4 = {
+					0x0100007f
+				}
+			}
+		}, {
+			AF_INET, {
+				.ip4 = {
+					0xffffffff
+				}
+			}
+		}, {
+			AF_INET6, {
+				.ip6 = in6addr_loopback
+			}
+		}, {
+			AF_INET6, {
+				.ip6 = in6addr_any
+			}
+		}
+	};
+
+	tcase_fn_start ("check_address_subnet_s", __FILE__, __LINE__);
 
 	if (status() && (buffer = st_alloc(INET6_ADDRSTRLEN))) {
 
@@ -107,8 +196,8 @@ void check_address_subnet_s (int _i CK_ATTRIBUTE_UNUSED) {
 			errmsg = NULLER("IPv4 subnet format test failed.");
 		}
 
-		else if (!ip_subnet(&ip[2], buffer) || st_cmp_cs_eq(buffer, CONSTANT("0000:0000:0000")) ||
-			!ip_subnet(&ip[3], buffer) || st_cmp_cs_eq(buffer, CONSTANT("0000:0000:0000"))) {
+		else if (!ip_subnet(&ip[2], buffer) || st_cmp_cs_eq(buffer, CONSTANT("0000:0000:0000:0000")) ||
+			!ip_subnet(&ip[3], buffer) || st_cmp_cs_eq(buffer, CONSTANT("0000:0000:0000:0000"))) {
 			errmsg = NULLER("IPv6 subnet test failed.");
 		}
 
@@ -122,11 +211,34 @@ void check_address_subnet_s (int _i CK_ATTRIBUTE_UNUSED) {
 void check_address_segment_s (int _i CK_ATTRIBUTE_UNUSED) {
 
 	log_disable();
-	tcase_fn_start ("check_address_segment_s", __FILE__, __LINE__);
 
 	stringer_t *buffer;
 	stringer_t *errmsg = NULL;
-	ip_t ip[4] = { {AF_INET,{.ip4={0x0100007f}}}, {AF_INET,{.ip4={0xffffffff}}}, {AF_INET6,{.ip6=in6addr_loopback}}, {AF_INET6,{.ip6=in6addr_any}} };
+	ip_t ip[4] = {
+		{
+			AF_INET, {
+				.ip4 = {
+					0x0100007f
+				}
+			}
+		}, {
+			AF_INET, {
+				.ip4 = {
+					0xffffffff
+				}
+			}
+		}, {
+			AF_INET6, {
+				.ip6 = in6addr_loopback
+			}
+		}, {
+			AF_INET6, {
+				.ip6 = in6addr_any
+			}
+		}
+	};
+
+	tcase_fn_start ("check_address_segment_s", __FILE__, __LINE__);
 
 	if (status() && (buffer = st_alloc(INET6_ADDRSTRLEN))) {
 
@@ -153,11 +265,33 @@ void check_address_segment_s (int _i CK_ATTRIBUTE_UNUSED) {
 void check_address_octet_s (int _i CK_ATTRIBUTE_UNUSED) {
 
 	log_disable();
-	tcase_fn_start ("check_address_octet_s", __FILE__, __LINE__);
-
 	stringer_t *buffer;
 	stringer_t *errmsg = NULL;
-	ip_t ip[4] = { {AF_INET,{.ip4={0x0100007f}}}, {AF_INET,{.ip4={0xffffffff}}}, {AF_INET6,{.ip6=in6addr_loopback}}, {AF_INET6,{.ip6=in6addr_any}} };
+	ip_t ip[4] = {
+		{
+			AF_INET, {
+				.ip4 = {
+					0x0100007f
+				}
+			}
+		}, {
+			AF_INET, {
+				.ip4 = {
+					0xffffffff
+				}
+			}
+		}, {
+			AF_INET6, {
+				.ip6 = in6addr_loopback
+			}
+		}, {
+			AF_INET6, {
+				.ip6 = in6addr_any
+			}
+		}
+	};
+
+	tcase_fn_start ("check_address_octet_s", __FILE__, __LINE__);
 
 	if (status() && (buffer = st_alloc(INET6_ADDRSTRLEN))) {
 

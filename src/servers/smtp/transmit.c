@@ -84,8 +84,11 @@ int_t smtp_relay_message(connection_t *con, stringer_t **result) {
 		holder = (smtp_recipients_t *)holder->next;
 	}
 
+	// Ensure the message is properly dot stuffed before sending.
+	st_replace(&(con->smtp.message->text), PLACER("\n.", 2), PLACER("\n..", 3));
+
 	// Send the the message.
-	state = smtp_client_send_data(client, con->smtp.message->text);
+	state = smtp_client_send_data(client, con->smtp.message->text, true);
 
 	if (state == -2) {
 		log_pedantic("An error occurred while trying to send the message.");
@@ -117,11 +120,13 @@ int_t smtp_forward_message(server_t *server, stringer_t *address, stringer_t *me
 		log_pedantic("Passed a NULL pointer.");
 		return -2;
 	}
-	else if (!(new = st_dupe(message))) {
+	// Duplicate and then dot stuff the output message.
+	else if (!(new = st_dupe_opts(MAPPED_T | JOINTED | HEAP, message)) || st_replace(&new, PLACER("\n.", 2), PLACER("\n..", 3)) < 0) {
 		log_pedantic("Could not duplicate the message.");
 		return -1;
 	}
 
+	// Add the new message headers associated with this forward operation.
 	mail_add_forward_headers(server, &new, id, mark, signum, sigkey);
 
 	// Open the connection to the SMTP server. Always use the default servers for forwards.
@@ -157,7 +162,7 @@ int_t smtp_forward_message(server_t *server, stringer_t *address, stringer_t *me
 	}
 
 	// Send the the message.
-	if ((state = smtp_client_send_data(client, new)) != 1) {
+	if ((state = smtp_client_send_data(client, new, true)) != 1) {
 		log_pedantic("An error occurred while trying to send the message.");
 		smtp_client_close(client);
 		st_free(new);
@@ -341,7 +346,7 @@ int_t smtp_bounce(connection_t *con) {
 	}
 
 	// Transmit the bounce.
-	if (message && smtp_client_send_data(client, message) != 1) {
+	if (message && smtp_client_send_data(client, message, false) != 1) {
 		log_pedantic("An error occurred while trying to send the message.");
 	}
 
@@ -467,7 +472,7 @@ int_t smtp_reply(stringer_t *from, stringer_t *to, uint64_t usernum, uint64_t au
 	}
 
 	// Transmit the auto reply and set the timestamp.
-	if (message != NULL && smtp_client_send_data(client, message) == 1) {
+	if (message != NULL && smtp_client_send_data(client, message, false) == 1) {
 		cache_set_u64(key, time(NULL), 86460);
 	}
 	else if (message != NULL) {
@@ -533,7 +538,7 @@ int_t smtp_send_message(stringer_t *to, stringer_t *from, stringer_t *message) {
 	}
 
 	// Send the the message.
-	if (smtp_client_send_data(client, message) != 1) {
+	if (smtp_client_send_data(client, message, false) != 1) {
 		log_pedantic("An error occurred while trying to send the message.");
 		smtp_client_close(client);
 		return -1;

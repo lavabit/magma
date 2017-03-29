@@ -67,7 +67,7 @@ stringer_t *  smtp_parse_rcpt_to(connection_t *con);
 /// relay.c
 void        smtp_client_close(client_t *client);
 client_t *  smtp_client_connect(int_t premium);
-int_t       smtp_client_send_data(client_t *client, stringer_t *message);
+int_t       smtp_client_send_data(client_t *client, stringer_t *message, bool_t dotstuffed);
 int_t       smtp_client_send_helo(client_t *client);
 int_t       smtp_client_send_mailfrom(client_t *client, stringer_t *mailfrom, size_t send_size);
 int_t       smtp_client_send_nullfrom(client_t *client);

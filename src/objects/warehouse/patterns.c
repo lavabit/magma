@@ -47,7 +47,7 @@ int_t pattern_check(stringer_t *message) {
 	if (result == -2) {
 		stats_adjust_by_name("objects.patterns.fail", 1);
 	} else if (result == -1) {
-		stats_adjust_by_name("objects.patterns.errors", 1);
+		stats_adjust_by_name("objects.patterns.error", 1);
 	}else if (result == 1) {
 		stats_adjust_by_name("objects.patterns.pass", 1);
 	}

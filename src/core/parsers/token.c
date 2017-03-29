@@ -14,7 +14,6 @@
  * @param	token	a character specifying the token to be searched.
  * @return	the number of times the token was found in the block of memory, or 0 on failure.
  */
-// QUESTION: Why not return -1 on failure?
 uint64_t tok_get_count_bl(void *block, size_t length, char token) {
 
 	uint64_t count = 1;

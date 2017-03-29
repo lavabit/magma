@@ -290,27 +290,27 @@ void smtp_auth_plain(connection_t *con) {
 
 	// Make sure we were able to decode something.
 	if (!decoded || !st_length_get(decoded)) {
-		st_cleanup(decoded);
 		con_write_bl(con, "501 INVALID AUTH SYNTAX\r\n", 25);
+		st_cleanup(decoded);
 		return;
 	}
 
 	// Fetch the different components.
 	if (tok_get_st(decoded, '\0', 0, &authorize_id) || tok_get_st(decoded, '\0', 1, &username) || tok_get_st(decoded, '\0', 2, &password) != 1) {
-		st_free(decoded);
 		con_write_bl(con, "501 INVALID AUTH SYNTAX\r\n", 25);
+		st_free(decoded);
 		return;
 	}
 
 	// If for some reason the username field is NULL, but the authorize-id isn't, try that instead. We really don't need this.
-	if (st_empty(&username) && !st_empty(&authorize_id)) {
+	if (st_empty(&username) && st_populated(&authorize_id)) {
 		mm_copy(&username, &authorize_id, sizeof(placer_t));
 	}
 
 	// Error check.
 	if (st_empty(&username) || st_empty(&password)) {
-		st_free(decoded);
 		con_write_bl(con, "501 INVALID AUTH SYNTAX\r\n", 25);
+		st_free(decoded);
 		return;
 	}
 
@@ -328,6 +328,7 @@ void smtp_auth_plain(connection_t *con) {
 			st_length_int(&username), st_char_get(&username));
 
 		con->protocol.violations++;
+		st_free(decoded);
 		return;
 	}
 
@@ -349,6 +350,7 @@ void smtp_auth_plain(connection_t *con) {
 			con_write_bl(con, "535 AUTHENTICATION FAILURE - INVALID USERNAME AND PASSWORD COMBINATION\r\n", 72);
 		}
 
+		st_free(decoded);
 		auth_free(auth);
 		return;
 	}
@@ -359,6 +361,7 @@ void smtp_auth_plain(connection_t *con) {
 	// If we made it this far then the connection is authenticated.
 	smtp_add_outbound(con, outbound);
 	smtp_session_reset(con);
+	st_free(decoded);
 	auth_free(auth);
 
 	// Adjust the connection object accordingly.

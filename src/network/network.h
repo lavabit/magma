@@ -34,6 +34,7 @@ typedef struct {
 
 // Setup the structure of variables used to relay and bounce messages.
 typedef struct {
+	ip_t *ip; /* The remote host address information. */
 	void *tls; /* The TLS connection object. */
 	int sockd; /* The socket connection. */
 	int status; /* Track whether the last network generated an error. */
@@ -114,7 +115,6 @@ int_t       client_secure(client_t *client);
 int_t       client_status(client_t *client);
 
 /// options.c
-
 bool_t   net_set_buffer_length(int sd, int buffer_recv, int buffer_send);
 bool_t   net_set_keepalive(int sd, bool_t keepalive, int_t idle, int_t interval, int_t tolerance);
 bool_t   net_set_linger(int sd, bool_t linger, int_t timeout);
@@ -149,5 +149,7 @@ int64_t   con_write_bl(connection_t *con, char *block, size_t length);
 int64_t   con_write_ns(connection_t *con, char *string);
 int64_t   con_write_pl(connection_t *con, placer_t string);
 int64_t   con_write_st(connection_t *con, stringer_t *string);
+
+stringer_t * protocol_type(connection_t *con);
 
 #endif

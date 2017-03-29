@@ -1760,7 +1760,11 @@ memcached() {
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-
+				
+			# Recent versions of gcc require libmemcached to be explicitly linked with libm.so and libstdc++.so, and configure
+			# doesn't appear to include the libraries automatically.
+			export LIBS="-lm -lstdc++"
+			
 			# unset MEMCACHED_SERVERS
 			# export GEARMAND_BINARY="/usr/local/sbin/gearmand"
 			# export MEMCACHED_BINARY="/usr/local/bin/memcached"
@@ -1782,7 +1786,7 @@ memcached() {
 			# An alternative and still experimental strategy for configuring the memcached library.
 			# ./configure --disable-silent-rules --disable-sasl --enable-static --with-pic --with-debug --with-valgrind &>> "$M_LOGS/memcached.txt"; error
 
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LIBS
 			# unset GEARMAND_BINARY; unset MEMCACHED_BINARY
 
 			make --jobs=4 &>> "$M_LOGS/memcached.txt"; error
@@ -2385,12 +2389,12 @@ all() {
 	rm -f "$M_LOGS/build.txt"; error
 	date +"%nStarting at %r on %x%n"
 	date +"Starting at %r on %x" &>> "$M_LOGS/build.txt"
-	$M_BUILD "extract"
-	$M_BUILD "prep"
-	$M_BUILD "build"
-	$M_BUILD "combine"
-	$M_BUILD "load"
-	$M_BUILD "keys"
+	$M_BUILD "extract"; error
+	$M_BUILD "prep"; error
+	$M_BUILD "build"; error
+	$M_BUILD "combine"; error
+	$M_BUILD "load"; error
+	$M_BUILD "keys"; error
 	$M_BUILD "check"
 	date +"%nFinished at %r on %x%n"
 	date +"Finished at %r on %x" &>> "$M_LOGS/build.txt"

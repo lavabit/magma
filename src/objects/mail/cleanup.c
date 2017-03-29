@@ -80,8 +80,8 @@ bool_t mail_message_cleanup(stringer_t **message) {
 		added++;
 	}
 
-	// Allocate a new stringer for the cleaned up message.
-	if (!(output = st_alloc_opts(MAPPED_T | JOINTED | HEAP,  added))) {
+	// Allocate a new string buffer to hold the cleaned version of the message.
+	if (!(output = st_alloc_opts(MAPPED_T | JOINTED | HEAP, added))) {
 		log_pedantic("Unable to allocate %zu bytes for a new stringer.", added);
 		return false;
 	}

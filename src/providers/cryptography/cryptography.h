@@ -14,7 +14,7 @@
 
 // The list of ciphers support depending on the SSL security level required.
 #define MAGMA_CIPHERS_HIGH		"ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305"
-#define MAGMA_CIPHERS_MEDIUM	"EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH+aRSA+RC4:EECDH:EDH+aRSA:RC4:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!SSLv2:!RC4-SHA:!SEED"
+#define MAGMA_CIPHERS_MEDIUM	"EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH+aRSA+RC4:EECDH:EDH+aRSA:!RC4:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!SSLv2:!RC4-SHA:!SEED"
 #define MAGMA_CIPHERS_LOW		"EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH+aRSA+RC4:EECDH:EDH+aRSA:!RC4:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!SSLv2:!RC4-SHA:!SEED"
 #define MAGMA_CIPHERS_GENERIC	"HIGH:MEDIUM"
 
@@ -174,15 +174,20 @@ void             ssl_thread_stop(void);
 bool_t           ssl_verify_privkey(const char *keyfile);
 
 /// tls.c
-int      tls_print(TLS *tls, const char *format, va_list args);
-int      tls_read(TLS *tls, void *buffer, int length, bool_t block);
-bool_t   ssl_server_create(void *server, uint_t security_level);
-void     ssl_server_destroy(void *server);
-int      tls_write(TLS *tls, const void *buffer, int length);
-void *   tls_client_alloc(int_t sockd);
-void     tls_free(TLS *tls);
-TLS *    tls_server_alloc(void *server, int sockd, int flags);
-int      tls_status(TLS *tls);
+bool_t        ssl_server_create(void *server, uint_t security_level);
+void          ssl_server_destroy(void *server);
+int_t         tls_bits(TLS *tls);
+stringer_t *  tls_cipher(TLS *tls, stringer_t *output);
+void *        tls_client_alloc(int_t sockd);
+stringer_t *  tls_error(TLS *tls, int_t code, stringer_t *output);
+void          tls_free(TLS *tls);
+int           tls_print(TLS *tls, const char *format, va_list args);
+int           tls_read(TLS *tls, void *buffer, int length, bool_t block);
+TLS *         tls_server_alloc(void *server, int sockd, int flags);
+int           tls_status(TLS *tls);
+chr_t *       tls_suite(TLS *tls);
+chr_t *       tls_version(TLS *tls);
+int           tls_write(TLS *tls, const void *buffer, int length, bool_t block);
 
 /// random.c
 bool_t        rand_start(void);

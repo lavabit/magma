@@ -31,13 +31,13 @@ prime_user_signet_t * user_request_sign(prime_user_signet_t *request, prime_org_
 	stringer_t *signing = NULL, *encryption = NULL, *cryptographic = MANAGEDBUF(199);
 
 	// Ensure a valid signing request was provided.
-	if (!request || !request->encryption || !request->signing || !request->signing->type == ED25519_PUB ||
+	if (!request || !request->encryption || !request->signing || request->signing->type != ED25519_PUB ||
 		st_empty(request->signatures.user) || st_length_get(request->signatures.user) != 64 ||
 		(request->signatures.custody && st_length_get(request->signatures.custody) != 64)) {
 		return NULL;
 	}
 	// Ensure the user structure contains the necessary organizational private key.
-	else if (!org || !org->signing || !org->signing->type == ED25519_PRIV) {
+	else if (!org || !org->signing || org->signing->type != ED25519_PRIV) {
 		return NULL;
 	}
 	else if (!user_request_verify_self(request)) {
@@ -104,7 +104,7 @@ prime_user_signet_t * user_request_generate(prime_user_key_t *user) {
 	stringer_t *signing = NULL, *encryption = NULL, *cryptographic = MANAGEDBUF(69);
 
 	// Ensure the user structure contains the necessary private keys.
-	if (!user || !user->encryption || !user->signing || !user->signing->type == ED25519_PRIV) {
+	if (!user || !user->encryption || !user->signing || user->signing->type != ED25519_PRIV) {
 		return NULL;
 	}
 	else if (!(request = mm_alloc(sizeof(prime_user_signet_t)))) {
@@ -154,12 +154,12 @@ prime_user_signet_t * user_request_rotation(prime_user_key_t *user, prime_user_k
 	stringer_t *signing = NULL, *encryption = NULL, *cryptographic = MANAGEDBUF(134);
 
 	// Ensure the user structure contains the necessary private keys.
-	if (!user || !user->encryption || !user->signing || !user->signing->type == ED25519_PRIV) {
+	if (!user || !user->encryption || !user->signing || user->signing->type != ED25519_PRIV) {
 		return NULL;
 	}
 	// Ensure we have the previous user private signing key. We don't need the previous encryption key so we don't
 	// bother checking for it.
-	else if (!previous || !previous->signing || !previous->signing->type == ED25519_PRIV) {
+	else if (!previous || !previous->signing || previous->signing->type != ED25519_PRIV) {
 		return NULL;
 	}
 	else if (!(request = mm_alloc(sizeof(prime_user_signet_t)))) {

@@ -44,7 +44,7 @@ prime_org_signet_t * org_signet_generate(prime_org_key_t *org) {
 	stringer_t *signing = NULL, *encryption = NULL, *cryptographic = MANAGEDBUF(69);
 
 	// Ensure the org structure contains the necessary private keys.
-	if (!org || !org->encryption || !org->signing || !org->signing->type == ED25519_PRIV) {
+	if (!org || !org->encryption || !org->signing || org->signing->type != ED25519_PRIV) {
 		return NULL;
 	}
 	else if (!(signet = mm_alloc(sizeof(prime_org_signet_t)))) {

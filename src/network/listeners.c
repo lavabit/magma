@@ -75,11 +75,11 @@ bool_t net_init(server_t *server) {
 		log_critical("Could not make the socket reusable.");
 		return false;
 	}
-
-	if (!net_set_buffer_length(sd, magma.system.network_buffer, magma.system.network_buffer)) {
-		log_critical("Could not configure the socket buffer size.");
-		return false;
-	}
+//
+//	if (!net_set_buffer_length(sd, magma.system.network_buffer, magma.system.network_buffer)) {
+//		log_critical("Could not configure the socket buffer size.");
+//		return false;
+//	}
 
 	// Zero out the server socket structure, and set the values.
 	if (server->network.ipv6) {

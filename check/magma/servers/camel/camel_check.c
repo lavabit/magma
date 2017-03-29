@@ -1,0 +1,45 @@
+/**
+ * @file /check/magma/camel/camel_check.c
+ *
+ * @brief Camelface test functions.
+ */
+
+#include "magma_check.h"
+
+START_TEST (check_camel_basic_s) {
+
+	log_disable();
+	bool_t outcome = true;
+	client_t *client = NULL;
+	server_t *server = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	if (status() && !(server = servers_get_by_protocol(HTTP, true))) {
+		st_sprint(errmsg, "No HTTP servers were configured to support TLS connections.");
+		outcome = false;
+	}
+	else if (!(client = client_connect("localhost", server->network.port)) || (client_secure(client) == -1)) {
+
+		st_sprint(errmsg, "Failed to connect client securely to HTTP server.");
+		outcome = false;
+	}
+	else if (!check_camel_basic_sthread(client, errmsg)){
+		outcome = false;
+	}
+	else {
+		errmsg = NULL;
+	}
+
+	log_test("CAMEL / BASIC / SINGLE THREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
+}
+END_TEST
+
+Suite * suite_check_camel(void) {
+
+	Suite *s = suite_create("\tCAMEL");
+
+	suite_check_testcase(s, "CAMEL", "Camel Basic/S", check_camel_basic_s);
+
+	return s;
+}

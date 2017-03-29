@@ -9,10 +9,10 @@
 #include "magma_check.h"
 
 /**
- * Calls 	client_read_line on a client until it reaches a period only line, returning the
- * 			number of messages in the inbox.
+ * @brief 	Calls client_read_line on a client until it reaches a period only line, returning
+ * 			the number of messages in the inbox.
  *
- * @param 	client 	The client_t* to read from (which should be connected to a POP server).
+ * @param 	client 	The client_t* to read from (which should be connected to a POP server)
  * @return 	true if a line containing a single period is found, false if not.
  */
 bool_t check_pop_client_read_end(client_t *client) {
@@ -39,7 +39,7 @@ uint64_t check_pop_client_read_list(client_t *client, stringer_t *errmsg) {
 	while (client_read_line(client) > 0) {
 
 		if (pl_starts_with_char(client->line, '.')) {
-			return counter;
+			return counter-1;
 		}
 		else if (tok_get_st(&(client->line), ' ', 0, &fragment) >= 0 && !uint64_conv_pl(fragment, &sequence)) {
 			if (sequence != counter) return 0;
@@ -55,6 +55,7 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 
 	uint64_t message_num;
 	client_t *client = NULL;
+	stringer_t *top_command = NULL;
 
 	// Connect the client.
 	if (!(client = client_connect("localhost", port)) || (secure && (client_secure(client) == -1)) ||
@@ -134,19 +135,19 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 		return false;
 	}
 
-	// Test the LAST command.
-	else if (client_print(client, "LAST 1\r\n") != 8 || client_read_line(client) <= 0 || client_status(client) != 1 ||
-		st_cmp_cs_starts(&(client->line), NULLER("+OK")) || st_cmp_cs_ends(&(client->line),
-		st_aprint_opts(MANAGED_T | CONTIGUOUS | STACK, "%lu\r\n", message_num))) {
+	// Test the TOP command.
+	else if (!(top_command = st_aprint_opts(MANAGED_T | CONTIGUOUS | STACK, "TOP %lu 0\r\n", message_num)) ||
+		client_print(client, st_char_get(top_command)) != st_length_get(top_command) || client_status(client) != 1 ||
+		client_read_line(client) <= 0 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))|| !check_pop_client_read_end(client)) {
 
-		st_sprint(errmsg, "Failed to return a successful state after LAST.");
+		st_sprint(errmsg, "Failed to return a successful state after TOP.");
 		client_close(client);
 		return false;
 	}
 
 	// Test the RSET command.
 	else if (client_print(client, "RSET\r\n") != 6 || client_read_line(client) <= 0 || client_status(client) != 1 ||
-		st_cmp_cs_starts(&(client->line), NULLER("+OK")) || st_cmp_cs_ends(&(client->line), NULLER("were reset.\r\n"))) {
+		st_cmp_cs_eq(&(client->line), NULLER("+OK All messages were reset.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful state after RSET.");
 		client_close(client);

@@ -19,6 +19,8 @@ START_TEST (check_pop_network_basic_tcp_s) {
 	}
 	else if (status() && !check_pop_network_basic_sthread(errmsg, tcp->network.port, false)) {
 		outcome = false;
+	}
+	else {
 		errmsg = NULL;
 	}
 

@@ -119,7 +119,7 @@ bool_t check_http_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_
 		return false;
 	}
 	// Test submitting a GET request.
-	else if (client_print(client, "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n") != 37 || client_status(client) != 1 ||
+	else if (client_print(client, "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n") != 35 || client_status(client) != 1 ||
 		!(content_length = check_http_content_length_get(client, errmsg))) {
 
 		if (st_empty(errmsg)) st_sprint(errmsg, "Failed to return a valid GET response.");

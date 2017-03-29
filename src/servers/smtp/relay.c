@@ -258,9 +258,11 @@ int_t smtp_client_send_data(client_t *client, stringer_t *message, bool_t dotstu
 
 	// Send the DATA command and confirm the proceed response was recieved in response.
 	if ((sent = client_write(client, PLACER("DATA\r\n", 6))) != 6 || (line = client_read_line(client)) <= 0 || !pl_starts_with_char(client->line, '3')) {
+
 		log_pedantic("A%serror occurred while trying to send the DATA command.%s", (sent != 6 || line <= 0 ? " network " : "n "),
 			(sent == 6 && line > 0 ? st_char_get(st_quick(MANAGEDBUF(1024), " { response = %.*s }", st_length_int(&(client->line)),
 			st_char_get(&(client->line)))) : ""));
+
 		st_cleanup(duplicate);
 		return (sent != 6 || line <= 0 ? -1 : -2);
 	}
@@ -272,7 +274,7 @@ int_t smtp_client_send_data(client_t *client, stringer_t *message, bool_t dotstu
 		return -1;
 	}
 
-	// If the message doesn't end witha line break, we'll send a line terminator here, so the termination sequence sent below
+	// If the message doesn't end with a line break, we'll send a line terminator here, so the termination sequence sent below
 	// will appear on a line by itself.
 	else if (!st_cmp_cs_ends(message, PLACER("\n", 1))) {
 		client_write(client, PLACER("\r\n", 2));
@@ -283,9 +285,11 @@ int_t smtp_client_send_data(client_t *client, stringer_t *message, bool_t dotstu
 
 	// Read in the result code to see if the message was relayed successfully. If it fails, print the resulting response message.
 	if ((sent = client_write(client, PLACER(".\r\n", 3))) != 3 || (line = client_read_line(client)) <= 0 || !pl_starts_with_char(client->line, '2')) {
+
 		log_pedantic("A%serror occurred while attempting to transmit the message.%s", (sent != 3 || line <= 0 ? " network " : "n "),
 			(sent == 3 && line > 0 ? st_char_get(st_quick(MANAGEDBUF(1024), " { response = %.*s }", pl_length_int(client->line),
 			pl_char_get(client->line))) : ""));
+
 		return (sent != 3 || line <= 0 ? -1 : -2);
 	}
 

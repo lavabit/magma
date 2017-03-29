@@ -13,12 +13,23 @@
  * 			the number of messages in the inbox.
  *
  * @param 	client 	The client_t* to read from (which should be connected to a POP server)
+ * @param	size	A uint64_t*. If not null, the total size of the lines read will be placed
+ * 					at this address.
+ * @param	token	If not NULL and size if not NULL, then size will only be incremented after
+ * 					reaching a line that begins with token.
  * @return 	true if a line containing a single period is found, false if not.
  */
-bool_t check_pop_client_read_end(client_t *client) {
+bool_t check_pop_client_read_end(client_t *client, uint64_t *size, chr_t *token) {
+
+	if (size) *size = 0;
+	bool_t token_found = false;
 
 	while (client_read_line(client) > 0) {
+
 		if (!st_cmp_cs_eq(&(client->line), NULLER(".\r\n"))) return true;
+		else if (size && st_cmp_cs_starts(&(client->line), NULLER(token)) == 0) token_found = true;
+
+		if (size && token_found) *size += pl_length_get(client->line);
 	}
 	return false;
 }
@@ -34,21 +45,46 @@ bool_t check_pop_client_read_end(client_t *client) {
 uint64_t check_pop_client_read_list(client_t *client, stringer_t *errmsg) {
 
 	placer_t fragment = pl_null();
-	uint64_t counter = 0, sequence = 0;
+	uint64_t counter = 1, sequence = 0;
+
+	client_read_line(client);
 
 	while (client_read_line(client) > 0) {
 
 		if (pl_starts_with_char(client->line, '.')) {
-			return counter-1;
+			return counter-2;
 		}
-		else if (tok_get_st(&(client->line), ' ', 0, &fragment) >= 0 && !uint64_conv_pl(fragment, &sequence)) {
+		else if (tok_get_st(&(client->line), ' ', 0, &fragment) >= 0 && !uint64_conv_pl(fragment, &sequence) == 0) {
 			if (sequence != counter) return 0;
+		}
+		else {
+			return 0;
 		}
 
 		counter++;
 	}
 
 	return 0;
+}
+
+bool_t check_pop_client_auth(client_t *client, chr_t *user, chr_t *pass, stringer_t *errmsg) {
+
+	stringer_t *user_command = st_aprint_opts(MANAGED_T | CONTIGUOUS | STACK, "USER %s\r\n", user),
+		*pass_command = st_aprint_opts(MANAGED_T | CONTIGUOUS | STACK, "PASS %s\r\n", pass);
+
+	if (client_print(client, st_char_get(user_command)) != st_length_get(user_command) || client_read_line(client) <= 0 ||
+		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
+
+		st_sprint(errmsg, "Failed to return a successful state after USER.");
+		return false;
+	}
+	else if (client_print(client, st_char_get(pass_command)) != st_length_get(pass_command) || client_read_line(client) <= 0 ||
+		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
+
+		st_sprint(errmsg, "Failed to return a successful state after PASS.");
+		return false;
+	}
+	return true;
 }
 
 bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t secure) {
@@ -109,7 +145,7 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 	}
 
 	// Test the RETR command.
-	else if (client_print(client, "RETR 1\r\n") != 8 || !check_pop_client_read_end(client) ||
+	else if (client_print(client, "RETR 1\r\n") != 8 || !check_pop_client_read_end(client, NULL, NULL) ||
 		client_status(client) != 1) {
 
 		st_sprint(errmsg, "Failed to return a successful state after RETR.");
@@ -138,7 +174,8 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 	// Test the TOP command.
 	else if (!(top_command = st_aprint_opts(MANAGED_T | CONTIGUOUS | STACK, "TOP %lu 0\r\n", message_num)) ||
 		client_print(client, st_char_get(top_command)) != st_length_get(top_command) || client_status(client) != 1 ||
-		client_read_line(client) <= 0 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))|| !check_pop_client_read_end(client)) {
+		client_read_line(client) <= 0 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))||
+		!check_pop_client_read_end(client, NULL, NULL)) {
 
 		st_sprint(errmsg, "Failed to return a successful state after TOP.");
 		client_close(client);

@@ -40,6 +40,7 @@ bool_t check_smtp_checkers_greylist_sthread(stringer_t *errmsg) {
 
 	if (!(addr = con_addr_reversed(&con, addr)) ||
 		st_sprint(key, "magma.greylist.%lu.%.*s", prefs.usernum, st_length_int(addr), st_char_get(addr)) <= 0) {
+
 		st_sprint(errmsg, "The SMTP greylist check failed to create a valid lookup key.");
 		client_close(client);
 		return false;

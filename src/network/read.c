@@ -70,7 +70,7 @@ int64_t con_read_line(connection_t *con, bool_t block) {
 				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), block);
 
 			// If zero bytes were read, or a negative value was returned to indicate an error, call tls_erorr(), which will return
-			// NULL if the error can be safely ignored.
+			// NULL if the error can be safely ignored. Otherwise log the output for debug purposes.
 			if (bytes <= 0 && (error = tls_error(con->network.tls, bytes, MANAGEDBUF(512)))) {
 				cipher = tls_cipher(con->network.tls, MANAGEDBUF(128));
 				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
@@ -191,7 +191,7 @@ int64_t con_read(connection_t *con) {
 				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), blocking);
 
 			// If zero bytes were read, or a negative value was returned to indicate an error, call tls_erorr(), which will return
-			// NULL if the error can be safely ignored.
+			// NULL if the error can be safely ignored. Otherwise log the output for debug purposes.
 			if (bytes <= 0 && (error = tls_error(con->network.tls, bytes, MANAGEDBUF(512)))) {
 				cipher = tls_cipher(con->network.tls, MANAGEDBUF(128));
 				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
@@ -302,7 +302,7 @@ int64_t client_read_line(client_t *client) {
 				st_avail_get(client->buffer) - st_length_get(client->buffer), blocking);
 
 			// If zero bytes were read, or a negative value was returned to indicate an error, call tls_erorr(), which will return
-			// NULL if the error can be safely ignored.
+			// NULL if the error can be safely ignored. Otherwise log the output for debug purposes.
 			if (bytes <= 0 && (error = tls_error(client->tls, bytes, MANAGEDBUF(512)))) {
 				cipher = tls_cipher(client->tls, MANAGEDBUF(128));
 				ip = ip_presentation(client->ip, MANAGEDBUF(INET6_ADDRSTRLEN));
@@ -403,7 +403,7 @@ int64_t client_read(client_t *client) {
 				st_avail_get(client->buffer) - st_length_get(client->buffer), blocking);
 
 			// If zero bytes were read, or a negative value was returned to indicate an error, call tls_erorr(), which will return
-			// NULL if the error can be safely ignored.
+			// NULL if the error can be safely ignored. Otherwise log the output for debug purposes.
 			if (bytes <= 0 && (error = tls_error(client->tls, bytes, MANAGEDBUF(512)))) {
 				cipher = tls_cipher(client->tls, MANAGEDBUF(128));
 				ip = ip_presentation(client->ip, MANAGEDBUF(INET6_ADDRSTRLEN));

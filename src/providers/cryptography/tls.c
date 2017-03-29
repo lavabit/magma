@@ -39,8 +39,8 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 		ciphers = SSL_DEFAULT_CIPHER_LIST;
 	}
 	else if (security_level == 2) {
-		//options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_COMPRESSION);
-		options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_MODE_AUTO_RETRY | SSL_OP_CIPHER_SERVER_PREFERENCE | SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS;
+		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_COMPRESSION | SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS);
+		//options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_MODE_AUTO_RETRY | SSL_OP_CIPHER_SERVER_PREFERENCE | SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS;
 		ciphers = MAGMA_CIPHERS_MEDIUM;
 	}
 	else if (security_level >= 3) {
@@ -54,11 +54,7 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 		log_critical("Could not create a valid SSL context.");
 		return false;
 	}
-	// Set the CTX options. We use the underlying function instead of going through the macro below,
-	// since macros can't be loaded at runtime.
-	// #define SSL_CTX_set_options(ctx, op) SSL_CTX_ctrl((ctx),SSL_CTRL_OPTIONS,(op),NULL)
-	// Pete suggested "RC4:kEDH:HIGH:!aNULL:!eNULL:!EXP:!LOW:!SSLv2:!MD5" or using SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS to workaround the Thunderbird SSL bug.
-	// Otherwise the suggestion was to use "kEDH:HIGH:RC4:!aNULL:!eNULL:!EXP:!LOW:!SSLv2:!MD5" once the stream bug is fixed.
+	// Set the CTX options using the control function (in lieu of macros) so we can load/bind the necessary function at runtime.
 	else if ((SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_OPTIONS, options, NULL) & options) != options) {
 		log_critical("Could set the options mask on the TLS context.");
 		return false;
@@ -81,11 +77,6 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 		return false;
 	}
 
-	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_ECDH_AUTO, 1, NULL) != 1) {
-		log_critical("Could not enable the automatic, default selection of the strongest curve.");
-		return false;
-	}
-
 	// High security connections get 4096 bit prime when generating a DH session key.
 	else if (magma.iface.cryptography.dhparams_rotate && magma.iface.cryptography.dhparams_large_keys) {
 		SSL_CTX_set_tmp_dh_callback_d(local->tls.context, dh_exchange_4096);
@@ -102,10 +93,19 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 		SSL_CTX_set_tmp_dh_callback_d(local->tls.context, dh_static_2048);
 	}
 
-	SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_READ_AHEAD, 1, NULL);
+	// Automatically select the appropriate and ECDH curve. Note the SSL_CTRL_SET_ECDH_AUTO and SSL_CTX_set_tmp_ecdh_callback()
+	// configured below are no longer necessary, or relevant once we upgrade to OpenSSL 1.1.0. Curve configuration in 1.1.10
+	// occurs automatically, with control over which curves are available being provided by the SSL_CTX_set1_curves interface.
+	if (SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_ECDH_AUTO, 1, NULL) != 1) {
+		log_critical("Could not enable the automatic selection of ellipitical curves.");
+		return false;
+	}
 
-	/// TODO: The SSL_CTX_set_tmp_ecdh_callback() may no longer be needed with SSL_CTX_set_ecdh_auto(). More research is needed.
+	// Like the SSL_CTRL_SET_ECDH_AUTO, this function will no longer be needed when we switch to OpenSSL 1.1.0.
 	SSL_CTX_set_tmp_ecdh_callback_d(local->tls.context, ssl_ecdh_exchange_callback);
+
+	// Enable read ahead to allow for more efficient pipeline processing.
+	SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_READ_AHEAD, 1, NULL);
 
 	return true;
 }
@@ -267,7 +267,6 @@ void tls_free(TLS *tls) {
  */
  stringer_t * tls_cipher(TLS *tls, stringer_t *output) {
 
-	 int_t bits = 0;
 	 SSL_CIPHER *cipher = NULL;
 	 stringer_t *result = NULL;
 	 chr_t *version = NULL, *name = NULL;
@@ -281,17 +280,63 @@ void tls_free(TLS *tls) {
 	 else if (!(name = (chr_t *)SSL_CIPHER_get_name_d(cipher))) {
 		 return NULL;
 	 }
-	 else if (!SSL_CIPHER_get_bits_d(cipher, &bits)) {
-		 return NULL;
-	 }
 	 else if (!(result = st_output(output, 128))) {
 		 return NULL;
 	 }
-//	 st_sprint(result, "version = %s / bits = %i / suite = %s", (st_cmp_cs_eq(NULLER(version), PLACER("TLSv1", 5)) ? version : "TLSv1.0"),
-//		 bits, name);
+
 	 st_sprint(result, "version = %s / suite = %s", (st_cmp_cs_eq(NULLER(version), PLACER("TLSv1", 5)) ? version : "TLSv1.0"), name);
 
 	 return result;
+ }
+
+/**
+ * @brief	Provide the number of secret bits, and thus strength, of the TLS connection cipher suite.
+ * @see		SSL_CIPHER_get_bits()
+ */
+ int_t tls_bits(TLS *tls) {
+
+	 int_t bits = 0;
+	 SSL_CIPHER *cipher = NULL;
+
+	 if (!tls || !(cipher = SSL_get_current_cipher_d(tls)) || !SSL_CIPHER_get_bits_d(cipher, &bits)) {
+		 return 0;
+	 }
+
+	 return bits;
+ }
+
+/**
+ * @brief	Provide the SSL/TLS/DTLS version as a string constant.
+ * @see		SSL_get_version()
+ */
+chr_t * tls_version(TLS *tls) {
+
+	chr_t *version = NULL;
+	SSL_CIPHER *cipher = NULL;
+
+	if (!tls || !(cipher = SSL_get_current_cipher_d(tls)) || !(version = (chr_t *)SSL_get_version_d(tls))) {
+		return NULL ;
+	}
+
+	return (st_cmp_cs_eq(NULLER(version), PLACER("TLSv1", 5)) ? version : "TLSv1.0");
+ }
+
+/**
+ * @brief	Provide the SSL/TLS/DTLS cipher suite as a string constant.
+ * @see		SSL_CIPHER_get_name()
+ * @note	The RFC version of the TLS cipher suite is available through the SSL_CIPHER_standard_name() function.
+ *
+ */
+chr_t * tls_suite(TLS *tls) {
+
+	chr_t *suite = NULL;
+	SSL_CIPHER *cipher = NULL;
+
+	if (!tls || !(cipher = SSL_get_current_cipher_d(tls)) || !(suite = (chr_t *)SSL_CIPHER_get_name_d(cipher))) {
+		 return NULL;
+	}
+
+	return suite;
  }
 
 /**
@@ -312,76 +357,60 @@ int tls_status(TLS *tls) {
 	return result;
 }
 
+/**
+ * @brief	Consolidate the complicated logic associated with handling SSL_read/SSL_write calls which result in 0, or a negative number.
+ */
 stringer_t * tls_error(TLS *tls, int_t code, stringer_t *output) {
 
-	long popped = 0;
 	int tlserr = 0, syserr = 0;
 	chr_t *message = MEMORYBUF(1024);
-	stringer_t *merged = NULL, *result = NULL;
+	stringer_t *result = NULL;
 
-	if (!(result = st_output(output, 128))) {
+	// Check the SSL_get_error() function. If any of the codes listed here (0, 2 or 3) are returned, then the SSL input/output is
+	// still valid, and may be used for future read and write operations.
+	if ((tlserr = SSL_get_error_d(tls, code)) == SSL_ERROR_NONE || tlserr == SSL_ERROR_WANT_READ || tlserr == SSL_ERROR_WANT_WRITE) {
+		return NULL;
+	}
+
+	// If we make it past here, then there should be an error message in the buffer by the time we exit this function.
+	else if (!(result = st_output(output, 128))) {
 		log_pedantic("Unable to record the TLS error because the output buffer is invalid.");
 		return NULL;
 	}
-	// Ensure we have an error condition.
-	else if ((tlserr = SSL_get_error_d(tls, code)) == SSL_ERROR_NONE || tlserr == SSL_ERROR_WANT_READ || tlserr == SSL_ERROR_WANT_WRITE) {
-		if (tlserr == SSL_ERROR_NONE) {
-			st_sprint(result, "error = %i / message = SSL_ERROR_NONE", tlserr);
-		}
-		else if (tlserr == SSL_ERROR_WANT_READ) {
-			st_sprint(result, "error = %i / message = SSL_ERROR_WANT_READ", tlserr);
-		}
-		else if (tlserr == SSL_ERROR_WANT_WRITE) {
-			st_sprint(result, "error = %i / message = SSL_ERROR_WANT_WRITE", tlserr);
-		}
+
+	// We need to record the errno locally to prevent any future function call from clobbering the relevant value.
+	syserr = errno;
+
+	// Note that if errno is non-zero, then the SSL error was probably just an indication we had a system level event, like a peer disconnect.
+	if (syserr != 0) {
+		st_sprint(result, "error = %i / errno = %i / message = %s", tlserr, syserr, strerror_r(syserr, message, 1024));
+	}
+	// If the operation returned a negative value, but errno indicate no particular problem, then we record that scenario here.
+	else if (code < 0 && syserr == 0) {
+		st_sprint(result, "error = %i / errno = 0", tlserr);
 	}
 
-	// We'll need to record something, so make sure we have an output buffer.
-//	else if (!(result = st_output(output, 128))) {
-//		log_pedantic("Unable to record the TLS error because the output buffer is invalid.");
-//		return NULL;
-//	}
+	// SSL error code number 1, an SSL library error occurred, usually because of a protocol problem, and thus the OpenSSL
+	// error queue should hold more information about the fault.
+	else if (tlserr == SSL_ERROR_SSL) {
+		ERR_error_string_n_d(ERR_get_error_d(), message, 1024);
+		st_sprint(result, "error = %i / errno = 0 / message = %s", tlserr, message);
+	}
 
-	// If errno isn't 0, then we have a system level error.
-	else if ((syserr = errno) != 0) {
-		st_sprint(result, "errno = %i / message = %s", syserr, strerror_r(syserr, message, 1024));
+	// SSL error code number 5, a non-recoverable I/O error occurred. Usually errno will provide a clue, but not always.
+	else if (tlserr == SSL_ERROR_SYSCALL) {
+		ERR_error_string_n_d(ERR_get_error_d(), message, 1024);
+		st_sprint(result, "error = %i / errno = 0 / message = %s", tlserr, message);
 	}
-	// If the result variable was less than 0, but errno was 0, print it here.
-	else if (code < 0) {
-		st_sprint(result, "errno = 0");
+
+	// SSL error code number 6, which seems to indicate the remote host shut down the connection.
+	else if (tlserr == SSL_ERROR_ZERO_RETURN) {
+		st_sprint(result, "error = %i / message = Connection shut down.", tlserr);
 	}
-	// If result is 0, then we need to build the error message.
+
+	// We end up here if the result was zero, and errno was zero, and we didn't recognize the SSL error code directly.
 	else {
-
-		if (tlserr == SSL_ERROR_ZERO_RETURN) {
-			st_sprint(result, "error = %i / message = Connection shut down.", tlserr);
-		}
-
-		else if (tlserr == SSL_ERROR_SYSCALL) {
-			ERR_error_string_n_d(ERR_get_error_d(), message, 1024);
-			st_sprint(result, "error = %i / errno = 0 / message = %s", tlserr, message);
-		}
-
-		else if (tlserr == SSL_ERROR_SSL) {
-			// Loop through and create an error message using all of the errors in the TLS error queue.
-			while ((popped = ERR_get_error_d())) {
-				ERR_error_string_n_d(popped, message, 1024);
-				merged = st_append_opts(1024, merged,
-					st_quick(MANAGEDBUF(512), "%s( error = %li / message = %s ) ", (merged ? "/ " : ""), popped, message));
-			};
-
-			if (!merged) {
-				st_sprint(result, "error = %i / message = NULL", tlserr);
-			}
-			else {
-				st_sprint(result, "error = %i / message = %.*s", tlserr, st_length_int(merged), st_char_get(merged));
-				st_free(merged);
-			}
-		}
-
-		else {
-			st_sprint(result, "error = %i", tlserr);
-		}
+		st_sprint(result, "error = %i / errno = 0", tlserr);
 	}
 
 	return result;
@@ -413,7 +442,7 @@ int tls_read(TLS *tls, void *buffer, int length, bool_t block) {
 	else if (!block) {
 
 		// Consult SSL_peek / SSL_want / SSL_get_read_ahead / SSL_set_read_ahead
-		log_pedantic("Non-blocking TLS read calls aren't fully implemented yet.");
+		log_pedantic("Non-blocking TLS write calls have not been fully implemented yet.");
 
 		result = SSL_read_d(tls, buffer, length);
 	}
@@ -443,6 +472,9 @@ int tls_write(TLS *tls, const void *buffer, int length, bool_t block) {
 		return -1;
 	}
 	else if (!block) {
+
+		log_pedantic("Non-blocking TLS write calls have not been fully implemented yet.");
+
 		result = SSL_write_d(tls, buffer, length);
 	}
 	else {

@@ -14,29 +14,27 @@
  */
 int_t client_status(client_t *client) {
 
-	return client->status;
+	int_t result = -1;
 
-//	int_t result = -1;
-//
-//	if (client && client->sockd != -1) {
-//		result = client->status;
-//	}
-//
-//
-//	// If the status is positive, and tls_status returns 0, we use the existing status state.
-//	if (client && client->tls && client->status >= 0 && !tls_status(client->tls)) {
-//		result = client->status;
-//	}
-//	// If the status is positive, and tcp_status returns 0, we use the existing status state.
-//	else if (client && client->sockd != -1 && client->status >= 0 && !tcp_status(client->sockd)) {
-//		result = client->status;
-//	}
-//	// We return -1 if the status is already negative, or connection is otherwise invalid.
-//	else {
-//		result = client->status = -1;
-//	}
-//
-//	return result;
+	if (client && client->sockd != -1) {
+		result = client->status;
+	}
+
+	// If the status is positive, and tls_status returns 0, we use the existing status state.
+	if (client && client->tls && client->status >= 0 && !tls_status(client->tls)) {
+		result = client->status;
+	}
+	// If the status is positive, and tcp_status returns 0, we use the existing status state.
+	else if (client && client->sockd != -1 && client->status >= 0 && !tcp_status(client->sockd)) {
+		result = client->status;
+	}
+	// We return -1 if the status is already negative, or connection is otherwise invalid.
+	else {
+		result = client->status = -1;
+	}
+
+	return result;
+
 }
 
 /**

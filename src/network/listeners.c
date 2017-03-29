@@ -75,11 +75,11 @@ bool_t net_init(server_t *server) {
 		log_critical("Could not make the socket reusable.");
 		return false;
 	}
-//
-//	if (!net_set_buffer_length(sd, magma.system.network_buffer, magma.system.network_buffer)) {
-//		log_critical("Could not configure the socket buffer size.");
-//		return false;
-//	}
+
+	if (!net_set_buffer_length(sd, magma.system.network_buffer, magma.system.network_buffer)) {
+		log_critical("Could not configure the socket buffer size.");
+		return false;
+	}
 
 	// Zero out the server socket structure, and set the values.
 	if (server->network.ipv6) {
@@ -119,13 +119,14 @@ bool_t net_init(server_t *server) {
 	return true;
 }
 
-//
-///**
-// * @brief	The main network handler entry point; poll the listening socket of each configured protocol server, and dispatch the
-// * 			protocol-specific handler for any inbound client connection that is accepted.
-// * @see		protocol_process()
-// * @return	This function returns no value.
-// */
+
+
+/**
+ * @brief	The main network handler entry point; poll the listening socket of each configured protocol server, and dispatch the
+ * 			protocol-specific handler for any inbound client connection that is accepted.
+ * @see		protocol_process()
+ * @return	This function returns no value.
+ */
 //void net_listen(void) {
 //
 //	server_t *server = NULL;
@@ -215,13 +216,13 @@ bool_t net_init(server_t *server) {
 //
 //	return;
 //}
-//
-///**
-// * @brief	Initialize a server and listen for connections.
-// * @note	Each server listens on either an ipv4 or ipv6 address in non-blocking mode, and will be bound and listen on the configured port.
-// * @param	server	a pointer to the server object to be initialized.
-// * @return	true on successful initialization of the server, or false on failure.
-// */
+
+/**
+ * @brief	Initialize a server and listen for connections.
+ * @note	Each server listens on either an ipv4 or ipv6 address in non-blocking mode, and will be bound and listen on the configured port.
+ * @param	server	a pointer to the server object to be initialized.
+ * @return	true on successful initialization of the server, or false on failure.
+ */
 //bool_t net_init(server_t *server) {
 //
 //	int sd;

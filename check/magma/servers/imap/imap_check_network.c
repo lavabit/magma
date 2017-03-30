@@ -43,17 +43,11 @@ bool_t check_imap_client_read_end(client_t *client, chr_t *tag) {
 bool_t check_imap_client_login(client_t *client, chr_t *user, chr_t *pass, chr_t *tag, stringer_t *errmsg) {
 
 	stringer_t *login_line = NULL;
-	uint32_t login_line_len = ns_length_get(tag) + ns_length_get(user) + ns_length_get(pass) + 10;
 
-	// Construct the login command
-	if (!(login_line = st_merge("nsnsns", tag, NULLER(" LOGIN "), user, NULLER(" "), pass, NULLER("\r\n")))) {
-
-		st_sprint(errmsg, "Failed to construct the login command.");
-		return false;
-	}
 	// Test the LOGIN command.
-	else if (client_print(client, st_char_get(login_line)) != login_line_len || !check_imap_client_read_end(client, tag) ||
-			client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER(tag))) {
+	if (client_print(client, "%s LOGIN %s %s\r\n", tag, user, pass) <= 0 ||
+		!check_imap_client_read_end(client, tag) || client_status(client) != 1 ||
+		st_cmp_cs_starts(&(client->line), NULLER(tag))) {
 
 		st_sprint(errmsg, "Failed to return a successful state after LOGIN.");
 		return false;
@@ -75,8 +69,9 @@ bool_t check_imap_client_login(client_t *client, chr_t *user, chr_t *pass, chr_t
 bool_t check_imap_client_select(client_t *client, chr_t *folder, chr_t *tag, stringer_t *errmsg) {
 
 	// Test the SELECT command.
-	if (client_print(client, "%s SELECT Inbox\r\n", tag) <= 0 || !check_imap_client_read_end(client, tag) ||
-		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER(tag))) {
+	if (client_print(client, "%s SELECT Inbox\r\n", tag) != (ns_length_get(tag) + 15) ||
+		!check_imap_client_read_end(client, tag) || client_status(client) != 1 ||
+		st_cmp_cs_starts(&(client->line), NULLER(tag))) {
 
 		st_sprint(errmsg, "Failed to return a successful state after SELECT.");
 		return false;
@@ -100,7 +95,7 @@ bool_t check_imap_client_close_logout(client_t *client, uint32_t tag_num, string
 	tag_num += 1;
 
 	// Construct the tag, close_command, and success stringers for CLOSE.
-	if (!(tag = st_alloc_opts(MANAGED_T | CONTIGUOUS | HEAP, 1024)) || (st_sprint(tag, "A%u", tag_num) != uint32_digits(tag_num)+1) ||
+	if (!(tag = st_alloc(1024)) || (st_sprint(tag, "A%u", tag_num) != uint32_digits(tag_num)+1) ||
 		!(command = st_merge("sn", tag, " CLOSE\r\n")) || !(success = st_merge("sn", tag, " OK"))) {
 
 		st_sprint(errmsg, "Failed to construct tag, command, or success strings for CLOSE.");
@@ -124,7 +119,7 @@ bool_t check_imap_client_close_logout(client_t *client, uint32_t tag_num, string
 	st_free(success);
 
 	// Construct the tag, close_command, and success stringers for LOGOUT.
-	if (!(tag = st_alloc_opts(MANAGED_T | CONTIGUOUS | HEAP, 1024)) || (st_sprint(tag, "A%u", tag_num) != uint32_digits(tag_num)+1) ||
+	if (!(tag = st_alloc(1024)) || (st_sprint(tag, "A%u", tag_num) != uint32_digits(tag_num)+1) ||
 		!(command = st_merge("sn", tag, " LOGOUT\r\n")) || !(success = st_merge("sn", tag, " OK"))) {
 
 		st_sprint(errmsg, "Failed to construct tag, command, or success strings for LOGOUT.");
@@ -214,7 +209,7 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 
 	uint32_t tag_num = 0;
 	client_t *client = NULL;
-	stringer_t *tag = NULL, *command = NULL, *success = NULL;
+	stringer_t *tag = NULL, *success = NULL;
 	chr_t *commands[] = {
 		"SEARCH ALL\r\n",
 		"SEARCH ANSWERED\r\n",
@@ -279,26 +274,25 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 
 		tag_num = i + 2;
 
-		if (!(tag = st_alloc_opts(MANAGED_T | CONTIGUOUS | HEAP, 1024)) ||//(uint32_digits(tag_num) +1))) ||
-			(st_sprint(tag, "A%u", tag_num) != uint32_digits(tag_num)+1) || !(command = st_merge("snn", tag, " ", commands[i])) ||
+		if (!(tag = st_alloc(uint32_digits(tag_num) + 2)) || (st_sprint(tag, "A%u", tag_num) != uint32_digits(tag_num) + 1) ||
 			!(success = st_merge("sn", tag, " OK Search complete.\r\n"))) {
 
-			st_sprint(errmsg, "Failed to construct the command or success strings. { i = %d }", i);
-			st_cleanup(tag, command, success);
+			st_sprint(errmsg, "Failed to construct the tag or success strings. { i = %d }", i);
+			st_cleanup(tag, success);
 			client_close(client);
 			return false;
 		}
-		else if (client_print(client, st_char_get(command)) <= 0 || !check_imap_client_read_end(client, st_char_get(tag)) ||
-			client_status(client) != 1 || st_cmp_cs_eq(&(client->line), success)) {
+		else if (client_print(client, "%s %s\r\n", st_char_get(tag), commands[i]) <= 0 ||
+			!check_imap_client_read_end(client, st_char_get(tag)) || client_status(client) != 1 ||
+			st_cmp_cs_eq(&(client->line), success)) {
 
-			st_sprint(errmsg, "Failed to return a successful status. { command = \"%s\" }", st_char_get(command));
-			st_cleanup(tag, command, success);
+			st_sprint(errmsg, "Failed to return a successful status. { command = \"%s\" }", commands[i]);
+			st_cleanup(tag, success);
 			client_close(client);
 			return false;
 		}
 
 		st_free(tag);
-		st_free(command);
 		st_free(success);
 	}
 
@@ -318,7 +312,7 @@ bool_t check_imap_network_fetch_sthread(stringer_t *errmsg, uint32_t port, bool_
 
 	uint32_t tag_num = 0;
 	client_t *client = NULL;
-	stringer_t *tag = NULL, *command = NULL, *success = NULL;
+	stringer_t *tag = NULL, *success = NULL;
 	chr_t *commands[] = {
 		"FETCH 1:* FLAGS\r\n",
 		"FETCH 1 (BODY [])\r\n",
@@ -354,25 +348,25 @@ bool_t check_imap_network_fetch_sthread(stringer_t *errmsg, uint32_t port, bool_
 
 		tag_num = i + 2;
 
-		if (!(tag = st_alloc_opts(MANAGED_T | CONTIGUOUS | HEAP, 1024)) ||//(uint32_digits(tag_num) +1))) ||
-			(st_sprint(tag, "A%u", tag_num) != uint32_digits(tag_num)+1) || !(command = st_merge("snn", tag, " ", commands[i])) ||
+		if (!(tag = st_alloc(uint32_digits(tag_num) + 2)) || (st_sprint(tag, "A%u", tag_num) != uint32_digits(tag_num) + 1) ||
 			!(success = st_merge("sn", tag, " OK"))) {
 
-			st_sprint(errmsg, "Failed to construct the command or success strings. { i = %d }", i);
-			st_cleanup(tag, command, success);
+			st_sprint(errmsg, "Failed to construct the tag or success strings. { i = %d }", i);
+			st_cleanup(tag, success);
 			client_close(client);
 			return false;
 		}
-		else if (client_print(client, st_char_get(command)) <= 0 || !check_imap_client_read_end(client, st_char_get(tag)) ||
-			client_status(client) != 1 || st_cmp_cs_starts(&(client->line), success)) {
+		else if (client_print(client, "%s %s\r\n", st_char_get(tag), commands[i]) <= 0 ||
+			!check_imap_client_read_end(client, st_char_get(tag)) || client_status(client) != 1 ||
+			st_cmp_cs_starts(&(client->line), success)) {
 
-			st_sprint(errmsg, "Failed to return a successful status. { command = \"%s\" }", st_char_get(command));
-			st_cleanup(tag, command, success);
+			st_sprint(errmsg, "Failed to return a successful status. { command = \"%s\" }", commands[i]);
+			st_cleanup(tag, success);
 			client_close(client);
 			return false;
 		}
 
-		st_cleanup(tag, command, success);
+		st_cleanup(tag, success);
 	}
 	// Test the CLOSE and LOGOUT commands;
 	if (!check_imap_client_close_logout(client, tag_num+1, errmsg)) {

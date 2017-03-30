@@ -49,7 +49,7 @@ bool_t check_camel_login_sthread(client_t *client, stringer_t *errmsg) {
 		"Content-Type: application/x-www-form-urlencoded\r\n\r\n"\
 		"{\"id\":1,\"method\":\"auth\",\"params\":{\"username\":\"princess\",\"password\":\"password\"}}\r\n";
 
-	if (client_print(client, message) != ns_length_get(message) || client_status(client) != 1) {
+	if (client_write(client, PLACER(message, ns_length_get(message))) != ns_length_get(message) || client_status(client) != 1) {
 
 		st_sprint(errmsg, "The client failed to have a successful status after printing the request.");
 		client_close(client);

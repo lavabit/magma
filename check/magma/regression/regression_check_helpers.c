@@ -56,7 +56,7 @@ bool_t check_regression_smtp_dot_stuffing_sthread(stringer_t *errmsg) {
 	client_t *client = NULL;
 	server_t *server = NULL;
 	uint64_t message_num = 0;
-	stringer_t *top_command = NULL, *mailfrom = "magma@lavabit.com", *rcptto = NULLER("princess@example.com"),
+	stringer_t *mailfrom = "magma@lavabit.com", *rcptto = NULLER("princess@example.com"),
 		*message = NULLER(
 		"To: \"Magma\" <magma@lavabit.com>\r\n"\
 		"From: \"Princess\" <princess@example.com\r\n"\
@@ -100,6 +100,7 @@ bool_t check_regression_smtp_dot_stuffing_sthread(stringer_t *errmsg) {
 		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
 		st_sprint(errmsg, "Failed to connect to POP server.");
+		client_close(client);
 		return false;
 	}
 	else if (!check_pop_client_auth(client, "princess", "password", errmsg)) {
@@ -107,15 +108,14 @@ bool_t check_regression_smtp_dot_stuffing_sthread(stringer_t *errmsg) {
 		client_close(client);
 		return false;
 	}
-	else if (client_print(client, "LIST\r\n") != 6 || (message_num = check_pop_client_read_list(client, errmsg)) == 0 ||
+	else if (client_write(client, PLACER("LIST\r\n", 6)) != 6 || (message_num = check_pop_client_read_list(client, errmsg)) == 0 ||
 		client_status(client) != 1) {
 
 		if (st_empty(errmsg)) st_sprint(errmsg, "Failed to return successful state after LIST.");
 		client_close(client);
 		return false;
 	}
-	else if (!(top_command = st_aprint_opts(MANAGED_T | CONTIGUOUS | STACK, "TOP %lu 0\r\n", message_num)) ||
-		client_print(client, st_char_get(top_command)) != st_length_get(top_command) || client_status(client) != 1) {
+	else if (client_print(client, "TOP %lu 0\r\n", message_num) != (uint16_digits(message_num) + 8) || client_status(client) != 1) {
 
 		st_sprint(errmsg, "Failed to return successful status after TOP.");
 		client_close(client);
@@ -128,5 +128,6 @@ bool_t check_regression_smtp_dot_stuffing_sthread(stringer_t *errmsg) {
 		return false;
 	}
 
+	client_close(client);
 	return true;
 }

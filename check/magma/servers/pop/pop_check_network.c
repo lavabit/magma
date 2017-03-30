@@ -69,16 +69,13 @@ uint64_t check_pop_client_read_list(client_t *client, stringer_t *errmsg) {
 
 bool_t check_pop_client_auth(client_t *client, chr_t *user, chr_t *pass, stringer_t *errmsg) {
 
-	stringer_t *user_command = st_aprint_opts(MANAGED_T | CONTIGUOUS | STACK, "USER %s\r\n", user),
-		*pass_command = st_aprint_opts(MANAGED_T | CONTIGUOUS | STACK, "PASS %s\r\n", pass);
-
-	if (client_print(client, st_char_get(user_command)) != st_length_get(user_command) || client_read_line(client) <= 0 ||
+	if (client_print(client, "USER %s\r\n", user) != (ns_length_get(user) + 7) || client_read_line(client) <= 0 ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
 		st_sprint(errmsg, "Failed to return a successful state after USER.");
 		return false;
 	}
-	else if (client_print(client, st_char_get(pass_command)) != st_length_get(pass_command) || client_read_line(client) <= 0 ||
+	else if (client_print(client, "PASS %s\r\n", pass) != (ns_length_get(pass) + 7) || client_read_line(client) <= 0 ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
 		st_sprint(errmsg, "Failed to return a successful state after PASS.");
@@ -91,7 +88,6 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 
 	uint64_t message_num;
 	client_t *client = NULL;
-	stringer_t *top_command = NULL;
 
 	// Connect the client.
 	if (!(client = client_connect("localhost", port)) || (secure && (client_secure(client) == -1)) ||
@@ -104,14 +100,14 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 	}
 
 	// Test the USER and PASS commands with incorrect credentials.
-	else if (client_print(client, "USER princess\r\n") != 15 || client_read_line(client) <= 0 ||
+	else if (client_write(client, PLACER("USER princess\r\n", 15)) != 15 || client_read_line(client) <= 0 ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
 		st_sprint(errmsg, "Failed to return a successful state after USER.");
 		client_close(client);
 		return false;
 	}
-	else if (client_print(client, "PASS lavabit\r\n") != 14 || client_read_line(client) <= 0 ||
+	else if (client_write(client, PLACER("PASS lavabit\r\n", 14)) != 14 || client_read_line(client) <= 0 ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("-ERR"))) {
 
 		st_sprint(errmsg, "Failed to return an error state after PASS with incorrect credentials.");
@@ -120,14 +116,14 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 	}
 
 	// Test the USER and PASS commands with correct credentials.
-	else if (client_print(client, "USER princess\r\n") != 15 || client_read_line(client) <= 0 ||
+	else if (client_write(client, PLACER("USER princess\r\n", 15)) != 15 || client_read_line(client) <= 0 ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
 		st_sprint(errmsg, "Failed to return a successful state after USER.");
 		client_close(client);
 		return false;
 	}
-	else if (client_print(client, "PASS password\r\n") != 15 || client_read_line(client) <= 0 ||
+	else if (client_write(client, PLACER("PASS password\r\n", 15)) != 15 || client_read_line(client) <= 0 ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
 		st_sprint(errmsg, "Failed to return a successful state after USER.");
@@ -136,7 +132,7 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 	}
 
 	// Test the LIST command.
-	else if (client_print(client, "LIST\r\n") != 6 || !(message_num = check_pop_client_read_list(client, errmsg)) ||
+	else if (client_write(client, PLACER("LIST\r\n", 6)) != 6 || !(message_num = check_pop_client_read_list(client, errmsg)) ||
 		client_status(client) != 1) {
 
 		if (!errmsg) st_sprint(errmsg, "Failed to return a successful state after LIST.");
@@ -145,7 +141,7 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 	}
 
 	// Test the RETR command.
-	else if (client_print(client, "RETR 1\r\n") != 8 || !check_pop_client_read_end(client, NULL, NULL) ||
+	else if (client_write(client, PLACER("RETR 1\r\n", 8)) != 8 || !check_pop_client_read_end(client, NULL, NULL) ||
 		client_status(client) != 1) {
 
 		st_sprint(errmsg, "Failed to return a successful state after RETR.");
@@ -154,7 +150,7 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 	}
 
 	// Test the DELE command.
-	else if (client_print(client, "DELE 1\r\n") != 8 || client_read_line(client) <= 0 || client_status(client) != 1 ||
+	else if (client_write(client, PLACER("DELE 1\r\n", 8)) != 8 || client_read_line(client) <= 0 || client_status(client) != 1 ||
 		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
 		st_sprint(errmsg, "Failed to return a successful state after DELE.");
@@ -163,7 +159,7 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 	}
 
 	// Test the NOOP command.
-	else if (client_print(client, "NOOP\r\n") != 6 || client_read_line(client) <= 0 || client_status(client) != 1 ||
+	else if (client_write(client, PLACER("NOOP\r\n", 6)) != 6 || client_read_line(client) <= 0 || client_status(client) != 1 ||
 		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
 		st_sprint(errmsg, "Failed to return a successful state after NOOP.");
@@ -172,9 +168,8 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 	}
 
 	// Test the TOP command.
-	else if (!(top_command = st_aprint_opts(MANAGED_T | CONTIGUOUS | STACK, "TOP %lu 0\r\n", message_num)) ||
-		client_print(client, st_char_get(top_command)) != st_length_get(top_command) || client_status(client) != 1 ||
-		client_read_line(client) <= 0 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))||
+	else if (client_print(client, "TOP %lu 0\r\n", message_num) != (uint16_digits(message_num) + 8) ||
+		client_status(client) != 1 || client_read_line(client) <= 0 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))||
 		!check_pop_client_read_end(client, NULL, NULL)) {
 
 		st_sprint(errmsg, "Failed to return a successful state after TOP.");
@@ -183,7 +178,7 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 	}
 
 	// Test the RSET command.
-	else if (client_print(client, "RSET\r\n") != 6 || client_read_line(client) <= 0 || client_status(client) != 1 ||
+	else if (client_write(client, PLACER("RSET\r\n", 6)) != 6 || client_read_line(client) <= 0 || client_status(client) != 1 ||
 		st_cmp_cs_eq(&(client->line), NULLER("+OK All messages were reset.\r\n"))) {
 
 		st_sprint(errmsg, "Failed to return a successful state after RSET.");
@@ -192,7 +187,7 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 	}
 
 	// Test the QUIT command.
-	else if (client_print(client, "QUIT 1\r\n") <= 0 || client_read_line(client) <= 0 || client_status(client) != 1 ||
+	else if (client_write(client, PLACER("QUIT 1\r\n", 8)) != 8 || client_read_line(client) <= 0 || client_status(client) != 1 ||
 		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
 		st_sprint(errmsg, "Failed to return a successful state after QUIT.");

@@ -51,7 +51,7 @@ bool_t check_smtp_client_mail_rcpt_data(client_t *client, chr_t *from, chr_t *to
 	}
 
 	// Issue DATA command.
-	else if (client_print(client, "DATA\r\n") != 6 || !check_smtp_client_read_end(client) ||
+	else if (client_write(client, PLACER("DATA\r\n", 6)) != 6 || !check_smtp_client_read_end(client) ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("354"))) {
 		st_sprint(errmsg, "Failed to return a proceed status code after DATA.");
 		return false;
@@ -96,7 +96,7 @@ bool_t check_smtp_client_auth_plain(client_t *client, chr_t *auth, stringer_t *e
  */
 bool_t check_smtp_client_auth_login(client_t *client, chr_t *user, chr_t *pass, stringer_t *errmsg) {
 
-	if (client_print(client, "AUTH LOGIN\r\n") != 12 || !check_smtp_client_read_end(client) ||
+	if (client_write(client, PLACER("AUTH LOGIN\r\n", 12)) != 12 || !check_smtp_client_read_end(client) ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("334"))) {
 
 		st_sprint(errmsg, "Failed to return a proceed status code after AUTH LOGIN.");
@@ -129,7 +129,7 @@ bool_t check_smtp_client_auth_login(client_t *client, chr_t *user, chr_t *pass, 
 bool_t check_smtp_client_quit(client_t *client, stringer_t *errmsg) {
 
 	// Test the QUIT command.
-	if (client_print(client, "QUIT\r\n") != 6 || client_read_line(client) <= 0 ||
+	if (client_write(client, PLACER("QUIT\r\n", 6)) != 6 || client_read_line(client) <= 0 ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("221"))) {
 
 		st_sprint(errmsg, "Failed to return successful status following the QUIT command.");
@@ -149,6 +149,8 @@ bool_t check_smtp_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_
 
 	size_t location = 0;
 	client_t *client = NULL;
+	chr_t *message = "To: magma@lavabit.com\r\nFrom: princess@example.com\r\nSubject: Unit Tests\r\n\r\n"\
+		"Aren't unit tests great?\r\n.\r\n";
 
 	// Test the connect banner.
 	if (!(client = client_connect("localhost", port)) || (secure && (client_secure(client) == -1)) ||
@@ -161,49 +163,55 @@ bool_t check_smtp_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_
 	}
 
 	// Test the HELO command.
-	else if (client_print(client, "HELO localhost\r\n") != 16 || client_read_line(client) <= 0 ||
+	else if (client_write(client, PLACER("HELO localhost\r\n", 16)) != 16 || client_read_line(client) <= 0 ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("250"))) {
+
 		st_sprint(errmsg, "Failed to return successful status after HELO.");
 		client_close(client);
 		return false;
 	}
 
 	// Test the EHLO command.
-	else if (client_print(client, "EHLO localhost\r\n") != 16 || !check_smtp_client_read_end(client) ||
+	else if (client_write(client, PLACER("EHLO localhost\r\n", 16)) != 16 || !check_smtp_client_read_end(client) ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("250"))) {
+
 		st_sprint(errmsg, "Failed to return successful status after EHLO.");
 		client_close(client);
 		return false;
 	}
 
 	// Test the MAIL command.
-	else if (client_print(client, "MAIL FROM: <>\r\n") != 15 || client_read_line(client) <= 0 ||
+	else if (client_write(client, PLACER("MAIL FROM: <>\r\n", 15)) != 15 || client_read_line(client) <= 0 ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("250"))) {
+
 		st_sprint(errmsg, "Failed to return successful status after MAIL.");
 		client_close(client);
 		return false;
 	}
 
 	// Test the RCPT command.
-	else if (client_print(client, "RCPT TO: <princess@example.com>\r\n") != 33 || client_read_line(client) <= 0 ||
+	else if (client_write(client, PLACER("RCPT TO: <princess@example.com>\r\n", 33)) != 33 || client_read_line(client) <= 0 ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("250"))) {
+
 		st_sprint(errmsg, "Failed to return successful status after RCPT.");
 		client_close(client);
 		return false;
 	}
 
 	// Test the DATA command.
-	else if (client_print(client, "DATA\r\n") != 6 || client_read_line(client) <= 0 ||
+	else if (client_write(client, PLACER("DATA\r\n", 6)) != 6 || client_read_line(client) <= 0 ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("354"))) {
+
 		st_sprint(errmsg, "Failed to return a proceed status code after DATA.");
 		client_close(client);
 		return false;
 	}
 
 	// Test sending the contents of an email.
-	else if (client_print(client, "To: magma@lavabit.com\r\nFrom: princess@example.com\r\nSubject: Unit Tests\r\n\r\n" \
-		"Aren't unit tests great?\r\n.\r\n") != 103 || client_read_line(client) <= 0 ||
-		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("250"))) {
+	else if (client_write(client, PLACER(message, ns_length_get(message))) != ns_length_get(message) ||
+		client_read_line(client) <= 0 || client_status(client) != 1 ||
+		st_cmp_cs_starts(&(client->line), NULLER("250"))) {
+
 		st_sprint(errmsg, "Failed to get a successful status code after email submission.");
 		client_close(client);
 		return false;
@@ -234,7 +242,7 @@ bool_t check_smtp_network_auth_sthread(stringer_t *errmsg, uint32_t port, bool_t
 		return false;
 	}
 	// Issue EHLO.
-	else if (client_print(client, "EHLO localhost\r\n") != 16 || !check_smtp_client_read_end(client) ||
+	else if (client_write(client, PLACER("EHLO localhost\r\n", 16)) != 16 || !check_smtp_client_read_end(client) ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("250"))) {
 
 		st_sprint(errmsg, "Failed to return successful status after EHLO.");

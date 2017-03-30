@@ -7,7 +7,7 @@
 #ifndef REGRESSION_CHECK_H
 #define REGRESSION_CHECK_H
 
-/// regression_check.c
+/// regression_check_helpers.c
 void check_regression_file_descriptors_leak_test(void);
 bool_t check_client_dot_stuff(client_t *client, chr_t *token);
 bool_t check_regression_smtp_dot_stuffing_sthread(stringer_t *errmsg);

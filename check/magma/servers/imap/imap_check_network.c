@@ -117,8 +117,11 @@ bool_t check_imap_client_close_logout(client_t *client, uint32_t tag_num, string
 		return false;
 	}
 
-	//st_cleanup(tag, command, success);
 	tag_num += 1;
+
+	st_free(tag);
+	st_free(command);
+	st_free(success);
 
 	// Construct the tag, close_command, and success stringers for LOGOUT.
 	if (!(tag = st_alloc_opts(MANAGED_T | CONTIGUOUS | HEAP, 1024)) || (st_sprint(tag, "A%u", tag_num) != uint32_digits(tag_num)+1) ||
@@ -139,6 +142,7 @@ bool_t check_imap_client_close_logout(client_t *client, uint32_t tag_num, string
 	}
 
 	st_cleanup(tag, command, success);
+
 	return true;
 }
 
@@ -214,37 +218,37 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 	chr_t *commands[] = {
 		"SEARCH ALL\r\n",
 		"SEARCH ANSWERED\r\n",
-		"SEARCH BCC\r\n",
-		"SEARCH BEFORE 01-Apr-2017\r\n",
-		"SEARCH BODY Hello\r\n",
-		"SEARCH CC\r\n",
-		"SEARCH DELETED\r\n",
-		"SEARCH FLAGGED\r\n",
-		"SEARCH FROM ladar@lavabit.com\r\n",
-		"SEARCH HEADER lavabit\r\n",
-		"SEARCH KEYWORD Seen\r\n",
-		"SEARCH LARGER 1024\r\n",
-		"SEARCH NEW\r\n",
-		"SEARCH NOT Seen\r\n",
-		"SEARCH OLD\r\n",
-		"SEARCH ON 23-Mar-2017\r\n",
-		"SEARCH OR Seen Flagged\r\n",
-		"SEARCH RECENT\r\n",
-		"SEARCH SEEN\r\n",
-		"SEARCH SENTBEFORE 23-Mar-2017\r\n",
-		"SEARCH SENTON 23-Mar-2017\r\n",
-		"SEARCH SENTSINCE 01-Jan-2017\r\n",
-		"SEARCH SINCE 01-Jan-2017\r\n",
-		"SEARCH SMALLER 30960\r\n",
-		"SEARCH SUBJECT lavabit\r\n",
-		"SEARCH TEXT lavabit\r\n",
-		"SEARCH TO ladar@lavabit.com\r\n",
-		"SEARCH UID 1\r\n",
-		"SEARCH UNANSWERED\r\n",
-		"SEARCH UNDELETED\r\n",
-		"SEARCH UNDRAFT\r\n",
-		"SEARCH UNFLAGGED\r\n",
-		"SEARCH UNKEYWORD Seen\r\n",
+//		"SEARCH BCC\r\n",
+//		"SEARCH BEFORE 01-Apr-2017\r\n",
+//		"SEARCH BODY Hello\r\n",
+//		"SEARCH CC\r\n",
+//		"SEARCH DELETED\r\n",
+//		"SEARCH FLAGGED\r\n",
+//		"SEARCH FROM ladar@lavabit.com\r\n",
+//		"SEARCH HEADER lavabit\r\n",
+//		"SEARCH KEYWORD Seen\r\n",
+//		"SEARCH LARGER 1024\r\n",
+//		"SEARCH NEW\r\n",
+//		"SEARCH NOT Seen\r\n",
+//		"SEARCH OLD\r\n",
+//		"SEARCH ON 23-Mar-2017\r\n",
+//		"SEARCH OR Seen Flagged\r\n",
+//		"SEARCH RECENT\r\n",
+//		"SEARCH SEEN\r\n",
+//		"SEARCH SENTBEFORE 23-Mar-2017\r\n",
+//		"SEARCH SENTON 23-Mar-2017\r\n",
+//		"SEARCH SENTSINCE 01-Jan-2017\r\n",
+//		"SEARCH SINCE 01-Jan-2017\r\n",
+//		"SEARCH SMALLER 30960\r\n",
+//		"SEARCH SUBJECT lavabit\r\n",
+//		"SEARCH TEXT lavabit\r\n",
+//		"SEARCH TO ladar@lavabit.com\r\n",
+//		"SEARCH UID 1\r\n",
+//		"SEARCH UNANSWERED\r\n",
+//		"SEARCH UNDELETED\r\n",
+//		"SEARCH UNDRAFT\r\n",
+//		"SEARCH UNFLAGGED\r\n",
+//		"SEARCH UNKEYWORD Seen\r\n",
 		"SEARCH UNSEEN\r\n"
 	};
 
@@ -293,19 +297,20 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			return false;
 		}
 
-		st_cleanup(tag, command, success);
+		st_free(tag);
+		st_free(command);
+		st_free(success);
 	}
 
 	// Test the CLOSE and LOGOUT commands;
 	if (!check_imap_client_close_logout(client, tag_num+1, errmsg)) {
 
 		client_close(client);
-		st_cleanup(tag);
 		return false;
 	}
 
 	client_close(client);
-	st_cleanup(tag);
+
 	return true;
 }
 
@@ -373,12 +378,11 @@ bool_t check_imap_network_fetch_sthread(stringer_t *errmsg, uint32_t port, bool_
 	if (!check_imap_client_close_logout(client, tag_num+1, errmsg)) {
 
 		client_close(client);
-		st_cleanup(tag);
 		return false;
 	}
 
 	client_close(client);
-	st_cleanup(tag);
+
 	return true;
 }
 

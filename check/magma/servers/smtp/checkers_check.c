@@ -35,6 +35,9 @@ bool_t check_smtp_checkers_greylist_sthread(stringer_t *errmsg) {
 	// The connection needs a valid network socket or the address lookup will fail randomly.
 	con.network.sockd = client->sockd;
 
+	con.network.reverse.ip = mm_alloc(sizeof(ip_t));
+	ip_str_addr("127.0.0.1", con.network.reverse.ip);
+
 	prefs.usernum = 1;
 	prefs.greytime = 1;
 
@@ -83,6 +86,7 @@ bool_t check_smtp_checkers_greylist_sthread(stringer_t *errmsg) {
 		return false;
 	}
 
+	mm_free(con.network.reverse.ip);
 	client_close(client);
 	st_free(value);
 

@@ -6,7 +6,7 @@
 
 #include "magma_check.h"
 
-START_TEST (check_camel_basic_s) {
+START_TEST (check_camel_login_s) {
 
 	log_disable();
 	bool_t outcome = true;
@@ -23,14 +23,14 @@ START_TEST (check_camel_basic_s) {
 		st_sprint(errmsg, "Failed to connect client securely to HTTP server.");
 		outcome = false;
 	}
-	else if (!check_camel_basic_sthread(client, errmsg)){
+	else if (!check_camel_login_sthread(client, errmsg)){
 		outcome = false;
 	}
 	else {
 		errmsg = NULL;
 	}
 
-	log_test("CAMEL / BASIC / SINGLE THREADED:", errmsg);
+	log_test("CAMEL / LOGIN / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
@@ -39,7 +39,7 @@ Suite * suite_check_camel(void) {
 
 	Suite *s = suite_create("\tCAMEL");
 
-	suite_check_testcase(s, "CAMEL", "Camel Basic/S", check_camel_basic_s);
+	suite_check_testcase(s, "CAMEL", "Camel Login/S", check_camel_login_s);
 
 	return s;
 }

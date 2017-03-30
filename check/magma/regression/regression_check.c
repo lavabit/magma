@@ -51,7 +51,7 @@ START_TEST (check_regression_file_descriptors_leak_m) {
 
 		if (folder_difference) {
 			outcome = false;
-			errmsg = NULLER("Failed to properly clean file handles.");
+			if (!errmsg) errmsg = NULLER("Failed to properly clean file handles.");
 		}
 	}
 
@@ -64,6 +64,7 @@ END_TEST
 
 START_TEST (check_regression_smtp_dot_stuffing_s) {
 
+	log_disable();
 	bool_t outcome = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 

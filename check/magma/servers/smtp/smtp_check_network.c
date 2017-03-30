@@ -131,14 +131,14 @@ bool_t check_smtp_client_quit(client_t *client, stringer_t *errmsg) {
 	// Test the QUIT command.
 	if (client_print(client, "QUIT\r\n") != 6 || client_read_line(client) <= 0 ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("221"))) {
+
 		st_sprint(errmsg, "Failed to return successful status following the QUIT command.");
-		client_close(client);
 		return false;
 	}
 
 	else if (client_read_line(client) > 0) {
+
 		st_sprint(errmsg, "The server failed to close the connection after issuing a QUIT command.");
-		client_close(client);
 		return false;
 	}
 
@@ -208,23 +208,14 @@ bool_t check_smtp_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_
 		client_close(client);
 		return false;
 	}
+	// Submit QUIT and cleanup.
+	else if (!check_smtp_client_quit(client, errmsg)) {
 
-	// Test the QUIT command.
-	else if (client_print(client, "QUIT\r\n") != 6 || client_read_line(client) <= 0 ||
-		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("221"))) {
-		st_sprint(errmsg, "Failed to return successful status following the QUIT command.");
-		client_close(client);
-		return false;
-	}
-
-	else if (client_read_line(client) > 0) {
-		st_sprint(errmsg, "The server failed to close the connection after issuing a QUIT command.");
 		client_close(client);
 		return false;
 	}
 
 	client_close(client);
-
 	return true;
 }
 
@@ -284,8 +275,11 @@ bool_t check_smtp_network_auth_sthread(stringer_t *errmsg, uint32_t port, bool_t
 	}
 	// Submit QUIT and cleanup.
 	else if (!check_smtp_client_quit(client, errmsg)) {
+
+		client_close(client);
 		return false;
 	}
 
+	client_close(client);
 	return true;
 }

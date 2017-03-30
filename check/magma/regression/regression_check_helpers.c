@@ -28,7 +28,6 @@ void check_regression_file_descriptors_leak_test(void) {
 	thread_stop();
 	pthread_exit(outcome);
 	return;
-
 }
 
 /**

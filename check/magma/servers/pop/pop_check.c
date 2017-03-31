@@ -20,9 +20,6 @@ START_TEST (check_pop_network_basic_tcp_s) {
 	else if (status() && !check_pop_network_basic_sthread(errmsg, tcp->network.port, false)) {
 		outcome = false;
 	}
-	else {
-		errmsg = NULL;
-	}
 
 	log_test("POP / NETWORK / BASIC / TCP / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
@@ -42,7 +39,6 @@ START_TEST (check_pop_network_basic_tls_s) {
 	}
 	else if (status() && !check_pop_network_basic_sthread(errmsg, tls->network.port, true)) {
 		outcome = false;
-		errmsg = NULL;
 	}
 
 	log_test("POP / NETWORK / BASIC / TLS / SINGLE THREADED:", errmsg);

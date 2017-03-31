@@ -16,7 +16,7 @@
  * 			If the read returns 0 and wasn't caused by a syscall interruption or blocking error, -2 is returned, and the connection status is set to 2.
  * 			Once a \n character is reached, the length of the current line of input is returned to the user, and the connection status is set to 1.
  * @param	con		the network connection across which the line of data will be read.
- * @return	-1 on general failure, -2 if the connection was reset, or the length of the current line of input, including the trailing \n.
+ * @return	-1 on general failure, -2 if the connection was reset, or the length of the current line of input, including the trailing new line character.
  */
 int64_t con_read_line(connection_t *con, bool_t block) {
 
@@ -134,7 +134,7 @@ int64_t con_read_line(connection_t *con, bool_t block) {
  * @note	This function handles reading data from both regular and SSL connections.
  * 			If the connection's network buffer hasn't been allocated, it will be initialized.
  * @param	con		a pointer to the connection object from which the data will be read.
- * @return	-1 on internal error, or on a read error.
+ * @return	-1 on general failure, -2 if the connection was reset, or the amount of data that was read.
  */
 int64_t con_read(connection_t *con) {
 
@@ -254,9 +254,7 @@ int64_t con_read(connection_t *con) {
 
 /**
  * @brief	Read a line of input from a network client session.
- *
- *
- * @return	The length of the line read.
+ * @return	-1 on general failure, -2 if the connection was reset, or the length of the current line of input, including the trailing new line character.
  */
 int64_t client_read_line(client_t *client) {
 
@@ -361,6 +359,10 @@ int64_t client_read_line(client_t *client) {
 	return pl_length_get(client->line);
 }
 
+/**
+ * @brief	Read data from a network connection, and store the data in the connection context buffer.
+ * @return	-1 on general failure, -2 if the connection was reset, or the amount of data that was read.
+ */
 int64_t client_read(client_t *client) {
 
 	ssize_t bytes = 0;

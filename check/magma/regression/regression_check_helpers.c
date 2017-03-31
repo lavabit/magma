@@ -55,20 +55,19 @@ bool_t check_regression_smtp_dot_stuffing_sthread(stringer_t *errmsg) {
 
 	client_t *client = NULL;
 	server_t *server = NULL;
-	uint64_t message_num = 0;
+	uint64_t messagenum = 0;
 	stringer_t *mailfrom = "magma@lavabit.com", *rcptto = NULLER("princess@example.com"),
-		*message = NULLER(
-		"To: \"Magma\" <magma@lavabit.com>\r\n"\
-		"From: \"Princess\" <princess@example.com\r\n"\
-		"Subject: Dot Stuffing Regression Test\r\n"\
-		"This is an SMTP message whose body has a period at the start of a line\r\n"\
-		". In fact, there are two instances of this in the body of this message\r\n"\
-		". The SMTP client code should stuff an extra period after each of them.\r\n"\
+		*message = NULLER("To: \"Magma\" <magma@lavabit.com>\r\n" \
+		"From: \"Princess\" <princess@example.com>\r\n" \
+		"Subject: Dot Stuffing Regression Test\r\n\r\n" \
+		"This is an SMTP message whose body has a period at the start of a line\r\n" \
+		". In fact, there are two instances of this in the body of this message\r\n" \
+		". The SMTP client code should stuff an extra period after each of them.\r\n" \
 		".\r\n");
 
 	// First, send the message with periods at the beginning of lines in the body.
 	if (!(client = smtp_client_connect(0))) {
-		st_sprint(errmsg, "Failed to connect to an SMTP server.");
+		st_sprint(errmsg, "Failed to connect with the SMTP server.");
 		return false;
 	}
 	else if (smtp_client_send_helo(client) != 1) {
@@ -94,6 +93,9 @@ bool_t check_regression_smtp_dot_stuffing_sthread(stringer_t *errmsg) {
 
 	smtp_client_close(client);
 
+	/// LOW: Split this unit test in the SMTP client dot stuff test, and the POP dot stuff test. In theory the latter should
+	/// 	add a test message using mail_store_message() and then find the precise UID for said test message via POP.
+
 	// Next, check if the entire message was sent to the recipient.
 	if (!(server = servers_get_by_protocol(POP, false)) || !(client = client_connect("localhost", server->network.port)) ||
 		!net_set_timeout(client->sockd, 20, 20) || client_read_line(client) <= 0 || client_status(client) != 1 ||
@@ -108,14 +110,14 @@ bool_t check_regression_smtp_dot_stuffing_sthread(stringer_t *errmsg) {
 		client_close(client);
 		return false;
 	}
-	else if (client_write(client, PLACER("LIST\r\n", 6)) != 6 || (message_num = check_pop_client_read_list(client, errmsg)) == 0 ||
+	else if (client_write(client, PLACER("LIST\r\n", 6)) != 6 || (messagenum = check_pop_client_read_list(client, errmsg)) == 0 ||
 		client_status(client) != 1) {
 
 		if (st_empty(errmsg)) st_sprint(errmsg, "Failed to return successful state after LIST.");
 		client_close(client);
 		return false;
 	}
-	else if (client_print(client, "TOP %lu 0\r\n", message_num) != (uint16_digits(message_num) + 8) || client_status(client) != 1) {
+	else if (client_print(client, "TOP %lu 0\r\n", messagenum) != (uint16_digits(messagenum) + 8) || client_status(client) != 1) {
 
 		st_sprint(errmsg, "Failed to return successful status after TOP.");
 		client_close(client);

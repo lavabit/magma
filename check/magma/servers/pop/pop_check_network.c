@@ -12,61 +12,71 @@
  * @brief 	Calls client_read_line on a client until it reaches a period only line, returning
  * 			the number of messages in the inbox.
  *
- * @param 	client 	The client_t* to read from (which should be connected to a POP server)
- * @param	size	A uint64_t*. If not null, the total size of the lines read will be placed
+ * @param 	client 	The client_t pointer to read from (which should be connected to a POP server)
+ * @param	size	A uint64_t pointer. If not NULL, the total size of the lines read will be placed
  * 					at this address.
- * @param	token	If not NULL and size if not NULL, then size will only be incremented after
- * 					reaching a line that begins with token.
+ * @param	token	If not NULL, then the size variable will only include the number of bytes read after the token.
  * @return 	true if a line containing a single period is found, false if not.
  */
 bool_t check_pop_client_read_end(client_t *client, uint64_t *size, chr_t *token) {
 
-	if (size) *size = 0;
 	bool_t token_found = false;
+
+	if (size) *size = 0;
+	else if (!token) token_found = true;
+
+	// There shouldn't be a token, if we aren't also supposed to be counting the number of bytes.
+	else if (!size && token) return false;
 
 	while (client_read_line(client) > 0) {
 
+		// Break when a line with just a period is found.
 		if (!st_cmp_cs_eq(&(client->line), NULLER(".\r\n"))) return true;
-		else if (size && st_cmp_cs_starts(&(client->line), NULLER(token)) == 0) token_found = true;
+
+		// If we have a size and a token, then keep checking for the token until its found.
+		else if (size && token && !token_found && st_cmp_cs_starts(&(client->line), NULLER(token)) == 0) token_found = true;
 
 		if (size && token_found) *size += pl_length_get(client->line);
 	}
+
 	return false;
 }
 
 /**
- * Calls 	client_read_line on a client until it reaches a period only line, returning the
- * 			number of messages in the inbox.
+ * @brief	Calls client_read_line until it reaches a line containing only a period, then returns the number
+ * 			of messages it encountered.
  *
- * @param 	client 	The client_t* to read from (which should be connected to a POP server).
- * @param 	errmsg	The stringer_t* to which error messages will be printed in event of an error.
- * @return 	a uint32_t containing the number of messages in the inbox.
+ * @param 	client 	The client_t pointer to read from (which should be connected to a POP server).
+ * @param 	errmsg	The stringer_t pointer to which error messages will be printed in event of an error.
+ * @return 	an uint32_t containing the number of messages in the inbox.
  */
 uint64_t check_pop_client_read_list(client_t *client, stringer_t *errmsg) {
 
 	placer_t fragment = pl_null();
 	uint64_t counter = 1, sequence = 0;
 
-	client_read_line(client);
 
-	while (client_read_line(client) > 0) {
+	/// LOW: Parse out the total message number from the first line returned and check against that at the end of the
+	/// 	function, returning an error if it and the counter do not match.
+	if (client_read_line(client) <= 0 || !pl_starts_with_char(client->line, '+')) {
+		st_sprint(errmsg, "The message list response failed to return a valid response.");
+		return 0;
+	}
+	while (client_read_line(client) > 0 && !pl_starts_with_char(client->line, '.')) {
 
-		if (pl_starts_with_char(client->line, '.')) {
-			return counter-2;
-		}
-		else if (tok_get_st(&(client->line), ' ', 0, &fragment) >= 0 && !uint64_conv_pl(fragment, &sequence) == 0) {
-			if (sequence != counter) return 0;
-		}
-		else {
+		// If the sequence number doesn't match our counter variable, we'll indicate an error.
+		if (tok_get_st(&(client->line), ' ', 0, &fragment) >= 0 && !uint64_conv_pl(fragment, &sequence) == 0 && sequence != counter) {
+			st_sprint(errmsg, "The message sequence appears to have skipped, because the internal counter no longer matches the sequence.");
 			return 0;
 		}
 
 		counter++;
 	}
 
-	return 0;
+	return counter - 1;
 }
 
+/// LOW: This should use stringer parameters.
 bool_t check_pop_client_auth(client_t *client, chr_t *user, chr_t *pass, stringer_t *errmsg) {
 
 	if (client_print(client, "USER %s\r\n", user) != (ns_length_get(user) + 7) || client_read_line(client) <= 0 ||

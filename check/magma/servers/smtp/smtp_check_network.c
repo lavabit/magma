@@ -34,7 +34,7 @@ bool_t check_smtp_client_read_end(client_t *client) {
 bool_t check_smtp_client_mail_rcpt_data(client_t *client, chr_t *from, chr_t *to, stringer_t *errmsg) {
 
 	chr_t *line_from = "MAIL FROM: <%s>\r\n", *line_to = "RCPT TO: <%s>\r\n";
-	size_t size_from = ns_length_get(line_from) + ns_length_get(from) -2, size_to = ns_length_get(line_to) + ns_length_get(to) -2;
+	size_t size_from = ns_length_get(line_from) + ns_length_get(from) - 2, size_to = ns_length_get(line_to) + ns_length_get(to) - 2;
 
 	// Issue MAIL command.
 	if (client_print(client, line_from, from) != size_from || !check_smtp_client_read_end(client) ||
@@ -69,15 +69,11 @@ bool_t check_smtp_client_mail_rcpt_data(client_t *client, chr_t *from, chr_t *to
  * 					and error
  * @return 	True if no errors, false otherwise
  */
-bool_t check_smtp_client_auth_plain(client_t *client, chr_t *auth, stringer_t *errmsg) {
+bool_t check_smtp_client_auth_plain(client_t *client, stringer_t *auth) {
 
-	chr_t *line_auth = "AUTH PLAIN %s\r\n";
-
-	if (client_print(client, line_auth, auth) != (ns_length_get(line_auth) + ns_length_get(auth)) -2 ||
+	if (client_print(client, "AUTH PLAIN %.*s\r\n", st_length_int(auth), st_char_get(auth)) != st_length_get(auth) + 13 ||
 		!check_smtp_client_read_end(client) || client_status(client) != 1 ||
 		st_cmp_cs_starts(&(client->line), NULLER("235"))) {
-
-		st_sprint(errmsg, "Failed to return a successful status after submitting credentials");
 		return false;
 	}
 
@@ -88,30 +84,22 @@ bool_t check_smtp_client_auth_plain(client_t *client, chr_t *auth, stringer_t *e
  * @brief 	Submits the AUTH LOGIN command to the passed client using the passed parameters
  * @param 	client 	A client_t* connected to an SMTP server that has had the HELO/EHLO command
  * 					already submitted
- * @param 	user 	A chr_t* containing the username of the user
- * @param 	pass 	A chr_t* containing the password of the user
- * @param 	errmsg 	A stringer_t* that will have the error message printed to it in the event of
- * 					and error
- * @return 	True if no errors, false otherwise
+ * @param 	user 	A NULL string containing the username of the user.
+ * @param 	pass 	A NULL string containing the password of the user.
+ * @return 	true if no errors, false otherwise
  */
-bool_t check_smtp_client_auth_login(client_t *client, chr_t *user, chr_t *pass, stringer_t *errmsg) {
+bool_t check_smtp_client_auth_login(client_t *client, stringer_t *user, stringer_t *pass) {
 
 	if (client_write(client, PLACER("AUTH LOGIN\r\n", 12)) != 12 || !check_smtp_client_read_end(client) ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("334"))) {
-
-		st_sprint(errmsg, "Failed to return a proceed status code after AUTH LOGIN.");
 		return false;
 	}
-	else if (client_print(client, "%s\r\n", user) != ns_length_get(user) + 2 || !check_smtp_client_read_end(client) ||
-		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("334"))) {
-
-		st_sprint(errmsg, "Failed to return a proceed status code after submitting username.");
+	else if (client_print(client, "%.*s\r\n", st_length_int(user), st_char_get(user)) != st_length_get(user) + 2 ||
+		!check_smtp_client_read_end(client) || client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("334"))) {
 		return false;
 	}
-	else if (client_print(client, "%s\r\n", pass) != ns_length_get(pass) + 2 || !check_smtp_client_read_end(client) ||
-		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("235"))) {
-
-		st_sprint(errmsg, "Failed to return a successful status after submitting credentials.");
+	else if (client_print(client, "%.*s\r\n", st_length_int(pass), st_char_get(pass)) != st_length_get(pass) + 2 ||
+		!check_smtp_client_read_end(client) || client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("235"))) {
 		return false;
 	}
 
@@ -250,16 +238,16 @@ bool_t check_smtp_network_auth_sthread(stringer_t *errmsg, uint32_t port, bool_t
 		return false;
 	}
 	// Issue AUTH with incorrect credentials.
-	else if ((login ? check_smtp_client_auth_login(client, "bWFnbWE=", "aW52YWxpZHBhc3N3b3Jk", errmsg)
-			: check_smtp_client_auth_plain(client, "bWFnbWEAbWFnbWEAaW52YWxpZHBhc3N3b3Jk", errmsg))) {
-
+	else if ((login ? check_smtp_client_auth_login(client,  NULLER("bWFnbWE="),  NULLER("aW52YWxpZHBhc3N3b3Jk"))
+			: check_smtp_client_auth_plain(client,  NULLER("bWFnbWEAbWFnbWEAaW52YWxpZHBhc3N3b3Jk")))) {
+		st_sprint(errmsg, "Invalid credentials appear to have authenticated when they should have failed.");
 		client_close(client);
 		return false;
 	}
 	// Issue AUTH with correct credentials.
-	else if (!(login ? check_smtp_client_auth_login(client, "bWFnbWE=", "cGFzc3dvcmQ=", errmsg)
-			: check_smtp_client_auth_plain(client, "bWFnbWEAbWFnbWEAcGFzc3dvcmQ=", errmsg))) {
-
+	else if (!(login ? check_smtp_client_auth_login(client, NULLER("bWFnbWE="),  NULLER("cGFzc3dvcmQ="))
+			: check_smtp_client_auth_plain(client,  NULLER("bWFnbWEAbWFnbWEAcGFzc3dvcmQ=")))) {
+		st_sprint(errmsg, "Failed to authenticate even though we supplied valid credentials.");
 		client_close(client);
 		return false;
 	}

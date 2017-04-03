@@ -111,31 +111,26 @@ bool_t check_http_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_
 	client_t *client = NULL;
 
 	// Test the connection.
-	if (!(client = client_connect("localhost", port)) || (secure && (client_secure(client) == -1)) ||
-		client_status(client) != 1) {
-
+	if (!(client = client_connect("localhost", port)) || (secure && (client_secure(client) == -1)) || client_status(client) != 1) {
 		st_sprint(errmsg, "Failed to connect with the HTTP server.");
 		client_close(client);
 		return false;
 	}
 	// Test submitting a GET request.
-	else if (client_write(client, PLACER("GET / HTTP/1.1\r\nHost: localhost\r\n\r\n", 35)) != 35 || client_status(client) != 1 ||
-		!(content_length = check_http_content_length_get(client, errmsg))) {
-
+	else if (client_write(client, PLACER("GET / HTTP/1.1\r\nHost: localhost\r\n\r\n", 35)) != 35 ||
+		client_status(client) != 1 || !(content_length = check_http_content_length_get(client, errmsg))) {
 		if (st_empty(errmsg)) st_sprint(errmsg, "Failed to return a valid GET response.");
 		client_close(client);
 		return false;
 	}
 	// Test the response.
 	else if (check_http_content_length_test(client, content_length, errmsg)) {
-
 		if (st_empty(errmsg)) st_sprint(errmsg, "The content length and actual body length of the GET response did not match.");
 		client_close(client);
 		return false;
 	}
 
 	client_close(client);
-
 	return true;
 }
 
@@ -153,17 +148,14 @@ bool_t check_http_network_options_sthread(stringer_t *errmsg, uint32_t port, boo
 	};
 
 	// Test the connection.
-	if (!(client = client_connect("localhost", port)) || (secure && (client_secure(client) == -1)) ||
-		client_status(client) != 1) {
-
+	if (!(client = client_connect("localhost", port)) || (secure && (client_secure(client) == -1)) || client_status(client) != 1) {
 		st_sprint(errmsg, "Failed to connect with the HTTP server.");
 		client_close(client);
 		return false;
 	}
-	// Test OPTIONS
-	else if (client_write(client, PLACER("OPTIONS /portal/camel HTTP/1.1\r\n\r\n", 34)) != 34 || client_status(client) != 1 ||
-		!check_http_options(client, options, errmsg)) {
-
+	// Test OPTIONS.
+	else if (client_write(client, PLACER("OPTIONS /portal/camel HTTP/1.1\r\n\r\n", 34)) != 34 ||
+		client_status(client) != 1 || !check_http_options(client, options, errmsg)) {
 		client_close(client);
 		return false;
 	}

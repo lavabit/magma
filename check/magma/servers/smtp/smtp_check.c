@@ -21,9 +21,6 @@ START_TEST (check_smtp_network_basic_tcp_s) {
 	else if (status() && !check_smtp_network_basic_sthread(errmsg, server->network.port, false)) {
 		outcome = false;
 	}
-	else {
-		errmsg = NULL;
-	}
 
 	log_test("SMTP / NETWORK / BASIC / TCP / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
@@ -44,9 +41,6 @@ START_TEST (check_smtp_network_basic_tls_s) {
 	else if (status() && !check_smtp_network_basic_sthread(errmsg, server->network.port, true)) {
 		outcome = false;
 	}
-	else {
-		errmsg = NULL;
-	}
 
 	log_test("SMTP / NETWORK / BASIC / TLS / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
@@ -59,8 +53,7 @@ START_TEST (check_smtp_accept_store_message_s) {
 	bool_t outcome = true;
 	stringer_t *errmsg = MANAGEDBUF(2048);
 
-	outcome = check_smtp_accept_message_sthread(errmsg);
-	if (outcome) errmsg = NULL;
+	if (status()) outcome = check_smtp_accept_message_sthread(errmsg);
 
 	log_test("SMTP / ACCEPT / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
@@ -73,8 +66,7 @@ START_TEST (check_smtp_checkers_greylist_s) {
 	bool_t outcome = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
-	outcome = check_smtp_checkers_greylist_sthread(errmsg);
-	if (outcome) errmsg = NULL;
+	if (status()) outcome = check_smtp_checkers_greylist_sthread(errmsg);
 
 	log_test("SMTP / CHECKERS / GREYLIST / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
@@ -92,8 +84,6 @@ START_TEST (check_smtp_checkers_filters_s) {
 	if (status() && outcome) outcome = check_smtp_checkers_filters_sthread(errmsg, SMTP_FILTER_ACTION_MOVE, 2);
 	if (status() && outcome) outcome = check_smtp_checkers_filters_sthread(errmsg, SMTP_FILTER_ACTION_LABEL, 3);
 	if (status() && outcome) outcome = check_smtp_checkers_filters_sthread(errmsg, SMTP_FILTER_ACTION_MARK_READ, 4);
-
-	if (outcome) errmsg = NULL;
 
 	log_test("SMTP / CHECKERS / FILTERS / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
@@ -114,9 +104,10 @@ START_TEST (check_smtp_network_auth_plain_s) {
 	else if (status() && !check_smtp_network_auth_sthread(errmsg, server->network.port, false)) {
 		outcome = false;
 	}
-	else {
-		errmsg = NULL;
-	}
+
+	/// LOW: Add a variation of this test which takes place over TCP and thus fails specifically because the connection
+	/// 	lacks transport security (aka TLS). In other words, test for valid credentials first, and that it works via TLS,
+	/// 	before ensuring the same inputs fail via TCP.
 
 	log_test("SMTP / NETWORK / AUTH PLAIN / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
@@ -137,9 +128,10 @@ START_TEST (check_smtp_network_auth_login_s) {
 	else if (status() && !check_smtp_network_auth_sthread(errmsg, server->network.port, true)) {
 		outcome = false;
 	}
-	else {
-		errmsg = NULL;
-	}
+
+	/// LOW: Add a variation of this test which takes place over TCP and thus fails specifically because the connection
+	/// 	lacks transport security (aka TLS). In other words, test for valid credentials first, and that it works via TLS,
+	/// 	before ensuring the same inputs fail via TCP.
 
 	log_test("SMTP / NETWORK / AUTH LOGIN / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));

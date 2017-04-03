@@ -129,9 +129,10 @@ int_t smtp_check_filters(smtp_inbound_prefs_t *prefs, stringer_t **local) {
 	size_t length;
 	stringer_t *field;
 	inx_cursor_t *cursor;
-	int_t match = -1, result = 0;
+	chr_t *error = MEMORYBUF(1024);
 	struct re_pattern_buffer regbuff;
 	smtp_inbound_filter_t *filter = NULL;
+	int_t match = -1, result = 0, holder = 0;
 
 	if (!prefs || !prefs->filters || !(cursor = inx_cursor_alloc(prefs->filters))) {
 		return -1;
@@ -144,9 +145,10 @@ int_t smtp_check_filters(smtp_inbound_prefs_t *prefs, stringer_t **local) {
 		mm_wipe(&regbuff, sizeof(struct re_pattern_buffer));
 
 		// Use regcomp, so we can use the case insensitive flag.
-		if (regcomp(&regbuff, st_char_get(filter->expression), REG_ICASE) != 0) {
-			log_pedantic("Regular expression compilation failed. {user = %lu / rule = %lu / expression = %.*s}",
-				prefs->usernum, filter->rulenum, st_length_int(filter->expression), st_char_get(filter->expression));
+		if ((holder = regcomp(&regbuff, st_char_get(filter->expression), REG_ICASE)) != 0) {
+			regerror(holder, &regbuff, error, 1024);
+			log_pedantic("Regular expression compilation failed. {user = %lu / rule = %lu / expression = %.*s / error = %s }",
+				prefs->usernum, filter->rulenum, st_length_int(filter->expression), st_char_get(filter->expression), error);
 			inx_cursor_free(cursor);
 			return -1;
 		}

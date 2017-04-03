@@ -21,9 +21,6 @@ START_TEST (check_http_network_basic_tcp_s) {
 	else if (status() && !check_http_network_basic_sthread(errmsg, server->network.port, false)) {
 		outcome = false;
 	}
-	else {
-		errmsg = NULL;
-	}
 
 	log_test("HTTP / NETWORK / BASIC / TCP / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
@@ -44,9 +41,6 @@ START_TEST (check_http_network_basic_tls_s) {
 	else if (status() && !check_http_network_basic_sthread(errmsg, server->network.port, true)) {
 		outcome = false;
 	}
-	else {
-		errmsg = NULL;
-	}
 
 	log_test("HTTP / NETWORK / BASIC / TLS / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
@@ -66,9 +60,6 @@ START_TEST (check_http_network_options_s) {
 	}
 	else if (status() && !check_http_network_options_sthread(errmsg, server->network.port, true)) {
 		outcome = false;
-	}
-	else {
-		errmsg = NULL;
 	}
 
 	log_test("HTTP / NETWORK / OPTIONS / SINGLE THREADED:", errmsg);

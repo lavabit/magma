@@ -20,9 +20,6 @@ START_TEST (check_imap_network_basic_tcp_s) {
 	else if (status() && !check_imap_network_basic_sthread(errmsg, server->network.port, false)) {
 		outcome = false;
 	}
-	else {
-		errmsg = NULL;
-	}
 
 	log_test("IMAP / NETWORK / BASIC / TCP / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
@@ -42,9 +39,6 @@ START_TEST (check_imap_network_basic_tls_s) {
 	}
 	else if (status() && !check_imap_network_basic_sthread(errmsg, server->network.port, true)) {
 		outcome = false;
-	}
-	else {
-		errmsg = NULL;
 	}
 
 	log_test("IMAP / NETWORK / BASIC / TLS / SINGLE THREADED:", errmsg);
@@ -66,9 +60,6 @@ START_TEST (check_imap_network_search_s) {
 	else if (status() && !check_imap_network_search_sthread(errmsg, server->network.port, false)) {
 		outcome = false;
 	}
-	else {
-		errmsg = NULL;
-	}
 
 	log_test("IMAP / NETWORK / SEARCH / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
@@ -88,9 +79,6 @@ START_TEST (check_imap_network_fetch_s) {
 	}
 	else if (status() && !check_imap_network_fetch_sthread(errmsg, server->network.port, false)) {
 		outcome = false;
-	}
-	else {
-		errmsg = NULL;
 	}
 
 	log_test("IMAP / NETWORK / FETCH / SINGLE THREADED:", errmsg);

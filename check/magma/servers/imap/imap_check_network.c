@@ -191,6 +191,8 @@ bool_t check_imap_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_
 		return false;
 	}
 
+	/// HIGH: Test other IMAP commands, like LIST, CREATE, TAG, APPEND.
+
 	// Test the LOGOUT command.
 	else if (client_print(client, "A5 LOGOUT\r\n") <= 0 || !check_imap_client_read_end(client, "A5") ||
 			client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("A5 OK"))) {
@@ -211,65 +213,62 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 	client_t *client = NULL;
 	stringer_t *tag = NULL, *success = NULL;
 	chr_t *commands[] = {
-		"SEARCH ALL\r\n",
-		"SEARCH ANSWERED\r\n",
-//		"SEARCH BCC\r\n",
-//		"SEARCH BEFORE 01-Apr-2017\r\n",
-//		"SEARCH BODY Hello\r\n",
-//		"SEARCH CC\r\n",
-//		"SEARCH DELETED\r\n",
-//		"SEARCH FLAGGED\r\n",
-//		"SEARCH FROM ladar@lavabit.com\r\n",
-//		"SEARCH HEADER lavabit\r\n",
-//		"SEARCH KEYWORD Seen\r\n",
-//		"SEARCH LARGER 1024\r\n",
-//		"SEARCH NEW\r\n",
-//		"SEARCH NOT Seen\r\n",
-//		"SEARCH OLD\r\n",
-//		"SEARCH ON 23-Mar-2017\r\n",
-//		"SEARCH OR Seen Flagged\r\n",
-//		"SEARCH RECENT\r\n",
-//		"SEARCH SEEN\r\n",
-//		"SEARCH SENTBEFORE 23-Mar-2017\r\n",
-//		"SEARCH SENTON 23-Mar-2017\r\n",
-//		"SEARCH SENTSINCE 01-Jan-2017\r\n",
-//		"SEARCH SINCE 01-Jan-2017\r\n",
-//		"SEARCH SMALLER 30960\r\n",
-//		"SEARCH SUBJECT lavabit\r\n",
-//		"SEARCH TEXT lavabit\r\n",
-//		"SEARCH TO ladar@lavabit.com\r\n",
-//		"SEARCH UID 1\r\n",
-//		"SEARCH UNANSWERED\r\n",
-//		"SEARCH UNDELETED\r\n",
-//		"SEARCH UNDRAFT\r\n",
-//		"SEARCH UNFLAGGED\r\n",
-//		"SEARCH UNKEYWORD Seen\r\n",
-		"SEARCH UNSEEN\r\n"
+		"SEARCH 1 ALL\r\n",
+		"SEARCH 1 ANSWERED\r\n",
+		"SEARCH 1 BCC\r\n",
+		"SEARCH 1 BEFORE 01-Apr-2017\r\n",
+		"SEARCH 1 BODY Hello\r\n",
+		"SEARCH 1 CC\r\n",
+		"SEARCH 1 DELETED\r\n",
+		"SEARCH 1 FLAGGED\r\n",
+		"SEARCH 1 FROM ladar@lavabit.com\r\n",
+		"SEARCH 1 HEADER lavabit\r\n",
+		"SEARCH 1 KEYWORD Seen\r\n",
+		"SEARCH 1 LARGER 1024\r\n",
+		"SEARCH 1 NEW\r\n",
+		"SEARCH 1 NOT Seen\r\n",
+		"SEARCH 1 OLD\r\n",
+		"SEARCH 1 ON 23-Mar-2017\r\n",
+		"SEARCH 1 OR Seen Flagged\r\n",
+		"SEARCH 1 RECENT\r\n",
+		"SEARCH 1 SEEN\r\n",
+		"SEARCH 1 SENTBEFORE 23-Mar-2017\r\n",
+		"SEARCH 1 SENTON 23-Mar-2017\r\n",
+		"SEARCH 1 SENTSINCE 01-Jan-2017\r\n",
+		"SEARCH 1 SINCE 01-Jan-2017\r\n",
+		"SEARCH 1 SMALLER 30960\r\n",
+		"SEARCH 1 SUBJECT lavabit\r\n",
+		"SEARCH 1 TEXT lavabit\r\n",
+		"SEARCH 1 TO ladar@lavabit.com\r\n",
+		"SEARCH 1 UID 1\r\n",
+		"SEARCH 1 UNANSWERED\r\n",
+		"SEARCH 1 UNDELETED\r\n",
+		"SEARCH 1 UNDRAFT\r\n",
+		"SEARCH 1 UNFLAGGED\r\n",
+		"SEARCH 1 UNKEYWORD Seen\r\n",
+		"SEARCH 1 UNSEEN\r\n"
 	};
 
 	// Check the initial response.
 	if (!(client = client_connect("localhost", port)) || (secure && (client_secure(client) == -1)) ||
 		!net_set_timeout(client->sockd, 20, 20) || client_read_line(client) <= 0 || (client->status != 1) ||
 		st_cmp_cs_starts(&(client->line), NULLER("* OK"))) {
-
 		st_sprint(errmsg, "Failed to connect with the IMAP server.");
 		client_close(client);
 		return false;
 	}
 	// Test the LOGIN command.
 	else if (!check_imap_client_login(client, "princess", "password", "A0", errmsg)) {
-
 		client_close(client);
 		return false;
 	}
 	// Test the SELECT command.
 	else if (!check_imap_client_select(client, "Inbox", "A1", errmsg)) {
-
 		client_close(client);
 		return false;
 	}
 
-	// Test each of the commands.
+	// Test each of the SEARCH commands.
 	for (uint32_t i = 0; i < sizeof(commands)/sizeof(chr_t*); i++) {
 
 		tag_num = i + 2;
@@ -292,8 +291,8 @@ bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool
 			return false;
 		}
 
-		st_free(tag);
 		st_free(success);
+		st_free(tag);
 	}
 
 	// Test the CLOSE and LOGOUT commands;
@@ -326,20 +325,17 @@ bool_t check_imap_network_fetch_sthread(stringer_t *errmsg, uint32_t port, bool_
 	if (!(client = client_connect("localhost", port)) || (secure && (client_secure(client) == -1)) ||
 		!net_set_timeout(client->sockd, 20, 20) || client_read_line(client) <= 0 || (client->status != 1) ||
 		st_cmp_cs_starts(&(client->line), NULLER("* OK"))) {
-
 		st_sprint(errmsg, "Failed to connect with the IMAP server.");
 		client_close(client);
 		return false;
 	}
 	// Test the LOGIN command.
 	else if (!check_imap_client_login(client, "princess", "password", "A0", errmsg)) {
-
 		client_close(client);
 		return false;
 	}
 	// Test the SELECT command.
 	else if (!check_imap_client_select(client, "Inbox", "A1", errmsg)) {
-
 		client_close(client);
 		return false;
 	}
@@ -350,7 +346,6 @@ bool_t check_imap_network_fetch_sthread(stringer_t *errmsg, uint32_t port, bool_
 
 		if (!(tag = st_alloc(uint32_digits(tag_num) + 2)) || (st_sprint(tag, "A%u", tag_num) != uint32_digits(tag_num) + 1) ||
 			!(success = st_merge("sn", tag, " OK"))) {
-
 			st_sprint(errmsg, "Failed to construct the tag or success strings. { i = %d }", i);
 			st_cleanup(tag, success);
 			client_close(client);
@@ -359,7 +354,6 @@ bool_t check_imap_network_fetch_sthread(stringer_t *errmsg, uint32_t port, bool_
 		else if (client_print(client, "%s %s\r\n", st_char_get(tag), commands[i]) <= 0 ||
 			!check_imap_client_read_end(client, st_char_get(tag)) || client_status(client) != 1 ||
 			st_cmp_cs_starts(&(client->line), success)) {
-
 			st_sprint(errmsg, "Failed to return a successful status. { command = \"%s\" }", commands[i]);
 			st_cleanup(tag, success);
 			client_close(client);
@@ -370,7 +364,6 @@ bool_t check_imap_network_fetch_sthread(stringer_t *errmsg, uint32_t port, bool_
 	}
 	// Test the CLOSE and LOGOUT commands;
 	if (!check_imap_client_close_logout(client, tag_num+1, errmsg)) {
-
 		client_close(client);
 		return false;
 	}

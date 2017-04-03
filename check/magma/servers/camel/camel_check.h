@@ -8,8 +8,9 @@
 #define CAMEL_CHECK_H
 
 /// camel_check_network.c
-bool_t check_camel_response_status(client_t *client);
-bool_t check_camel_response_read_end(client_t *client);
+bool_t check_camel_status(client_t *client);
+bool_t check_camel_read_end(client_t *client);
+bool_t check_camel_login(client_t *client, uint32_t id, chr_t *user, chr_t *pass, stringer_t *cookie);
 bool_t check_camel_login_sthread(client_t *client, stringer_t *errmsg);
 
 /// pop_check.c

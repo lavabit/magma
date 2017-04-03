@@ -1,9 +1,8 @@
 #!/bin/bash
 
-# Name: t.camel.login.sh
-# Author: Ladar Levison
+# Name: t.camel.edit.config.sh
 #
-# Description: Used for testing the camelface login user method.
+# Description: Used for testing the camelface edit config user method.
 
 # Check and make sure magmad is running before attempting a connection.
 PID=`pidof magmad magmad.check`       
@@ -25,10 +24,9 @@ API_PATH="http://localhost:10000/portal/camel"
 read -d '' JSON <<EOF
 {
     "id": 1,
-    "method": "auth",
+    "method": "config.edit",
     "params": {
-        "username": "$1",
-        "password": "$2"
+        "$2": $3
     }
 }
 EOF
@@ -36,5 +34,5 @@ EOF
 echo "Request:"
 echo "$JSON"
 echo "Response:"
-curl --silent --data "$JSON" "$API_PATH"
+curl --silent --cookie "$1" --data "$JSON" "$API_PATH"
 echo ""

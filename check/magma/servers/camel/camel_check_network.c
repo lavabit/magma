@@ -111,14 +111,14 @@ bool_t check_camel_login(client_t *client, uint32_t id, stringer_t *user, string
 	}
 	else if (cookie && st_sprint(cookie, "%s", json_string_value_d(session)) == -1) {
 
+		st_free(json);
 		mm_free(result);
 		mm_free(session);
-		st_cleanup(json);
 		mm_free(parsed_json);
 		return false;
 	}
 
-	st_cleanup(json);
+	st_free(json);
 	mm_free(result);
 	mm_free(session);
 	mm_free(parsed_json);
@@ -214,7 +214,7 @@ bool_t check_camel_basic_sthread(client_t *client, stringer_t *errmsg) {
 	}
 
 	// Test config.edit { key = "key", value = "value" }
-	if (!check_camel_json_write(client, st_char_get(commands[0]), cookie, true) || client_status(client) != 1 || !check_camel_status(client) ||
+	if (!check_camel_json_write(client, commands[0], cookie, true) || client_status(client) != 1 || !check_camel_status(client) ||
 		!(content_length = check_http_content_length_get(client)) || !(json = check_camel_json_read(client, content_length))) {
 
 		st_sprint(errmsg, "Failed to return successful response after config.edit.");
@@ -225,7 +225,7 @@ bool_t check_camel_basic_sthread(client_t *client, stringer_t *errmsg) {
 	st_free(json);
 
 	// Test config.load
-	if (!check_camel_json_write(client, st_char_get(commands[1]), cookie, true) || client_status(client) != 1 || !check_camel_status(client) ||
+	if (!check_camel_json_write(client, commands[1], cookie, true) || client_status(client) != 1 || !check_camel_status(client) ||
 		!(content_length = check_http_content_length_get(client)) || !(json = check_camel_json_read(client, content_length))) {
 
 		st_sprint(errmsg, "Failed to return successful response after config.load.");
@@ -236,7 +236,7 @@ bool_t check_camel_basic_sthread(client_t *client, stringer_t *errmsg) {
 	st_free(json);
 
 	// Test config.edit { key = "key", "value" = null }
-	if (!check_camel_json_write(client, st_char_get(commands[2]), cookie, true) || client_status(client) != 1 || !check_camel_status(client) ||
+	if (!check_camel_json_write(client, commands[2], cookie, true) || client_status(client) != 1 || !check_camel_status(client) ||
 		!(content_length = check_http_content_length_get(client)) || !(json = check_camel_json_read(client, content_length))) {
 
 		st_sprint(errmsg, "Failed to return successful response after config.edit.");
@@ -247,7 +247,7 @@ bool_t check_camel_basic_sthread(client_t *client, stringer_t *errmsg) {
 	st_free(json);
 
 	// Test config.load
-	if (!check_camel_json_write(client, st_char_get(commands[3]), cookie, true) || client_status(client) != 1 || !check_camel_status(client) ||
+	if (!check_camel_json_write(client, commands[3], cookie, true) || client_status(client) != 1 || !check_camel_status(client) ||
 		!(content_length = check_http_content_length_get(client)) || !(json = check_camel_json_read(client, content_length))) {
 
 		st_sprint(errmsg, "Failed to return successful response after config.load.");
@@ -258,7 +258,7 @@ bool_t check_camel_basic_sthread(client_t *client, stringer_t *errmsg) {
 	st_free(json);
 
 	// Test config.edit { key = "key.3943", value = "18346" }
-	if (!check_camel_json_write(client, st_char_get(commands[4]), cookie, true) || client_status(client) != 1 || !check_camel_status(client) ||
+	if (!check_camel_json_write(client, commands[4], cookie, true) || client_status(client) != 1 || !check_camel_status(client) ||
 		!(content_length = check_http_content_length_get(client)) || !(json = check_camel_json_read(client, content_length))) {
 
 		st_sprint(errmsg, "Failed to return successful response after config.edit.");
@@ -269,7 +269,7 @@ bool_t check_camel_basic_sthread(client_t *client, stringer_t *errmsg) {
 	st_free(json);
 
 	// Test folders.add { context = "contacts", name = "Flight Crew" }
-	if (!check_camel_json_write(client, st_char_get(commands[5]), cookie, true) || client_status(client) != 1 || !check_camel_status(client) ||
+	if (!check_camel_json_write(client, commands[5], cookie, true) || client_status(client) != 1 || !check_camel_status(client) ||
 		!(content_length = check_http_content_length_get(client)) || !(json = check_camel_json_read(client, content_length)) ||
 		json_unpack_d(json, "{s:{s:i}}", "result", "folderID", &folderid)) {
 
@@ -281,7 +281,7 @@ bool_t check_camel_basic_sthread(client_t *client, stringer_t *errmsg) {
 	st_free(json);
 
 	// Test folders.list { context = "contacts" }
-	if (!check_camel_json_write(client, st_char_get(commands[6]), cookie, true) || client_status(client) != 1 || !check_camel_status(client) ||
+	if (!check_camel_json_write(client, commands[6], cookie, true) || client_status(client) != 1 || !check_camel_status(client) ||
 		!(content_length = check_http_content_length_get(client)) || !(json = check_camel_json_read(client, content_length)) ||
 		json_unpack_d(json, "{s:[{s:i}]}", "result", "folderID", &folderid_buff) || folderid != folderid_buff) {
 

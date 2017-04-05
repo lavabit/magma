@@ -6,9 +6,12 @@
 
 #include "magma_check.h"
 
-START_TEST (check_camel_login_s) {
+// LOW: Refactor for both HTTP and HTTPS.
 
-	log_disable();
+START_TEST (check_camel_auth_s) {
+
+	//log_disable();
+	log_enable();
 	bool_t outcome = true;
 	client_t *client = NULL;
 	server_t *server = NULL;
@@ -23,7 +26,7 @@ START_TEST (check_camel_login_s) {
 		st_sprint(errmsg, "Failed to connect client securely to HTTP server.");
 		outcome = false;
 	}
-	else if (!check_camel_login_sthread(client, errmsg)){
+	else if (!check_camel_auth_sthread(client, errmsg)){
 		outcome = false;
 	}
 	else {
@@ -68,7 +71,7 @@ Suite * suite_check_camel(void) {
 
 	Suite *s = suite_create("\tCAMEL");
 
-	suite_check_testcase(s, "CAMEL", "Camel Login/S", check_camel_login_s);
+	suite_check_testcase(s, "CAMEL", "Camel Auth/S", check_camel_auth_s);
 	suite_check_testcase(s, "CAMEL", "Camel Basic/S", check_camel_basic_s);
 
 	return s;

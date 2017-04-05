@@ -209,6 +209,7 @@ bool_t check_camel_basic_sthread(client_t *client, stringer_t *errmsg) {
 	if (!check_camel_login(client, 1, PLACER("princess", 8), PLACER("password", 8), cookie)) {
 
 		st_sprint(errmsg, "Failed to return successful response after auth request.");
+		client_close(client);
 		return false;
 	}
 
@@ -217,6 +218,7 @@ bool_t check_camel_basic_sthread(client_t *client, stringer_t *errmsg) {
 		!(content_length = check_http_content_length_get(client)) || !(json = check_camel_json_read(client, content_length))) {
 
 		st_sprint(errmsg, "Failed to return successful response after config.edit.");
+		client_close(client);
 		return false;
 	}
 
@@ -227,6 +229,7 @@ bool_t check_camel_basic_sthread(client_t *client, stringer_t *errmsg) {
 		!(content_length = check_http_content_length_get(client)) || !(json = check_camel_json_read(client, content_length))) {
 
 		st_sprint(errmsg, "Failed to return successful response after config.load.");
+		client_close(client);
 		return false;
 	}
 
@@ -237,6 +240,7 @@ bool_t check_camel_basic_sthread(client_t *client, stringer_t *errmsg) {
 		!(content_length = check_http_content_length_get(client)) || !(json = check_camel_json_read(client, content_length))) {
 
 		st_sprint(errmsg, "Failed to return successful response after config.edit.");
+		client_close(client);
 		return false;
 	}
 
@@ -247,6 +251,7 @@ bool_t check_camel_basic_sthread(client_t *client, stringer_t *errmsg) {
 		!(content_length = check_http_content_length_get(client)) || !(json = check_camel_json_read(client, content_length))) {
 
 		st_sprint(errmsg, "Failed to return successful response after config.load.");
+		client_close(client);
 		return false;
 	}
 
@@ -257,6 +262,7 @@ bool_t check_camel_basic_sthread(client_t *client, stringer_t *errmsg) {
 		!(content_length = check_http_content_length_get(client)) || !(json = check_camel_json_read(client, content_length))) {
 
 		st_sprint(errmsg, "Failed to return successful response after config.edit.");
+		client_close(client);
 		return false;
 	}
 
@@ -268,6 +274,7 @@ bool_t check_camel_basic_sthread(client_t *client, stringer_t *errmsg) {
 		json_unpack_d(json, "{s:{s:i}}", "result", "folderID", &folderid)) {
 
 		st_sprint(errmsg, "Failed to return successful response after folders.add.");
+		client_close(client);
 		return false;
 	}
 
@@ -279,10 +286,12 @@ bool_t check_camel_basic_sthread(client_t *client, stringer_t *errmsg) {
 		json_unpack_d(json, "{s:[{s:i}]}", "result", "folderID", &folderid_buff) || folderid != folderid_buff) {
 
 		st_sprint(errmsg, "Failed to return successful response after folders.list.");
+		client_close(client);
 		return false;
 	}
 
 	st_free(json);
+	client_close(client);
 
 	return true;
 }

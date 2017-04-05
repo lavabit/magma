@@ -16,9 +16,6 @@
 #include "imap.h"
 #include "http.h"
 
-typedef int16_t octet_t;
-typedef int32_t segment_t;
-
 enum {
 	REVERSE_ERROR = -1,
 	REVERSE_EMPTY = 0,
@@ -85,19 +82,6 @@ segment_t     con_addr_segment(connection_t *con, int_t position);
 stringer_t *  con_addr_standard(connection_t *con, stringer_t *output);
 stringer_t *  con_addr_subnet(connection_t *con, stringer_t *output);
 uint32_t      con_addr_word(connection_t *con, int_t position);
-ip_t * 		  ip_copy(ip_t *dst, ip_t *src);
-octet_t       ip_octet(ip_t *address, int_t position);
-stringer_t *  ip_presentation(ip_t *address, stringer_t *output);
-stringer_t *  ip_reversed(ip_t *address, stringer_t *output);
-bool_t        ip_address_equal(ip_t *ip1, ip_t *ip2);
-segment_t     ip_segment(ip_t *address, int_t position);
-stringer_t *  ip_standard(ip_t *address, stringer_t *output);
-stringer_t *  ip_subnet(ip_t *address, stringer_t *output);
-uint32_t      ip_word(ip_t *address, int_t position);
-bool_t        ip_str_addr(chr_t *ipstr, ip_t *out);
-bool_t        ip_str_subnet(chr_t *substr, subnet_t *out);
-bool_t        ip_matches_subnet(subnet_t *subnet, ip_t *addr);
-
 
 /// connections.c
 uint64_t        con_decrement_refs(connection_t *con);
@@ -105,6 +89,8 @@ void            con_destroy(connection_t *con);
 uint64_t        con_increment_refs(connection_t *con);
 connection_t *  con_init(int cond, server_t *server);
 bool_t          con_init_network_buffer(connection_t *con);
+bool_t          con_localhost(connection_t *con);
+bool_t          con_private(connection_t *con);
 int_t           con_secure(connection_t *con);
 int_t           con_status(connection_t *con);
 

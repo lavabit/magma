@@ -56,9 +56,8 @@ void portal_print_login(connection_t *con, chr_t *message) {
  */
 void portal_process(connection_t *con) {
 
-
-	// Is HTTPS required to access to the portal from anywhere but the localhost.
-	if (magma.web.portal.safeguard && con_secure(con) != 1 && con_addr_word(con, 0) != 0x0100007f) {
+	// Is HTTPS required to access the portal from anywhere but the localhost.
+	if (magma.web.portal.safeguard && con_secure(con) != 1 && !con_localhost(con)) {
 		http_print_301(con, "/portal", 1);
 		return;
 	}
@@ -66,7 +65,6 @@ void portal_process(connection_t *con) {
 	// Try extracting the session from either a cookie, or the location.
 	http_parse_context(con, PLACER("portal", 6), PLACER("/portal/", 8));
 
-	// QUESTION: Maybe not this hello world?
 	portal_print_login(con, "Hello world.");
 	return;
 }

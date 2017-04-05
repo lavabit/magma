@@ -27,10 +27,6 @@ static int_t api_method_compare(void const *compare, void const *command) {
 	return strcmp(cmp->string, cmd->string);
 }
 
-static bool_t is_localhost(connection_t *con) {
-	return con_addr_word(con, 0) == 0x0100007f;
-}
-
 static
 void internal_error(connection_t *con) {
 	api_error(con, HTTP_ERROR_500, JSON_RPC_2_ERROR_SERVER_INTERNAL, "Internal server error.");
@@ -52,13 +48,23 @@ void not_found_error(connection_t *con) {
  * @return This function returns no value.
  */
 void json_api_dispatch(connection_t *con) {
+
 	json_error_t jansson_err;
 	json_t *method;
 	json_t *id;
 	api_lookup_t *found_method;
 	api_lookup_t method_lookup = {.callback = NULL};
 
-	if (magma.web.portal.safeguard && con_secure(con) != 1 && !is_localhost(con)) {
+	// Because this endpoint exposes what some might consider administrative functionality, while also lacking an effective
+	// means for access control, take the draconian step of rejecting any request that doesn't originate on the
+	// localhost/loopback adapater.
+	if (!con_localhost(con)) {
+		log_pedantic("Insecure request denied");
+		bad_request_error(con);
+		goto out;
+	}
+
+	if (magma.web.portal.safeguard && con_secure(con) != 1 && !con_localhost(con)) {
 		log_pedantic("Insecure request denied");
 		bad_request_error(con);
 		goto out;

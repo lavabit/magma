@@ -139,6 +139,13 @@ bool_t sanity_check(void) {
 		return false;
 	}
 
+	// The ip_family() function uses AF_UNSPEC for unrecognized address families, and -1 for invalid address structures,
+	// so we perform a sanity check to ensure AF_UNSPEC remains 0 so that ip_family(ip) <= AF_UNSPEC functions as a generic
+	// boolean for catching/handling errors.
+	if (AF_UNSPEC != 0) {
+		return false;
+	}
+
 	return true;
 }
 

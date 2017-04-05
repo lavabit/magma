@@ -1087,7 +1087,7 @@ magma.view = (function() {
             
             // [DEV]
             username.val('magma');
-            password.val('test');
+            password.val('password');
             // [/DEV]
 
             // handle login submit

@@ -4521,7 +4521,7 @@ magma.view = (function() {
 
             // [DEV]
             username.val('magma');
-            password.val('test');
+            password.val('password');
             // [/DEV]
 
             // handle login submit
@@ -7040,7 +7040,7 @@ $(document).ready(function() {
             switch(method) {
 
                 case "auth":
-                    if(params && params.username === "magma" && params.password === "test") {
+                    if(params && params.username === "magma" && params.password === "password") {
                         // authenticated!
                         respond("result");
                     } else if(params && params.username === "locked") {

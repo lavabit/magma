@@ -28,9 +28,6 @@ START_TEST (check_camel_auth_s) {
 	else if (!check_camel_auth_sthread(client, errmsg)){
 		outcome = false;
 	}
-	else {
-		errmsg = NULL;
-	}
 
 	log_test("CAMEL / LOGIN / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
@@ -56,9 +53,6 @@ START_TEST (check_camel_basic_s) {
 	}
 	else if (!check_camel_basic_sthread(client, errmsg)){
 		outcome = false;
-	}
-	else {
-		errmsg = NULL;
 	}
 
 	log_test("CAMEL / BASIC / SINGLE THREADED:", errmsg);

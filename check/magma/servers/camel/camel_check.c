@@ -10,8 +10,7 @@
 
 START_TEST (check_camel_auth_s) {
 
-	//log_disable();
-	log_enable();
+	log_disable();
 	bool_t outcome = true;
 	client_t *client = NULL;
 	server_t *server = NULL;

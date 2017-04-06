@@ -21,7 +21,29 @@ bool_t check_camel_status(client_t *client) {
 		if (client_read_line(client) <= 2) return false;
 	}
 
+	chr_t *foo = pl_char_get(client->line);
+	(void)foo;
+
 	return ((*(pl_char_get(client->line) + 9) == '2') ? true : false);
+}
+
+client_t * check_camel_connect(bool_t secure) {
+
+	client_t *client = NULL;
+	server_t *server = NULL;
+
+	if (!(server = servers_get_by_protocol(HTTP, secure))) {
+		return NULL;
+	}
+	else if (!(client = client_connect("localhost", server->network.port))) {
+		return NULL;
+	}
+	else if (secure && client_secure(client) != 0) {
+		client_close(client);
+		return NULL;
+	}
+
+	return client;
 }
 
 // Combine submit and read, because we now need to handle the connection being closed between requests.
@@ -60,12 +82,14 @@ stringer_t * check_camel_json_read(client_t *client, size_t length) {
 bool_t check_camel_json_write(client_t *client, stringer_t *json, stringer_t *cookie, bool_t keep_alive) {
 
 	chr_t *message = "POST /portal/camel HTTP/1.1\r\nHost: localhost:10000\r\nAccept: */*\r\nContent-Length: %u\r\n" \
-		"Content-Type: application/x-www-form-urlencoded\r\nCookie: %.*s\r\nConnection: %s\r\n\r\n%.*s";
+		"Content-Type: application/x-www-form-urlencoded\r\nCookie: portal=%.*s;\r\nConnection: %s\r\n\r\n%.*s";
 
-	if (client_print(client, message, st_length_get(json), st_length_int(cookie), st_char_get(cookie),
-		(keep_alive ? "keep-alive" : "close"), st_char_get(json)) != (st_length_get(message) - 6 + st_length_get(json) +
-		(keep_alive ? 10 : 5)) || client_status(client) != 1) {
+	if (client_print(client, message, st_length_get(json), st_length_int(cookie), (cookie ? st_char_get(cookie) : ""),
+		(keep_alive ? "keep-alive" : "close"), st_length_int(json), st_char_get(json)) != (ns_length_get(message) - 10 +
+		st_length_get(json) + (cookie ? st_length_get(cookie) : 0) + (keep_alive ? 10 : 5)) || client_status(client) != 1) {
 
+		uint32_t foo = (ns_length_get(message) - 10 + st_length_get(json) + (cookie ? st_length_get(cookie) : 0) + (keep_alive ? 10 : 5));
+		(void)foo;
 		return false;
 	}
 
@@ -127,11 +151,16 @@ bool_t check_camel_login(client_t *client, uint32_t id, stringer_t *user, string
 }
 
 // LOW: Test the four different ways of preserving a session token: Cookie, URL param, JSON param, Form post.
-bool_t check_camel_auth_sthread(client_t *client, stringer_t *errmsg) {
+bool_t check_camel_auth_sthread(bool_t secure, stringer_t *errmsg) {
 
+	client_t *client = NULL;
 	stringer_t *cookie = MANAGEDBUF(1024);
 
-	if (!check_camel_login(client, 1, PLACER("princess", 8), PLACER("password", 8), cookie)) {
+	if (!(client = check_camel_connect(secure))) {
+		st_sprint(errmsg, "There were no HTTP servers available for %s connections.", (secure ? "TLS" : "TCP"));
+		return false;
+	}
+	else if (!check_camel_login(client, 1, PLACER("princess", 8), PLACER("password", 8), cookie)) {
 
 		st_sprint(errmsg, "Failed to return successful state after auth request.");
 		return false;
@@ -141,8 +170,9 @@ bool_t check_camel_auth_sthread(client_t *client, stringer_t *errmsg) {
 	return true;
 }
 
-bool_t check_camel_basic_sthread(client_t *client, stringer_t *errmsg) {
+bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
+	client_t *client = NULL;
 	uint32_t content_length = 0, folderid = 0, folderid_buff = 0;
 	stringer_t *cookie = MANAGEDBUF(1024), *json = NULL, *commands[] = {
 		NULLER("{\"id\":2,\"method\":\"config.edit\",\"params\":{\"key\":\"value\"}}"),
@@ -206,7 +236,10 @@ bool_t check_camel_basic_sthread(client_t *client, stringer_t *errmsg) {
 		NULLER("{\"id\":60,\"method\":\"logout\"}")
 	};
 
-	if (!check_camel_login(client, 1, PLACER("princess", 8), PLACER("password", 8), cookie)) {
+	if (!(client = check_camel_connect(secure))) {
+		st_sprint(errmsg, "There were no HTTP servers available for %s connections.", (secure ? "TLS" : "TCP"));
+	}
+	else if (!check_camel_login(client, 1, PLACER("princess", 8), PLACER("password", 8), cookie)) {
 
 		st_sprint(errmsg, "Failed to return successful response after auth request.");
 		client_close(client);
@@ -214,8 +247,9 @@ bool_t check_camel_basic_sthread(client_t *client, stringer_t *errmsg) {
 	}
 
 	// Test config.edit { key = "key", value = "value" }
-	if (!check_camel_json_write(client, commands[0], cookie, true) || client_status(client) != 1 || !check_camel_status(client) ||
-		!(content_length = check_http_content_length_get(client)) || !(json = check_camel_json_read(client, content_length))) {
+	if (!(client = check_camel_connect(secure)) || !check_camel_json_write(client, commands[0], cookie, true) ||
+		client_status(client) != 1 || !check_camel_status(client) || !(content_length = check_http_content_length_get(client)) ||
+		!(json = check_camel_json_read(client, content_length))) {
 
 		st_sprint(errmsg, "Failed to return successful response after config.edit.");
 		client_close(client);

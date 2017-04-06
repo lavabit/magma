@@ -9,11 +9,12 @@
 
 /// camel_check_network.c
 bool_t check_camel_status(client_t *client);
+client_t * check_camel_connect(bool_t secure);
 stringer_t* check_camel_json_read(client_t *client, size_t length);
 bool_t check_camel_json_write(client_t *client, stringer_t *json, stringer_t *cookie, bool_t keep_alive);
 bool_t check_camel_login(client_t *client, uint32_t id, stringer_t *user, stringer_t *pass, stringer_t *cookie);
-bool_t check_camel_auth_sthread(client_t *client, stringer_t *errmsg);
-bool_t check_camel_basic_sthread(client_t *client, stringer_t *errmsg);
+bool_t check_camel_auth_sthread(bool_t secure, stringer_t *errmsg);
+bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg);
 
 /// pop_check.c
 Suite * suite_check_camel(void);

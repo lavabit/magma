@@ -32,8 +32,8 @@ bool_t check_http_read_to_empty(client_t *client) {
  */
 size_t check_http_content_length_get(client_t *client) {
 
-	size_t location = 0, content_length = 0;
 	placer_t cl_placer = pl_null();
+	size_t location = 0, content_length = 0;
 
 	while (st_cmp_ci_starts(&(client->line), NULLER("Content-Length:")) != 0) {
 		if (client_read_line(client) <= 2) return content_length;

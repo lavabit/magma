@@ -494,7 +494,7 @@ int_t sess_get(connection_t *con, stringer_t *application, stringer_t *path, str
 	} else if (con->http.session->request.secure != (con_secure(con) ? 1 : 0)) {
 		log_error("Cookie was submitted from a mismatched transport layer { user = %s }", st_char_get(con->http.session->user->username));
 		result = -5;
-	} else if (!ip_address_equal(&(con->http.session->warden.ip), (ip_t *)con_addr(con, MEMORYBUF(64)))) {
+	} else if (!ip_addr_eq(&(con->http.session->warden.ip), (ip_t *)con_addr(con, MEMORYBUF(64)))) {
 		log_error("Cookie was submitted from a mismatched IP address { user = %s }", st_char_get(con->http.session->user->username));
 		result = -5;
 	}

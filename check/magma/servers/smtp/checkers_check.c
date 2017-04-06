@@ -24,7 +24,7 @@ bool_t check_smtp_checkers_greylist_sthread(stringer_t *errmsg) {
 	con.smtp.mailfrom = NULLER("check@example.com");
 
 	con.network.reverse.ip = mm_alloc(sizeof(ip_t));
-	ip_str_addr("127.0.0.1", con.network.reverse.ip);
+	ip_addr_st("127.0.0.1", con.network.reverse.ip);
 
 	if (!(addr = con_addr_reversed(&con, addr)) ||
 		st_sprint(key, "magma.greylist.%lu.%.*s", prefs.usernum, st_length_int(addr), st_char_get(addr)) <= 0) {

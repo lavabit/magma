@@ -872,6 +872,34 @@ START_TEST (check_bitwise)
 }
 END_TEST
 
+START_TEST (check_ip_private_s) {
+
+	log_disable();
+	bool_t result = true;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	if (status()) result = check_ip_private_scheck(errmsg);
+
+	log_test("CORE / HOST / ADDRESS / PRIVATE / SINGLE THREADED:", errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
+
+}
+END_TEST
+
+START_TEST (check_ip_localhost_s) {
+
+	log_disable();
+	bool_t result = true;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	if (status()) result = check_ip_localhost_scheck(errmsg);
+
+	log_test("CORE / HOST / ADDRESS / LOCAL / SINGLE THREADED:", errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
+
+}
+END_TEST
+
 Suite * suite_check_core(void) {
 
 	Suite *s = suite_create("\tCore");
@@ -879,7 +907,9 @@ Suite * suite_check_core(void) {
 	suite_check_testcase(s, "CORE", "Parsers / Digits", check_digits);
 	suite_check_testcase(s, "CORE", "Parsers / Clamp", check_clamp);
 	suite_check_testcase(s, "CORE", "Parsers / Capitalization", check_capitalization);
+
 	suite_check_testcase(s, "CORE", "Classify / ASCII", check_classify);
+
 	suite_check_testcase(s, "CORE", "Strings / Constants", check_constants);
 	suite_check_testcase(s, "CORE", "Strings / Allocation", check_allocation);
 	suite_check_testcase(s, "CORE", "Strings / Reallocation", check_reallocation);
@@ -890,16 +920,28 @@ Suite * suite_check_core(void) {
 	suite_check_testcase(s, "CORE", "Strings / Compare", check_compare);
 	suite_check_testcase(s, "CORE", "Strings / Binary Search", check_bsearch);
 	suite_check_testcase(s, "CORE", "Strings / Bitwise Operations", check_bitwise);
+
 	suite_check_testcase(s, "CORE", "Memory / Checksum", check_checksum);
 	suite_check_testcase(s, "CORE", "Memory / Secure Address Range", check_secmem);
-	suite_check_testcase(s, "CORE", "System / Signal Names", check_signames_s);
-	suite_check_testcase(s, "CORE", "System / Error Names", check_errnames_s);
+
+	suite_check_testcase(s, "CORE", "Host / System / Signal Names", check_signames_s);
+	suite_check_testcase(s, "CORE", "Host / System / Error Names", check_errnames_s);
+	suite_check_testcase(s, "CORE", "Host / Address / Standard / S", check_address_standard_s);
+	suite_check_testcase(s, "CORE", "Host / Address / Presentation / S", check_address_presentation_s);
+	suite_check_testcase(s, "CORE", "Host / Address / Reversed / S", check_address_reversed_s);
+	suite_check_testcase(s, "CORE", "Host / Address / Subnet / S", check_address_subnet_s);
+	suite_check_testcase(s, "CORE", "Host / Address / Segment / S", check_address_segment_s);
+	suite_check_testcase(s, "CORE", "Host / Address / Octet / S", check_address_octet_s);
+	suite_check_testcase(s, "CORE", "Host / Address / Local / S", check_ip_localhost_s);
+	suite_check_testcase(s, "CORE", "Host / Address / Private / S", check_ip_private_s);
+
 	suite_check_testcase(s, "CORE", "Encoding / Quoted Printable", check_qp);
 	suite_check_testcase(s, "CORE", "Encoding / Hex", check_hex);
 	suite_check_testcase(s, "CORE", "Encoding / URL", check_url);
 	suite_check_testcase(s, "CORE", "Encoding / Base64", check_base64);
 	suite_check_testcase(s, "CORE", "Encoding / Zbase32", check_zbase32);
 	suite_check_testcase(s, "CORE", "Encoding / Network Byte Order/S", check_nbo_s);
+
 	suite_check_testcase(s, "CORE", "Indexes / Linked/S", check_inx_linked_s);
 	suite_check_testcase(s, "CORE", "Indexes / Linked/M", check_inx_linked_m);
 	suite_check_testcase(s, "CORE", "Indexes / Hashed/S", check_inx_hashed_s);

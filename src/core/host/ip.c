@@ -65,6 +65,11 @@ int8_t ip_type(ip_t *address) {
  * @note	This function only matches if the remote peer is connected using IPv4 from the 127.0.0.0/8 range, from the same range
  * 				using an IPv4 to IPv6 mapping, or frm the specific IPv6  using IPv6
  * 				from the ::1/128 address by IPv6.
+ * @remark	The rationale behind this function is to make it easy for us to detect connections from the local host, and thus
+ * 				dictating that the packets associated with the connection never travel across a network cable, which allows
+ * 				us to excempt the peer from transport security requirements, SPF checks. and allow the use of administrative
+ * 				functions without authentication. In theory connections from IP addresses associated with the network
+ * 					interfaces on the local host are just as safe, but we currently only match against the loopback address.
  * @return	true if the connection appears to be using the loopback adapter, or false, if the connection appears to be from anywhere else.
  */
 bool_t ip_localhost(ip_t *address) {
@@ -94,6 +99,8 @@ bool_t ip_localhost(ip_t *address) {
  * 				the ranges 10.0.0.0/8, 172.16.0.0/12 and 192.168.0.0/16 are reserved. For IPv6 the range fc00::/7 has
  * 				been set aside. By convention addresses in these ranges are unrouteable on the open internet, so if a peer
  * 				appears to be connecting from a private address then it should be on the same private network.
+ * @remark	The rationale behind this function is to make it easy for us to detect connections from hosts on the same
+ * 				 (internal) network, and thus treat those connections differently than connections from the public internet.
  * @return	false by default, and true if the address falls inside the ranges reserved for private networks.
  */
 bool_t ip_private(ip_t *address) {
@@ -126,6 +133,12 @@ bool_t ip_private(ip_t *address) {
 		// Match anything inside the 192.168.0.0/16 address range.
 		(ip_octet(address, 3) == 192 && ip_octet(address, 2) == 168))) {
 		result = true;
+	}
+
+	// If the result is still false, because it didn't match any of the private address ranges, then we need to run it
+	// through the ip_localhost() function so loopback addresses also return true.
+	else if (address && !result) {
+		result = ip_localhost(address);
 	}
 
 	return result;
@@ -469,7 +482,7 @@ stringer_t * ip_reversed(ip_t *address, stringer_t *output) {
  * @param	ip2		a pointer to the second ip address object in the comparison.
  * @return	true if the two addresses are equal, or false if they are not.
  */
-bool_t ip_address_equal(ip_t *ip1, ip_t *ip2) {
+bool_t ip_addr_eq(ip_t *ip1, ip_t *ip2) {
 
 	if (ip1->family != ip2->family) {
 		return false;
@@ -486,28 +499,26 @@ bool_t ip_address_equal(ip_t *ip1, ip_t *ip2) {
 }
 
 /**
- * @brief	Convert an IP address string to an IP address object.
+ * @brief	Convert a string into an IP address object.
  * @param	ipstr	a pointer to a null-terminated string containing the IP string to be parsed.
  * @param	out		a pointer to an IP address object that will receive result of the operation.
  * @return	true if the input string was a valid IP address or false if it was unable to be parsed.
  */
-bool_t ip_str_addr(chr_t *ipstr, ip_t *out) {
+bool_t ip_addr_st(chr_t *ipstr, ip_t *out) {
 
-	sa_family_t class = -1;
-	struct in6_addr in6;
-	struct in_addr in4;
 	size_t i;
+	struct in_addr in4;
+	struct in6_addr in6;
+	sa_family_t class = -1;
 
 	// Delimiter of '.' indicates IPv4 address; ':' for IPv6
-	for (i = 0; i < ns_length_get(ipstr); i++) {
+	for (i = 0; i < ns_length_get(ipstr) && class == -1; i++) {
 
 		if (ipstr[i] == '.') {
 			class = AF_INET;
-			break;
 		}
 		else if (ipstr[i] == ':') {
 			class = AF_INET6;
-			break;
 		}
 
 	}
@@ -543,13 +554,13 @@ bool_t ip_str_addr(chr_t *ipstr, ip_t *out) {
  * @param	out		a pointer to an IP address object that will receive result of the operation.
  * @return	true if the input string was a valid IP address or false if it was unable to be parsed.
  */
-bool_t ip_str_subnet(chr_t *substr, subnet_t *out) {
+bool_t ip_subnet_st(chr_t *substr, subnet_t *out) {
 
-	placer_t netaddr, netmask;
-	ip_t addr;
 	size_t i;
+	ip_t addr;
 	chr_t *haddr;
 	uint8_t subval;
+	placer_t netaddr, netmask;
 
 	// If there's no slash, then all we really have is a hostname. If there's more than 1, it's a bad string.
 	i = tok_get_count_st(NULLER(substr), '/');
@@ -558,7 +569,7 @@ bool_t ip_str_subnet(chr_t *substr, subnet_t *out) {
 		return false;
 	} else if (i == 1) {
 
-		if (!ip_str_addr(substr, &addr)) {
+		if (!ip_addr_st(substr, &addr)) {
 			return false;
 		}
 
@@ -576,7 +587,7 @@ bool_t ip_str_subnet(chr_t *substr, subnet_t *out) {
 		return false;
 	}
 
-	if (!ip_str_addr(haddr, &addr)) {
+	if (!ip_addr_st(haddr, &addr)) {
 		ns_free(haddr);
 		return false;
 	}

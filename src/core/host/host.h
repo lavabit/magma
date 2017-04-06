@@ -171,7 +171,7 @@ bool_t        spool_start(void);
 void          spool_stop(void);
 
 /// ip.c
-bool_t        ip_address_equal(ip_t *ip1, ip_t *ip2);
+bool_t        ip_addr_eq(ip_t *ip1, ip_t *ip2);
 ip_t *        ip_copy(ip_t *dst, ip_t *src);
 int_t         ip_family(ip_t *address);
 bool_t        ip_localhost(ip_t *address);
@@ -182,8 +182,8 @@ bool_t        ip_private(ip_t *address);
 stringer_t *  ip_reversed(ip_t *address, stringer_t *output);
 segment_t     ip_segment(ip_t *address, int_t position);
 stringer_t *  ip_standard(ip_t *address, stringer_t *output);
-bool_t        ip_str_addr(chr_t *ipstr, ip_t *out);
-bool_t        ip_str_subnet(chr_t *substr, subnet_t *out);
+bool_t        ip_addr_st(chr_t *ipstr, ip_t *out);
+bool_t        ip_subnet_st(chr_t *substr, subnet_t *out);
 stringer_t *  ip_subnet(ip_t *address, stringer_t *output);
 int8_t        ip_type(ip_t *address);
 uint32_t      ip_word(ip_t *address, int_t position);

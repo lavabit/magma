@@ -117,6 +117,9 @@ contact_detail_t * contact_detail_alloc(stringer_t *key, stringer_t *value, uint
  */
 void contact_name(contact_t *contact, stringer_t *name) {
 
+	/// HIGH: A possible segfault is exposed here, related to the contacts.edit camelface call and
+	/// 		having to do with the way foreign data is handled.
+
 	size_t len;
 	uchr_t *data;
 

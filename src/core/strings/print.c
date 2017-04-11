@@ -173,6 +173,12 @@ stringer_t * st_aprint_opts(uint32_t opts, chr_t *format, ...) {
 	return result;
 }
 
+/**
+ * @brief	Write a variable number of user-supplied strings into a buffer.
+ *
+ * @param	...		a variable argument list containing the strings to be written one after the other.
+ * @return	the number of bytes written into the buffer.
+ */
 int_t st_write_variadic(stringer_t *output, ssize_t count, ...) {
 
 	va_list list;

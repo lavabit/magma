@@ -61,7 +61,7 @@ bool_t check_camel_print(stringer_t *req, stringer_t *cookie, stringer_t *res, b
 		return false;
 	}
 
-	if (res) st_write(res, json);
+	if (res) st_write(res, json, PLACER("\0",1));
 
 	client_close(client);
 	st_cleanup(json);
@@ -127,7 +127,7 @@ bool_t check_camel_json_write(client_t *client, stringer_t *json, stringer_t *co
  */
 bool_t check_camel_login(client_t *client, uint32_t id, stringer_t *user, stringer_t *pass, stringer_t *cookie) {
 
-	json_error_t json_err;
+	json_error_t err;
 	size_t content_length = 0;
 	json_t *json_root = NULL, *json_result = NULL, *json_key = NULL;
 	uint32_t length = 62 + ns_length_get(user) + ns_length_get(pass) + uint32_digits(id);
@@ -142,7 +142,7 @@ bool_t check_camel_login(client_t *client, uint32_t id, stringer_t *user, string
 
 		return false;
 	}
-	else if (!(json_root = json_loads_d(st_char_get(json), 0, &json_err)) || !(json_result = json_object_get_d(json_root, "result")) ||
+	else if (!(json_root = json_loads_d(st_char_get(json), 0, &err)) || !(json_result = json_object_get_d(json_root, "result")) ||
 		!(json_key = json_object_get_d(json_result, "session"))) {
 
 		st_free(json);
@@ -185,15 +185,14 @@ bool_t check_camel_auth_sthread(bool_t secure, stringer_t *errmsg) {
 
 bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
-	json_error_t json_err;
+	json_error_t err;
 	client_t *client = NULL;
-	uint32_t content_length = 0;
 	json_t *json_objs[2] = { NULL, NULL };
 	const chr_t *json_values[2] = { NULL, NULL };
 	bool_t contains_entries[2] = { false, false };
 	int32_t folder_ids[2] = { -1, -1 }, contact_ids[3] = { -1, -1, -1 };
 	chr_t *choices = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-	stringer_t *cookie = MANAGEDBUF(1024), *command = MANAGEDBUF(8192), *json = NULL,
+	stringer_t *cookie = MANAGEDBUF(1024), *command = MANAGEDBUF(8192), *json = MANAGEDBUF(8192),
 		*rand_strs[4] = { MANAGEDBUF(64), MANAGEDBUF(64), MANAGEDBUF(64), MANAGEDBUF(64) };
 	chr_t *commands[] = {
 		"{\"id\":2,\"method\":\"config.edit\",\"params\":{\"%.*s\":\"%.*s\"}}",
@@ -291,26 +290,22 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Submit the command and check the status of the response.
-	if (!(client = check_camel_connect(secure)) || !check_camel_json_write(client, command, cookie, true) ||
-		!check_camel_status(client) || !(content_length = check_http_content_length_get(client)) ||
-		!(json = check_camel_json_read(client, content_length))) {
+	if (!check_camel_print(command, cookie, json, secure)) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
 
 	// Parse the returned JSON.
-	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &json_err)) || json_unpack_d(json_objs[0], "{s:{s:s}}", "result",
+	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || json_unpack_d(json_objs[0], "{s:{s:s}}", "result",
 		"config.edit", &json_values[0]) != 0) {
 
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\", value = \"%s\"}",
 			st_length_int(command), st_char_get(command), st_length_int(json), st_char_get(json), json_values[0]);
-		json_decref_d(json_objs[0]);
+		if (json_objs[0]) json_decref_d(json_objs[0]);
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
 
@@ -321,17 +316,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
 
-	st_cleanup(json);
-	json_decref_d(json_objs[0]);
+	if (json_objs[0]) json_decref_d(json_objs[0]);
 
-	json = NULL;
 	json_objs[0] = NULL;
 	json_values[0] = NULL;
 
@@ -345,36 +337,31 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Submit the command and check the status of the response.
-	if (!(client = check_camel_connect(secure)) || !check_camel_json_write(client, PLACER(commands[1], ns_length_get(commands[1])),
-		cookie, true) || !check_camel_status(client) || !(content_length = check_http_content_length_get(client)) ||
-		!(json = check_camel_json_read(client, content_length))) {
+	if (!check_camel_print(NULLER(commands[1]), cookie, json, secure)) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%s\" }", commands[1]);
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
 
 	// Parse the returned JSON.
-	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &json_err)) || json_unpack_d(json_objs[0], "{s:{s:{s:s}}}", "result",
+	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || json_unpack_d(json_objs[0], "{s:{s:{s:s}}}", "result",
 		st_char_get(rand_strs[0]), "value", &json_values[0]) != 0) {
 
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%s\", json = \"%.*s\" }", commands[1],
 			st_length_int(json), st_char_get(json));
-		json_decref_d(json_objs[0]);
+		if (json_objs[0]) json_decref_d(json_objs[0]);
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
 
 	// Check if the returned JSON is correct.
-	else if (st_cmp_cs_eq(PLACER((chr_t *)json_values[0], ns_length_get(json_values[0])), rand_strs[1])) {
+	else if (st_cmp_cs_eq(NULLER((chr_t *)json_values[0]), rand_strs[1])) {
 
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%s\", json = \"%.*s\" }", commands[0],
 			st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
 
@@ -382,10 +369,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	st_wipe(command);
 	st_wipe(rand_strs[1]);
 
-	st_cleanup(json);
-	json_decref_d(json_objs[0]);
+	if (json_objs[0]) json_decref_d(json_objs[0]);
 
-	json = NULL;
 	json_objs[0] = NULL;
 	json_values[0] = NULL;
 
@@ -405,28 +390,23 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		client_close(client);
 		return false;
 	}
-
 	// Submit the command and check the status of the response.
-	if (!(client = check_camel_connect(secure)) || !check_camel_json_write(client, command, cookie, true) ||
-		!check_camel_status(client) || !(content_length = check_http_content_length_get(client)) ||
-		!(json = check_camel_json_read(client, content_length))) {
+	if (!check_camel_print(command, cookie, json, secure)) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
 
 	// Parse the returned JSON.
-	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &json_err)) || json_unpack_d(json_objs[0], "{s:{s:s}}", "result",
-		"config.edit", &json_values[0]) != 0) {
+	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || json_unpack_d(json_objs[0], "{s:{s:s}}",
+		"result", "config.edit", &json_values[0]) != 0) {
 
-		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\", value = \"%s\"}",
-			st_length_int(command), st_char_get(command), st_length_int(json), st_char_get(json), json_values[0]);
-		json_decref_d(json_objs[0]);
+		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\", value = \"%s\", err = \"%s\" }",
+			st_length_int(command), st_char_get(command), st_length_int(json), st_char_get(json), json_values[0], err.text);
+		if (json_objs[0]) json_decref_d(json_objs[0]);
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
 
@@ -437,17 +417,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 			st_length_int(command), st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
 
-	st_cleanup(json);
-	json_decref_d(json_objs[0]);
+	if (json_objs[0]) json_decref_d(json_objs[0]);
 
-	json = NULL;
 	json_objs[0] = NULL;
 	json_values[0] = NULL;
 
@@ -461,25 +438,21 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Submit the command and check the status of the response.
-	if (!(client = check_camel_connect(secure)) || !check_camel_json_write(client, PLACER(commands[3], ns_length_get(commands[3])),
-		cookie, true) || !check_camel_status(client) || !(content_length = check_http_content_length_get(client)) ||
-		!(json = check_camel_json_read(client, content_length))) {
+	if (!check_camel_print(NULLER(commands[3]), cookie, json, secure)) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%s\" }", commands[3]);
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
 
 	// Parse the returned JSON.
-	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &json_err)) || json_unpack_d(json_objs[0], "{s:{s:{s:s}}}", "result",
+	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || json_unpack_d(json_objs[0], "{s:{s:{s:s}}}", "result",
 		st_char_get(rand_strs[0]), "value", &json_values[0]) == 0) {
 
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%s\", json = \"%.*s\" }", commands[3],
 			st_length_int(json), st_char_get(json));
-		json_decref_d(json_objs[0]);
+		if (json_objs[0]) json_decref_d(json_objs[0]);
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
 
@@ -487,10 +460,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	st_wipe(command);
 	st_wipe(rand_strs[0]);
 
-	st_cleanup(json);
-	json_decref_d(json_objs[0]);
+	if (json_objs[0]) json_decref_d(json_objs[0]);
 
-	json = NULL;
 	json_objs[0] = NULL;
 	json_values[0] = NULL;
 
@@ -527,36 +498,30 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Submit the command and check the status of the response.
-	if (!(client = check_camel_connect(secure)) || !check_camel_json_write(client, command, cookie, true) ||
-		!check_camel_status(client) || !(content_length = check_http_content_length_get(client)) ||
-		!(json = check_camel_json_read(client, content_length))) {
+	if (!check_camel_print(command, cookie, json, secure)) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
 
 	// Parse the returned JSON.
-	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &json_err)) || (json_unpack_d(json_objs[0], "{s:{s:i}}", "result",
+	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || (json_unpack_d(json_objs[0], "{s:{s:i}}", "result",
 		"folderID", &folder_ids[0]) != 0) || folder_ids[0] == -1) {
 
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
-		json_decref_d(json_objs[0]);
+		if (json_objs[0]) json_decref_d(json_objs[0]);
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
 
-	st_cleanup(json);
-	json_decref_d(json_objs[0]);
+	if (json_objs[0]) json_decref_d(json_objs[0]);
 
-	json = NULL;
 	json_objs[0] = NULL;
 
 	client_close(client);
@@ -569,59 +534,51 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Submit the command and check the status of the response.
-	if (!(client = check_camel_connect(secure)) || !check_camel_json_write(client, PLACER(commands[6], ns_length_get(commands[6])),
-		cookie, true) || !check_camel_status(client) || !(content_length = check_http_content_length_get(client)) ||
-		!(json = check_camel_json_read(client, content_length))) {
+	if (!check_camel_print(NULLER(commands[6]), cookie, json, secure)) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%s\" }", commands[6]);
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
 
 	// Parse the returned JSON.
-	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &json_err)) || !(json_objs[1] = json_object_get_d(json_objs[0],
+	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || !(json_objs[1] = json_object_get_d(json_objs[0],
 		"result")) || !json_is_array(json_objs[1])) {
 
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%s\", json = \"%.*s\" }", commands[6],
 			st_length_int(json), st_char_get(json));
-		json_decref_d(json_objs[0]);
-		json_decref_d(json_objs[1]);
+		if (json_objs[0]) json_decref_d(json_objs[0]);
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
+	else {
+		// Search for the object describing the newly added folder.
+		for (size_t i = 0; !contains_entries[0] && i < json_array_size_d(json_objs[1]); i++) {
+			json_objs[2] = json_array_get_d(json_objs[1], i);
+			if (json_unpack_d(json_objs[2], "{s:i,s:s}", "folderID", &folder_ids[1], "name", &json_values[0]) == 0 &&
+				folder_ids[0] == folder_ids[1] && st_cmp_cs_eq(NULLER((chr_t *)json_values[0]), rand_strs[0]) == 0) {
 
-	// Search for the object describing the newly added folder.
-	for (size_t i = 0; !contains_entries[0] && i < json_array_size_d(json_objs[1]); i++) {
-		json_objs[2] = json_array_get_d(json_objs[1], i);
-		if (json_unpack_d(json_objs[2], "{s:i,s:s}", "folderID", &folder_ids[1], "name", &json_values[0]) == 0 &&
-			folder_ids[0] == folder_ids[1] && st_cmp_cs_eq(NULLER((chr_t *)json_values[0]), rand_strs[0]) == 0) {
-
-			contains_entries[0] = true;
+				contains_entries[0] = true;
+			}
 		}
-	}
-	if (!contains_entries[0]) {
+		if (!contains_entries[0]) {
 
-		st_sprint(errmsg, "Failed to find folder entry in response. { command = \"%s\", json = \"%.*s\", folder_id = %d, folder_name = \"%.*s\" }",
-			commands[6], st_length_int(json), st_char_get(json), folder_ids[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
-		json_decref_d(json_objs[0]);
-		json_decref_d(json_objs[1]);
-		client_close(client);
-		st_cleanup(json);
-		return false;
+			st_sprint(errmsg, "Failed to find folder entry in response. { command = \"%s\", json = \"%.*s\", folder_id = %d, folder_name = \"%.*s\" }",
+				commands[6], st_length_int(json), st_char_get(json), folder_ids[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
+			json_decref_d(json_objs[0]);
+			client_close(client);
+			return false;
+		}
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
 	st_wipe(rand_strs[0]);
 
-	st_cleanup(json);
-	json_decref_d(json_objs[0]);
+	if (json_objs[0]) json_decref_d(json_objs[0]);
 
 	contains_entries[0] = false;
 
-	json = NULL;
 	json_objs[0] = NULL;
 	json_values[0] = NULL;
 
@@ -654,36 +611,30 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Submit the command and check the status of the response.
-	if (!(client = check_camel_connect(secure)) || !check_camel_json_write(client, command, cookie, true) ||
-		!check_camel_status(client) || !(content_length = check_http_content_length_get(client)) ||
-		!(json = check_camel_json_read(client, content_length))) {
+	if (!check_camel_print(command, cookie, json, secure)) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
 
 	// Parse the returned JSON.
-	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &json_err)) || (json_unpack_d(json_objs[0], "{s:{s:i}}", "result",
+	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || (json_unpack_d(json_objs[0], "{s:{s:i}}", "result",
 		"contactID", &contact_ids[0]) != 0) || contact_ids[0] == -1) {
 
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
-		json_decref_d(json_objs[0]);
+		if (json_objs[0]) json_decref_d(json_objs[0]);
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
 
-	st_cleanup(json);
-	json_decref_d(json_objs[0]);
+	if (json_objs[0]) json_decref_d(json_objs[0]);
 
-	json = NULL;
 	json_objs[0] = NULL;
 
 	client_close(client);
@@ -704,36 +655,30 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Submit the command and check the status of the response.
-	if (!(client = check_camel_connect(secure)) || !check_camel_json_write(client, command, cookie, true) ||
-		!check_camel_status(client) || !(content_length = check_http_content_length_get(client)) ||
-		!(json = check_camel_json_read(client, content_length))) {
+	if (!check_camel_print(command, cookie, json, secure)) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
 
 	// Parse the returned JSON.
-	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &json_err)) || (json_unpack_d(json_objs[0], "{s:{s:i}}", "result",
+	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || (json_unpack_d(json_objs[0], "{s:{s:i}}", "result",
 		"contactID", &contact_ids[1]) != 0) || contact_ids[1] == -1) {
 
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
-		json_decref_d(json_objs[0]);
+		if (json_objs[0]) json_decref_d(json_objs[0]);
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
 
-	st_cleanup(json);
-	json_decref_d(json_objs[0]);
+	if (json_objs[0]) json_decref_d(json_objs[0]);
 
-	json = NULL;
 	json_objs[0] = NULL;
 
 	client_close(client);
@@ -755,67 +700,185 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Submit the command and check the status of the response.
-	if (!(client = check_camel_connect(secure)) || !check_camel_json_write(client, command, cookie, true) ||
-		!check_camel_status(client) || !(content_length = check_http_content_length_get(client)) ||
-		!(json = check_camel_json_read(client, content_length))) {
+	if (!check_camel_print(command, cookie, json, secure)) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
 
 	// Parse the returned JSON.
-	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &json_err)) || !(json_objs[1] = json_object_get_d(json_objs[0],
+	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || !(json_objs[1] = json_object_get_d(json_objs[0],
 		"result")) || !json_is_array(json_objs[1])) {
 
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%s\", json = \"%.*s\" }", commands[6],
 			st_length_int(json), st_char_get(json));
-		json_decref_d(json_objs[0]);
+		if (json_objs[0]) json_decref_d(json_objs[0]);
 		client_close(client);
-		st_cleanup(json);
+		return false;
+	}
+	else {
+		// Search for the objects describing the newly added contacts.
+		for (size_t i = 0; i < json_array_size_d(json_objs[1]); i++) {
+			json_objs[2] = json_array_get_d(json_objs[1], i);
+			if (json_unpack_d(json_objs[2], "{s:i,s:s,s:s}", "contactID", &contact_ids[3], "name", &json_values[0], "email",
+				&json_values[1]) == 0 && st_search_cs(NULLER((chr_t *)json_values[1]), rand_strs[1], NULL) &&
+				st_search_cs(NULLER((chr_t*)json_values[0]), rand_strs[0], NULL)) {
+
+				/// LOW: Figure out why st_cmp_* did not work between the name/email and their rand_strs counterparts.
+
+				// Ensure that both of the contacts added by this test are present in the return set.
+				if (contact_ids[3] == contact_ids[0]) contains_entries[0] = true;
+				else if (contact_ids[3] == contact_ids[1]) contains_entries[1] = true;
+			}
+		}
+		if (!contains_entries[0] || !contains_entries[1]) {
+
+			st_sprint(errmsg, "Failed to find contact entry in response. { command = \"%s\", json = \"%.*s\", contact_id = %u, copy_id = %u}",
+				commands[9], st_length_int(json), st_char_get(json), contact_ids[0], contact_ids[1]);
+			json_decref_d(json_objs[0]);
+			client_close(client);
+			return false;
+		}
+	}
+
+	// Clean up before the next check.
+	st_wipe(command);
+
+	if (json_objs[0]) json_decref_d(json_objs[0]);
+
+	contains_entries[0] = false;
+	contains_entries[1] = false;
+
+	json_objs[0] = NULL;
+
+	client_close(client);
+	client = NULL;
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Test config.edit 	: commands[10]
+	// JSON Command			: {"id":12,"method":"contacts.edit","params":{"folderID":<folder_ids[0]>, "contactID":<contact_ids[0]>,
+	//							"contact":{"name":"<rand_strs[0]>","email":"rand_strs[1]"}}}
+	// Expected Response 	: {"jsonrpc":"2.0","result":{"contacts.edit":"success"},"id":12}
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// Generate the new random inputs for "name" and "email".
+	if (!rand_choices(choices, 64, rand_strs[0]) || !rand_choices(choices, 64, rand_strs[1])) {
+
+		st_sprint(errmsg, "Failed to create random inputs. { command = \"%s\" }", commands[10]);
+		client_close(client);
 		return false;
 	}
 
-	// Search for the objects describing the newly added contacts.
-	for (size_t i = 0; i < json_array_size_d(json_objs[1]); i++) {
-		json_objs[2] = json_array_get_d(json_objs[1], i);
-		if (json_unpack_d(json_objs[2], "{s:i,s:s,s:s}", "contactID", &contact_ids[3], "name", &json_values[0], "email",
-			&json_values[1]) == 0 && st_search_cs(NULLER((chr_t *)json_values[1]), rand_strs[1], NULL) &&
-			st_search_cs(NULLER((chr_t*)json_values[0]), rand_strs[0], NULL)) {
+	// Construct the command string.
+	else if (!(st_sprint(command, commands[10], folder_ids[0], contact_ids[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0]),
+		st_length_int(rand_strs[1]), st_char_get(rand_strs[1])))) {
 
-			/// LOW: Figure out why st_cmp_* did not work between the name/email and their rand_strs counterparts.
-
-			// Ensure that both of the contacts added by this test are present in the return set.
-			if (contact_ids[3] == contact_ids[0]) contains_entries[0] = true;
-			else if (contact_ids[3] == contact_ids[1]) contains_entries[1] = true;
-		}
+		st_sprint(errmsg, "Failed to create command string. { command = \"%.*s\" }", st_length_int(command), st_char_get(command));
+		client_close(client);
+		return false;
 	}
-	if (!contains_entries[0] || !contains_entries[1]) {
 
-		st_sprint(errmsg, "Failed to find contact entry in response. { command = \"%s\", json = \"%.*s\", contact_id = %u, copy_id = %u}",
-			commands[9], st_length_int(json), st_char_get(json), contact_ids[0], contact_ids[1]);
+	// Submit the command and check the status of the response.
+	if (!check_camel_print(command, cookie, json, secure)) {
+
+		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
+			st_char_get(command));
+		client_close(client);
+		return false;
+	}
+
+	// Parse the returned JSON.
+	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || json_unpack_d(json_objs[0], "{s:{s:s}}", "result",
+		"contacts.edit", &json_values[0]) != 0) {
+
+		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\", value = \"%s\"}",
+			st_length_int(command), st_char_get(command), st_length_int(json), st_char_get(json), json_values[0]);
+		if (json_objs[0]) json_decref_d(json_objs[0]);
+		client_close(client);
+		return false;
+	}
+
+	// Check if the returned JSON is correct.
+	else if (st_cmp_cs_eq(NULLER((chr_t *)json_values[0]), PLACER("success", 7))) {
+
+		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
+			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
 		client_close(client);
-		st_cleanup(json);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
 
-	st_cleanup(json);
-	json_decref_d(json_objs[0]);
+	if (json_objs[0]) json_decref_d(json_objs[0]);
 
-	contains_entries[0] = false;
-	contains_entries[1] = false;
-
-	json = NULL;
 	json_objs[0] = NULL;
+	json_values[0] = NULL;
 
 	client_close(client);
 	client = NULL;
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Test config.edit 	: commands[11]
+	// JSON Command			: {"id":13,"method\":"contacts.load","params":{"folderID":<folder_ids[0]>, "contactID":<contact_ids[0]>}}
+	// Expected Response 	: {"jsonrpc":"2.0","result":{"contactID":<contact_ids[0]>, "name":{"value":<rand_strs[0]>, ...},
+	//							"email":{"value":<rand_strs[1]>}}, "id":13}
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// Construct the command string.
+	if (!(st_sprint(command, commands[11], folder_ids[0], contact_ids[0]), st_char_get(rand_strs[1]))) {
+
+		st_sprint(errmsg, "Failed to create command string. { command = \"%.*s\" }", st_length_int(command), st_char_get(command));
+		client_close(client);
+		return false;
+	}
+
+	// Submit the command and check the status of the response.
+	if (!check_camel_print(command, cookie, json, secure)) {
+
+		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
+			st_char_get(command));
+		client_close(client);
+		return false;
+	}
+
+	// Parse the returned JSON.
+	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || json_unpack_d(json_objs[0], "{s:{s:i,s:{s:s},s:{s:s}}}",
+		"result", "contactID", &contact_ids[2], "name", "value", &json_values[0], "email", "value", &json_values[1]) != 0) {
+
+		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\"}",
+			st_length_int(command), st_char_get(command), st_length_int(json), st_char_get(json));
+		if (json_objs[0]) json_decref_d(json_objs[0]);
+		client_close(client);
+		return false;
+	}
+
+	// Check if the returned JSON is correct.
+	else if (st_cmp_cs_eq(NULLER((chr_t *)json_values[0]), rand_strs[0]) != 0 ||
+			st_cmp_cs_eq(NULLER((chr_t *)json_values[1]), rand_strs[1]) != 0 ||
+			contact_ids[2] != contact_ids[0]) {
+
+		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
+			st_char_get(command), st_length_int(json), st_char_get(json));
+		json_decref_d(json_objs[0]);
+		client_close(client);
+		return false;
+	}
+
+	// Clean up before the next check.
+	st_wipe(command);
+
+	if (json_objs[0]) json_decref_d(json_objs[0]);
+
+	json_objs[0] = NULL;
+	json_values[0] = NULL;
+
+	client_close(client);
+	client = NULL;
+	///
 
 	return true;
 }

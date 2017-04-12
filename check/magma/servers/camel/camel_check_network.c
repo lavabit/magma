@@ -342,16 +342,13 @@ bool_t check_camel_login(stringer_t *user, stringer_t *pass, stringer_t *cookie,
 // LOW: Test the four different ways of preserving a session token: Cookie, URL param, JSON param, Form post.
 bool_t check_camel_auth_sthread(bool_t secure, stringer_t *errmsg) {
 
-	client_t *client = NULL;
 	stringer_t *cookie = MANAGEDBUF(1024);
 
 	if (!check_camel_login(PLACER("princess", 8), PLACER("password", 8), cookie, secure)) {
-
 		st_sprint(errmsg, "Failed to return successful state after auth request.");
 		return false;
 	}
 
-	client_close(client);
 	return true;
 }
 

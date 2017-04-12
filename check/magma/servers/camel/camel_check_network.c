@@ -24,6 +24,13 @@ bool_t check_camel_status(client_t *client) {
 	return ((*(pl_char_get(client->line) + 9) == '2') ? true : false);
 }
 
+/**
+ * @brief	Returns a client_t * connected to an HTTP server, either securely or not.
+ *
+ * @param	secure	a bool specifying whether or not the connection should be secured.
+ *
+ * @return	A client_t * connected to an HTTP server.
+ */
 client_t * check_camel_connect(bool_t secure) {
 
 	client_t *client = NULL;
@@ -43,6 +50,16 @@ client_t * check_camel_connect(bool_t secure) {
 	return client;
 }
 
+/**
+ * @brief	Prints JSON to the camelface portal using the passed cookie and sets the
+ *
+ * @param	req		is a stringer_t * holding the JSON request.
+ * @param	cookie	is a stringer_t * holding the user's auth cookie.
+ * @param	res		is a stringer+t * into which the response JSON will be written (if not NULL).
+ * @param	secure	is a bool which determines whether or not the client will connect to the
+ * 						HTTP server securely.
+ * @return	true if all communications were successful, false otherwise.
+ */
 bool_t check_camel_print(stringer_t *req, stringer_t *cookie, stringer_t *res, bool_t secure) {
 
 	uint32_t length = 0;
@@ -69,13 +86,13 @@ bool_t check_camel_print(stringer_t *req, stringer_t *cookie, stringer_t *res, b
 }
 
 /**
- * @brief	Reads lines from the client until the end of the HTTP response is reached.
+ * @brief	Returns the JSON from a client holding a response from the Camelface.
  *
- * @param	client	A client_t* to read lines from. An HTTP request should have been submitted
- * 			from the client before this function is called.
+ * @param	client	is a client_t* to read lines from. An HTTP request should have been submitted
+ * 						from the client before this function is called.
+ * @param	length	is a size_t containing the content length of the JSON response.
  *
- * @return	True if the end of the HTTP response was reached, false if client_read_line reads
- * 			a 0 length line before the last line is reached.
+ * @return	A stringer_t * holding the JSON response from the server.
  */
 stringer_t * check_camel_json_read(client_t *client, size_t length) {
 
@@ -99,6 +116,17 @@ stringer_t * check_camel_json_read(client_t *client, size_t length) {
 	return json;
 }
 
+/**
+ * @brief	Writes JSON to the passed client, optionally with a cookie or keep-alive set.
+ *
+ * @param	client		is a client_t * to which the JSON will be written. It should be connected to HTTP server.
+ * @param	json		is a stringer_t * holding the JSON to be written.
+ * @param	cookie		is a stringer_t * holding the user's auth cookie.
+ * @param	keep_alive	is a bool_t that determines whether or not the client will connect to the HTTP server
+ * 							securely.
+ *
+ * @return	True if the submission was successful, false otherwise.
+ */
 bool_t check_camel_json_write(client_t *client, stringer_t *json, stringer_t *cookie, bool_t keep_alive) {
 
 	chr_t *message = "POST /portal/camel HTTP/1.1\r\nHost: localhost:10000\r\nAccept: */*\r\nContent-Length: %u\r\n" \
@@ -114,29 +142,148 @@ bool_t check_camel_json_write(client_t *client, stringer_t *json, stringer_t *co
 	return true;
 }
 
-/*
-int32_t check_camel_send_mail(stringer_t *to, stringer_t *from, stringer_t *subject, stringer_t *body, stringer_t *cookie, bool_t secure) {
+/**
+ * @brief	Returns the folderid of the folder named "Inbox" for a user.
+ *
+ * @param	cookie	is a stringer_t * containing the user's auth cookie.
+ * @param	secure	is the a bool_t which determines whether or not the client
+ * 				will connect to the HTTP server securely.
+ *
+ * @return	The folderID of Inbox if found, otherwise -1.
+ */
+int32_t check_camel_inbox_id(stringer_t *cookie, bool_t secure) {
 
+	uint32_t id = -1;
 	json_error_t err;
-	client_t *client = NULL;
-	uint32_t compose_id = 0;
-	json_t *json_root = NULL;
+	const chr_t *json_value = NULL;
 	stringer_t *json = MANAGEDBUF(8192);
-	chr_t *compose_req = "{\"id\":1,\"method\":\"messages.compose\"}", *message = "{\"id\":1,\"method\":\"messages.send\"," \
-		"\"params\":{\"to\":\"%.*s\",\"from\":[\"%.*s\"],\"subject\":\"%.*s\",\"body\":{\"text\":\"%.*s\"}]}";
+	json_t *json_root = NULL, *json_array = NULL, *json_cursor = NULL;
+	chr_t *folders_list = "{\"id\":1,\"method\":\"folders.list\",\"params\":{\"context\":\"mail\"}}";
 
-	// Retrieve a compose ID.
-	if (!check_camel_print(PLACER(compose_req, ns_length_get(compose_req)), cookie, json, secure) ||
-		!(json_root = json_loads_d(st_char_get(json), 0, &err)) || json_unpack_d(json_objs[0], "{s:{s:s}}", "result",
-		"composeID", &compose_id) != 0) {
+	// Determine the folderID of Inbox.
+	if (!check_camel_print(PLACER(folders_list, ns_length_get(folders_list)), cookie, json, secure) ||
+		!(json_root = json_loads_d(st_char_get(json), 0, &err)) || !(json_array = json_object_get_d(json_root, "result")) ||
+		!json_is_array(json_array)) {
 
-		if (json_objs[0]) json_decref_d(json_objs[0]);
+		if (json_root) json_decref_d(json_root);
+		return false;
+	}
+	for (size_t i = 0; id == -1 && i < json_array_size_d(json_array); i++) {
+
+		json_cursor = json_array_get_d(json_array, i);
+
+		if (json_unpack_d(json_cursor, "{s:i, s:s}", "folderID", &id, "name", &json_value) != 0 ||
+			st_cmp_cs_eq(NULLER((chr_t *)json_value), PLACER("Inbox", 5)) != 0) {
+
+			id = -1;
+		}
+	}
+
+	json_decref_d(json_root);
+	return id;
+}
+
+/**
+ * @brief	Determines if a user's Inbox contains mail, and returns the first message id.
+ *
+ * @param	cookie	is a stringer_t * holding a user auth cookie.
+ *
+ * @return	-1 if the Inbox folder does not exist for the user or is empty, otherwise
+ * 				the first messageID of a message in the user's Inbox.
+ */
+int32_t check_camel_inbox_msg(stringer_t *cookie, bool_t secure) {
+
+	uint32_t id = -1;
+	json_error_t err;
+	stringer_t *command = MANAGEDBUF(2048), *json = MANAGEDBUF(8192);
+	json_t *json_root = NULL, *json_array = NULL, *json_cursor = NULL;
+	chr_t *messages_list = "{\"id\":2,\"method\":\"messages.list\",\"params\":{\"folderID\":%d}}";
+
+	// Determine the folderID of Inbox.
+	if ((id = check_camel_inbox_id(cookie, secure)) == -1) {
+
 		return false;
 	}
 
-	return -1;
+	// Query for the contents of Inbox.
+	else if (id != -1 && (!(command = st_quick(command, messages_list, id)) || !check_camel_print(command, cookie, json, secure) ||
+		!(json_root = json_loads_d(st_char_get(json), 0, &err)) || !(json_array = json_object_get_d(json_root, "result")) ||
+		json_is_array(json_array))) {
+
+		if (json_root) json_decref_d(json_root);
+		return false;
+	}
+
+	// If Inbox contains mail, return the messageID of the first message.
+	if (json_array_size_d(json_array) > 0) {
+
+		json_cursor = json_array_get_d(json_array, 0);
+		json_unpack_d(json_cursor, "{s:i}", "messageID", &id);
+	}
+
+	json_decref_d(json_root);
+	return id;
 }
-*/
+
+/**
+ * @brief	Sends mail via the Camelface.
+ *
+ * @param	to		is a stringer_t * holding the TO: address.
+ * @param	from	is a stringer_t * holding the FROM: address.
+ * @param	subject	is a stringer_t * holding the subject of the message.
+ * @param	body	is a stringer_t * holding the body of the message.
+ * @param	cookie	is a stringer_t * holding the user's auth cookie.
+ * @param	secure	is a bool_t which determines whether the client will connected to
+ * 						the HTTP server securely.
+ *
+ * @return	True if submission was successful, false otherwise.
+ */
+bool_t check_camel_send_mail(stringer_t *to, stringer_t *from, stringer_t *subject, stringer_t *body, stringer_t *cookie, bool_t secure) {
+
+	json_error_t err;
+	uint32_t compose_id = 0;
+	json_t *json_root = NULL;
+	const chr_t *json_value = NULL;
+	stringer_t *json = MANAGEDBUF(8192), *command = NULL;
+	chr_t *compose_req = "{\"id\":1,\"method\":\"messages.compose\"}", *message = "{\"id\":1,\"method\":\"messages.send\"," \
+		"\"params\":{\"composeID\":%u,\"to\":\"%.*s\",\"from\":[\"%.*s\"],\"subject\":\"%.*s\",\"priority\":\"normal\"," \
+		"\"attachments\":[], \"body\":{\"text\":\"%.*s\"}}}";
+
+	if (!to || !from || !subject || !body || !cookie) return false;
+
+	// Retrieve a compose ID.
+	if (!check_camel_print(PLACER(compose_req, ns_length_get(compose_req)), cookie, json, secure) ||
+		!(json_root = json_loads_d(st_char_get(json), 0, &err)) || json_unpack_d(json_root, "{s:{s:s}}", "result",
+		"composeID", &compose_id) != 0) {
+
+		if (json_root) json_decref_d(json_root);
+		return false;
+	}
+	// Compose the command string.
+	else if (!(command = st_quick(NULL, message, compose_id, st_length_int(to), st_char_get(to), st_length_int(from),
+			st_char_get(from), st_length_int(subject), st_char_get(subject), st_length_int(body), st_char_get(body)))) {
+
+		if (json_root) json_decref_d(json_root);
+		return false;
+	}
+
+	// Submit the message.
+	st_wipe(json);
+	json_decref_d(json_root);
+
+	if (!check_camel_print(command, cookie, json, secure) || !(json_root = json_loads_d(st_char_get(json), 0, &err)) ||
+		json_unpack_d(json_root, "{s:s}", "result", &json_value) != 0 || st_cmp_cs_eq(NULLER((chr_t *)json_value), PLACER("OK", 2)) != 0) {
+
+		if (json_root) json_decref_d(json_root);
+		st_free(command);
+		return false;
+	}
+
+	if (json_root) json_decref_d(json_root);
+	st_free(command);
+	return true;
+}
+
 /**
  * @brief	Submits an auth request to /portal/camel, setting *cookie to the session cookie in the response.
  *
@@ -2087,7 +2234,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[58]
-	// JSON Command			: "{\"id\":60,\"method\":\"logout\"}"
+	// JSON Command			: {"id":60,"method":"logout"}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"logout":"success},"id":60}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

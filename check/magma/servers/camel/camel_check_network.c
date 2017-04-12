@@ -114,6 +114,29 @@ bool_t check_camel_json_write(client_t *client, stringer_t *json, stringer_t *co
 	return true;
 }
 
+/*
+int32_t check_camel_send_mail(stringer_t *to, stringer_t *from, stringer_t *subject, stringer_t *body, stringer_t *cookie, bool_t secure) {
+
+	json_error_t err;
+	client_t *client = NULL;
+	uint32_t compose_id = 0;
+	json_t *json_root = NULL;
+	stringer_t *json = MANAGEDBUF(8192);
+	chr_t *compose_req = "{\"id\":1,\"method\":\"messages.compose\"}", *message = "{\"id\":1,\"method\":\"messages.send\"," \
+		"\"params\":{\"to\":\"%.*s\",\"from\":[\"%.*s\"],\"subject\":\"%.*s\",\"body\":{\"text\":\"%.*s\"}]}";
+
+	// Retrieve a compose ID.
+	if (!check_camel_print(PLACER(compose_req, ns_length_get(compose_req)), cookie, json, secure) ||
+		!(json_root = json_loads_d(st_char_get(json), 0, &err)) || json_unpack_d(json_objs[0], "{s:{s:s}}", "result",
+		"composeID", &compose_id) != 0) {
+
+		if (json_objs[0]) json_decref_d(json_objs[0]);
+		return false;
+	}
+
+	return -1;
+}
+*/
 /**
  * @brief	Submits an auth request to /portal/camel, setting *cookie to the session cookie in the response.
  *
@@ -125,41 +148,47 @@ bool_t check_camel_json_write(client_t *client, stringer_t *json, stringer_t *co
  *
  * @return	True if the request was successful, false otherwise.
  */
-bool_t check_camel_login(client_t *client, uint32_t id, stringer_t *user, stringer_t *pass, stringer_t *cookie) {
+bool_t check_camel_login(stringer_t *user, stringer_t *pass, stringer_t *cookie, bool_t secure) {
 
 	json_error_t err;
+	client_t *client = NULL;
 	size_t content_length = 0;
 	json_t *json_root = NULL, *json_result = NULL, *json_key = NULL;
-	uint32_t length = 62 + ns_length_get(user) + ns_length_get(pass) + uint32_digits(id);
+	uint32_t id = 1, length = 62 + ns_length_get(user) + ns_length_get(pass) + uint32_digits(id);
 	stringer_t *json = NULL, *message = NULLER("POST /portal/camel HTTP/1.1\r\nHost: localhost:10000\r\nAccept: */*\r\n" \
 		"Content-Length: %u\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n{\"id\":%u,\"method\":\"auth\"," \
 		"\"params\":{\"username\":\"%.*s\",\"password\":\"%.*s\"}}\r\n\r\n");
 
-	if (client_print(client, st_char_get(message), length, id, st_length_int(user), st_char_get(user), st_length_int(pass),
+	if (!(client = check_camel_connect(secure))) {
+		return false;
+	}
+	else if (client_print(client, st_char_get(message), length, id, st_length_int(user), st_char_get(user), st_length_int(pass),
 		st_char_get(pass)) != ((st_length_get(message) - 12) + uint32_digits(length) + uint32_digits(id) + st_length_get(user) +
 		st_length_get(pass)) || !check_camel_status(client) || !(content_length = check_http_content_length_get(client)) ||
 		!(json = check_camel_json_read(client, content_length))) {
 
+		client_close(client);
 		return false;
 	}
 	else if (!(json_root = json_loads_d(st_char_get(json), 0, &err)) || !(json_result = json_object_get_d(json_root, "result")) ||
 		!(json_key = json_object_get_d(json_result, "session"))) {
 
-		st_free(json);
 		mm_cleanup(json_root, json_result, json_key);
-
+		client_close(client);
+		st_free(json);
 		return false;
 	}
 	else if (cookie && st_sprint(cookie, "%s", json_string_value_d(json_key)) == -1) {
 
-		st_free(json);
 		mm_cleanup(json_root, json_result, json_key);
+		client_close(client);
+		st_free(json);
 		return false;
 	}
 
-	st_free(json);
 	mm_cleanup(json_root, json_result, json_key);
-
+	client_close(client);
+	st_free(json);
 	return true;
 }
 
@@ -169,11 +198,7 @@ bool_t check_camel_auth_sthread(bool_t secure, stringer_t *errmsg) {
 	client_t *client = NULL;
 	stringer_t *cookie = MANAGEDBUF(1024);
 
-	if (!(client = check_camel_connect(secure))) {
-		st_sprint(errmsg, "There were no HTTP servers available for %s connections.", (secure ? "TLS" : "TCP"));
-		return false;
-	}
-	else if (!check_camel_login(client, 1, PLACER("princess", 8), PLACER("password", 8), cookie)) {
+	if (!check_camel_login(PLACER("princess", 8), PLACER("password", 8), cookie, secure)) {
 
 		st_sprint(errmsg, "Failed to return successful state after auth request.");
 		return false;
@@ -186,7 +211,6 @@ bool_t check_camel_auth_sthread(bool_t secure, stringer_t *errmsg) {
 bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json_error_t err;
-	client_t *client = NULL;
 	json_t *json_objs[2] = { NULL, NULL };
 	bool_t contains_entries[2] = { false, false };
 	const chr_t *json_values[4] = { NULL, NULL, NULL, NULL };
@@ -256,13 +280,10 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		"{\"id\":60,\"method\":\"logout\"}"
 	};
 
-	if (!(client = check_camel_connect(secure))) {
-		st_sprint(errmsg, "There were no HTTP servers available for %s connections.", (secure ? "TLS" : "TCP"));
-	}
-	else if (!check_camel_login(client, 1, PLACER("princess", 8), PLACER("password", 8), cookie)) {
+	// Get the auth cookie for the Princess user.
+	if (!check_camel_login(PLACER("princess", 8), PLACER("password", 8), cookie, secure)) {
 
 		st_sprint(errmsg, "Failed to return successful response after auth request.");
-		client_close(client);
 		return false;
 	}
 
@@ -276,7 +297,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!rand_choices(choices, 64, rand_strs[0]) || !rand_choices(choices, 64, rand_strs[1])) {
 
 		st_sprint(errmsg, "Failed to create random inputs. { command = \"%s\" }", commands[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -285,7 +305,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_char_get(rand_strs[1])))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%.*s\" }", st_length_int(command), st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -294,7 +313,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -305,7 +323,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\", value = \"%s\"}",
 			st_length_int(command), st_char_get(command), st_length_int(json), st_char_get(json), json_values[0]);
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -315,20 +332,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[1]
@@ -340,7 +349,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!check_camel_print(NULLER(commands[1]), cookie, json, secure)) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%s\" }", commands[1]);
-		client_close(client);
 		return false;
 	}
 
@@ -351,7 +359,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%s\", json = \"%.*s\" }", commands[1],
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -361,21 +368,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%s\", json = \"%.*s\" }", commands[0],
 			st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-	st_wipe(rand_strs[1]);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[2]
@@ -387,7 +385,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!(st_sprint(command, commands[2], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\" }", commands[2]);
-		client_close(client);
 		return false;
 	}
 	// Submit the command and check the status of the response.
@@ -395,7 +392,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -406,7 +402,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\", value = \"%s\", err = \"%s\" }",
 			st_length_int(command), st_char_get(command), st_length_int(json), st_char_get(json), json_values[0], err.text);
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -416,20 +411,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%.*s\", json = \"%.*s\" }",
 			st_length_int(command), st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[3]
@@ -441,7 +428,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!check_camel_print(NULLER(commands[3]), cookie, json, secure)) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%s\" }", commands[3]);
-		client_close(client);
 		return false;
 	}
 
@@ -452,21 +438,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%s\", json = \"%.*s\" }", commands[3],
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-	st_wipe(rand_strs[0]);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[4]
@@ -478,7 +455,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!rand_choices(choices, 64, rand_strs[0]) || !rand_choices(choices, 64, rand_strs[1])) {
 
 		st_sprint(errmsg, "Failed to create random inputs. { command = \"%s\" }", commands[4]);
-		client_close(client);
 		return false;
 	}
 
@@ -487,7 +463,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_char_get(rand_strs[1])))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%.*s\" }", st_length_int(command), st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -496,7 +471,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -507,7 +481,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\", value = \"%s\"}",
 			st_length_int(command), st_char_get(command), st_length_int(json), st_char_get(json), json_values[0]);
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -517,20 +490,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[5]
@@ -542,7 +507,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!rand_choices(choices, 16, rand_strs[0])) {
 
 		st_sprint(errmsg, "Failed to create random input. { command = \"%s\" }", commands[5]);
-		client_close(client);
 		return false;
 	}
 
@@ -551,7 +515,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\", \"name\" = \"%.*s\"}", commands[5],
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
-		client_close(client);
 		return false;
 	}
 
@@ -560,7 +523,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -571,19 +533,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[6]
@@ -595,7 +550,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!check_camel_print(NULLER(commands[6]), cookie, json, secure)) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%s\" }", commands[6]);
-		client_close(client);
 		return false;
 	}
 
@@ -606,12 +560,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%s\", json = \"%.*s\" }", commands[6],
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Search for the object describing the newly added folder.
 	else {
+
+		contains_entries[0] = false;
+
 		for (size_t i = 0; !contains_entries[0] && i < json_array_size_d(json_objs[1]); i++) {
 			json_objs[2] = json_array_get_d(json_objs[1], i);
 			if (json_unpack_d(json_objs[2], "{s:i,s:s}", "folderID", &folder_ids[1], "name", &json_values[0]) == 0 &&
@@ -625,24 +581,13 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 			st_sprint(errmsg, "Failed to find folder entry in response. { command = \"%s\", json = \"%.*s\", folder_id = %d, folder_name = \"%.*s\" }",
 				commands[6], st_length_int(json), st_char_get(json), folder_ids[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
 			json_decref_d(json_objs[0]);
-			client_close(client);
 			return false;
 		}
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-	st_wipe(rand_strs[0]);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	contains_entries[0] = false;
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[7]
@@ -655,7 +600,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!rand_choices(choices, 64, rand_strs[0]) || !rand_choices(choices, 64, rand_strs[1])) {
 
 		st_sprint(errmsg, "Failed to create random inputs. { command = \"%s\" }", commands[7]);
-		client_close(client);
 		return false;
 	}
 
@@ -665,7 +609,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\", \"name\" = \"%.*s\"}", commands[7],
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
-		client_close(client);
 		return false;
 	}
 
@@ -674,7 +617,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -685,19 +627,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[8]
@@ -710,7 +645,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!(st_sprint(command, commands[8], folder_ids[0], folder_ids[0], contact_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\"}", commands[8]);
-		client_close(client);
 		return false;
 	}
 
@@ -719,7 +653,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -730,19 +663,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[9]
@@ -755,7 +681,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!(st_sprint(command, commands[9], folder_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%.*s\" }", st_length_int(command), st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -764,7 +689,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -775,12 +699,15 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%s\", json = \"%.*s\" }", commands[6],
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Search for the objects describing the newly added contacts.
 	else {
+
+		contains_entries[0] = false;
+		contains_entries[0] = false;
+
 		for (size_t i = 0; i < json_array_size_d(json_objs[1]); i++) {
 			json_objs[2] = json_array_get_d(json_objs[1], i);
 			if (json_unpack_d(json_objs[2], "{s:i,s:s,s:s}", "contactID", &contact_ids[3], "name", &json_values[0], "email",
@@ -799,25 +726,13 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 			st_sprint(errmsg, "Failed to find contact entry in response. { command = \"%s\", json = \"%.*s\", contact_id = %u, copy_id = %u}",
 				commands[9], st_length_int(json), st_char_get(json), contact_ids[0], contact_ids[1]);
 			json_decref_d(json_objs[0]);
-			client_close(client);
 			return false;
 		}
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	for (size_t i = 0; i < 2; i++) json_values[i] = NULL;
-
-	contains_entries[0] = false;
-	contains_entries[1] = false;
-
-	json_objs[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[10]
@@ -830,7 +745,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!rand_choices(choices, 64, rand_strs[0]) || !rand_choices(choices, 64, rand_strs[1])) {
 
 		st_sprint(errmsg, "Failed to create random inputs. { command = \"%s\" }", commands[10]);
-		client_close(client);
 		return false;
 	}
 
@@ -839,7 +753,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_length_int(rand_strs[1]), st_char_get(rand_strs[1])))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%.*s\" }", st_length_int(command), st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -848,7 +761,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -859,7 +771,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\", value = \"%s\"}",
 			st_length_int(command), st_char_get(command), st_length_int(json), st_char_get(json), json_values[0]);
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -869,20 +780,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[11]
@@ -895,7 +798,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!(st_sprint(command, commands[11], folder_ids[0], contact_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%.*s\" }", st_length_int(command), st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -904,7 +806,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -915,7 +816,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\"}",
 			st_length_int(command), st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -927,22 +827,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-	st_wipe(rand_strs[0]);
-	st_wipe(rand_strs[1]);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	for (size_t i = 0; i < 2; i++) json_values[i] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	/// LOW: This test triggers a bug in the contacts code. "Invalid String Options" at quit.
 
@@ -958,7 +848,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		!rand_choices(choices, 64, rand_strs[2]) || !rand_choices(choices, 64, rand_strs[3])) {
 
 		st_sprint(errmsg, "Failed to create random inputs. { command = \"%s\" }", commands[12]);
-		client_close(client);
 		return false;
 	}
 
@@ -968,7 +857,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_length_int(rand_strs[3]), st_char_get(rand_strs[3])))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%.*s\" }", st_length_int(command), st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -977,7 +865,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -988,7 +875,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\", value = \"%s\"}",
 			st_length_int(command), st_char_get(command), st_length_int(json), st_char_get(json), json_values[0]);
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -998,20 +884,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[13]
@@ -1024,7 +902,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!(st_sprint(command, commands[13], folder_ids[0], contact_ids[1]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\" }", commands[13]);
-		client_close(client);
 		return false;
 	}
 
@@ -1033,7 +910,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -1046,7 +922,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\"}",
 			st_length_int(command), st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -1060,22 +935,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-
-	for (size_t i = 0; i < 4; i++) json_values[i] = NULL;
-	for (size_t i = 0; i < 4; i++) st_wipe(rand_strs[i]);
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[14]
@@ -1087,7 +952,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!rand_choices(choices, 16, rand_strs[0])) {
 
 		st_sprint(errmsg, "Failed to create random input. { command = \"%s\" }", commands[14]);
-		client_close(client);
 		return false;
 	}
 
@@ -1096,7 +960,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\", \"name\" = \"%.*s\"}", commands[14],
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
-		client_close(client);
 		return false;
 	}
 
@@ -1105,7 +968,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -1116,19 +978,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[15]
@@ -1141,7 +996,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!(st_sprint(command, commands[15], contact_ids[0], folder_ids[0], folder_ids[2]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\"}", commands[15]);
-		client_close(client);
 		return false;
 	}
 
@@ -1150,7 +1004,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -1161,7 +1014,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -1171,20 +1023,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[16]
@@ -1196,7 +1040,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!(st_sprint(command, commands[16], folder_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%.*s\" }", st_length_int(command), st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -1205,7 +1048,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -1216,11 +1058,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%s\", json = \"%.*s\" }", commands[16],
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
+
+	// Search for the object describing the newly added folder.
 	else {
-		// Search for the object describing the newly added folder.
+
+		contains_entries[0] = false;
+
 		for (size_t i = 0; !contains_entries[0] && i < json_array_size_d(json_objs[1]); i++) {
 			json_objs[2] = json_array_get_d(json_objs[1], i);
 			if (json_unpack_d(json_objs[2], "{s:i}", "contactID", &contact_ids[2]) == 0 && contact_ids[0] == contact_ids[2]) {
@@ -1233,23 +1078,13 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 			st_sprint(errmsg, "The contact was not moved between folders. { command = \"%s\", json = \"%.*s\", contact_ids[0] = <%u> }",
 				commands[16], st_length_int(json), st_char_get(json), contact_ids[0]);
 			json_decref_d(json_objs[0]);
-			client_close(client);
 			return false;
 		}
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-	st_wipe(rand_strs[0]);
-	st_wipe(rand_strs[1]);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	for (size_t i = 0; i < 2; i++) json_values[i] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[17]
@@ -1261,7 +1096,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!(st_sprint(command, commands[17], folder_ids[2]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%.*s\" }", st_length_int(command), st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -1270,7 +1104,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -1281,11 +1114,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%s\", json = \"%.*s\" }", commands[16],
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
+
+	// Search for the object describing the newly added folder.
 	else {
-		// Search for the object describing the newly added folder.
+
+		contains_entries[0] = false;
+
 		for (size_t i = 0; !contains_entries[0] && i < json_array_size_d(json_objs[1]); i++) {
 			json_objs[2] = json_array_get_d(json_objs[1], i);
 			if (json_unpack_d(json_objs[2], "{s:i}", "contactID", &contact_ids[2]) == 0 && contact_ids[0] == contact_ids[2]) {
@@ -1298,25 +1134,13 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 			st_sprint(errmsg, "Failed to find the moved contact. { command = \"%s\", json = \"%.*s\", contact_ids[0] = <%u> }",
 				commands[16], st_length_int(json), st_char_get(json), contact_ids[0]);
 			json_decref_d(json_objs[0]);
-			client_close(client);
 			return false;
 		}
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-	st_wipe(rand_strs[0]);
-	st_wipe(rand_strs[1]);
-
-	contains_entries[0] = false;
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	for (size_t i = 0; i < 2; i++) json_values[i] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[18]
@@ -1328,7 +1152,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!(st_sprint(command, commands[18], folder_ids[2], contact_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\"}", commands[15]);
-		client_close(client);
 		return false;
 	}
 
@@ -1337,7 +1160,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -1348,7 +1170,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -1358,20 +1179,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[19]
@@ -1383,7 +1196,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!(st_sprint(command, commands[19], folder_ids[0], contact_ids[1]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\"}", commands[19]);
-		client_close(client);
 		return false;
 	}
 
@@ -1392,7 +1204,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -1403,7 +1214,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -1413,20 +1223,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[20]
@@ -1438,7 +1240,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!(st_sprint(command, commands[20], folder_ids[2]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%.*s\" }", st_length_int(command), st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -1447,7 +1248,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -1458,11 +1258,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%s\", json = \"%.*s\" }", commands[20],
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
+
+	// Search for the object describing the newly added folder.
 	else {
-		// Search for the object describing the newly added folder.
+
+		contains_entries[0] = false;
+
 		for (size_t i = 0; !contains_entries[0] && i < json_array_size_d(json_objs[1]); i++) {
 
 			json_objs[2] = json_array_get_d(json_objs[1], i);
@@ -1476,24 +1279,13 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 			st_sprint(errmsg, "Found a contact that should have been removed. { command = \"%s\", json = \"%.*s\", contact_ids[0] = <%u> }",
 				commands[16], st_length_int(json), st_char_get(json), contact_ids[0]);
 			json_decref_d(json_objs[0]);
-			client_close(client);
 			return false;
 		}
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	for (size_t i = 0; i < 2; i++) json_values[i] = NULL;
-
-	contains_entries[0] = false;
-
-	json_objs[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[21]
@@ -1505,7 +1297,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!(st_sprint(command, commands[21], folder_ids[2]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\"}", commands[21]);
-		client_close(client);
 		return false;
 	}
 
@@ -1514,7 +1305,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -1525,7 +1315,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -1535,20 +1324,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[22]
@@ -1560,7 +1341,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!(st_sprint(command, commands[22], folder_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\"}", commands[22]);
-		client_close(client);
 		return false;
 	}
 
@@ -1569,7 +1349,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -1582,7 +1361,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -1592,20 +1370,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[23]
@@ -1618,7 +1388,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -1629,7 +1398,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -1639,20 +1407,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[24]
@@ -1665,7 +1425,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -1676,7 +1435,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%s\", json = \"%.*s\" }", commands[24],
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -1687,20 +1445,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Unable to parse the alertID. { command = \"%s\", json = \"%.*s\"}", commands[24],
 			st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[25]
@@ -1712,7 +1462,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!(st_sprint(command, commands[25], alert_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\"}", commands[25]);
-		client_close(client);
 		return false;
 	}
 
@@ -1721,7 +1470,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -1734,7 +1482,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -1746,20 +1493,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[26]
@@ -1773,7 +1512,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -1784,11 +1522,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%s\", json = \"%.*s\" }", commands[20],
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
+
+	// Search for the object describing the newly added folder.
 	else {
-		// Search for the object describing the newly added folder.
+
+		contains_entries[0] = false;
+
 		for (size_t i = 0; !contains_entries[0] && i < json_array_size_d(json_objs[1]); i++) {
 
 			json_objs[2] = json_array_get_d(json_objs[1], i);
@@ -1802,23 +1543,13 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 			st_sprint(errmsg, "Found an alert that should have been ack. { command = \"%s\", json = \"%.*s\", contact_ids[0] = <%u> }",
 				commands[16], st_length_int(json), st_char_get(json), contact_ids[0]);
 			json_decref_d(json_objs[0]);
-			client_close(client);
 			return false;
 		}
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	contains_entries[0] = false;
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[27]
@@ -1830,7 +1561,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!check_camel_print(PLACER(commands[27], ns_length_get(commands[27])), cookie, json, secure)) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%s\" }", commands[27]);
-		client_close(client);
 		return false;
 	}
 
@@ -1841,20 +1571,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%s\", json = \"%.*s\" }", commands[27],
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	/// LOW: The following two checks to not work. When submitting "settings" or "help" as the "context" value
 	///			for the method "folders.list", an error is thrown and the message "Context not supported" is
@@ -1872,7 +1594,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!check_camel_print(PLACER(commands[28], ns_length_get(commands[28])), cookie, json, secure)) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%s\" }", commands[28]);
-		client_close(client);
 		return false;
 	}
 
@@ -1883,20 +1604,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%s\", json = \"%.*s\" }", commands[28],
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[29]
@@ -1908,7 +1621,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!check_camel_print(PLACER(commands[29], ns_length_get(commands[29])), cookie, json, secure)) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%s\" }", commands[29]);
-		client_close(client);
 		return false;
 	}
 
@@ -1919,20 +1631,11 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%s\", json = \"%.*s\" }", commands[29],
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
-	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	*/
 
@@ -1946,7 +1649,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!rand_choices(choices, 16, rand_strs[0])) {
 
 		st_sprint(errmsg, "Failed to create random input. { command = \"%s\" }", commands[30]);
-		client_close(client);
 		return false;
 	}
 
@@ -1955,7 +1657,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\", \"name\" = \"%.*s\"}", commands[30],
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
-		client_close(client);
 		return false;
 	}
 
@@ -1964,7 +1665,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -1975,19 +1675,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[31]
@@ -2000,7 +1693,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!rand_choices(choices, 16, rand_strs[0])) {
 
 		st_sprint(errmsg, "Failed to create random input. { command = \"%s\" }", commands[31]);
-		client_close(client);
 		return false;
 	}
 
@@ -2009,7 +1701,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\", \"name\" = \"%.*s\"}", commands[31],
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
-		client_close(client);
 		return false;
 	}
 
@@ -2018,7 +1709,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -2029,19 +1719,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[32]
@@ -2054,7 +1737,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!rand_choices(choices, 16, rand_strs[0])) {
 
 		st_sprint(errmsg, "Failed to create random input. { command = \"%s\" }", commands[32]);
-		client_close(client);
 		return false;
 	}
 
@@ -2063,7 +1745,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\", \"name\" = \"%.*s\"}", commands[32],
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
-		client_close(client);
 		return false;
 	}
 
@@ -2072,7 +1753,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -2083,19 +1763,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[33]
@@ -2108,7 +1781,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!rand_choices(choices, 16, rand_strs[0])) {
 
 		st_sprint(errmsg, "Failed to create random input. { command = \"%s\" }", commands[33]);
-		client_close(client);
 		return false;
 	}
 
@@ -2117,7 +1789,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\", \"name\" = \"%.*s\"}", commands[33],
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
-		client_close(client);
 		return false;
 	}
 
@@ -2126,7 +1797,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -2137,7 +1807,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -2147,19 +1816,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[34]
@@ -2172,7 +1834,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!rand_choices(choices, 16, rand_strs[0])) {
 
 		st_sprint(errmsg, "Failed to create random input. { command = \"%s\" }", commands[33]);
-		client_close(client);
 		return false;
 	}
 
@@ -2181,7 +1842,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\", \"name\" = \"%.*s\"}", commands[34],
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
-		client_close(client);
 		return false;
 	}
 
@@ -2190,7 +1850,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -2201,7 +1860,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -2211,19 +1869,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[35]
@@ -2235,7 +1886,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!(st_sprint(command, commands[36], folder_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\"}", commands[36]);
-		client_close(client);
 		return false;
 	}
 
@@ -2244,7 +1894,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -2255,7 +1904,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -2265,20 +1913,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[36]
@@ -2290,7 +1930,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!(st_sprint(command, commands[38], folder_ids[1]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\"}", commands[38]);
-		client_close(client);
 		return false;
 	}
 
@@ -2299,7 +1938,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -2310,7 +1948,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -2320,20 +1957,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[37]
@@ -2345,7 +1974,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!(st_sprint(command, commands[37], folder_ids[2]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\"}", commands[37]);
-		client_close(client);
 		return false;
 	}
 
@@ -2354,7 +1982,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -2365,7 +1992,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -2375,20 +2001,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[38]
@@ -2407,7 +2025,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -2418,20 +2035,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%s\", json = \"%.*s\" }", commands[39],
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[40]
@@ -2443,7 +2052,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!rand_choices(choices, 16, rand_strs[0])) {
 
 		st_sprint(errmsg, "Failed to create random input. { command = \"%s\" }", commands[40]);
-		client_close(client);
 		return false;
 	}
 
@@ -2452,7 +2060,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to create command string. { command = \"%s\", \"name\" = \"%.*s\"}", commands[40],
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
-		client_close(client);
 		return false;
 	}
 
@@ -2461,7 +2068,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -2472,19 +2078,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return a successful JSON response. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
-
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-
-	client_close(client);
-	client = NULL;
+	json_decref_d(json_objs[0]);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[58]
@@ -2497,7 +2096,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = \"%.*s\" }", st_length_int(command),
 			st_char_get(command));
-		client_close(client);
 		return false;
 	}
 
@@ -2508,7 +2106,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
@@ -2518,22 +2115,13 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = \"%.*s\", json = \"%.*s\" }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
-		client_close(client);
 		return false;
 	}
 
 	// Clean up before the next check.
 	st_wipe(command);
+	json_decref_d(json_objs[0]);
 
-	if (json_objs[0]) json_decref_d(json_objs[0]);
-
-	json_objs[0] = NULL;
-	json_values[0] = NULL;
-
-	client_close(client);
-	client = NULL;
 
 	return true;
-
-
 }

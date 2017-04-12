@@ -564,12 +564,12 @@ int_t imap_search_messages_inner(meta_user_t *user, mail_message_t **message, st
 inx_t * imap_search_messages(connection_t *con) {
 
 	time_t start;
-	inx_t *output;
+	inx_t *output = NULL;
 	inx_cursor_t *cursor = NULL;
 	stringer_t *header = NULL;
 	mail_message_t *message = NULL;
 	uint64_t finished = 0, uid = 0, count = 0;
-	meta_message_t *duplicate, *active = NULL;
+	meta_message_t *duplicate = NULL, *active = NULL;
 	multi_t key = { .type = M_TYPE_UINT64, .val.u64 = 0 };
 
 	if (!con || !(output = inx_alloc(M_INX_LINKED, &meta_message_free))) {
@@ -584,7 +584,8 @@ inx_t * imap_search_messages(connection_t *con) {
 
 		if (con->imap.user && con->imap.user->messages && (cursor = inx_cursor_alloc(con->imap.user->messages))) {
 			while (uid && (active = inx_cursor_value_next(cursor)) && active->messagenum <= uid);
-		} else {
+		}
+		else {
 			finished = 1;
 		}
 
@@ -616,7 +617,7 @@ inx_t * imap_search_messages(connection_t *con) {
 		meta_user_unlock(con->imap.user);
 		inx_cursor_free(cursor);
 
-		// If the search is defers it should also sleep to allowing other threads access.
+		// If the search defers it should also sleep to allowing other threads access.
 		if (!active) {
 			finished = 1;
 		}
@@ -626,8 +627,13 @@ inx_t * imap_search_messages(connection_t *con) {
 
 	}
 
-	// We need to update the sequence numbers.
+	// If the user serial number has changed, then messages may have been added or removed from the user's mailbox, which
+	// means the sequence numbers, which are relative, for messages in the output index could have changed. The  logic below
+	// iterates through the output index and updates the sequence number duplicate message strucutre with the current sequence
+	// number stored in primary message user index.  If a message is in the output index, but no longer in the primary index
+	// it was probably deleted, and thus needs to be removed from the output.
 	if (!finished && con->imap.uid != 1 && con->imap.messages_checkpoint != con->imap.user->serials.messages && (cursor = inx_cursor_alloc(output))) {
+
 		meta_user_rlock(con->imap.user);
 
 		while ((active = inx_cursor_value_next(cursor)) && con->imap.user && con->imap.user->messages) {
@@ -635,10 +641,12 @@ inx_t * imap_search_messages(connection_t *con) {
 			key = inx_cursor_key_active(cursor);
 			duplicate = inx_find(con->imap.user->messages, key);
 
-			// If the message wasn't found, set the sequence number to zero so its not included in the output.
+			// If the message isn't found, then it might have been removed by another connection while the search was
+			// running. In that case we'll set the sequence number to zero so message doesn't get included in the output.
 			if (!duplicate || active->messagenum != duplicate->messagenum) {
 				active->sequencenum = 0;
 			}
+			// If the message numbers match, then assign the current sequence number to the output version of the structure.
 			else {
 				active->sequencenum = duplicate->sequencenum;
 			}
@@ -712,7 +720,7 @@ inx_t * imap_search_messages(connection_t *con) {
 
 		if (active == NULL) {
 
-			// If were going to return sequence numbers we need to
+			// If we're going to return sequence numbers we need to
 			if (con->imap.uid != 1 && con->imap.messages_checkpoint != con->imap.user->serials.messages) {
 
 				// Unlock and then relock the mailbox in case any other threads are waiting.

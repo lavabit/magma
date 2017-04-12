@@ -1719,28 +1719,30 @@ void imap_search(connection_t *con) {
 	// Perform the search. The internal search functions will lock the session as necessary.
 	messages = imap_search_messages(con);
 
+	// If the messages index is NULL, then the cursor alloc will yield NULL, and output buffer, which is allocated and prefaced
+	// with the untagged response, will be ultimately be written out as an empty set.
 	if ((output = st_aprint_opts(MANAGED_T | HEAP | JOINTED, "* SEARCH")) && (cursor = inx_cursor_alloc(messages))) {
-
-		while (status() && con_status(con) >= 0 && (active = inx_cursor_value_next(cursor))) {
-
+		while ((active = inx_cursor_value_next(cursor))) {
 			st_sprint(buffer, " %lu", con->imap.uid ? active->messagenum : active->sequencenum);
-			st_append_opts(1024, output, buffer);
-
-			if (st_length_get(output) > 16536) {
-				con_write_st(con, output);
-				st_length_set(output, 0);
-			}
+			st_append_opts(8192, output, buffer);
 		}
 	}
 
-	if (output && st_length_get(output)) {
-		con_write_st(con, output);
-	}
+	// Append the blank line that follows the untagged result line.
+	st_append_opts(1024, output, PLACER("\r\n", 2));
 
-	con_print(con, "\r\n%.*s OK Search complete.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
+	// Append the command tag value.
+	st_append_opts(1024, output, con->imap.tag);
 
-	if (output) st_free(output);
-	inx_free(messages);
+	// Append the command status.
+	st_append_opts(1024, output, PLACER(" OK Search complete.\r\n", 22));
+
+	// Barring a serious error above, the output buffer should hold the search results.
+	if (st_populated(output) && status()) con_write_st(con, output);
+
+	if (cursor) inx_cursor_free(cursor);
+	if (messages) inx_free(messages);
+	st_cleanup(output);
 	return;
 }
 

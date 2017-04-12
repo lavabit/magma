@@ -121,27 +121,27 @@ auth_stacie_t * auth_stacie(uint32_t bonus, stringer_t *username, stringer_t *pa
 
 		// We don't expressly check the length of the return values. We rely on upon the STACIE functions to check the length of inputs
 		// and output values.
-		if (!(rounds = stacie_rounds_calculate(password, bonus))) {
+		if (!(rounds = stacie_derive_rounds(password, bonus))) {
 			log_pedantic("An error ocurred while trying to calculate the number of hash rounds needed to derive the encryption keys.");
 			auth_stacie_free(stacie);
 			return NULL;
 		}
-		else if (!(seed = stacie_entropy_seed_derive(rounds, password, salt))) {
+		else if (!(seed = stacie_derive_seed(rounds, password, salt))) {
 			log_pedantic("An error ocurred while trying to calculate the entropy seed value.");
 			auth_stacie_free(stacie);
 			return NULL;
 		}
-		else if (!(stacie->keys.master = stacie_hashed_key_derive(seed, rounds, username, password, salt))) {
+		else if (!(stacie->keys.master = stacie_derive_key(seed, rounds, username, password, salt))) {
 			log_pedantic("An error ocurred while trying to calculate the master key.");
 			auth_stacie_free(stacie);
 			return NULL;
 		}
-		else if (!(stacie->keys.password = stacie_hashed_key_derive(stacie->keys.master, rounds, username, password, salt))) {
+		else if (!(stacie->keys.password = stacie_derive_key(stacie->keys.master, rounds, username, password, salt))) {
 			log_pedantic("An error ocurred while trying to calculate the password key.");
 			auth_stacie_free(stacie);
 			return NULL;
 		}
-		else if (!(stacie->tokens.verification = stacie_hashed_token_derive(stacie->keys.password, username, salt, NULL))) {
+		else if (!(stacie->tokens.verification = stacie_derive_token(stacie->keys.password, username, salt, NULL))) {
 			log_pedantic("An error ocurred while trying to calculate the verification token.");
 			auth_stacie_free(stacie);
 			return NULL;
@@ -150,7 +150,7 @@ auth_stacie_t * auth_stacie(uint32_t bonus, stringer_t *username, stringer_t *pa
 
 	// The ephemeral token is only calculated if a nonce is provided. A trenary expression ensures the provided verification token is used
 	// if the password wasn't provided.
-	if (!st_empty(nonce) && !(stacie->tokens.ephemeral = stacie_hashed_token_derive((st_empty(verification) ? stacie->tokens.verification : verification),
+	if (!st_empty(nonce) && !(stacie->tokens.ephemeral = stacie_derive_token((st_empty(verification) ? stacie->tokens.verification : verification),
 		username, salt, nonce))) {
 		log_pedantic("An error ocurred while trying to calculate the verification token.");
 		auth_stacie_free(stacie);

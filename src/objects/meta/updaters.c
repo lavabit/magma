@@ -48,7 +48,7 @@ int_t meta_update_realms(meta_user_t *user, stringer_t *master, META_LOCK_STATUS
 		// Fetch the mail realm shard. If one isn't found, try generating a new shard value for the user.
 		else if (meta_data_fetch_shard(user->usernum, 0, PLACER("mail", 4), shard, transaction) == 1) {
 
-			if (!(holder = stacie_shard_create(shard)) || meta_data_insert_shard(user->usernum, 0, PLACER("mail", 4), holder, transaction) < 0) {
+			if (!(holder = stacie_create_shard(shard)) || meta_data_insert_shard(user->usernum, 0, PLACER("mail", 4), holder, transaction) < 0) {
 				log_pedantic("Unable to create a user shard for the mail realm. { username = %.*s }", st_length_int(user->username),
 					st_char_get(user->username));
 				tran_rollback(transaction);
@@ -77,7 +77,7 @@ int_t meta_update_realms(meta_user_t *user, stringer_t *master, META_LOCK_STATUS
 		if (!result && st_length_get(shard) == STACIE_SHARD_LENGTH) {
 
 			// Derive the realm key and store the relevant pieces.
-			if (!(user->realm.mail = stacie_realm_key_derive(master, PLACER("mail",  4), shard))) {
+			if (!(user->realm.mail = stacie_realm_key(master, PLACER("mail",  4), shard))) {
 				log_pedantic("Unable to parse the realm key. { username = %.*s }", st_length_int(user->username),
 					st_char_get(user->username));
 				result = -1;

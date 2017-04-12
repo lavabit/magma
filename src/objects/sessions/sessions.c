@@ -244,18 +244,14 @@ stringer_t * sess_token(session_t *sess) {
 	stringer_t *binary = NULL, *encoded = NULL;
 
 	if (!(binary = st_merge("ssss", PLACER(&(sess->warden.host), sizeof(uint64_t)), PLACER(&(sess->warden.stamp), sizeof(uint64_t)),
-		PLACER(&(sess->warden.number),	sizeof(uint64_t)), PLACER(&(sess->warden.key), sizeof(uint64_t)))) ||
+		PLACER(&(sess->warden.number), sizeof(uint64_t)), PLACER(&(sess->warden.key), sizeof(uint64_t)))) ||
 		!(encrypted = deprecated_scramble_encrypt(magma.secure.sessions, binary)) ||
 		!(encoded = zbase32_encode(PLACER(encrypted, deprecated_scramble_total_length(encrypted))))) {
 		log_pedantic("An error occurred while trying to generate the session token.");
 	}
 
-	if (encrypted) {
-		deprecated_scramble_free(encrypted);
-	}
-
+	if (encrypted) deprecated_scramble_free(encrypted);
 	st_cleanup(binary);
-
 	return encoded;
 }
 
@@ -473,34 +469,38 @@ int_t sess_get(connection_t *con, stringer_t *application, stringer_t *path, str
 		return 0;
 	}
 
-	// We need to do full validation against the cookie and associated session.
-	// First, the cookie.
+	// We need to do full validation against the cookie and associated session to ensure the token hasn't been hijacked.
 	if ((*numbers != con->http.session->warden.host) || (*(numbers + 1) != con->http.session->warden.stamp) ||
 			(*(numbers + 2) != con->http.session->warden.number)) {
 		log_error("Received mismatched cookie for authenticated session { user = %s }", st_char_get(con->http.session->user->username));
 		result = -2;
-	} else if (*(numbers + 3) != con->http.session->warden.key) {
+	}
+	else if (*(numbers + 3) != con->http.session->warden.key) {
 		log_error("Cookie contained an incorrect session key { user = %s }", st_char_get(con->http.session->user->username));
 		result = -4;
-	} else if (st_cmp_cs_eq(application, con->http.session->request.application)) {
+	}
+	else if (st_cmp_cs_eq(application, con->http.session->request.application)) {
 		log_error("Cookie did not match session's application { user = %s }", st_char_get(con->http.session->user->username));
 		result = -2;
-	} else if (st_cmp_cs_eq(path, con->http.session->request.path)) {
+	}
+	else if (st_cmp_cs_eq(path, con->http.session->request.path)) {
 		log_error("Cookie did not match session's path { user = %s }", st_char_get(con->http.session->user->username));
 		result = -2;
-	} else if (st_cmp_cs_eq(con->http.agent, con->http.session->warden.agent)) {
+	}
+	else if (st_cmp_cs_eq(con->http.agent, con->http.session->warden.agent)) {
 		log_error("Cookie contained a mismatched user agent { user = %s }", st_char_get(con->http.session->user->username));
 		result = -3;
-	} else if (con->http.session->request.secure != (con_secure(con) ? 1 : 0)) {
+	}
+	else if (con->http.session->request.secure != (con_secure(con) ? 1 : 0)) {
 		log_error("Cookie was submitted from a mismatched transport layer { user = %s }", st_char_get(con->http.session->user->username));
 		result = -5;
-	} else if (!ip_addr_eq(&(con->http.session->warden.ip), (ip_t *)con_addr(con, MEMORYBUF(64)))) {
+	}
+	else if (!ip_addr_eq(&(con->http.session->warden.ip), (ip_t *)con_addr(con, MEMORYBUF(64)))) {
 		log_error("Cookie was submitted from a mismatched IP address { user = %s }", st_char_get(con->http.session->user->username));
 		result = -5;
 	}
 
-	// Finally, do comparisons to see that we haven't timed out.
-	/* Did we expire? */
+	// Now that we know the token is a legitimate reference to a session, ensure the session it references hasn't expired.
 	if (magma.http.session_timeout <= (time(NULL) - con->http.session->warden.stamp)) {
 		log_pedantic("User submitted expired or invalidated cookie; marking for deletion { user = %s }", st_char_get(con->http.session->user->username));
 		result = -7;

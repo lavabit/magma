@@ -15,6 +15,7 @@ START_TEST (check_camel_auth_s) {
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	if (status() && !check_camel_auth_sthread(false, errmsg)) outcome = false;
+	else if (status() && outcome && !check_camel_auth_sthread(true, errmsg)) outcome = false;
 
 	log_test("HTTP / NETWORK / CAMEL / LOGIN / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));

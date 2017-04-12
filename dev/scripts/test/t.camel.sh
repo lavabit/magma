@@ -8,7 +8,7 @@ export USERID="magma"
 export PASSWORD="password"
 export COOKIES=`mktemp`
 export SQLHOST="localhost"
-export CAMELHOST="http://localhost:10000"
+export CAMELHOST="https://localhost:10500"
 export CAMELPATH="$CAMELHOST/portal/camel"
 
 # Check and make sure magmad is running before attempting a connection.
@@ -27,7 +27,7 @@ if [ -z "$PID" ]; then
 	exit 2
 fi
 
-wget --quiet --retry-connrefused --connect-timeout=1 --waitretry=1 --tries=0 --output-document=/dev/null "$CAMELHOST"
+wget --quiet --no-check-certificate --retry-connrefused --connect-timeout=1 --waitretry=1 --tries=0 --output-document=/dev/null "$CAMELHOST"
 if [ $? != 0 ]; then
 	tput setaf 1; tput bold; echo "tired of waiting on the magma daemon start"; tput sgr0
 	exit
@@ -41,12 +41,12 @@ submit() {
 	# Submit using cURL
 	# To print the server supplied HTTP headers add --include
 
-	# export OUTPUT=`curl --silent --cookie "$COOKIES" --cookie-jar "$COOKIES" --data "$1" "$CAMELPATH"`
+	export OUTPUT=`curl --insecure --silent --cookie "$COOKIES" --cookie-jar "$COOKIES" --data "$1" "$CAMELPATH"`
 
 	# Submit using wget
 	# To print the server supplied HTTP headers add --server-response
 
-	export OUTPUT=`wget --load-cookies="$COOKIES" --save-cookies="$COOKIES" --quiet --output-document=- --post-data="$1" "$CAMELPATH"`
+	#export OUTPUT=`wget --no-check-certificate --load-cookies="$COOKIES" --save-cookies="$COOKIES" --quiet --output-document=- --post-data="$1" "$CAMELPATH"`
 
 	if [[ "$OUTPUT" =~ "\"result\":" ]] && [[ ! "$OUTPUT" =~ "\"failed\"" ]]; then
 		tput setaf 2; tput bold; echo $OUTPUT

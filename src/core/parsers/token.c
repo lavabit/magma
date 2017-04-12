@@ -19,12 +19,8 @@ uint64_t tok_get_count_bl(void *block, size_t length, char token) {
 	uint64_t count = 1;
 
 #ifdef MAGMA_PEDANTIC
-	if (!block) {
-		log_options(M_LOG_PEDANTIC | M_LOG_STACK_TRACE, "Attempted to count the tokens using a NULL string pointer. Printing stack:");
-	}
-	else if (!length) {
-		log_options(M_LOG_PEDANTIC | M_LOG_STACK_TRACE, "Attempted to count the tokens inside an empty string. Printing stack:");
-	}
+	if (!block) log_pedantic("Attempted a token count on a NULL string bugger.");
+	else if (!length) log_pedantic("Attempted a token count on an empty string.");
 #endif
 
 	// We can't search NULL pointers or empty strings.
@@ -39,6 +35,7 @@ uint64_t tok_get_count_bl(void *block, size_t length, char token) {
 		}
 
 	}
+
 	return count;
 }
 
@@ -65,16 +62,12 @@ uint64_t tok_get_count_st(stringer_t *string, char token) {
  */
 int tok_get_ns(char *string, size_t length, char token, uint64_t fragment, placer_t *value) {
 
-#ifdef MAGMA_PEDANTIC
-	if (!string) {
-		log_options(M_LOG_PEDANTIC | M_LOG_STACK_TRACE, "Attempted to count the tokens using a NULL string pointer. Printing stack:");
-	}
-	else if (!length) {
-		log_options(M_LOG_PEDANTIC | M_LOG_STACK_TRACE, "Attempted to count the tokens inside an empty string. Printing stack:");
-	}
-#endif
-
 	char *start;
+
+#ifdef MAGMA_PEDANTIC
+	if (!string) log_pedantic("Attempted token extraction from a NULL string buffer.");
+	else if (!length) log_pedantic("Attempted token extraction from an empty string.");
+#endif
 
 	// We can't search NULL pointers or empty strings.
 	if (!value || mm_empty(string, length)) {

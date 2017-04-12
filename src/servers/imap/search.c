@@ -288,7 +288,7 @@ int_t imap_search_messages_range(meta_message_t *active, stringer_t *range, int_
 	commas = tok_get_count_st(range, ',');
 
 	// Break apart each sequence section.
-	for (uint32_t i = 0; i <= commas && tok_get_st(range, ',', i, &sequence) >= 0; i++) {
+	for (uint32_t i = 0; i < commas && tok_get_st(range, ',', i, &sequence) >= 0; i++) {
 
 		start = end = asterisk = 0;
 		start_token = end_token = pl_null();
@@ -302,9 +302,11 @@ int_t imap_search_messages_range(meta_message_t *active, stringer_t *range, int_
 		// Parse the start.
 		if (pl_empty(start_token)) {
 			return -1;
-		} else if (*(pl_char_get(start_token)) == '*') {
+		}
+		else if (*(pl_char_get(start_token)) == '*') {
 			asterisk = 1;
-		} else if (!uint64_conv_st(&start_token, &start)) {
+		}
+		else if (!uint64_conv_st(&start_token, &start)) {
 				return -1;
 		}
 
@@ -314,12 +316,9 @@ int_t imap_search_messages_range(meta_message_t *active, stringer_t *range, int_
 		}
 		else if (pl_empty(end_token)) {
 			end = start;
-		} else {
-
-			if (!uint64_conv_st(&end_token, &end)) {
-				return -1;
-			}
-
+		}
+		else if (!uint64_conv_st(&end_token, &end)) {
+			return -1;
 		}
 
 		// If necessary, swap the values.

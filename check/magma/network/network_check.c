@@ -2,7 +2,7 @@
 /**
  * @file /check/magma/network/network_check.c
  *
- * @brief Check the network functions.
+ * @brief Check the network module, and the various protocol agnostic connection/client interfaces.
  */
 
 #include "magma_check.h"
@@ -11,12 +11,12 @@ Suite * suite_check_network(void) {
 
 	Suite *s = suite_create("\tNetwork");
 
-	suite_check_testcase(s, "NETWORK", "Network / Address / Standard / S", check_address_standard_s);
-	suite_check_testcase(s, "NETWORK", "Network / Address / Presentation / S", check_address_presentation_s);
-	suite_check_testcase(s, "NETWORK", "Network / Address / Reversed / S", check_address_reversed_s);
-	suite_check_testcase(s, "NETWORK", "Network / Address / Subnet / S", check_address_subnet_s);
-	suite_check_testcase(s, "NETWORK", "Network / Address / Segment / S", check_address_segment_s);
-	suite_check_testcase(s, "NETWORK", "Network / Address / Octet / S", check_address_octet_s);
+	// The IP address checks were the only thing handled by this suite. Those checks have since moved to
+	// to core. The empty suite remains to remind us what needs doing.
 
+	/// MEDIUM: Write checks which stress the connection accept logic.
+	/// MEDIUM: Write checks for the con_write/con_read/con_read_line interfaces.
+	/// MEDIUM: Write checks for the client_write/client_read/client_read_line interfaces.
+	///
 	return s;
 }

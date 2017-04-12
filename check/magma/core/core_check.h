@@ -104,4 +104,14 @@ bool_t check_checksum_fuzz_sthread(void);
 bool_t check_checksum_fixed_sthread(void);
 bool_t check_checksum_loop_sthread(void);
 
+/// address_check.c
+void check_address_octet_s (int _i CK_ATTRIBUTE_UNUSED);
+void check_address_presentation_s (int _i CK_ATTRIBUTE_UNUSED);
+void check_address_reversed_s (int _i CK_ATTRIBUTE_UNUSED);
+void check_address_segment_s (int _i CK_ATTRIBUTE_UNUSED);
+void check_address_standard_s (int _i CK_ATTRIBUTE_UNUSED);
+void check_address_subnet_s (int _i CK_ATTRIBUTE_UNUSED);
+bool_t check_ip_private_scheck(stringer_t *errmsg);
+bool_t check_ip_localhost_scheck(stringer_t *errmsg);
+
 #endif

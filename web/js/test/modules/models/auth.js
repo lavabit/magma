@@ -15,7 +15,7 @@ var auth = function() {
     return {
         login: function(callbacks) {
             addObservers(callbacks);
-            authModel.login('magma', 'test');
+            authModel.login('magma', 'password');
         },
         empty: function(type, callbacks) {
             addObservers(callbacks);

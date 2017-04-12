@@ -1,8 +1,8 @@
 
 /**
- * @file /check/magma/network/address_check.c
+ * @file /magma/check/magma/core/ip_check.c
  *
- * @brief Address unit tests.
+ * @brief Various checks designed to make sure the IP address interface works as expected.
  */
 
 #include "magma_check.h"
@@ -53,7 +53,7 @@ void check_address_standard_s (int _i CK_ATTRIBUTE_UNUSED) {
 		st_free(buffer);
 	}
 
-	log_test("NETWORK / ADDRESSES / STANDARD / SINGLE THREADED:", errmsg);
+	log_test("CORE / HOST / ADDRESS / STANDARD / SINGLE THREADED:", errmsg);
 	ck_assert_msg(!errmsg, st_char_get(errmsg));
 }
 
@@ -103,7 +103,7 @@ void check_address_presentation_s (int _i CK_ATTRIBUTE_UNUSED) {
 		st_free(buffer);
 	}
 
-	log_test("NETWORK / ADDRESSES / PRESENTATION / SINGLE THREADED:", errmsg);
+	log_test("CORE / HOST / ADDRESS / PRESENTATION / SINGLE THREADED:", errmsg);
 	ck_assert_msg(!errmsg, st_char_get(errmsg));
 }
 
@@ -154,7 +154,7 @@ void check_address_reversed_s (int _i CK_ATTRIBUTE_UNUSED) {
 		st_free(buffer);
 	}
 
-	log_test("NETWORK / ADDRESSES / REVERSED / SINGLE THREADED:", errmsg);
+	log_test("CORE / HOST / ADDRESS / REVERSED / SINGLE THREADED:", errmsg);
 	ck_assert_msg(!errmsg, st_char_get(errmsg));
 }
 
@@ -204,7 +204,7 @@ void check_address_subnet_s (int _i CK_ATTRIBUTE_UNUSED) {
 		st_free(buffer);
 	}
 
-	log_test("NETWORK / ADDRESSES / SUBNET / SINGLE THREADED:", errmsg);
+	log_test("CORE / HOST / ADDRESS / SUBNET / SINGLE THREADED:", errmsg);
 	ck_assert_msg(!errmsg, st_char_get(errmsg));
 }
 
@@ -258,7 +258,7 @@ void check_address_segment_s (int _i CK_ATTRIBUTE_UNUSED) {
 		st_free(buffer);
 	}
 
-	log_test("NETWORK / ADDRESSES / SEGMENT / SINGLE THREADED:", errmsg);
+	log_test("CORE / HOST / ADDRESS / SEGMENT / SINGLE THREADED:", errmsg);
 	ck_assert_msg(!errmsg, st_char_get(errmsg));
 }
 
@@ -315,6 +315,57 @@ void check_address_octet_s (int _i CK_ATTRIBUTE_UNUSED) {
 		st_free(buffer);
 	}
 
-	log_test("NETWORK / ADDRESSES / OCTET / SINGLE THREADED:", errmsg);
+	log_test("CORE / HOST / ADDRESS / OCTET / SINGLE THREADED:", errmsg);
 	ck_assert_msg(!errmsg, st_char_get(errmsg));
+}
+
+bool_t check_ip_private_scheck(stringer_t *errmsg) {
+
+	st_sprint(errmsg, "This check needs love. Touch me tender, and finish me off.");
+	return false;
+
+	/// MEDIUM: Write the private IP address checks.
+	///
+	/// Use the ip_addr_st() function to turn test addresses into IP address structs and confirm ip_private() returns
+	/// the correct response.
+	///
+	/// Generate random addresses in the 10.0.0.0/8 range and verify the outcome.
+	/// Generate random addresses in the 127.0.0.0/8 range and verify the outcome (localhost).
+	/// Generate random addresses in the 172.16.0.0/12 range and verify the outcome.
+	/// Generate random addresses in the 192.168.0.0/16 range and verify the outcome.
+	/// Generate random addresses in the 72.0.0.0/8 and 172.0.0.0/8 ranges then verify the outcome (non-private).
+	///
+	/// Generate an address using ::1 and verify the outcome.
+	/// Generate random addresses in the fc00::/7 range and verify the outcome.
+	/// Generate random addresses in the (pick well known non-private prefix)::/7 range and verify the outcome.
+	///
+	/// Generate random addresses in the private IPv4 ranges above and map them into the IPv4 to IPv6 compatability/translation
+	/// range... ::ffff:0:0/96 and verify the outcome.
+	///
+	/// Finally, call ip_private() using an invalid IP address struct. This includes passing NULL. Providing an IP struct
+	/// with an address family other than AF_INET or AF_INET6 and any other edge case you can think of.
+
+}
+
+bool_t check_ip_localhost_scheck(stringer_t *errmsg) {
+
+	st_sprint(errmsg, "This check needs love. Touch me tender, and finish me off.");
+	return false;
+
+	/// MEDIUM: Write the localhost IP address checks.
+	///
+	/// Use the ip_addr_st() function to turn test addresses into IP address structs and confirm ip_localhost() returns
+	/// the correct response.
+	///
+	/// Generate random addresses in the 127.0.0.1/8 range and verify the outcome.
+	/// Generate random addresses in the 72.0.0.0/8 and 172.0.0.0/8 ranges then verify the outcome (non-private).
+	///
+	/// Generate an address using ::1 and verify the outcome.
+	/// Generate random addresses in the (pick well known non-private prefix)::/7 range and verify the outcome.
+	///
+	/// Generate IPv4 addresses in the range above and map them into the IPv4 to IPv6 compatability/translation
+	/// range... ::ffff:0:0/96 and verify the outcome.
+	///
+	/// Finally, call ip_localhost() using an invalid IP address struct. This includes passing NULL. Providing an IP struct
+	/// with an address family other than AF_INET or AF_INET6 and any other edge case you can think of.
 }

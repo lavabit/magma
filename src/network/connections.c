@@ -25,6 +25,38 @@ int_t con_secure(connection_t *con) {
 }
 
 /**
+ * @brief	Determine whether a client connection is from the same machine, using the loopback adapter, or a remote machine.
+ * @see		ip_localhost()
+ * @return	true if the connection appears to be using the loopback adapter, or false, if the connection appears to be from anywhere else.
+ */
+bool_t con_localhost(connection_t *con) {
+
+	bool_t result = false;
+
+	if (con && con->network.reverse.ip) {
+		result = ip_localhost(con->network.reverse.ip);
+	}
+
+	return result;
+}
+
+/**
+ * @brief	Determine whether a client connection is with a machine on the same private network.
+ * @see		ip_private()
+ * @return	true if the connection appears to be using the loopback adapter, or false, if the connection appears to be from anywhere else.
+ */
+bool_t con_private(connection_t *con) {
+
+	bool_t result = false;
+
+	if (con && con->network.reverse.ip) {
+		result = ip_localhost(con->network.reverse.ip);
+	}
+
+	return result;
+}
+
+/**
  * @brief	Return the status of a specified connection.
  * @param	con		the input client connection.
  * @return  -1 on network errors, 0 for an unknown status, 1 for connected, and 2 for a graceful shutdown.

@@ -92,7 +92,7 @@ $(document).ready(function() {
             switch(method) {
 
                 case "auth":
-                    if(params && params.username === "magma" && params.password === "test") {
+                    if(params && params.username === "magma" && params.password === "password") {
                         // authenticated!
                         respond("result");
                     } else if(params && params.username === "locked") {

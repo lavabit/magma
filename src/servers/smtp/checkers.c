@@ -262,7 +262,7 @@ bool_t smtp_add_bypass_entry(stringer_t *subnet) {
 		return false;
 	}
 
-	if (!ip_str_subnet(st_char_get(subnet), sn)) {
+	if (!ip_subnet_st(st_char_get(subnet), sn)) {
 		log_pedantic("SMTP bypass subnet was invalid { subnet = %s }", st_char_get(subnet));
 		mm_free(sn);
 		return false;

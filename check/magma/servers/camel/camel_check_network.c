@@ -70,8 +70,7 @@ bool_t check_camel_print(stringer_t *req, stringer_t *cookie, stringer_t *res, b
 
 	// Submit the command and check the status of the response.
 	if (!(client = check_camel_connect(secure)) || !check_camel_json_write(client, req, cookie, secure) ||
-		!check_camel_status(client) || !(length = check_http_content_length_get(client)) ||
-		!(json = check_camel_json_read(client, length))) {
+		!(length = check_http_content_length_get(client)) || !(json = check_camel_json_read(client, length))) {
 
 		client_close(client);
 		st_cleanup(json);
@@ -143,15 +142,16 @@ bool_t check_camel_json_write(client_t *client, stringer_t *json, stringer_t *co
 }
 
 /**
- * @brief	Returns the folderid of the folder named "Inbox" for a user.
+ * @brief	Returns the folderid of the folder with a matching name for a user.
  *
+ * @param	name	is a stringer_t * containing the name of the folder.
  * @param	cookie	is a stringer_t * containing the user's auth cookie.
  * @param	secure	is the a bool_t which determines whether or not the client
  * 				will connect to the HTTP server securely.
  *
- * @return	The folderID of Inbox if found, otherwise -1.
+ * @return	The folderID of the matching folder if found, otherwise -1.
  */
-int32_t check_camel_inbox_id(stringer_t *cookie, bool_t secure) {
+int32_t check_camel_folder_id(stringer_t *name, stringer_t *cookie, bool_t secure) {
 
 	uint32_t id = -1;
 	json_error_t err;
@@ -160,7 +160,7 @@ int32_t check_camel_inbox_id(stringer_t *cookie, bool_t secure) {
 	json_t *json_root = NULL, *json_array = NULL, *json_cursor = NULL;
 	chr_t *folders_list = "{\"id\":1,\"method\":\"folders.list\",\"params\":{\"context\":\"mail\"}}";
 
-	// Determine the folderID of Inbox.
+	// Retrieve the list of folders for the user.
 	if (!check_camel_print(PLACER(folders_list, ns_length_get(folders_list)), cookie, json, secure) ||
 		!(json_root = json_loads_d(st_char_get(json), 0, &err)) || !(json_array = json_object_get_d(json_root, "result")) ||
 		!json_is_array(json_array)) {
@@ -168,12 +168,14 @@ int32_t check_camel_inbox_id(stringer_t *cookie, bool_t secure) {
 		if (json_root) json_decref_d(json_root);
 		return id;
 	}
+
+	// Iterate through the folders until one with a matching name is found.
 	for (size_t i = 0; id == -1 && i < json_array_size_d(json_array); i++) {
 
 		json_cursor = json_array_get_d(json_array, i);
 
 		if (json_unpack_d(json_cursor, "{s:i, s:s}", "folderID", &id, "name", &json_value) != 0 ||
-			st_cmp_cs_eq(NULLER((chr_t *)json_value), PLACER("Inbox", 5)) != 0) {
+			st_cmp_cs_eq(NULLER((chr_t *)json_value), name) != 0) {
 
 			id = -1;
 		}
@@ -184,47 +186,40 @@ int32_t check_camel_inbox_id(stringer_t *cookie, bool_t secure) {
 }
 
 /**
- * @brief	Determines if a user's Inbox contains mail, and returns the first message id.
+ * @brief	Returns the message id of the first message in a folder.
  *
- * @param	cookie	is a stringer_t * holding a user auth cookie.
+ * @param	folder_id	is a uint32_t containing the id of the folder.
+ * @param	cookie		is a stringer_t * holding a user auth cookie.
  *
- * @return	-1 if the Inbox folder does not exist for the user or is empty, otherwise
- * 				the first messageID of a message in the user's Inbox.
+ * @return	-1 if the folder does not exist for the user or is empty, otherwise
+ * 				the first messageID of a message in the folder.
  */
-int32_t check_camel_inbox_msg(stringer_t *cookie, bool_t secure) {
+int32_t check_camel_msg_id(uint32_t folder_id, stringer_t *cookie, bool_t secure) {
 
-	int32_t id = -1;
 	json_error_t err;
+	int32_t msg_id = -1;
 	stringer_t *command = MANAGEDBUF(2048), *json = MANAGEDBUF(8192);
 	json_t *json_root = NULL, *json_array = NULL, *json_cursor = NULL;
 	chr_t *messages_list = "{\"id\":2,\"method\":\"messages.list\",\"params\":{\"folderID\":%d}}";
 
-	// Determine the folderID of Inbox.
-	if ((id = check_camel_inbox_id(cookie, secure)) == -1) {
-		return id;
-	}
-
-	// Query for the contents of Inbox.
-	else if (id != -1 && (!(command = st_quick(command, messages_list, id)) || !check_camel_print(command, cookie, json, secure) ||
+	// Query for the contents of the folder.
+	if (!(command = st_quick(command, messages_list, folder_id)) || !check_camel_print(command, cookie, json, secure) ||
 		!(json_root = json_loads_d(st_char_get(json), 0, &err)) || !(json_array = json_object_get_d(json_root, "result")) ||
-		json_is_array(json_array))) {
-
-		chr_t *foo = st_char_get(json);
-		(void)foo;
+		json_is_array(json_array)) {
 
 		if (json_root) json_decref_d(json_root);
-		return id;
+		return msg_id;
 	}
 
-	// If Inbox contains mail, return the messageID of the first message.
+	// If the folder contains mail, return the messageID of the first message.
 	if (json_array_size_d(json_array) <= 0 || !(json_cursor = json_array_get_d(json_array, 0)) ||
-		json_unpack_d(json_cursor, "{s:i}", "messageID", &id) != 0) {
+		json_unpack_d(json_cursor, "{s:i}", "messageID", &msg_id) != 0) {
 
-		id = -1;
+		msg_id = -1;
 	}
 
 	json_decref_d(json_root);
-	return id;
+	return msg_id;
 }
 
 /**
@@ -442,7 +437,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Generate the random inputs for "key" and "value".
 	if (!rand_choices(choices, 64, rand_strs[0]) || !rand_choices(choices, 64, rand_strs[1])) {
 
-		st_sprint(errmsg, "Failed to create random inputs. { command = %s }", commands[0]);
+		st_sprint(errmsg, "Failed to create random inputs. { command # = 0 }");
 		return false;
 	}
 
@@ -450,7 +445,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	else if (!(st_sprint(command, commands[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0]), st_length_int(rand_strs[1]),
 		st_char_get(rand_strs[1])))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %.*s }", st_length_int(command), st_char_get(command));
+		st_sprint(errmsg, "Failed to create command string. { command # = 0 }");
 		return false;
 	}
 
@@ -494,7 +489,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Submit the command and check the status of the response.
 	if (!check_camel_print(NULLER(commands[1]), cookie, json, secure)) {
 
-		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = %s }", commands[1]);
+		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 1 }");
 		return false;
 	}
 
@@ -502,8 +497,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || json_unpack_d(json_objs[0], "{s:{s:{s:s}}}", "result",
 		st_char_get(rand_strs[0]), "value", &json_values[0]) != 0) {
 
-		st_sprint(errmsg, "Failed parsing the returned JSON. { command = %s, json = %.*s }", commands[1],
-			st_length_int(json), st_char_get(json));
+		st_sprint(errmsg, "Failed parsing the returned JSON. { command # = 1, json = %.*s }", st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
 		return false;
 	}
@@ -511,8 +505,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Check if the returned JSON is correct.
 	else if (st_cmp_cs_eq(NULLER((chr_t *)json_values[0]), rand_strs[1])) {
 
-		st_sprint(errmsg, "Failed to return a successful JSON response. { command = %s, json = %.*s }", commands[0],
-			st_length_int(json), st_char_get(json));
+		st_sprint(errmsg, "Failed to return a successful JSON response. { command # = 1, json = %.*s }", st_length_int(json),
+			st_char_get(json));
 		json_decref_d(json_objs[0]);
 		return false;
 	}
@@ -530,14 +524,13 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Construct the command string.
 	if (!(st_sprint(command, commands[2], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s }", commands[2]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 2 }");
 		return false;
 	}
 	// Submit the command and check the status of the response.
 	else if (!check_camel_print(command, cookie, json, secure)) {
 
-		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = %.*s }", st_length_int(command),
-			st_char_get(command));
+		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 2 }");
 		return false;
 	}
 
@@ -573,7 +566,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Submit the command and check the status of the response.
 	if (!check_camel_print(NULLER(commands[3]), cookie, json, secure)) {
 
-		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = %s }", commands[3]);
+		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 3 }");
 		return false;
 	}
 
@@ -581,7 +574,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || json_unpack_d(json_objs[0], "{s:{s:{s:s}}}", "result",
 		st_char_get(rand_strs[0]), "value", &json_values[0]) == 0) {
 
-		st_sprint(errmsg, "Failed to return a successful JSON response. { command = %s, json = %.*s }", commands[3],
+		st_sprint(errmsg, "Failed to return a successful JSON response. { command # = 3, json = %.*s }",
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
 		return false;
@@ -600,7 +593,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Generate the random inputs for "key" and "value".
 	if (!rand_choices(choices, 64, rand_strs[0]) || !rand_choices(choices, 64, rand_strs[1])) {
 
-		st_sprint(errmsg, "Failed to create random inputs. { command = %s }", commands[4]);
+		st_sprint(errmsg, "Failed to create random inputs. { command # = 4 }");
 		return false;
 	}
 
@@ -608,7 +601,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	else if (!(st_sprint(command, commands[4], st_length_int(rand_strs[0]), st_char_get(rand_strs[0]), st_length_int(rand_strs[1]),
 		st_char_get(rand_strs[1])))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %.*s }", st_length_int(command), st_char_get(command));
+		st_sprint(errmsg, "Failed to create command string. { command # = 4 }");
 		return false;
 	}
 
@@ -652,23 +645,21 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
 
-		st_sprint(errmsg, "Failed to create random input. { command = %s }", commands[5]);
+		st_sprint(errmsg, "Failed to create random input. { command # = 5 }");
 		return false;
 	}
 
 	// Construct the command string.
 	else if (!(st_sprint(command, commands[5], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s, \"name\" = %.*s}", commands[5],
-			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
+		st_sprint(errmsg, "Failed to create command string. { command # = 5 }");
 		return false;
 	}
 
 	// Submit the command and check the status of the response.
 	else if (!check_camel_print(command, cookie, json, secure)) {
 
-		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = %.*s }", st_length_int(command),
-			st_char_get(command));
+		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 5 }");
 		return false;
 	}
 
@@ -695,7 +686,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Submit the command and check the status of the response.
 	if (!check_camel_print(NULLER(commands[6]), cookie, json, secure)) {
 
-		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = %s }", commands[6]);
+		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 6 }");
 		return false;
 	}
 
@@ -703,7 +694,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || !(json_objs[1] = json_object_get_d(json_objs[0],
 		"result")) || !json_is_array(json_objs[1])) {
 
-		st_sprint(errmsg, "Failed to return a successful JSON response. { command = %s, json = %.*s }", commands[6],
+		st_sprint(errmsg, "Failed to return a successful JSON response. { command # = 6, json = %.*s }",
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
 		return false;
@@ -724,8 +715,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		}
 		if (!contains_entries[0]) {
 
-			st_sprint(errmsg, "Failed to find folder entry in response. { command = %s, json = %.*s, folder_id = %d, folder_name = %.*s }",
-				commands[6], st_length_int(json), st_char_get(json), folder_ids[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
+			st_sprint(errmsg, "Failed to find folder entry in response. { command # = 6, json = %.*s, folder_id = %d, folder_name = %.*s }",
+				st_length_int(json), st_char_get(json), folder_ids[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
 			json_decref_d(json_objs[0]);
 			return false;
 		}
@@ -745,7 +736,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Generate the random input for "name" and "email".
 	if (!rand_choices(choices, 64, rand_strs[0]) || !rand_choices(choices, 64, rand_strs[1])) {
 
-		st_sprint(errmsg, "Failed to create random inputs. { command = %s }", commands[7]);
+		st_sprint(errmsg, "Failed to create random inputs. { command # = 7 }");
 		return false;
 	}
 
@@ -753,8 +744,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	else if (!(st_sprint(command, commands[7], folder_ids[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0]),
 		st_length_int(rand_strs[1]), st_char_get(rand_strs[1])))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s, \"name\" = %.*s}", commands[7],
-			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
+		st_sprint(errmsg, "Failed to create command string. { command # = 7 }");
 		return false;
 	}
 
@@ -790,15 +780,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Construct the command string.
 	if (!(st_sprint(command, commands[8], folder_ids[0], folder_ids[0], contact_ids[0]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[8]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 8 }");
 		return false;
 	}
 
 	// Submit the command and check the status of the response.
 	else if (!check_camel_print(command, cookie, json, secure)) {
 
-		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = %.*s }", st_length_int(command),
-			st_char_get(command));
+		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 8 }");
 		return false;
 	}
 
@@ -826,15 +815,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Construct the command string.
 	if (!(st_sprint(command, commands[9], folder_ids[0]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %.*s }", st_length_int(command), st_char_get(command));
+		st_sprint(errmsg, "Failed to create command string. { command # = 9 }");
 		return false;
 	}
 
 	// Submit the command and check the status of the response.
 	else if (!check_camel_print(command, cookie, json, secure)) {
 
-		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = %.*s }", st_length_int(command),
-			st_char_get(command));
+		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 9 }");
 		return false;
 	}
 
@@ -842,8 +830,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || !(json_objs[1] = json_object_get_d(json_objs[0],
 		"result")) || !json_is_array(json_objs[1])) {
 
-		st_sprint(errmsg, "Failed to return a successful JSON response. { command = %s, json = %.*s }", commands[6],
-			st_length_int(json), st_char_get(json));
+		st_sprint(errmsg, "Failed to return a successful JSON response. { command # = 9, json = %.*s }", st_length_int(json),
+			st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
 		return false;
 	}
@@ -869,8 +857,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		}
 		if (!contains_entries[0] || !contains_entries[1]) {
 
-			st_sprint(errmsg, "Failed to find contact entry in response. { command = %s, json = %.*s, contact_id = %u, copy_id = %u}",
-				commands[9], st_length_int(json), st_char_get(json), contact_ids[0], contact_ids[1]);
+			st_sprint(errmsg, "Failed to find contact entry in response. { command # = 9, json = %.*s, contact_id = %u, copy_id = %u}",
+				st_length_int(json), st_char_get(json), contact_ids[0], contact_ids[1]);
 			json_decref_d(json_objs[0]);
 			return false;
 		}
@@ -890,7 +878,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Generate the new random inputs for "name" and "email".
 	if (!rand_choices(choices, 64, rand_strs[0]) || !rand_choices(choices, 64, rand_strs[1])) {
 
-		st_sprint(errmsg, "Failed to create random inputs. { command = %s }", commands[10]);
+		st_sprint(errmsg, "Failed to create random inputs. { command # = 10 }");
 		return false;
 	}
 
@@ -898,7 +886,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	else if (!(st_sprint(command, commands[10], folder_ids[0], contact_ids[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0]),
 		st_length_int(rand_strs[1]), st_char_get(rand_strs[1])))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %.*s }", st_length_int(command), st_char_get(command));
+		st_sprint(errmsg, "Failed to create command string. { command # = 10 }");
 		return false;
 	}
 
@@ -943,15 +931,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Construct the command string.
 	if (!(st_sprint(command, commands[11], folder_ids[0], contact_ids[0]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %.*s }", st_length_int(command), st_char_get(command));
+		st_sprint(errmsg, "Failed to create command string. { command # = 11 }");
 		return false;
 	}
 
 	// Submit the command and check the status of the response.
 	else if (!check_camel_print(command, cookie, json, secure)) {
 
-		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = %.*s }", st_length_int(command),
-			st_char_get(command));
+		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 11 }");
 		return false;
 	}
 
@@ -993,7 +980,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if (!rand_choices(choices, 64, rand_strs[0]) || !rand_choices(choices, 64, rand_strs[1]) ||
 		!rand_choices(choices, 64, rand_strs[2]) || !rand_choices(choices, 64, rand_strs[3])) {
 
-		st_sprint(errmsg, "Failed to create random inputs. { command = %s }", commands[12]);
+		st_sprint(errmsg, "Failed to create random inputs. { command # = 12 }");
 		return false;
 	}
 
@@ -1002,7 +989,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		st_length_int(rand_strs[1]), st_char_get(rand_strs[1]), st_length_int(rand_strs[2]), st_char_get(rand_strs[2]),
 		st_length_int(rand_strs[3]), st_char_get(rand_strs[3])))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %.*s }", st_length_int(command), st_char_get(command));
+		st_sprint(errmsg, "Failed to create command string. { command # = 12}");
 		return false;
 	}
 
@@ -1047,7 +1034,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Construct the command string.
 	if (!(st_sprint(command, commands[13], folder_ids[0], contact_ids[1]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s }", commands[13]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 13 }");
 		return false;
 	}
 
@@ -1097,14 +1084,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
 
-		st_sprint(errmsg, "Failed to create random input. { command = %s }", commands[14]);
+		st_sprint(errmsg, "Failed to create random input. { command # = 14 }");
 		return false;
 	}
 
 	// Construct the command string.
 	else if (!(st_sprint(command, commands[5], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s, \"name\" = %.*s}", commands[14],
+		st_sprint(errmsg, "Failed to create command string. { command # = 14, \"name\" = %.*s}",
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
 		return false;
 	}
@@ -1141,7 +1128,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Construct the command string.
 	if (!(st_sprint(command, commands[15], contact_ids[0], folder_ids[0], folder_ids[2]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[15]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 15 }");
 		return false;
 	}
 
@@ -1185,7 +1172,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Construct the command string.
 	if (!(st_sprint(command, commands[16], folder_ids[0]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %.*s }", st_length_int(command), st_char_get(command));
+		st_sprint(errmsg, "Failed to create command string. { command # = 16 }");
 		return false;
 	}
 
@@ -1201,8 +1188,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || !(json_objs[1] = json_object_get_d(json_objs[0],
 		"result")) || !json_is_array(json_objs[1])) {
 
-		st_sprint(errmsg, "Failed to return a successful JSON response. { command = %s, json = %.*s }", commands[16],
-			st_length_int(json), st_char_get(json));
+		st_sprint(errmsg, "Failed to return a successful JSON response. { command # = 16, json = %.*s }", st_length_int(json),
+			st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
 		return false;
 	}
@@ -1221,8 +1208,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		}
 		if (contains_entries[0]) {
 
-			st_sprint(errmsg, "The contact was not moved between folders. { command = %s, json = %.*s, contact_ids[0] = <%u> }",
-				commands[16], st_length_int(json), st_char_get(json), contact_ids[0]);
+			st_sprint(errmsg, "The contact was not moved between folders. { command # = 16, json = %.*s, contact_ids[0] = <%u> }",
+				st_length_int(json), st_char_get(json), contact_ids[0]);
 			json_decref_d(json_objs[0]);
 			return false;
 		}
@@ -1241,7 +1228,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Construct the command string.
 	if (!(st_sprint(command, commands[17], folder_ids[2]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %.*s }", st_length_int(command), st_char_get(command));
+		st_sprint(errmsg, "Failed to create command string. { command # = 17 }");
 		return false;
 	}
 
@@ -1257,8 +1244,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || !(json_objs[1] = json_object_get_d(json_objs[0],
 		"result")) || !json_is_array(json_objs[1])) {
 
-		st_sprint(errmsg, "Failed to return a successful JSON response. { command = %s, json = %.*s }", commands[16],
-			st_length_int(json), st_char_get(json));
+		st_sprint(errmsg, "Failed to return a successful JSON response. { command # = 17, json = %.*s }", st_length_int(json),
+			st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
 		return false;
 	}
@@ -1277,8 +1264,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		}
 		if (!contains_entries[0]) {
 
-			st_sprint(errmsg, "Failed to find the moved contact. { command = %s, json = %.*s, contact_ids[0] = <%u> }",
-				commands[16], st_length_int(json), st_char_get(json), contact_ids[0]);
+			st_sprint(errmsg, "Failed to find the moved contact. { command # = 17, json = %.*s, contact_ids[0] = <%u> }",
+				st_length_int(json), st_char_get(json), contact_ids[0]);
 			json_decref_d(json_objs[0]);
 			return false;
 		}
@@ -1297,7 +1284,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Construct the command string.
 	if (!(st_sprint(command, commands[18], folder_ids[2], contact_ids[0]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[15]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 18 }");
 		return false;
 	}
 
@@ -1341,7 +1328,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Construct the command string.
 	if (!(st_sprint(command, commands[19], folder_ids[0], contact_ids[1]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[19]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 19 }");
 		return false;
 	}
 
@@ -1385,7 +1372,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Construct the command string.
 	if (!(st_sprint(command, commands[20], folder_ids[2]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %.*s }", st_length_int(command), st_char_get(command));
+		st_sprint(errmsg, "Failed to create command string. { command # = 20 }");
 		return false;
 	}
 
@@ -1401,7 +1388,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || !(json_objs[1] = json_object_get_d(json_objs[0],
 		"result")) || !json_is_array(json_objs[1])) {
 
-		st_sprint(errmsg, "Failed to return a successful JSON response. { command = %s, json = %.*s }", commands[20],
+		st_sprint(errmsg, "Failed to return a successful JSON response. { command # = 20, json = %.*s }",
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
 		return false;
@@ -1422,8 +1409,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		}
 		if (contains_entries[0]) {
 
-			st_sprint(errmsg, "Found a contact that should have been removed. { command = %s, json = %.*s, contact_ids[0] = <%u> }",
-				commands[16], st_length_int(json), st_char_get(json), contact_ids[0]);
+			st_sprint(errmsg, "Found a contact that should have been removed. { command # = 20, json = %.*s, contact_ids[0] = <%u> }",
+				st_length_int(json), st_char_get(json), contact_ids[0]);
 			json_decref_d(json_objs[0]);
 			return false;
 		}
@@ -1442,7 +1429,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Construct the command string.
 	if (!(st_sprint(command, commands[21], folder_ids[2]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[21]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 21 }");
 		return false;
 	}
 
@@ -1486,7 +1473,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Construct the command string.
 	if (!(st_sprint(command, commands[22], folder_ids[0]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[22]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 22 }");
 		return false;
 	}
 
@@ -1532,8 +1519,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Submit the command and check the status of the response.
 	if (!check_camel_print(PLACER(commands[23], ns_length_get(commands[23])), cookie, json, secure)) {
 
-		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = %.*s }", st_length_int(command),
-			st_char_get(command));
+		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 23 }");
 		return false;
 	}
 
@@ -1541,8 +1527,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || json_unpack_d(json_objs[0], "{s:{s:s}}", "result",
 		"cookies", &json_values[0]) != 0) {
 
-		st_sprint(errmsg, "Failed parsing the returned JSON. { command = %.*s, json = %.*s }", st_length_int(command),
-			st_char_get(command), st_length_int(json), st_char_get(json));
+		st_sprint(errmsg, "Failed parsing the returned JSON. { command # = 23, json = %.*s }", st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
 		return false;
 	}
@@ -1550,8 +1535,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Check if the returned JSON is correct.
 	else if (st_cmp_cs_eq(NULLER((chr_t *)json_values[0]), PLACER("enabled", 7))) {
 
-		st_sprint(errmsg, "Failed parsing the returned JSON. { command = %.*s, json = %.*s }", st_length_int(command),
-			st_char_get(command), st_length_int(json), st_char_get(json));
+		st_sprint(errmsg, "Failed parsing the returned JSON. { command # = 23, json = %.*s }", st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
 		return false;
 	}
@@ -1569,8 +1553,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Submit the command and check the status of the response.
 	if (!check_camel_print(PLACER(commands[24], ns_length_get(commands[24])), cookie, json, secure)) {
 
-		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = %.*s }", st_length_int(command),
-			st_char_get(command));
+		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 24 }");
 		return false;
 	}
 
@@ -1578,7 +1561,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || !(json_objs[1] = json_object_get_d(json_objs[0],
 		"result")) || !json_is_array(json_objs[1])) {
 
-		st_sprint(errmsg, "Failed to return a successful JSON response. { command = %s, json = %.*s }", commands[24],
+		st_sprint(errmsg, "Failed to return a successful JSON response. { command # = 24, json = %.*s }",
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
 		return false;
@@ -1588,8 +1571,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	else if (json_array_size_d(json_objs[1]) > 0 && (!(json_objs[2] = json_array_get_d(json_objs[1], 0)) ||
 		json_unpack_d(json_objs[2], "{s:i}", "alertID", &alert_ids[0]) != 0)) {
 
-		st_sprint(errmsg, "Unable to parse the alertID. { command = %s, json = %.*s}", commands[24],
-			st_length_int(json), st_char_get(json));
+		st_sprint(errmsg, "Unable to parse the alertID. { command # = 24, json = %.*s}", st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
 		return false;
 	}
@@ -1607,7 +1589,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Construct the command string.
 	if (!(st_sprint(command, commands[25], alert_ids[0]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[25]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 25 }");
 		return false;
 	}
 
@@ -1656,8 +1638,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Submit the command and check the status of the response.
 	if (!check_camel_print(PLACER(commands[26], ns_length_get(commands[26])), cookie, json, secure)) {
 
-		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = %.*s }", st_length_int(command),
-			st_char_get(command));
+		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 26 }");
 		return false;
 	}
 
@@ -1665,7 +1646,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || !(json_objs[1] = json_object_get_d(json_objs[0],
 		"result")) || !json_is_array(json_objs[1])) {
 
-		st_sprint(errmsg, "Failed to return a successful JSON response. { command = %s, json = %.*s }", commands[20],
+		st_sprint(errmsg, "Failed to return a successful JSON response. { command # = 26, json = %.*s }",
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
 		return false;
@@ -1686,8 +1667,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		}
 		if (contains_entries[0]) {
 
-			st_sprint(errmsg, "Found an alert that should have been ack. { command = %s, json = %.*s, contact_ids[0] = <%u> }",
-				commands[16], st_length_int(json), st_char_get(json), contact_ids[0]);
+			st_sprint(errmsg, "Found an alert that should have been ack. { command # = 26, json = %.*s, contact_ids[0] = <%u> }",
+				st_length_int(json), st_char_get(json), contact_ids[0]);
 			json_decref_d(json_objs[0]);
 			return false;
 		}
@@ -1706,7 +1687,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Submit the command and check the status of the response.
 	if (!check_camel_print(PLACER(commands[27], ns_length_get(commands[27])), cookie, json, secure)) {
 
-		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = %s }", commands[27]);
+		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 27 }");
 		return false;
 	}
 
@@ -1714,7 +1695,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || !(json_objs[1] = json_object_get_d(json_objs[0],
 		"result")) || !json_is_array(json_objs[1])) {
 
-		st_sprint(errmsg, "Failed to return a successful JSON response. { command = %s, json = %.*s }", commands[27],
+		st_sprint(errmsg, "Failed to return a successful JSON response. { command # = 27, json = %.*s }",
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
 		return false;
@@ -1739,7 +1720,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Submit the command and check the status of the response.
 	if (!check_camel_print(PLACER(commands[28], ns_length_get(commands[28])), cookie, json, secure)) {
 
-		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = %s }", commands[28]);
+		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 28 });
 		return false;
 	}
 
@@ -1747,7 +1728,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || !(json_objs[1] = json_object_get_d(json_objs[0],
 		"result")) || !json_is_array(json_objs[1])) {
 
-		st_sprint(errmsg, "Failed to return a successful JSON response. { command = %s, json = %.*s }", commands[28],
+		st_sprint(errmsg, "Failed to return a successful JSON response. { command # = 28, json = %.*s }",
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
 		return false;
@@ -1766,7 +1747,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Submit the command and check the status of the response.
 	if (!check_camel_print(PLACER(commands[29], ns_length_get(commands[29])), cookie, json, secure)) {
 
-		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = %s }", commands[29]);
+		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 29 });
 		return false;
 	}
 
@@ -1774,7 +1755,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || !(json_objs[1] = json_object_get_d(json_objs[0],
 		"result")) || !json_is_array(json_objs[1])) {
 
-		st_sprint(errmsg, "Failed to return a successful JSON response. { command = %s, json = %.*s }", commands[29],
+		st_sprint(errmsg, "Failed to return a successful JSON response. { command # = 29, json = %.*s }",
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
 		return false;
@@ -1794,14 +1775,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
 
-		st_sprint(errmsg, "Failed to create random input. { command = %s }", commands[30]);
+		st_sprint(errmsg, "Failed to create random input. { command # = 30 }");
 		return false;
 	}
 
 	// Construct the command string.
 	else if (!(st_sprint(command, commands[30], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s, \"name\" = %.*s}", commands[30],
+		st_sprint(errmsg, "Failed to create command string. { command # = 30, \"name\" = %.*s}",
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
 		return false;
 	}
@@ -1838,14 +1819,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
 
-		st_sprint(errmsg, "Failed to create random input. { command = %s }", commands[31]);
+		st_sprint(errmsg, "Failed to create random input. { command # = 31 }");
 		return false;
 	}
 
 	// Construct the command string.
 	else if (!(st_sprint(command, commands[31], folder_ids[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s, \"name\" = %.*s}", commands[31],
+		st_sprint(errmsg, "Failed to create command string. { command # = 31, \"name\" = %.*s}",
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
 		return false;
 	}
@@ -1882,14 +1863,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
 
-		st_sprint(errmsg, "Failed to create random input. { command = %s }", commands[32]);
+		st_sprint(errmsg, "Failed to create random input. { command # = 32 }");
 		return false;
 	}
 
 	// Construct the command string.
 	else if (!(st_sprint(command, commands[32], folder_ids[1], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s, \"name\" = %.*s}", commands[32],
+		st_sprint(errmsg, "Failed to create command string. { command # = 32, \"name\" = %.*s}",
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
 		return false;
 	}
@@ -1926,14 +1907,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
 
-		st_sprint(errmsg, "Failed to create random input. { command = %s }", commands[33]);
+		st_sprint(errmsg, "Failed to create random input. { command # = 33 }");
 		return false;
 	}
 
 	// Construct the command string.
 	else if (!(st_sprint(command, commands[33], folder_ids[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s, \"name\" = %.*s}", commands[33],
+		st_sprint(errmsg, "Failed to create command string. { command # = 33, \"name\" = %.*s}",
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
 		return false;
 	}
@@ -1979,14 +1960,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
 
-		st_sprint(errmsg, "Failed to create random input. { command = %s }", commands[33]);
+		st_sprint(errmsg, "Failed to create random input. { command # = 34 }");
 		return false;
 	}
 
 	// Construct the command string.
 	else if (!(st_sprint(command, commands[34], folder_ids[1], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s, \"name\" = %.*s}", commands[34],
+		st_sprint(errmsg, "Failed to create command string. { command # = 34, \"name\" = %.*s}",
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
 		return false;
 	}
@@ -2029,9 +2010,9 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[36], folder_ids[0]))) {
+	if (!(st_sprint(command, commands[35], folder_ids[0]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[36]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 35 }");
 		return false;
 	}
 
@@ -2073,9 +2054,9 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[38], folder_ids[1]))) {
+	if (!(st_sprint(command, commands[36], folder_ids[1]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[38]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 36 }");
 		return false;
 	}
 
@@ -2119,7 +2100,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Construct the command string.
 	if (!(st_sprint(command, commands[37], folder_ids[2]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[37]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 37 }");
 		return false;
 	}
 
@@ -2178,7 +2159,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || !(json_objs[1] = json_object_get_d(json_objs[0],
 		"result")) || !json_is_array(json_objs[1])) {
 
-		st_sprint(errmsg, "Failed to return a successful JSON response. { command = %s, json = %.*s }", commands[39],
+		st_sprint(errmsg, "Failed to return a successful JSON response. { command # = 39, json = %.*s }",
 			st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
 		return false;
@@ -2197,15 +2178,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
 
-		st_sprint(errmsg, "Failed to create random input. { command = %s }", commands[40]);
+		st_sprint(errmsg, "Failed to create random input. { command # = 40 }");
 		return false;
 	}
 
 	// Construct the command string.
 	else if (!(st_sprint(command, commands[40], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s, \"name\" = %.*s}", commands[40],
-			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
+		st_sprint(errmsg, "Failed to create command string. { command # = 40 }");
 		return false;
 	}
 
@@ -2239,17 +2219,17 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Retrieve the folderID of Inbox and a messageID.
-	if ((folder_ids[0] = check_camel_inbox_id(cookie, secure)) == -1 || (message_ids[0] = check_camel_inbox_msg(cookie, secure)) == -1) {
+	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
+		(message_ids[0] = check_camel_msg_id(folder_ids[0], cookie, secure)) == -1) {
 
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty");
+		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 41 }");
 		return false;
 	}
 
 	// Construct the command string.
 	else if (!(st_sprint(command, commands[41], message_ids[0], folder_ids[0], folder_ids[3]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s, \"name\" = %.*s}", commands[41],
-			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
+		st_sprint(errmsg, "Failed to create command string. { command # = 41 }");
 		return false;
 	}
 
@@ -2270,6 +2250,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		if (json_objs[0]) json_decref_d(json_objs[0]);
 		return false;
 	}
+
 	// Check if the JSON is correct.
 	else if (json_array_size_d(json_objs[1]) < 1 || !(json_objs[2] = json_array_get_d(json_objs[1], 0)) ||
 		json_unpack_d(json_objs[2], "{s:i}", "targetMessageID", &message_ids[1]) != 0 || message_ids[1] == -1) {
@@ -2292,17 +2273,17 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Retrieve the folderID of Inbox and a messageID.
-	if ((folder_ids[0] = check_camel_inbox_id(cookie, secure)) == -1 || (message_ids[0] = check_camel_inbox_msg(cookie, secure)) == -1) {
+	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
+		(message_ids[0] = check_camel_msg_id(folder_ids[0], cookie, secure)) == -1) {
 
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty");
+		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 42 }");
 		return false;
 	}
 
 	// Construct the command string.
 	else if (!(st_sprint(command, commands[42], message_ids[0], folder_ids[0], folder_ids[3]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s, \"name\" = %.*s}", commands[42],
-			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
+		st_sprint(errmsg, "Failed to create command string. { command # = 42 }");
 		return false;
 	}
 
@@ -2346,7 +2327,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Construct the command string.
 	if (!(st_sprint(command, commands[43], folder_ids[3]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[43]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 43 }");
 		return false;
 	}
 
@@ -2390,15 +2371,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
 
-		st_sprint(errmsg, "Failed to create random input. { command = %s }", commands[44]);
+		st_sprint(errmsg, "Failed to create random input. { command # = 44 }");
 		return false;
 	}
 
 	// Construct the command string.
 	else if (!(st_sprint(command, commands[44], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s, \"name\" = %.*s}", commands[44],
-			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
+		st_sprint(errmsg, "Failed to create command string. { command # = 44 }");
 		return false;
 	}
 
@@ -2424,7 +2404,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	st_wipe(command);
 	json_decref_d(json_objs[0]);
 
-	/*
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[45]
 	// JSON Command			: {"id":47,"method":"messages.load","params":{"messageID":<message_ids[0]>,"folderID":folder_ids[1],
@@ -2433,17 +2412,17 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Retrieve the folderID of Inbox and a messageID.
-	if ((folder_ids[1] = check_camel_inbox_id(cookie, secure)) == -1 || (message_ids[0] = check_camel_inbox_msg(cookie, secure)) == -1) {
+	if ((folder_ids[1] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
+		(message_ids[0] = check_camel_msg_id(folder_ids[0], cookie, secure)) == -1) {
 
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty");
+		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 45 }");
 		return false;
 	}
 
 	// Construct the command string.
 	else if (!(st_sprint(command, commands[45], message_ids[0], folder_ids[1]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s, \"name\" = %.*s}", commands[45],
-			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
+		st_sprint(errmsg, "Failed to create command string. { command # = 45 }");
 		return false;
 	}
 
@@ -2469,7 +2448,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Clean up before the next check.
 	st_wipe(command);
 	json_decref_d(json_objs[0]);
-	*/
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[46]
@@ -2479,17 +2457,17 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Retrieve the folderID of Inbox and a messageID.
-	if ((folder_ids[1] = check_camel_inbox_id(cookie, secure)) == -1 || (message_ids[0] = check_camel_inbox_msg(cookie, secure)) == -1) {
+	if ((folder_ids[1] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
+		(message_ids[0] = check_camel_msg_id(folder_ids[0], cookie, secure)) == -1) {
 
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty");
+		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 46 }");
 		return false;
 	}
 
 	// Construct the command string.
 	else if (!(st_sprint(command, commands[46], message_ids[0], folder_ids[1], folder_ids[0]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s, \"name\" = %.*s}", commands[46],
-			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
+		st_sprint(errmsg, "Failed to create command string. { command # = 46 }");
 		return false;
 	}
 
@@ -2533,7 +2511,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Construct the command string.
 	if (!(st_sprint(command, commands[47], folder_ids[0]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[47]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 47 }");
 		return false;
 	}
 
@@ -2576,16 +2554,17 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Retrieve the folderID of Inbox and a messageID.
-	if ((folder_ids[0] = check_camel_inbox_id(cookie, secure)) == -1 || (message_ids[0] = check_camel_inbox_msg(cookie, secure)) == -1) {
+	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
+		(message_ids[0] = check_camel_msg_id(folder_ids[0], cookie, secure)) == -1) {
 
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty");
+		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 48 }");
 		return false;
 	}
 
 	// Construct the command string.
 	if (!(st_sprint(command, commands[48], message_ids[0], folder_ids[0]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[48]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 48 }");
 		return false;
 	}
 
@@ -2620,7 +2599,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	st_wipe(command);
 	json_decref_d(json_objs[0]);
 
-	/*
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[49]
 	// JSON Command			: {"id":51,"method":"messages.tag","params":{"action":"add","tags":["girlie","girlie-16938"],
@@ -2629,16 +2607,17 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Retrieve the folderID of Inbox and a messageID.
-	if ((folder_ids[0] = check_camel_inbox_id(cookie, secure)) == -1 || (message_ids[0] = check_camel_inbox_msg(cookie, secure)) == -1) {
+	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
+		(message_ids[0] = check_camel_msg_id(folder_ids[0], cookie, secure)) == -1) {
 
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty");
+		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 49 }");
 		return false;
 	}
 
 	// Construct the command string.
 	if (!(st_sprint(command, commands[49], message_ids[0], folder_ids[0]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[49]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 49 }");
 		return false;
 	}
 
@@ -2672,7 +2651,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Clean up before the next check.
 	st_wipe(command);
 	json_decref_d(json_objs[0]);
-	*/
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[50]
@@ -2682,16 +2660,17 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Retrieve the folderID of Inbox and a messageID.
-	if ((folder_ids[0] = check_camel_inbox_id(cookie, secure)) == -1 || (message_ids[0] = check_camel_inbox_msg(cookie, secure)) == -1) {
+	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
+		(message_ids[0] = check_camel_msg_id(folder_ids[0], cookie, secure)) == -1) {
 
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty");
+		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 50 }");
 		return false;
 	}
 
 	// Construct the command string.
 	if (!(st_sprint(command, commands[50], message_ids[0], folder_ids[0]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[50]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 50 }");
 		return false;
 	}
 
@@ -2726,7 +2705,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	st_wipe(command);
 	json_decref_d(json_objs[0]);
 
-	/*
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[51]
 	// JSON Command			: {"id":53,"method":"messages.tags","params":{"action":"list","messageIDs":[%u], "folderID":<folder_ids[0]>}}
@@ -2734,16 +2712,17 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Retrieve the folderID of Inbox and a messageID.
-	if ((folder_ids[0] = check_camel_inbox_id(cookie, secure)) == -1 || (message_ids[0] = check_camel_inbox_msg(cookie, secure)) == -1) {
+	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
+		(message_ids[0] = check_camel_msg_id(folder_ids[0], cookie, secure)) == -1) {
 
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty");
+		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 51 }");
 		return false;
 	}
 
 	// Construct the command string.
 	if (!(st_sprint(command, commands[51], message_ids[0], folder_ids[0]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[51]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 51 }");
 		return false;
 	}
 
@@ -2768,9 +2747,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Clean up before the next check.
 	st_wipe(command);
 	json_decref_d(json_objs[0]);
-	*/
 
-	/*
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[52]
 	// JSON Command			: {"id":54,"method":"messages.list","params":{"folderID":<folder_ids[0]>}}",
@@ -2778,16 +2755,17 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Retrieve the folderID of Inbox and a messageID.
-	if ((folder_ids[0] = check_camel_inbox_id(cookie, secure)) == -1 || (message_ids[0] = check_camel_inbox_msg(cookie, secure)) == -1) {
+	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
+		(message_ids[0] = check_camel_msg_id(folder_ids[0], cookie, secure)) == -1) {
 
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty");
+		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 52 }");
 		return false;
 	}
 
 	// Construct the command string.
 	if (!(st_sprint(command, commands[52], folder_ids[0]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[52]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 52 }");
 		return false;
 	}
 
@@ -2812,7 +2790,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Clean up before the next check.
 	st_wipe(command);
 	json_decref_d(json_objs[0]);
-	*/
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test config.edit 	: commands[53]
@@ -2821,16 +2798,16 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Retrieve the folderID of Inbox.
-	if ((folder_ids[0] = check_camel_inbox_id(cookie, secure)) == -1) {
+	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1) {
 
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty");
+		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 53 }");
 		return false;
 	}
 
 	// Construct the command string.
 	if (!(st_sprint(command, commands[53], folder_ids[0]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[53]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 53 }");
 		return false;
 	}
 
@@ -2865,15 +2842,15 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
 
-		st_sprint(errmsg, "Failed to create random input. { command = %s }", commands[54]);
+		st_sprint(errmsg, "Failed to create random input. { command # = 54 }");
 		return false;
 	}
 
 	// Construct the command string.
 	else if (!(st_sprint(command, commands[54], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s, \"name\" = %.*s}", commands[54],
-			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
+		st_sprint(errmsg, "Failed to create command string. { command # = 54, \"name\" = %.*s}", st_length_int(rand_strs[0]),
+			st_char_get(rand_strs[0]));
 		return false;
 	}
 
@@ -2907,16 +2884,17 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Retrieve the folderID of Inbox and a messageID.
-	if ((folder_ids[0] = check_camel_inbox_id(cookie, secure)) == -1 || (message_ids[0] = check_camel_inbox_msg(cookie, secure)) == -1) {
+	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
+		(message_ids[0] = check_camel_msg_id(folder_ids[0], cookie, secure)) == -1) {
 
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty");
+		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 55 }");
 		return false;
 	}
 
 	// Construct the command string.
 	else if (!(st_sprint(command, commands[55], message_ids[0], folder_ids[0], folder_ids[1]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[55]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 55 }");
 		return false;
 	}
 
@@ -2960,7 +2938,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Construct the command string.
 	if (!(st_sprint(command, commands[56], folder_ids[1], message_ids[0]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[56]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 56 }");
 		return false;
 	}
 
@@ -3004,7 +2982,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Construct the command string.
 	if (!(st_sprint(command, commands[57], folder_ids[0]))) {
 
-		st_sprint(errmsg, "Failed to create command string. { command = %s}", commands[57]);
+		st_sprint(errmsg, "Failed to create command string. { command # = 57 }");
 		return false;
 	}
 

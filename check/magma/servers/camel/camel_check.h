@@ -10,8 +10,8 @@
 /// camel_check_network.c
 bool_t check_camel_status(client_t *client);
 client_t * check_camel_connect(bool_t secure);
-int32_t check_camel_inbox_id(stringer_t *cookie, bool_t secure);
-int32_t check_camel_inbox_msg(stringer_t *cookie, bool_t secure);
+int32_t check_camel_folder_id(stringer_t *name, stringer_t *cookie, bool_t secure);
+int32_t check_camel_msg_id(uint32_t folder_id, stringer_t *cookie, bool_t secure);
 stringer_t* check_camel_json_read(client_t *client, size_t length);
 bool_t check_camel_auth_sthread(bool_t secure, stringer_t *errmsg);
 bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg);

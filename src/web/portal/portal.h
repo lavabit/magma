@@ -24,8 +24,6 @@ enum {
 	JSON_RPC_2_ERROR_TRANSPORT             = -32300 /* Transport error */
 };
 
-
-
 enum {
 	PORTAL_ENDPOINT_ACTION_INVALID = -1,
 	PORTAL_ENDPOINT_ACTION_ADD = 1,
@@ -62,7 +60,6 @@ enum {
 	PORTAL_ENDPOINT_ERROR_SYSTEM_FLAG = 10400, // An attempt was made to modify a status flag that can only be changed by the system.
 	PORTAL_ENDPOINT_ERROR_READ = 10500 // Unable to read/load/parse the requested data.
 };
-
 
 enum {
 	PORTAL_ENDPOINT_ERROR_NONE = 0,

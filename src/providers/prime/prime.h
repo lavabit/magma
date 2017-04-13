@@ -2,7 +2,7 @@
 /**
  * @file /magma/providers/prime/prime.h
  *
- * @brief DESCRIPTIONxxxGOESxxxHERE
+ * @brief The refactored DIME (aka PRIME) interfaces used to handle the various signet/key and message formats.
  */
 
 #ifndef PRIME_H

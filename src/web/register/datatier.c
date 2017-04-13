@@ -157,8 +157,8 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 	}
 
 	// We start by generating all of the values we'll need to complete the registration process. The STACIE values are first.
-	if (!(salt = stacie_salt_create(NULL)) || !(b64_salt = base64_encode_mod(salt, NULL)) ||
-		!(shard = stacie_shard_create(NULL)) || !(b64_shard = base64_encode_mod(shard, NULL)) ||
+	if (!(salt = stacie_create_salt(NULL)) || !(b64_salt = base64_encode_mod(salt, NULL)) ||
+		!(shard = stacie_create_shard(NULL)) || !(b64_shard = base64_encode_mod(shard, NULL)) ||
 		!(stacie = auth_stacie(bonus,  username,  password,  salt,  NULL, NULL)) ||
 		!(b64_verification = base64_encode_mod(stacie->tokens.verification, NULL))) {
 
@@ -402,7 +402,7 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 	}
 
 	// Finally derive the realm key, and then create the DIME signet and key pair.
-	if (!(realm = stacie_realm_key_derive(stacie->keys.master, PLACER("mail",  4), shard)) || meta_crypto_keys_create(usernum, username, realm, transaction)) {
+	if (!(realm = stacie_realm_key(stacie->keys.master, PLACER("mail",  4), shard)) || meta_crypto_keys_create(usernum, username, realm, transaction)) {
 		log_pedantic("Unable to insert the user into the database. (Failed on Keys table.)");
 		st_cleanup(newaddr, salt, shard, b64_salt, b64_shard, b64_verification);
 		auth_stacie_cleanup(stacie);

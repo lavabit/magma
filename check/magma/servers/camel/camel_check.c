@@ -24,8 +24,7 @@ END_TEST
 
 START_TEST (check_camel_basic_s) {
 
-	//log_disable();
-	log_enable();
+	log_disable();
 	bool_t outcome = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 

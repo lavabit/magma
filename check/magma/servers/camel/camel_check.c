@@ -6,8 +6,6 @@
 
 #include "magma_check.h"
 
-// LOW: Refactor for both HTTP and HTTPS.
-
 START_TEST (check_camel_auth_s) {
 
 	log_disable();
@@ -29,6 +27,7 @@ START_TEST (check_camel_basic_s) {
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	if (status() && !check_camel_basic_sthread(false, errmsg)) outcome = false;
+	else if (status() && outcome && !check_camel_basic_sthread(true, errmsg)) outcome = false;
 
 	log_test("HTTP / NETWORK / CAMEL / BASIC / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
@@ -39,8 +38,8 @@ Suite * suite_check_camel(void) {
 
 	Suite *s = suite_create("\tCAMEL");
 
-	suite_check_testcase(s, "CAMEL", "HTTP Network Camel Auth/S", check_camel_auth_s);
-	suite_check_testcase(s, "CAMEL", "HTTP Network Camel Basic/S", check_camel_basic_s);
+	suite_check_testcase(s, "HTTP CAMEL", "HTTP Network Camel Auth/S", check_camel_auth_s);
+	suite_check_testcase(s, "HTTP CAMEL", "HTTP Network Camel Basic/S", check_camel_basic_s);
 
 	return s;
 }

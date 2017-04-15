@@ -35,8 +35,9 @@ size_t check_http_content_length_get(client_t *client) {
 	placer_t cl_placer = pl_null();
 	size_t location = 0, content_length = 0;
 
+	/// HIGH: This logic is wrong.
 	while (st_cmp_ci_starts(&(client->line), NULLER("Content-Length:")) != 0) {
-		if (client_read_line(client) <= 2) return content_length;
+		if (client_read_line(client) <= 2) return 0;
 	}
 
 	if (!st_search_chr(&(client->line), ' ', &location)) {

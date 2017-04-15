@@ -11,7 +11,7 @@ PID=`pidof magmad magmad.check`
 # If the above logic doesn't find a process, then it's possible magma is running atop valgrind.
 if [ -z "$PID" ]; then
 	PID=`pidof valgrind`
-	if [ -z "$PID" ]; then
+	if [ ! -z "$PID" ]; then
 		PID=`ps -ef | grep $PID | grep valgrind | grep -E "magmad|magmad.check" | awk -F' ' '{print $2}'`
 	fi
 fi

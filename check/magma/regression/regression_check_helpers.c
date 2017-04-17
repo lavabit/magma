@@ -133,3 +133,7 @@ bool_t check_regression_smtp_dot_stuffing_sthread(stringer_t *errmsg) {
 	client_close(client);
 	return true;
 }
+
+bool_t check_regression_imap_search_range_sthread(stringer_t *errmsg) {
+
+}

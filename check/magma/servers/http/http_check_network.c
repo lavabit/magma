@@ -30,7 +30,7 @@ bool_t check_http_read_to_empty(client_t *client) {
  * @param 	client	A client_t containing the response of an HTTP request.
  * @return 	The value of Content-Length in the HTTP message header.
  */
-size_t check_http_content_length_get(client_t *client) {
+int32_t check_http_content_length_get(client_t *client) {
 
 	placer_t cl_placer = pl_null();
 	size_t location = 0, content_length = 0;
@@ -40,16 +40,16 @@ size_t check_http_content_length_get(client_t *client) {
 	}
 
 	if (!st_search_chr(&(client->line), ' ', &location)) {
-		//st_sprint(errmsg, "The Content-Length line was improperly formed.");
+		return -1;
 	}
 	else if (pl_empty(cl_placer = pl_init(pl_data_get(client->line) + location, pl_length_get(client->line) - location))) {
-		//st_sprint(errmsg, "Failed to initialize content length placer.");
+		return -1;
 	}
 	else if (!pl_inc(&cl_placer, pl_length_get(client->line) - location) || !(cl_placer.length = pl_length_get(cl_placer)-2)) {
-		//st_sprint(errmsg, "Failed to increment placer to location of content-length value.");
+		return -1;
 	}
 	else if (!size_conv_bl(pl_char_get(cl_placer), pl_length_get(cl_placer), &content_length)) {
-		//st_sprint(errmsg, "Failed to convert the content-length string to a uint32");
+		return -1;
 	}
 
 	return content_length;
@@ -119,7 +119,7 @@ bool_t check_http_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_
 	}
 	// Test submitting a GET request.
 	else if (client_write(client, PLACER("GET / HTTP/1.1\r\nHost: localhost\r\n\r\n", 35)) != 35 ||
-		client_status(client) != 1 || !(content_length = check_http_content_length_get(client))) {
+		client_status(client) != 1 || (content_length = check_http_content_length_get(client)) < 0) {
 		if (st_empty(errmsg)) st_sprint(errmsg, "Failed to return a valid GET response.");
 		client_close(client);
 		return false;

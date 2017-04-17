@@ -123,7 +123,6 @@ bool_t check_smtp_client_quit(client_t *client, stringer_t *errmsg) {
 		st_sprint(errmsg, "Failed to return successful status following the QUIT command.");
 		return false;
 	}
-
 	else if (client_read_line(client) > 0) {
 
 		st_sprint(errmsg, "The server failed to close the connection after issuing a QUIT command.");
@@ -274,6 +273,88 @@ bool_t check_smtp_network_auth_sthread(stringer_t *errmsg, uint32_t port, bool_t
 
 		client_close(client);
 		return false;
+	}
+
+	client_close(client);
+	return true;
+}
+
+bool_t check_smtp_network_quotas_sthread(stringer_t *errmsg, uint32_t port, bool_t secure) {
+
+	// Set the quota low for the magma user.
+	if (sql_query(PLACER("UPDATE Users SET quota = 1 WHERE usernum = 1;", 0)) != 0) {
+		return false;
+	}
+
+	// Reset the quota for the magma user.
+	else if (sql_query(PLACER("UPDATE Users SET quota = 4294967296 WHERE usernum = 1;", 0)) != 0) {
+		return false;
+	}
+
+	return true;
+}
+
+bool_t check_smtp_network_starttls_advertisement_sthread(stringer_t *errmsg, uint32_t tcp_port, uint32_t tls_port) {
+
+	client_t *client = NULL;
+	bool_t found_starttls_ad = false;
+
+	// Connect the client over TCP.
+	if (!(client = client_connect("localhost", tcp_port)) || client_read_line(client) <= 0 ||
+		!net_set_timeout(client->sockd, 20, 20)) {
+
+		st_sprint(errmsg, "Failed to connect with the SMTP server over TCP.");
+		client_close(client);
+		return false;
+	}
+	// Issue EHLO.
+	else if (client_write(client, PLACER("EHLO localhost\r\n", 16)) != 16) {
+
+		st_sprint(errmsg, "Failed to return successful status after TCP EHLO.");
+		client_close(client);
+		return false;
+	}
+	// Check for "250-STARTTLS" in the EHLO response over an insecure connection.
+	else {
+		while (client_read_line(client) > 0 && pl_char_get(client->line)[3] != ' ') {
+			if (st_cmp_cs_starts(&(client->line), PLACER("250-STARTTLS", 12))) found_starttls_ad = true;
+		}
+		if (!found_starttls_ad) {
+
+			st_sprint(errmsg, "Failed to find STARTTLS advertised in TCP EHLO response.");
+			client_close(client);
+			return false;
+		}
+	}
+
+	found_starttls_ad = false;
+	client_close(client);
+	client = NULL;
+
+	// Connect the client over TLS.
+	if (!(client = client_connect("localhost", tls_port)) || client_secure(client) != 0) {
+
+		st_sprint(errmsg, "Failed to connect with the SMTP server over TLS.");
+		client_close(client);
+		return false;
+	}
+	// Issue EHLO.
+	else if (client_write(client, PLACER("EHLO localhost\r\n", 16)) != 16) {
+
+		st_sprint(errmsg, "Failed to return successful status after TLS EHLO.");
+		client_close(client);
+		return false;
+	}
+	// Check for "250-STARTTLS" in the EHLO response over an insecure connection.
+	else {
+		while (client_read_line(client) > 0 && pl_char_get(client->line)[3] != ' ') {
+			if (st_cmp_cs_starts(&(client->line), PLACER("250-STARTTLS", 12))) found_starttls_ad = true;
+		}
+		if (found_starttls_ad) {
+			st_sprint(errmsg, "Found an unnecessary STARTTLS advertisement in TLS connection EHLO response.");
+			client_close(client);
+			return false;
+		}
 	}
 
 	client_close(client);

@@ -138,6 +138,46 @@ START_TEST (check_smtp_network_auth_login_s) {
 }
 END_TEST
 
+START_TEST (check_smtp_network_quotas_s) {
+
+	log_disable();
+	bool_t outcome = true;
+	server_t *server = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	if (!(server = servers_get_by_protocol(SMTP, false))) {
+		st_sprint(errmsg, "No SMTP servers were configured and available for testing.");
+		outcome = false;
+	}
+	else if (status() && !check_smtp_network_quotas_sthread(errmsg, server->network.port, true)) {
+		outcome = false;
+	}
+
+	log_test("SMTP / NETWORK / QUOTAS / SINGLE THREADED:", NULLER("SKIPPED"));
+	ck_assert_msg(outcome, st_char_get(errmsg));
+}
+END_TEST
+
+START_TEST (check_smtp_network_starttls_advertisement_s) {
+
+	log_disable();
+	bool_t outcome = true;
+	server_t *tcp_server = NULL, *tls_server = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	if (!(tcp_server = servers_get_by_protocol(SMTP, false)) || !(tls_server = servers_get_by_protocol(SMTP, true))) {
+		st_sprint(errmsg, "No SMTP servers were configured and available for testing for both TCP and TLS.");
+		outcome = false;
+	}
+	else if (status() && !check_smtp_network_starttls_advertisement_sthread(errmsg, tcp_server->network.port, tls_server->network.port)) {
+		outcome = false;
+	}
+
+	log_test("SMTP/ NETWORK / STARTTLS ADVERTISEMENT / SINGLE THREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
+}
+END_TEST
+
 Suite * suite_check_smtp(void) {
 
 	Suite *s = suite_create("\tSMTP");
@@ -149,6 +189,8 @@ Suite * suite_check_smtp(void) {
 	suite_check_testcase(s, "SMTP", "SMTP Network Basic/ TLS/S", check_smtp_network_basic_tls_s);
 	suite_check_testcase(s, "SMTP", "SMTP Network Auth Plain/S", check_smtp_network_auth_plain_s);
 	suite_check_testcase(s, "SMTP", "SMTP Network Auth Login/S", check_smtp_network_auth_login_s);
+	suite_check_testcase(s, "SMTP", "SMTP Network Quotas/S", check_smtp_network_quotas_s);
+	suite_check_testcase(s, "SMTP", "SMTP Network STARTTLS Advertisement/S", check_smtp_network_starttls_advertisement_s);
 
 	return s;
 }

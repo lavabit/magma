@@ -68,7 +68,7 @@ stringer_t * check_camel_print(stringer_t *command, stringer_t *cookie, bool_t s
 
 	// Submit the command and check the status of the response.
 	if (!(client = check_camel_connect(secure)) || !check_camel_json_write(client, command, cookie, secure) ||
-		!(length = check_http_content_length_get(client)) || !(json = check_camel_json_read(client, length))) {
+		(length = check_http_content_length_get(client)) < 0 || !(json = check_camel_json_read(client, length))) {
 
 		client_close(client);
 		return false;
@@ -315,7 +315,7 @@ bool_t check_camel_login(stringer_t *user, stringer_t *pass, stringer_t *cookie,
 	}
 	else if (client_print(client, st_char_get(message), length, id, st_length_int(user), st_char_get(user), st_length_int(pass),
 		st_char_get(pass)) != ((st_length_get(message) - 12) + uint32_digits(length) + uint32_digits(id) + st_length_get(user) +
-		st_length_get(pass)) || !check_camel_status(client) || !(content_length = check_http_content_length_get(client)) ||
+		st_length_get(pass)) || !check_camel_status(client) || (content_length = check_http_content_length_get(client)) < 0 ||
 		!(json = check_camel_json_read(client, content_length))) {
 
 		client_close(client);

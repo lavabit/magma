@@ -436,9 +436,9 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[0]
-	// JSON Command			: {"id":2,"method":"config.edit","params":{<rand_strs[0]>:<rand_strs[1]>}}"
-	// Expected Response 	: {"jsonrpc":"2.0","result":{"config.edit":"success"},"id":2}
+	/// Test config.edit 	: commands[0]                                                                                   ///
+	/// JSON Command			: {"id":2,"method":"config.edit","params":{<rand_strs[0]>:<rand_strs[1]>}}"                 ///
+	/// Expected Response 	: {"jsonrpc":"2.0","result":{"config.edit":"success"},"id":2}                                    ///
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Generate the random inputs for "key" and "value".

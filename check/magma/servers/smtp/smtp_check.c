@@ -138,7 +138,7 @@ START_TEST (check_smtp_network_auth_login_s) {
 }
 END_TEST
 
-START_TEST (check_smtp_network_quotas_s) {
+START_TEST (check_smtp_network_outbound_quota_s) {
 
 	log_disable();
 	bool_t outcome = true;
@@ -149,11 +149,11 @@ START_TEST (check_smtp_network_quotas_s) {
 		st_sprint(errmsg, "No SMTP servers were configured and available for testing.");
 		outcome = false;
 	}
-	else if (status() && !check_smtp_network_quotas_sthread(errmsg, server->network.port, true)) {
+	else if (status() && !check_smtp_network_outbound_quota_sthread(errmsg, server->network.port, false)) {
 		outcome = false;
 	}
 
-	log_test("SMTP / NETWORK / QUOTAS / SINGLE THREADED:", NULLER("SKIPPED"));
+	log_test("SMTP / NETWORK / OUTBOUND QUOTA / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
@@ -189,7 +189,7 @@ Suite * suite_check_smtp(void) {
 	suite_check_testcase(s, "SMTP", "SMTP Network Basic/ TLS/S", check_smtp_network_basic_tls_s);
 	suite_check_testcase(s, "SMTP", "SMTP Network Auth Plain/S", check_smtp_network_auth_plain_s);
 	suite_check_testcase(s, "SMTP", "SMTP Network Auth Login/S", check_smtp_network_auth_login_s);
-	suite_check_testcase(s, "SMTP", "SMTP Network Quotas/S", check_smtp_network_quotas_s);
+	suite_check_testcase(s, "SMTP", "SMTP Network Outbound Quota/S", check_smtp_network_outbound_quota_s);
 	suite_check_testcase(s, "SMTP", "SMTP Network STARTTLS Advertisement/S", check_smtp_network_starttls_advertisement_s);
 
 	return s;

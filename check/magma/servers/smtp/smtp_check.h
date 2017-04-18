@@ -23,7 +23,7 @@ bool_t check_smtp_client_auth_login(client_t *client, stringer_t *user, stringer
 bool_t check_smtp_client_quit(client_t *client, stringer_t *errmsg);
 bool_t check_smtp_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t secure);
 bool_t check_smtp_network_auth_sthread(stringer_t *errmsg, uint32_t port, bool_t login);
-bool_t check_smtp_network_quotas_sthread(stringer_t *errmsg, uint32_t port, bool_t secure);
+bool_t check_smtp_network_outbound_quota_sthread(stringer_t *errmsg, uint32_t port, bool_t secure);
 bool_t check_smtp_network_starttls_advertisement_sthread(stringer_t *errmsg, uint32_t tcp_port, uint32_t tls_port);
 
 Suite * suite_check_smtp(void);

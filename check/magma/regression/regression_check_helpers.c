@@ -134,6 +134,49 @@ bool_t check_regression_smtp_dot_stuffing_sthread(stringer_t *errmsg) {
 	return true;
 }
 
-bool_t check_regression_imap_search_range_sthread(stringer_t *errmsg) {
+bool_t check_regression_imap_search_range_parsing_sthread(stringer_t *errmsg, uint32_t port) {
 
+	client_t *client = NULL;
+
+	// Enable logging to see the error. It should take the form of two repeating lines:
+	//
+	// Attempted a token count on a NULL string bugger.
+	// Attempted token extraction from a NULL string buffer.
+	log_enable();
+
+	// Connect the client over TCP.
+	if (!(client = client_connect("localhost", port)) || client_read_line(client) <= 0 || !net_set_timeout(client->sockd, 20, 20)) {
+
+		st_sprint(errmsg, "Failed to connect with the IMAP server over TCP.");
+		client_close(client);
+		return false;
+	}
+	else if (!check_imap_client_login(client, "princess", "password", "A00", errmsg) ||
+		!check_imap_client_select(client, "Inbox", "A01", errmsg)) {
+
+		if (st_empty(errmsg)) st_sprint(errmsg, "The LOGIN or SELECT command failed.");
+		client_close(client);
+		return false;
+	}
+	else if (client_write(client, PLACER("A02 SEARCH UID 531870239:532870239 NOT DELETE\r\n", 47)) != 47 ||
+		!check_imap_client_read_end(client, "A02") ||
+		client_write(client, PLACER("A03 SEARCH UID 531870239:532870239, 1:10000 NOT DELETE\r\n", 56)) != 56 ||
+		!check_imap_client_read_end(client, "A03")) {
+
+		if (st_empty(errmsg)) st_sprint(errmsg, "A SEARCH UID command failed.");
+		client_close(client);
+		return false;
+	}
+	else if (!check_imap_client_close_logout(client, 4, errmsg)) {
+
+		if (st_empty(errmsg)) st_sprint(errmsg, "A LOGOUT or CLOSE command failed.");
+		client_close(client);
+		return false;
+	}
+
+	// Disable logging again.
+	log_disable();
+
+	client_close(client);
+	return true;
 }

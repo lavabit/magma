@@ -279,18 +279,62 @@ bool_t check_smtp_network_auth_sthread(stringer_t *errmsg, uint32_t port, bool_t
 	return true;
 }
 
-bool_t check_smtp_network_quotas_sthread(stringer_t *errmsg, uint32_t port, bool_t secure) {
+bool_t check_smtp_network_outbound_quota_sthread(stringer_t *errmsg, uint32_t port, bool_t secure) {
 
-	// Set the quota low for the magma user.
-	if (sql_query(PLACER("UPDATE Users SET quota = 1 WHERE usernum = 1;", 0)) != 0) {
+	client_t *client = NULL;
+	log_enable();
+
+	// Wipe the Transmitting table history for the Magma user.
+	if (sql_query(PLACER("DELETE FROM Transmitting WHERE usernum = 1;", 45)) != 0) {
+
+		st_sprint(errmsg, "The SQL query to clear the Magma user's transmission history failed.");
+		return false;
+	}
+	// Set the daily send limit to 1 for the Magma user.
+	else if (sql_query(PLACER("UPDATE Dispatch SET daily_send_limit = 1 WHERE usernum = 1;", 59)) != 0) {
+
+		st_sprint(errmsg, "The SQL query to set the daily send limit low for the Magma user failed.");
+		return false;
+	}
+	// Connect to the SMTP server and authenticate.
+	else if (!(client = client_connect("localhost", port)) || !net_set_timeout(client->sockd, 20, 20) ||
+		(secure && (client_secure(client) == -1)) || client_read_line(client) <= 0 ||
+		!check_smtp_client_auth_login(client, PLACER("bWFnbWE=", 8),  PLACER("cGFzc3dvcmQ=", 12))) {
+
+		sql_query(PLACER("UPDATE Dispatch SET daily_send_limit = 256 WHERE usernum = 1;", 61));
+		st_sprint(errmsg, "Failed to connect with the SMTP server or AUTH LOGIN failed.");
+		client_close(client);
+		return false;
+	}
+	// Send the first message and expect a reply of "250 MESSAGE ACCEPTED".
+	else if (!check_smtp_client_mail_rcpt_data(client, "magma@lavabit.com", "ladar@lavabit.com", errmsg) ||
+		client_write(client, PLACER("This is a message body.\r\n.\r\n", 28)) != 28 ||
+		!check_smtp_client_read_end(client) || st_cmp_cs_starts(&(client->line), PLACER("250", 3)) != 0) {
+
+		sql_query(PLACER("UPDATE Dispatch SET daily_send_limit = 256 WHERE usernum = 1;", 61));
+		if (st_empty(errmsg)) st_sprint(errmsg, "Failed sending the first message.");
+		client_close(client);
+		return false;
+	}
+	// Send the second message and expect a reply of "451 OUTBOUND MAIL QUOTA EXCEEDED".
+	else if (!check_smtp_client_mail_rcpt_data(client, "magma@lavabit.com", "ladar@lavabit.com", errmsg) ||
+		client_write(client, PLACER("This is a message body.\r\n.\r\n", 28)) != 28 ||
+		!check_smtp_client_read_end(client) || st_cmp_cs_starts(&(client->line), PLACER("451", 3)) != 0) {
+
+		sql_query(PLACER("UPDATE Dispatch SET daily_send_limit = 256 WHERE usernum = 1;", 61));
+		if (st_empty(errmsg)) st_sprint(errmsg, "Failed to be limited by quota.");
+		client_close(client);
+		return false;
+	}
+	// Reset the daily send limit for the Magma user.
+	else if (sql_query(PLACER("UPDATE Dispatch SET daily_send_limit = 256 WHERE usernum = 1;", 61)) != 0) {
+
+		st_sprint(errmsg, "The SQL query to reset the daily send limit for the Magma user failed.");
+		client_close(client);
 		return false;
 	}
 
-	// Reset the quota for the magma user.
-	else if (sql_query(PLACER("UPDATE Users SET quota = 4294967296 WHERE usernum = 1;", 0)) != 0) {
-		return false;
-	}
-
+	client_close(client);
 	return true;
 }
 

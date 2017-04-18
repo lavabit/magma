@@ -11,7 +11,7 @@
 void check_regression_file_descriptors_leak_test(void);
 bool_t check_client_dot_stuff(client_t *client, chr_t *token);
 bool_t check_regression_smtp_dot_stuffing_sthread(stringer_t *errmsg);
-bool_t check_regression_imap_search_range_sthread(stringer_t *errmsg);
+bool_t check_regression_imap_search_range_parsing_sthread(stringer_t *errmsg, uint32_t port);
 
 Suite * suite_check_regression(void);
 

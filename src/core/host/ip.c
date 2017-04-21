@@ -509,10 +509,10 @@ bool_t ip_addr_st(chr_t *ipstr, ip_t *out) {
 	size_t i;
 	struct in_addr in4;
 	struct in6_addr in6;
-	sa_family_t class = -1;
+	sa_family_t class = 0;
 
 	// Delimiter of '.' indicates IPv4 address; ':' for IPv6
-	for (i = 0; i < ns_length_get(ipstr) && class == -1; i++) {
+	for (i = 0; i < ns_length_get(ipstr) && class == 0; i++) {
 
 		if (ipstr[i] == '.') {
 			class = AF_INET;

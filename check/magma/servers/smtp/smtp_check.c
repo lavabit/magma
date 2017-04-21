@@ -90,6 +90,19 @@ START_TEST (check_smtp_checkers_filters_s) {
 }
 END_TEST
 
+START_TEST (check_smtp_checkers_rbl_s) {
+
+	log_disable();
+	bool_t outcome = true;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	if (status()) outcome = check_smtp_checkers_rbl_sthread(errmsg);
+
+	log_test("SMTP / CHECKERS / RBL / SINGLE THREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
+}
+END_TEST
+
 START_TEST (check_smtp_network_auth_plain_s) {
 
 	log_disable();
@@ -185,6 +198,7 @@ Suite * suite_check_smtp(void) {
 	suite_check_testcase(s, "SMTP", "SMTP Accept Message/S", check_smtp_accept_store_message_s);
 	suite_check_testcase(s, "SMTP", "SMTP Checkers Greylist/S", check_smtp_checkers_greylist_s);
 	suite_check_testcase(s, "SMTP", "SMTP Checkers Filters/S", check_smtp_checkers_filters_s);
+	suite_check_testcase(s, "SMTP", "SMTP Checkers RBL", check_smtp_checkers_rbl_s);
 	suite_check_testcase(s, "SMTP", "SMTP Network Basic/ TCP/S", check_smtp_network_basic_tcp_s);
 	suite_check_testcase(s, "SMTP", "SMTP Network Basic/ TLS/S", check_smtp_network_basic_tls_s);
 	suite_check_testcase(s, "SMTP", "SMTP Network Auth Plain/S", check_smtp_network_auth_plain_s);

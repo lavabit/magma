@@ -325,6 +325,7 @@ bool_t check_imap_network_fetch_sthread(stringer_t *errmsg, uint32_t port, bool_
 	if (!(client = client_connect("localhost", port)) || (secure && (client_secure(client) == -1)) ||
 		!net_set_timeout(client->sockd, 20, 20) || client_read_line(client) <= 0 || (client->status != 1) ||
 		st_cmp_cs_starts(&(client->line), NULLER("* OK"))) {
+
 		st_sprint(errmsg, "Failed to connect with the IMAP server.");
 		client_close(client);
 		return false;
@@ -346,6 +347,7 @@ bool_t check_imap_network_fetch_sthread(stringer_t *errmsg, uint32_t port, bool_
 
 		if (!(tag = st_alloc(uint32_digits(tag_num) + 2)) || (st_sprint(tag, "A%u", tag_num) != uint32_digits(tag_num) + 1) ||
 			!(success = st_merge("sn", tag, " OK"))) {
+
 			st_sprint(errmsg, "Failed to construct the tag or success strings. { i = %d }", i);
 			st_cleanup(tag, success);
 			client_close(client);
@@ -354,6 +356,7 @@ bool_t check_imap_network_fetch_sthread(stringer_t *errmsg, uint32_t port, bool_
 		else if (client_print(client, "%s %s\r\n", st_char_get(tag), commands[i]) <= 0 ||
 			!check_imap_client_read_end(client, st_char_get(tag)) || client_status(client) != 1 ||
 			st_cmp_cs_starts(&(client->line), success)) {
+
 			st_sprint(errmsg, "Failed to return a successful status. { command = \"%s\" }", commands[i]);
 			st_cleanup(tag, success);
 			client_close(client);
@@ -373,3 +376,24 @@ bool_t check_imap_network_fetch_sthread(stringer_t *errmsg, uint32_t port, bool_
 	return true;
 }
 
+bool_t check_imap_network_starttls_advertisement_sthread(stringer_t *errmsg, uint32_t tcp_port, uint32_t tls_port) {
+
+	client_t *client = NULL;
+
+	// Check the initial response.
+	if (!(client = client_connect("localhost", port)) || (secure && (client_secure(client) == -1)) ||
+		!net_set_timeout(client->sockd, 20, 20) || client_read_line(client) <= 0 || (client->status != 1) ||
+		st_cmp_cs_starts(&(client->line), NULLER("* OK"))) {
+
+		st_sprint(errmsg, "Failed to connect with the IMAP server.");
+		client_close(client);
+		return false;
+	}
+
+	// Check for STARTTLS in the capabilities when connected over TCP.
+	// Reconnect the client via TLS.
+	// Check for the absense of STARTTLS in the capabilities when connected over TLS.
+
+	client_close(client);
+	return true;
+}

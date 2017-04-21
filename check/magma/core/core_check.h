@@ -51,6 +51,11 @@ void	  check_inx_append_test(inx_t *);
 bool_t 	  check_inx_append_sthread(MAGMA_INDEX, stringer_t*);
 bool_t 	  check_inx_append_mthread(MAGMA_INDEX, stringer_t*);
 
+/// ip_check.c
+bool_t check_uint16_to_hex_st(uint16_t val, stringer_t *buff);
+bool_t check_ip_private_sthread(stringer_t *errmsg);
+bool_t check_ip_localhost_sthread(stringer_t *errmsg);
+
 /// linked_check.c
 bool_t   check_indexes_linked_cursor(char **errmsg);
 bool_t   check_indexes_linked_cursor_compare(uint64_t values[], inx_cursor_t *cursor);

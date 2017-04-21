@@ -95,6 +95,26 @@ START_TEST (check_regression_imap_search_range_parsing_s) {
 }
 END_TEST
 
+START_TEST (check_regression_http_append_string_s) {
+
+	log_disable();
+	bool_t outcome = true;
+	server_t *server = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	if (!(server = servers_get_by_protocol(HTTP, false))) {
+		st_sprint(errmsg, "No HTTP servers were configured and available for testing.");
+		outcome = false;
+	}
+	else if (status()) {
+		outcome = check_regression_http_append_string(errmsg, server->network.port);
+	}
+
+	log_test("REGRESSION / HTTP / APPEND STRING / SINGLE THREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
+}
+END_TEST
+
 Suite * suite_check_regression(void) {
 
 	Suite *s = suite_create("\tRegression");
@@ -102,6 +122,7 @@ Suite * suite_check_regression(void) {
 	suite_check_testcase(s, "REGRESSION", "Regression File Descriptors Leak/M", check_regression_file_descriptors_leak_m);
 	suite_check_testcase(s, "REGRESSION", "Regression SMTP Dot Stuffing/S", check_regression_smtp_dot_stuffing_s);
 	suite_check_testcase(s, "REGRESSION", "Regression IMAP Search Range Parsing/S", check_regression_imap_search_range_parsing_s);
+	suite_check_testcase(s, "REGRESSION", "Regression HTTP Append String/S", check_regression_http_append_string_s);
 
 	return s;
 }

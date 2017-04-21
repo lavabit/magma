@@ -13,6 +13,7 @@ int32_t check_http_content_length_get(client_t *client);
 bool_t check_http_content_length_test(client_t *client, uint32_t content_length, stringer_t *errmsg);
 bool_t check_http_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t secure);
 bool_t check_http_network_options_sthread(stringer_t *errmsg, uint32_t port, bool_t secure);
+bool_t check_http_mime_types_sthread(stringer_t *errmsg, uint32_t port, bool_t secure);
 
 Suite * suite_check_http(void);
 

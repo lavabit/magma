@@ -878,7 +878,7 @@ START_TEST (check_ip_private_s) {
 	bool_t result = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
-	if (status()) result = check_ip_private_scheck(errmsg);
+	if (status()) result = check_ip_private_sthread(errmsg);
 
 	log_test("CORE / HOST / ADDRESS / PRIVATE / SINGLE THREADED:", errmsg);
 	ck_assert_msg(result, st_char_get(errmsg));
@@ -892,7 +892,7 @@ START_TEST (check_ip_localhost_s) {
 	bool_t result = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
-	if (status()) result = check_ip_localhost_scheck(errmsg);
+	if (status()) result = check_ip_localhost_sthread(errmsg);
 
 	log_test("CORE / HOST / ADDRESS / LOCAL / SINGLE THREADED:", errmsg);
 	ck_assert_msg(result, st_char_get(errmsg));

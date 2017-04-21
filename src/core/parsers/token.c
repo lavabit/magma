@@ -19,7 +19,7 @@ uint64_t tok_get_count_bl(void *block, size_t length, char token) {
 	uint64_t count = 1;
 
 #ifdef MAGMA_PEDANTIC
-	if (!block) log_pedantic("Attempted a token count on a NULL string bugger.");
+	if (!block) log_pedantic("Attempted a token count on a NULL string buffer.");
 	else if (!length) log_pedantic("Attempted a token count on an empty string.");
 #endif
 

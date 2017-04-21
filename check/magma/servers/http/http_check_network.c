@@ -166,3 +166,70 @@ bool_t check_http_network_options_sthread(stringer_t *errmsg, uint32_t port, boo
 
 	return true;
 }
+
+bool_t check_http_mime_types_sthread(stringer_t *errmsg, uint32_t port, bool_t secure) {
+
+	size_t delim_index = 0;
+	media_type_t *media_type = NULL;
+	stringer_t *content_type = MANAGEDBUF(128), *group = NULL, *sub = NULL;
+	placer_t header_pl = pl_null(), group_pl = pl_null(), sub_pl = pl_null();
+	chr_t *types[] = {"application/octet-stream", "audio/aiff", "audio/aiff", "audio/basic", "video/avi", "image/bmp",
+		"application/x-bzip", "application/x-bzip2", "text/x-c", "application/java", "text/plain", "text/x-c", "application/x-x509-ca-cert",
+		"text/css", "text/csv", "application/msword", "application/msword", "video/x-flv", "image/gif", "application/gzip", "text/x-h",
+		"text/html", "text/html", "image/x-icon", "application/inf", "text/x-java-source", "image/jpeg", "image/jpeg", "image/jpeg",
+		"image/jpeg", "application/javascript", "application/json", "text/plain", "application/x-lzh", "application/x-lzh", "video/mpeg",
+		"video/mpeg", "video/mpeg", "audio/midi", "audio/midi", "video/quicktime", "audio/mpeg3", "video/mpeg", "video/mpeg",
+		"application/ogg", "application/pdf", "text-script.perl", "image/png", "application/mspowerpoint", "application/powerpoint",
+		"application/postscript", "text/x-script.python", "video/quicktime", "audio/x-realaudio", "application/rss+xml", "text/rtf",
+		"text/x-asm", "text/x-sgml", "text/x-sgml", "application/x-sh", "text/html", "application/x-shockwave-flash", "application/x-tar",
+		"application-xtcl", "text/plain", "application/x-compressed", "image/tiff", "image/tiff", "text/plain", "text/x-uuencode",
+		"text/x-uuencode", "audio/wav", "video/x-ms-wmv", "application/wordperfect", "application/wordperfect", "image/xbm",
+		"application/excel", "application/excel", "text/xml", "application/x-compressed", "application/zip"
+	}, *extensions[] = {
+		"" ".aif", ".aiff", ".au", ".avi", ".bmp", ".bz", ".bz2", ".c", ".class", ".conf", ".cpp", ".crt", ".css", ".csv", ".doc",
+		".dot", ".flv", ".gif", ".gz", ".h", ".htm", ".html", ".ico", ".inf", ".java", ".jfif", ".jpe", ".jpeg", ".jpg", ".js", ".json",
+		".lst", ".lzh", ".lzs", ".m1v", ".m2v", ".m4v", ".mid", ".midi", ".mov", ".mp3", ".mpeg", ".mpg", ".ogg", ".pdf", ".pl",
+		".png", ".pps", ".ppt", ".ps", ".py", ".qt", ".ra", ".rss", ".rtf", ".s", ".sgm", ".smgl", ".sh", ".shtml", ".swf", ".tar",
+		".tcl", ".text", ".tgz", ".tif", ".tiff", ".txt", ".uu", ".uue", ".wav", ".wmv", ".wp5", ".wp6", ".xbm", ".xl", ".xls", ".xml",
+		".z", ".zip"
+	};
+
+	for (size_t i = 0; i < sizeof(types)/sizeof(chr_t *); i++) {
+
+		st_wipe(content_type);
+		st_sprint(content_type, "Content-Type: %s\r\n", types[i]);
+		header_pl = pl_init(st_data_get(content_type), st_length_get(content_type));
+
+		if (!st_search_chr(NULLER(types[i]), '/', &delim_index)) {
+
+			st_sprint(errmsg, "Failed to split mime type.");
+			return false;
+		}
+
+		group_pl = pl_init(types[i], delim_index);
+		sub_pl = pl_init(types[i] + delim_index + 1, ns_length_get(types[i]) - delim_index);
+
+		if (!(group = mail_mime_type_group(header_pl)) || !(sub = mail_mime_type_sub(header_pl)) ||
+			st_cmp_cs_eq(&group_pl, &group) != 0 || st_cmp_cs_ends(&sub_pl, &sub) != 0) {
+
+			st_sprint(errmsg, "Failed to return correct group/sub values from content type header. " \
+				"{ header = %.*s , group = %.*s , sub = %.*s }", st_length_int(content_type), st_char_get(content_type),
+				st_length_int(group), st_char_get(group), st_length_int(sub), st_char_get(sub));
+			st_cleanup(group, sub);
+			return false;
+		}
+
+		if (!(media_type = mail_mime_get_media_type(extensions[i])) || media_type->name != types[i]) {
+
+			st_sprint(errmsg, "Failed to return the correct media type object for an extension. { extension = %s , type = %s }",
+				extensions[i], types[i]);
+			st_cleanup(group, sub);
+			return false;
+		}
+
+		st_cleanup(group, sub);
+		group = sub = NULL;
+	}
+
+	return true;
+}

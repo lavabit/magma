@@ -251,11 +251,11 @@ bool_t check_smtp_network_auth_sthread(stringer_t *errmsg, uint32_t port, bool_t
 		return false;
 	}
 	// Try sending mail from an unauthenticated account (ladar@lavabit.com).
-	else if ((errmsg = NULL) || !check_smtp_client_mail_rcpt_data(client, "ladar@lavabit.com", "princess@example.com", errmsg) ||
+	else if (!check_smtp_client_mail_rcpt_data(client, "ladar@lavabit.com", "princess@example.com", errmsg) ||
 		client_print(client, ".\r\n") != 3 || !check_smtp_client_read_end(client) || client_status(client) != 1 ||
 		st_cmp_cs_starts(&(client->line), NULLER("550"))) {
 
-		if (!errmsg) st_sprint(errmsg, "Failed to return an error status after sending from an unauthenticated account.");
+		if (st_empty(errmsg)) st_sprint(errmsg, "Failed to return an error status after sending from an unauthenticated account.");
 		client_close(client);
 		return false;
 	}

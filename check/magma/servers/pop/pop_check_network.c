@@ -209,3 +209,20 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 
 	return true;
 }
+
+bool_t check_pop_network_stls_advertisement_sthread(stringer_t *errmsg, uint32_t tcp_port, uint32_t tls_port) {
+
+	client_t *client = NULL;
+
+	// Connect the client.
+	if (!(client = client_connect("localhost", port)) || (secure && (client_secure(client) == -1)) ||
+		!net_set_timeout(client->sockd, 20, 20) || client_read_line(client) <= 0 || client_status(client) != 1 ||
+		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
+
+		st_sprint(errmsg, "Failed to connect with the POP server.");
+		client_close(client);
+		return false;
+	}
+
+	return true;
+}

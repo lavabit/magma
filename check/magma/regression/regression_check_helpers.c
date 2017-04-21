@@ -180,3 +180,33 @@ bool_t check_regression_imap_search_range_parsing_sthread(stringer_t *errmsg, ui
 	client_close(client);
 	return true;
 }
+
+bool_t check_regression_http_append_string(stringer_t *errmsg, uint32_t port) {
+
+	// The bug that this test checks for should show up in the server log as:
+	// "The append string appears to be empty."
+
+	client_t *client = NULL;
+	chr_t *message = "POST /portal/camel HTTP/1.1\r\nHost: localhost:10000\r\nAccept: */*\r\n" \
+		"Content-Type: application/x-www-form-urlencoded\r\nContent-Length: 10000\r\n\r\n" \
+		"Foo Bar Baz\r\n";
+
+	// Connect the client.
+	if (!(client = client_connect("localhost", port)) || !net_set_timeout(client->sockd, 20, 20)) {
+
+		st_sprint(errmsg, "Failed to connect with the IMAP server over TCP.");
+		client_close(client);
+		return false;
+	}
+	// Send an HTTP message with an improperly long Content-Length header.
+	else if (client_write(client, NULLER(message)) != ns_length_get(message)) {
+
+		st_sprint(errmsg, "Failed to write the HTTP message to the client.");
+		client_close(client);
+		return false;
+	}
+	// Force close the connection.
+	client_close(client);
+
+	return true;
+}

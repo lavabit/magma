@@ -7,6 +7,35 @@
 
 #include "magma_check.h"
 
+bool_t check_uint16_to_hex_st(uint16_t val, stringer_t *buff) {
+
+	uint32_t digits[4] = { 0, 0, 0, 0 };
+	chr_t *hex_chrs = "0123456789abcdef";
+
+	if ((st_length_get(buff) + st_avail_get(buff)) < 5) return false;
+
+	digits[0] = val / 4096;
+	val -= digits[0] * 4096;
+
+	digits[1] = val / 256;
+	val -= digits[1] * 256;
+
+	digits[2] = val / 16;
+	val -= digits[2] * 16;
+
+	digits[3] = val;
+
+	st_wipe(buff);
+
+	if (st_sprint(buff, "%c%c%c%c", *(hex_chrs + digits[0]), *(hex_chrs + digits[1]),
+		*(hex_chrs + digits[2]), *(hex_chrs + digits[3])) == -1) {
+
+		return false;
+	}
+
+	return true;
+}
+
 void check_address_standard_s (int _i CK_ATTRIBUTE_UNUSED) {
 
 	log_disable();
@@ -319,10 +348,12 @@ void check_address_octet_s (int _i CK_ATTRIBUTE_UNUSED) {
 	ck_assert_msg(!errmsg, st_char_get(errmsg));
 }
 
-bool_t check_ip_private_scheck(stringer_t *errmsg) {
+bool_t check_ip_private_sthread(stringer_t *errmsg) {
 
-	st_sprint(errmsg, "This check needs love. Touch me tender, and finish me off.");
-	return false;
+	ip_t ip;
+	uint16_t segments[4] = { 0, 0, 0, 0 };
+	stringer_t *ipstr = MANAGEDBUF(64), *hex_buffs[8] = { MANAGEDBUF(5), MANAGEDBUF(5), MANAGEDBUF(5), MANAGEDBUF(5),
+		MANAGEDBUF(5), MANAGEDBUF(5), MANAGEDBUF(5), MANAGEDBUF(5) };
 
 	/// MEDIUM: Write the private IP address checks.
 	///
@@ -330,42 +361,355 @@ bool_t check_ip_private_scheck(stringer_t *errmsg) {
 	/// the correct response.
 	///
 	/// Generate random addresses in the 10.0.0.0/8 range and verify the outcome.
+
+	st_wipe(ipstr);
+
+	segments[0] = 10;
+	for (size_t i = 0; i < 10; i++) {
+
+		for (size_t j = 1; j < 4; j++) segments[j] = rand() % 256;
+		st_sprint(ipstr, "%d.%d.%d.%d", segments[0], segments[1], segments[2], segments[3]);
+
+		if (!ip_addr_st(st_char_get(ipstr), &ip)) {
+			st_sprint(errmsg, "Failed to construct an ip address object. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+		else if (!ip_private(&ip)) {
+			st_sprint(errmsg, "ip_private() failed to return true. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+
+		st_wipe(ipstr);
+	}
+
 	/// Generate random addresses in the 127.0.0.0/8 range and verify the outcome (localhost).
+	segments[0] = 127;
+	for (size_t i = 0; i < 10; i++) {
+
+		for (size_t j = 1; j < 4; j++) segments[j] = rand() % 256;
+		st_sprint(ipstr, "%d.%d.%d.%d", segments[0], segments[1], segments[2], segments[3]);
+
+		if (!ip_addr_st(st_char_get(ipstr), &ip)) {
+			st_sprint(errmsg, "Failed to construct an ip address object. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+		else if (!ip_private(&ip)) {
+			st_sprint(errmsg, "ip_private() failed to return true. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+
+		st_wipe(ipstr);
+	}
+
 	/// Generate random addresses in the 172.16.0.0/12 range and verify the outcome.
+	segments[0] = 172;
+	for (size_t i = 0; i < 10; i++) {
+
+		segments[1] = 16 + (rand() % 16);
+		for (size_t j = 2; j < 4; j++) segments[j] = rand() % 256;
+		st_sprint(ipstr, "%d.%d.%d.%d", segments[0], segments[1], segments[2], segments[3]);
+
+		if (!ip_addr_st(st_char_get(ipstr), &ip)) {
+			st_sprint(errmsg, "Failed to construct an ip address object. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+		else if (!ip_private(&ip)) {
+			st_sprint(errmsg, "ip_private() failed to return true. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+
+		st_wipe(ipstr);
+	}
+
 	/// Generate random addresses in the 192.168.0.0/16 range and verify the outcome.
+	segments[0] = 192;
+	segments[1] = 168;
+	for (size_t i = 0; i < 10; i++) {
+
+		for (size_t j = 2; j < 4; j++) segments[j] = rand() % 256;
+		st_sprint(ipstr, "%d.%d.%d.%d", segments[0], segments[1], segments[2], segments[3]);
+
+		if (!ip_addr_st(st_char_get(ipstr), &ip)) {
+			st_sprint(errmsg, "Failed to construct an ip address object. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+		else if (!ip_private(&ip)) {
+			st_sprint(errmsg, "ip_private() failed to return true. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+
+		st_wipe(ipstr);
+	}
+
 	/// Generate random addresses in the 72.0.0.0/8 and 172.0.0.0/8 ranges then verify the outcome (non-private).
-	///
+	segments[0] = 72;
+	for (size_t i = 0; i < 10; i++) {
+
+		for (size_t j = 1; j < 4; j++) segments[j] = rand() % 256;
+		st_sprint(ipstr, "%d.%d.%d.%d", segments[0], segments[1], segments[2], segments[3]);
+
+		if (!ip_addr_st(st_char_get(ipstr), &ip)) {
+			st_sprint(errmsg, "Failed to construct an ip address object. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+		else if (!ip_private(&ip)) {
+			st_sprint(errmsg, "ip_private() failed to return true. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+
+		st_wipe(ipstr);
+	}
+
+	segments[0] = 172;
+	for (size_t i = 0; i < 10; i++) {
+
+		for (size_t j = 1; j < 4; j++) segments[j] = rand() % 256;
+		st_sprint(ipstr, "%d.%d.%d.%d", segments[0], segments[1], segments[2], segments[3]);
+
+		if (!ip_addr_st(st_char_get(ipstr), &ip)) {
+			st_sprint(errmsg, "Failed to construct an ip address object. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+		else if (!ip_private(&ip)) {
+			st_sprint(errmsg, "ip_private() failed to return true. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+
+		st_wipe(ipstr);
+	}
+
 	/// Generate an address using ::1 and verify the outcome.
+	if (!ip_addr_st("::1", &ip)) {
+		st_sprint(errmsg, "Failed to construct an ip address object. { ipstr = %.*s }",
+			st_length_int(ipstr), st_char_get(ipstr));
+		return false;
+	}
+	else if (!ip_private(&ip)) {
+		st_sprint(errmsg, "ip_private() failed to return true. { ipstr = %.*s }",
+			st_length_int(ipstr), st_char_get(ipstr));
+		return false;
+	}
+
+	st_wipe(ipstr);
+
 	/// Generate random addresses in the fc00::/7 range and verify the outcome.
+	for (size_t i = 0; i < 10; i++) {
+
+		for (size_t j = 1; j < 8; j++) check_uint16_to_hex_st(rand() % 65536, hex_buffs[j]);
+		st_sprint(ipstr, "fc00::%s::%s::%s::%s::%s::%s::%s", st_char_get(hex_buffs[1]), st_char_get(hex_buffs[2]),
+			st_char_get(hex_buffs[3]), st_char_get(hex_buffs[4]), st_char_get(hex_buffs[5]), st_char_get(hex_buffs[6]),
+			st_char_get(hex_buffs[7]));
+
+		if (!ip_addr_st(st_char_get(ipstr), &ip)) {
+			st_sprint(errmsg, "Failed to construct an ip address object. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+		else if (!ip_private(&ip)) {
+			st_sprint(errmsg, "ip_private() failed to return true. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+
+		st_wipe(ipstr);
+	}
+
 	/// Generate random addresses in the (pick well known non-private prefix)::/7 range and verify the outcome.
-	///
+
+
 	/// Generate random addresses in the private IPv4 ranges above and map them into the IPv4 to IPv6 compatability/translation
 	/// range... ::ffff:0:0/96 and verify the outcome.
-	///
+
+	segments[0] = 172;
+	for (size_t i = 0; i < 10; i++) {
+
+		for (size_t j = 1; j < 4; j++) segments[j] = rand() % 256;
+		st_sprint(ipstr, "::ffff:%d.%d.%d.%d", segments[0], segments[1], segments[2], segments[3]);
+
+		if (!ip_addr_st(st_char_get(ipstr), &ip)) {
+			st_sprint(errmsg, "Failed to construct an ip address object. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+		else if (!ip_private(&ip)) {
+			st_sprint(errmsg, "ip_private() failed to return true. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+
+		st_wipe(ipstr);
+	}
+
 	/// Finally, call ip_private() using an invalid IP address struct. This includes passing NULL. Providing an IP struct
 	/// with an address family other than AF_INET or AF_INET6 and any other edge case you can think of.
 
+	if (!ip_addr_st("0.42.42.42", &ip)) {
+
+		st_sprint(errmsg, "Failed to create invalid ip_t object.");
+		return false;
+	}
+	else if (ip_private(NULL) || ip_private(&ip)) {
+
+		st_sprint(errmsg, "ip_private() failed to return false when passed an invalid ip_t object.");
+		return false;
+	}
+
+	return true;
 }
 
-bool_t check_ip_localhost_scheck(stringer_t *errmsg) {
+bool_t check_ip_localhost_sthread(stringer_t *errmsg) {
 
-	st_sprint(errmsg, "This check needs love. Touch me tender, and finish me off.");
-	return false;
+	ip_t ip;
+	uint16_t segments[4] = { 0, 0, 0, 0 };
+	stringer_t *ipstr = MANAGEDBUF(64);/*, *hex_buffs[8] = { MANAGEDBUF(5), MANAGEDBUF(5), MANAGEDBUF(5), MANAGEDBUF(5),
+		MANAGEDBUF(5), MANAGEDBUF(5), MANAGEDBUF(5), MANAGEDBUF(5) };*/
 
 	/// MEDIUM: Write the localhost IP address checks.
 	///
 	/// Use the ip_addr_st() function to turn test addresses into IP address structs and confirm ip_localhost() returns
 	/// the correct response.
-	///
 	/// Generate random addresses in the 127.0.0.1/8 range and verify the outcome.
+
+	st_wipe(ipstr);
+
+	segments[0] = 127;
+	for (size_t i = 0; i < 10; i++) {
+
+		segments[1] = rand() % 256;
+		segments[2] = rand() % 256;
+		segments[3] = rand() % 255 + 1;
+
+		st_sprint(ipstr, "%d.%d.%d.%d", segments[0], segments[1], segments[2], segments[3]);
+
+		if (!ip_addr_st(st_char_get(ipstr), &ip)) {
+			st_sprint(errmsg, "Failed to construct an ip address object. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+		else if (!ip_localhost(&ip)) {
+			st_sprint(errmsg, "ip_localhost() failed to return true. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+
+		st_wipe(ipstr);
+	}
+
 	/// Generate random addresses in the 72.0.0.0/8 and 172.0.0.0/8 ranges then verify the outcome (non-private).
-	///
+
+	segments[0] = 72;
+	for (size_t i = 0; i < 10; i++) {
+
+		segments[1] = rand() % 256;
+		segments[2] = rand() % 256;
+		segments[3] = rand() % 255 + 1;
+
+		st_sprint(ipstr, "%d.%d.%d.%d", segments[0], segments[1], segments[2], segments[3]);
+
+		if (!ip_addr_st(st_char_get(ipstr), &ip)) {
+			st_sprint(errmsg, "Failed to construct an ip address object. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+		else if (ip_localhost(&ip)) {
+			st_sprint(errmsg, "ip_localhost() failed to return true. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+
+		st_wipe(ipstr);
+	}
+	segments[0] = 172;
+	for (size_t i = 0; i < 10; i++) {
+
+		segments[1] = rand() % 256;
+		segments[2] = rand() % 256;
+		segments[3] = rand() % 255 + 1;
+
+		st_sprint(ipstr, "%d.%d.%d.%d", segments[0], segments[1], segments[2], segments[3]);
+
+		if (!ip_addr_st(st_char_get(ipstr), &ip)) {
+			st_sprint(errmsg, "Failed to construct an ip address object. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+		else if (ip_localhost(&ip)) {
+			st_sprint(errmsg, "ip_localhost() failed to return true. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+
+		st_wipe(ipstr);
+	}
+
 	/// Generate an address using ::1 and verify the outcome.
+	if (!ip_addr_st("::1", &ip)) {
+		st_sprint(errmsg, "Failed to construct an ip address object. { ipstr = %.*s }",
+			st_length_int(ipstr), st_char_get(ipstr));
+		return false;
+	}
+	else if (!ip_localhost(&ip)) {
+		st_sprint(errmsg, "ip_localhost() failed to return true. { ipstr = %.*s }",
+			st_length_int(ipstr), st_char_get(ipstr));
+		return false;
+	}
+
+	st_wipe(ipstr);
+
 	/// Generate random addresses in the (pick well known non-private prefix)::/7 range and verify the outcome.
-	///
+
+
 	/// Generate IPv4 addresses in the range above and map them into the IPv4 to IPv6 compatability/translation
 	/// range... ::ffff:0:0/96 and verify the outcome.
-	///
+
+	segments[0] = 127;
+	for (size_t i = 0; i < 10; i++) {
+
+		segments[1] = rand() % 256;
+		segments[2] = rand() % 256;
+		segments[3] = rand() % 255 + 1;
+
+		st_sprint(ipstr, "::ffff:%d.%d.%d.%d", segments[0], segments[1], segments[2], segments[3]);
+
+		if (!ip_addr_st(st_char_get(ipstr), &ip)) {
+			st_sprint(errmsg, "Failed to construct an ip address object. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+		else if (!ip_localhost(&ip)) {
+			st_sprint(errmsg, "ip_localhost() failed to return true. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+
+		st_wipe(ipstr);
+	}
+
 	/// Finally, call ip_localhost() using an invalid IP address struct. This includes passing NULL. Providing an IP struct
 	/// with an address family other than AF_INET or AF_INET6 and any other edge case you can think of.
+
+	if (!ip_addr_st("0.42.42.42", &ip)) {
+
+		st_sprint(errmsg, "Failed to create invalid ip_t object.");
+		return false;
+	}
+	else if (ip_localhost(NULL) || ip_localhost(&ip)) {
+
+		st_sprint(errmsg, "ip_localhost() failed to return false when passed an invalid ip_t object.");
+		return false;
+	}
+
+	return true;
 }

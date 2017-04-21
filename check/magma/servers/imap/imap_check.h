@@ -15,6 +15,7 @@ bool_t check_imap_client_close_logout(client_t *client, uint32_t tag_num, string
 bool_t check_imap_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t secure);
 bool_t check_imap_network_search_sthread(stringer_t *errmsg, uint32_t port, bool_t secure);
 bool_t check_imap_network_fetch_sthread(stringer_t *errmsg, uint32_t port, bool_t secure);
+bool_t check_imap_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_port, uint32_t tls_port);
 
 Suite * suite_check_imap(void);
 

@@ -338,7 +338,7 @@ bool_t check_smtp_network_outbound_quota_sthread(stringer_t *errmsg, uint32_t po
 	return true;
 }
 
-bool_t check_smtp_network_starttls_advertisement_sthread(stringer_t *errmsg, uint32_t tcp_port, uint32_t tls_port) {
+bool_t check_smtp_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_port, uint32_t tls_port) {
 
 	client_t *client = NULL;
 	bool_t found_starttls_ad = false;

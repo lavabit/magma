@@ -171,7 +171,7 @@ START_TEST (check_smtp_network_outbound_quota_s) {
 }
 END_TEST
 
-START_TEST (check_smtp_network_starttls_advertisement_s) {
+START_TEST (check_smtp_network_starttls_ad_s) {
 
 	log_disable();
 	bool_t outcome = true;
@@ -182,7 +182,7 @@ START_TEST (check_smtp_network_starttls_advertisement_s) {
 		st_sprint(errmsg, "No SMTP servers were configured and available for testing for both TCP and TLS.");
 		outcome = false;
 	}
-	else if (status() && !check_smtp_network_starttls_advertisement_sthread(errmsg, tcp_server->network.port, tls_server->network.port)) {
+	else if (status() && !check_smtp_network_starttls_ad_sthread(errmsg, tcp_server->network.port, tls_server->network.port)) {
 		outcome = false;
 	}
 
@@ -204,7 +204,7 @@ Suite * suite_check_smtp(void) {
 	suite_check_testcase(s, "SMTP", "SMTP Network Auth Plain/S", check_smtp_network_auth_plain_s);
 	suite_check_testcase(s, "SMTP", "SMTP Network Auth Login/S", check_smtp_network_auth_login_s);
 	suite_check_testcase(s, "SMTP", "SMTP Network Outbound Quota/S", check_smtp_network_outbound_quota_s);
-	suite_check_testcase(s, "SMTP", "SMTP Network STARTTLS Advertisement/S", check_smtp_network_starttls_advertisement_s);
+	suite_check_testcase(s, "SMTP", "SMTP Network STARTTLS A/S", check_smtp_network_starttls_ad_s);
 
 	return s;
 }

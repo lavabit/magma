@@ -106,6 +106,7 @@ START_TEST (check_imap_network_starttls_ad_s) {
 	log_test("IMAP / NETWORK / STARTTLS AD / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
+END_TEST
 
 Suite * suite_check_imap(void) {
 

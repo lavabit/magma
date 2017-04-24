@@ -8,6 +8,14 @@
 
 #include "magma_check.h"
 
+bool_t check_servers_line_presence(client_t *client, stringer_t *line, stringer_t *last) {
+
+	while (st_cmp_cs_eq(&(client->line), last) != 0 && client_read_line(client) > 0) {
+		if (st_cmp_cs_eq(&(client->line), line) == 0) return true;
+	}
+	return false;
+}
+
 /**
  * @brief 	Calls client_read_line on a client until it reaches a period only line, returning
  * 			the number of messages in the inbox.
@@ -210,19 +218,49 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 	return true;
 }
 
-bool_t check_pop_network_stls_advertisement_sthread(stringer_t *errmsg, uint32_t tcp_port, uint32_t tls_port) {
+bool_t check_pop_network_stls_ad_sthread(stringer_t *errmsg, uint32_t tcp_port, uint32_t tls_port) {
 
 	client_t *client = NULL;
 
-	// Connect the client.
-	if (!(client = client_connect("localhost", port)) || (secure && (client_secure(client) == -1)) ||
-		!net_set_timeout(client->sockd, 20, 20) || client_read_line(client) <= 0 || client_status(client) != 1 ||
-		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
+	// Connect the client over TCP.
+	if (!(client = client_connect("localhost", tcp_port)) || !net_set_timeout(client->sockd, 20, 20) ||
+		client_read_line(client) <= 0 || client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
+
+		st_sprint(errmsg, "Failed to connect with the POP server.");
+		client_close(client);
+		return false;
+	}
+	// Check for the presence of the STLS capability in the CAPA list over an insecure connection.
+	else if (client_write(client, PLACER("CAPA\r\n", 6)) != 6 ||
+		!check_servers_line_presence(client, PLACER("STLS\r\n", 6), PLACER(".\r\n", 3)) ||
+		!check_pop_client_read_end(client, NULL, NULL)) {
+
+		st_sprint(errmsg, "Failed to find the STLS capability in the CAPA list over TCP.");
+		client_close(client);
+		return false;
+	}
+
+	client_close(client);
+	client = NULL;
+
+	// Connect the client over TLS.
+	if (!(client = client_connect("localhost", tls_port)) || client_secure(client) != 0) {
 
 		st_sprint(errmsg, "Failed to connect with the POP server.");
 		client_close(client);
 		return false;
 	}
 
+	// Check for the absence of the STLS capability.
+	else if (client_write(client, PLACER("CAPA\r\n", 6)) != 6 ||
+		check_servers_line_presence(client, PLACER("STLS\r\n", 6), PLACER(".\r\n", 3)) ||
+		!check_pop_client_read_end(client, NULL, NULL)) {
+
+		st_sprint(errmsg, "The STLS capability is still advertised over TLS.");
+		client_close(client);
+		return false;
+	}
+
+	client_close(client);
 	return true;
 }

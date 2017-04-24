@@ -376,14 +376,14 @@ bool_t check_imap_network_fetch_sthread(stringer_t *errmsg, uint32_t port, bool_
 	return true;
 }
 
-bool_t check_imap_network_starttls_advertisement_sthread(stringer_t *errmsg, uint32_t tcp_port, uint32_t tls_port) {
+bool_t check_imap_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_port, uint32_t tls_port) {
 
+	size_t location = 0;
 	client_t *client = NULL;
 
 	// Check the initial response.
-	if (!(client = client_connect("localhost", port)) || (secure && (client_secure(client) == -1)) ||
-		!net_set_timeout(client->sockd, 20, 20) || client_read_line(client) <= 0 || (client->status != 1) ||
-		st_cmp_cs_starts(&(client->line), NULLER("* OK"))) {
+	if (!(client = client_connect("localhost", tcp_port)) || !net_set_timeout(client->sockd, 20, 20) ||
+		client_read_line(client) <= 0 || client->status != 1 || st_cmp_cs_starts(&(client->line), NULLER("* OK"))) {
 
 		st_sprint(errmsg, "Failed to connect with the IMAP server.");
 		client_close(client);
@@ -391,8 +391,33 @@ bool_t check_imap_network_starttls_advertisement_sthread(stringer_t *errmsg, uin
 	}
 
 	// Check for STARTTLS in the capabilities when connected over TCP.
-	// Reconnect the client via TLS.
+	else if (client_write(client, PLACER("A0 CAPABILITY\r\n", 15)) != 15 || client_read_line(client) <= 0 ||
+		!st_search_cs(&(client->line), PLACER("STARTTLS", 8), &location)) {
+
+		st_sprint(errmsg, "Failed to find STARTTLS advertised in the IMAP CAPABILITY response over TCP.");
+		client_close(client);
+		return false;
+	}
+
+	client_close(client);
+	client = NULL;
+
+	// Reconnect the client over TLS.
+	if (!(client = client_connect("localhost", tls_port)) || !net_set_timeout(client->sockd, 20, 20)) {
+
+		st_sprint(errmsg, "Failed to connect with the IMAP server.");
+		client_close(client);
+		return false;
+	}
+
 	// Check for the absense of STARTTLS in the capabilities when connected over TLS.
+	else if (client_write(client, PLACER("A0 CAPABILITY\r\n", 15)) != 15 || client_read_line(client) <= 0 ||
+		st_search_cs(&(client->line), PLACER("STARTTLS", 8), &location)) {
+
+		st_sprint(errmsg, "IMAP advertised STARTTLS when already connected via TLS.");
+		client_close(client);
+		return false;
+	}
 
 	client_close(client);
 	return true;

@@ -385,7 +385,7 @@ bool_t check_imap_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_p
 	if (!(client = client_connect("localhost", tcp_port)) || !net_set_timeout(client->sockd, 20, 20) ||
 		client_read_line(client) <= 0 || client->status != 1 || st_cmp_cs_starts(&(client->line), NULLER("* OK"))) {
 
-		st_sprint(errmsg, "Failed to connect with the IMAP server.");
+		st_sprint(errmsg, "Failed to connect with the IMAP server over TCP.");
 		client_close(client);
 		return false;
 	}
@@ -403,9 +403,9 @@ bool_t check_imap_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_p
 	client = NULL;
 
 	// Reconnect the client over TLS.
-	if (!(client = client_connect("localhost", tls_port)) || !net_set_timeout(client->sockd, 20, 20)) {
+	if (!(client = client_connect("localhost", tls_port)) || client_secure(client) || !net_set_timeout(client->sockd, 20, 20)) {
 
-		st_sprint(errmsg, "Failed to connect with the IMAP server.");
+		st_sprint(errmsg, "Failed to connect securely with the IMAP server over TLS.");
 		client_close(client);
 		return false;
 	}

@@ -58,6 +58,8 @@ void suite_check_testcase(Suite *s, const char *tags, const char *name, TFun fun
 #define INX_CHECK_MTHREADS 2
 #define INX_CHECK_OBJECTS 1024
 
+#define IP_CHECK_ROUNDS 10
+
 #define TREE_INSERTS_CHECK 128
 #define TREE_CURSORS_CHECK 128
 #define LINKED_INSERTS_CHECK 128

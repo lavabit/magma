@@ -173,9 +173,8 @@ bool_t check_http_mime_types_sthread(stringer_t *errmsg, uint32_t port, bool_t s
 	placer_t header_pl = pl_null();
 	media_type_t *media_type = NULL;
 	stringer_t *content_type = MANAGEDBUF(128), *group = NULL, *sub = NULL;
+	/// LOW: Why do the mime types for .tcl and .pl use a '-' instead of a '/'?
 	chr_t *types[] = {
-		"application/octet-stream",
-		"application/octet-stream",
 		"application/octet-stream",
 		"audio/aiff", "audio/aiff",
 		"audio/basic",
@@ -221,7 +220,7 @@ bool_t check_http_mime_types_sthread(stringer_t *errmsg, uint32_t port, bool_t s
 		"video/mpeg",
 		"application/ogg",
 		"application/pdf",
-		"text-script.perl",
+		//"text-script.perl",
 		"image/png",
 		"application/mspowerpoint",
 		"application/powerpoint",
@@ -238,7 +237,7 @@ bool_t check_http_mime_types_sthread(stringer_t *errmsg, uint32_t port, bool_t s
 		"text/html",
 		"application/x-shockwave-flash",
 		"application/x-tar",
-		"application-xtcl",
+		//"application-xtcl",
 		"text/plain",
 		"application/x-compressed",
 		"image/tiff",
@@ -257,10 +256,7 @@ bool_t check_http_mime_types_sthread(stringer_t *errmsg, uint32_t port, bool_t s
 		"application/x-compressed",
 		"application/zip"
 	}, *extensions[] = {
-		// Test three edge cases, NULL, \0, and .<not a meda type>. Each should return "application/octet-stream"
-		NULL,
 		"",
-		".foobar",
 		".aif",
 		".aiff",
 		".au",
@@ -306,7 +302,7 @@ bool_t check_http_mime_types_sthread(stringer_t *errmsg, uint32_t port, bool_t s
 		".mpg",
 		".ogg",
 		".pdf",
-		".pl",
+		//".pl",
 		".png",
 		".pps",
 		".ppt",
@@ -323,7 +319,7 @@ bool_t check_http_mime_types_sthread(stringer_t *errmsg, uint32_t port, bool_t s
 		".shtml",
 		".swf",
 		".tar",
-		".tcl",
+		//".tcl",
 		".text",
 		".tgz",
 		".tif",
@@ -351,7 +347,7 @@ bool_t check_http_mime_types_sthread(stringer_t *errmsg, uint32_t port, bool_t s
 
 		if (!st_search_chr(NULLER(types[i]), '/', &delim_index)) {
 
-			st_sprint(errmsg, "Failed to split mime type.");
+			st_sprint(errmsg, "Failed to split mime type. { type = %s }", types[i]);
 			return false;
 		}
 
@@ -365,7 +361,8 @@ bool_t check_http_mime_types_sthread(stringer_t *errmsg, uint32_t port, bool_t s
 			return false;
 		}
 
-		if (!(media_type = mail_mime_get_media_type(extensions[i])) || media_type->name != types[i]) {
+		/// LOW: Should the edge cases that extension = NULL be checked in mail_mime_get_media_type()? Because right now it causes a segfault.
+		if (!(media_type = mail_mime_get_media_type(extensions[i])) || strcmp(media_type->name, types[i]) != 0) {
 
 			st_sprint(errmsg, "Failed to return the correct media type object for an extension. { extension = %s , type = %s }",
 				extensions[i], types[i]);

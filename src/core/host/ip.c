@@ -82,7 +82,7 @@ bool_t ip_localhost(ip_t *address) {
 	}
 	// Match an IPv4 address in the loopback address range after it has been mapped into the IPv6 compatibility space.
 	else if (address && ip_type(address) == 6 && IN6_IS_ADDR_V4MAPPED(&(address->ip6)) &&
-		(0x000000ff & ip_word(address, 0)) == 127) {
+		(0x000000ff & ip_word(address, 3)) == 127) {
 		result = true;
 	}
 	// Match any IPv4 address in the 127.0.0.0/8 address space.
@@ -127,11 +127,11 @@ bool_t ip_private(ip_t *address) {
 	// The IPv4 private address space is divided into three different groupings.
 	else if (address && ip_type(address) == 4 &&
 		// Match anything inside the 10.0.0.0/8 address range.
-		(ip_octet(address, 3) == 10 ||
+		(ip_octet(address, 0) == 10 ||
 		// Match anything inside the 172.16.0.0/12 address range.
-		(ip_octet(address, 3) == 172 && ip_octet(address, 2) >= 16 && ip_octet(address, 2) <= 31) ||
+		(ip_octet(address, 0) == 172 && ip_octet(address, 1) >= 16 && ip_octet(address, 1) <= 31) ||
 		// Match anything inside the 192.168.0.0/16 address range.
-		(ip_octet(address, 3) == 192 && ip_octet(address, 2) == 168))) {
+		(ip_octet(address, 0) == 192 && ip_octet(address, 1) == 168))) {
 		result = true;
 	}
 

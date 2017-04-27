@@ -355,8 +355,6 @@ bool_t check_ip_private_sthread(stringer_t *errmsg) {
 	stringer_t *ipstr = MANAGEDBUF(64), *hex_buffs[8] = { MANAGEDBUF(5), MANAGEDBUF(5), MANAGEDBUF(5), MANAGEDBUF(5),
 		MANAGEDBUF(5), MANAGEDBUF(5), MANAGEDBUF(5), MANAGEDBUF(5) };
 
-	/// MEDIUM: Write the private IP address checks.
-	///
 	/// Use the ip_addr_st() function to turn test addresses into IP address structs and confirm ip_private() returns
 	/// the correct response.
 	///
@@ -365,7 +363,7 @@ bool_t check_ip_private_sthread(stringer_t *errmsg) {
 	st_wipe(ipstr);
 
 	segments[0] = 10;
-	for (size_t i = 0; i < 10; i++) {
+	for (size_t i = 0; i < IP_CHECK_ROUNDS; i++) {
 
 		for (size_t j = 1; j < 4; j++) segments[j] = rand() % 256;
 		st_sprint(ipstr, "%d.%d.%d.%d", segments[0], segments[1], segments[2], segments[3]);
@@ -386,7 +384,7 @@ bool_t check_ip_private_sthread(stringer_t *errmsg) {
 
 	/// Generate random addresses in the 127.0.0.0/8 range and verify the outcome (localhost).
 	segments[0] = 127;
-	for (size_t i = 0; i < 10; i++) {
+	for (size_t i = 0; i < IP_CHECK_ROUNDS; i++) {
 
 		for (size_t j = 1; j < 4; j++) segments[j] = rand() % 256;
 		st_sprint(ipstr, "%d.%d.%d.%d", segments[0], segments[1], segments[2], segments[3]);
@@ -407,7 +405,7 @@ bool_t check_ip_private_sthread(stringer_t *errmsg) {
 
 	/// Generate random addresses in the 172.16.0.0/12 range and verify the outcome.
 	segments[0] = 172;
-	for (size_t i = 0; i < 10; i++) {
+	for (size_t i = 0; i < IP_CHECK_ROUNDS; i++) {
 
 		segments[1] = 16 + (rand() % 16);
 		for (size_t j = 2; j < 4; j++) segments[j] = rand() % 256;
@@ -430,7 +428,7 @@ bool_t check_ip_private_sthread(stringer_t *errmsg) {
 	/// Generate random addresses in the 192.168.0.0/16 range and verify the outcome.
 	segments[0] = 192;
 	segments[1] = 168;
-	for (size_t i = 0; i < 10; i++) {
+	for (size_t i = 0; i < IP_CHECK_ROUNDS; i++) {
 
 		for (size_t j = 2; j < 4; j++) segments[j] = rand() % 256;
 		st_sprint(ipstr, "%d.%d.%d.%d", segments[0], segments[1], segments[2], segments[3]);
@@ -451,7 +449,7 @@ bool_t check_ip_private_sthread(stringer_t *errmsg) {
 
 	/// Generate random addresses in the 72.0.0.0/8 and 172.0.0.0/8 ranges then verify the outcome (non-private).
 	segments[0] = 72;
-	for (size_t i = 0; i < 10; i++) {
+	for (size_t i = 0; i < IP_CHECK_ROUNDS; i++) {
 
 		for (size_t j = 1; j < 4; j++) segments[j] = rand() % 256;
 		st_sprint(ipstr, "%d.%d.%d.%d", segments[0], segments[1], segments[2], segments[3]);
@@ -461,8 +459,8 @@ bool_t check_ip_private_sthread(stringer_t *errmsg) {
 				st_length_int(ipstr), st_char_get(ipstr));
 			return false;
 		}
-		else if (!ip_private(&ip)) {
-			st_sprint(errmsg, "ip_private() failed to return true. { ipstr = %.*s }",
+		else if (ip_private(&ip)) {
+			st_sprint(errmsg, "ip_private() failed to return false. { ipstr = %.*s }",
 				st_length_int(ipstr), st_char_get(ipstr));
 			return false;
 		}
@@ -471,9 +469,11 @@ bool_t check_ip_private_sthread(stringer_t *errmsg) {
 	}
 
 	segments[0] = 172;
-	for (size_t i = 0; i < 10; i++) {
+	for (size_t i = 0; i < IP_CHECK_ROUNDS; i++) {
 
-		for (size_t j = 1; j < 4; j++) segments[j] = rand() % 256;
+		segments[1] = rand() % 256;
+		if (segments[1] > 15 && segments[1] < 32) segments[1] += 16;
+		for (size_t j = 2; j < 4; j++) segments[j] = rand() % 256;
 		st_sprint(ipstr, "%d.%d.%d.%d", segments[0], segments[1], segments[2], segments[3]);
 
 		if (!ip_addr_st(st_char_get(ipstr), &ip)) {
@@ -481,8 +481,8 @@ bool_t check_ip_private_sthread(stringer_t *errmsg) {
 				st_length_int(ipstr), st_char_get(ipstr));
 			return false;
 		}
-		else if (!ip_private(&ip)) {
-			st_sprint(errmsg, "ip_private() failed to return true. { ipstr = %.*s }",
+		else if (ip_private(&ip)) {
+			st_sprint(errmsg, "ip_private() failed to return false. { ipstr = %.*s }",
 				st_length_int(ipstr), st_char_get(ipstr));
 			return false;
 		}
@@ -505,10 +505,10 @@ bool_t check_ip_private_sthread(stringer_t *errmsg) {
 	st_wipe(ipstr);
 
 	/// Generate random addresses in the fc00::/7 range and verify the outcome.
-	for (size_t i = 0; i < 10; i++) {
+	for (size_t i = 0; i < IP_CHECK_ROUNDS; i++) {
 
 		for (size_t j = 1; j < 8; j++) check_uint16_to_hex_st(rand() % 65536, hex_buffs[j]);
-		st_sprint(ipstr, "fc00::%s::%s::%s::%s::%s::%s::%s", st_char_get(hex_buffs[1]), st_char_get(hex_buffs[2]),
+		st_sprint(ipstr, "fc00:%s:%s:%s:%s:%s:%s:%s", st_char_get(hex_buffs[1]), st_char_get(hex_buffs[2]),
 			st_char_get(hex_buffs[3]), st_char_get(hex_buffs[4]), st_char_get(hex_buffs[5]), st_char_get(hex_buffs[6]),
 			st_char_get(hex_buffs[7]));
 
@@ -527,14 +527,34 @@ bool_t check_ip_private_sthread(stringer_t *errmsg) {
 	}
 
 	/// Generate random addresses in the (pick well known non-private prefix)::/7 range and verify the outcome.
+	for (size_t i = 0; i < IP_CHECK_ROUNDS; i++) {
 
+		for (size_t j = 1; j < 8; j++) check_uint16_to_hex_st(rand() % 65536, hex_buffs[j]);
+		st_sprint(ipstr, "fd00:%s:%s:%s:%s:%s:%s:%s", st_char_get(hex_buffs[1]), st_char_get(hex_buffs[2]),
+			st_char_get(hex_buffs[3]), st_char_get(hex_buffs[4]), st_char_get(hex_buffs[5]), st_char_get(hex_buffs[6]),
+			st_char_get(hex_buffs[7]));
+
+		if (!ip_addr_st(st_char_get(ipstr), &ip)) {
+			st_sprint(errmsg, "Failed to construct an ip address object. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+		else if (ip_private(&ip)) {
+			st_sprint(errmsg, "ip_private() failed to return false. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+
+		st_wipe(ipstr);
+	}
 
 	/// Generate random addresses in the private IPv4 ranges above and map them into the IPv4 to IPv6 compatability/translation
 	/// range... ::ffff:0:0/96 and verify the outcome.
 
-	segments[0] = 172;
-	for (size_t i = 0; i < 10; i++) {
+	for (size_t i = 0; i < IP_CHECK_ROUNDS; i++) {
 
+		// 10.0.0.0/8
+		segments[0] = 10;
 		for (size_t j = 1; j < 4; j++) segments[j] = rand() % 256;
 		st_sprint(ipstr, "::ffff:%d.%d.%d.%d", segments[0], segments[1], segments[2], segments[3]);
 
@@ -543,13 +563,49 @@ bool_t check_ip_private_sthread(stringer_t *errmsg) {
 				st_length_int(ipstr), st_char_get(ipstr));
 			return false;
 		}
-		else if (!ip_private(&ip)) {
+		else if (ip_private(&ip)) {
 			st_sprint(errmsg, "ip_private() failed to return true. { ipstr = %.*s }",
 				st_length_int(ipstr), st_char_get(ipstr));
 			return false;
 		}
 
 		st_wipe(ipstr);
+
+		// 192.168.0.0/16
+		segments[0] = 192;
+		segments[1] = 168;
+		for (size_t j = 2; j < 4; j++) segments[j] = rand() % 256;
+		st_sprint(ipstr, "::ffff:%d.%d.%d.%d", segments[0], segments[1], segments[2], segments[3]);
+
+		if (!ip_addr_st(st_char_get(ipstr), &ip)) {
+			st_sprint(errmsg, "Failed to construct an ip address object. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+		else if (ip_private(&ip)) {
+			st_sprint(errmsg, "ip_private() failed to return true. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+
+		st_wipe(ipstr);
+
+		// 172.16.0.0/12
+		segments[0] = 172;
+		segments[1] = 16 + (rand() % 16);
+		for (size_t j = 2; j < 4; j++) segments[j] = rand() % 256;
+		st_sprint(ipstr, "::ffff:%d.%d.%d.%d", segments[0], segments[1], segments[2], segments[3]);
+
+		if (!ip_addr_st(st_char_get(ipstr), &ip)) {
+			st_sprint(errmsg, "Failed to construct an ip address object. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+		else if (ip_private(&ip)) {
+			st_sprint(errmsg, "ip_private() failed to return true. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
 	}
 
 	/// Finally, call ip_private() using an invalid IP address struct. This includes passing NULL. Providing an IP struct
@@ -573,11 +629,9 @@ bool_t check_ip_localhost_sthread(stringer_t *errmsg) {
 
 	ip_t ip;
 	uint16_t segments[4] = { 0, 0, 0, 0 };
-	stringer_t *ipstr = MANAGEDBUF(64);/*, *hex_buffs[8] = { MANAGEDBUF(5), MANAGEDBUF(5), MANAGEDBUF(5), MANAGEDBUF(5),
-		MANAGEDBUF(5), MANAGEDBUF(5), MANAGEDBUF(5), MANAGEDBUF(5) };*/
+	stringer_t *ipstr = MANAGEDBUF(64), *hex_buffs[8] = { MANAGEDBUF(5), MANAGEDBUF(5), MANAGEDBUF(5), MANAGEDBUF(5),
+		MANAGEDBUF(5), MANAGEDBUF(5), MANAGEDBUF(5), MANAGEDBUF(5) };
 
-	/// MEDIUM: Write the localhost IP address checks.
-	///
 	/// Use the ip_addr_st() function to turn test addresses into IP address structs and confirm ip_localhost() returns
 	/// the correct response.
 	/// Generate random addresses in the 127.0.0.1/8 range and verify the outcome.
@@ -585,7 +639,7 @@ bool_t check_ip_localhost_sthread(stringer_t *errmsg) {
 	st_wipe(ipstr);
 
 	segments[0] = 127;
-	for (size_t i = 0; i < 10; i++) {
+	for (size_t i = 0; i < IP_CHECK_ROUNDS; i++) {
 
 		segments[1] = rand() % 256;
 		segments[2] = rand() % 256;
@@ -610,7 +664,7 @@ bool_t check_ip_localhost_sthread(stringer_t *errmsg) {
 	/// Generate random addresses in the 72.0.0.0/8 and 172.0.0.0/8 ranges then verify the outcome (non-private).
 
 	segments[0] = 72;
-	for (size_t i = 0; i < 10; i++) {
+	for (size_t i = 0; i < IP_CHECK_ROUNDS; i++) {
 
 		segments[1] = rand() % 256;
 		segments[2] = rand() % 256;
@@ -632,7 +686,7 @@ bool_t check_ip_localhost_sthread(stringer_t *errmsg) {
 		st_wipe(ipstr);
 	}
 	segments[0] = 172;
-	for (size_t i = 0; i < 10; i++) {
+	for (size_t i = 0; i < IP_CHECK_ROUNDS; i++) {
 
 		segments[1] = rand() % 256;
 		segments[2] = rand() % 256;
@@ -669,13 +723,32 @@ bool_t check_ip_localhost_sthread(stringer_t *errmsg) {
 	st_wipe(ipstr);
 
 	/// Generate random addresses in the (pick well known non-private prefix)::/7 range and verify the outcome.
+	for (size_t i = 0; i < IP_CHECK_ROUNDS; i++) {
 
+		for (size_t j = 1; j < 8; j++) check_uint16_to_hex_st(rand() % 65536, hex_buffs[j]);
+		st_sprint(ipstr, "fd00:%s:%s:%s:%s:%s:%s:%s", st_char_get(hex_buffs[1]), st_char_get(hex_buffs[2]),
+			st_char_get(hex_buffs[3]), st_char_get(hex_buffs[4]), st_char_get(hex_buffs[5]), st_char_get(hex_buffs[6]),
+			st_char_get(hex_buffs[7]));
+
+		if (!ip_addr_st(st_char_get(ipstr), &ip)) {
+			st_sprint(errmsg, "Failed to construct an ip address object. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+		else if (ip_private(&ip)) {
+			st_sprint(errmsg, "ip_localhost() failed to return false. { ipstr = %.*s }",
+				st_length_int(ipstr), st_char_get(ipstr));
+			return false;
+		}
+
+		st_wipe(ipstr);
+	}
 
 	/// Generate IPv4 addresses in the range above and map them into the IPv4 to IPv6 compatability/translation
 	/// range... ::ffff:0:0/96 and verify the outcome.
 
 	segments[0] = 127;
-	for (size_t i = 0; i < 10; i++) {
+	for (size_t i = 0; i < IP_CHECK_ROUNDS; i++) {
 
 		segments[1] = rand() % 256;
 		segments[2] = rand() % 256;

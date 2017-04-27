@@ -8,7 +8,17 @@
 
 #include "magma_check.h"
 
-bool_t check_servers_line_presence(client_t *client, stringer_t *line, stringer_t *last) {
+/// LOW: Refactor some of the protocol-specific functions across the server tests to use this
+///		generic function instead.
+/**
+ * @brief	Calls client_read_line on a client until it reaches last, checking for line.
+ *
+ * @param	client	The client_t pointer to read from.
+ * @param	line	A stringer_t pointer containing the line whose presence to check for.
+ * @param	last	A stringer_t pointer containing the line to read until found.
+ * @return	True if line was found before last, false otherwise.
+ */
+bool_t check_client_line_presence(client_t *client, stringer_t *line, stringer_t *last) {
 
 	while (st_cmp_cs_eq(&(client->line), last) != 0 && client_read_line(client) > 0) {
 		if (st_cmp_cs_eq(&(client->line), line) == 0) return true;
@@ -226,13 +236,13 @@ bool_t check_pop_network_stls_ad_sthread(stringer_t *errmsg, uint32_t tcp_port, 
 	if (!(client = client_connect("localhost", tcp_port)) || !net_set_timeout(client->sockd, 20, 20) ||
 		client_read_line(client) <= 0 || client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
-		st_sprint(errmsg, "Failed to connect with the POP server.");
+		st_sprint(errmsg, "Failed to connect with the POP server over TCP.");
 		client_close(client);
 		return false;
 	}
 	// Check for the presence of the STLS capability in the CAPA list over an insecure connection.
 	else if (client_write(client, PLACER("CAPA\r\n", 6)) != 6 ||
-		!check_servers_line_presence(client, PLACER("STLS\r\n", 6), PLACER(".\r\n", 3)) ||
+		!check_client_line_presence(client, PLACER("STLS\r\n", 6), PLACER(".\r\n", 3)) ||
 		!check_pop_client_read_end(client, NULL, NULL)) {
 
 		st_sprint(errmsg, "Failed to find the STLS capability in the CAPA list over TCP.");
@@ -244,19 +254,20 @@ bool_t check_pop_network_stls_ad_sthread(stringer_t *errmsg, uint32_t tcp_port, 
 	client = NULL;
 
 	// Connect the client over TLS.
-	if (!(client = client_connect("localhost", tls_port)) || client_secure(client) != 0) {
+	if (!(client = client_connect("localhost", tls_port)) || !net_set_timeout(client->sockd, 20, 20) ||
+		client_secure(client) != 0) {
 
-		st_sprint(errmsg, "Failed to connect with the POP server.");
+		st_sprint(errmsg, "Failed to connect securely with the POP server over TLS.");
 		client_close(client);
 		return false;
 	}
 
 	// Check for the absence of the STLS capability.
 	else if (client_write(client, PLACER("CAPA\r\n", 6)) != 6 ||
-		check_servers_line_presence(client, PLACER("STLS\r\n", 6), PLACER(".\r\n", 3)) ||
+		check_client_line_presence(client, PLACER("STLS\r\n", 6), PLACER(".\r\n", 3)) ||
 		!check_pop_client_read_end(client, NULL, NULL)) {
 
-		st_sprint(errmsg, "The STLS capability is still advertised over TLS.");
+		st_sprint(errmsg, "The STLS capability is advertised over TLS.");
 		client_close(client);
 		return false;
 	}

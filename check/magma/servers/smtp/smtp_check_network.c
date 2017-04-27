@@ -344,8 +344,8 @@ bool_t check_smtp_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_p
 	bool_t found_starttls_ad = false;
 
 	// Connect the client over TCP.
-	if (!(client = client_connect("localhost", tcp_port)) || client_read_line(client) <= 0 ||
-		!net_set_timeout(client->sockd, 20, 20)) {
+	if (!(client = client_connect("localhost", tcp_port)) || !net_set_timeout(client->sockd, 20, 20) ||
+		client_read_line(client) <= 0) {
 
 		st_sprint(errmsg, "Failed to connect with the SMTP server over TCP.");
 		client_close(client);

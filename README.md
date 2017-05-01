@@ -86,9 +86,14 @@ List of packages to be installed: mysql-server, memcached, gettext-devel
 To install MySQL and configure the magma username run the commands below. The supplied password should be replaced with value unique to your environment. You may also want to limit the permissions of the magma database user to the database it will need to access. The global permission is only needed to setup the table schema.
 
 ```shell
+
+# For CentOS v6
 yum install mysql-server
-service mysqld start
-chkconfig mysqld on
+chkconfig mysqld on && service mysqld start
+
+# For CentOS v7
+yum install mariadb-server
+systemctl enable mariadb.service && systemctl start mariadb.service
 
 mysql -u root < echo "CREATE USER 'magma'@'localhost' IDENTIFIED BY 'volcano';"
 mysql -u root < echo "GRANT ALL PRIVILEGES ON *.* TO 'magma'@'localhost' WITH GRANT OPTION;"

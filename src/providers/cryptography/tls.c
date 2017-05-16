@@ -102,10 +102,10 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 	}
 
 	// Enabling the ellipitical curve single use will improve the forward secreecy for ecdh keys.
-	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_OP_SINGLE_ECDH_USE, 1, NULL) != 1) {
-		log_critical("Could not enable the elliptical curve single use.");
-		return false;
-	}
+//	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_OP_SINGLE_ECDH_USE, 1, NULL) != 1) {
+//		log_critical("Could not enable single use elliptical curve.");
+//		return false;
+//	}
 
 	// Enable read ahead to allow for more efficient pipeline processing.
 	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_READ_AHEAD, 1, NULL) != 1) {

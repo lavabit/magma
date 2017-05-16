@@ -404,3 +404,13 @@ bool_t check_smtp_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_p
 	client_close(client);
 	return true;
 }
+
+bool_t check_smtp_network_domain_wildcard_sthread(stringer_t *errmsg, uint32_t port) {
+
+	st_sprint(errmsg, "This test needs to be implemented");
+
+	// Create a stringer_t holding a email address with a wildcard in the domain.
+
+
+	return false;
+}

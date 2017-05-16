@@ -26,6 +26,7 @@ bool_t check_smtp_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_
 bool_t check_smtp_network_auth_sthread(stringer_t *errmsg, uint32_t port, bool_t login);
 bool_t check_smtp_network_outbound_quota_sthread(stringer_t *errmsg, uint32_t port, bool_t secure);
 bool_t check_smtp_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_port, uint32_t tls_port);
+bool_t check_smtp_network_domain_wildcard_sthread(stringer_t *errmsg, uint32_t port);
 
 Suite * suite_check_smtp(void);
 

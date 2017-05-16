@@ -264,5 +264,6 @@ bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg, int_t action, int
 bool_t check_smtp_checkers_rbl_sthread(stringer_t *errmsg) {
 
 	st_sprint(errmsg, "This test is a stub and needs implemented.");
+
 	return false;
 }

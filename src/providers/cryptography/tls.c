@@ -108,10 +108,10 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 //	}
 
 	// Enable read ahead to allow for more efficient pipeline processing.
-	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_READ_AHEAD, 1, NULL) != 1) {
-		log_critical("Could not enable the read ahead.");
-		return false;
-	}
+//	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_READ_AHEAD, 1, NULL) != 1) {
+//		log_critical("Could not enable the use of read ahead for encrypted connections.");
+//		return false;
+//	}
 
 	return true;
 }

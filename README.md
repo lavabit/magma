@@ -32,15 +32,18 @@ vagrant init lavabit/magma; vagrant up --provider virtualbox
 vagrant init lavabit/magma; vagrant up --provider libvirt
 ```
 
+Images for specific platforms can be found [here](https://atlas.hashicorp.com/lavabit)
+
 # Credits
 
-Ladar Levison    
-Greg Brown    
-Ivan Tolkachev    
-Princess Levison    
-Ryan Crites    
-Sean Benson    
-Stephen Watt    
+Ladar Levison
+Greg Brown
+Ivan Tolkachev
+Princess Levison
+Ryan Crites
+Sean Benson
+Stephen Watt
+Jacob Adkins
 
 And the army of Kickstarter supporters who contributed to this project.
 
@@ -78,27 +81,30 @@ These instructions are targeted at systems running CentOS 6.
 
 ### Prerequisites
 
-List of packages to be installed: mysql-server, memcached, gettext-devel
+Install the dependencies (make sure that EPEL is enabled):
+
+```shell
+yum groupinstall -y 'Development Tools'
+yum install -y mysql-server memcached gettext-devel patch ncurses-devel perl-Time-HiRes check check-devel libbsd-devel
+```
 
 **MySQL**
 
-To install MySQL and configure the magma username run the commands below. The supplied password should be replaced with value unique to your environment. You may also want to limit the permissions of the magma database user to the database it will need to access. The global permission is only needed to setup the table schema.
+To start MySQL and configure the magma username run the commands below. The supplied password should be replaced with value unique to your environment. You may also want to limit the permissions of the magma database user to the database it will need to access. The global permission is only needed to setup the table schema.
 
 ```shell
-yum install mysql-server
 service mysqld start
 chkconfig mysqld on
 
-mysql -u root < echo "CREATE USER 'magma'@'localhost' IDENTIFIED BY 'volcano';"
-mysql -u root < echo "GRANT ALL PRIVILEGES ON *.* TO 'magma'@'localhost' WITH GRANT;"
+echo "CREATE USER 'magma'@'localhost' IDENTIFIED BY 'volcano';" | mysql -u root
+echo "GRANT ALL PRIVILEGES ON *.* TO 'magma'@'localhost' WITH GRANT OPTION;" | mysql -u root
 ```
 
 **Memcached**
 
-To install Memcached run the commands below.
+To start Memcached run the commands below.
 
 ```shell
-yum install memcached
 service memcached start
 chkconfig memcached on
 ```
@@ -107,13 +113,11 @@ chkconfig memcached on
 
 To link up the development and build scripts run the linkup.sh. This will create a bin folder in your home directory, if it doesn't already exist, and create symbolic links to the scripts and tools used to build, run and test magma. The commands below assume the bin directory is in your PATH. If it isn't, or you simply don't want to create the symbolic links, you can also run the shell scripts directly from their location in the dev/scripts folder. To execute the linkup.sh script:
 
-
 ```shell
 magma/dev/scripts/linkup.sh
 ```
 
 To build the dependencies and create the magmad.so library separately, run the build.lib script. Run the script without any parameters to see the possible command line options. To compile and combine all of dependencies in a single operation:
-
 
 ```shell
 build.lib all

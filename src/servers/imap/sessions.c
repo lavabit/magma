@@ -8,8 +8,8 @@
 #include "magma.h"
 
 /**
- * Returns 0 if the selected folder wasn't modified, or 1 if things changed and the updated status should be sent to the client. A -1
- * is used to indicate the update check encountered a problem and should be retried later.
+ * @brief Returns 0 if the selected folder wasn't modified, or 1 if things changed and the updated status should be sent to
+ * the client, and a -1 is used to indicate the update check encountered a problem and should be retried later.
  */
 int_t imap_session_update(connection_t *con) {
 

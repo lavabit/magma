@@ -96,10 +96,13 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 	// Automatically select the appropriate and ECDH curve. Note the SSL_CTRL_SET_ECDH_AUTO and SSL_CTX_set_tmp_ecdh_callback()
 	// configured below are no longer necessary, or relevant once we upgrade to OpenSSL 1.1.0. Curve configuration in 1.1.10
 	// occurs automatically, with control over which curves are available being provided by the SSL_CTX_set1_curves interface.
-	if (SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_ECDH_AUTO, 1, NULL) != 1) {
-		log_critical("Could not enable the automatic selection of ellipitical curves.");
-		return false;
-	}
+//	if (SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_ECDH_AUTO, 1, NULL) != 1) {
+//		log_critical("Could not enable the automatic selection of ellipitical curves.");
+//		return false;
+//	}
+
+	// Like the SSL_CTRL_SET_ECDH_AUTO, this function will no longer be needed when we switch to OpenSSL 1.1.0.
+	SSL_CTX_set_tmp_ecdh_callback_d(local->tls.context, ssl_ecdh_exchange_callback);
 
 	// Enabling the ellipitical curve single use will improve the forward secreecy for ecdh keys.
 //	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_OP_SINGLE_ECDH_USE, 1, NULL) != 1) {

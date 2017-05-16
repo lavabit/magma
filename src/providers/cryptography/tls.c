@@ -39,7 +39,7 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 		ciphers = SSL_DEFAULT_CIPHER_LIST;
 	}
 	else if (security_level == 2) {
-		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_COMPRESSION | SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS);
+		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_TICKET | SSL_OP_NO_COMPRESSION | SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS);
 		//options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_MODE_AUTO_RETRY | SSL_OP_CIPHER_SERVER_PREFERENCE | SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS;
 		ciphers = MAGMA_CIPHERS_MEDIUM;
 	}
@@ -101,11 +101,17 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 		return false;
 	}
 
-	// Like the SSL_CTRL_SET_ECDH_AUTO, this function will no longer be needed when we switch to OpenSSL 1.1.0.
-	SSL_CTX_set_tmp_ecdh_callback_d(local->tls.context, ssl_ecdh_exchange_callback);
+	// Enabling the ellipitical curve single use will improve the forward secreecy for ecdh keys.
+	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_OP_SINGLE_ECDH_USE, 1, NULL) != 1) {
+		log_critical("Could not enable the elliptical curve single use.");
+		return false;
+	}
 
 	// Enable read ahead to allow for more efficient pipeline processing.
-	SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_READ_AHEAD, 1, NULL);
+	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_READ_AHEAD, 1, NULL) != 1) {
+		log_critical("Could not enable the read ahead.");
+		return false;
+	}
 
 	return true;
 }

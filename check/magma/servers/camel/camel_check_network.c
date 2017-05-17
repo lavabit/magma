@@ -362,71 +362,10 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_t *json_objs[2] = { NULL, NULL };
 	bool_t contains_entries[2] = { false, false };
 	const chr_t *json_values[4] = { NULL, NULL, NULL, NULL };
-	chr_t *choices = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+	chr_t *choices = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", *chr_command = NULL;
 	int32_t folder_ids[2] = { -1, -1 }, contact_ids[3] = { -1, -1, -1 }, alert_ids[2] = { -1, -1 }, message_ids[2] = { -1, -1 };
 	stringer_t *cookie = MANAGEDBUF(1024), *command = MANAGEDBUF(2048), *json = NULL,
 		*rand_strs[4] = { MANAGEDBUF(64), MANAGEDBUF(64), MANAGEDBUF(64), MANAGEDBUF(64) };
-	chr_t *commands[] = {
-		"{\"id\":2,\"method\":\"config.edit\",\"params\":{\"%.*s\":\"%.*s\"}}",
-		"{\"id\":3,\"method\":\"config.load\"}",
-		"{\"id\":4,\"method\":\"config.edit\",\"params\":{\"%.*s\":null}}",
-		"{\"id\":5,\"method\":\"config.load\"}",
-		"{\"id\":6,\"method\":\"config.edit\",\"params\":{\"%.*s\":\"%.*s\"}}",
-		"{\"id\":7,\"method\":\"folders.add\",\"params\":{\"context\":\"contacts\",\"name\":\"%.*s\"}}",
-		"{\"id\":8,\"method\":\"folders.list\",\"params\":{\"context\":\"contacts\"}}",
-		"{\"id\":9,\"method\":\"contacts.add\",\"params\":{\"folderID\":%u, \"contact\":{\"name\":\"%.*s\", \"email\":\"%.*s\"}}}",
-		"{\"id\":10,\"method\":\"contacts.copy\",\"params\":{\"sourceFolderID\":%u, \"targetFolderID\":%u, \"contactID\":%u}}",
-		"{\"id\":11,\"method\":\"contacts.list\",\"params\":{\"folderID\":%u}}",
-		"{\"id\":12,\"method\":\"contacts.edit\",\"params\":{\"folderID\":%u, \"contactID\":%u, \"contact\":{\"name\":\"%.*s\", \"email\":\"%.*s\"}}}",
-		"{\"id\":13,\"method\":\"contacts.load\",\"params\":{\"folderID\":%u, \"contactID\":%u }}",
-		"{\"id\":14,\"method\":\"contacts.edit\",\"params\":{\"folderID\":%u, \"contactID\":%u, \"contact\":{\"name\":\"%.*s\", \"email\":\"%.*s\", \"phone\":\"%.*s\", \"notes\":\"%.*s\"}}}",
-		"{\"id\":15,\"method\":\"contacts.load\",\"params\":{\"folderID\":%u, \"contactID\":%u}}",
-		"{\"id\":16,\"method\":\"folders.add\",\"params\":{\"context\":\"contacts\",\"name\":\"%.*s\"}}",
-		"{\"id\":17,\"method\":\"contacts.move\",\"params\":{ \"contactID\":%u, \"sourceFolderID\":%u, \"targetFolderID\":%u}}",
-		"{\"id\":18,\"method\":\"contacts.list\",\"params\":{\"folderID\":%u}}",
-		"{\"id\":19,\"method\":\"contacts.list\",\"params\":{\"folderID\":%u}}",
-		"{\"id\":20,\"method\":\"contacts.remove\",\"params\":{\"folderID\":%u, \"contactID\":%u}}",
-		"{\"id\":21,\"method\":\"contacts.remove\",\"params\":{\"folderID\":%u, \"contactID\":%u}}",
-		"{\"id\":22,\"method\":\"contacts.list\",\"params\":{\"folderID\":%u}}",
-		"{\"id\":23,\"method\":\"folders.remove\",\"params\":{\"context\":\"contacts\",\"folderID\":%u}}",
-		"{\"id\":24,\"method\":\"folders.remove\",\"params\":{\"context\":\"contacts\",\"folderID\":%u}}",
-		"{\"id\":25,\"method\":\"cookies\"}",
-		"{\"id\":26,\"method\":\"alert.list\"}",
-		"{\"id\":27,\"method\":\"alert.acknowledge\",\"params\":{\"alertIDs\":[%u]}}",
-		"{\"id\":28,\"method\":\"alert.list\"}",
-		"{\"id\":29,\"method\":\"folders.list\",\"params\":{\"context\":\"mail\"}}",
-		"{\"id\":30,\"method\":\"folders.list\",\"params\":{\"context\":\"settings\"}}",
-		"{\"id\":31,\"method\":\"folders.list\",\"params\":{\"context\":\"help\"}}",
-		"{\"id\":32,\"method\":\"folders.add\",\"params\":{\"context\":\"mail\",\"name\":\"%.*s\"}}",
-		"{\"id\":33,\"method\":\"folders.add\",\"params\":{\"context\":\"mail\",\"parentID\":%u,\"name\":\"%.*s\"}}",
-		"{\"id\":34,\"method\":\"folders.add\",\"params\":{\"context\":\"mail\",\"parentID\":%u,\"name\":\"%.*s\"}}",
-		"{\"id\":35,\"method\":\"folders.rename\",\"params\":{\"context\":\"mail\",\"folderID\":%u,\"name\":\"%.*s\"}}",
-		"{\"id\":36,\"method\":\"folders.rename\",\"params\":{\"context\":\"mail\",\"folderID\":%u,\"name\":\"%.*s\"}}",
-		"{\"id\":37,\"method\":\"folders.remove\",\"params\":{\"context\":\"mail\",\"folderID\":%u}}",
-		"{\"id\":38,\"method\":\"folders.remove\",\"params\":{\"context\":\"mail\",\"folderID\":%u}}",
-		"{\"id\":39,\"method\":\"folders.remove\",\"params\":{\"context\":\"mail\",\"folderID\":%u}}",
-		"{\"id\":40,\"method\":\"folders.remove\",\"params\":{\"context\":\"mail\",\"folderID\":%u}}",
-		"{\"id\":41,\"method\":\"aliases\"}",
-		"{\"id\":42,\"method\":\"folders.add\",\"params\":{\"context\":\"mail\",\"name\":\"%.*s\"}}",
-		"{\"id\":43,\"method\":\"messages.copy\",\"params\":{\"messageIDs\":[%u],\"sourceFolderID\":%u,\"targetFolderID\":%u}}",
-		"{\"id\":44,\"method\":\"messages.copy\",\"params\":{\"messageIDs\":[%u],\"sourceFolderID\":%u,\"targetFolderID\":%u}}",
-		"{\"id\":45,\"method\":\"folders.remove\",\"params\":{\"context\":\"mail\",\"folderID\":%u}}",
-		"{\"id\":46,\"method\":\"folders.add\",\"params\":{\"context\":\"mail\",\"name\":\"%.*s\"}}",
-		"{\"id\":47,\"method\":\"messages.load\",\"params\":{\"messageID\":%u,\"folderID\":%u, \"sections\":[\"meta\",\"source\",\"security\",\"server\",\"header\",\"body\",\"attachments\"]}}",
-		"{\"id\":48,\"method\":\"messages.copy\",\"params\":{\"messageIDs\":[%u],\"sourceFolderID\":%u,\"targetFolderID\":%u}}",
-		"{\"id\":49,\"method\":\"folders.remove\",\"params\":{\"context\":\"mail\",\"folderID\":%u}}",
-		"{\"id\":50,\"method\":\"messages.flag\",\"params\":{\"action\":\"add\",\"flags\":[\"flagged\"],\"messageIDs\":[%u],\"folderID\":%u}}",
-		"{\"id\":51,\"method\":\"messages.tag\",\"params\":{\"action\":\"add\",\"tags\":[\"girlie\",\"girlie-6169\"],\"messageIDs\":[%u],\"folderID\":%u}}",
-		"{\"id\":52,\"method\":\"messages.flag\",\"params\":{\"action\":\"list\",\"messageIDs\":[%u],\"folderID\":%u}}",
-		"{\"id\":53,\"method\":\"messages.tags\",\"params\":{\"action\":\"list\",\"messageIDs\":[%u],\"folderID\":%u}}",
-		"{\"id\":54,\"method\":\"messages.list\",\"params\":{\"folderID\":%u}}",
-		"{\"id\":55,\"method\":\"folders.tags\",\"params\":{\"context\":\"mail\",\"folderID\":%u}}",
-		"{\"id\":56,\"method\":\"folders.add\",\"params\":{\"context\":\"mail\",\"name\":\"%.*s\"}}",
-		"{\"id\":57,\"method\":\"messages.move\",\"params\":{\"messageIDs\":[%u], \"sourceFolderID\":%u, \"targetFolderID\":%u}}",
-		"{\"id\":58,\"method\":\"messages.remove\",\"params\":{\"folderID\":%u,\"messageIDs\":[%u]}}",
-		"{\"id\":59,\"method\":\"folders.remove\",\"params\":{\"context\":\"mail\",\"folderID\":%u}}",
-		"{\"id\":60,\"method\":\"logout\"}"
-	};
 
 	// Get the auth cookie for the Princess user.
 	if (!check_camel_login(PLACER("magma", 5), PLACER("password", 8), cookie, secure)) {
@@ -435,11 +374,11 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		return false;
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/// Test config.edit 	: commands[0]                                                                                   ///
-	/// JSON Command			: {"id":2,"method":"config.edit","params":{<rand_strs[0]>:<rand_strs[1]>}}"                 ///
-	/// Expected Response 	: {"jsonrpc":"2.0","result":{"config.edit":"success"},"id":2}                                    ///
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// Test config.edit 		: {"id":2,"method":"config.edit","params":{<rand_strs[0]>:<rand_strs[1]>}}"
+	/// Expected Response 	: {"jsonrpc":"2.0","result":{"config.edit":"success"},"id":2}
+
+  // Set the current command string.
+  chr_command = "{\"id\":2,\"method\":\"config.edit\",\"params\":{\"%.*s\":\"%.*s\"}}";
 
 	// Generate the random inputs for "key" and "value".
 	if (!rand_choices(choices, 64, rand_strs[0]) || !rand_choices(choices, 64, rand_strs[1])) {
@@ -449,7 +388,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	else if (!(st_sprint(command, commands[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0]), st_length_int(rand_strs[1]),
+	else if (!(st_sprint(command, chr_command, st_length_int(rand_strs[0]), st_char_get(rand_strs[0]), st_length_int(rand_strs[1]),
 		st_char_get(rand_strs[1])))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 0 }");
@@ -492,14 +431,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[1]
-	// JSON Command			: {"id":3,"method":"config.load"}
+	// Test config.load		: {"id":3,"method":"config.load"}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{<rand_strs[0]>:{"value":<rand_strs[1]>, "flags":[]}, ...}, "id":3}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":3,\"method\":\"config.load\"}";
 
 	// Submit the command and check the status of the response.
-	if (!(json = check_camel_print(NULLER(commands[1]), cookie, secure))) {
+	if (!(json = check_camel_print(NULLER(chr_command), cookie, secure))) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 1 }");
 		return false;
@@ -532,14 +471,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[2]
-	// JSON Command			: {"id":4,"method":"config.edit","params":{<rand_strs[0]>:null}}"
+	// Test config.edit		: {"id":4,"method":"config.edit","params":{<rand_strs[0]>:null}}"
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"config.edit":"success"},"id":4}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":4,\"method\":\"config.edit\",\"params\":{\"%.*s\":null}}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[2], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
+	if (!(st_sprint(command, chr_command, st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 2 }");
 		return false;
@@ -579,14 +518,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[3]
-	// JSON Command			: {"id":5,"method":"config.load"}
+	// Test config.load		: {"id":5,"method":"config.load"}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{ there should be no key matching <rand_strs[0]> }, "id":5}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":5,\"method\":\"config.load\"}";
 
 	// Submit the command and check the status of the response.
-	if (!(json = check_camel_print(NULLER(commands[3]), cookie, secure))) {
+	if (!(json = check_camel_print(NULLER(chr_command), cookie, secure))) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 3 }");
 		return false;
@@ -610,11 +549,11 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[4]
-	// JSON Command			: {"id":6,"method":"config.edit","params":{<rand_strs[0]>:<rand_strs[1]>}}"
+	// Test config.edit		: {"id":6,"method":"config.edit","params":{<rand_strs[0]>:<rand_strs[1]>}}"
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"config.edit":"success"},"id":6}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":6,\"method\":\"config.edit\",\"params\":{\"%.*s\":\"%.*s\"}}";
 
 	// Generate the random inputs for "key" and "value".
 	if (!rand_choices(choices, 64, rand_strs[0]) || !rand_choices(choices, 64, rand_strs[1])) {
@@ -624,7 +563,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	else if (!(st_sprint(command, commands[4], st_length_int(rand_strs[0]), st_char_get(rand_strs[0]), st_length_int(rand_strs[1]),
+	else if (!(st_sprint(command, chr_command, st_length_int(rand_strs[0]), st_char_get(rand_strs[0]), st_length_int(rand_strs[1]),
 		st_char_get(rand_strs[1])))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 4 }");
@@ -667,11 +606,11 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[5]
-	// JSON Command			: {"id":7,"method":"folders.add","params":{"context":"contacts","name:<rand_strs[0]>}}"
+	// Test folders.add		: {"id":7,"method":"folders.add","params":{"context":"contacts","name:<rand_strs[0]>}}"
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"folderID":<folder_ids[0]>},"id":7}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":7,\"method\":\"folders.add\",\"params\":{\"context\":\"contacts\",\"name\":\"%.*s\"}}";
 
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
@@ -681,7 +620,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	else if (!(st_sprint(command, commands[5], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
+	else if (!(st_sprint(command, chr_command, st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 5 }");
 		return false;
@@ -712,14 +651,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[6]
-	// JSON Command			: {"id":8,"method":"folders.list","params":{"context":"contacts"}}
+	// Test folders.list	: {"id":8,"method":"folders.list","params":{"context":"contacts"}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":[{"context":"contacts","folderID":<folder_ids[0],"name":<rand_strs[0]>}], "id":8}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":8,\"method\":\"folders.list\",\"params\":{\"context\":\"contacts\"}}";
 
 	// Submit the command and check the status of the response.
-	if (!(json = check_camel_print(NULLER(commands[6]), cookie, secure))) {
+	if (!(json = check_camel_print(NULLER(chr_command), cookie, secure))) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 6 }");
 		return false;
@@ -764,12 +703,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[7]
-	// JSON Command			: {"id\":9,"method":"contacts.add","params":{"folderID":<folder_ids[0]>,
-	//							"contact":{"name":"<rand_strs[0]>", "email":"<rand_strs[1]>"}}}
+	// Test contacts.add	: {"id\":9,"method":"contacts.add","params":{"folderID":<folder_ids[0]>,
+  //												"contact":{"name":"<rand_strs[0]>", "email":"<rand_strs[1]>"}}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"contactID":<contact_ids[0]>},"id":9}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":9,\"method\":\"contacts.add\",\"params\":{\"folderID\":%u, \"contact\":{\"name\":\"%.*s\", \"email\":\"%.*s\"}}}";
 
 	// Generate the random input for "name" and "email".
 	if (!rand_choices(choices, 64, rand_strs[0]) || !rand_choices(choices, 64, rand_strs[1])) {
@@ -779,7 +718,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	else if (!(st_sprint(command, commands[7], folder_ids[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0]),
+	else if (!(st_sprint(command, chr_command, folder_ids[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0]),
 		st_length_int(rand_strs[1]), st_char_get(rand_strs[1])))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 7 }");
@@ -813,14 +752,17 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json = NULL;
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[8]
-	// JSON Command			: {"id":10,"method":"contacts.copy","params":{"sourceFolderID":<folder_ids[0]>,
-	//							"targetFolderID":folder_ids[0], "contactID":<contact_ids[0]>}}
+	// Test contacts.copy	: {"id":10,"method":"contacts.copy","params":{"sourceFolderID":<folder_ids[0]>,
+	//												"targetFolderID":folder_ids[0], "contactID":<contact_ids[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"contactID":<contact_ids[1]>},"id":10}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Set the current command string.
+  chr_command = "{\"id\":10,\"method\":\"contacts.copy\",\"params\":{\"sourceFolderID\":%u, \"targetFolderID\":%u, \"contactID\":%u}}";
+
+
 	// Construct the command string.
-	if (!(st_sprint(command, commands[8], folder_ids[0], folder_ids[0], contact_ids[0]))) {
+	if (!(st_sprint(command, chr_command, folder_ids[0], folder_ids[0], contact_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 8 }");
 		return false;
@@ -851,15 +793,15 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[9]
-	// JSON Command			: {"id":11,"method":"contacts.list","params":{"folderID":%u}}
+	// Test contacts.list	: {"id":11,"method":"contacts.list","params":{"folderID":%u}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":[{"contactID":<contact_ids[0]>,"name":<rand_strs[0]>,email:<rand_strs[1]>},
-	//							{same for contact_ids[1]}, ...],"id":11}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//												{same for contact_ids[1]}, ...],"id":11}
+
+  // Set the current command string.
+  chr_command = "{\"id\":11,\"method\":\"contacts.list\",\"params\":{\"folderID\":%u}}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[9], folder_ids[0]))) {
+	if (!(st_sprint(command, chr_command, folder_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 9 }");
 		return false;
@@ -917,12 +859,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[10]
-	// JSON Command			: {"id":12,"method":"contacts.edit","params":{"folderID":<folder_ids[0]>, "contactID":<contact_ids[0]>,
-	//							"contact":{"name":"<rand_strs[0]>","email":"rand_strs[1]"}}}
+	// Test contacts.edit	: {"id":12,"method":"contacts.edit","params":{"folderID":<folder_ids[0]>, "contactID":<contact_ids[0]>,
+	//												"contact":{"name":"<rand_strs[0]>","email":"rand_strs[1]"}}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"contacts.edit":"success"},"id":12}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":12,\"method\":\"contacts.edit\",\"params\":{\"folderID\":%u, \"contactID\":%u, \"contact\":{\"name\":\"%.*s\", \"email\":\"%.*s\"}}}";
 
 	// Generate the new random inputs for "name" and "email".
 	if (!rand_choices(choices, 64, rand_strs[0]) || !rand_choices(choices, 64, rand_strs[1])) {
@@ -932,7 +874,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	else if (!(st_sprint(command, commands[10], folder_ids[0], contact_ids[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0]),
+	else if (!(st_sprint(command, chr_command, folder_ids[0], contact_ids[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0]),
 		st_length_int(rand_strs[1]), st_char_get(rand_strs[1])))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 10 }");
@@ -975,15 +917,15 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[11]
-	// JSON Command			: {"id":13,"method\":"contacts.list","params":{"folderID":<folder_ids[0]>, "contactID":<contact_ids[0]>}}
+	// Test contacts.list	: {"id":13,"method\":"contacts.list","params":{"folderID":<folder_ids[0]>, "contactID":<contact_ids[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"contactID":<contact_ids[0]>, "name":{"value":<rand_strs[0]>, ...},
-	//							"email":{"value":<rand_strs[1]>}}, "id":13}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//												"email":{"value":<rand_strs[1]>}}, "id":13}
+
+  // Set the current command string.
+  chr_command = "{\"id\":13,\"method\":\"contacts.load\",\"params\":{\"folderID\":%u, \"contactID\":%u }}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[11], folder_ids[0], contact_ids[0]))) {
+	if (!(st_sprint(command, chr_command, folder_ids[0], contact_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 11 }");
 		return false;
@@ -1027,13 +969,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json = NULL;
 
 	/// LOW: This test triggers a bug in the contacts code. "Invalid String Options" at quit.
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[12]
-	// JSON Command			: {"id":14,"method":"contacts.edit","params":{"folderID":<folder_ids[0]>,"contactID":contact_ids[1],
-	//							"contact":{"name":<rand_strs[0]>, "email":rand_strs[1],"phone":rand_strs[2],"notes":rand_strs[3}}}
+	// Test contact.edit	: {"id":14,"method":"contacts.edit","params":{"folderID":<folder_ids[0]>,"contactID":contact_ids[1],
+	//												"contact":{"name":<rand_strs[0]>, "email":rand_strs[1],"phone":rand_strs[2],"notes":rand_strs[3}}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"contacts.edit":"success"},"id":14}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":14,\"method\":\"contacts.edit\",\"params\":{\"folderID\":%u, \"contactID\":%u, \"contact\":{\"name\":\"%.*s\", \"email\":\"%.*s\", \"phone\":\"%.*s\", \"notes\":\"%.*s\"}}}";
 
 	// Generate the new random inputs for "name", "email", "phone", and "notes".
 	if (!rand_choices(choices, 64, rand_strs[0]) || !rand_choices(choices, 64, rand_strs[1]) ||
@@ -1044,7 +985,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	else if (!(st_sprint(command, commands[12], folder_ids[0], contact_ids[1], st_length_int(rand_strs[0]), st_char_get(rand_strs[0]),
+	else if (!(st_sprint(command, chr_command, folder_ids[0], contact_ids[1], st_length_int(rand_strs[0]), st_char_get(rand_strs[0]),
 		st_length_int(rand_strs[1]), st_char_get(rand_strs[1]), st_length_int(rand_strs[2]), st_char_get(rand_strs[2]),
 		st_length_int(rand_strs[3]), st_char_get(rand_strs[3])))) {
 
@@ -1088,15 +1029,15 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[13]
-	// JSON Command			: {"id":15,"method":"contacts.load","params":{"folderID":<folder_ids[0]>, "contactID":<contact_ids[1]>}}
+	// Test contacts.load	: {"id":15,"method":"contacts.load","params":{"folderID":<folder_ids[0]>, "contactID":<contact_ids[1]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"contactID":<contact_ids[1]>, "name":{"value":<rand_strs[0]>, ...},
 	//							"email":{"value":<rand_strs[1]>, ...}, ... (for phone and notes)...}, "id":15}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":15,\"method\":\"contacts.load\",\"params\":{\"folderID\":%u, \"contactID\":%u}}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[13], folder_ids[0], contact_ids[1]))) {
+	if (!(st_sprint(command, chr_command, folder_ids[0], contact_ids[1]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 13 }");
 		return false;
@@ -1144,11 +1085,11 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[14]
-	// JSON Command			: {"id":16,"method":"folders.add","params":{"context":"contacts","name:<rand_strs[0]>}}"
+	// Test folders.add		: {"id":16,"method":"folders.add","params":{"context":"contacts","name:<rand_strs[0]>}}"
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"folderID":<folder_ids[2]>},"id":16}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":16,\"method\":\"folders.add\",\"params\":{\"context\":\"contacts\",\"name\":\"%.*s\"}}";
 
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
@@ -1158,7 +1099,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	else if (!(st_sprint(command, commands[5], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
+	else if (!(st_sprint(command, chr_command, st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 14, \"name\" = %.*s}",
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
@@ -1191,15 +1132,15 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[15]
-	// JSON Command			: {"id":17,"method":"contacts.move","params":{"contactID":contact_ids[0], "sourceFolderID":<folder_ids[0]>,
-	//							"targetFolderID":<folder_ids[2]}}
+	// Test contacts.move	: {"id":17,"method":"contacts.move","params":{"contactID":contact_ids[0], "sourceFolderID":<folder_ids[0]>,
+	//												"targetFolderID":<folder_ids[2]}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"contactID":<contact_ids[1]>},"id":15}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":17,\"method\":\"contacts.move\",\"params\":{ \"contactID\":%u, \"sourceFolderID\":%u, \"targetFolderID\":%u}}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[15], contact_ids[0], folder_ids[0], folder_ids[2]))) {
+	if (!(st_sprint(command, chr_command, contact_ids[0], folder_ids[0], folder_ids[2]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 15 }");
 		return false;
@@ -1241,14 +1182,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[16]
-	// JSON Command			: {"id":18,"method\":"contacts.list","params":{"folderID":<folder_ids[0]>}}
+	// Test contacts.list	: {"id":18,"method\":"contacts.list","params":{"folderID":<folder_ids[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{ { no object matching contact_ids[0] }, ...}, "id":18}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":18,\"method\":\"contacts.list\",\"params\":{\"folderID\":%u}}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[16], folder_ids[0]))) {
+	if (!(st_sprint(command, chr_commands, folder_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 16 }");
 		return false;
@@ -1299,14 +1240,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[17]
-	// JSON Command			: {"id":19,"method\":"contacts.list","params":{"folderID":<folder_ids[2]>}}
+	// Test contacts.list	: {"id":19,"method\":"contacts.list","params":{"folderID":<folder_ids[2]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{ { an object matching contact_ids[0] }, ...}, "id":19}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":19,\"method\":\"contacts.list\",\"params\":{\"folderID\":%u}}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[17], folder_ids[2]))) {
+	if (!(st_sprint(command, chr_command, folder_ids[2]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 17 }");
 		return false;
@@ -1357,14 +1298,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[18]
-	// JSON Command			: {"id":20,"method":"contacts.remove","params":{"folderID":<folder_ids[2]>, "contactID":<contact_ids[0]>}}
-	// Expected Response 	: {"jsonrpc":"2.0","result":{"contacts.remove":"success"},"id":19}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Test contacts.remove	: {"id":20,"method":"contacts.remove","params":{"folderID":<folder_ids[2]>, "contactID":<contact_ids[0]>}}
+	// Expected Response 		: {"jsonrpc":"2.0","result":{"contacts.remove":"success"},"id":19}
+
+  // Set the current command string.
+  chr_command = "{\"id\":20,\"method\":\"contacts.remove\",\"params\":{\"folderID\":%u, \"contactID\":%u}}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[18], folder_ids[2], contact_ids[0]))) {
+	if (!(st_sprint(command, chr_command, folder_ids[2], contact_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 18 }");
 		return false;
@@ -1406,14 +1347,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[19]
-	// JSON Command			: {"id":21,"method":"contacts.remove","params":{"folderID":<folder_ids[0]>, "contactID":<contact_ids[1]>}}
-	// Expected Response 	: {"jsonrpc":"2.0","result":{"contacts.remove":"success"},"id":19}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Test contacts.remove	: {"id":21,"method":"contacts.remove","params":{"folderID":<folder_ids[0]>, "contactID":<contact_ids[1]>}}
+	// Expected Response 		: {"jsonrpc":"2.0","result":{"contacts.remove":"success"},"id":19}
+
+  // Set the current command string.
+  chr_command = "{\"id\":21,\"method\":\"contacts.remove\",\"params\":{\"folderID\":%u, \"contactID\":%u}}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[19], folder_ids[0], contact_ids[1]))) {
+	if (!(st_sprint(command, chr_command, folder_ids[0], contact_ids[1]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 19 }");
 		return false;
@@ -1455,14 +1396,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[20]
-	// JSON Command			: {"id":22,"method":"contacts.list","params":{"folderID":<folder_ids[2]>}}
+	// Test contacts.list	: {"id":22,"method":"contacts.list","params":{"folderID":<folder_ids[2]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":[{ no objects matching contact_ids[0] }, ...],"id":22}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":22,\"method\":\"contacts.list\",\"params\":{\"folderID\":%u}}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[20], folder_ids[2]))) {
+	if (!(st_sprint(command, chr_command, folder_ids[2]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 20 }");
 		return false;
@@ -1514,14 +1455,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[21]
-	// JSON Command			: {"id":23,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[2]>}}
-	// Expected Response 	: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":23}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Test folders.remove	: {"id":23,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[2]>}}
+	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":23}
+
+  // Set the current command string.
+  chr_command = "{\"id\":23,\"method\":\"folders.remove\",\"params\":{\"context\":\"contacts\",\"folderID\":%u}}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[21], folder_ids[2]))) {
+	if (!(st_sprint(command, chr_command, folder_ids[2]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 21 }");
 		return false;
@@ -1563,14 +1504,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[22]
-	// JSON Command			: {"id":24,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[0]>}}",
-	// Expected Response 	: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":24}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Test folders.remove	: {"id":24,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[0]>}}",
+	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":24}
+
+  // Set the current command string.
+  chr_command = "{\"id\":24,\"method\":\"folders.remove\",\"params\":{\"context\":\"contacts\",\"folderID\":%u}}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[22], folder_ids[0]))) {
+	if (!(st_sprint(command, chr_command, folder_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 22 }");
 		return false;
@@ -1614,14 +1555,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[23]
-	// JSON Command			: {"id":25,"method":"cookies"}
+	// Test cookies				: {"id":25,"method":"cookies"}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"cookies":"enabled"},"id":25}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":25,\"method\":\"cookies\"}";
 
 	// Submit the command and check the status of the response.
-	if (!(json = check_camel_print(PLACER(commands[23], ns_length_get(commands[23])), cookie, secure))) {
+	if (!(json = check_camel_print(PLACER(chr_command, ns_length_get(chr_command)), cookie, secure))) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 23 }");
 		return false;
@@ -1653,14 +1594,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[24]
-	// JSON Command			: {"id":26,"method":"alert.list"}
+	// Test config.edit		: {"id":26,"method":"alert.list"}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"cookies":"enabled"},"id":26}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":26,\"method\":\"alert.list\"}";
 
 	// Submit the command and check the status of the response.
-	if (!(json = check_camel_print(PLACER(commands[24], ns_length_get(commands[24])), cookie, secure))) {
+  if (!(json = check_camel_print(PLACER(chr_command, ns_length_get(chr_command)), cookie, secure))) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 24 }");
 		return false;
@@ -1694,14 +1635,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[25]
-	// JSON Command			: {"id":27,"method":"alert.acknowledge","params":[<alert_ids[0]>]}
-	// Expected Response 	: {"jsonrpc":"2.0","result":{"alert.acknowledge":"success"},"id":24}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Test alert.acknowledge	: {"id":27,"method":"alert.acknowledge","params":[<alert_ids[0]>]}
+	// Expected Response 			: {"jsonrpc":"2.0","result":{"alert.acknowledge":"success"},"id":24}
+
+  // Set the current command string.
+  chr_command = "{\"id\":27,\"method\":\"alert.acknowledge\",\"params\":{\"alertIDs\":[%u]}}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[25], alert_ids[0]))) {
+	if (!(st_sprint(command, chr_command, alert_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 25 }");
 		return false;
@@ -1747,15 +1688,15 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[26]
-	// JSON Command			: {"id":28,"method":"alert.list"}
+	// Test alert.list		: {"id":28,"method":"alert.list"}
 	// Expected Response 	: {"jsonrpc":"2.0","result":[ {if alert_ids[0] was set previously, expect to not find a matching alert},
-	//							...], "id":26}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//												...], "id":26}
+
+  // Set the current command string.
+  chr_command = "{\"id\":28,\"method\":\"alert.list\"}";
 
 	// Submit the command and check the status of the response.
-	if (!(json = check_camel_print(PLACER(commands[26], ns_length_get(commands[26])), cookie, secure))) {
+	if (!(json = check_camel_print(PLACER(chr_command, ns_length_get(chr_command)), cookie, secure))) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 26 }");
 		return false;
@@ -1799,14 +1740,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[27]
-	// JSON Command			: "{\"id\":29,\"method\":\"folders.list\",\"params\":{\"context\":\"mail\"}}",
+	// Test folders.list	: "{\"id\":29,\"method\":\"folders.list\",\"params\":{\"context\":\"mail\"}}",
 	// Expected Response 	: {"jsonrpc":"2.0","result"{ ... },"id":29}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":29,\"method\":\"folders.list\",\"params\":{\"context\":\"mail\"}}";
 
 	// Submit the command and check the status of the response.
-	if (!(json = check_camel_print(PLACER(commands[27], ns_length_get(commands[27])), cookie, secure))) {
+	if (!(json = check_camel_print(PLACER(chr_command, ns_length_get(chr_command)), cookie, secure))) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 27 }");
 		return false;
@@ -1836,14 +1777,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	/*
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[28]
-	// JSON Command			: "{\"id\":30,\"method\":\"folders.list\",\"params\":{\"context\":\"settings\"}}",
+	// Test folders.list	: "{\"id\":30,\"method\":\"folders.list\",\"params\":{\"context\":\"settings\"}}",
 	// Expected Response 	: {"jsonrpc":"2.0","result"{ ... },"id":30}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":30,\"method\":\"folders.list\",\"params\":{\"context\":\"settings\"}}";
 
 	// Submit the command and check the status of the response.
-	if (!(json = check_camel_print(PLACER(commands[28], ns_length_get(commands[28])), cookie, secure))) {
+	if (!(json = check_camel_print(PLACER(chr_command, ns_length_get(chr_command)), cookie, secure))) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 28 });
 		return false;
@@ -1867,14 +1808,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[29]
-	// JSON Command			: "{\"id\":31,\"method\":\"folders.list\",\"params\":{\"context\":\"help\"}}",
+	// Test folders.list	: "{\"id\":31,\"method\":\"folders.list\",\"params\":{\"context\":\"help\"}}",
 	// Expected Response 	: {"jsonrpc":"2.0","result"{ ... },"id":31}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":31,\"method\":\"folders.list\",\"params\":{\"context\":\"help\"}}";
 
 	// Submit the command and check the status of the response.
-	if (!(json = check_camel_print(PLACER(commands[29], ns_length_get(commands[29])), cookie, secure))) {
+	if (!(json = check_camel_print(PLACER(chr_command, ns_length_get(chr_command)), cookie, secure))) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command # = 29 });
 		return false;
@@ -1900,11 +1841,11 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	*/
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[30]
-	// JSON Command			: {"id":32,"method":"folders.add","params":{"context":"mail","name":"%.*s"}}",
+	// Test folders.add		: {"id":32,"method":"folders.add","params":{"context":"mail","name":"%.*s"}}",
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"folderID":<folder_ids[0]>},"id":32}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":32,\"method\":\"folders.add\",\"params\":{\"context\":\"mail\",\"name\":\"%.*s\"}}";
 
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
@@ -1914,7 +1855,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	else if (!(st_sprint(command, commands[30], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
+	else if (!(st_sprint(command, chr_command, st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 30, \"name\" = %.*s}",
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
@@ -1947,12 +1888,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[31]
-	// JSON Command			: {"id":33,"method":"folders.add","params":{"context":"mail","parentID":<folder_ids[0]>,
-	//							"name":<rand_strs[0]>}}
+	// Test folders.add		: {"id":33,"method":"folders.add","params":{"context":"mail","parentID":<folder_ids[0]>,
+	//						 					"name":<rand_strs[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"folderID":<folder_ids[1]>},"id":33}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":33,\"method\":\"folders.add\",\"params\":{\"context\":\"mail\",\"parentID\":%u,\"name\":\"%.*s\"}}";
 
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
@@ -1962,7 +1903,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	else if (!(st_sprint(command, commands[31], folder_ids[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
+	else if (!(st_sprint(command, chr_command, folder_ids[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 31, \"name\" = %.*s}",
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
@@ -1995,12 +1936,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[32]
-	// JSON Command			: {"id":34,"method":"folders.add","params":{"context":"mail","parentID":<folder_ids[1]>,
-	//							"name":<rand_strs[0]>}}
+	// Test folders.add		: {"id":34,"method":"folders.add","params":{"context":"mail","parentID":<folder_ids[1]>,
+	//											"name":<rand_strs[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"folderID":<folder_ids[2]>},"id":34}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":34,\"method\":\"folders.add\",\"params\":{\"context\":\"mail\",\"parentID\":%u,\"name\":\"%.*s\"}}";
 
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
@@ -2010,7 +1951,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	else if (!(st_sprint(command, commands[32], folder_ids[1], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
+	else if (!(st_sprint(command, chr_command, folder_ids[1], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 32, \"name\" = %.*s}",
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
@@ -2043,12 +1984,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[33]
-	// JSON Command			: {"id":35,"method":"folders.rename","params":{"context":"mail","folderID": <folder_ids[0]>,
-	//							"name":<rand_strs[0]>}}
-	// Expected Response 	: {"jsonrpc":"2.0","result":{"folder.rename":"success"},"id":35}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Test folders.rename	: {"id":35,"method":"folders.rename","params":{"context":"mail","folderID": <folder_ids[0]>,
+	//												"name":<rand_strs[0]>}}
+	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.rename":"success"},"id":35}
+
+  // Set the current command string.
+  chr_command = "{\"id\":35,\"method\":\"folders.rename\",\"params\":{\"context\":\"mail\",\"folderID\":%u,\"name\":\"%.*s\"}}";
 
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
@@ -2058,7 +1999,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	else if (!(st_sprint(command, commands[33], folder_ids[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
+	else if (!(st_sprint(command, chr_command, folder_ids[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 33, \"name\" = %.*s}",
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
@@ -2101,12 +2042,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[34]
-	// JSON Command			: {"id":36,"method":"folders.rename","params":{"context":"mail","folderID": <folder_ids[1]>,
-	//							"name":<rand_strs[0]>}}
-	// Expected Response 	: {"jsonrpc":"2.0","result":{"folder.rename":"success"},"id":36}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Test folders.rename	: {"id":36,"method":"folders.rename","params":{"context":"mail","folderID": <folder_ids[1]>,
+	//												"name":<rand_strs[0]>}}
+	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.rename":"success"},"id":36}
+
+  // Set the current command string.
+  chr_command = "{\"id\":36,\"method\":\"folders.rename\",\"params\":{\"context\":\"mail\",\"folderID\":%u,\"name\":\"%.*s\"}}";
 
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
@@ -2116,7 +2057,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	else if (!(st_sprint(command, commands[34], folder_ids[1], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
+	else if (!(st_sprint(command, chr_command, folder_ids[1], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 34, \"name\" = %.*s}",
 			st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
@@ -2159,14 +2100,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[35]
-	// JSON Command			: {"id":37,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[0]>}}
-	// Expected Response 	: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":37}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Test folders.remove	: {"id":37,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[0]>}}
+	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":37}
+
+  // Set the current command string.
+  chr_command = "{\"id\":37,\"method\":\"folders.remove\",\"params\":{\"context\":\"mail\",\"folderID\":%u}}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[35], folder_ids[0]))) {
+	if (!(st_sprint(command, chr_command, folder_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 35 }");
 		return false;
@@ -2208,14 +2149,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[36]
-	// JSON Command			: {"id":38,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[1]>}}
-	// Expected Response 	: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":38}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Test folders.remove	: {"id":38,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[1]>}}
+	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":38}
+
+  // Set the current command string.
+  chr_command = "{\"id\":38,\"method\":\"folders.remove\",\"params\":{\"context\":\"mail\",\"folderID\":%u}}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[36], folder_ids[1]))) {
+	if (!(st_sprint(command, chr_command, folder_ids[1]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 36 }");
 		return false;
@@ -2257,14 +2198,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[37]
-	// JSON Command			: {"id":39,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[2]>}}
-	// Expected Response 	: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":39}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Test folders.remove	: {"id":39,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[2]>}}
+	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":39}
+
+  // Set the current command string.
+  chr_command = "{\"id\":39,\"method\":\"folders.remove\",\"params\":{\"context\":\"mail\",\"folderID\":%u}}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[37], folder_ids[2]))) {
+	if (!(st_sprint(command, chr_command, folder_ids[2]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 37 }");
 		return false;
@@ -2306,20 +2247,20 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[38]
-	// JSON Command			: {"id":40,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[4]>}}
-	// Expected Response 	: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":40}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Test folders.remove	: {"id":40,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[4]>}}
+	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":40}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[39]
-	// JSON Command			: {"id":41,"method":"aliases"}
+  // Set the current command string.
+  //chr_command = "{\"id\":40,\"method\":\"folders.remove\",\"params\":{\"context\":\"mail\",\"folderID\":%u}}";
+
+	// Test aliases				: {"id":41,"method":"aliases"}
 	// Expected Response 	: {"jsonrpc":"2.0","result":[...],"id":41}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":41,\"method\":\"aliases\"}";
 
 	// Submit the command and check the status of the response.
-	if (!(json = check_camel_print(PLACER(commands[39], ns_length_get(commands[39])), cookie, secure))) {
+	if (!(json = check_camel_print(PLACER(chr_command, ns_length_get(chr_command)), cookie, secure))) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = %.*s }", st_length_int(command),
 			st_char_get(command));
@@ -2344,11 +2285,11 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[40]
-	// JSON Command			: {"id":42,"method":"folders.add","params":{"context":"mail","name":<rand_strs[0]>}}
+	// Test folders.add		: {"id":42,"method":"folders.add","params":{"context":"mail","name":<rand_strs[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"folderID":<folder_ids[3]>},"id":42}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":42,\"method\":\"folders.add\",\"params\":{\"context\":\"mail\",\"name\":\"%.*s\"}}";
 
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
@@ -2358,7 +2299,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	else if (!(st_sprint(command, commands[40], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
+	else if (!(st_sprint(command, chr_command, st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 40 }");
 		return false;
@@ -2390,12 +2331,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[41]
-	// JSON Command			: {"id":43,"method":"messages.copy","params":{"messageIDs":[<message_ids[0]>],"sourceFolderID":<folder_ids[0]>,
-	//							"targetFolderID":<folder_ids[3]>}}",
+	// Test messages.copy	: {"id":43,"method":"messages.copy","params":{"messageIDs":[<message_ids[0]>],"sourceFolderID":<folder_ids[0]>,
+	//											"targetFolderID":<folder_ids[3]>}}",
 	// Expected Response 	: {"jsonrpc":"2.0","result":[],"id":43}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":43,\"method\":\"messages.copy\",\"params\":{\"messageIDs\":[%u],\"sourceFolderID\":%u,\"targetFolderID\":%u}}";
 
 	// Retrieve the folderID of Inbox and a messageID.
 	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
@@ -2406,7 +2347,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	else if (!(st_sprint(command, commands[41], message_ids[0], folder_ids[0], folder_ids[3]))) {
+	else if (!(st_sprint(command, chr_command, message_ids[0], folder_ids[0], folder_ids[3]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 41 }");
 		return false;
@@ -2449,12 +2390,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[42]
-	// JSON Command			: {"id":44,"method":"messages.copy","params":{"messageIDs":[<message_ids[0]>],"sourceFolderID":<folder_ids[0]>,
-	//							"targetFolderID":<folder_ids[3]>}}",
+	// Test messages.copy	: {"id":44,"method":"messages.copy","params":{"messageIDs":[<message_ids[0]>],"sourceFolderID":<folder_ids[0]>,
+	//											"targetFolderID":<folder_ids[3]>}}",
 	// Expected Response 	: {"jsonrpc":"2.0","result":[],"id":44}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":44,\"method\":\"messages.copy\",\"params\":{\"messageIDs\":[%u],\"sourceFolderID\":%u,\"targetFolderID\":%u}}";
 
 	// Retrieve the folderID of Inbox and a messageID.
 	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
@@ -2465,7 +2406,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	else if (!(st_sprint(command, commands[42], message_ids[0], folder_ids[0], folder_ids[3]))) {
+	else if (!(st_sprint(command, chr_command, message_ids[0], folder_ids[0], folder_ids[3]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 42 }");
 		return false;
@@ -2507,14 +2448,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[43]
-	// JSON Command			: {"id":45,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[3]>}}",
-	// Expected Response 	: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":43}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Test folders.remove	: {"id":45,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[3]>}}",
+	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":43}
+
+  // Set the current command string.
+  chr_command = "{\"id\":45,\"method\":\"folders.remove\",\"params\":{\"context\":\"mail\",\"folderID\":%u}}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[43], folder_ids[3]))) {
+	if (!(st_sprint(command, chr_command, folder_ids[3]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 43 }");
 		return false;
@@ -2556,11 +2497,11 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[44]
-	// JSON Command			: {"id":46,"method":"folders.add","params":{"context":"mail","name":<rand_strs[0]>}}
+	// Test folders.add		: {"id":46,"method":"folders.add","params":{"context":"mail","name":<rand_strs[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"folderID":<folder_ids[0]>},"id":46}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":46,\"method\":\"folders.add\",\"params\":{\"context\":\"mail\",\"name\":\"%.*s\"}}";
 
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
@@ -2570,7 +2511,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	else if (!(st_sprint(command, commands[44], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
+	else if (!(st_sprint(command, chr_command, st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 44 }");
 		return false;
@@ -2604,12 +2545,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	/// LOW: This method returns "error":{"code":-32602,"message":"Invalid method parameters."}...
 /*
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[45]
-	// JSON Command			: {"id":47,"method":"messages.load","params":{"messageID":<message_ids[0]>,"folderID":folder_ids[1],
-	//							"sections":["meta","source","security","server","header","body","attachments"]}}
+	// Test messages.load	: {"id":47,"method":"messages.load","params":{"messageID":<message_ids[0]>,"folderID":folder_ids[1],
+	//								 			"sections":["meta","source","security","server","header","body","attachments"]}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":[],"id":47}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":47,\"method\":\"messages.load\",\"params\":{\"messageID\":%u,\"folderID\":%u, \"sections\":[\"meta\",\"source\",\"security\",\"server\",\"header\",\"body\",\"attachments\"]}}";
 
 	// Retrieve the folderID of Inbox and a messageID.
 	if ((folder_ids[1] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
@@ -2620,7 +2561,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	else if (!(st_sprint(command, commands[45], message_ids[0], folder_ids[1]))) {
+	else if (!(st_sprint(command, chr_command, message_ids[0], folder_ids[1]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 45 }");
 		return false;
@@ -2654,13 +2595,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json = NULL;
 */
 
-	/// LOW: This method
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[46]
-	// JSON Command			: {"id":48,"method":"messages.copy","params":{"messageIDs":[<message_ids[0]>],"sourceFolderID":<folder_ids[1]>,
-	//							"targetFolderID":<folder_ids[0]>}}",
+	// Test messages.copy	: {"id":48,"method":"messages.copy","params":{"messageIDs":[<message_ids[0]>],"sourceFolderID":<folder_ids[1]>,
+	//											"targetFolderID":<folder_ids[0]>}}",
 	// Expected Response 	: {"jsonrpc":"2.0","result":[],"id":48}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":48,\"method\":\"messages.copy\",\"params\":{\"messageIDs\":[%u],\"sourceFolderID\":%u,\"targetFolderID\":%u}}";
 
 	// Retrieve the folderID of Inbox and a messageID.
 	if ((folder_ids[1] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
@@ -2671,7 +2611,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	else if (!(st_sprint(command, commands[46], message_ids[0], folder_ids[1], folder_ids[0]))) {
+	else if (!(st_sprint(command, chr_command, message_ids[0], folder_ids[1], folder_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 46 }");
 		return false;
@@ -2713,14 +2653,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[47]
-	// JSON Command			: {"id":49,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[0]>}}",
-	// Expected Response 	: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":49}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Test folders.remove	: {"id":49,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[0]>}}",
+	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":49}
+
+  // Set the current command string.
+  chr_command = "{\"id\":49,\"method\":\"folders.remove\",\"params\":{\"context\":\"mail\",\"folderID\":%u}}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[47], folder_ids[0]))) {
+	if (!(st_sprint(command, chr_command, folder_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 47 }");
 		return false;
@@ -2762,12 +2702,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[48]
-	// JSON Command			: {"id":50,"method":"messages.flag","params":{"action":"add","flags":["flagged"],
-	//							"messageIDs":[<message_ids[0]>], "folderID":<folder_ids[0]>}}
+	// Test messages.flag	: {"id":50,"method":"messages.flag","params":{"action":"add","flags":["flagged"],
+	//											"messageIDs":[<message_ids[0]>], "folderID":<folder_ids[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"messages.flag":"success"},"id":50}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":50,\"method\":\"messages.flag\",\"params\":{\"action\":\"add\",\"flags\":[\"flagged\"],\"messageIDs\":[%u],\"folderID\":%u}}";
 
 	// Retrieve the folderID of Inbox and a messageID.
 	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
@@ -2778,7 +2718,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[48], message_ids[0], folder_ids[0]))) {
+	if (!(st_sprint(command, chr_command, message_ids[0], folder_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 48 }");
 		return false;
@@ -2822,12 +2762,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	/// LOW: This api method fails with "error":{"code":10102,"message":"Invalid tag reference."}...
 /*
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[49]
-	// JSON Command			: {"id":51,"method":"messages.tag","params":{"action":"add","tags":["girlie","girlie-16938"],
-	//							"messageIDs":[<message_ids[0]>], "folderID":<folder_ids[0]>}}
+	// Test messages.tag	: {"id":51,"method":"messages.tag","params":{"action":"add","tags":["girlie","girlie-16938"],
+	//											"messageIDs":[<message_ids[0]>], "folderID":<folder_ids[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"messages.flag":"success"},"id":51}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":51,\"method\":\"messages.tag\",\"params\":{\"action\":\"add\",\"tags\":[\"girlie\",\"girlie-6169\"],\"messageIDs\":[%u],\"folderID\":%u}}";
 
 	// Retrieve the folderID of Inbox and a messageID.
 	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
@@ -2838,7 +2778,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[49], message_ids[0], folder_ids[0]))) {
+	if (!(st_sprint(command, chr_command, message_ids[0], folder_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 49 }");
 		return false;
@@ -2880,12 +2820,12 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 */
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[50]
-	// JSON Command			: {"id":52,"method":"messages.flag","params":{"action":"list","flags":[], "messageIDs":[,message_ids[0]>],
-	//							"folderID":<folder_ids[0]>}}
+	// Test messages.flag	: {"id":52,"method":"messages.flag","params":{"action":"list","flags":[], "messageIDs":[,message_ids[0]>],
+	//											"folderID":<folder_ids[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":[ { an object matching messageID[0] }, ... ],"id":52}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":52,\"method\":\"messages.flag\",\"params\":{\"action\":\"list\",\"messageIDs\":[%u],\"folderID\":%u}}";
 
 	// Retrieve the folderID of Inbox and a messageID.
 	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
@@ -2896,7 +2836,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[50], message_ids[0], folder_ids[0]))) {
+	if (!(st_sprint(command, chr_command, message_ids[0], folder_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 50 }");
 		return false;
@@ -2940,11 +2880,11 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	/// LOW: This method returns "error":{"code":-32602,"message":"Invalid method parameters."}...
 /*
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[51]
-	// JSON Command			: {"id":53,"method":"messages.tags","params":{"action":"list","messageIDs":[%u], "folderID":<folder_ids[0]>}}
+	// Test messages.tags	: {"id":53,"method":"messages.tags","params":{"action":"list","messageIDs":[%u], "folderID":<folder_ids[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"messages.flag":"success"},"id":53}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":53,\"method\":\"messages.tags\",\"params\":{\"action\":\"list\",\"messageIDs\":[%u],\"folderID\":%u}}";
 
 	// Retrieve the folderID of Inbox and a messageID.
 	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
@@ -2955,7 +2895,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[51], message_ids[0], folder_ids[0]))) {
+	if (!(st_sprint(command, chr_command, message_ids[0], folder_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 51 }");
 		return false;
@@ -2988,11 +2928,11 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json = NULL;
 */
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[52]
-	// JSON Command			: {"id":54,"method":"messages.list","params":{"folderID":<folder_ids[0]>}}",
+	// Test messages.list	: {"id":54,"method":"messages.list","params":{"folderID":<folder_ids[0]>}}",
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"messages.flag":"success"},"id":54}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":54,\"method\":\"messages.list\",\"params\":{\"folderID\":%u}}";
 
 	// Retrieve the folderID of Inbox and a messageID.
 	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
@@ -3003,7 +2943,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[52], folder_ids[0]))) {
+	if (!(st_sprint(command, chr_command, folder_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 52 }");
 		return false;
@@ -3035,11 +2975,11 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[53]
-	// JSON Command			: {"id":55,"method":"messages.list","params":{"context":"mail","folderID":<folder_ids[0]>}}",
+	// Test messages.list	: {"id":55,"method":"messages.list","params":{"context":"mail","folderID":<folder_ids[0]>}}",
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"messages.flag":"success"},"id":55}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":55,\"method\":\"folders.tags\",\"params\":{\"context\":\"mail\",\"folderID\":%u}}";
 
 	// Retrieve the folderID of Inbox.
 	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1) {
@@ -3049,7 +2989,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[53], folder_ids[0]))) {
+	if (!(st_sprint(command, chr_command, folder_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 53 }");
 		return false;
@@ -3081,11 +3021,11 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[54]
-	// JSON Command			: {"id":56,"method":"folders.add","params":{"context":"mail","name":<rand_strs[0]>}}
+	// Test folders.add		: {"id":56,"method":"folders.add","params":{"context":"mail","name":<rand_strs[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"folderID":<folder_ids[0]>},"id":56}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":56,\"method\":\"folders.add\",\"params\":{\"context\":\"mail\",\"name\":\"%.*s\"}}";
 
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
@@ -3095,7 +3035,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	else if (!(st_sprint(command, commands[54], st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
+	else if (!(st_sprint(command, chr_command, st_length_int(rand_strs[0]), st_char_get(rand_strs[0])))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 54, \"name\" = %.*s}", st_length_int(rand_strs[0]),
 			st_char_get(rand_strs[0]));
@@ -3128,12 +3068,13 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[55]
-	// JSON Command			: {"id":57,"method":"messages.move","params":{"messageIDs":[<message_ids[0]>],"sourceFolderID":<folder_ids[0]>,
-	//							"targetFolderID":<folder_ids[1]>}}
+	// Test messages.move	: {"id":57,"method":"messages.move","params":{"messageIDs":[<message_ids[0]>],"sourceFolderID":<folder_ids[0]>,
+	//											"targetFolderID":<folder_ids[1]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"messages.move":"success"},"id":55}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":57,\"method\":\"messages.move\",\"params\":{\"messageIDs\":[%u], \"sourceFolderID\":%u, \"targetFolderID\":%u}}";
+
 
 	// Retrieve the folderID of Inbox and a messageID.
 	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
@@ -3144,7 +3085,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	}
 
 	// Construct the command string.
-	else if (!(st_sprint(command, commands[55], message_ids[0], folder_ids[0], folder_ids[1]))) {
+	else if (!(st_sprint(command, chr_command, message_ids[0], folder_ids[0], folder_ids[1]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 55 }");
 		return false;
@@ -3186,14 +3127,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[56]
-	// JSON Command			: {"id":58,"method":"messages.remove","params":{"folderID":%u,"messageIDs":[%u]}}
-	// Expected Response 	: {"jsonrpc":"2.0","result":{"messages.remove":"success"},"id":58}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Test messages.remove	: {"id":58,"method":"messages.remove","params":{"folderID":%u,"messageIDs":[%u]}}
+	// Expected Response 		: {"jsonrpc":"2.0","result":{"messages.remove":"success"},"id":58}
+
+  // Set the current command string.
+  chr_command = "{\"id\":58,\"method\":\"messages.remove\",\"params\":{\"folderID\":%u,\"messageIDs\":[%u]}}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[56], folder_ids[1], message_ids[0]))) {
+	if (!(st_sprint(command, chr_command, folder_ids[1], message_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 56 }");
 		return false;
@@ -3235,14 +3176,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[57]
-	// JSON Command			: {"id":59,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[0]>}}",
-	// Expected Response 	: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":59}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Test folders.remove	: {"id":59,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[0]>}}",
+	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":59}
+
+  // Set the current command string.
+  chr_command = "{\"id\":59,\"method\":\"folders.remove\",\"params\":{\"context\":\"mail\",\"folderID\":%u}}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, commands[57], folder_ids[1]))) {
+	if (!(st_sprint(command, chr_command, folder_ids[1]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 57 }");
 		return false;
@@ -3284,14 +3225,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Test config.edit 	: commands[58]
-	// JSON Command			: {"id":60,"method":"logout"}
+	// Test logout				: {"id":60,"method":"logout"}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"logout":"success},"id":60}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Set the current command string.
+  chr_command = "{\"id\":60,\"method\":\"logout\"}";
 
 	// Submit the command and check the status of the response.
-	if (!(json = check_camel_print(PLACER(commands[58], ns_length_get(commands[58])), cookie, secure))) {
+	if (!(json = check_camel_print(PLACER(chr_command, ns_length_get(chr_command)), cookie, secure))) {
 
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = %.*s }", st_length_int(command),
 			st_char_get(command));

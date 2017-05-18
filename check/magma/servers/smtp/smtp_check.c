@@ -191,7 +191,7 @@ START_TEST (check_smtp_network_starttls_ad_s) {
 }
 END_TEST
 
-START_TEST (check_smtp_network_domain_wildcard_s) {
+START_TEST (check_smtp_network_wildcard_s) {
 
 	log_disable();
 	bool_t outcome = true;
@@ -203,13 +203,13 @@ START_TEST (check_smtp_network_domain_wildcard_s) {
 		st_sprint(errmsg, "No SMTP servers were configured and available for testing for both TCP and TLS.");
 		outcome = false;
 	}
-	else if (status() && (!check_smtp_network_domain_wildcard_sthread(errmsg, tcp_server->network.port) ||
-		!check_smtp_network_domain_wildcard_sthread(errmsg, tls_server->network.port))) {
+	else if (status() && (!check_smtp_network_wildcard_sthread(errmsg, tcp_server->network.port) ||
+		!check_smtp_network_wildcard_sthread(errmsg, tls_server->network.port))) {
 
 		outcome = false;
 	}
 
-	log_test("SMTP / NETWORK / DOMAIN WILDCARD / SINGLE THREADED:", errmsg);
+	log_test("SMTP / NETWORK / WILDCARD / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 
 }
@@ -229,7 +229,7 @@ Suite * suite_check_smtp(void) {
 	suite_check_testcase(s, "SMTP", "SMTP Network Auth Login/S", check_smtp_network_auth_login_s);
 	suite_check_testcase(s, "SMTP", "SMTP Network Outbound Quota/S", check_smtp_network_outbound_quota_s);
 	suite_check_testcase(s, "SMTP", "SMTP Network STARTTLS Ad/S", check_smtp_network_starttls_ad_s);
-	suite_check_testcase(s, "SMTP", "SMTP Network Domain Wildcard/S", check_smtp_network_domain_wildcard_s);
+	suite_check_testcase(s, "SMTP", "SMTP Network Wildcard/S", check_smtp_network_wildcard_s);
 
 	return s;
 }

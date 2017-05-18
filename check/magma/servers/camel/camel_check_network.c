@@ -1189,7 +1189,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
   chr_command = "{\"id\":18,\"method\":\"contacts.list\",\"params\":{\"folderID\":%u}}";
 
 	// Construct the command string.
-	if (!(st_sprint(command, chr_commands, folder_ids[0]))) {
+	if (!(st_sprint(command, chr_command, folder_ids[0]))) {
 
 		st_sprint(errmsg, "Failed to create command string. { command # = 16 }");
 		return false;

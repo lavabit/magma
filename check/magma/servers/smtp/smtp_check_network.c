@@ -405,12 +405,51 @@ bool_t check_smtp_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_p
 	return true;
 }
 
-bool_t check_smtp_network_domain_wildcard_sthread(stringer_t *errmsg, uint32_t port) {
+bool_t check_smtp_network_wildcard_sthread(stringer_t *errmsg, uint32_t port) {
 
-	st_sprint(errmsg, "This test needs to be implemented");
+	size_t location = 0;
+	client_t *client = NULL;
 
-	// Create a stringer_t holding a email address with a wildcard in the domain.
+	// Connect the client.
+	if (!(client = client_connect("localhost", port)) || client_read_line(client) <= 0 ||
+		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("220")) ||
+		!st_search_cs(&(client->line), NULLER(" ESMTP "), &location)) {
 
+		st_sprint(errmsg, "Failed to connect with the SMTP server.");
+		client_close(client);
+		return false;
+	}
+	// Issue EHLO.
+	else if (client_write(client, PLACER("EHLO localhost\r\n", 16)) != 16 || !check_smtp_client_read_end(client) ||
+		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("250"))) {
 
-	return false;
+		st_sprint(errmsg, "Failed to return successful status after EHLO.");
+		client_close(client);
+		return false;
+	}
+	// Issue AUTH for the magma user.
+	else if (check_smtp_client_auth_login(client, NULLER("bWFnbWE="),  NULLER("cGFzc3dvcmQ="))) {
+
+		st_sprint(errmsg, "Failed to authenticate.");
+		client_close(client);
+		return false;
+	}
+	// Try sending mail to with a wildcard in the destination address.
+	else if (!check_smtp_client_mail_rcpt_data(client, "magma@lavabit.com", "princess*@example.com", errmsg) ||
+		client_print(client, ".\r\n") != 3 || !check_smtp_client_read_end(client) || client_status(client) != 1 ||
+		st_cmp_cs_starts(&(client->line), NULLER("250"))) {
+
+		if (st_empty(errmsg)) st_sprint(errmsg, "Failed to return successful status after sending mail.");
+		client_close(client);
+		return false;
+	}
+	// Submit QUIT and cleanup.
+	else if (!check_smtp_client_quit(client, errmsg)) {
+
+		client_close(client);
+		return false;
+	}
+
+	client_close(client);
+	return true;
 }

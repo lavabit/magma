@@ -83,27 +83,31 @@ bool_t check_http_content_length_test(client_t *client, uint32_t content_length,
  * @param	options	An array of chr_t* containing the options that should be in the response.
  * @return	True if all of the options were present, false otherwise.
  */
-bool_t check_http_options(client_t *client, chr_t *options[], stringer_t *errmsg) {
+bool_t check_http_options(client_t *client, chr_t **options, uint32_t options_count, stringer_t *errmsg) {
 
-	bool_t opts_present[sizeof(options)/sizeof(chr_t*)] = { false };
+	bool_t *opts_present = mm_alloc(options_count * sizeof(bool_t));
+	for (size_t i = 0; i < options_count; i++) opts_present[i] = false;
 
 	while (st_cmp_ci_starts(&client->line, NULLER("\r\n")) != 0) {
-		for (size_t i = 0; i < (sizeof(options)/sizeof(chr_t*)); i++) {
+		for (size_t i = 0; i < options_count; i++) {
 			if (st_cmp_cs_starts(&client->line, NULLER(options[i]))) {
+
 				opts_present[i] = true;
-				break;
 			}
 		}
 		client_read_line(client);
 	}
 
-	for (size_t i = 0; i < (sizeof(opts_present)/sizeof(bool_t)); i++) {
+	for (size_t i = 0; i < options_count; i++) {
 		if (!opts_present[i]) {
+
 			st_sprint(errmsg, "One of the HTTP options was not present in the response. { option = \"%s\" }", options[i]);
+			mm_free(opts_present);
 			return false;
 		}
 	}
 
+	mm_free(opts_present);
 	return true;
 }
 
@@ -139,6 +143,7 @@ bool_t check_http_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_
 bool_t check_http_network_options_sthread(stringer_t *errmsg, uint32_t port, bool_t secure) {
 
 	client_t *client = NULL;
+	uint32_t options_count = 7;
 	chr_t *options[] = {
 		"Connection: close",
 		"Content-Length: 0",
@@ -157,7 +162,7 @@ bool_t check_http_network_options_sthread(stringer_t *errmsg, uint32_t port, boo
 	}
 	// Test OPTIONS.
 	else if (client_write(client, PLACER("OPTIONS /portal/camel HTTP/1.1\r\n\r\n", 34)) != 34 ||
-		client_status(client) != 1 || !check_http_options(client, options, errmsg)) {
+		client_status(client) != 1 || !check_http_options(client, options, options_count, errmsg)) {
 		client_close(client);
 		return false;
 	}

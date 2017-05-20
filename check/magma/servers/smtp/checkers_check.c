@@ -263,7 +263,40 @@ bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg, int_t action, int
 
 bool_t check_smtp_checkers_rbl_sthread(stringer_t *errmsg) {
 
-	st_sprint(errmsg, "This test is a stub and needs implemented.");
+	connection_t con;
 
-	return false;
+	// Create a connection struct with a blacklisted IP.
+	mm_wipe(&con, sizeof(connection_t));
+	con.smtp.mailfrom = NULLER("check@example.com");
+
+	if (!(con.network.reverse.ip = mm_alloc(sizeof(ip_t)))) {
+		st_sprint(errmsg, "Failed to allocate memory for the ip.");
+		return false;
+	}
+	else if (!ip_addr_st("127.0.0.2", con.network.reverse.ip)) {
+		st_sprint(errmsg, "Failed to set the blacklisted ip.");
+		mm_free(con.network.reverse.ip);
+		return false;
+	}
+	// Expect the rbl check to return -2.
+	else if (smtp_check_rbl(&con) != -2) {
+		st_sprint(errmsg, "Failed to correctly recognize a blacklisted IP.");
+		mm_free(con.network.reverse.ip);
+		return false;
+	}
+	// Create another ip, this time not blacklisted.
+	else if (!ip_addr_st("127.0.0.1", con.network.reverse.ip)) {
+		st_sprint(errmsg, "Failed to set the non-blacklisted ip.");
+		mm_free(con.network.reverse.ip);
+		return false;
+	}
+	// Expect the rbl check to return 1.
+	else if (smtp_check_rbl(&con) != 1) {
+		st_sprint(errmsg, "Failed to correctly recognize a non-blacklisted IP.");
+		mm_free(con.network.reverse.ip);
+		return false;
+	}
+
+	mm_free(con.network.reverse.ip);
+	return true;
 }

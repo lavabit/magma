@@ -240,12 +240,22 @@ bool_t check_pop_network_stls_ad_sthread(stringer_t *errmsg, uint32_t tcp_port, 
 		client_close(client);
 		return false;
 	}
+
 	// Check for the presence of the STLS capability in the CAPA list over an insecure connection.
 	else if (client_write(client, PLACER("CAPA\r\n", 6)) != 6 ||
 		!check_client_line_presence(client, PLACER("STLS\r\n", 6), PLACER(".\r\n", 3)) ||
 		!check_pop_client_read_end(client, NULL, NULL)) {
 
 		st_sprint(errmsg, "Failed to find the STLS capability in the CAPA list over TCP.");
+		client_close(client);
+		return false;
+	}
+
+	// Issue the QUIT command.
+	else if (client_write(client, PLACER("QUIT\r\n", 6)) != 6 || client_read_line(client) <= 0 || client_status(client) != 1 ||
+		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
+
+		st_sprint(errmsg, "Failed to return a successful state after QUIT over an insecure connection.");
 		client_close(client);
 		return false;
 	}
@@ -268,6 +278,15 @@ bool_t check_pop_network_stls_ad_sthread(stringer_t *errmsg, uint32_t tcp_port, 
 		!check_pop_client_read_end(client, NULL, NULL)) {
 
 		st_sprint(errmsg, "The STLS capability is advertised over TLS.");
+		client_close(client);
+		return false;
+	}
+
+	// Issue the QUIT command.
+	else if (client_write(client, PLACER("QUIT\r\n", 6)) != 6 || client_read_line(client) <= 0 || client_status(client) != 1 ||
+		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
+
+		st_sprint(errmsg, "Failed to return a successful state after QUIT over a secure connection.");
 		client_close(client);
 		return false;
 	}

@@ -54,7 +54,7 @@ media_type_t media_types[] = {
 		{ ".mpg",   true,  "video/mpeg" },
 		{ ".ogg",   true,  "application/ogg" },
 		{ ".pdf",   true,  "application/pdf" },
-		{ ".pl",    false, "text-script.perl" },
+		{ ".pl",    false, "text/x-perl" },
 		{ ".png",   true,  "image/png" },
 		{ ".pps",   true,  "application/mspowerpoint" },
 		{ ".ppt",   true,  "application/powerpoint" },
@@ -71,7 +71,6 @@ media_type_t media_types[] = {
 		{ ".shtml", false, "text/html" },
 		{ ".swf",   true,  "application/x-shockwave-flash" },
 		{ ".tar",   true,  "application/x-tar" },
-		{ ".tcl",   false, "application-xtcl" },
 		{ ".text",  false, "text/plain" },
 		{ ".tgz",   true,  "application/x-compressed" },
 		{ ".tif",   true,  "image/tiff" },
@@ -100,7 +99,12 @@ media_type_t media_types[] = {
  */
 media_type_t * mail_mime_get_media_type (chr_t *extension) {
 
-	size_t cmplen = ns_length_get(extension) + 1;
+	size_t cmplen = 0;
+
+	// If extension is NULL, return application/octet-stream.
+	if (ns_empty(extension)) return (&(media_types[0]));
+
+	cmplen = ns_length_get(extension) + 1;
 
 	for (size_t i = 1; i < sizeof(media_types) / sizeof(media_type_t); i++) {
 

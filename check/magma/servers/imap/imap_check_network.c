@@ -422,7 +422,7 @@ bool_t check_imap_network_starttls_sthread(stringer_t *errmsg, uint32_t tcp_port
 		client_close(client);
 		return false;
 	}
-/*
+
 	client_close(client);
 	client = NULL;
 
@@ -446,7 +446,7 @@ bool_t check_imap_network_starttls_sthread(stringer_t *errmsg, uint32_t tcp_port
 		client_close(client);
 		return false;
 	}
-*/
+
 	client_close(client);
 	return true;
 }

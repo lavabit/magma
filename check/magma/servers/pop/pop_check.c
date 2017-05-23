@@ -46,7 +46,7 @@ START_TEST (check_pop_network_basic_tls_s) {
 }
 END_TEST
 
-START_TEST (check_pop_network_stls_ad_s) {
+START_TEST (check_pop_network_stls_s) {
 
 	log_disable();
 	bool_t outcome = true;
@@ -57,11 +57,11 @@ START_TEST (check_pop_network_stls_ad_s) {
 		st_sprint(errmsg, "No POP servers were configured to support TLS connections.");
 		outcome = false;
 	}
-	else if (status() && !check_pop_network_stls_ad_sthread(errmsg, tcp_server->network.port, tls_server->network.port)) {
+	else if (status() && !check_pop_network_stls_sthread(errmsg, tcp_server->network.port, tls_server->network.port)) {
 		outcome = false;
 	}
 
-	log_test("POP / NETWORK / STLS ADVERTISEMENT / SINGLE THREADED:", errmsg);
+	log_test("POP / NETWORK / STLS / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
@@ -72,7 +72,7 @@ Suite * suite_check_pop(void) {
 
 	suite_check_testcase(s, "POP", "POP Network Basic / TCP/S", check_pop_network_basic_tcp_s);
 	suite_check_testcase(s, "POP", "POP Network Basic / TLS/S", check_pop_network_basic_tls_s);
-	suite_check_testcase(s, "POP", "POP Network STLS Ad/S", check_pop_network_stls_ad_s);
+	suite_check_testcase(s, "POP", "POP Network STLS/S", check_pop_network_stls_s);
 
 	return s;
 }

@@ -160,15 +160,22 @@ bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg, int_t action, int
 
 	multi_t key = mt_get_null();
 	smtp_inbound_prefs_t prefs;
+	stringer_t *message = NULL;
 	smtp_inbound_filter_t *filter = NULL;
-	stringer_t *message = NULLER( \
+	chr_t *chr_message = \
 			"From: Princess (princess@example.com\r\n" \
 			"To: ladar@lavabit.com\r\n" \
 			"Date: March 7th, 2017 5:55:55 PM CST\r\n" \
 			"Subject: SMTP Filters Unit Test\r\n" \
 			"\r\n" \
 			"This is the message body.\r\n" \
-			".\r\n");
+			".\r\n";
+
+	if (!(message = st_import_opts(MANAGED_T | HEAP | JOINTED, chr_message, ns_length_get(chr_message)))) {
+		st_sprint(errmsg, "Failed to create the message buffer or write message to the buffer.");
+		return false;
+	}
+
 	chr_t *fields[] = { "From", "To", "Date", "Subject" }, *exprs[] = { "Princess", "ladar", "March", "Filters" };
 
 	mm_wipe(&prefs, sizeof(smtp_inbound_prefs_t));
@@ -176,7 +183,10 @@ bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg, int_t action, int
 	prefs.usernum = 2;
 	prefs.mark = 0;
 
-	if (!(filter = mm_alloc(sizeof(smtp_inbound_filter_t)))) return false;
+	if (!(filter = mm_alloc(sizeof(smtp_inbound_filter_t)))) {
+		st_free(message);
+		return false;
+	}
 	key = mt_set_type(key, M_TYPE_UINT64);
 	key.val.u64 = rand_get_int64();
 	inx_insert(prefs.filters, key, filter);
@@ -189,6 +199,7 @@ bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg, int_t action, int
 	filter->expression = NULLER("//");
 	if (status() && (smtp_check_filters(&prefs, &message) != 1)) {
 		st_sprint(errmsg, "Failed to return 1 when no action was taken.");
+		st_free(message);
 		return false;
 	}
 
@@ -196,6 +207,7 @@ bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg, int_t action, int
 	filter->expression = NULLER("[this[is[not[valid[regex[");
 	if (status() && (smtp_check_filters(&prefs, &message) != -1)) {
 		st_sprint(errmsg, "Failed to return -1 when regex is broken.");
+		st_free(message);
 		return false;
 	}
 
@@ -204,11 +216,13 @@ bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg, int_t action, int
 	filter->location = SMTP_FILTER_LOCATION_HEADER;
 	if (status() && (smtp_check_filters(&prefs, &message) != expected)) {
 		st_sprint(errmsg, "Failed to return -2 when the regex matches the header. { action = %x }", action);
+		st_free(message);
 		return false;
 	}
 	filter->expression = NULLER("This is not in the header.");
 	if (status() && !(smtp_check_filters(&prefs, &message) != expected)) {
 		st_sprint(errmsg, "Failed to return -2 when the regex does not match the header. { action = %x }", action);
+		st_free(message);
 		return false;
 	}
 
@@ -217,11 +231,13 @@ bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg, int_t action, int
 	filter->location = SMTP_FILTER_LOCATION_BODY;
 	if (status() && (smtp_check_filters(&prefs, &message) != expected)) {
 		st_sprint(errmsg, "Failed to return -2 when the regex matches the body. { action = %x }", action);
+		st_free(message);
 		return false;
 	}
 	filter->expression = NULLER("This is not in the body.");
 	if (status() && !(smtp_check_filters(&prefs, &message) != expected)) {
 		st_sprint(errmsg, "Failed to not return -2 when the regex does not match the body. { action = %x }", action);
+		st_free(message);
 		return false;
 	}
 
@@ -230,11 +246,13 @@ bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg, int_t action, int
 	filter->location = SMTP_FILTER_LOCATION_ENTIRE;
 	if (status() && (smtp_check_filters(&prefs, &message) != expected)) {
 		st_sprint(errmsg, "Failed to return -2 when the regex matches everything. { action = %x }", action);
+		st_free(message);
 		return false;
 	}
 	filter->expression = NULLER("This is not in the entire message.");
 	if (status() && !(smtp_check_filters(&prefs, &message) != expected)) {
 		st_sprint(errmsg, "Failed to not return -2 when the regex does not match anything. { action = %x }", action);
+		st_free(message);
 		return false;
 	}
 
@@ -247,16 +265,19 @@ bool_t check_smtp_checkers_filters_sthread(stringer_t *errmsg, int_t action, int
 
 		if (status() && (smtp_check_filters(&prefs, &message) != expected)) {
 			st_sprint(errmsg, "Failed to return -2 when the regex matches. { field = \"%s\" }", fields[i]);
+			st_free(message);
 			return false;
 		}
 		filter->expression = NULLER("This is not in any of the fields.");
 		if (status() && !(smtp_check_filters(&prefs, &message) != expected)) {
 			st_sprint(errmsg, "Failed to not return -2 when the regex does not match. { field = \"%s\" }", fields[i]);
+			st_free(message);
 			return false;
 		}
 	}
 
 	inx_cleanup(prefs.filters);
+	st_free(message);
 
 	return true;
 }

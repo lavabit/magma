@@ -86,7 +86,7 @@ START_TEST (check_imap_network_fetch_s) {
 }
 END_TEST
 
-START_TEST (check_imap_network_starttls_ad_s) {
+START_TEST (check_imap_network_starttls_s) {
 
 	log_disable();
 	bool_t outcome = true;
@@ -97,13 +97,13 @@ START_TEST (check_imap_network_starttls_ad_s) {
 		st_sprint(errmsg, "No IMAP servers were configured to support TCP connections.");
 		outcome = false;
 	}
-	else if (status() && !check_imap_network_starttls_ad_sthread(errmsg, tcp_server->network.port,
+	else if (status() && !check_imap_network_starttls_sthread(errmsg, tcp_server->network.port,
 		tls_server->network.port)) {
 
 		outcome = false;
 	}
 
-	log_test("IMAP / NETWORK / STARTTLS AD / SINGLE THREADED:", errmsg);
+	log_test("IMAP / NETWORK / STARTTLS / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
@@ -116,7 +116,7 @@ Suite * suite_check_imap(void) {
 	suite_check_testcase(s, "IMAP", "IMAP Network Basic/ TLS/S", check_imap_network_basic_tls_s);
 	suite_check_testcase(s, "IMAP", "IMAP Network Search/S", check_imap_network_search_s);
 	suite_check_testcase(s, "IMAP", "IMAP Network Fetch/S", check_imap_network_fetch_s);
-	suite_check_testcase(s, "IMAP", "IMAP Network STARTTLS Ad/S", check_imap_network_starttls_ad_s);
+	suite_check_testcase(s, "IMAP", "IMAP Network STARTTLS/S", check_imap_network_starttls_s);
 
 	return s;
 }

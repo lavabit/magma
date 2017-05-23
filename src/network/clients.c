@@ -104,7 +104,7 @@ client_t * client_connect(chr_t *host, uint32_t port) {
 			return NULL;
 		}
 
-		// Attemot a socket connection. If the connection is established, we'll store the IP information in a ip_t structure,
+		// Attempt a socket connection. If the connection is established, we'll store the IP information in a ip_t structure,
 		// and set the holder variable to NULL so the loop exits.
 		if (!(ret = connect(sd, holder->ai_addr, holder->ai_addrlen))) {
 
@@ -156,6 +156,7 @@ client_t * client_connect(chr_t *host, uint32_t port) {
 	result->ip = ip;
 	result->sockd = sd;
 	result->status = 1;
+	result->line.length = 0;
 	result->line.opts = PLACER_T | JOINTED | STACK | FOREIGNDATA;
 
 	return result;

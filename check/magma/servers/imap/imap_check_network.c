@@ -20,9 +20,15 @@
 bool_t check_imap_client_read_end(client_t *client, chr_t *tag) {
 
 	bool_t outcome = false;
-	stringer_t *last_line = st_merge("ss", NULLER(tag), NULLER(" OK"));
+	stringer_t *last_line = st_merge("ns", tag, NULLER(" OK"));
+
+
 
 	while (!outcome && client_read_line(client) > 0) {
+
+		chr_t *test = pl_char_get(client->line);
+		(void)test;
+
 		if (!st_cmp_cs_starts(&client->line, last_line)) outcome = true;
 	}
 
@@ -91,8 +97,6 @@ bool_t check_imap_client_select(client_t *client, chr_t *folder, chr_t *tag, str
 bool_t check_imap_client_close_logout(client_t *client, uint32_t tag_num, stringer_t *errmsg) {
 
 	stringer_t *tag = NULL, *command = NULL, *success = NULL;
-
-	tag_num += 1;
 
 	// Construct the tag, close_command, and success stringers for CLOSE.
 	if (!(tag = st_alloc(1024)) || (st_sprint(tag, "A%u", tag_num) != uint32_digits(tag_num)+1) ||
@@ -376,7 +380,7 @@ bool_t check_imap_network_fetch_sthread(stringer_t *errmsg, uint32_t port, bool_
 	return true;
 }
 
-bool_t check_imap_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_port, uint32_t tls_port) {
+bool_t check_imap_network_starttls_sthread(stringer_t *errmsg, uint32_t tcp_port, uint32_t tls_port) {
 
 	size_t location = 0;
 	client_t *client = NULL;
@@ -401,12 +405,12 @@ bool_t check_imap_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_p
 	else if (client_write(client, PLACER("A1 STARTTLS\r\n", 13)) != 13 || client_read_line(client) <= 0 ||
 		client_secure(client)) {
 
-		st_sprint(errmsg, "Failed to completed TLS handshake and secure the connection when connected to the TCP port.");
+		st_sprint(errmsg, "Failed to complete TLS handshake and secure the connection when connected to the TCP port.");
 		client_close(client);
 		return false;
 	}
 	// Check for STARTTLS in the capabilities when connected over TLS.
-	else if (client_write(client, PLACER("A0 CAPABILITY\r\n", 15)) != 15 || client_read_line(client) <= 0 ||
+	else if (client_write(client, PLACER("A2 CAPABILITY\r\n", 15)) != 15 || client_read_line(client) <= 0 ||
 		st_search_cs(&(client->line), PLACER("STARTTLS", 8), &location)) {
 
 		st_sprint(errmsg, "IMAP advertised STARTTLS after completing a TLS handshake on the TCP port.");
@@ -418,7 +422,7 @@ bool_t check_imap_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_p
 		client_close(client);
 		return false;
 	}
-
+/*
 	client_close(client);
 	client = NULL;
 
@@ -429,8 +433,8 @@ bool_t check_imap_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_p
 		client_close(client);
 		return false;
 	}
-	// Check for the absense of STARTTLS in the capabilities when connected over TLS.
-	else if (client_write(client, PLACER("A0 CAPABILITY\r\n", 15)) != 15 || client_read_line(client) <= 0 ||
+	// Check for the absence of STARTTLS in the capabilities when connected over TLS.
+	else if (client_write(client, PLACER("A3 CAPABILITY\r\n", 15)) != 15 || client_read_line(client) <= 0 ||
 		st_search_cs(&(client->line), PLACER("STARTTLS", 8), &location)) {
 
 		st_sprint(errmsg, "IMAP advertised STARTTLS when already connected securely on the TLS port.");
@@ -438,11 +442,11 @@ bool_t check_imap_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_p
 		return false;
 	}
 	// Close the client.
-	else if (!check_imap_client_close_logout(client, 1, errmsg)) {
+	else if (!check_imap_client_close_logout(client, 3, errmsg)) {
 		client_close(client);
 		return false;
 	}
-
+*/
 	client_close(client);
 	return true;
 }

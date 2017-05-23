@@ -338,7 +338,7 @@ bool_t check_smtp_network_outbound_quota_sthread(stringer_t *errmsg, uint32_t po
 	return true;
 }
 
-bool_t check_smtp_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_port, uint32_t tls_port) {
+bool_t check_smtp_network_starttls_sthread(stringer_t *errmsg, uint32_t tcp_port, uint32_t tls_port) {
 
 	client_t *client = NULL;
 	bool_t found_starttls_ad = false;
@@ -374,10 +374,16 @@ bool_t check_smtp_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_p
 	found_starttls_ad = false;
 
 	// Start the TLS handshake and secure the connection.
-	if (client_write(client, PLACER("STARTTLS\r\n", 10)) != 10 || client_read_line(client) <= 0 ||
-		client_secure(client)) {
+	if (client_write(client, PLACER("STARTTLS\r\n", 10)) != 10 || client_read_line(client) <= 0 || client_secure(client)) {
 
 		st_sprint(errmsg, "Failed to complete TLS handshake and secure the connection when connected on the TCP port.");
+		client_close(client);
+		return false;
+	}
+	// Issue EHLO.
+	else if (client_write(client, PLACER("EHLO localhost\r\n", 16)) != 16) {
+
+		st_sprint(errmsg, "Failed to return successful status after EHLO when connected via TCP.");
 		client_close(client);
 		return false;
 	}
@@ -399,7 +405,7 @@ bool_t check_smtp_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_p
 		client_close(client);
 		return false;
 	}
-
+/*
 	found_starttls_ad = false;
 	client_close(client);
 	client = NULL;
@@ -436,7 +442,7 @@ bool_t check_smtp_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_p
 		client_close(client);
 		return false;
 	}
-
+*/
 	client_close(client);
 	return true;
 }

@@ -39,7 +39,7 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 		ciphers = SSL_DEFAULT_CIPHER_LIST;
 	}
 	else if (security_level == 2) {
-		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_COMPRESSION | SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS);
+		options = (options | SSL_OP_NO_SSLv2 | SSL_OP_NO_TICKET | SSL_OP_NO_COMPRESSION | SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS);
 		//options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_MODE_AUTO_RETRY | SSL_OP_CIPHER_SERVER_PREFERENCE | SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS;
 		ciphers = MAGMA_CIPHERS_MEDIUM;
 	}
@@ -96,16 +96,25 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 	// Automatically select the appropriate and ECDH curve. Note the SSL_CTRL_SET_ECDH_AUTO and SSL_CTX_set_tmp_ecdh_callback()
 	// configured below are no longer necessary, or relevant once we upgrade to OpenSSL 1.1.0. Curve configuration in 1.1.10
 	// occurs automatically, with control over which curves are available being provided by the SSL_CTX_set1_curves interface.
-	if (SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_ECDH_AUTO, 1, NULL) != 1) {
-		log_critical("Could not enable the automatic selection of ellipitical curves.");
-		return false;
-	}
+//	if (SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_ECDH_AUTO, 1, NULL) != 1) {
+//		log_critical("Could not enable the automatic selection of ellipitical curves.");
+//		return false;
+//	}
 
 	// Like the SSL_CTRL_SET_ECDH_AUTO, this function will no longer be needed when we switch to OpenSSL 1.1.0.
 	SSL_CTX_set_tmp_ecdh_callback_d(local->tls.context, ssl_ecdh_exchange_callback);
 
+	// Enabling the ellipitical curve single use will improve the forward secreecy for ecdh keys.
+//	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_OP_SINGLE_ECDH_USE, 1, NULL) != 1) {
+//		log_critical("Could not enable single use elliptical curve.");
+//		return false;
+//	}
+
 	// Enable read ahead to allow for more efficient pipeline processing.
-	SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_READ_AHEAD, 1, NULL);
+//	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_SET_READ_AHEAD, 1, NULL) != 1) {
+//		log_critical("Could not enable the use of read ahead for encrypted connections.");
+//		return false;
+//	}
 
 	return true;
 }
@@ -227,7 +236,7 @@ void * tls_client_alloc(int_t sockd) {
 	SSL_CTX_free_d(ctx);
 
 	if (SSL_connect_d(result) != 1) {
-		log_pedantic("Could not establish an TLS connection with the client. { error = %s }", ssl_error_string(MEMORYBUF(512), 512));
+		log_pedantic("Could not establish a TLS connection with the client. { error = %s }", ssl_error_string(MEMORYBUF(512), 512));
 		SSL_free_d(result);
 		return NULL;
 	}

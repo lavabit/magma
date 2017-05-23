@@ -1,6 +1,6 @@
 # Description
 
-Magma was originally designed and developed by Ladar Levison for lavabit.com. The current release is currently under heavy development, and some of the features and functions contained herein are unstable. The SMTP, POP, and IMAP protocol handlers are reasonably mature. The DMTP and HTTP (and the bundled webmail system) are still in development. Happy hacking.
+Magma was originally designed and developed by Ladar Levison for lavabit.com. The current release is currently under heavy development, and some of the features and functions contained herein are unstable. The SMTP, POP, and IMAP protocol handlers are reasonably mature. The DMTP, DMAP and HTTP implementations (along with the bundled webmail system) are still in development. Happy hacking.
 
 # Downloads
 
@@ -108,8 +108,13 @@ To start Memcached run the commands below.
 service memcached start
 chkconfig memcached on
 ```
+### Compiling (The Short Way)
 
-### Compiling
+```shell
+make all
+```
+
+### Compiling (The Long Way)
 
 To link up the development and build scripts run the linkup.sh. This will create a bin folder in your home directory, if it doesn't already exist, and create symbolic links to the scripts and tools used to build, run and test magma. The commands below assume the bin directory is in your PATH. If it isn't, or you simply don't want to create the symbolic links, you can also run the shell scripts directly from their location in the dev/scripts folder. To execute the linkup.sh script:
 

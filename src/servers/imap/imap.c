@@ -280,7 +280,7 @@ void imap_noop(connection_t *con) {
 
 void imap_check(connection_t *con) {
 
-	if (con->imap.session_state == 1 && con->imap.selected != 0 && con->imap.user && imap_session_update(con) >= 0) {
+	if (con->imap.session_state == 1 && con->imap.selected != 0 && con->imap.user && imap_session_update(con) == 0) {
 		con_print(con, "* %lu EXISTS\r\n* %lu RECENT\r\n%.*s OK CHECK Completed.\r\n", con->imap.messages_total,
 			con->imap.messages_recent, st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 	}
@@ -941,7 +941,6 @@ void imap_store(connection_t *con) {
 	inx_cursor_t *cursor;
 	meta_message_t *active;
 	inx_t *messages, *duplicate;
-	uint64_t recent = 0, exists = 0;
 
 	// Check for the right state.
 	if (con->imap.session_state != 1) {
@@ -1033,7 +1032,8 @@ void imap_store(connection_t *con) {
 
 				if (con->imap.uid) {
 					snprintf(buffer, 128, " UID %lu", active->messagenum);
-				} else {
+				}
+				else {
 					buffer[0] = '\0';
 				}
 
@@ -1059,7 +1059,7 @@ void imap_store(connection_t *con) {
 
 	// The relevant folder status changed.
 	if (imap_session_update(con) == 1) {
-		con_print(con, "* %lu EXISTS\r\n* %lu RECENT\r\n%.*s OK Store complete.\r\n", exists, recent, st_length_int(con->imap.tag), st_char_get(con->imap.tag));
+		con_print(con, "* %lu EXISTS\r\n* %lu RECENT\r\n%.*s OK Store complete.\r\n", con->imap.messages_total, con->imap.messages_recent, st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 	}
 	else {
 		con_print(con, "%.*s OK Store complete.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));

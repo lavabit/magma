@@ -219,7 +219,7 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 	return true;
 }
 
-bool_t check_pop_network_stls_ad_sthread(stringer_t *errmsg, uint32_t tcp_port, uint32_t tls_port) {
+bool_t check_pop_network_stls_sthread(stringer_t *errmsg, uint32_t tcp_port, uint32_t tls_port) {
 
 	client_t *client = NULL;
 
@@ -241,8 +241,7 @@ bool_t check_pop_network_stls_ad_sthread(stringer_t *errmsg, uint32_t tcp_port, 
 		return false;
 	}
 	// Initiate a TLS handshake and secure the connection.
-	else if (client_write(client, PLACER("STARTTLS\r\n", 10)) != 10 || client_read_line(client) <= 0 ||
-		st_cmp_cs_starts(&(client->line), NULLER("+OK")) || client_secure(client)) {
+	else if (client_write(client, PLACER("STLS\r\n", 6)) != 6 || client_read_line(client) <= 0 || client_secure(client)) {
 
 		st_sprint(errmsg, "Failed to complete the TLS handshake and secure the connection on the TCP port.");
 		client_close(client);

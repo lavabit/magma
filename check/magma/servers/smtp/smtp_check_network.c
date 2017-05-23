@@ -354,7 +354,7 @@ bool_t check_smtp_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_p
 	// Issue EHLO.
 	else if (client_write(client, PLACER("EHLO localhost\r\n", 16)) != 16) {
 
-		st_sprint(errmsg, "Failed to return successful status after TCP EHLO.");
+		st_sprint(errmsg, "Failed to return successful status after EHLO when connected via TCP.");
 		client_close(client);
 		return false;
 	}
@@ -365,7 +365,30 @@ bool_t check_smtp_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_p
 		}
 		if (!found_starttls_ad) {
 
-			st_sprint(errmsg, "Failed to find STARTTLS advertised in TCP EHLO response.");
+			st_sprint(errmsg, "Failed to find STARTTLS advertised in EHLO response when connected via TCP.");
+			client_close(client);
+			return false;
+		}
+	}
+
+	found_starttls_ad = false;
+
+	// Start the TLS handshake and secure the connection.
+	if (client_write(client, PLACER("STARTTLS\r\n", 10)) != 10 || client_read_line(client) <= 0 ||
+		client_secure(client)) {
+
+		st_sprint(errmsg, "Failed to complete TLS handshake and secure the connection when connected on the TCP port.");
+		client_close(client);
+		return false;
+	}
+	// Check for "250-STARTTLS" in the EHLO response over an insecure connection.
+	else {
+		while (client_read_line(client) > 0 && pl_char_get(client->line)[3] != ' ') {
+			if (st_cmp_cs_starts(&(client->line), PLACER("250-STARTTLS", 12))) found_starttls_ad = true;
+		}
+		if (found_starttls_ad) {
+
+			st_sprint(errmsg, "Found STARTTLS advertised in EHLO response when connected securely on the TCP port.");
 			client_close(client);
 			return false;
 		}
@@ -382,7 +405,8 @@ bool_t check_smtp_network_starttls_ad_sthread(stringer_t *errmsg, uint32_t tcp_p
 	client = NULL;
 
 	// Connect the client over TLS.
-	if (!(client = client_connect("localhost", tls_port)) || client_secure(client) != 0) {
+	if (!(client = client_connect("localhost", tls_port)) || !net_set_timeout(client->sockd, 20, 20) ||
+		client_secure(client) != 0 || client_read_line(client) <= 0 || st_cmp_cs_starts(&(client->line), NULLER("220"))) {
 
 		st_sprint(errmsg, "Failed to connect with the SMTP server over TLS.");
 		client_close(client);

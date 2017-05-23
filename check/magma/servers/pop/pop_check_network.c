@@ -126,7 +126,6 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 		client_close(client);
 		return false;
 	}
-
 	// Test the USER and PASS commands with incorrect credentials.
 	else if (client_write(client, PLACER("USER princess\r\n", 15)) != 15 || client_read_line(client) <= 0 ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
@@ -142,7 +141,6 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 		client_close(client);
 		return false;
 	}
-
 	// Test the USER and PASS commands with correct credentials.
 	else if (client_write(client, PLACER("USER princess\r\n", 15)) != 15 || client_read_line(client) <= 0 ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
@@ -158,7 +156,6 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 		client_close(client);
 		return false;
 	}
-
 	// Test the LIST command.
 	else if (client_write(client, PLACER("LIST\r\n", 6)) != 6 || !(message_num = check_pop_client_read_list(client, errmsg)) ||
 		client_status(client) != 1) {
@@ -167,7 +164,6 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 		client_close(client);
 		return false;
 	}
-
 	// Test the RETR command.
 	else if (client_write(client, PLACER("RETR 1\r\n", 8)) != 8 || !check_pop_client_read_end(client, NULL, NULL) ||
 		client_status(client) != 1) {
@@ -176,7 +172,6 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 		client_close(client);
 		return false;
 	}
-
 	// Test the DELE command.
 	else if (client_write(client, PLACER("DELE 1\r\n", 8)) != 8 || client_read_line(client) <= 0 || client_status(client) != 1 ||
 		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
@@ -185,7 +180,6 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 		client_close(client);
 		return false;
 	}
-
 	// Test the NOOP command.
 	else if (client_write(client, PLACER("NOOP\r\n", 6)) != 6 || client_read_line(client) <= 0 || client_status(client) != 1 ||
 		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
@@ -194,7 +188,6 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 		client_close(client);
 		return false;
 	}
-
 	// Test the TOP command.
 	else if (client_print(client, "TOP %lu 0\r\n", message_num) != (uint16_digits(message_num) + 8) ||
 		client_status(client) != 1 || client_read_line(client) <= 0 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))||
@@ -204,7 +197,6 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 		client_close(client);
 		return false;
 	}
-
 	// Test the RSET command.
 	else if (client_write(client, PLACER("RSET\r\n", 6)) != 6 || client_read_line(client) <= 0 || client_status(client) != 1 ||
 		st_cmp_cs_eq(&(client->line), NULLER("+OK All messages were reset.\r\n"))) {
@@ -213,9 +205,8 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 		client_close(client);
 		return false;
 	}
-
 	// Test the QUIT command.
-	else if (client_write(client, PLACER("QUIT 1\r\n", 8)) != 8 || client_read_line(client) <= 0 || client_status(client) != 1 ||
+	else if (client_write(client, PLACER("QUIT\r\n", 6)) != 6 || client_read_line(client) <= 0 || client_status(client) != 1 ||
 		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
 		st_sprint(errmsg, "Failed to return a successful state after QUIT.");
@@ -234,13 +225,12 @@ bool_t check_pop_network_stls_ad_sthread(stringer_t *errmsg, uint32_t tcp_port, 
 
 	// Connect the client over TCP.
 	if (!(client = client_connect("localhost", tcp_port)) || !net_set_timeout(client->sockd, 20, 20) ||
-		client_read_line(client) <= 0 || client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
+		client_read_line(client) <= 0 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
 		st_sprint(errmsg, "Failed to connect with the POP server over TCP.");
 		client_close(client);
 		return false;
 	}
-
 	// Check for the presence of the STLS capability in the CAPA list over an insecure connection.
 	else if (client_write(client, PLACER("CAPA\r\n", 6)) != 6 ||
 		!check_client_line_presence(client, PLACER("STLS\r\n", 6), PLACER(".\r\n", 3)) ||
@@ -250,12 +240,28 @@ bool_t check_pop_network_stls_ad_sthread(stringer_t *errmsg, uint32_t tcp_port, 
 		client_close(client);
 		return false;
 	}
+	// Initiate a TLS handshake and secure the connection.
+	else if (client_write(client, PLACER("STARTTLS\r\n", 10)) != 10 || client_read_line(client) <= 0 ||
+		st_cmp_cs_starts(&(client->line), NULLER("+OK")) || client_secure(client)) {
 
+		st_sprint(errmsg, "Failed to complete the TLS handshake and secure the connection on the TCP port.");
+		client_close(client);
+		return false;
+	}
+	// Check for the absence of the STLS capability.
+	else if (client_write(client, PLACER("CAPA\r\n", 6)) != 6 ||
+		check_client_line_presence(client, PLACER("STLS\r\n", 6), PLACER(".\r\n", 3)) ||
+		!check_pop_client_read_end(client, NULL, NULL)) {
+
+		st_sprint(errmsg, "The STLS capability is advertised after completing STARTTLS on the TCP port.");
+		client_close(client);
+		return false;
+	}
 	// Issue the QUIT command.
 	else if (client_write(client, PLACER("QUIT\r\n", 6)) != 6 || client_read_line(client) <= 0 || client_status(client) != 1 ||
 		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
-		st_sprint(errmsg, "Failed to return a successful state after QUIT over an insecure connection.");
+		st_sprint(errmsg, "Failed to return a successful state after QUIT over a secure connection.");
 		client_close(client);
 		return false;
 	}
@@ -263,30 +269,20 @@ bool_t check_pop_network_stls_ad_sthread(stringer_t *errmsg, uint32_t tcp_port, 
 	client_close(client);
 	client = NULL;
 
-	// Connect the client over TLS.
-	if (!(client = client_connect("localhost", tls_port)) || !net_set_timeout(client->sockd, 20, 20) ||
-		client_secure(client) != 0) {
+	// Reconnect the client, this time on the TLS port.
+	if (!(client = client_connect("localhost", tcp_port)) || !net_set_timeout(client->sockd, 20, 20)
+		|| client_secure(client) || client_read_line(client) <= 0 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
-		st_sprint(errmsg, "Failed to connect securely with the POP server over TLS.");
+		st_sprint(errmsg, "Failed to connect with the POP server over TCP.");
 		client_close(client);
 		return false;
 	}
-
-	// Check for the absence of the STLS capability.
+	// Make sure STARTTLS isn't advertised when connecting directly via TLS.
 	else if (client_write(client, PLACER("CAPA\r\n", 6)) != 6 ||
 		check_client_line_presence(client, PLACER("STLS\r\n", 6), PLACER(".\r\n", 3)) ||
 		!check_pop_client_read_end(client, NULL, NULL)) {
 
-		st_sprint(errmsg, "The STLS capability is advertised over TLS.");
-		client_close(client);
-		return false;
-	}
-
-	// Issue the QUIT command.
-	else if (client_write(client, PLACER("QUIT\r\n", 6)) != 6 || client_read_line(client) <= 0 || client_status(client) != 1 ||
-		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
-
-		st_sprint(errmsg, "Failed to return a successful state after QUIT over a secure connection.");
+		st_sprint(errmsg, "The STLS capability is advertised when connected securely on the TLS port.");
 		client_close(client);
 		return false;
 	}

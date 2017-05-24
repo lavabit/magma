@@ -11,6 +11,7 @@ char ssl_version[16];
 extern DH *dh2048, *dh4096;
 pthread_mutex_t **ssl_locks = NULL;
 extern pthread_mutex_t dhparam_lock;
+EC_KEY *ecdh512 = NULL, *ecdh1024 = NULL;
 
 /**
  * @brief	Return the version string of the OpenSSL library.
@@ -185,6 +186,10 @@ void ssl_stop(void) {
 			mm_free(*(ssl_locks + i));
 		}
 
+		// Clean up the variables for ECDH.
+		if (ecdh512) EC_KEY_free_d(ecdh512);
+		if (ecdh1024) EC_KEY_free_d(ecdh1024);
+
 		mutex_destroy(&dhparam_lock);
 		mm_free(ssl_locks);
 		ssl_locks = NULL;
@@ -251,7 +256,7 @@ unsigned long ssl_thread_id_callback(void) {
  */
 EC_KEY * ssl_ecdh_exchange_callback(SSL *ssl, int is_export, int keylength) {
 
-	static EC_KEY *ecdh512 = NULL, *ecdh1024 = NULL, *this_ecdh = NULL;
+	EC_KEY *this_ecdh = NULL;
 
 	if (keylength != 512 && keylength != 1024) {
 		log_error("ECDH key generation failed; only 512/1024 bit keys are supported but %u were requested.", (unsigned int)keylength);

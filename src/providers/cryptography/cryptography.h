@@ -151,8 +151,8 @@ void             ssl_thread_stop(void);
 bool_t           ssl_verify_privkey(const char *keyfile);
 
 /// tls.c
-bool_t        ssl_server_create(void *server, uint_t security_level);
-void          ssl_server_destroy(void *server);
+bool_t        tls_server_create(void *server, uint_t security_level);
+void          tls_server_destroy(void *server);
 int_t         tls_bits(TLS *tls);
 stringer_t *  tls_cipher(TLS *tls, stringer_t *output);
 void *        tls_client_alloc(int_t sockd);

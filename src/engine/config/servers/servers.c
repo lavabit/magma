@@ -105,7 +105,7 @@ bool_t servers_encryption_start(void) {
 		// The trenary increases the security level for DMTP (and DMAP in the future) connections, which require TLSv1.2 and only allow
 		// two cipher suites. Otherwise we allow any version of TSLv1.0 and higher, and any ciphersuite with forward secrecy.
 		if (magma.servers[i] && magma.servers[i]->enabled && magma.servers[i]->tls.certificate &&
-			!ssl_server_create(magma.servers[i], magma.servers[i]->protocol == DMTP ? 3 : 2)) {
+			!tls_server_create(magma.servers[i], magma.servers[i]->protocol == DMTP ? 3 : 2)) {
 			return false;
 		}
 	}
@@ -132,7 +132,7 @@ void servers_network_stop(void) {
 void servers_encryption_stop(void) {
 	for (uint32_t i = 0; i < MAGMA_SERVER_INSTANCES; i++) {
 		if (magma.servers[i]  && magma.servers[i]->enabled && magma.servers[i]->tls.context) {
-			ssl_server_destroy(magma.servers[i]);
+			tls_server_destroy(magma.servers[i]);
 		}
 	}
 	return;

@@ -21,7 +21,7 @@
  * 							3 = require TLSv1.2 and limit the cipher list to ECDHE-RSA-AES256-GCM-SHA384 or ECDHE-RSA-CHACHA20-POLY1305
  * 								as required by the specifications.
  */
-bool_t ssl_server_create(void *server, uint_t security_level) {
+bool_t tls_server_create(void *server, uint_t security_level) {
 
 	long options = 0;
 	char *ciphers = NULL;
@@ -104,6 +104,10 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
 	// Like the SSL_CTRL_SET_ECDH_AUTO, this function will no longer be needed when we switch to OpenSSL 1.1.0.
 	SSL_CTX_set_tmp_ecdh_callback_d(local->tls.context, ssl_ecdh_exchange_callback);
 
+	// We don't support authentication using client certificates, so we set the verify flag to NONE. This will prevent the server
+	// from sending a client certificate request.
+	SSL_CTX_set_verify_d(local->tls.context, SSL_VERIFY_NONE, NULL);
+
 	// Enabling the ellipitical curve single use will improve the forward secreecy for ecdh keys.
 //	else if (SSL_CTX_ctrl_d(local->tls.context, SSL_OP_SINGLE_ECDH_USE, 1, NULL) != 1) {
 //		log_critical("Could not enable single use elliptical curve.");
@@ -124,7 +128,7 @@ bool_t ssl_server_create(void *server, uint_t security_level) {
  * @param	server	the server to be deactivated.
  * @return	This function returns no value.
  */
-void ssl_server_destroy(void *server) {
+void tls_server_destroy(void *server) {
 
 	server_t *local = server;
 
@@ -151,8 +155,12 @@ TLS * tls_server_alloc(void *server, int sockd, int flags) {
 
 	SSL *tls;
 	BIO *bio;
-	int result = 0;
 	server_t *local = server;
+	int_t result = 0, counter = 0;
+
+	// Clear the error state, so we get accurate indications of a problem.
+	errno = 0;
+	ERR_clear_error_d();
 
 #ifdef MAGMA_PEDANTIC
 	if (!local) {
@@ -180,9 +188,23 @@ TLS * tls_server_alloc(void *server, int sockd, int flags) {
 	}
 
 	SSL_set_bio_d(tls, bio, bio);
+	SSL_set_accept_state_d(tls);
 
-	if ((result = SSL_accept_d(tls)) != 1) {
-		log_pedantic("TLS accept error. { accept = %i / error = %s }", result, ssl_error_string(MEMORYBUF(256), 256));
+	// If the result code indicates a handshake error, but the TCP connection is still alive, we retry the handshake.
+	do {
+
+		// Attempt the server connection setup.
+		if ((result = SSL_accept_d(tls)) < 0) {
+			log_pedantic("TLS accept error, but the result indicates we should retry. { error = %i }", SSL_get_error_d(tls, result));
+		}
+
+		else if (result < 1) {
+			log_pedantic("TLS accept error. { accept = %i / error = %s }", result, ssl_error_string(MEMORYBUF(512), 512));
+		}
+
+	} while (result < 0 && counter++ < 10);
+
+	if (result != 1) {
 		SSL_free_d(tls);
 		return NULL;
 	}
@@ -198,9 +220,14 @@ TLS * tls_server_alloc(void *server, int sockd, int flags) {
 void * tls_client_alloc(int_t sockd) {
 
 	BIO *bio;
-	SSL *result;
+	SSL *tls;
+	int_t result = 0, counter = 0;
 	SSL_CTX *ctx = NULL;
 	long options = (SSL_OP_ALL | SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION | SSL_MODE_AUTO_RETRY);
+
+	// Clear the error state, so we get accurate indications of a problem.
+	errno = 0;
+	ERR_clear_error_d();
 
 	if (!(ctx = SSL_CTX_new_d(SSLv23_client_method_d()))) {
 		log_pedantic("Could not create a valid TLS context. { error = %s }", ssl_error_string(MEMORYBUF(512), 512));
@@ -220,28 +247,45 @@ void * tls_client_alloc(int_t sockd) {
 	// mode = SSL_VERIFY_NONE or SSL_VERIFY_PEER
 	// SSL_CTX_set_verify(result.context, mode, cert_verify_callback);
 
-	else if (!(result = SSL_new_d(ctx))) {
+	// We don't bother with server certificate verification, just yet.
+	SSL_CTX_set_verify_d(ctx, SSL_VERIFY_NONE, NULL);
+
+	if (!(tls = SSL_new_d(ctx))) {
 		log_pedantic("Could create the TLS client connection context. { error = %s }", ssl_error_string(MEMORYBUF(512), 512));
 		SSL_CTX_free_d(ctx);
 		return NULL;
 	}
 	else if (!(bio = BIO_new_socket_d(sockd, BIO_NOCLOSE))) {
 		log_pedantic("Could not create the TLS client BIO context. { error = %s }", ssl_error_string(MEMORYBUF(512), 512));
-		SSL_free_d(result);
 		SSL_CTX_free_d(ctx);
+		SSL_free_d(tls);
 		return NULL;
 	}
 
-	SSL_set_bio_d(result, bio, bio);
+	SSL_set_bio_d(tls, bio, bio);
+	SSL_set_connect_state_d(tls);
+
 	SSL_CTX_free_d(ctx);
 
-	if (SSL_connect_d(result) != 1) {
-		log_pedantic("Could not establish a TLS connection with the client. { error = %s }", ssl_error_string(MEMORYBUF(512), 512));
-		SSL_free_d(result);
+	do {
+
+		// Attempt the connection. Retry if the error indicates a retryable error.
+		if ((result = SSL_connect_d(tls)) < 0) {
+			log_pedantic("Could not establish a TLS client connection, but the result indicates we should retry. { error = %i }", SSL_get_error_d(tls, result));
+		}
+
+		else if (result < 1) {
+			log_pedantic("Could not establish a TLS client connection. { error = %s }", ssl_error_string(MEMORYBUF(512), 512));
+		}
+
+	} while (result < 0 && counter++ < 10);
+
+	if (result != 1) {
+		SSL_free_d(tls);
 		return NULL;
 	}
 
-	return result;
+	return tls;
 }
 
 /**

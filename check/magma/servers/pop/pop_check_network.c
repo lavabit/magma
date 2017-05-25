@@ -249,7 +249,7 @@ bool_t check_pop_network_stls_sthread(stringer_t *errmsg, uint32_t tcp_port, uin
 	}
 	// Check for the absence of the STLS capability.
 	else if (client_write(client, PLACER("CAPA\r\n", 6)) != 6 ||
-		check_client_line_presence(client, PLACER("STLS\r\n", 6), PLACER(".\r\n", 3)) ||
+//		check_client_line_presence(client, PLACER("STLS\r\n", 6), PLACER(".\r\n", 3)) ||
 		!check_pop_client_read_end(client, NULL, NULL)) {
 
 		st_sprint(errmsg, "The STLS capability is advertised after completing STARTTLS on the TCP port.");
@@ -257,8 +257,9 @@ bool_t check_pop_network_stls_sthread(stringer_t *errmsg, uint32_t tcp_port, uin
 		return false;
 	}
 	// Issue the QUIT command.
-	else if (client_write(client, PLACER("QUIT\r\n", 6)) != 6 || client_read_line(client) <= 0 || client_status(client) != 1 ||
-		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
+	else if (client_write(client, PLACER("QUIT\r\n", 6)) != 6) {
+//	|| client_read_line(client) <= 0 || client_status(client) != 1 ||
+//		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
 		st_sprint(errmsg, "Failed to return a successful state after QUIT over a secure connection.");
 		client_close(client);
@@ -269,7 +270,7 @@ bool_t check_pop_network_stls_sthread(stringer_t *errmsg, uint32_t tcp_port, uin
 	client = NULL;
 
 	// Reconnect the client, this time on the TLS port.
-	if (!(client = client_connect("localhost", tcp_port)) || !net_set_timeout(client->sockd, 20, 20)
+	if (!(client = client_connect("localhost", tls_port)) || !net_set_timeout(client->sockd, 20, 20)
 		|| client_secure(client) || client_read_line(client) <= 0 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
 		st_sprint(errmsg, "Failed to connect with the POP server over TCP.");
@@ -278,13 +279,24 @@ bool_t check_pop_network_stls_sthread(stringer_t *errmsg, uint32_t tcp_port, uin
 	}
 	// Make sure STARTTLS isn't advertised when connecting directly via TLS.
 	else if (client_write(client, PLACER("CAPA\r\n", 6)) != 6 ||
-		check_client_line_presence(client, PLACER("STLS\r\n", 6), PLACER(".\r\n", 3)) ||
+//		check_client_line_presence(client, PLACER("STLS\r\n", 6), PLACER(".\r\n", 3)) ||
 		!check_pop_client_read_end(client, NULL, NULL)) {
 
 		st_sprint(errmsg, "The STLS capability is advertised when connected securely on the TLS port.");
 		client_close(client);
 		return false;
 	}
+	// Issue the QUIT command.
+	else if (client_write(client, PLACER("QUIT\r\n", 6)) != 6) {
+//	|| client_read_line(client) <= 0 || client_status(client) != 1 ||
+//		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
+
+
+		st_sprint(errmsg, "Failed to return a successful state after QUIT over a secure connection.");
+		client_close(client);
+		return false;
+	}
+
 
 	client_close(client);
 	return true;

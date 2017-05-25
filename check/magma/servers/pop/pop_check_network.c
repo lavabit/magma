@@ -46,10 +46,10 @@ bool_t check_pop_client_read_end(client_t *client, uint64_t *size, chr_t *token)
 	// There shouldn't be a token, if we aren't also supposed to be counting the number of bytes.
 	else if (!size && token) return false;
 
-	while (client_read_line(client) > 0) {
+	while (st_cmp_cs_eq(&(client->line), NULLER(".\r\n"))) {
 
-		// Break when a line with just a period is found.
-		if (!st_cmp_cs_eq(&(client->line), NULLER(".\r\n"))) return true;
+		// Read a line from the client.
+		if (client_read_line(client) <= 0) return false;
 
 		// If we have a size and a token, then keep checking for the token until its found.
 		else if (size && token && !token_found && st_cmp_cs_starts(&(client->line), NULLER(token)) == 0) token_found = true;
@@ -57,7 +57,7 @@ bool_t check_pop_client_read_end(client_t *client, uint64_t *size, chr_t *token)
 		if (size && token_found) *size += pl_length_get(client->line);
 	}
 
-	return false;
+	return true;
 }
 
 /**
@@ -165,8 +165,8 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 		return false;
 	}
 	// Test the RETR command.
-	else if (client_write(client, PLACER("RETR 1\r\n", 8)) != 8 || !check_pop_client_read_end(client, NULL, NULL) ||
-		client_status(client) != 1) {
+	else if (client_write(client, PLACER("RETR 1\r\n", 8)) != 8 || client_read_line(client) <= 0 ||
+		!check_pop_client_read_end(client, NULL, NULL) || client_status(client) != 1) {
 
 		st_sprint(errmsg, "Failed to return a successful state after RETR.");
 		client_close(client);
@@ -249,7 +249,7 @@ bool_t check_pop_network_stls_sthread(stringer_t *errmsg, uint32_t tcp_port, uin
 	}
 	// Check for the absence of the STLS capability.
 	else if (client_write(client, PLACER("CAPA\r\n", 6)) != 6 ||
-//		check_client_line_presence(client, PLACER("STLS\r\n", 6), PLACER(".\r\n", 3)) ||
+		check_client_line_presence(client, PLACER("STLS\r\n", 6), PLACER(".\r\n", 3)) ||
 		!check_pop_client_read_end(client, NULL, NULL)) {
 
 		st_sprint(errmsg, "The STLS capability is advertised after completing STARTTLS on the TCP port.");
@@ -257,9 +257,9 @@ bool_t check_pop_network_stls_sthread(stringer_t *errmsg, uint32_t tcp_port, uin
 		return false;
 	}
 	// Issue the QUIT command.
-	else if (client_write(client, PLACER("QUIT\r\n", 6)) != 6) {
-//	|| client_read_line(client) <= 0 || client_status(client) != 1 ||
-//		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
+	else if (client_write(client, PLACER("QUIT\r\n", 6)) != 6 ||
+		client_read_line(client) <= 0 || client_status(client) != 1 ||
+		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
 		st_sprint(errmsg, "Failed to return a successful state after QUIT over a secure connection.");
 		client_close(client);
@@ -279,7 +279,7 @@ bool_t check_pop_network_stls_sthread(stringer_t *errmsg, uint32_t tcp_port, uin
 	}
 	// Make sure STARTTLS isn't advertised when connecting directly via TLS.
 	else if (client_write(client, PLACER("CAPA\r\n", 6)) != 6 ||
-//		check_client_line_presence(client, PLACER("STLS\r\n", 6), PLACER(".\r\n", 3)) ||
+		check_client_line_presence(client, PLACER("STLS\r\n", 6), PLACER(".\r\n", 3)) ||
 		!check_pop_client_read_end(client, NULL, NULL)) {
 
 		st_sprint(errmsg, "The STLS capability is advertised when connected securely on the TLS port.");
@@ -287,9 +287,9 @@ bool_t check_pop_network_stls_sthread(stringer_t *errmsg, uint32_t tcp_port, uin
 		return false;
 	}
 	// Issue the QUIT command.
-	else if (client_write(client, PLACER("QUIT\r\n", 6)) != 6) {
-//	|| client_read_line(client) <= 0 || client_status(client) != 1 ||
-//		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
+	else if (client_write(client, PLACER("QUIT\r\n", 6)) != 6 ||
+		client_read_line(client) <= 0 || client_status(client) != 1 ||
+		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
 
 		st_sprint(errmsg, "Failed to return a successful state after QUIT over a secure connection.");

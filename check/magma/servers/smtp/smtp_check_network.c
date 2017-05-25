@@ -361,7 +361,7 @@ bool_t check_smtp_network_starttls_sthread(stringer_t *errmsg, uint32_t tcp_port
 	// Check for "250-STARTTLS" in the EHLO response over an insecure connection.
 	else {
 		while (client_read_line(client) > 0 && pl_char_get(client->line)[3] != ' ') {
-			if (st_cmp_cs_starts(&(client->line), PLACER("250-STARTTLS", 12))) found_starttls_ad = true;
+			if (st_cmp_cs_starts(&(client->line), PLACER("250-STARTTLS", 12)) == 0) found_starttls_ad = true;
 		}
 		if (!found_starttls_ad) {
 
@@ -390,7 +390,7 @@ bool_t check_smtp_network_starttls_sthread(stringer_t *errmsg, uint32_t tcp_port
 	// Check for "250-STARTTLS" in the EHLO response over an insecure connection.
 	else {
 		while (client_read_line(client) > 0 && pl_char_get(client->line)[3] != ' ') {
-			if (st_cmp_cs_starts(&(client->line), PLACER("250-STARTTLS", 12))) found_starttls_ad = true;
+			if (st_cmp_cs_starts(&(client->line), PLACER("250-STARTTLS", 12)) == 0) found_starttls_ad = true;
 		}
 		if (found_starttls_ad) {
 
@@ -428,7 +428,7 @@ bool_t check_smtp_network_starttls_sthread(stringer_t *errmsg, uint32_t tcp_port
 	// Check for "250-STARTTLS" in the EHLO response over an insecure connection.
 	else {
 		while (client_read_line(client) > 0 && pl_char_get(client->line)[3] != ' ') {
-			if (st_cmp_cs_starts(&(client->line), PLACER("250-STARTTLS", 12))) found_starttls_ad = true;
+			if (st_cmp_cs_starts(&(client->line), PLACER("250-STARTTLS", 12)) == 0) found_starttls_ad = true;
 		}
 		if (found_starttls_ad) {
 			st_sprint(errmsg, "Found an unnecessary STARTTLS advertisement in TLS connection EHLO response.");

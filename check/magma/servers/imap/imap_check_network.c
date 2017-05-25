@@ -22,12 +22,7 @@ bool_t check_imap_client_read_end(client_t *client, chr_t *tag) {
 	bool_t outcome = false;
 	stringer_t *last_line = st_merge("ns", tag, NULLER(" OK"));
 
-
-
 	while (!outcome && client_read_line(client) > 0) {
-
-		chr_t *test = pl_char_get(client->line);
-		(void)test;
 
 		if (!st_cmp_cs_starts(&client->line, last_line)) outcome = true;
 	}
@@ -97,7 +92,7 @@ bool_t check_imap_client_select(client_t *client, chr_t *folder, chr_t *tag, str
 bool_t check_imap_client_close_logout(client_t *client, uint32_t tag_num, stringer_t *errmsg) {
 
 	stringer_t *tag = NULL, *command = NULL, *success = NULL;
-
+/*
 	// Construct the tag, close_command, and success stringers for CLOSE.
 	if (!(tag = st_alloc(1024)) || (st_sprint(tag, "A%u", tag_num) != uint32_digits(tag_num)+1) ||
 		!(command = st_merge("sn", tag, " CLOSE\r\n")) || !(success = st_merge("sn", tag, " OK"))) {
@@ -121,7 +116,7 @@ bool_t check_imap_client_close_logout(client_t *client, uint32_t tag_num, string
 	st_free(tag);
 	st_free(command);
 	st_free(success);
-
+*/
 	// Construct the tag, close_command, and success stringers for LOGOUT.
 	if (!(tag = st_alloc(1024)) || (st_sprint(tag, "A%u", tag_num) != uint32_digits(tag_num)+1) ||
 		!(command = st_merge("sn", tag, " LOGOUT\r\n")) || !(success = st_merge("sn", tag, " OK"))) {
@@ -395,7 +390,7 @@ bool_t check_imap_network_starttls_sthread(stringer_t *errmsg, uint32_t tcp_port
 	}
 	// Check for STARTTLS in the capabilities when connected over TCP.
 	else if (client_write(client, PLACER("A0 CAPABILITY\r\n", 15)) != 15 || client_read_line(client) <= 0 ||
-		!st_search_cs(&(client->line), PLACER("STARTTLS", 8), &location)) {
+		!st_search_cs(&(client->line), PLACER("STARTTLS", 8), &location) || client_read_line(client) <= 0) {
 
 		st_sprint(errmsg, "Failed to find STARTTLS advertised in the IMAP CAPABILITY response over TCP.");
 		client_close(client);
@@ -411,14 +406,14 @@ bool_t check_imap_network_starttls_sthread(stringer_t *errmsg, uint32_t tcp_port
 	}
 	// Check for STARTTLS in the capabilities when connected over TLS.
 	else if (client_write(client, PLACER("A2 CAPABILITY\r\n", 15)) != 15 || client_read_line(client) <= 0 ||
-		st_search_cs(&(client->line), PLACER("STARTTLS", 8), &location)) {
+		st_search_cs(&(client->line), PLACER("STARTTLS", 8), &location) || client_read_line(client) <= 0) {
 
 		st_sprint(errmsg, "IMAP advertised STARTTLS after completing a TLS handshake on the TCP port.");
 		client_close(client);
 		return false;
 	}
 	// Close the client.
-	else if (!check_imap_client_close_logout(client, 1, errmsg)) {
+	else if (!check_imap_client_close_logout(client, 3, errmsg)) {
 		client_close(client);
 		return false;
 	}
@@ -434,15 +429,15 @@ bool_t check_imap_network_starttls_sthread(stringer_t *errmsg, uint32_t tcp_port
 		return false;
 	}
 	// Check for the absence of STARTTLS in the capabilities when connected over TLS.
-	else if (client_write(client, PLACER("A3 CAPABILITY\r\n", 15)) != 15 || client_read_line(client) <= 0 ||
-		st_search_cs(&(client->line), PLACER("STARTTLS", 8), &location)) {
+	else if (client_write(client, PLACER("A0 CAPABILITY\r\n", 15)) != 15 || client_read_line(client) <= 0 ||
+		st_search_cs(&(client->line), PLACER("STARTTLS", 8), &location) || client_read_line(client) <= 0) {
 
 		st_sprint(errmsg, "IMAP advertised STARTTLS when already connected securely on the TLS port.");
 		client_close(client);
 		return false;
 	}
 	// Close the client.
-	else if (!check_imap_client_close_logout(client, 3, errmsg)) {
+	else if (!check_imap_client_close_logout(client, 1, errmsg)) {
 		client_close(client);
 		return false;
 	}

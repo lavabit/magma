@@ -78,8 +78,8 @@ gd() {
 			cat "$M_PATCHES/gd/"gd-2.0.34-fonts.patch | patch -s -p1 -b --suffix .fonts --fuzz=0; error
 			cat "$M_PATCHES/gd/"gd-2.0.35-time.patch | patch -s -p1 -b --suffix .time --fuzz=0; error
 			cat "$M_PATCHES/gd/"gd-2.0.35-security3.patch | patch -s -p1 -b --suffix .sec3 --fuzz=0; error
-			cat "$M_PATCHES/gd/"gd-version.patch | patch -s -p1 -b --fuzz=0; error; error
-			cat "$M_PATCHES/gd/"gd-sigcmp.patch | patch -s -p1 -b --fuzz=0; error; error
+			cat "$M_PATCHES/gd/"gd-version.patch | patch -s -p1 -b --fuzz=0; error
+			cat "$M_PATCHES/gd/"gd-sigcmp.patch | patch -s -p1 -b --fuzz=0; error
 		;;
 		gd-build)
 			cd "$M_SOURCES/gd"; error
@@ -463,7 +463,7 @@ curl() {
 			# The target 'check' is an alias for the targets 'test' and 'examples'
 			cd "$M_SOURCES/curl"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
-			make --jobs=4 examples &>> "$M_LOGS/curl.txt"; error; error
+			make --jobs=4 examples &>> "$M_LOGS/curl.txt"; error
 			make --jobs=4 test &>> "$M_LOGS/curl.txt"; error
 		;;
 		curl-check-full)
@@ -471,7 +471,7 @@ curl() {
 			# The target 'check' is an alias for the targets 'test' and 'examples'
 			cd "$M_SOURCES/curl"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
-			make --jobs=4 examples &>> "$M_LOGS/curl.txt"; error; error
+			make --jobs=4 examples &>> "$M_LOGS/curl.txt"; error
 			make --jobs=4 test &>> "$M_LOGS/curl.txt"; error
 			make --jobs=4 test-full &>> "$M_LOGS/curl.txt"; error
 
@@ -1765,7 +1765,9 @@ memcached() {
 			# doesn't appear to include the libraries automatically.
 			export LIBS="-lm -lstdc++"
 			
-			# unset MEMCACHED_SERVERS
+			# For some reason, the unit tests will fail when using this environment variable to find the memcached server.
+			unset MEMCACHED_SERVERS
+			
 			# export GEARMAND_BINARY="/usr/local/sbin/gearmand"
 			# export MEMCACHED_BINARY="/usr/local/bin/memcached"
 
@@ -1795,6 +1797,9 @@ memcached() {
 		memcached-check)
 			cd "$M_SOURCES/memcached"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			
+			# For some reason, the unit tests will fail when using this environment variable to find the memcached server.
+			unset MEMCACHED_SERVERS
 
 			# Doesn't appear to be necessary anymore...
 			#rm -vf /tmp/memcached.pid* &>> "$M_LOGS/memcached.txt"; error
@@ -1807,6 +1812,9 @@ memcached() {
 		memcached-check-full)
 			cd "$M_SOURCES/memcached"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			
+			# For some reason, the unit tests will fail when using this environment variable to find the memcached server.
+			unset MEMCACHED_SERVERS
 
 			# Doesn't appear to be necessary anymore...
 			#rm -vf /tmp/memcached.pid* &>> "$M_LOGS/memcached.txt"; error

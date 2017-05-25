@@ -96,11 +96,15 @@ bool_t net_set_reuseable_address(int sd, bool_t reuse) {
 /**
  * @brief	Set the blocking flag for a socket.
  * @param	sd			the socket descriptor to be adjusted.
- * @param	blocking	a boolean variable specifying whether blocking should be set.
+ * @param	blocking	a boolean, where true indicates the socket should be configured to use blocking system calls,
+ * 				and false to indicate the socket should use non-blocking calls.
  * @return	true if the flag was successfully set or false on failure.
  */
-bool_t net_set_non_blocking(int sd, bool_t blocking) {
+bool_t net_set_blocking(int sd, bool_t blocking) {
 
+	// If blocking is true, we retrieve the current socket flags, add the non-blocking flag, and then use the exclusive or
+	// operation to ensure the flag is removed the from resulting integer.If the blocking flag is false, then we simply use
+	// the or operator to ensure the flag is added to the options.
 	int flags = blocking ? ((fcntl(sd, F_GETFL, 0) | O_NONBLOCK) ^ O_NONBLOCK) : (fcntl(sd, F_GETFL, 0) | O_NONBLOCK);
 
 	if (fcntl(sd, F_SETFL, flags) == -1)  {

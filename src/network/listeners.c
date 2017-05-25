@@ -65,7 +65,7 @@ bool_t net_init(server_t *server) {
 	}
 
 	// Set non-blocking IO.
-//	if (!net_set_non_blocking(sd, false)) {
+//	if (!net_set_blocking(sd, false)) {
 //		log_critical("Error attempting to setup non-blocking IO.");
 //		return false;
 //	}
@@ -236,7 +236,7 @@ bool_t net_init(server_t *server) {
 //	}
 //
 //	// Set non-blocking IO.
-//	if (!net_set_non_blocking(sd, false)) {
+//	if (!net_set_blocking(sd, false)) {
 //		log_critical("Error attempting to setup non-blocking IO.");
 //		return false;
 //	}

@@ -62,7 +62,6 @@ bool_t check_prime_writers_sthread(stringer_t *errmsg) {
 
 bool_t check_prime_unpacker_sthread(stringer_t *errmsg) {
 
-	log_enable();
 	prime_object_t *object = NULL;
 	stringer_t *user_key = base64_decode(NULLER("B90AAEQBIAzFqb5wsMLLwJV1uUfVecHirAQVnHZbvlDqDqkwGZwzAiAk/epj8HtmvA/VUnMC9TfWwh1veCK9Bp+uExSfeuHCug=="), MANAGEDBUF(76)),
 		*org_key = base64_decode(NULLER("B6AAAEQBIJw2BXyqCKDFsosdWHuGxUpD7CDNyYCCjtjKuS1zHUOAAyD0I69V/DkTLv/g9Maesc9Vs2Ssef8ao4ZTzDk7e+Nf1g=="), MANAGEDBUF(128)),

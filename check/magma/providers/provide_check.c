@@ -572,13 +572,9 @@ START_TEST (check_unicode_s) {
 	bool_t result = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
-	log_disable();
-
 	if (status()) result = check_unicode_valid(errmsg);
 	if (status() && result) result = check_unicode_invalid(errmsg);
 	if (status() && result) result = check_unicode_length(errmsg);
-
-	log_enable();
 
 	log_test("PARSERS / UNICODE / SINGLE THREADED:", errmsg);
 	ck_assert_msg(result, st_char_get(errmsg));

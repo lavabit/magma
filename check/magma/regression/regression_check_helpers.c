@@ -142,7 +142,6 @@ bool_t check_regression_imap_search_range_parsing_sthread(stringer_t *errmsg, ui
 	//
 	// Attempted a token count on a NULL string bugger.
 	// Attempted token extraction from a NULL string buffer.
-	log_enable();
 
 	// Connect the client over TCP.
 	if (!(client = client_connect("localhost", port)) || client_read_line(client) <= 0 || !net_set_timeout(client->sockd, 20, 20)) {

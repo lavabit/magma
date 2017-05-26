@@ -282,7 +282,6 @@ bool_t check_smtp_network_auth_sthread(stringer_t *errmsg, uint32_t port, bool_t
 bool_t check_smtp_network_outbound_quota_sthread(stringer_t *errmsg, uint32_t port, bool_t secure) {
 
 	client_t *client = NULL;
-	log_enable();
 
 	// Wipe the Transmitting table history for the Magma user.
 	if (sql_query(PLACER("DELETE FROM Transmitting WHERE usernum = 1;", 45)) != 0) {

@@ -32,7 +32,7 @@ vagrant init lavabit/magma; vagrant up --provider virtualbox
 vagrant init lavabit/magma; vagrant up --provider libvirt
 ```
 
-Images for specific platforms can be found [here](https://atlas.hashicorp.com/lavabit)
+Images are available for alternate platforms [here](https://atlas.hashicorp.com/lavabit).
 
 # Credits
 
@@ -84,8 +84,7 @@ These instructions are targeted at systems running CentOS 6.
 Install the dependencies (make sure that EPEL is enabled):
 
 ```shell
-yum groupinstall -y 'Development Tools'
-yum install -y mysql-server memcached gettext-devel patch ncurses-devel perl-Time-HiRes check check-devel libbsd-devel
+yum install -y  gcc make autoconf automake binutils bison flex gcc-c++ gettext libtool make patch pkgconfig mysql-server memcached gettext-devel patch perl perl-Time-HiRes check check-devel ncurses-devel libbsd-devel
 ```
 
 **MySQL**
@@ -93,8 +92,7 @@ yum install -y mysql-server memcached gettext-devel patch ncurses-devel perl-Tim
 To start MySQL and configure the magma username run the commands below. The supplied password should be replaced with value unique to your environment. You may also want to limit the permissions of the magma database user to the database it will need to access. The global permission is only needed to setup the table schema.
 
 ```shell
-service mysqld start
-chkconfig mysqld on
+chkconfig mysqld on && service mysqld start
 
 echo "CREATE USER 'magma'@'localhost' IDENTIFIED BY 'volcano';" | mysql -u root
 echo "GRANT ALL PRIVILEGES ON *.* TO 'magma'@'localhost' WITH GRANT OPTION;" | mysql -u root
@@ -105,8 +103,7 @@ echo "GRANT ALL PRIVILEGES ON *.* TO 'magma'@'localhost' WITH GRANT OPTION;" | m
 To start Memcached run the commands below.
 
 ```shell
-service memcached start
-chkconfig memcached on
+chkconfig memcached on && service memcached start
 ```
 ### Compiling (The Short Way)
 

@@ -917,8 +917,8 @@ mysql() {
 		mysql-build)
 			cd "$M_SOURCES/mysql"; error
 			export CFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
-			export CXXFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
-			export CPPFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
+			export CXXFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -Wno-narrowing"
+			export CPPFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -Wno-narrowing"
 			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
 			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
 

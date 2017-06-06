@@ -1131,32 +1131,41 @@ clamav() {
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE -I$M_LOCAL/include"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE -I$M_LOCAL/include"
 			export LDFLAGS="-L$M_LOCAL/lib -Wl,-rpath,$M_LOCAL/lib"
+#
+#			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
+#			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
+#			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
+#			export CPPFLAGS="$CPPFLAGS \
+#				-I$M_SOURCES/curl/include \
+#				-I$M_SOURCES/openssl/include \
+#				-I$M_SOURCES/zlib"
+#			export LDFLAGS="\
+#				-L$M_SOURCES/curl/lib -Wl,-rpath,$M_SOURCES/curl/lib\
+#				-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl\
+#				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
+
 
 			# Note that at least in version 0.97 and 0.98, --disable-llvm breaks the unit tests. And with ClamAV 0.98.4
-			# Zlib 1.2.11 is mistaken for Zlib 1.2.1 and thus triggers an invalid security complaint.  
-#			if [[ $CLAMAV =~ "clamav-0.99."[0-9] ]]; then # 
-#				./configure  \
-#					--enable-check --enable-static --disable-yara --disable-mempool --disable-llvm --disable-zlib-vcheck \
-#					--with-openssl="$M_LOCAL" --with-zlib="$M_LOCAL" --with-xml="$M_LOCAL" --with-libcurl="$M_LOCAL" \
-#					--with-libbz2-prefix="$M_LOCAL" --with-libcheck-prefix="$M_LOCAL" \
-#					--prefix="$M_LOCAL" --exec-prefix="$M_LOCAL" --libdir="$M_LOCAL/lib" \
-#					&>> "$M_LOGS/clamav.txt"; error
 					
-#					--with-libcheck-prefix="$M_LOCAL" 
+################################################################################################################################
+################################################################################################################################
+################################################################################################################################															
+			# Updated to work with 0.99.2 but doesn't work with Zlib 1.2.11, yet.				
 				./configure  \
-					--enable-static --enable-shared --disable-check --disable-mempool --disable-llvm --disable-silent-rules \
+					--enable-check --enable-static --enable-shared --disable-mempool --disable-llvm --disable-silent-rules \
 					--with-openssl="$M_LOCAL" --with-zlib="$M_LOCAL" --with-xml="$M_LOCAL" --with-libcurl="$M_LOCAL" \
-					--with-libbz2-prefix="$M_LOCAL"  \
+					--with-libbz2-prefix="$M_LOCAL" --with-libcheck-prefix="$M_LOCAL" \
 					--prefix="$M_LOCAL" --exec-prefix="$M_LOCAL" --libdir="$M_LOCAL/lib" \
 					&>> "$M_LOGS/clamav.txt"; error
-#			else 
-#				./configure  \
-#					--disable-llvm --with--disable-xml --enable-check --enable-static --disable-silent-rules --disable-libcurl \
-#					--with-openssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" --with-libcheck-prefix="$M_LOCAL" \
-#					--with-libbz2-prefix="$M_SOURCES/bzip2" --prefix="$M_LOCAL"  --exec-prefix="$M_LOCAL"  --libdir="$M_LOCAL/lib" \
-#					&>> "$M_LOGS/clamav.txt"; error
-#				
-#			fi
+################################################################################################################################
+################################################################################################################################
+################################################################################################################################
+#			./configure  \
+#				--disable-llvm --disable-jit --with-disable-xml --enable-check --enable-static --disable-silent-rules --disable-libcurl \
+#				--with-openssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" --with-libcheck-prefix="$M_LOCAL" \
+#				--with-libbz2-prefix="$M_SOURCES/bzip2" --prefix="$M_LOCAL"  --exec-prefix="$M_LOCAL"  --libdir="$M_LOCAL/lib" \
+#				&>> "$M_LOGS/clamav.txt"; error
+			
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
 			if [[ $CLAMAV =~ "clamav-0.9"[7-9]"."[1-9] ]]; then
@@ -1168,7 +1177,7 @@ clamav() {
 				printf "\x23\x21/bin/bash\nexit 77\n" > "$M_SOURCES/clamav/unit_tests/check4_clamd.sh"; error
 			fi
 
-			make &>> "$M_LOGS/clamav.txt"; error
+			make --jobs=4 &>> "$M_LOGS/clamav.txt"; error
 			make install &>> "$M_LOGS/clamav.txt"; error
 		;;
 		clamav-check)
@@ -1336,12 +1345,19 @@ openssl() {
         	if [ $? == 0 ]; then
                 	export CONFIGOPTS='-fno-merge-debug-strings '
         	fi
-		    ./config \
+#		    ./config \
+#		        -d shared zlib no-asm --openssldir="$M_LOCAL" --libdir="lib" \
+#				-I"$M_SOURCES/zlib" -O $CONFIGOPTS -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
+#				-L"$M_SOURCES/openssl" -Wl,-rpath,"$M_SOURCES/openssl" \
+#				-L"$M_SOURCES/zlib" -Wl,-rpath,"$M_SOURCES/zlib" \
+#				&>> "$M_LOGS/openssl.txt"; error
+#				
+			./config \
 		        -d shared zlib no-asm --openssldir="$M_LOCAL" --libdir="lib" \
-				-I"$M_SOURCES/zlib" -O $CONFIGOPTS -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
-				-L"$M_SOURCES/openssl" -Wl,-rpath,"$M_SOURCES/openssl" \
-				-L"$M_SOURCES/zlib" -Wl,-rpath,"$M_SOURCES/zlib" \
+				-I"$M_SOURCES/include/" -O $CONFIGOPTS -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
+				-L"$M_SOURCES/lib/" -Wl,-rpath,"$M_SOURCES/lib/" \
 				&>> "$M_LOGS/openssl.txt"; error
+			
 
 			make depend &>> "$M_LOGS/openssl.txt"; error
 			make &>> "$M_LOGS/openssl.txt"; error

@@ -1112,7 +1112,10 @@ clamav() {
 				cat "$M_PATCHES/clamav/"shutdown_rarload_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
 
 				# Output the version number and not the git commit hash.
-				cat "$M_PATCHES/clamav/"version_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
+				cat "$M_PATCHES/clamav/"version_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error 
+				
+				# Fix the zlib version check, so that 1.2.10+ doesn't trigger a spurious error.
+				cat "$M_PATCHES/clamav/"zlib_check_0992.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
 			fi
 
 			# Fix reference conflict with libpng over the filename png.h.
@@ -1124,38 +1127,48 @@ clamav() {
 		;;
 		clamav-build)
 			cd "$M_SOURCES/clamav"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
-			export CPPFLAGS="$CPPFLAGS \
-				-I$M_SOURCES/curl/include \
-				-I$M_SOURCES/openssl/include \
-				-I$M_SOURCES/zlib"
-			export LDFLAGS="\
-				-L$M_SOURCES/curl/lib -Wl,-rpath,$M_SOURCES/curl/lib\
-				-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl\
-				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE -I$M_LOCAL/include"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE -I$M_LOCAL/include"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE -I$M_LOCAL/include"
+			export LDFLAGS="-L$M_LOCAL/lib -Wl,-rpath,$M_LOCAL/lib"
 
-			# Note that at least in version 0.97 and 0.98, --disable-llvm breaks the unit tests.
-
-			./configure  \
-				--disable-llvm --with--disable-xml --enable-check --enable-static --disable-silent-rules --disable-libcurl \
-				--with-openssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" --with-libcheck-prefix="$M_LOCAL" \
-				--with-libbz2-prefix="$M_SOURCES/bzip2" --prefix="$M_LOCAL"  --exec-prefix="$M_LOCAL"  --libdir="$M_LOCAL/lib" \
-				&>> "$M_LOGS/clamav.txt"; error
-
+			# Note that at least in version 0.97 and 0.98, --disable-llvm breaks the unit tests. And with ClamAV 0.98.4
+			# Zlib 1.2.11 is mistaken for Zlib 1.2.1 and thus triggers an invalid security complaint.  
+#			if [[ $CLAMAV =~ "clamav-0.99."[0-9] ]]; then # 
+#				./configure  \
+#					--enable-check --enable-static --disable-yara --disable-mempool --disable-llvm --disable-zlib-vcheck \
+#					--with-openssl="$M_LOCAL" --with-zlib="$M_LOCAL" --with-xml="$M_LOCAL" --with-libcurl="$M_LOCAL" \
+#					--with-libbz2-prefix="$M_LOCAL" --with-libcheck-prefix="$M_LOCAL" \
+#					--prefix="$M_LOCAL" --exec-prefix="$M_LOCAL" --libdir="$M_LOCAL/lib" \
+#					&>> "$M_LOGS/clamav.txt"; error
+					
+#					--with-libcheck-prefix="$M_LOCAL" 
+				./configure  \
+					--enable-static --enable-shared --disable-check --disable-mempool --disable-llvm --disable-silent-rules \
+					--with-openssl="$M_LOCAL" --with-zlib="$M_LOCAL" --with-xml="$M_LOCAL" --with-libcurl="$M_LOCAL" \
+					--with-libbz2-prefix="$M_LOCAL"  \
+					--prefix="$M_LOCAL" --exec-prefix="$M_LOCAL" --libdir="$M_LOCAL/lib" \
+					&>> "$M_LOGS/clamav.txt"; error
+#			else 
+#				./configure  \
+#					--disable-llvm --with--disable-xml --enable-check --enable-static --disable-silent-rules --disable-libcurl \
+#					--with-openssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" --with-libcheck-prefix="$M_LOCAL" \
+#					--with-libbz2-prefix="$M_SOURCES/bzip2" --prefix="$M_LOCAL"  --exec-prefix="$M_LOCAL"  --libdir="$M_LOCAL/lib" \
+#					&>> "$M_LOGS/clamav.txt"; error
+#				
+#			fi
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
-			if [[ $CLAMAV =~ "clamav-0.9"[7-8]"."[1-9] ]]; then
+			if [[ $CLAMAV =~ "clamav-0.9"[7-9]"."[1-9] ]]; then
 				# The check3_clamd.sh script will fail if LLVM is disabled.
-				# Since were not currently using clamd, the offending check script is replaced.
+				# Since we are not currently using clamd, the offending check script is replaced.
 				# The exit value 77 indicates the check was skipped.
 				printf "\x23\x21/bin/bash\nexit 77\n" > "$M_SOURCES/clamav/unit_tests/check2_clamd.sh"; error
 				printf "\x23\x21/bin/bash\nexit 77\n" > "$M_SOURCES/clamav/unit_tests/check3_clamd.sh"; error
 				printf "\x23\x21/bin/bash\nexit 77\n" > "$M_SOURCES/clamav/unit_tests/check4_clamd.sh"; error
 			fi
 
-			make --jobs=4 &>> "$M_LOGS/clamav.txt"; error
+			make &>> "$M_LOGS/clamav.txt"; error
 			make install &>> "$M_LOGS/clamav.txt"; error
 		;;
 		clamav-check)

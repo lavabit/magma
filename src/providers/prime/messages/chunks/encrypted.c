@@ -1,4 +1,3 @@
-
 /**
  * @file /magma/providers/prime/messages/chunks/encrypted.c
  *
@@ -11,12 +10,11 @@ void encrypted_chunk_free(prime_encrypted_chunk_t *chunk) {
 
 	if (chunk) {
 
-		if (chunk->signature) st_free(chunk->signature);
 		if (chunk->data) st_free(chunk->data);
+		if (chunk->slots) slots_free(chunk->slots);
 		if (chunk->trailing) st_free(chunk->trailing);
 		if (chunk->encrypted) st_free(chunk->encrypted);
-
-		if (chunk->slots) slots_free(chunk->slots);
+		if (chunk->signature) st_free(chunk->signature);
 
 		mm_free(chunk);
 	}
@@ -66,7 +64,7 @@ stringer_t * encrypted_chunk_buffer(prime_encrypted_chunk_t *chunk) {
  * @brief	Generate an encrypted message chunk. The signing and encryption keys are required, along with the public encryption
  * 			key for at least one actor.
  */
-prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *data) {
+prime_encrypted_chunk_t * encrypted_chunk_set(prime_message_chunk_type_t type, ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *data, uint8_t flags) {
 
 	uint32_t big_endian_length = 0;
 	prime_chunk_slots_t *slots = NULL;
@@ -102,7 +100,7 @@ prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, e
 		result->pad += (256 - (result->pad + result->length + 69));
 	}
 
-	result->flags = 0;
+	result->flags = flags;
 	big_endian_length = htobe32(result->length);
 
 	// Allocate a buffer for the serialized payload, and a buffer to store the padding bytes, then initialize the padding
@@ -162,7 +160,7 @@ prime_encrypted_chunk_t * encrypted_chunk_get(prime_message_chunk_type_t type, e
 	return result;
 }
 
-stringer_t * encrypted_chunk_set(ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *chunk, stringer_t *output) {
+stringer_t * encrypted_chunk_get(ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *chunk, stringer_t *output) {
 
 	int32_t payload_size = 0;
 	uint32_t big_endian_size = 0;
@@ -209,14 +207,12 @@ stringer_t * encrypted_chunk_set(ed25519_key_t *signing, prime_chunk_keks_t *kek
 			st_length_get(chunk), (payload_size + slot_size + 4));
 		return NULL;
 	}
-
 	// Key slots.
 	else if (!(key = slots_get(type, PLACER(st_data_get(chunk) + payload_size + 4, slot_size), keks, MANAGEDBUF(32))) ||
 		!(stretched = hash_sha512(key, MANAGEDBUF(64)))) {
 		log_pedantic("Key slot parsing failed.s");
 		return NULL;
 	}
-
 	// Decrypt.
 	else if (!(payload = aes_chunk_decrypt(stretched, PLACER(st_data_get(chunk), st_length_get(chunk) - slot_size), NULL))) {
 		log_pedantic("Chunk decryption failed.");
@@ -228,7 +224,6 @@ stringer_t * encrypted_chunk_set(ed25519_key_t *signing, prime_chunk_keks_t *kek
 		st_free(payload);
 		return NULL;
 	}
-
 	// Verify the signature.
 	else if (ed25519_verify(signing, PLACER(st_data_get(payload) + ED25519_SIGNATURE_LEN, st_length_get(payload) - ED25519_SIGNATURE_LEN),
 		PLACER(st_data_get(payload), ED25519_SIGNATURE_LEN))) {
@@ -280,4 +275,3 @@ stringer_t * encrypted_chunk_set(ed25519_key_t *signing, prime_chunk_keks_t *kek
 	st_free(payload);
 	return result;
 }
-

@@ -272,7 +272,6 @@ typedef struct __attribute__ ((packed)) {
 	uint8_t pad;
 	stringer_t *data;
 	stringer_t *trailing;
-
 	stringer_t *encrypted;
 	prime_chunk_slots_t *slots;
 

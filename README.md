@@ -36,14 +36,14 @@ Images are available for alternate platforms [here](https://atlas.hashicorp.com/
 
 # Credits
 
-Ladar Levison
-Greg Brown
-Ivan Tolkachev
-Princess Levison
-Ryan Crites
-Sean Benson
-Stephen Watt
-Jacob Adkins
+- Ladar Levison
+- Greg Brown
+- Ivan Tolkachev
+- Princess Levison
+- Ryan Crites
+- Sean Benson
+- Stephen Watt
+- Jacob Adkins
 
 And the army of Kickstarter supporters who contributed to this project.
 

@@ -422,113 +422,44 @@ START_TEST (check_prime_chunk_spanning_s) {
 	//log_disable();
 	log_enable();
 	bool_t outcome = true;
-	prime_encrypted_chunk_t *chunk = NULL;
-	prime_chunk_keys_t encrypt_keys, decrypt_keys;
-	ed25519_key_t *signing_pub = NULL, *signing_priv = NULL;
-	prime_chunk_keks_t *encrypt_keks = NULL, *decrypt_keks = NULL;
-	stringer_t *errmsg = MANAGEDBUF(1024), *data = NULL, *set = NULL;
-	secp256k1_key_t *encryption_pub = NULL, *encryption_priv = NULL, *recipient_pub = NULL, *recipient_priv = NULL;
+	stringer_t *raw = NULL, *message = NULL, *rebuilt = NULL, *errmsg = MANAGEDBUF(1024);
+	prime_t *destination = NULL, *org = NULL, *recipient = NULL, *request = NULL, *signet = NULL;
 
 	if (status()) {
 
-		// We add spaces between the categories to increase the number of randomly placed whitespace.
-		data = rand_choices("0123456789 abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ " \
-			"+!@#$%^&*()_|\"?><{}>~`<[]/.,;'\\-=\n\t", 1024, MANAGEDBUF(1024));
-
-		if (!(signing_priv = ed25519_generate()) || !(encryption_priv = secp256k1_generate()) || !(recipient_priv = secp256k1_generate()) ||
-			!(signing_pub = ed25519_public_set(ed25519_public_get(signing_priv, MANAGEDBUF(32)))) ||
-			!(encryption_pub = secp256k1_public_set(secp256k1_public_get(encryption_priv, MANAGEDBUF(33)))) ||
-			!(recipient_pub = secp256k1_public_set(secp256k1_public_get(recipient_priv, MANAGEDBUF(33))))) {
-			st_sprint(errmsg, "Key generation failed.");
+		if (!(destination = prime_key_generate(PRIME_ORG_KEY, NONE)) || !(org = prime_signet_generate(destination)) ||
+			!(recipient = prime_key_generate(PRIME_USER_KEY, NONE)) || !(request = prime_request_generate(recipient, NULL)) ||
+			!(signet = prime_request_sign(request, destination))) {
+			st_sprint(errmsg, "PRIME message test identity generation failed.");
+			outcome = false;
+		}
+		// Generate a large (> 16mb) random buffer for the message body.
+		else if (!(raw = rand_choices("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 20971520, NULL))) {
+			st_sprint(errmsg, "Unable to generate random message.");
+			outcome = false;
+		}
+		else if (!(message = prime_message_encrypt(raw, NULL, NULL, destination, signet))) {
+			st_sprint(errmsg, "PRIME message encryption test failed.");
+			outcome = false;
+		}
+		else if (!(rebuilt = prime_message_decrypt(message, org, recipient))) {
+			st_sprint(errmsg, "PRIME message decryption test failed.");
+			outcome = false;
+		}
+		else if (st_cmp_cs_eq(raw, rebuilt)) {
+			st_sprint(errmsg, "PRIME message encryption before and after comparison test failed.");
 			outcome = false;
 		}
 
-		mm_wipe(&encrypt_keys, sizeof(prime_chunk_keys_t));
-		mm_wipe(&decrypt_keys, sizeof(prime_chunk_keys_t));
+		st_cleanup(message, rebuilt, raw);
+		raw = rebuilt = message;
 
-		encrypt_keys.signing = signing_priv;
-		encrypt_keys.encryption = encryption_priv;
-		encrypt_keys.recipient = recipient_pub;
+		prime_cleanup(destination);
+		prime_cleanup(recipient);
+		prime_cleanup(request);
+		prime_cleanup(signet);
+		prime_cleanup(org);
 
-		decrypt_keys.signing = signing_pub;
-		decrypt_keys.encryption = encryption_pub;
-		decrypt_keys.recipient = recipient_priv;
-
-		if (outcome && (!(encrypt_keks = keks_get(&encrypt_keys, NULL)) || !(decrypt_keks = keks_set(&decrypt_keys, NULL)) ||
-			st_cmp_cs_eq(encrypt_keks->recipient, decrypt_keks->recipient))) {
-			st_sprint(errmsg, "Encrypted chunk kek creation failed.");
-			outcome = false;
-		}
-
-		// Test chunk creation using an ephemeral signing/encryption key, and a recipient public key.
-		else if (outcome && !(chunk = encrypted_chunk_set(PRIME_CHUNK_COMMON, signing_priv, encrypt_keks, data, 0))) {
-			st_sprint(errmsg, "Encrypted chunk creation failed.");
-			outcome = false;
-		}
-		else if (outcome && !(set = encrypted_chunk_get(signing_pub, decrypt_keks, encrypted_chunk_buffer(chunk), MANAGEDBUF(1024)))) {
-			st_sprint(errmsg, "Encrypted chunk parsing failed.");
-			outcome = false;
-		}
-		else if (outcome && st_cmp_cs_eq(data, set)) {
-			st_sprint(errmsg, "Encrypted chunk comparison failed. The output isn't identical to the input.");
-			outcome = false;
-		}
-
-		// Cleanup and reset the pointers so we don't trigger a double free.
-		encrypted_chunk_cleanup(chunk);
-		chunk = NULL;
-
-		// Randomize the test data.
-		data = rand_choices("0123456789 abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ " \
-			"+!@#$%^&*()_|\"?><{}>~`<[]/.,;'\\-=\n\t", 1024, MANAGEDBUF(1024));
-
-		if (outcome && !(chunk = encrypted_chunk_set(PRIME_CHUNK_HEADERS, signing_priv, encrypt_keks, data, 0))) {
-			st_sprint(errmsg, "Encrypted chunk creation failed.");
-			outcome = false;
-		}
-		else if (outcome && !(set = encrypted_chunk_get(signing_pub, decrypt_keks, encrypted_chunk_buffer(chunk), MANAGEDBUF(1024)))) {
-			st_sprint(errmsg, "Encrypted chunk parsing failed.");
-			outcome = false;
-		}
-		else if (outcome && st_cmp_cs_eq(data, set)) {
-			st_sprint(errmsg, "Encrypted chunk comparison failed. The output isn't identical to the input.");
-			outcome = false;
-		}
-
-		// Cleanup and reset the pointers so we don't trigger a double free.
-		encrypted_chunk_cleanup(chunk);
-		chunk = NULL;
-
-
-		// Randomize the test data.
-		data = rand_choices("0123456789 abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ " \
-			"+!@#$%^&*()_|\"?><{}>~`<[]/.,;'\\-=\n\t", 1024, MANAGEDBUF(1024));
-
-		if (outcome && !(chunk = encrypted_chunk_set(PRIME_CHUNK_BODY, signing_priv, encrypt_keks, data, 0))) {
-			st_sprint(errmsg, "Encrypted chunk creation failed.");
-			outcome = false;
-		}
-		else if (outcome && !(set = encrypted_chunk_get(signing_pub, decrypt_keks, encrypted_chunk_buffer(chunk), MANAGEDBUF(1024)))) {
-			st_sprint(errmsg, "Encrypted chunk parsing failed.");
-			outcome = false;
-		}
-		else if (outcome && st_cmp_cs_eq(data, set)) {
-			st_sprint(errmsg, "Encrypted chunk comparison failed. The output isn't identical to the input.");
-			outcome = false;
-		}
-
-		// Cleanup and reset the pointers so we don't trigger a double free.
-		encrypted_chunk_cleanup(chunk);
-		chunk = NULL;
-
-		keks_cleanup(encrypt_keks);
-		keks_cleanup(decrypt_keks);
-		if (signing_pub) ed25519_free(signing_pub);
-		if (signing_priv) ed25519_free(signing_priv);
-		if (recipient_pub) secp256k1_free(recipient_pub);
-		if (recipient_priv) secp256k1_free(recipient_priv);
-		if (encryption_pub) secp256k1_free(encryption_pub);
-		if (encryption_priv) secp256k1_free(encryption_priv);
 	}
 
 	log_test("PRIME / CHUNKS / SPANNING / SINGLE THREADED:", errmsg);
@@ -538,7 +469,8 @@ END_TEST
 
 START_TEST (check_prime_message_naked_s) {
 
-	log_disable();
+	//log_disable();
+	log_enable();
 	bool_t result = true;
 	uint32_t max = check_message_max();
 	stringer_t *raw = NULL, *message = NULL, *rebuilt = NULL, *errmsg = MANAGEDBUF(1024);

@@ -15,6 +15,7 @@ void encrypted_chunk_free(prime_encrypted_chunk_t *chunk) {
 		if (chunk->trailing) st_free(chunk->trailing);
 		if (chunk->encrypted) st_free(chunk->encrypted);
 		if (chunk->signature) st_free(chunk->signature);
+		if (chunk->next) encrypted_chunk_free(chunk->next);
 
 		mm_free(chunk);
 	}
@@ -55,6 +56,13 @@ stringer_t * encrypted_chunk_buffer(prime_encrypted_chunk_t *chunk) {
 
 	if (chunk) {
 		buffer = chunk->encrypted;
+	}
+
+	// If the *next pointer is set then this is part of a series of
+	// spanning chunks.
+	while (chunk->next) {
+		buffer = st_append(buffer, chunk->next);
+		chunk = chunk->next;
 	}
 
 	return buffer;
@@ -160,6 +168,7 @@ prime_encrypted_chunk_t * encrypted_chunk_set(prime_message_chunk_type_t type, e
 	return result;
 }
 
+// Decrypt
 stringer_t * encrypted_chunk_get(ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *chunk, stringer_t *output) {
 
 	int32_t payload_size = 0;

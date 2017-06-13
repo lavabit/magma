@@ -69,70 +69,29 @@ prime_message_t * encrypted_message_alloc(void) {
 	return result;
 }
 
-/* @brief	Get a message part as binary data.
+/* @brief	Get the part as an encrypted data buffer.
  *
- * @param	data		a stringer_t * pointing to the message data.
- * @param	remaining	a uint32_t holding the length of the remaining message data.
- * @param	keys		the prime_chunk_keys_t for the message.
- * @param	keks		the prime_chunk_keks_t for the message.
- * @param	type		a uint32_t holding the expected chunk type flag.
+ * @param	payload
+ * @param	type
+ * @param	keks
+ * @param	signing
  *
- * @return	a stringer_t * pointing to the total concatenated binary data of every
- * 			chunk representing the part.
- *
+ * @return
  */
-/*
-stringer_t * part_get(stringer_t *data, size_t remaining, prime_chunk_keys_t *keys, prime_chunk_keks_t *keks, uint32_t type) {
+prime_encrypted_chunk_t * part_encrypt(stringer_t *payload, uint8_t type, prime_chunk_keks_t *keks, ed25519_key_t *signing) {
 
-	stringer_t *part = NULL;
-	placer_t chunk = pl_null();
-	uint32_t read_type = 0, total_size = 0, chunk_payload_size = 0, chunk_slot_size = 0;
+	size_t num_chunks = 0;
+	stringer_t *slice = NULL;
+	prime_encrypted_chunk_t *chunk = NULL, *prev = NULL, *curr = NULL;
 
-	if (chunk_header_read(PLACER(data, remaining), &read_type, &total_size, &chunk) < 0 || read_type != type) {
+	if (!(slice = PLACER(st_data_get(payload), st_length_get(payload))) ||
+		!(num_chunks = (st_length_get(payload) / 16777098) + 1)) {
 		return NULL;
 	}
 
-	// If the size > 16777332, this part consists of multiple spanning chunks.
-	if (size > 16777332) {
-
-		// Parse the payload size.
-		if ((chunk_payload_size = chunk_header_size(chunk)) == -1) {
-			log_pedantic("Invalid chunk size. { size = -1 }");
-			return NULL;
-		}
-
-		// Parse the keyslot size.
-		else if ((chunk_slot_size = (slots_count(type) * SECP256K1_SHARED_SECRET_LEN)) == 0) {
-			log_pedantic("Invalid keyslot size. { size = %zu }", slot_size);
-			return NULL;
-		}
-
-		// Set the chunk placer.
-		chunk
-
-		// Append the raw chunk data.
-		part = st_append(part, encrypted_chunk_set(keys.signing, keks, &chunk, NULL));
-
-		chunk_payload_size = chunk_slot_size = 0;
-	}
-
-
-	return part;
-}
-*/
-
-// Get the part as an encrypted data buffer.
-stringer_t * part_encrypt(stringer_t *payload, uint8_t type, prime_chunk_keks_t *keks, ed25519_key_t *signing) {
-
-	size_t num_chunks = 0;
-	prime_encrypted_chunk_t *chunk;
-	stringer_t *result = NULL, *slice = NULL;
-
 	// Create a stringer with a serialized set of encrypted chunks. If necessary the payload is split into multiple chunks.
-	//  Pass this into encrypted_chunk_get() each portion of the payload. Note you'll need to tell the set that it's a span, or have the chunk get do the splitting.
-	// Return the serialized encrypted_chunk_get() values buffer, combining as necessary.
-
-	num_chunks = (st_length_get(payload) / 16777098) + 1;
+	// Pass this into encrypted_chunk_get() each portion of the payload. Note you'll need to tell the set that it's a span,
+	// or have the chunk get do the splitting.Return the serialized encrypted_chunk_get() values buffer, combining as necessary.
 
 	for (size_t i = 0; i < num_chunks; i++) {
 
@@ -141,53 +100,76 @@ stringer_t * part_encrypt(stringer_t *payload, uint8_t type, prime_chunk_keks_t 
 		st_data_set(slice, st_data_get(payload) + (16777098 * i));
 
 		// Process the chunk stringer into an encrypted chunk.
-		if (!(chunk = encrypted_chunk_set(type, signing, keks, slice, ((i + i < num_chunks) ? true : false)))) {
-			st_cleanup(result);
+		if (!(curr = encrypted_chunk_set(type, signing, keks, slice, ((i + i < num_chunks) ?  128 : 0)))) {
+			encrypted_chunk_cleanup(chunk);
 			return NULL;
 		}
 
-		// Either append the chunk data to result, or set result to the chunk data if this is the first chunk.
-		result = (result) ? st_append(result, encrypted_chunk_buffer(chunk))  : st_dupe(encrypted_chunk_buffer(chunk));
-
-		encrypted_chunk_cleanup(chunk);
+		if (!chunk) {
+			chunk = curr;
+			prev = curr;
+			curr = NULL;
+		}
+		else {
+			prev->next = curr;
+			prev = curr;
+			curr = NULL;
+		}
 	}
 
-	return result;
+	return chunk;
 }
 
-// TODO: Set needs to have in input parameter that may be set to the length of the encrypted data remaining in the message buffer.
-// Get the part as a decrypted data buffer.
-stringer_t * part_decrypt(stringer_t *payload, prime_chunk_keks_t *keks, ed25519_key_t *signing) {
+/* @brief	Get the part as a decrypted data buffer.
+ *
+ * @param	payload
+ * @param	part
+ * @param	keks
+ * @param	signing
+ * @param	type
+ *
+ * @return
+ */
+stringer_t * part_decrypt(stringer_t *payload, stringer_t *part, prime_chunk_keks_t *keks, ed25519_key_t *signing, uint8_t type) {
 
-	uint8_t type;
-	uint32_t remaining, size;
+	size_t part_size;
+	uint8_t curr_type;
+	uint32_t chunk_size = 0;
 	placer_t slice = pl_null();
-	stringer_t *result = NULL, *chunk = NULL;
+	stringer_t *result = NULL, *curr_chunk = NULL;
 
-	// Set remaining to the length of payload.
-	remaining = st_length_get(payload);
+	// Set the data buffer of the part stringer to the beginning of the payload.
+	st_data_set(part, st_data_get(payload));
 
-	while (remaining) {
+	while (true) {
 
-		// Read the chunk headers from the beginning of the payload.
-		chunk_header_read(payload, &type, &size, &slice);
+		// Read the chunk headers from the beginning of the remaining payload.
+		if (chunk_header_read(payload, &curr_type, &chunk_size, &slice) != 0) break;
+		part_size += st_length_get(&slice);
 
-		// Pass this into encrypted_chunk_get() and either set the result buffer to the return value or
-		// append the return value to the result buffer.
-		if (!(chunk = encrypted_chunk_get(signing, keks, &slice, NULL))) {
+		// TODO: Instead, check if the spanning-chunk flag (128) is set in the header.
+		// Check if the chunk is still a part of the part that we are decrypting.
+		if (curr_type != type) break;
+
+		// Pass this into encrypted_chunk_get().
+		if (!(curr_chunk = encrypted_chunk_get(signing, keks, &slice, NULL))) {
 			st_cleanup(result);
 			return NULL;
 		}
 
-		result = (result) ? st_append(result, chunk) : st_dupe(chunk);
+		// Either append curr_chunk onto result or set result equal to chunk.
+		result = st_append(result, curr_chunk);
 
-		// Decrement remaining by the length of the constructed chunk.
-		remaining -= pl_length_get(slice);
+		// Free curr_chunk.
+		st_free(curr_chunk);
 
 		// Update payload and loop if necessary.
-		st_data_set(payload, st_data_get(payload) + pl_length_get(slice));
-		st_length_set(payload, remaining);
+		st_data_set(payload, st_data_get(payload) + st_length_get(&slice));
+		st_length_set(payload, st_length_get(payload) - st_length_get(&slice));
 	}
+
+	// Construct the part-spanning chunk placer.
+	st_length_set(part, part_size);
 
 	return result;
 }
@@ -265,8 +247,10 @@ stringer_t * naked_message_get(stringer_t *message, prime_org_signet_t *org, pri
 	data += st_length_get(&chunk[2]);
 	remaining -= st_length_get(&chunk[2]);
 
-	if (chunk_header_read(PLACER(data, remaining), &type, &size, &chunk[3]) < 0 || type != PRIME_CHUNK_BODY ||
-		!(body = part_encrypt(&chunk[3], PRIME_CHUNK_BODY, keks, keys.signing))) {
+	//(void)body_size;
+	if (//chunk_header_read(PLACER(data, remaining), &type, &size, &chunk[3]) < 0 || type != PRIME_CHUNK_BODY ||
+		!(body = part_decrypt(PLACER(data, remaining), &chunk[3], keks, keys.signing, PRIME_CHUNK_BODY))) {
+		//!(body = encrypted_chunk_get(keys.signing, keks, &chunk[3], NULL))) {
 		ephemeral_chunk_cleanup(ephemeral);
 		st_free(headers);
 		keks_free(keks);
@@ -274,8 +258,12 @@ stringer_t * naked_message_get(stringer_t *message, prime_org_signet_t *org, pri
 	}
 
 	// Tree signature.
+	// 191892
 	data += st_length_get(&chunk[3]);
 	remaining -= st_length_get(&chunk[3]);
+	// 191824
+	//data += body_size;
+	//remaining -= body_size;
 
 	if (chunk_header_read(PLACER(data, remaining), &type, &size, &chunk[4]) < 0 || type != PRIME_SIGNATURE_TREE ||
 		!(tree = signature_tree_alloc())) {
@@ -411,10 +399,14 @@ prime_message_t * naked_message_set(stringer_t *message, prime_org_key_t *destin
 		encrypted_message_free(result);
 		return NULL;
 	}
-	else if (!(result->content.body = part_decrypt(&body, &(result->keks), result->keys.signing))) {
+	else if (!(result->content.body = part_encrypt(&body, PRIME_CHUNK_BODY, &(result->keks), result->keys.signing))) {
 		encrypted_message_free(result);
 		return NULL;
 	}
+	/*else if (!(result->content.body = encrypted_chunk_set(PRIME_CHUNK_BODY, result->keys.signing, &(result->keks), &body, 0))) {
+		encrypted_message_free(result);
+		return NULL;
+	}*/
 
 	// Generate the signatures.
 	if (!(tree = signature_tree_alloc())) {
@@ -426,8 +418,6 @@ prime_message_t * naked_message_set(stringer_t *message, prime_org_key_t *destin
 	signature_tree_add(tree, encrypted_chunk_buffer(result->metadata.common));
 	signature_tree_add(tree, encrypted_chunk_buffer(result->metadata.headers));
 	signature_tree_add(tree, encrypted_chunk_buffer(result->content.body));
-
-	// TODO:
 
 	// Calculate the tree signature.
 	result->signatures.tree = signature_tree_get(result->keys.signing, tree, &(result->keks));

@@ -59,24 +59,6 @@ uint64_t system_ulimit_cur(int_t resource) {
 	return (uint64_t)limits.rlim_cur;
 }
 
-uint64_t system_oslimit_max(int_t control, int_t resource) {
-
-	int_t ret, mib[2];
-	uint64_t result = 0;
-	size_t len = sizeof(result);
-
-	mib[0] = control;
-	mib[1] = resource;
-
-	if ((ret = sysctl(mib, 2, &result, &len, NULL, 0))) {
-		log_info("{ constrol = %i / resource = %i / return = %i / error = %s }", control, resource,
-			ret, strerror_r(errno, MEMORYBUF(1024), 1024));
-		return 0;
-	}
-
-	return result;
-}
-
 /**
  * @brief	Perform a chroot() on the directory specified in the config option magma.system.root_directory, if it is set.
  * @return	true on success or false on failure.
@@ -300,7 +282,7 @@ bool_t system_init_resource_limits(void) {
 		}
 
 		// File Descriptors
-		limits.rlim_cur = limits.rlim_max = system_oslimit_max(CTL_FS, FS_MAXFILE);
+		limits.rlim_cur = limits.rlim_max = 1048576;
 
 		if (setrlimit64(RLIMIT_NOFILE, &limits) && magma.config.output_resource_limits) {
 			log_info("Unable to increase the file descriptor limit. { error = %s }", strerror_r(errno, errbuf, 1024));

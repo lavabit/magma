@@ -72,8 +72,9 @@ void http_requeue(connection_t *con) {
  */
 void http_body(connection_t *con) {
 
+	int64_t read;
+	size_t length;
 	http_data_t *data;
-	size_t read, length;
 
 	// Get the content length.
 	if (!(data = http_data_get(con, HTTP_DATA_HEADER, "Content-Length")) || size_conv_bl(st_data_get(data->value),
@@ -89,17 +90,27 @@ void http_body(connection_t *con) {
 		return;
 	}
 
-	// If the length indicates we should be expecting more than a megabyte of data, manually allocate a memory mapped string. Were assuming the
-	// kernel will be more likely to store the data on disk if memory comes in short supply and that operations on this buffer are not likely to
-	// suffer from the performance penalty. If it appears the data will be less than 1 megabyte or an error occurs we can just use a jointed
-	// memory string and grow it by 32 KB each time.
-	if (!con->http.body && length > 1048576) {
-		con->http.body = st_alloc_opts(MAPPED_T | HEAP | JOINTED, length);
-	}
-
 	// There should be more data for us to read.
-	if (length && (!con->http.body || st_length_get(con->http.body) < length) && (read = con_read(con)) > 0) {
-		con->http.body = st_append_opts(32768, con->http.body, con->network.buffer);
+	else if (length && (!con->http.body || st_length_get(con->http.body) < length) && (read = con_read(con)) > 0) {
+
+		// If the length indicates we should be expecting more than a megabyte of data, manually allocate a memory mapped string. Were assuming the
+		// kernel will be more likely to store the data on disk if memory comes in short supply and that operations on this buffer are not likely to
+		// suffer from the performance penalty. If it appears the data will be less than 1 megabyte or an error occurs we can just use a jointed
+		// memory string and grow it by 32 KB each time.
+		if (!con->http.body && length > 1048576) {
+			con->http.body = st_dupe_opts(MAPPED_T | HEAP | JOINTED, con->network.buffer);
+		}
+
+		// If an empty body buffer exists, then free it before duplicating the network buffer.
+		else if (st_empty(con->http.body)) {
+			st_cleanup(con->http.body);
+			con->http.body = st_dupe_opts(MANAGED_T | HEAP | JOINTED, con->network.buffer);
+		}
+
+		// If a buffer exists with data in it, then we'll use the append function.
+		else {
+			con->http.body = st_append_opts(32768, con->http.body, con->network.buffer);
+		}
 	}
 
 	// When were done reading the body reset the mode to respond and the requeue function will route accordingly.

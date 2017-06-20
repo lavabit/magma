@@ -260,7 +260,7 @@ typedef struct __attribute__ ((packed)) {
 /**
  * @typedef prime_encrypted_chunk_t
  */
-typedef struct __attribute__ ((packed)) {
+typedef struct __attribute__ ((packed)) prime_encrypted_chunk_t {
 	struct {
 		uint8_t type;                      /**< Chunk type, 1 through 255. >*/
 		uint32_t length;                   /**< Payload length, must be divisible by 16 and less than 2^24 - 1. >*/
@@ -272,9 +272,9 @@ typedef struct __attribute__ ((packed)) {
 	uint8_t pad;
 	stringer_t *data;
 	stringer_t *trailing;
-
 	stringer_t *encrypted;
 	prime_chunk_slots_t *slots;
+	struct prime_encrypted_chunk_t *next;
 
 } prime_encrypted_chunk_t;
 

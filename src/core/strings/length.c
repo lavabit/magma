@@ -15,8 +15,8 @@
 size_t st_length_get(stringer_t *s) {
 
 	char *data;
+	uint32_t opts;
 	size_t result = 0;
-	uint32_t opts; ;
 
 	if (!s || !(opts = *((uint32_t *)s))) {
 		return 0;

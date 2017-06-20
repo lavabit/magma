@@ -123,8 +123,8 @@ START_TEST (check_prime_chunk_ephemeral_s) {
 	bool_t result = true;
 	ed25519_key_t *signing = NULL;
 	secp256k1_key_t *encryption = NULL;
-	prime_ephemeral_chunk_t *get = NULL, *set = NULL;
 	stringer_t *errmsg = MANAGEDBUF(1024);
+	prime_ephemeral_chunk_t *get = NULL, *set = NULL;
 
 	if (status()) {
 
@@ -180,9 +180,9 @@ START_TEST (check_prime_chunk_encrypted_s) {
 	bool_t result = true;
 	prime_encrypted_chunk_t *chunk = NULL;
 	prime_chunk_keys_t encrypt_keys, decrypt_keys;
+	ed25519_key_t *signing_pub = NULL, *signing_priv = NULL;
 	prime_chunk_keks_t *encrypt_keks = NULL, *decrypt_keks = NULL;
 	stringer_t *errmsg = MANAGEDBUF(1024), *data = NULL, *set = NULL;
-	ed25519_key_t *signing_pub = NULL, *signing_priv = NULL;
 	secp256k1_key_t *encryption_pub = NULL, *encryption_priv = NULL, *recipient_pub = NULL, *recipient_priv = NULL;
 
 	if (status()) {
@@ -217,11 +217,11 @@ START_TEST (check_prime_chunk_encrypted_s) {
 		}
 
 		// Test chunk creation using an ephemeral signing/encryption key, and a recipient public key.
-		else if (result && !(chunk = encrypted_chunk_get(PRIME_CHUNK_COMMON, signing_priv, encrypt_keks, data))) {
+		else if (result && !(chunk = encrypted_chunk_set(PRIME_CHUNK_COMMON, signing_priv, encrypt_keks, data, 0))) {
 			st_sprint(errmsg, "Encrypted chunk creation failed.");
 			result = false;
 		}
-		else if (result && !(set = encrypted_chunk_set(signing_pub, decrypt_keks, encrypted_chunk_buffer(chunk), MANAGEDBUF(1024)))) {
+		else if (result && !(set = encrypted_chunk_get(signing_pub, decrypt_keks, encrypted_chunk_buffer(chunk), MANAGEDBUF(1024)))) {
 			st_sprint(errmsg, "Encrypted chunk parsing failed.");
 			result = false;
 		}
@@ -238,11 +238,11 @@ START_TEST (check_prime_chunk_encrypted_s) {
 		data = rand_choices("0123456789 abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ " \
 			"+!@#$%^&*()_|\"?><{}>~`<[]/.,;'\\-=\n\t", 1024, MANAGEDBUF(1024));
 
-		if (result && !(chunk = encrypted_chunk_get(PRIME_CHUNK_HEADERS, signing_priv, encrypt_keks, data))) {
+		if (result && !(chunk = encrypted_chunk_set(PRIME_CHUNK_HEADERS, signing_priv, encrypt_keks, data, 0))) {
 			st_sprint(errmsg, "Encrypted chunk creation failed.");
 			result = false;
 		}
-		else if (result && !(set = encrypted_chunk_set(signing_pub, decrypt_keks, encrypted_chunk_buffer(chunk), MANAGEDBUF(1024)))) {
+		else if (result && !(set = encrypted_chunk_get(signing_pub, decrypt_keks, encrypted_chunk_buffer(chunk), MANAGEDBUF(1024)))) {
 			st_sprint(errmsg, "Encrypted chunk parsing failed.");
 			result = false;
 		}
@@ -260,11 +260,11 @@ START_TEST (check_prime_chunk_encrypted_s) {
 		data = rand_choices("0123456789 abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ " \
 			"+!@#$%^&*()_|\"?><{}>~`<[]/.,;'\\-=\n\t", 1024, MANAGEDBUF(1024));
 
-		if (result && !(chunk = encrypted_chunk_get(PRIME_CHUNK_BODY, signing_priv, encrypt_keks, data))) {
+		if (result && !(chunk = encrypted_chunk_set(PRIME_CHUNK_BODY, signing_priv, encrypt_keks, data, 0))) {
 			st_sprint(errmsg, "Encrypted chunk creation failed.");
 			result = false;
 		}
-		else if (result && !(set = encrypted_chunk_set(signing_pub, decrypt_keks, encrypted_chunk_buffer(chunk), MANAGEDBUF(1024)))) {
+		else if (result && !(set = encrypted_chunk_get(signing_pub, decrypt_keks, encrypted_chunk_buffer(chunk), MANAGEDBUF(1024)))) {
 			st_sprint(errmsg, "Encrypted chunk parsing failed.");
 			result = false;
 		}
@@ -296,16 +296,16 @@ END_TEST
 START_TEST (check_prime_chunk_signature_s) {
 
 	log_disable();
-	bool_t result = true;
 	size_t length = 0;
-	prime_chunk_keys_t encrypt_keys, decrypt_keys;
-	prime_ephemeral_chunk_t *ephemeral = NULL;
+	bool_t result = true;
 	prime_signature_tree_t *tree = NULL;
+	prime_ephemeral_chunk_t *ephemeral = NULL;
+	prime_chunk_keys_t encrypt_keys, decrypt_keys;
 	ed25519_key_t *signing_pub = NULL, *signing_priv = NULL;
 	prime_chunk_keks_t *encrypt_keks = NULL, *decrypt_keks = NULL;
 	prime_encrypted_chunk_t *common = NULL, *headers = NULL, *body = NULL;
-	stringer_t *errmsg = MANAGEDBUF(1024), *payload = MANAGEDBUF(1024), *treesig = NULL, *data = NULL, *full = NULL;
 	secp256k1_key_t *encryption_pub = NULL, *encryption_priv = NULL, *recipient_pub = NULL, *recipient_priv = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024), *payload = MANAGEDBUF(1024), *treesig = NULL, *data = NULL, *full = NULL;
 
 	if (status()) {
 
@@ -344,19 +344,19 @@ START_TEST (check_prime_chunk_signature_s) {
 			result = false;
 		}
 
-		common = encrypted_chunk_get(PRIME_CHUNK_COMMON, signing_priv, encrypt_keks, payload);
+		common = encrypted_chunk_set(PRIME_CHUNK_COMMON, signing_priv, encrypt_keks, payload, 0);
 		if (signature_tree_add(tree, encrypted_chunk_buffer(common))) {
 			st_sprint(errmsg, "Tree signature creation failed.");
 			result = false;
 		}
 
-		headers = encrypted_chunk_get(PRIME_CHUNK_HEADERS, signing_priv, encrypt_keks, payload);
+		headers = encrypted_chunk_set(PRIME_CHUNK_HEADERS, signing_priv, encrypt_keks, payload, 0);
 		if (signature_tree_add(tree, encrypted_chunk_buffer(headers))) {
 			st_sprint(errmsg, "Tree signature creation failed.");
 			result = false;
 		}
 
-		body = encrypted_chunk_get(PRIME_CHUNK_BODY, signing_priv, encrypt_keks, payload);
+		body = encrypted_chunk_set(PRIME_CHUNK_BODY, signing_priv, encrypt_keks, payload, 0);
 		if (signature_tree_add(tree, encrypted_chunk_buffer(body))) {
 			st_sprint(errmsg, "Tree signature creation failed.");
 			result = false;
@@ -406,9 +406,71 @@ START_TEST (check_prime_chunk_signature_s) {
 }
 END_TEST
 
+START_TEST (check_prime_chunk_compressed_s) {
+
+	log_disable();
+	bool_t outcome = false;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	log_test("PRIME / CHUNKS / COMPRESSED / SINGLE THREADED:", NULLER("SKIPPED"));
+	ck_assert_msg(outcome, st_char_get(errmsg));
+}
+END_TEST
+
+START_TEST (check_prime_chunk_spanning_s) {
+
+	//log_disable();
+	log_enable();
+	bool_t outcome = true;
+	stringer_t *raw = NULL, *message = NULL, *rebuilt = NULL, *errmsg = MANAGEDBUF(1024);
+	prime_t *destination = NULL, *org = NULL, *recipient = NULL, *request = NULL, *signet = NULL;
+
+	if (status()) {
+
+		if (!(destination = prime_key_generate(PRIME_ORG_KEY, NONE)) || !(org = prime_signet_generate(destination)) ||
+			!(recipient = prime_key_generate(PRIME_USER_KEY, NONE)) || !(request = prime_request_generate(recipient, NULL)) ||
+			!(signet = prime_request_sign(request, destination))) {
+			st_sprint(errmsg, "PRIME message test identity generation failed.");
+			outcome = false;
+		}
+		// Generate a large (> 16mb) random buffer for the message body.
+		else if (!(raw = rand_choices("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 20971520, NULL))) {
+			st_sprint(errmsg, "Unable to generate random message.");
+			outcome = false;
+		}
+		else if (!(message = prime_message_encrypt(raw, NULL, NULL, destination, signet))) {
+			st_sprint(errmsg, "PRIME message encryption test failed.");
+			outcome = false;
+		}
+		else if (!(rebuilt = prime_message_decrypt(message, org, recipient))) {
+			st_sprint(errmsg, "PRIME message decryption test failed.");
+			outcome = false;
+		}
+		else if (st_cmp_cs_eq(raw, rebuilt)) {
+			st_sprint(errmsg, "PRIME message encryption before and after comparison test failed.");
+			outcome = false;
+		}
+
+		st_cleanup(message, rebuilt, raw);
+		raw = rebuilt = message;
+
+		prime_cleanup(destination);
+		prime_cleanup(recipient);
+		prime_cleanup(request);
+		prime_cleanup(signet);
+		prime_cleanup(org);
+
+	}
+
+	log_test("PRIME / CHUNKS / SPANNING / SINGLE THREADED:", errmsg);
+	ck_assert_msg(outcome, st_char_get(errmsg));
+}
+END_TEST
+
 START_TEST (check_prime_message_naked_s) {
 
-//	log_disable();
+	//log_disable();
+	log_enable();
 	bool_t result = true;
 	uint32_t max = check_message_max();
 	stringer_t *raw = NULL, *message = NULL, *rebuilt = NULL, *errmsg = MANAGEDBUF(1024);
@@ -490,6 +552,8 @@ Suite * suite_check_prime(void) {
 	suite_check_testcase(s, "PRIME", "PRIME Ephemeral Chunks/S", check_prime_chunk_ephemeral_s);
 	suite_check_testcase(s, "PRIME", "PRIME Encrypted Chunks/S", check_prime_chunk_encrypted_s);
 	suite_check_testcase(s, "PRIME", "PRIME Signature Chunks/S", check_prime_chunk_signature_s);
+	suite_check_testcase(s, "PRIME", "PRIME Compressed Chunks/S", check_prime_chunk_compressed_s);
+	suite_check_testcase(s, "PRIME", "PRIME Spanning Chunks/S", check_prime_chunk_spanning_s);
 
 	suite_check_testcase(s, "PRIME", "PRIME Naked Messages/S", check_prime_message_naked_s);
 	suite_check_testcase(s, "PRIME", "PRIME Native Messages/S", check_prime_message_native_s);

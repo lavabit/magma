@@ -55,7 +55,7 @@ prime_encrypted_chunk_t *  encrypted_chunk_alloc(void);
 stringer_t *               encrypted_chunk_buffer(prime_encrypted_chunk_t *chunk);
 void                       encrypted_chunk_cleanup(prime_encrypted_chunk_t *chunk);
 void                       encrypted_chunk_free(prime_encrypted_chunk_t *chunk);
-prime_encrypted_chunk_t *  encrypted_chunk_set(prime_message_chunk_type_t type, ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *data, uint8_t flags);
+prime_encrypted_chunk_t *  encrypted_chunk_set(prime_message_chunk_type_t type, ed25519_key_t *signing, prime_chunk_keks_t *keks, prime_message_chunk_flags_t flags, stringer_t *payload);
 stringer_t *               encrypted_chunk_get(ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *chunk, stringer_t *output);
 
 #endif

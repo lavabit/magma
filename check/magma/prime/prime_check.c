@@ -217,7 +217,7 @@ START_TEST (check_prime_chunk_encrypted_s) {
 		}
 
 		// Test chunk creation using an ephemeral signing/encryption key, and a recipient public key.
-		else if (result && !(chunk = encrypted_chunk_set(PRIME_CHUNK_COMMON, signing_priv, encrypt_keks, data, 0))) {
+		else if (result && !(chunk = encrypted_chunk_set(PRIME_CHUNK_COMMON, signing_priv, encrypt_keks, PRIME_CHUNK_FLAG_NONE, data))) {
 			st_sprint(errmsg, "Encrypted chunk creation failed.");
 			result = false;
 		}
@@ -238,7 +238,7 @@ START_TEST (check_prime_chunk_encrypted_s) {
 		data = rand_choices("0123456789 abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ " \
 			"+!@#$%^&*()_|\"?><{}>~`<[]/.,;'\\-=\n\t", 1024, MANAGEDBUF(1024));
 
-		if (result && !(chunk = encrypted_chunk_set(PRIME_CHUNK_HEADERS, signing_priv, encrypt_keks, data, 0))) {
+		if (result && !(chunk = encrypted_chunk_set(PRIME_CHUNK_HEADERS, signing_priv, encrypt_keks, PRIME_CHUNK_FLAG_NONE, data))) {
 			st_sprint(errmsg, "Encrypted chunk creation failed.");
 			result = false;
 		}
@@ -260,7 +260,7 @@ START_TEST (check_prime_chunk_encrypted_s) {
 		data = rand_choices("0123456789 abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ " \
 			"+!@#$%^&*()_|\"?><{}>~`<[]/.,;'\\-=\n\t", 1024, MANAGEDBUF(1024));
 
-		if (result && !(chunk = encrypted_chunk_set(PRIME_CHUNK_BODY, signing_priv, encrypt_keks, data, 0))) {
+		if (result && !(chunk = encrypted_chunk_set(PRIME_CHUNK_BODY, signing_priv, encrypt_keks, PRIME_CHUNK_FLAG_NONE, data))) {
 			st_sprint(errmsg, "Encrypted chunk creation failed.");
 			result = false;
 		}
@@ -344,19 +344,19 @@ START_TEST (check_prime_chunk_signature_s) {
 			result = false;
 		}
 
-		common = encrypted_chunk_set(PRIME_CHUNK_COMMON, signing_priv, encrypt_keks, payload, 0);
+		common = encrypted_chunk_set(PRIME_CHUNK_COMMON, signing_priv, encrypt_keks, PRIME_CHUNK_FLAG_NONE, payload);
 		if (signature_tree_add(tree, encrypted_chunk_buffer(common))) {
 			st_sprint(errmsg, "Tree signature creation failed.");
 			result = false;
 		}
 
-		headers = encrypted_chunk_set(PRIME_CHUNK_HEADERS, signing_priv, encrypt_keks, payload, 0);
+		headers = encrypted_chunk_set(PRIME_CHUNK_HEADERS, signing_priv, encrypt_keks, PRIME_CHUNK_FLAG_NONE, payload);
 		if (signature_tree_add(tree, encrypted_chunk_buffer(headers))) {
 			st_sprint(errmsg, "Tree signature creation failed.");
 			result = false;
 		}
 
-		body = encrypted_chunk_set(PRIME_CHUNK_BODY, signing_priv, encrypt_keks, payload, 0);
+		body = encrypted_chunk_set(PRIME_CHUNK_BODY, signing_priv, encrypt_keks, PRIME_CHUNK_FLAG_NONE, payload);
 		if (signature_tree_add(tree, encrypted_chunk_buffer(body))) {
 			st_sprint(errmsg, "Tree signature creation failed.");
 			result = false;

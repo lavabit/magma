@@ -8,22 +8,28 @@
 
 void encrypted_chunk_free(prime_encrypted_chunk_t *chunk) {
 
-	if (chunk) {
+	prime_encrypted_chunk_t *next = NULL;
+
+#ifdef MAGMA_PEDANTIC
+	if (!chunk) {
+		log_pedantic("An invalid PRIME encrypted chunk pointer was passed to the free function.");
+		return;
+	}
+#endif
+
+	while (chunk) {
 
 		if (chunk->data) st_free(chunk->data);
-		if (chunk->slots) slots_free(chunk->slots);
 		if (chunk->trailing) st_free(chunk->trailing);
 		if (chunk->encrypted) st_free(chunk->encrypted);
 		if (chunk->signature) st_free(chunk->signature);
-		if (chunk->next) encrypted_chunk_free(chunk->next);
 
+		if (chunk->slots) slots_free(chunk->slots);
+
+		next = chunk->next;
 		mm_free(chunk);
+		chunk = next;
 	}
-#ifdef MAGMA_PEDANTIC
-	else {
-		log_pedantic("An invalid PRIME encrypted chunk pointer was passed to the free function.");
-	}
-#endif
 
 	return;
 }
@@ -50,19 +56,15 @@ prime_encrypted_chunk_t * encrypted_chunk_alloc(void) {
 	return result;
 }
 
+/**
+ * @brief	Returns the chunk buffer, which contains a serialized version of the encrypted chunk data.
+ */
 stringer_t * encrypted_chunk_buffer(prime_encrypted_chunk_t *chunk) {
 
 	stringer_t *buffer = NULL;
 
 	if (chunk) {
 		buffer = chunk->encrypted;
-	}
-
-	// If the *next pointer is set then this is part of a series of
-	// spanning chunks.
-	while (chunk->next) {
-		buffer = st_append(buffer, chunk->next);
-		chunk = chunk->next;
 	}
 
 	return buffer;
@@ -72,7 +74,7 @@ stringer_t * encrypted_chunk_buffer(prime_encrypted_chunk_t *chunk) {
  * @brief	Generate an encrypted message chunk. The signing and encryption keys are required, along with the public encryption
  * 			key for at least one actor.
  */
-prime_encrypted_chunk_t * encrypted_chunk_set(prime_message_chunk_type_t type, ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *data, uint8_t flags) {
+prime_encrypted_chunk_t * encrypted_chunk_set(prime_message_chunk_type_t type, ed25519_key_t *signing, prime_chunk_keks_t *keks, prime_message_chunk_flags_t flags, stringer_t *payload) {
 
 	uint32_t big_endian_length = 0;
 	prime_chunk_slots_t *slots = NULL;
@@ -81,17 +83,16 @@ prime_encrypted_chunk_t * encrypted_chunk_set(prime_message_chunk_type_t type, e
 
 	// We need a signing key, encryption key, and at least one actor.
 	if (!signing || ed25519_type(signing) != ED25519_PRIV ||
-		!keks || (!keks->author && !keks->origin && !keks->destination && !keks->recipient) || !data) {
+		!keks || (!keks->author && !keks->origin && !keks->destination && !keks->recipient) || !payload) {
 		log_pedantic("Invalid parameters passed to the encrypted chunk generator.");
 		return NULL;
 	}
 
-	/// HIGH: Add support for payloads that span across multiple chunks.
 	// The maximum chunk plain text data size is 16,777,099. The max is limited by the 3 byte length in the chunk header,
 	// minus the 32 byte needed for the shards, and then accounting for the 69 required encryted bytes, while still resulting
 	// in a total encrypted size that aligns to a 16 byte boundary.
-	else if (st_length_get(data) < 1 || st_length_get(data) >= 16777099) {
-		log_pedantic("The chunk payload data must bpe larger than 1 byte, but smaller than 16,777,099 bytes. { length = %zu }", st_length_get(data));
+	else if (st_length_get(payload) < 1 || st_length_get(payload) >= 16777099) {
+		log_pedantic("The chunk payload data must bpe larger than 1 byte, but smaller than 16,777,099 bytes. { length = %zu }", st_length_get(payload));
 		return NULL;
 	}
 	else if (!(result = encrypted_chunk_alloc())) {
@@ -100,8 +101,8 @@ prime_encrypted_chunk_t * encrypted_chunk_set(prime_message_chunk_type_t type, e
 
 	// The entire buffer must be evenly divisible by 16. divisible by
 	// 64 signature + 3 data length + 1 flags + 1 padding length = 69
-	result->pad = ((st_length_get(data) + 69 + 16 - 1) & ~(16 - 1)) - (st_length_get(data) + 69);
-	result->length = st_length_get(data);
+	result->pad = ((st_length_get(payload) + 69 + 16 - 1) & ~(16 - 1)) - (st_length_get(payload) + 69);
+	result->length = st_length_get(payload);
 
 	// The spec suggests we pad any payload smaller to 256 bytes, to make it a minimum of 256 bytes.
 	if ((result->pad + result->length + 69) < 256) {
@@ -129,7 +130,7 @@ prime_encrypted_chunk_t * encrypted_chunk_set(prime_message_chunk_type_t type, e
 	mm_copy(st_data_get(result->data) + 68, ((uchr_t *)&result->pad), 1);
 
 	// Copy in the payload.
-	mm_copy(st_data_get(result->data) + 69, st_data_get(data), result->length);
+	mm_copy(st_data_get(result->data) + 69, st_data_get(payload), result->length);
 
 	// Copy in the trailing bytes.
 	mm_copy(st_data_get(result->data) + result->length + 69, st_data_get(result->trailing), result->pad);
@@ -168,7 +169,9 @@ prime_encrypted_chunk_t * encrypted_chunk_set(prime_message_chunk_type_t type, e
 	return result;
 }
 
-// Decrypt
+/**
+ * @brief	Take an encrypted message chunk, in serialized form, and return the decrypted payload data.
+ */
 stringer_t * encrypted_chunk_get(ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *chunk, stringer_t *output) {
 
 	int32_t payload_size = 0;

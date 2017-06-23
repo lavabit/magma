@@ -53,7 +53,7 @@
 #define DNSSEC_DIGEST_SHA256 2
 
 
-typedef struct  {
+typedef struct __attribute__ ((packed)) {
 #if BYTE_ORDER == BIG_ENDIAN
     unsigned int reserved1 : 7;
     unsigned int zone_key : 1;
@@ -65,9 +65,9 @@ typedef struct  {
     unsigned int sep : 1;
     unsigned int reserved2 : 7;
 #endif
-} __attribute__((__packed__)) dnskey_rr_flags_t;
+} dnskey_rr_flags_t;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
     uint16_t covered;               ///< The type of the rr set covered by this record.
     uint8_t algorithm;              ///< The numerical id of the cryptographic algorithm used to generate the signature.
     uint8_t labels;                 ///< The number of labels in the original RRSIG RR owner name.
@@ -77,14 +77,14 @@ typedef struct {
     uint16_t key_tag;               ///< A tag (selector) identifying the corresponding DNSKEY RR (which isn't necessarily unique) that validates this record.
     unsigned char signame;          ///< A label identifying the owner name of the DNSKEY RR validating this signature (must not use name compression).
     // Signame is followed by the actual signature
-} __attribute__((__packed__)) rrsig_rr_t;
+} rrsig_rr_t;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
     uint16_t key_tag;               ///< The keytag of the DNSKEY RR to which this record refers.
     uint8_t algorithm;              ///< The algorithm used by this RR's referenced DNSKEY.
     uint8_t digest_type;            ///< The type of the digest algorithm used by the digest field.
     unsigned char digest;           ///< A digest of this RR's referenced DNSKEY.
-} __attribute__((__packed__)) ds_rr_t;
+} ds_rr_t;
 
 
 typedef struct ds ds_t;

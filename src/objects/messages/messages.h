@@ -66,7 +66,7 @@ enum {
 /// LOW: Update the Messages table columns so they match the tank mail message header fields. Store individual header/body lengths
 /// and the compressed/uncompressed hash values; then update the message type to store and use the new information.
 
-typedef struct __attribute__ ((__packed__)) {
+typedef struct __attribute__ ((packed)) {
 
 	struct {
 		uint64_t num; /* Unique message number. */

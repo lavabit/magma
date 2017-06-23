@@ -13,15 +13,13 @@
 #include "providers/symbols.h"
 
 // sizeof(errinfo_t) and number elements chosen so the entire data structure fits inside one 4,096 byte page.
-struct thread_err_stack {
+struct __attribute__ ((packed)) thread_err_stack {
     errinfo_t error_stack[ERR_STACK_SIZE];
     errinfo_t *error_stack_top;
     unsigned char error_stack_overflow;
-} __attribute__((__packed__));
-
+};
 
 __thread struct thread_err_stack _t_err_stack;
-
 
 // The global error message string table.
 static const err_desc_t err_desc_table[] = {

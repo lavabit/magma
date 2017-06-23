@@ -10,21 +10,21 @@
 #define MAGMA_HASHED_BUCKETS 1024
 
 // Hashed lists.
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	void *data;
 	multi_t key;
 	struct hashed_bucket_t *next;
 } hashed_bucket_t;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	inx_t *inx;
 	hashed_bucket_t *bucket;
 	uint64_t serial, slot, count;
-} __attribute__((__packed__)) hashed_cursor_t;
+} hashed_cursor_t;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	uint32_t buckets;
-} __attribute__((__packed__)) hashed_index_t;
+} hashed_index_t;
 
 // TODO: Finish implementing the hashed iterators.
 // TODO: Respect dupe/lock flags.

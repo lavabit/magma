@@ -8,22 +8,22 @@
 #include "magma.h"
 
 // Linked lists.
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	multi_t key;
 	void **data;
 	uint64_t size, count;
 } linked_record_t;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	linked_record_t *record;
 	struct linked_node_t *next, *prev;
 } linked_node_t;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	inx_t *inx;
 	linked_node_t *node;
 	uint64_t serial, count, position;
-}__attribute__ ((__packed__)) linked_cursor_t;
+} linked_cursor_t;
 
 /**
  * @brief	Get the data associated with a linked list record.

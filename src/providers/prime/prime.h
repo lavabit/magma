@@ -89,8 +89,7 @@ typedef enum {
 
 /**
  * @typedef prime_message_chunk_type_t
- */
-typedef enum {
+ */typedef enum {
 	PRIME_CHUNK_INVALID = -1,
 
 	// Tracing

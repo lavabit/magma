@@ -43,7 +43,7 @@ typedef enum {
 } dmime_message_state_t;
 
 // structure to easily store the KEKs and IVs
-typedef struct __attribute__((packed)) {
+typedef struct __attribute__ ((packed)) {
     unsigned char iv[16];
     unsigned char key[AES_256_KEY_SIZE];
 } dmime_kek_t;
@@ -87,7 +87,7 @@ typedef struct {
 } dmime_object_t;
 
 //tracing structure
-typedef struct __attribute__((packed)) {
+typedef struct __attribute__ ((packed)) {
     unsigned char size[TRACING_LENGTH_SIZE];
     unsigned char data[];
 } dmime_tracing_t;
@@ -105,7 +105,7 @@ typedef enum {
 } dmime_message_chunk_state_t;
 
 // Chunk of a DIME message.
-typedef struct __attribute__((packed)) {
+typedef struct __attribute__ ((packed)) {
     dmime_message_chunk_state_t state;
     // this size is used to serialize the chunk which follows
     size_t serial_size;

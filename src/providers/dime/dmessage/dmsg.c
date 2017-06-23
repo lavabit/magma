@@ -9,7 +9,7 @@ typedef dmime_kek_t dmime_kekset_t[4];
 typedef unsigned char dmime_ephemeral_payload_t[EC_PUBKEY_SIZE];
 
 //standard payload structure
-typedef struct __attribute__((packed)) {
+typedef struct __attribute__ ((packed)) {
     unsigned char signature[ED25519_SIG_SIZE];
     unsigned char data_size[CHUNK_LENGTH_SIZE];
     unsigned char flags;
@@ -24,7 +24,7 @@ typedef unsigned char dmime_signature_payload_t[ED25519_SIG_SIZE];
 typedef unsigned char *dmime_encrypted_payload_t;
 
 // keyslot contains the aes keys. Each chunk can have between 0 and 4 keyslots.
-typedef struct __attribute__((packed)) {
+typedef struct __attribute__ ((packed)) {
     unsigned char random[16];               // Random bytes.
     unsigned char iv[16];                   // Initialization vector.
     unsigned char aes_key[AES_256_KEY_SIZE];

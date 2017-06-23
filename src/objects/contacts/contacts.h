@@ -13,12 +13,12 @@ enum {
 	CONTACT_DETAIL_FLAG_CRITICAL = 1
 };
 
-typedef struct __attribute__ ((__packed__)) {
+typedef struct __attribute__ ((packed)) {
 	uint64_t flags;
 	stringer_t *key, *value;
 } contact_detail_t;
 
-typedef struct __attribute__ ((__packed__)) {
+typedef struct __attribute__ ((packed)) {
 	inx_t *details;
 	stringer_t *name;
 	uint64_t contactnum;

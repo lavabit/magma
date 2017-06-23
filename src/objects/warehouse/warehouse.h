@@ -11,14 +11,14 @@
 /// HIGH: Create an interface for loading SSL/TLS and DKIM certificates from the database.
 /// HIGH: Create an interface for checking whether an address or IP is trusted.
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	int_t spf;
 	int_t dkim;
 	int_t wildcard;
 	int_t mailboxes;
 	int_t restricted;
 	stringer_t *domain;
-} __attribute__((__packed__)) domain_t;
+} domain_t;
 
 /// datatier.c
 inx_t *  warehouse_fetch_domains(void);

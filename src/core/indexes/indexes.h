@@ -61,9 +61,9 @@ typedef struct {
 
 } inx_t;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	inx_t *inx;
-} __attribute__((__packed__)) inx_cursor_t;
+} inx_cursor_t;
 
 /// cursors.c
 inx_cursor_t *  inx_cursor_alloc(inx_t *index);

@@ -16,13 +16,13 @@ cd $BASE/../../../
 
 # Make sure we were passed a path to an email message.
 if [ $# -ne 1 ]; then
-	printf "\nUsage: `basename $0` message.em\n\n"
+	printf "\nUsage: `basename $0` message.eml\n\n"
 	exit 2
 fi	
 
 # Then make sure the path provided actually exists.
 if [ ! -f $ORIG/$1 ]; then
-	printf "\nUsage: `basename $0` message.em\n\n"
+	printf "\nUsage: `basename $0` message.eml\n\n"
 	tput setaf 1
 	printf "Invalid filename. { $1 }\n\n"
 	tput sgr0

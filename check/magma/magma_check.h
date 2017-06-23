@@ -120,6 +120,7 @@ void suite_check_testcase(Suite *s, const char *tags, const char *name, TFun fun
 #define PRIME_CHECK_SIZE_MIN 64
 #define PRIME_CHECK_SIZE_MAX (2 * 1024) // 2 kilobytes
 #define PRIME_CHECK_ITERATIONS 16
+#define PRIME_CHECK_SPANNING_CHUNK_SIZE (1024 * 1024 * 20) // 20 megabytes
 
 #define OBJECT_CHECK_ITERATIONS 16
 
@@ -188,8 +189,8 @@ void suite_check_testcase(Suite *s, const char *tags, const char *name, TFun fun
 
 #define PRIME_CHECK_ITERATIONS 256
 #define PRIME_CHECK_SIZE_MIN (1024) // 1 kilobyte
-#define PRIME_CHECK_SIZE_MAX (16 * 1024)
-//#define PRIME_CHECK_SIZE_MAX (1 * 1024 * 1024) // 1 megabyte
+#define PRIME_CHECK_SIZE_MAX (1 * 1024 * 1024) // 1 megabyte
+#define PRIME_CHECK_SPANNING_CHUNK_SIZE (1024 * 1024 * 256) // 256 megabytes
 
 #define SCRAMBLE_CHECK_ITERATIONS 256
 #define SCRAMBLE_CHECK_SIZE_MIN 1024 // 1 kilobyte

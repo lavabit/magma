@@ -447,7 +447,8 @@ START_TEST (check_prime_chunk_spanning_s) {
 		}
 
 		// Generate a large (> 16mb) random buffer for the message body.
-		else if (result && !(data = rand_choices("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 20971520, NULL))) {
+		else if (result && !(data = rand_choices("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+			PRIME_CHECK_SPANNING_CHUNK_SIZE, NULL))) {
 			st_sprint(errmsg, "Unable to generate a large random payload for testing spanning chunks.");
 			result = false;
 
@@ -481,7 +482,7 @@ START_TEST (check_prime_chunk_spanning_s) {
 		chunk = NULL;
 
 		// Now generate a spanning chunk using random binary data.
-		if (result && rand_write(data) != 20971520) {
+		if (result && rand_write(data) != PRIME_CHECK_SPANNING_CHUNK_SIZE) {
 			st_sprint(errmsg, "Unable to generate a large random payload filled with binary data for testing spanning binary chunks.");
 			result = false;
 		}

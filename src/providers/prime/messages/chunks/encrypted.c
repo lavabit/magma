@@ -88,9 +88,9 @@ prime_encrypted_chunk_t * encrypted_chunk_set(prime_message_chunk_type_t type, e
 		return NULL;
 	}
 
-	// The maximum chunk plain text data size is 16,777,099. The max is limited by the 3 byte length in the chunk header,
-	// minus the 32 byte needed for the shards, and then accounting for the 69 required encryted bytes, while still resulting
-	// in a total encrypted size that aligns to a 16 byte boundary.
+	// The maximum chunk plain text data size is 16,777,098. The max is limited by the 3 byte length in the chunk header,
+	// minus the 32 bytes needed for the shards, and then accounting for the 69 required encryted heading bytes, while still resulting
+	// in a total encrypted payload size that aligns to a 16 byte boundary.
 	else if (st_length_get(payload) < 1 || st_length_get(payload) >= 16777099) {
 		log_pedantic("The chunk payload data must bpe larger than 1 byte, but smaller than 16,777,099 bytes. { length = %zu }", st_length_get(payload));
 		return NULL;
@@ -99,12 +99,12 @@ prime_encrypted_chunk_t * encrypted_chunk_set(prime_message_chunk_type_t type, e
 		return NULL;
 	}
 
-	// The entire buffer must be evenly divisible by 16. divisible by
-	// 64 signature + 3 data length + 1 flags + 1 padding length = 69
+	// The entire buffer must be evenly divisible by 16.
+	// 64 signature + 3 data length + 1 flags + 1 padding length = 69 encrypted header
 	result->pad = ((st_length_get(payload) + 69 + 16 - 1) & ~(16 - 1)) - (st_length_get(payload) + 69);
 	result->length = st_length_get(payload);
 
-	// The spec suggests we pad any payload smaller to 256 bytes, to make it a minimum of 256 bytes.
+	// The spec suggests we pad any payload smaller than 256 bytes, to make it a minimum of 256 bytes.
 	if ((result->pad + result->length + 69) < 256) {
 		result->pad += (256 - (result->pad + result->length + 69));
 	}
@@ -189,7 +189,7 @@ stringer_t * encrypted_chunk_get(ed25519_key_t *signing, prime_chunk_keks_t *kek
 	}
 
 	// The minimum legal chunk size would be 4 + 32 + 80 + 64 = 180, while the max would be 4 + 32 + 69 + 128 + 16,777,099 =
-	// 16,777,332, which accounts for the chunk header, and keyslots, which might be included in the buffer, but not in the
+	// 16,777,332, which accounts for the chunk header, and keyslots, which are included in the buffer, but not in the
 	// chunk header length.
 	else if (st_length_get(chunk) < 84 || st_length_get(chunk) > 16777332) {
 		log_pedantic("The chunk payload data must be larger than 1 byte, but smaller than 16,777,332 bytes. { length = %zu }",
@@ -247,7 +247,6 @@ stringer_t * encrypted_chunk_get(ed25519_key_t *signing, prime_chunk_keks_t *kek
 	mm_copy(((uchr_t *)&big_endian_size) + 1, (uchr_t *)st_data_get(payload) + ED25519_SIGNATURE_LEN, 3);
 	data_size = be32toh(big_endian_size);
 
-	/// HIGH: Handle the different flags. Specifically data compression, and the alternate padding algorithm.
 	// Flags
 	mm_copy((uchr_t *)&flags, (uchr_t *)st_data_get(payload) + ED25519_SIGNATURE_LEN + 3, 1);
 

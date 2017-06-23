@@ -406,63 +406,149 @@ START_TEST (check_prime_chunk_signature_s) {
 }
 END_TEST
 
+START_TEST (check_prime_chunk_spanning_s) {
+
+	//log_disable();
+	log_enable();
+
+	bool_t result = true;
+	prime_encrypted_chunk_t *chunk = NULL;
+	prime_chunk_keys_t encrypt_keys, decrypt_keys;
+	ed25519_key_t *signing_pub = NULL, *signing_priv = NULL;
+	prime_chunk_keks_t *encrypt_keks = NULL, *decrypt_keks = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024), *data = NULL, *buffer = NULL, *set = NULL;
+	secp256k1_key_t *encryption_pub = NULL, *encryption_priv = NULL, *recipient_pub = NULL, *recipient_priv = NULL;
+
+	if (status()) {
+
+		if (!(signing_priv = ed25519_generate()) || !(encryption_priv = secp256k1_generate()) || !(recipient_priv = secp256k1_generate()) ||
+			!(signing_pub = ed25519_public_set(ed25519_public_get(signing_priv, MANAGEDBUF(32)))) ||
+			!(encryption_pub = secp256k1_public_set(secp256k1_public_get(encryption_priv, MANAGEDBUF(33)))) ||
+			!(recipient_pub = secp256k1_public_set(secp256k1_public_get(recipient_priv, MANAGEDBUF(33))))) {
+			st_sprint(errmsg, "Key generation failed.");
+			result = false;
+		}
+
+		mm_wipe(&encrypt_keys, sizeof(prime_chunk_keys_t));
+		mm_wipe(&decrypt_keys, sizeof(prime_chunk_keys_t));
+
+		encrypt_keys.signing = signing_priv;
+		encrypt_keys.encryption = encryption_priv;
+		encrypt_keys.recipient = recipient_pub;
+
+		decrypt_keys.signing = signing_pub;
+		decrypt_keys.encryption = encryption_pub;
+		decrypt_keys.recipient = recipient_priv;
+
+		if (result && (!(encrypt_keks = keks_get(&encrypt_keys, NULL)) || !(decrypt_keks = keks_set(&decrypt_keys, NULL)) ||
+			st_cmp_cs_eq(encrypt_keks->recipient, decrypt_keks->recipient))) {
+			st_sprint(errmsg, "Encrypted chunk kek creation failed.");
+			result = false;
+		}
+
+		// Generate a large (> 16mb) random buffer for the message body.
+		else if (result && !(data = rand_choices("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 20971520, NULL))) {
+			st_sprint(errmsg, "Unable to generate a large random payload for testing spanning chunks.");
+			result = false;
+
+		}
+
+		// Test spanning chunk creation using an ephemeral signing/encryption key, and a recipient public key.
+		else if (result && !(chunk = part_encrypt(PRIME_CHUNK_BODY, signing_priv, encrypt_keks, data))) {
+			st_sprint(errmsg, "Encrypted spanning chunk creation failed.");
+			result = false;
+		}
+
+		// Serialize the spanning chunks into a single buffer.
+		else if (result && !(buffer = part_buffer(chunk))) {
+			st_sprint(errmsg, "Encrypted spanning chunk serialization failed.");
+			result = false;
+		}
+
+		else if (result && !(set = part_decrypt(signing_pub, decrypt_keks, buffer, NULL))) {
+			st_sprint(errmsg, "Encrypted spanning chunk parsing and decryption failed.");
+			result = false;
+		}
+		else if (result && st_cmp_cs_eq(data, set)) {
+			st_sprint(errmsg, "Encrypted spanning chunks failed with random alphabet data. The input doesn't match the output.");
+			result = false;
+		}
+
+		// Clean up after the first test.
+		encrypted_chunk_cleanup(chunk);
+		st_cleanup(buffer, set);
+		set = buffer = NULL;
+		chunk = NULL;
+
+		// Now generate a spanning chunk using random binary data.
+		if (result && rand_write(data) != 20971520) {
+			st_sprint(errmsg, "Unable to generate a large random payload filled with binary data for testing spanning binary chunks.");
+			result = false;
+		}
+
+		// Test spanning chunk creation using an ephemeral signing/encryption key, and a recipient public key.
+		else if (result && !(chunk = part_encrypt(PRIME_CHUNK_BODY, signing_priv, encrypt_keks, data))) {
+			st_sprint(errmsg, "Encrypted spanning chunk creation failed.");
+			result = false;
+		}
+
+		// Serialize the spanning chunks into a single buffer.
+		else if (result && !(buffer = part_buffer(chunk))) {
+			st_sprint(errmsg, "Encrypted spanning chunk serialization failed.");
+			result = false;
+		}
+
+		else if (result && !(set = part_decrypt(signing_pub, decrypt_keks, buffer, NULL))) {
+			st_sprint(errmsg, "Encrypted spanning chunk parsing and decryption failed.");
+			result = false;
+		}
+		else if (result && st_cmp_cs_eq(data, set)) {
+			st_sprint(errmsg, "Encrypted spanning chunks failed with random binary data. The input doesn't match the output.");
+			result = false;
+		}
+
+		encrypted_chunk_cleanup(chunk);
+		st_cleanup(data, buffer, set);
+		set = data = buffer = NULL;
+		chunk = NULL;
+
+		keks_cleanup(encrypt_keks);
+		keks_cleanup(decrypt_keks);
+		if (signing_pub) ed25519_free(signing_pub);
+		if (signing_priv) ed25519_free(signing_priv);
+		if (recipient_pub) secp256k1_free(recipient_pub);
+		if (recipient_priv) secp256k1_free(recipient_priv);
+		if (encryption_pub) secp256k1_free(encryption_pub);
+		if (encryption_priv) secp256k1_free(encryption_priv);
+	}
+
+	log_test("PRIME / CHUNKS / SPANNING / SINGLE THREADED:", errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
+}
+END_TEST
+
 START_TEST (check_prime_chunk_compressed_s) {
 
 	log_disable();
 	bool_t outcome = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
+	/// HIGH: Handle the different chunk flags properly. Specifically add support for compressed chunk payloads.
+
 	log_test("PRIME / CHUNKS / COMPRESSED / SINGLE THREADED:", NULLER("SKIPPED"));
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
 
-START_TEST (check_prime_chunk_spanning_s) {
+START_TEST (check_prime_chunk_padding_s) {
 
-	//log_disable();
-	log_enable();
+	log_disable();
 	bool_t outcome = true;
-	stringer_t *raw = NULL, *message = NULL, *rebuilt = NULL, *errmsg = MANAGEDBUF(1024);
-	prime_t *destination = NULL, *org = NULL, *recipient = NULL, *request = NULL, *signet = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 
-	if (status()) {
+	/// HIGH: Handle the different chunk flags properly. Specifically add support for the alternate padding algorithm.
 
-		if (!(destination = prime_key_generate(PRIME_ORG_KEY, NONE)) || !(org = prime_signet_generate(destination)) ||
-			!(recipient = prime_key_generate(PRIME_USER_KEY, NONE)) || !(request = prime_request_generate(recipient, NULL)) ||
-			!(signet = prime_request_sign(request, destination))) {
-			st_sprint(errmsg, "PRIME message test identity generation failed.");
-			outcome = false;
-		}
-		// Generate a large (> 16mb) random buffer for the message body.
-		else if (!(raw = rand_choices("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 20971520, NULL))) {
-			st_sprint(errmsg, "Unable to generate random message.");
-			outcome = false;
-		}
-		else if (!(message = prime_message_encrypt(raw, NULL, NULL, destination, signet))) {
-			st_sprint(errmsg, "PRIME message encryption test failed.");
-			outcome = false;
-		}
-		else if (!(rebuilt = prime_message_decrypt(message, org, recipient))) {
-			st_sprint(errmsg, "PRIME message decryption test failed.");
-			outcome = false;
-		}
-		else if (st_cmp_cs_eq(raw, rebuilt)) {
-			st_sprint(errmsg, "PRIME message encryption before and after comparison test failed.");
-			outcome = false;
-		}
-
-		st_cleanup(message, rebuilt, raw);
-		raw = rebuilt = message;
-
-		prime_cleanup(destination);
-		prime_cleanup(recipient);
-		prime_cleanup(request);
-		prime_cleanup(signet);
-		prime_cleanup(org);
-
-	}
-
-	log_test("PRIME / CHUNKS / SPANNING / SINGLE THREADED:", errmsg);
+	log_test("PRIME / CHUNKS / PADDING / SINGLE THREADED:", NULLER("SKIPPED"));
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST
@@ -552,8 +638,10 @@ Suite * suite_check_prime(void) {
 	suite_check_testcase(s, "PRIME", "PRIME Ephemeral Chunks/S", check_prime_chunk_ephemeral_s);
 	suite_check_testcase(s, "PRIME", "PRIME Encrypted Chunks/S", check_prime_chunk_encrypted_s);
 	suite_check_testcase(s, "PRIME", "PRIME Signature Chunks/S", check_prime_chunk_signature_s);
-	suite_check_testcase(s, "PRIME", "PRIME Compressed Chunks/S", check_prime_chunk_compressed_s);
 	suite_check_testcase(s, "PRIME", "PRIME Spanning Chunks/S", check_prime_chunk_spanning_s);
+
+	suite_check_testcase(s, "PRIME", "PRIME Chunk Padding Algorithms/S", check_prime_chunk_padding_s);
+	suite_check_testcase(s, "PRIME", "PRIME Chunk Compression/S", check_prime_chunk_compressed_s);
 
 	suite_check_testcase(s, "PRIME", "PRIME Naked Messages/S", check_prime_message_naked_s);
 	suite_check_testcase(s, "PRIME", "PRIME Native Messages/S", check_prime_message_native_s);

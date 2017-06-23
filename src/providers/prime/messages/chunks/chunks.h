@@ -9,6 +9,8 @@
 #define PRIME_CHUNKS_H
 
 /// chunks.c
+int_t                        chunk_buffer_read(stringer_t *data, uint8_t *type, uint32_t *payload_size, uint32_t *buffer_size, placer_t *chunk);
+int32_t                      chunk_buffer_size(stringer_t *chunk);
 int_t                        chunk_header_read(stringer_t *data, uint8_t *type, uint32_t *size, placer_t *chunk);
 int32_t                      chunk_header_size(stringer_t *chunk);
 prime_message_chunk_type_t   chunk_header_type(stringer_t *chunk);

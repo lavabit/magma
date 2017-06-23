@@ -401,8 +401,7 @@ stringer_t * st_append_opts(size_t align, stringer_t *s, stringer_t *append) {
 	}
 
 	if (!append || !(alen = st_length_get(append))) {
-//		log_pedantic("The append string appears to be empty.");
-		log_options(M_LOG_CRITICAL | M_LOG_STACK_TRACE, "The append string appears to be empty.");
+		log_pedantic("The append string appears to be empty.");
 		return s;
 	}
 
@@ -435,8 +434,7 @@ int_t st_append_out(size_t align, stringer_t **s, stringer_t *append) {
 	}
 
 	if (!append || !(alen = st_length_get(append))) {
-//		log_pedantic("The append string appears to be empty.");
-		log_options(M_LOG_CRITICAL | M_LOG_STACK_TRACE, "The append string appears to be empty.");
+		log_pedantic("The append string appears to be empty.");
 		return 0;
 	}
 

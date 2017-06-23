@@ -172,7 +172,7 @@ prime_encrypted_chunk_t * encrypted_chunk_set(prime_message_chunk_type_t type, e
 /**
  * @brief	Take an encrypted message chunk, in serialized form, and return the decrypted payload data.
  */
-stringer_t * encrypted_chunk_get(ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *chunk, stringer_t *output) {
+stringer_t * encrypted_chunk_get(ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *chunk, stringer_t *output, bool_t *spanning) {
 
 	int32_t payload_size = 0;
 	uint32_t big_endian_size = 0;
@@ -188,7 +188,6 @@ stringer_t * encrypted_chunk_get(ed25519_key_t *signing, prime_chunk_keks_t *kek
 		return NULL;
 	}
 
-	/// HIGH: Add support for payloads that span across multiple chunks.
 	// The minimum legal chunk size would be 4 + 32 + 80 + 64 = 180, while the max would be 4 + 32 + 69 + 128 + 16,777,099 =
 	// 16,777,332, which accounts for the chunk header, and keyslots, which might be included in the buffer, but not in the
 	// chunk header length.
@@ -251,6 +250,10 @@ stringer_t * encrypted_chunk_get(ed25519_key_t *signing, prime_chunk_keks_t *kek
 	/// HIGH: Handle the different flags. Specifically data compression, and the alternate padding algorithm.
 	// Flags
 	mm_copy((uchr_t *)&flags, (uchr_t *)st_data_get(payload) + ED25519_SIGNATURE_LEN + 3, 1);
+
+	// If the spanning variable is valid pointer, then we'll check whether the spanning flag was set and let the caller know.
+	if (spanning && (flags & PRIME_CHUNK_FLAG_SPANNING) == PRIME_CHUNK_FLAG_SPANNING) *spanning = true;
+	else if (spanning) *spanning = false;
 
 	// Padding
 	mm_copy((uchr_t *)&padding, (uchr_t *)st_data_get(payload) + ED25519_SIGNATURE_LEN + 4, 1);

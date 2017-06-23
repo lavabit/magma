@@ -132,7 +132,7 @@ stringer_t * naked_message_get(stringer_t *message, prime_org_signet_t *org, pri
 	remaining -= st_length_get(&chunk[1]);
 
 	if (chunk_header_read(PLACER(data, remaining), &type, &size, &chunk[2]) < 0 || type != PRIME_CHUNK_HEADERS ||
-		!(headers = encrypted_chunk_get(keys.signing, keks, &chunk[2], NULL))) {
+		!(headers = encrypted_chunk_get(keys.signing, keks, &chunk[2], NULL, NULL))) {
 		ephemeral_chunk_cleanup(ephemeral);
 		keks_free(keks);
 		return NULL;
@@ -227,6 +227,7 @@ prime_message_t * naked_message_set(stringer_t *message, prime_org_key_t *destin
 	uint32_t big_endian_size = 0;
 	prime_message_t *result = NULL;
 	prime_signature_tree_t *tree = NULL;
+	prime_encrypted_chunk_t *chunk = NULL;
 	stringer_t *common = NULL, *holder[10];
 	placer_t header = pl_null(), body = pl_null();
 	uint16_t type = htobe16(PRIME_MESSAGE_NAKED);
@@ -266,11 +267,12 @@ prime_message_t * naked_message_set(stringer_t *message, prime_org_key_t *destin
 	holder[8] = mail_header_fetch_cleaned(&header, PLACER("In-Reply-To", 11));
 	holder[9] = mail_header_fetch_cleaned(&header, PLACER("Message-ID", 10));
 
-	/// LOW: An effective, albeit kludgey, logic to ensure common headers are formatted correctly, and the values reside on a single line.
+	/// LOW: Effective, albeit kludgey, logic to ensure common headers are formatted correctly, and each header field is
+	/// 		reformatted values reside on a single line.
 	common = st_merge("nsnnsnnsnnsnnsnnsnnsnnsnnsnnsn",
 		(holder[0] ? "Date: " : ""), holder[0], (holder[0] ? "\n" : ""),
 		(holder[1] ? "Subject: " : ""), holder[1], (holder[1] ? "\n" : ""),
-		(holder[2] ? "From: " : ""), holder[2], (holder[2] ? "\encrypted_chunk_buffer(n" : ""),
+		(holder[2] ? "From: " : ""), holder[2], (holder[2] ? "\n" : ""),
 		(holder[3] ? "Sender: " : ""), holder[3], (holder[3] ? "\n" : ""),
 		(holder[4] ? "Reply-To: " : ""), holder[4], (holder[4] ? "\n" : ""),
 		(holder[5] ? "To: " : ""), holder[5], (holder[5] ? "\n" : ""),
@@ -312,7 +314,14 @@ prime_message_t * naked_message_set(stringer_t *message, prime_org_key_t *destin
 	signature_tree_add(tree, ephemeral_chunk_buffer(result->envelope.ephemeral));
 	signature_tree_add(tree, encrypted_chunk_buffer(result->metadata.common));
 	signature_tree_add(tree, encrypted_chunk_buffer(result->metadata.headers));
-	signature_tree_add(tree, encrypted_chunk_buffer(result->content.body));
+
+	// Because the content chunks like the message body can be spanning chunks, we need to use an iterator which goes through
+	// the linked list, adding each chunk to the tree signature separately.
+	chunk = result->content.body;
+	while (chunk) {
+		signature_tree_add(tree, encrypted_chunk_buffer(chunk));
+		chunk = chunk->next;
+	}
 
 	// Calculate the tree signature.
 	result->signatures.tree = signature_tree_get(result->keys.signing, tree, &(result->keks));

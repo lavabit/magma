@@ -72,6 +72,10 @@ int_t signature_tree_add(prime_signature_tree_t *chunk, stringer_t *data) {
 	return 0;
 }
 
+/**
+ * @brief	Calculates the tree signature value by concatenating the hashes together, and generating an Ed25519 signature
+ * 			using the result.
+ */
 stringer_t * signature_tree_get(ed25519_key_t *signing, prime_signature_tree_t *chunk, prime_chunk_keks_t *keks) {
 
 	placer_t buffer;

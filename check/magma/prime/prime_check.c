@@ -221,7 +221,7 @@ START_TEST (check_prime_chunk_encrypted_s) {
 			st_sprint(errmsg, "Encrypted chunk creation failed.");
 			result = false;
 		}
-		else if (result && !(set = encrypted_chunk_get(signing_pub, decrypt_keks, encrypted_chunk_buffer(chunk), MANAGEDBUF(1024)))) {
+		else if (result && !(set = encrypted_chunk_get(signing_pub, decrypt_keks, encrypted_chunk_buffer(chunk), MANAGEDBUF(1024), NULL))) {
 			st_sprint(errmsg, "Encrypted chunk parsing failed.");
 			result = false;
 		}
@@ -242,7 +242,7 @@ START_TEST (check_prime_chunk_encrypted_s) {
 			st_sprint(errmsg, "Encrypted chunk creation failed.");
 			result = false;
 		}
-		else if (result && !(set = encrypted_chunk_get(signing_pub, decrypt_keks, encrypted_chunk_buffer(chunk), MANAGEDBUF(1024)))) {
+		else if (result && !(set = encrypted_chunk_get(signing_pub, decrypt_keks, encrypted_chunk_buffer(chunk), MANAGEDBUF(1024), NULL))) {
 			st_sprint(errmsg, "Encrypted chunk parsing failed.");
 			result = false;
 		}
@@ -264,7 +264,7 @@ START_TEST (check_prime_chunk_encrypted_s) {
 			st_sprint(errmsg, "Encrypted chunk creation failed.");
 			result = false;
 		}
-		else if (result && !(set = encrypted_chunk_get(signing_pub, decrypt_keks, encrypted_chunk_buffer(chunk), MANAGEDBUF(1024)))) {
+		else if (result && !(set = encrypted_chunk_get(signing_pub, decrypt_keks, encrypted_chunk_buffer(chunk), MANAGEDBUF(1024), NULL))) {
 			st_sprint(errmsg, "Encrypted chunk parsing failed.");
 			result = false;
 		}

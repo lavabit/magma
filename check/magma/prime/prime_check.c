@@ -409,7 +409,7 @@ END_TEST
 START_TEST (check_prime_chunk_compressed_s) {
 
 	log_disable();
-	bool_t outcome = false;
+	bool_t outcome = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	log_test("PRIME / CHUNKS / COMPRESSED / SINGLE THREADED:", NULLER("SKIPPED"));

@@ -149,6 +149,10 @@ LDFLAGS							= -rdynamic
 AR								= ar
 ARFLAGS							= rcs
 
+# Strip Parameters
+STRIP							= strip
+STRIPFLAGS						= --strip-debug
+
 # GProf Parameters
 GPROF							= -pg -finstrument-functions -fprofile-arcs -ftest-coverage
 
@@ -180,6 +184,7 @@ ifneq ($(strip $(MAGMA_REPO)),1)
 	MAGMA_VERSION				:= $(PACKAGE_VERSION)
 	MAGMA_COMMIT				:= "NONE"
 else
+	# Add the --since='YYYY/MM/DD' or --since='TAG' to the git log command below to reset the patch version to 0.
 	MAGMA_VERSION				:= $(PACKAGE_VERSION).$(shell git log --format='%H' | wc -l)
 	MAGMA_COMMIT				:= $(shell git log --format="%H" -n 1 | cut -c33-40)
 endif
@@ -222,7 +227,9 @@ else
     EXEEXT						:= 
 endif
 
-all: config warning $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) 
+all: config warning $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) finished 
+
+strip: config warning stripped-$(MAGMA_PROGRAM) stripped-$(MAGMA_SHARED_LIBRARY) finished
 	
 warning:
 ifeq ($(VERBOSE),no)
@@ -286,6 +293,15 @@ distclean:
 	@$(RM) $(MAGMA_DEPFILES) $(DIME_DEPFILES) $(SIGNET_DEPFILES) $(GENREC_DEPFILES) $(MAGMA_CHECK_DEPFILES) $(DIME_CHECK_DEPFILES)
 	@$(RM) --recursive --force $(DEPDIR) $(OBJDIR) lib/local lib/logs lib/objects lib/sources
 	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
+
+stripped-%: $(MAGMA_PROGRAM) $(MAGMA_SHARED_LIBRARY)
+ifeq ($(VERBOSE),no)
+	@echo 'Creating' $(RED)$@$(NORMAL)
+else
+	@echo 
+endif
+	$(RUN)$(STRIP) $(STRIPFLAGS) --output-format=$(shell objdump -p "$(subst stripped-,,$@)" | grep "file format" | head -1 | \
+	awk -F'file format' '{print $$2}' | tr --delete [:space:]) -o "$@" "$(subst stripped-,,$@)"
 
 install: $(MAGMA_PROGRAM) $(MAGMA_SHARED_LIBRARY)
 ifeq ($(VERBOSE),no)
@@ -434,6 +450,6 @@ endif
 # Special Make Directives
 .SUFFIXES: .c .cc .cpp .o 
 #.NOTPARALLEL: warning conifg $(PACKAGE_DEPENDENCIES)
-.PHONY: all warning config finished check setup clean distclean install pprof gprof
+.PHONY: all strip warning config finished check setup clean distclean install pprof gprof
 
 # vim:set softtabstop=4 shiftwidth=4 tabstop=4:

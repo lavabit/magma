@@ -465,7 +465,7 @@ START_TEST (check_prime_chunk_spanning_s) {
 			result = false;
 		}
 
-		else if (result && !(set = part_decrypt(signing_pub, decrypt_keks, buffer, NULL))) {
+		else if (result && !(set = part_decrypt(signing_pub, decrypt_keks, buffer, NULL, NULL))) {
 			st_sprint(errmsg, "Encrypted spanning chunk parsing and decryption failed.");
 			result = false;
 		}
@@ -498,7 +498,7 @@ START_TEST (check_prime_chunk_spanning_s) {
 			result = false;
 		}
 
-		else if (result && !(set = part_decrypt(signing_pub, decrypt_keks, buffer, NULL))) {
+		else if (result && !(set = part_decrypt(signing_pub, decrypt_keks, buffer, NULL, NULL))) {
 			st_sprint(errmsg, "Encrypted spanning chunk parsing and decryption failed.");
 			result = false;
 		}

@@ -91,12 +91,12 @@ prime_encrypted_chunk_t * part_encrypt(prime_message_chunk_type_t type, ed25519_
  * @brief	Takes a serialized body part, stored as one or more encrypted chunks, and decrypts each in sequence, returning the
  * 			original plain text payload as the result.
  */
-stringer_t * part_decrypt(ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *part, stringer_t *output) {
+stringer_t * part_decrypt(ed25519_key_t *signing, prime_chunk_keks_t *keks, stringer_t *part, stringer_t *output, size_t *consumed) {
 	uint8_t type = 0;
 	uchr_t *data = NULL;
-	size_t remaining = 0;
 	bool_t spanning = false;
 	placer_t chunk = pl_null();
+	size_t used = 0, remaining = 0;
 	uint32_t payload_size = 0, buffer_size = 0;
 	stringer_t *result = NULL, *payload = NULL;
 
@@ -133,6 +133,7 @@ stringer_t * part_decrypt(ed25519_key_t *signing, prime_chunk_keks_t *keks, stri
 		st_free(payload);
 
 		remaining -= buffer_size;
+		used += buffer_size;
 		data += buffer_size;
 
 	} while (remaining && spanning);
@@ -143,6 +144,11 @@ stringer_t * part_decrypt(ed25519_key_t *signing, prime_chunk_keks_t *keks, stri
 		log_pedantic("Body part decryption failed. The last chunk in the span is missing.");
 		st_free(result);
 		return NULL;
+	}
+
+	// If the process was successful and the caller passed in a valid pointer, let them know how much of the buffer was consumed.
+	else if (consumed) {
+		*consumed = used;
 	}
 
 	return result;

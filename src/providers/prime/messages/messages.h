@@ -16,6 +16,7 @@ stringer_t *       naked_message_get(stringer_t *message, prime_org_signet_t *or
 prime_message_t *  naked_message_set(stringer_t *message, prime_org_key_t *destination, prime_user_signet_t *recipient);
 
 #include "chunks/chunks.h"
+#include "parts/parts.h"
 
 #endif
 

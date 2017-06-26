@@ -7,6 +7,7 @@
 
 #include "magma.h"
 
+#include "../../../lib/sources/dkim/opendkim/opendkim-ar.h"
 
 /**
  * @brief	Perform a case-sensitive comparison of two memory blocks.
@@ -104,8 +105,10 @@ int_t st_cmp_cs_eq(stringer_t *a, stringer_t *b) {
 
 	// Break on the first non matching byte.
 	for (size_t i = 0; result == 0 && i < check; i++) {
-		if (*aptr < *bptr) result = -1;
-		else if (*aptr > *bptr) result = 1;
+		if (*aptr < *bptr)
+			result = -1;
+		else if (*aptr > *bptr)
+			result = 1;
 		aptr++;
 		bptr++;
 	}

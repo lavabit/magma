@@ -8,7 +8,7 @@
 #ifndef MAGMA_OBJECTS_CONFIG_H
 #define MAGMA_OBJECTS_CONFIG_H
 
-typedef struct __attribute__ ((__packed__)) {
+typedef struct __attribute__ ((packed)) {
 	uint64_t flags;
 	stringer_t *key, *value;
 } user_config_entry_t;
@@ -19,7 +19,7 @@ enum {
 	USER_CONF_STATUS_CRITICAL = 1
 };
 
-typedef struct __attribute__ ((__packed__)) {
+typedef struct __attribute__ ((packed)) {
 	inx_t *entries;
 	uint64_t usernum, serial;
 } user_config_t;

@@ -45,7 +45,7 @@ MAGMA_CHECK_DYNAMIC				= $(MAGMA_DYNAMIC) -lm
 MAGMA_CHECK_SRCDIRS				= $(shell find check/magma -type d -print)
 MAGMA_CHECK_SRCFILES			= $(foreach dir, $(MAGMA_CHECK_SRCDIRS), $(wildcard $(dir)/*.c))
 
-DIME_SRCDIRS					= $(shell  find src/ tools/dime -type d -print)
+DIME_SRCDIRS					= $(shell find src/ tools/dime -type d -print)
 DIME_SRCFILES					= $(filter-out $(FILTERED_SRCFILES), $(foreach dir, $(DIME_SRCDIRS), $(wildcard $(dir)/*.c)))
 DIME_STATIC						= $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) \
                                   $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libutf8proc$(STATLIBEXT)
@@ -88,11 +88,11 @@ MAGMA_CHECK_CINCLUDES			= -Icheck/magma -Ilib/local/include/ $(MAGMA_CINCLUDES) 
 DIME_CHECK_CPPINCLUDES			= -Icheck/dime -Ilib/sources/googtest/include/ -Ilib/sources/googtest/ -Ilib/sources/googtap/src/ $(MAGMA_CINCLUDES)
 
 CDEFINES						= -D_REENTRANT -D_GNU_SOURCE -D_LARGEFILE64_SOURCE -DHAVE_NS_TYPE -DFORTIFY_SOURCE=2 -DMAGMA_PEDANTIC 
-CDEFINES						+= -DDIME_BUILD=\"$(MAGMA_VERSION)\" -DDIME_STAMP=\"$(MAGMA_TIMESTAMP)\"
+CDEFINES.build.c 				= -DMAGMA_VERSION=\"$(MAGMA_VERSION)\" -DMAGMA_COMMIT=\"$(MAGMA_COMMIT)\" -DMAGMA_TIMESTAMP=\"$(MAGMA_TIMESTAMP)\"
 
 CPPDEFINES						= $(CDEFINES) -DGTEST_TAP_PRINT_TO_STDOUT -DGTEST_HAS_PTHREAD=1
+#CPPDEFINES						+= -DDIME_BUILD=\"$(MAGMA_VERSION)\" -DDIME_STAMP=\"$(MAGMA_TIMESTAMP)\"
 
-CDEFINES.build.c 				= -DMAGMA_VERSION=\"$(MAGMA_VERSION)\" -DMAGMA_COMMIT=\"$(MAGMA_COMMIT)\" -DMAGMA_TIMESTAMP=\"$(MAGMA_TIMESTAMP)\"
 
 # Hidden Directory for Dependency Files
 DEPDIR							= .deps
@@ -139,7 +139,7 @@ CFLAGS_PEDANTIC					= -Wextra -Wpacked -Wunreachable-code -Wformat=2
 
 CPP								= g++
 CPPFLAGS						= -std=c++0x $(CPPFLAGS_WARNINGS) -Wno-unused-parameter -pthread -g3 
-CPPFLAGS_WARNINGS				= -Werror -Wall -Wextra  -Wformat=2 -Wwrite-strings -Wno-format-nonliteral #-Wfatal-errors
+CPPFLAGS_WARNINGS				= -Werror -Wall -Wextra -Wformat=2 -Wwrite-strings -Wno-format-nonliteral #-Wfatal-errors
 
 # Linker Parameters
 LD								= gcc
@@ -148,6 +148,10 @@ LDFLAGS							= -rdynamic
 # Archiver Parameters
 AR								= ar
 ARFLAGS							= rcs
+
+# Strip Parameters
+STRIP							= strip
+STRIPFLAGS						= --strip-debug
 
 # GProf Parameters
 GPROF							= -pg -finstrument-functions -fprofile-arcs -ftest-coverage
@@ -180,6 +184,7 @@ ifneq ($(strip $(MAGMA_REPO)),1)
 	MAGMA_VERSION				:= $(PACKAGE_VERSION)
 	MAGMA_COMMIT				:= "NONE"
 else
+	# Add the --since='YYYY/MM/DD' or --since='TAG' to the git log command below to reset the patch version to 0.
 	MAGMA_VERSION				:= $(PACKAGE_VERSION).$(shell git log --format='%H' | wc -l)
 	MAGMA_COMMIT				:= $(shell git log --format="%H" -n 1 | cut -c33-40)
 endif
@@ -222,7 +227,9 @@ else
     EXEEXT						:= 
 endif
 
-all: config warning $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) 
+all: config warning $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) finished 
+
+strip: config warning stripped-$(MAGMA_PROGRAM) stripped-$(MAGMA_SHARED_LIBRARY) finished
 	
 warning:
 ifeq ($(VERBOSE),no)
@@ -287,6 +294,15 @@ distclean:
 	@$(RM) --recursive --force $(DEPDIR) $(OBJDIR) lib/local lib/logs lib/objects lib/sources
 	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
 
+stripped-%: $(MAGMA_PROGRAM) $(MAGMA_SHARED_LIBRARY)
+ifeq ($(VERBOSE),no)
+	@echo 'Creating' $(RED)$@$(NORMAL)
+else
+	@echo 
+endif
+	$(RUN)$(STRIP) $(STRIPFLAGS) --output-format=$(shell objdump -p "$(subst stripped-,,$@)" | grep "file format" | head -1 | \
+	awk -F'file format' '{print $$2}' | tr --delete [:space:]) -o "$@" "$(subst stripped-,,$@)"
+
 install: $(MAGMA_PROGRAM) $(MAGMA_SHARED_LIBRARY)
 ifeq ($(VERBOSE),no)
 	@echo 'Installing' $(GREEN)$(MAGMA_PROGRAM)$(NORMAL)
@@ -310,7 +326,7 @@ $(MAGMA_CHECK_PROGRAM): $(PACKAGE_DEPENDENCIES) $(MAGMA_CHECK_OBJFILES) $(filter
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) -Wl,--start-group,--whole-archive $(MAGMA_CHECK_STATIC) -Wl,--no-whole-archive,--end-group  $(MAGMA_CHECK_DYNAMIC) 
+	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) -Wl,--start-group,--whole-archive $(MAGMA_CHECK_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_CHECK_DYNAMIC) 
 		
 # Construct the magma daemon executable with pprof support.
 $(MAGMA_PROGRAM_PPROF): $(PACKAGE_DEPENDENCIES) $(MAGMA_OBJFILES)
@@ -326,7 +342,7 @@ $(MAGMA_CHECK_PROGRAM_PPROF): $(PACKAGE_DEPENDENCIES) $(MAGMA_CHECK_OBJFILES) $(
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) -Wl,--start-group,--whole-archive $(MAGMA_CHECK_STATIC) -Wl,--no-whole-archive,--end-group  $(MAGMA_CHECK_DYNAMIC) $(PPROF)
+	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) -Wl,--start-group,--whole-archive $(MAGMA_CHECK_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_CHECK_DYNAMIC) $(PPROF)
 
 # Construct the magma daemon executable with gprof support.
 $(MAGMA_PROGRAM_GPROF): $(PACKAGE_DEPENDENCIES) $(MAGMA_PROF_OBJFILES)
@@ -342,7 +358,7 @@ $(MAGMA_CHECK_PROGRAM_GPROF): $(PACKAGE_DEPENDENCIES) $(MAGMA_CHECK_PROF_OBJFILE
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 endif
-	$(RUN)$(LD) $(LDFLAGS) $(GPROF) --output='$@' $(MAGMA_CHECK_PROF_OBJFILES) $(filter-out .objs/src/magma.pg.o, $(MAGMA_PROF_OBJFILES)) -Wl,--start-group,--whole-archive $(MAGMA_CHECK_STATIC) -Wl,--no-whole-archive,--end-group  $(MAGMA_CHECK_DYNAMIC) 
+	$(RUN)$(LD) $(LDFLAGS) $(GPROF) --output='$@' $(MAGMA_CHECK_PROF_OBJFILES) $(filter-out .objs/src/magma.pg.o, $(MAGMA_PROF_OBJFILES)) -Wl,--start-group,--whole-archive $(MAGMA_CHECK_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_CHECK_DYNAMIC) 
 
 # Construct the dime command line utility
 $(DIME_PROGRAM): $(PACKAGE_DEPENDENCIES) $(DIME_OBJFILES) 
@@ -384,7 +400,7 @@ ifeq ($(VERBOSE),no)
 endif
 	@test -d $(DEPDIR)/$(dir $<) || $(MKDIR) $(DEPDIR)/$(dir $<)
 	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
-	$(RUN)$(CPP) $(CPPFLAGS) $(CPPFLAGS.$(<F)) $(CPPDEFINES) $(CDEFINES.$(<F)) $(DIME_CHECK_CPPINCLUDES) -MF"$(<:%.cpp=$(DEPDIR)/%.d)" -MD -MP -MT"$@" -o"$@" -c "$<"
+	$(RUN)$(CPP) --output='$@' $(CPPFLAGS) $(CPPDEFINES) $(CPPFLAGS.$(<F)) $(CPPDEFINES.$(<F)) $(DIME_CHECK_CPPINCLUDES) -MF"$(<:%.cpp=$(DEPDIR)/%.d)" -MD -MP -MT"$@" -c "$<"
 
 # The Magma Unit Test Object Files
 $(OBJDIR)/check/magma/%.o: check/magma/%.c
@@ -393,7 +409,7 @@ ifeq ($(VERBOSE),no)
 endif
 	@test -d $(DEPDIR)/$(dir $<) || $(MKDIR) $(DEPDIR)/$(dir $<)
 	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
-	$(RUN)$(CC) $(CFLAGS) $(CFLAGS.$(<F)) $(CDEFINES) $(CDEFINES.$(<F)) $(MAGMA_CHECK_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" -o"$@" "$<"
+	$(RUN)$(CC) --output='$@' $(CFLAGS) $(CDEFINES) $(CFLAGS.$(<F)) $(CDEFINES.$(<F)) $(MAGMA_CHECK_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" "$<"
 
 # The Magma Daemon Object Files
 $(OBJDIR)/%.o: %.c 
@@ -402,7 +418,7 @@ ifeq ($(VERBOSE),no)
 endif
 	@test -d $(DEPDIR)/$(dir $<) || $(MKDIR) $(DEPDIR)/$(dir $<)
 	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
-	$(RUN)$(CC) $(CFLAGS) $(CFLAGS.$(<F)) $(CDEFINES) $(CDEFINES.$(<F)) $(MAGMA_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" -o"$@" "$<"
+	$(RUN)$(CC) --output='$@' $(CFLAGS) $(CDEFINES) $(CFLAGS.$(<F)) $(CDEFINES.$(<F)) $(MAGMA_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" "$<"
 
 # The Magma Unit Test Object Files (GProf Version)
 $(OBJDIR)/check/magma/%.pg.o: check/magma/%.c
@@ -411,7 +427,7 @@ ifeq ($(VERBOSE),no)
 endif
 	@test -d $(DEPDIR)/$(dir $<) || $(MKDIR) $(DEPDIR)/$(dir $<)
 	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
-	$(RUN)$(CC) $(GPROF) $(CFLAGS) $(CFLAGS.$(<F)) $(CDEFINES) $(CDEFINES.$(<F)) $(MAGMA_CHECK_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" -o"$@" "$<"
+	$(RUN)$(CC) --output='$@' $(GPROF) $(CFLAGS) $(CDEFINES) $(CFLAGS.$(<F)) $(CDEFINES.$(<F)) $(MAGMA_CHECK_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" "$<"
 
 # The Magma Daemon Object Files (GProf Version)
 $(OBJDIR)/%.pg.o: %.c 
@@ -420,7 +436,7 @@ ifeq ($(VERBOSE),no)
 endif
 	@test -d $(DEPDIR)/$(dir $<) || $(MKDIR) $(DEPDIR)/$(dir $<)
 	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
-	$(RUN)$(CC) $(GPROF) $(CFLAGS) $(CFLAGS.$(<F)) $(CDEFINES) $(CDEFINES.$(<F)) $(MAGMA_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" -o"$@" "$<"
+	$(RUN)$(CC) --output='$@' $(GPROF) $(CFLAGS) $(CDEFINES) $(CFLAGS.$(<F)) $(CDEFINES.$(<F)) $(MAGMA_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" "$<"
 	
 $(PACKAGE_DEPENDENCIES): 
 ifeq ($(VERBOSE),no)
@@ -434,6 +450,6 @@ endif
 # Special Make Directives
 .SUFFIXES: .c .cc .cpp .o 
 #.NOTPARALLEL: warning conifg $(PACKAGE_DEPENDENCIES)
-.PHONY: all warning config finished check setup clean distclean install pprof gprof
+.PHONY: all strip warning config finished check setup clean distclean install pprof gprof
 
 # vim:set softtabstop=4 shiftwidth=4 tabstop=4:

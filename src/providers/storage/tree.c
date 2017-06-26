@@ -7,12 +7,12 @@
 
 #include "magma.h"
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	inx_t *inx;
 	void *tree;
 	multi_t key;
 	void *value;
-}__attribute__ ((__packed__)) tree_cursor_t;
+} tree_cursor_t;
 
 /**
  * The return value is positive if the former is big, negative if the latter is big, 0 if both are equivalent. If asked to search for a NULL key pointer

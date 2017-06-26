@@ -62,14 +62,14 @@ typedef struct {
 } err_desc_t;
 
 
-struct errinfo {
+struct __attribute__ ((packed)) errinfo {
     char filename[56];
     char funcname[56];
     int lineno;
     unsigned int errcode;
     int xerrno;
     char auxmsg[384];
-} __attribute__((__packed__));
+};
 
 typedef struct errinfo errinfo_t;
 

@@ -15,11 +15,6 @@ START_TEST (check_engine_context_system_s) {
 
 	if (status()) {
 
-		if (!system_oslimit_max(CTL_FS, FS_MAXFILE)) {
-			st_sprint(errmsg, "System limit check failed. { control = CTL_FS / FS_MAXFILE }");
-			result = false;
-		}
-
 		magma.config.output_resource_limits = true;
 		if (result && !system_init_resource_limits()) {
 			st_sprint(errmsg, "System limit resource manipulation failed.");

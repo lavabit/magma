@@ -24,7 +24,9 @@ res/sql/Hostname.sql
 
 # Compiled Binaries
 /magmad
+/stripped-magmad
 /magmad.so
+/stripped-magmad.so
 /magmad.check
 /dime
 /signet

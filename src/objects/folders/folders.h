@@ -19,7 +19,7 @@ enum {
 	M_FOLDER_CONTACTS = 2 //!< M_FOLDER_CONTACTS
 };
 
-typedef struct __attribute__((__packed__)) {
+typedef struct __attribute__ ((packed)) {
 	inx_t *records;
 	uint32_t order;
 	stringer_t *name;

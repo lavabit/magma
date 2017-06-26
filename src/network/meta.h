@@ -62,20 +62,20 @@ enum {
 	CREDENTIAL_AUTH = 1
 };
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	uint64_t alertnum, created;
 	stringer_t *type, *message;
-} __attribute__((__packed__)) meta_alert_t;
+} meta_alert_t;
 
 /***
  * @struct meta_alias_t
  * @brief	Describes user mailboxes and provides the display name for each address, while also indicating which address is the preferred default.
  */
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	bool_t selected;
 	uint64_t aliasnum, created;
 	stringer_t *display, *address;
-} __attribute__((__packed__)) meta_alias_t;
+} meta_alias_t;
 
 typedef struct {
 	size_t size;

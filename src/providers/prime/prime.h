@@ -85,29 +85,27 @@ typedef enum {
     PRIME_USER_SIGNET = 1789,              /**< User signet. >*/
 	PRIME_USER_KEY = 2013,                 /**< User key. >*/
 	PRIME_USER_KEY_ENCRYPTED = 1976,       /**< Encrypted user key. >*/
-
 } prime_artifact_type_t;
 
 /**
  * @typedef prime_message_chunk_type_t
- */
-typedef enum {
+ */typedef enum {
 	PRIME_CHUNK_INVALID = -1,
 
 	// Tracing
-    PRIME_CHUNK_TRACING = 0,               /**< Tracing data. >*/
+    PRIME_CHUNK_TRACING = 0,                        /**< Tracing data. >*/
 
 	// Envelope Block
-	PRIME_CHUNK_EPHEMERAL = 1,             /**< Ephemeral chunk. >*/
-	PRIME_CHUNK_ORIGIN = 2,                /**< Origin chunk. >*/
-	PRIME_CHUNK_DESTINATION = 3,           /**< Destination chunk. >*/
+	PRIME_CHUNK_EPHEMERAL = 1,                      /**< Ephemeral chunk. >*/
+	PRIME_CHUNK_ORIGIN = 2,                         /**< Origin chunk. >*/
+	PRIME_CHUNK_DESTINATION = 3,                    /**< Destination chunk. >*/
 
 	// Metadata Block
-	PRIME_CHUNK_COMMON = 32,               /**< Common headers chunk. >*/
-	PRIME_CHUNK_HEADERS = 33,              /**< Remaining headers chunk. >*/
+	PRIME_CHUNK_COMMON = 32,                        /**< Common headers chunk. >*/
+	PRIME_CHUNK_HEADERS = 33,                       /**< Remaining headers chunk. >*/
 
 	// Body
-	PRIME_CHUNK_BODY = 48,                 /**< Naked unstructured message body. >*/
+	PRIME_CHUNK_BODY = 48,                          /**< Naked unstructured message body. >*/
 
 	// Signature Block
 	PRIME_SIGNATURE_TREE = 224,
@@ -116,6 +114,24 @@ typedef enum {
 	PRIME_SIGNATURE_ORGIN = 254,
 	PRIME_SIGNATURE_DESTINATION = 255
 } prime_message_chunk_type_t;
+
+/**
+ * @typedef prime_message_chunk_flags_t
+ */
+typedef enum {
+	PRIME_CHUNK_FLAG_INVALID = -1,
+
+	PRIME_CHUNK_FLAG_NONE = 0,                   /**< The empty set. >*/
+
+	// Envelope Block
+	PRIME_CHUNK_FLAG_ALTERNATE_PADDING = 1,      /**< Alternate chunk padding algorithm. >*/
+	PRIME_CHUNK_FLAG_ALTERNATE_ENCRYPT = 2,      /**< Payload is further encrypted by the alternate cipher suite. >*/
+	PRIME_CHUNK_FLAG_COMPRESSED = 4,             /**< The data was compressed before being encrypted. >*/
+
+	// The values 8, 16, 32, 64 are currently reserved for future use.
+
+	PRIME_CHUNK_FLAG_SPANNING = 128              /**< The payload continues into the next available chunk. >*/
+} prime_message_chunk_flags_t;
 
 /**
  * @typedef prime_org_artifact_fields_t
@@ -260,7 +276,7 @@ typedef struct __attribute__ ((packed)) {
 /**
  * @typedef prime_encrypted_chunk_t
  */
-typedef struct __attribute__ ((packed)) {
+typedef struct __attribute__ ((packed)) prime_encrypted_chunk_t {
 	struct {
 		uint8_t type;                      /**< Chunk type, 1 through 255. >*/
 		uint32_t length;                   /**< Payload length, must be divisible by 16 and less than 2^24 - 1. >*/
@@ -272,9 +288,9 @@ typedef struct __attribute__ ((packed)) {
 	uint8_t pad;
 	stringer_t *data;
 	stringer_t *trailing;
-
 	stringer_t *encrypted;
 	prime_chunk_slots_t *slots;
+	struct prime_encrypted_chunk_t *next;
 
 } prime_encrypted_chunk_t;
 

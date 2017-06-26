@@ -108,11 +108,13 @@ gd() {
 		gd-check)
 			cd "$M_SOURCES/gd"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/gd.txt"; error
 		;;
 		gd-check-full)
 			cd "$M_SOURCES/gd"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/gd.txt"; error
 		;;
 		gd-clean)
@@ -178,11 +180,13 @@ png() {
 		png-check)
 			cd "$M_SOURCES/png"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/png.txt"; error
 		;;
 		png-check-full)
 			cd "$M_SOURCES/png"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/png.txt"; error
 		;;
 		png-clean)
@@ -243,11 +247,13 @@ lzo() {
 		lzo-check)
 			cd "$M_SOURCES/lzo"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make test &>> "$M_LOGS/lzo.txt"; error
 		;;
 		lzo-check-full)
 			cd "$M_SOURCES/lzo"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make test &>> "$M_LOGS/lzo.txt"; error
 		;;
 		lzo-clean)
@@ -309,11 +315,13 @@ jpeg() {
 		jpeg-check)
 			cd "$M_SOURCES/jpeg"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/jpeg.txt"; error
 		;;
 		jpeg-check-full)
 			cd "$M_SOURCES/jpeg"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/jpeg.txt"; error
 		;;
 		jpeg-clean)
@@ -380,11 +388,13 @@ spf2() {
 		spf2-check)
 			cd "$M_SOURCES/spf2"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/spf2.txt"; error
 		;;
 		spf2-check-full)
 			cd "$M_SOURCES/spf2"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/spf2.txt"; error
 		;;
 		spf2-clean)
@@ -463,6 +473,7 @@ curl() {
 			# The target 'check' is an alias for the targets 'test' and 'examples'
 			cd "$M_SOURCES/curl"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make --jobs=4 examples &>> "$M_LOGS/curl.txt"; error
 			make --jobs=4 test &>> "$M_LOGS/curl.txt"; error
 		;;
@@ -471,6 +482,7 @@ curl() {
 			# The target 'check' is an alias for the targets 'test' and 'examples'
 			cd "$M_SOURCES/curl"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make --jobs=4 examples &>> "$M_LOGS/curl.txt"; error
 			make --jobs=4 test &>> "$M_LOGS/curl.txt"; error
 			make --jobs=4 test-full &>> "$M_LOGS/curl.txt"; error
@@ -561,11 +573,13 @@ xml2() {
 		xml2-check)
 			cd "$M_SOURCES/xml2"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/xml2.txt"; error
 		;;
 		xml2-check-full)
 			cd "$M_SOURCES/xml2"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/xml2.txt"; error
 			make -f Makefile.tests check &>> "$M_LOGS/xml2.txt"; error
 		;;
@@ -638,11 +652,13 @@ dkim() {
 		dkim-check)
 			cd "$M_SOURCES/dkim"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/dkim.txt"; error
 		;;
 		dkim-check-full)
 			cd "$M_SOURCES/dkim"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/dkim.txt"; error
 		;;
 		dkim-clean)
@@ -708,11 +724,13 @@ zlib() {
 		zlib-check)
 			cd "$M_SOURCES/zlib"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/zlib.txt"; error
 		;;
 		zlib-check-full)
 			cd "$M_SOURCES/zlib"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/zlib.txt"; error
 		;;
 		zlib-clean)
@@ -774,11 +792,13 @@ bzip2() {
 		bzip2-check)
 			cd "$M_SOURCES/bzip2"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/bzip2.txt"; error
 		;;
 		bzip2-check-full)
 			cd "$M_SOURCES/bzip2"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/bzip2.txt"; error
 		;;
 		bzip2-clean)
@@ -861,11 +881,13 @@ dspam() {
 		dspam-check)
 			cd "$M_SOURCES/dspam"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/dspam.txt"; error
 		;;
 		dspam-check-full)
 			cd "$M_SOURCES/dspam"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/dspam.txt"; error
 		;;
 		dspam-clean)
@@ -951,12 +973,14 @@ mysql() {
 		mysql-check)
 			cd "$M_SOURCES/mysql"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make --jobs=4 test-fast &>> "$M_LOGS/mysql.txt"; error
 		;;
 		mysql-check-full)
 
 			cd "$M_SOURCES/mysql"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 
 			# The test suite will use this variable to offset the port numbers and prevent clashing.
 			export MTR_BUILD_THREAD=86
@@ -1037,11 +1061,13 @@ geoip() {
 		geoip-check)
 			cd "$M_SOURCES/geoip"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/geoip.txt"; error
 		;;
 		geoip-check-full)
 			cd "$M_SOURCES/geoip"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/geoip.txt"; error
 		;;
 		geoip-clean)
@@ -1112,7 +1138,10 @@ clamav() {
 				cat "$M_PATCHES/clamav/"shutdown_rarload_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
 
 				# Output the version number and not the git commit hash.
-				cat "$M_PATCHES/clamav/"version_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
+				cat "$M_PATCHES/clamav/"version_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error 
+				
+				# Fix the zlib version check, so that 1.2.10+ doesn't trigger a spurious error.
+				cat "$M_PATCHES/clamav/"zlib_check_0992.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
 			fi
 
 			# Fix reference conflict with libpng over the filename png.h.
@@ -1124,31 +1153,50 @@ clamav() {
 		;;
 		clamav-build)
 			cd "$M_SOURCES/clamav"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
-			export CPPFLAGS="$CPPFLAGS \
-				-I$M_SOURCES/curl/include \
-				-I$M_SOURCES/openssl/include \
-				-I$M_SOURCES/zlib"
-			export LDFLAGS="\
-				-L$M_SOURCES/curl/lib -Wl,-rpath,$M_SOURCES/curl/lib\
-				-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl\
-				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE -I$M_LOCAL/include"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE -I$M_LOCAL/include"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE -I$M_LOCAL/include"
+			export LDFLAGS="-L$M_LOCAL/lib -Wl,-rpath,$M_LOCAL/lib"
+#
+#			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
+#			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
+#			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
+#			export CPPFLAGS="$CPPFLAGS \
+#				-I$M_SOURCES/curl/include \
+#				-I$M_SOURCES/openssl/include \
+#				-I$M_SOURCES/zlib"
+#			export LDFLAGS="\
+#				-L$M_SOURCES/curl/lib -Wl,-rpath,$M_SOURCES/curl/lib\
+#				-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl\
+#				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
 
-			# Note that at least in version 0.97 and 0.98, --disable-llvm breaks the unit tests.
 
-			./configure  \
-				--disable-llvm --with--disable-xml --enable-check --enable-static --disable-silent-rules --disable-libcurl \
-				--with-openssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" --with-libcheck-prefix="$M_LOCAL" \
-				--with-libbz2-prefix="$M_SOURCES/bzip2" --prefix="$M_LOCAL"  --exec-prefix="$M_LOCAL"  --libdir="$M_LOCAL/lib" \
-				&>> "$M_LOGS/clamav.txt"; error
-
+			# Note that at least in version 0.97 and 0.98, --disable-llvm breaks the unit tests. And with ClamAV 0.98.4
+					
+################################################################################################################################
+################################################################################################################################
+################################################################################################################################															
+			# Updated to work with 0.99.2 but doesn't work with Zlib 1.2.11, yet.				
+				./configure  \
+					--enable-check --enable-static --enable-shared --disable-mempool --disable-llvm --disable-silent-rules \
+					--with-openssl="$M_LOCAL" --with-zlib="$M_LOCAL" --with-xml="$M_LOCAL" --with-libcurl="$M_LOCAL" \
+					--with-libbz2-prefix="$M_LOCAL" --with-libcheck-prefix="$M_LOCAL" \
+					--prefix="$M_LOCAL" --exec-prefix="$M_LOCAL" --libdir="$M_LOCAL/lib" \
+					&>> "$M_LOGS/clamav.txt"; error
+################################################################################################################################
+################################################################################################################################
+################################################################################################################################
+#			./configure  \
+#				--disable-llvm --disable-jit --with-disable-xml --enable-check --enable-static --disable-silent-rules --disable-libcurl \
+#				--with-openssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" --with-libcheck-prefix="$M_LOCAL" \
+#				--with-libbz2-prefix="$M_SOURCES/bzip2" --prefix="$M_LOCAL"  --exec-prefix="$M_LOCAL"  --libdir="$M_LOCAL/lib" \
+#				&>> "$M_LOGS/clamav.txt"; error
+			
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
-			if [[ $CLAMAV =~ "clamav-0.9"[7-8]"."[1-9] ]]; then
+			if [[ $CLAMAV =~ "clamav-0.9"[7-9]"."[1-9] ]]; then
 				# The check3_clamd.sh script will fail if LLVM is disabled.
-				# Since were not currently using clamd, the offending check script is replaced.
+				# Since we are not currently using clamd, the offending check script is replaced.
 				# The exit value 77 indicates the check was skipped.
 				printf "\x23\x21/bin/bash\nexit 77\n" > "$M_SOURCES/clamav/unit_tests/check2_clamd.sh"; error
 				printf "\x23\x21/bin/bash\nexit 77\n" > "$M_SOURCES/clamav/unit_tests/check3_clamd.sh"; error
@@ -1176,6 +1224,7 @@ clamav() {
 		clamav-check-full)
 			cd "$M_SOURCES/clamav"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 
 			# Remove read perms for the accdenied file so the test works properly.
 			if [[ -e "$M_SOURCES/clamav/unit_tests/accdenied" ]] && [[ ! -f "$M_SOURCES/clamav/unit_tests/accdenied" ]]; then
@@ -1259,11 +1308,13 @@ checker() {
 		checker-check)
 			cd "$M_SOURCES/checker"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/checker.txt"; error
 		;;
 		checker-check-full)
 			cd "$M_SOURCES/checker"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/checker.txt"; error
 		;;
 		checker-clean)
@@ -1323,12 +1374,19 @@ openssl() {
         	if [ $? == 0 ]; then
                 	export CONFIGOPTS='-fno-merge-debug-strings '
         	fi
-		    ./config \
+#		    ./config \
+#		        -d shared zlib no-asm --openssldir="$M_LOCAL" --libdir="lib" \
+#				-I"$M_SOURCES/zlib" -O $CONFIGOPTS -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
+#				-L"$M_SOURCES/openssl" -Wl,-rpath,"$M_SOURCES/openssl" \
+#				-L"$M_SOURCES/zlib" -Wl,-rpath,"$M_SOURCES/zlib" \
+#				&>> "$M_LOGS/openssl.txt"; error
+#				
+			./config \
 		        -d shared zlib no-asm --openssldir="$M_LOCAL" --libdir="lib" \
-				-I"$M_SOURCES/zlib" -O $CONFIGOPTS -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
-				-L"$M_SOURCES/openssl" -Wl,-rpath,"$M_SOURCES/openssl" \
-				-L"$M_SOURCES/zlib" -Wl,-rpath,"$M_SOURCES/zlib" \
+				-I"$M_SOURCES/include/" -O $CONFIGOPTS -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
+				-L"$M_SOURCES/lib/" -Wl,-rpath,"$M_SOURCES/lib/" \
 				&>> "$M_LOGS/openssl.txt"; error
+			
 
 			make depend &>> "$M_LOGS/openssl.txt"; error
 			make &>> "$M_LOGS/openssl.txt"; error
@@ -1340,11 +1398,13 @@ openssl() {
 		openssl-check)
 			cd "$M_SOURCES/openssl"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make test &>> "$M_LOGS/openssl.txt"; error
 		;;
 		openssl-check-full)
 			cd "$M_SOURCES/openssl"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make test &>> "$M_LOGS/openssl.txt"; error
 		;;
 		openssl-clean)
@@ -1560,11 +1620,13 @@ jansson() {
 		jansson-check)
 			cd "$M_SOURCES/jansson"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/jansson.txt"; error
 		;;
 		jansson-check-full)
 			cd "$M_SOURCES/jansson"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/jansson.txt"; error
 		;;
 		jansson-clean)
@@ -1627,11 +1689,13 @@ freetype() {
 		freetype-check)
 			cd "$M_SOURCES/freetype"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/freetype.txt"; error
 		;;
 		freetype-check-full)
 			cd "$M_SOURCES/freetype"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/freetype.txt"; error
 		;;
 		freetype-clean)
@@ -1692,11 +1756,13 @@ utf8proc() {
 		utf8proc-check)
 			cd "$M_SOURCES/utf8proc"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/utf8proc.txt"; error
 		;;
 		utf8proc-check-full)
 			cd "$M_SOURCES/utf8proc"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/utf8proc.txt"; error
 		;;
 		utf8proc-clean)
@@ -1797,6 +1863,7 @@ memcached() {
 		memcached-check)
 			cd "$M_SOURCES/memcached"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			
 			# For some reason, the unit tests will fail when using this environment variable to find the memcached server.
 			unset MEMCACHED_SERVERS
@@ -1812,6 +1879,7 @@ memcached() {
 		memcached-check-full)
 			cd "$M_SOURCES/memcached"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error			
 			
 			# For some reason, the unit tests will fail when using this environment variable to find the memcached server.
 			unset MEMCACHED_SERVERS
@@ -1888,11 +1956,13 @@ tokyocabinet() {
 		tokyocabinet-check)
 			cd "$M_SOURCES/tokyocabinet"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/tokyocabinet.txt"; error
 		;;
 		tokyocabinet-check-full)
 			cd "$M_SOURCES/tokyocabinet"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
 			make check &>> "$M_LOGS/tokyocabinet.txt"; error
 			make check-valgrind &>> "$M_LOGS/tokyocabinet.txt"; error
 			make check-large &>> "$M_LOGS/tokyocabinet.txt"; error
@@ -1907,12 +1977,7 @@ tokyocabinet() {
 		tokyocabinet-tail)
 			tail --lines=30 --follow=name --retry "$M_LOGS/tokyocabinet.txt"; error
 		;;
-		tokyocabinet-log)echo ""
-	printf "Checking shared object... "
-
-	mkdir -p "$M_CHECK"; error
-	cd "$M_CHECK"; error
-
+		tokyocabinet-log)
 			cat "$M_LOGS/tokyocabinet.txt"; error
 		;;
 		tokyocabinet)
@@ -2195,14 +2260,14 @@ keys() {
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dime.localhost.localdomain.key"; error
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dime.localhost.localdomain.signet"; error
 
-	# Tell git to skip checking for changes to the key files, but only if git is on the system and the files
+	# Tell git to skip checking for changes to these SQL files, but we only do this if git is on the system and the files
 	# are stored inside a repo.
 	GIT_IS_AVAILABLE=`which git &> /dev/null && git log &> /dev/null && echo 1`
 	if [[ "$GIT_IS_AVAILABLE" == "1" ]]; then
-		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/tls.localhost.localdomain.pem"
-		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
-		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dime.localhost.localdomain.key"
-		git update-index --assume-unchanged "$M_PROJECT_ROOT/sandbox/etc/dime.localhost.localdomain.signet"
+		git update-index --skip-worktree "$M_PROJECT_ROOT/sandbox/etc/tls.localhost.localdomain.pem"
+		git update-index --skip-worktree "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub"
+		git update-index --skip-worktree "$M_PROJECT_ROOT/sandbox/etc/dime.localhost.localdomain.key"
+		git update-index --skip-worktree "$M_PROJECT_ROOT/sandbox/etc/dime.localhost.localdomain.signet"
 	fi
 }
 

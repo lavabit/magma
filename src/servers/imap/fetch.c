@@ -230,8 +230,8 @@ stringer_t * imap_fetch_bodystructure(mail_mime_t *mime) {
 
 	array_t *items;
 	uint64_t lines = 0;
-	size_t increment = 0, length;
 	chr_t *stream, buffer[32];
+	size_t increment = 0, length;
 	stringer_t *output = NULL, *current, *value, *literal, *holder[8];
 
 	if (!mime) {
@@ -260,8 +260,8 @@ stringer_t * imap_fetch_bodystructure(mail_mime_t *mime) {
 
 			while (increment < length) {
 				current = ar_field_st(items, increment);
-				// If the current item is a literal.
 
+				// If the current item is a literal.
 				if (current && (literal = imap_build_array_isliteral(pl_init(st_char_get(current), st_length_get(current))))) {
 
 					if ((value = st_merge("sns", holder[2], holder[2] ? " " : "", literal))) {

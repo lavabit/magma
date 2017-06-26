@@ -70,7 +70,7 @@ typedef struct {
 		} portal;
 	};
 
-} __attribute__ ((__packed__)) http_session_t;
+} __attribute__ ((packed)) http_session_t;
 
 #endif
 

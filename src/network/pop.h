@@ -14,7 +14,7 @@ typedef struct {
 	int_t session_state;
 	stringer_t *username;
 	uint64_t usernum;
-} __attribute__ ((__packed__)) pop_session_t;
+} __attribute__ ((packed)) pop_session_t;
 
 #endif
 

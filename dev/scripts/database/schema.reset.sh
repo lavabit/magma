@@ -90,6 +90,14 @@ fi
 # Generate Hostname.sql with the system's Hostname
 echo "UPDATE Hosts SET hostname = '$HOSTNAME' WHERE hostnum = 1;" > $MAGMA_RES_SQL/Hostname.sql
 
+# Tell git to skip checking for changes to these SQL files, but we only do this if git is on the system and the files
+# are stored inside a repo.
+GIT_IS_AVAILABLE=`which git &> /dev/null && git log &> /dev/null && echo 1`
+if [[ "$GIT_IS_AVAILABLE" == "1" ]]; then
+	git update-index --skip-worktree "$MAGMA_RES_SQL/Start.sql"
+	git update-index --skip-worktree "$MAGMA_RES_SQL/Hostname.sql"
+fi
+
 cat $MAGMA_RES_SQL/Start.sql \
 	$MAGMA_RES_SQL/Schema.sql \
 	$MAGMA_RES_SQL/Data.sql \

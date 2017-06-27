@@ -88,9 +88,9 @@ int tcp_continue(int sockd, int result, int syserror) {
 	if (!status()) return -1;
 
 	// Data was processed, so there is no need to retry the operation.
-	else if (result > 0) return result;
+	else if (result >= 0) return result;
 
-	else if (result <= 0 && (syserror == EWOULDBLOCK || syserror == EAGAIN || syserror == EINTR)) return 0;
+	else if (result < 0 && (syserror == EWOULDBLOCK || syserror == EAGAIN || syserror == EINTR)) return 0;
 
 	log_pedantic("A TCP error occurred. { errno = %i / error = %s / message = %s }", syserror, errno_name(syserror),
 		strerror_r(syserror, message, 1024));

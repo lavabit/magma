@@ -28,17 +28,17 @@ bool_t check_system_signames(void) {
 bool_t check_system_errnonames(void) {
 
 	bool_t result = true;
-	chr_t *buffer1 = MEMORYBUF(1024), *buffer2 = MEMORYBUF(1024);
+	chr_t *buffer = MEMORYBUF(1024);
 
 	if (!status()) {
 		return result;
 	}
 
-	for (uint64_t i = 1; i < _sys_nerr; i++) {
+	for (uint64_t i = 1; i < 33; i++) {
 
-		// Errors 41 and 58 are aliases, and strerror will return unknown instead of the alias name..
-		if (st_cmp_ci_starts(NULLER(strerror_r(i, buffer1, 1024)), PLACER("Unknown", 7)) &&
-			st_cmp_cs_eq(NULLER(errno_name(i, buffer2, 1024)), NULLER(strerror_r(i, buffer2, 1024)))) {
+		// No error code between 1 and 32 should be "Unknown" or "Out of range."
+		if (!st_cmp_ci_starts(NULLER(strerror_r(i, buffer, 1024)), PLACER("Unknown", 7)) ||
+			!st_cmp_cs_eq(NULLER(errno_name(i)), NULLER("UNKNOWN")) || !st_cmp_cs_eq(NULLER(errno_name(i)), NULLER("ERANGE"))) {
 			result = false;
 		}
 	}

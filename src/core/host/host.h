@@ -140,15 +140,21 @@ bool_t        file_world_accessible(const chr_t *path);
 /// tcp.c
 ip_t *        tcp_addr_ip(int sockd, ip_t *output);
 stringer_t *  tcp_addr_st(int sockd, stringer_t *output);
+int           tcp_continue(int sockd, int result, int syserror);
 int_t         tcp_error(int error);
+int           tcp_read(int sockd, void *buffer, int length, bool_t block);
 int_t         tcp_status(int sockd);
+int           tcp_wait(int sockd);
+int           tcp_write(int sockd, const void *buffer, int length, bool_t block);
 
 /// host.c
 stringer_t *  host_platform(stringer_t *output);
 stringer_t *  host_version(stringer_t *output);
 
-/// mappings.c
-chr_t *  errno_name(int errnum, char *buffer, size_t length);
+/// errors.c
+chr_t *  errno_name(int error);
+
+/// signals.c
 chr_t *  signal_name(int signal, char *buffer, size_t length);
 
 /// folder.c

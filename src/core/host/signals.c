@@ -1,40 +1,11 @@
 
 /**
- * @file /magma/core/host/mappings.c
+ * @file /magma/src/core/host/signals.c
  *
- * @brief	Map numeric system values to their string equivalents.
+ * @brief 	Functions to help handle signals.
  */
 
 #include "magma.h"
-
-/**
- * @brief	Translate an error number into a descriptive, human-readable message.
- * @param	error	the error number (errno) to be looked up.
- * @param	buffer	a pointer to a character buffer that will store the error description string.
- * @param	length	the length, in bytes, of the output buffer, which should be at minimum of 32 bytes.
- * @return	a pointer to a null-terminated string containing the descriptive error message.
- */
-chr_t * errno_name(int errnum, char *buffer, size_t length) {
-
-	if (!buffer || !length) {
-		log_pedantic("Invalid output buffer supplied.");
-	}
-	else if (errnum < _sys_nerr && _sys_errlist[errnum]) {
-		snprintf(buffer, length, "%s", _sys_errlist[errnum]);
-	}
-	else if (errnum == 41) {
-		snprintf(buffer, length, "EWOULDBLOCK");
-	}
-	else if (errnum == 58) {
-		snprintf(buffer, length, "EDEADLOCK");
-	}
-	else {
-		log_pedantic("Asked to identify an error outside the legal range. { errno = %i / nerr = %i / name = UNKNOWN }", errnum, _sys_nerr);
-		snprintf(buffer, length, "UNKNOWN");
-	}
-
-	return buffer;
-}
 
 /**
  * @brief	Translate a numeric signal into a human readable name.

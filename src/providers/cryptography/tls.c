@@ -470,6 +470,62 @@ stringer_t * tls_error(TLS *tls, int_t code, stringer_t *output) {
 }
 
 /**
+ * @brief	Return -1 if the connection is invalid, 0 if the operation should be retried, or a positive number indicating the
+ * 			number of bytes processed.
+ */
+int tls_continue(TLS *tls, int result, int syserror) {
+
+	int holder = 0;
+	unsigned long tlserror = 0;
+	chr_t *message = MEMORYBUF(1024);
+
+	// Check that the daemon hasn't initiated a shutdown.
+	if (!status()) return -1;
+
+	// Data was processed, so there is no need to retry the operation.
+	else if (result > 0) return result;
+
+	// Switch statement will process neutral/negative result codes.
+	switch ((holder = SSL_get_error_d(tls, result))) {
+
+		// This result is expected when no more data is expected, such as when the end-of-file terminator ir reached.
+		case SSL_ERROR_ZERO_RETURN:
+			// This indicates a non-error occurred, such as a timeout lapse, or shutdown/close notifcation is reccieved.
+		case SSL_ERROR_NONE:
+			result = -1;
+			break;
+
+			// This indicates the operation should be retried, possibly because of a renegotiation, or other out-of-band
+			// interrupted the operation.
+		case SSL_ERROR_WANT_WRITE:
+		case SSL_ERROR_WANT_READ:
+			result = 0;
+			break;
+
+			// A TLS error ocurred, check the error stack to find out more.
+		case SSL_ERROR_SSL:
+			ERR_error_string_n_d((tlserror = ERR_get_error_d()), message, 1024);
+			log_pedantic("A TLS error occurred. { error = %lu / message = %s", tlserror, message);
+			result = -1;
+			break;
+
+			// Indicates the call returned because of a transport error. Check errno for more information.
+		case SSL_ERROR_SYSCALL:
+			log_pedantic("A TCP error occurred. { errno = %i / error = %s / message = %s }", syserror, errno_name(syserror),
+				strerror_r(syserror, message, 1024));
+			result = -1;
+			break;
+
+		default:
+			log_pedantic("An unexpected TLS error result was encountered. { error = %i }", holder);
+			result = 0;
+			break;
+	}
+
+	return result;
+}
+
+/**
  * @brief	Read data from a TLS connection.
  * @param	tls		the TLS connection from which the data will be read.
  * @param	buffer	a pointer to the buffer where the read data will be stored.
@@ -479,10 +535,7 @@ stringer_t * tls_error(TLS *tls, int_t code, stringer_t *output) {
  */
 int tls_read(TLS *tls, void *buffer, int length, bool_t block) {
 
-	int result = 0;
-
-	errno = 0;
-	ERR_clear_error_d();
+	int result = 0, counter = 0;
 
 	if (!tls || !buffer || !length) {
 		log_pedantic("Passed invalid parameters for a call to the TLS read function.");
@@ -492,16 +545,19 @@ int tls_read(TLS *tls, void *buffer, int length, bool_t block) {
 	// In the future, when we switch to OpenSSL v1.1.0 around the year ~2032, we should look into using an
 	// asynchronous SSL context to facilitate our non-blocking read/write operations. Look to configure the
 	// context using SSL_CTX_set_mode(SSL_CTX *ctx, long mode) with mode set to SSL_MODE_ASYNC.
-	else if (!block) {
+	if (!block) log_pedantic("Non-blocking TLS read calls have not been fully implemented yet.");
+
+	do {
+
+		errno = 0;
+		ERR_clear_error_d();
 
 		// Consult SSL_peek / SSL_want / SSL_get_read_ahead / SSL_set_read_ahead
-		log_pedantic("Non-blocking TLS write calls have not been fully implemented yet.");
+		// if (!block) SSL_peek_d(tld...);
 
 		result = SSL_read_d(tls, buffer, length);
-	}
-	else {
-		result = SSL_read_d(tls, buffer, length);
-	}
+
+	} while (block && counter++ < 8 && !(result = tls_continue(tls, result, errno)));
 
 	return result;
 }
@@ -515,24 +571,26 @@ int tls_read(TLS *tls, void *buffer, int length, bool_t block) {
  */
 int tls_write(TLS *tls, const void *buffer, int length, bool_t block) {
 
-	int result = -1;
-
-	errno = 0;
-	ERR_clear_error_d();
+	int result = 0, counter = 0;
 
 	if (!tls || !buffer || !length) {
 		log_pedantic("Passed invalid parameters for a call to the TLS write function.");
 		return -1;
 	}
-	else if (!block) {
 
-		log_pedantic("Non-blocking TLS write calls have not been fully implemented yet.");
+	if (!block) log_pedantic("Non-blocking TLS write calls have not been fully implemented yet.");
+
+	do {
+
+		errno = 0;
+		ERR_clear_error_d();
+
+		// Consult SSL_peek / SSL_want / SSL_get_read_ahead / SSL_set_read_ahead
+		// if (!block) SSL_peek_d(tld...);
 
 		result = SSL_write_d(tls, buffer, length);
-	}
-	else {
-		result = SSL_write_d(tls, buffer, length);
-	}
+
+	} while (block && counter++ < 8 && !(result = tls_continue(tls, result, errno)));
 
 	return result;
 }

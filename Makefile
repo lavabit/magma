@@ -319,14 +319,14 @@ ifeq ($(VERBOSE),no)
 else
 	@echo
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) -Wl,--end-group
+	$(RUN)$(LD) $(LDFLAGS) -o '$@' $(MAGMA_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) -Wl,--end-group
 
 # Construct the magma unit test executable.
 $(MAGMA_CHECK_PROGRAM): $(PACKAGE_DEPENDENCIES) $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES))
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) -Wl,--start-group,--whole-archive $(MAGMA_CHECK_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_CHECK_DYNAMIC) 
+	$(RUN)$(LD) $(LDFLAGS) -o '$@' $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) -Wl,--start-group,--whole-archive $(MAGMA_CHECK_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_CHECK_DYNAMIC) 
 		
 # Construct the magma daemon executable with pprof support.
 $(MAGMA_PROGRAM_PPROF): $(PACKAGE_DEPENDENCIES) $(MAGMA_OBJFILES)
@@ -335,14 +335,14 @@ ifeq ($(VERBOSE),no)
 else
 	@echo
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(PPROF) $(MAGMA_STATIC) -Wl,--end-group 
+	$(RUN)$(LD) $(LDFLAGS) -o '$@' $(MAGMA_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(PPROF) $(MAGMA_STATIC) -Wl,--end-group 
 
 # Construct the magma unit test executable with pprof support.
 $(MAGMA_CHECK_PROGRAM_PPROF): $(PACKAGE_DEPENDENCIES) $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES))
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) -Wl,--start-group,--whole-archive $(MAGMA_CHECK_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_CHECK_DYNAMIC) $(PPROF)
+	$(RUN)$(LD) $(LDFLAGS) -o '$@' $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) -Wl,--start-group,--whole-archive $(MAGMA_CHECK_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_CHECK_DYNAMIC) $(PPROF)
 
 # Construct the magma daemon executable with gprof support.
 $(MAGMA_PROGRAM_GPROF): $(PACKAGE_DEPENDENCIES) $(MAGMA_PROF_OBJFILES)
@@ -351,14 +351,14 @@ ifeq ($(VERBOSE),no)
 else
 	@echo
 endif
-	$(RUN)$(LD) $(LDFLAGS) $(GPROF) --output='$@' $(MAGMA_PROF_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) -Wl,--end-group
+	$(RUN)$(LD) $(LDFLAGS) $(GPROF) -o '$@' $(MAGMA_PROF_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) -Wl,--end-group
 
 # Construct the magma unit test executablew with gprof support.
 $(MAGMA_CHECK_PROGRAM_GPROF): $(PACKAGE_DEPENDENCIES) $(MAGMA_CHECK_PROF_OBJFILES) $(filter-out .objs/src/magma.pg.o, $(MAGMA_PROF_OBJFILES))
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 endif
-	$(RUN)$(LD) $(LDFLAGS) $(GPROF) --output='$@' $(MAGMA_CHECK_PROF_OBJFILES) $(filter-out .objs/src/magma.pg.o, $(MAGMA_PROF_OBJFILES)) -Wl,--start-group,--whole-archive $(MAGMA_CHECK_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_CHECK_DYNAMIC) 
+	$(RUN)$(LD) $(LDFLAGS) $(GPROF) -o '$@' $(MAGMA_CHECK_PROF_OBJFILES) $(filter-out .objs/src/magma.pg.o, $(MAGMA_PROF_OBJFILES)) -Wl,--start-group,--whole-archive $(MAGMA_CHECK_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_CHECK_DYNAMIC) 
 
 # Construct the dime command line utility
 $(DIME_PROGRAM): $(PACKAGE_DEPENDENCIES) $(DIME_OBJFILES) 
@@ -367,7 +367,7 @@ ifeq ($(VERBOSE),no)
 else
 	@echo 
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(DIME_OBJFILES) -Wl,--start-group,--whole-archive $(MAGMA_STATIC) $(DIME_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_DYNAMIC) 
+	$(RUN)$(LD) $(LDFLAGS) -o '$@' $(DIME_OBJFILES) -Wl,--start-group,--whole-archive $(MAGMA_STATIC) $(DIME_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_DYNAMIC) 
 
 # Construct the signet command line utility
 $(SIGNET_PROGRAM): $(PACKAGE_DEPENDENCIES) $(SIGNET_OBJFILES) 
@@ -376,7 +376,7 @@ ifeq ($(VERBOSE),no)
 else
 	@echo 
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(SIGNET_OBJFILES) -Wl,--start-group,--whole-archive $(MAGMA_STATIC) $(SIGNET_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_DYNAMIC)
+	$(RUN)$(LD) $(LDFLAGS) -o '$@' $(SIGNET_OBJFILES) -Wl,--start-group,--whole-archive $(MAGMA_STATIC) $(SIGNET_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_DYNAMIC)
 
 # Construct the dime command line utility
 $(GENREC_PROGRAM): $(PACKAGE_DEPENDENCIES) $(GENREC_OBJFILES) 
@@ -385,14 +385,14 @@ ifeq ($(VERBOSE),no)
 else
 	@echo 
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(GENREC_OBJFILES) -Wl,--start-group,--whole-archive $(MAGMA_STATIC) $(GENREC_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_DYNAMIC)
+	$(RUN)$(LD) $(LDFLAGS) -o '$@' $(GENREC_OBJFILES) -Wl,--start-group,--whole-archive $(MAGMA_STATIC) $(GENREC_STATIC) -Wl,--no-whole-archive,--end-group $(MAGMA_DYNAMIC)
 
 # Construct the dime unit test executable
 $(DIME_CHECK_PROGRAM): $(PACKAGE_DEPENDENCIES) $(DIME_CHECK_OBJFILES) 
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 endif
-	$(RUN)$(LD) $(LDFLAGS) --output='$@' $(DIME_CHECK_OBJFILES) -Wl,--start-group,--whole-archive $(DIME_CHECK_STATIC) -Wl,--no-whole-archive,--end-group $(DIME_CHECK_DYNAMIC) 
+	$(RUN)$(LD) $(LDFLAGS) -o '$@' $(DIME_CHECK_OBJFILES) -Wl,--start-group,--whole-archive $(DIME_CHECK_STATIC) -Wl,--no-whole-archive,--end-group $(DIME_CHECK_DYNAMIC) 
 
 $(OBJDIR)/check/dime/%.o: check/dime/%.cpp 
 ifeq ($(VERBOSE),no)
@@ -400,7 +400,7 @@ ifeq ($(VERBOSE),no)
 endif
 	@test -d $(DEPDIR)/$(dir $<) || $(MKDIR) $(DEPDIR)/$(dir $<)
 	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
-	$(RUN)$(CPP) --output='$@' $(CPPFLAGS) $(CPPDEFINES) $(CPPFLAGS.$(<F)) $(CPPDEFINES.$(<F)) $(DIME_CHECK_CPPINCLUDES) -MF"$(<:%.cpp=$(DEPDIR)/%.d)" -MD -MP -MT"$@" -c "$<"
+	$(RUN)$(CPP) -o '$@' $(CPPFLAGS) $(CPPDEFINES) $(CPPFLAGS.$(<F)) $(CPPDEFINES.$(<F)) $(DIME_CHECK_CPPINCLUDES) -MF"$(<:%.cpp=$(DEPDIR)/%.d)" -MD -MP -MT"$@" -c "$<"
 
 # The Magma Unit Test Object Files
 $(OBJDIR)/check/magma/%.o: check/magma/%.c
@@ -409,7 +409,7 @@ ifeq ($(VERBOSE),no)
 endif
 	@test -d $(DEPDIR)/$(dir $<) || $(MKDIR) $(DEPDIR)/$(dir $<)
 	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
-	$(RUN)$(CC) --output='$@' $(CFLAGS) $(CDEFINES) $(CFLAGS.$(<F)) $(CDEFINES.$(<F)) $(MAGMA_CHECK_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" "$<"
+	$(RUN)$(CC) -o '$@' $(CFLAGS) $(CDEFINES) $(CFLAGS.$(<F)) $(CDEFINES.$(<F)) $(MAGMA_CHECK_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" "$<"
 
 # The Magma Daemon Object Files
 $(OBJDIR)/%.o: %.c 
@@ -418,7 +418,7 @@ ifeq ($(VERBOSE),no)
 endif
 	@test -d $(DEPDIR)/$(dir $<) || $(MKDIR) $(DEPDIR)/$(dir $<)
 	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
-	$(RUN)$(CC) --output='$@' $(CFLAGS) $(CDEFINES) $(CFLAGS.$(<F)) $(CDEFINES.$(<F)) $(MAGMA_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" "$<"
+	$(RUN)$(CC) -o '$@' $(CFLAGS) $(CDEFINES) $(CFLAGS.$(<F)) $(CDEFINES.$(<F)) $(MAGMA_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" "$<"
 
 # The Magma Unit Test Object Files (GProf Version)
 $(OBJDIR)/check/magma/%.pg.o: check/magma/%.c
@@ -427,7 +427,7 @@ ifeq ($(VERBOSE),no)
 endif
 	@test -d $(DEPDIR)/$(dir $<) || $(MKDIR) $(DEPDIR)/$(dir $<)
 	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
-	$(RUN)$(CC) --output='$@' $(GPROF) $(CFLAGS) $(CDEFINES) $(CFLAGS.$(<F)) $(CDEFINES.$(<F)) $(MAGMA_CHECK_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" "$<"
+	$(RUN)$(CC) -o '$@' $(GPROF) $(CFLAGS) $(CDEFINES) $(CFLAGS.$(<F)) $(CDEFINES.$(<F)) $(MAGMA_CHECK_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" "$<"
 
 # The Magma Daemon Object Files (GProf Version)
 $(OBJDIR)/%.pg.o: %.c 
@@ -436,7 +436,7 @@ ifeq ($(VERBOSE),no)
 endif
 	@test -d $(DEPDIR)/$(dir $<) || $(MKDIR) $(DEPDIR)/$(dir $<)
 	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
-	$(RUN)$(CC) --output='$@' $(GPROF) $(CFLAGS) $(CDEFINES) $(CFLAGS.$(<F)) $(CDEFINES.$(<F)) $(MAGMA_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" "$<"
+	$(RUN)$(CC) -o '$@' $(GPROF) $(CFLAGS) $(CDEFINES) $(CFLAGS.$(<F)) $(CDEFINES.$(<F)) $(MAGMA_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" "$<"
 	
 $(PACKAGE_DEPENDENCIES): 
 ifeq ($(VERBOSE),no)

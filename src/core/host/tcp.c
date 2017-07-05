@@ -66,6 +66,101 @@ int_t tcp_status(int sockd) {
 	return result;
 }
 
+/**
+ * @brief	Blocks until a socket is ready for a read/write operation, or otherwise becomes invalid.
+ * @param sockd
+ * @return
+ */
+int tcp_wait(int sockd) {
+
+	return 0;
+}
+
+/**
+ * @brief	Return -1 if the connection is invalid, 0 if the operation should be retried, or a positive number indicating the
+ * 			number of bytes processed.
+ */
+int tcp_continue(int sockd, int result, int syserror) {
+
+	chr_t *message = MEMORYBUF(1024);
+
+	// Check that the daemon hasn't initiated a shutdown.
+	if (!status()) return -1;
+
+	// Data was processed, so there is no need to retry the operation.
+	else if (result > 0) return result;
+
+	// Handle non-errors.
+	else if (result <= 0 && (syserror == 0 || syserror == EWOULDBLOCK || syserror == EAGAIN || syserror == EINTR)) return 0;
+
+	log_pedantic("A TCP error occurred. { errno = %i / error = %s / message = %s }", syserror, errno_name(syserror),
+		strerror_r(syserror, message, 1024));
+	return -1;
+}
+
+/**
+ * @brief	Read data from a TCP/IP network socket.
+ * @param	sockd	the socket file descriptor we'll read the data from.
+ * @param	buffer	a pointer to the buffer where the data will be stored.
+ * @param	length	the maximum length, in bytes, we can read into the buffer.
+ * @param	block	a boolean to indicating whether to make a blocking write call.
+ * @return	-1 if the network connection is no longer viable, otherwise the number bytes read, while a 0 may indicate
+ * 				the connection wasn't ready (when using non-blocking read calls), or a non-network error may have ocurred.
+ */
+int tcp_read(int sockd, void *buffer, int length, bool_t block) {
+
+	int result = 0, counter = 0;
+
+	if (sockd < 0 || !buffer || !length) {
+		log_pedantic("Invalid parameters were provided to the TCP read function.");
+		return 0;
+	}
+
+#ifdef MAGMA_PEDANTIC
+	else if (!block) {
+		log_pedantic("Non-blocking TCP read calls have not been fully implemented yet.");
+	}
+#endif
+
+	do {
+		errno = 0;
+		result = recv(sockd, buffer, length, (block ? 0 : MSG_DONTWAIT));
+	} while (block && counter++ < 8 && !(result = tcp_continue(sockd, result, errno)));
+
+	return result;
+}
+
+/**
+ * @brief	Write data to an open TCP/IP network socket.
+ * @param	sockd	the socket file descriptor we'll write the data to.
+ * @param	buffer	a pointer to the buffer containing the data to be written.
+ * @param	length	the length, in bytes, of the data to be written.
+ * @param	block	a boolean to indicating whether to make a blocking write call.
+ * @return	-1 on error, or the number of bytes written to the network connection.
+ */
+int tcp_write(int sockd, const void *buffer, int length, bool_t block) {
+
+	int result = 0, counter = 0;
+
+	if (sockd < 0 || !buffer || !length) {
+		log_pedantic("Passed invalid parameters for a call to the TCP write function.");
+		return 0;
+	}
+
+#ifdef MAGMA_PEDANTIC
+	else if (!block) {
+		log_pedantic("Non-blocking TCP write calls have not been fully implemented yet.");
+	}
+#endif
+
+	do {
+		errno = 0;
+		result = send(sockd, buffer, length, (block ? 0 : MSG_DONTWAIT));
+	} while (block && counter++ < 8 && !(result = tcp_continue(sockd, result, errno)));
+
+	return result;
+}
+
 ip_t * tcp_addr_ip(int sockd, ip_t *output) {
 
 	ip_t *result = NULL;

@@ -25,7 +25,7 @@ int64_t con_write_bl(connection_t *con, char *block, size_t length) {
 
 	int_t counter = 0;
 	ssize_t bytes = 0, position = 0;
-	stringer_t *ip = NULL, *cipher = NULL, *error = NULL;
+//	stringer_t *ip = NULL, *cipher = NULL, *error = NULL;
 
 	if (!con || con->network.sockd == -1 || con_status(con) < 0) {
 		return -1;
@@ -39,52 +39,24 @@ int64_t con_write_bl(connection_t *con, char *block, size_t length) {
 	do {
 
 		if (con->network.tls) {
-
 			bytes = tls_write(con->network.tls, block + position, length, true);
-
-			// If zero bytes were written, or a negative value was returned to indicate an error, call tls_erorr(), which will return
-			// NULL if the error can be safely ignored. Otherwise log the output for debug purposes.
-			if (bytes <= 0 && (error = tls_error(con->network.tls, bytes, MANAGEDBUF(512)))) {
-				cipher = tls_cipher(con->network.tls, MANAGEDBUF(128));
-				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
-
-				log_pedantic("TLS server write operation failed. { ip = %.*s / protocol = %s / %.*s / result = %zi%s%.*s }",
-					st_length_int(ip), st_char_get(ip), st_char_get(protocol_type(con)), st_length_int(cipher), st_char_get(cipher),
-					bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
-
-				con->network.status = -1;
-				return -1;
-			}
-			// This will occur when the read operation results in a 0, or negative value, but TLS error returns NULL to
-			// indicate it was a transient error. For transient errors we simply set bytes equal to 0 so the read call gets retried.
-			else if (bytes <= 0) {
-				bytes = 0;
-			}
 		}
 		else {
-
-			errno = 0;
-
-			bytes = send(con->network.sockd, block + position, length, 0);
-
-			// Check for errors on non-SSL writes in the traditional way.
-			if (bytes <= 0 && tcp_status(con->network.sockd)) {
-
-				int_t local = errno;
-				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
-
-				log_pedantic("TCP server write operation failed. { ip = %.*s / result = %zi / error = %i / message = %s }",
-					st_length_int(ip), st_char_get(ip), bytes, local, strerror_r(local, MEMORYBUF(1024), 1024));
-
-				con->network.status = -1;
-				return -1;
-			}
+			bytes = tcp_write(con->network.sockd, block + position, length, true);
 		}
 
 		// Handle progress by advancing our position tracker.
 		if (bytes > 0) {
+			counter = 0;
 			length -= bytes;
 			position += bytes;
+		}
+		else if (bytes == 0) {
+			usleep(1000);
+		}
+		else if (bytes < 0) {
+			con->network.status = -1;
+			return -1;
 		}
 
 	} while (length && counter++ < 128 && status());
@@ -94,6 +66,44 @@ int64_t con_write_bl(connection_t *con, char *block, size_t length) {
 	}
 
 	return position;
+
+			// If zero bytes were written, or a negative value was returned to indicate an error, call tls_erorr(), which will return
+			// NULL if the error can be safely ignored. Otherwise log the output for debug purposes.
+//			if (bytes <= 0 && (error = tls_error(con->network.tls, bytes, MANAGEDBUF(512)))) {
+//				cipher = tls_cipher(con->network.tls, MANAGEDBUF(128));
+//				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
+//
+//				log_pedantic("TLS server write operation failed. { ip = %.*s / protocol = %s / %.*s / result = %zi%s%.*s }",
+//					st_length_int(ip), st_char_get(ip), st_char_get(protocol_type(con)), st_length_int(cipher), st_char_get(cipher),
+//					bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
+//
+//				con->network.status = -1;
+//				return -1;
+//			}
+			// This will occur when the read operation results in a 0, or negative value, but TLS error returns NULL to
+			// indicate it was a transient error. For transient errors we simply set bytes equal to 0 so the read call gets retried.
+//			else if (bytes <= 0) {
+//				bytes = 0;
+//			}
+//		}
+//		else {
+//
+//
+//
+//			// Check for errors on non-SSL writes in the traditional way.
+//			if (bytes <= 0 && tcp_status(con->network.sockd)) {
+//
+//				int_t local = errno;
+//				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
+//
+//				log_pedantic("TCP server write operation failed. { ip = %.*s / result = %zi / error = %i / message = %s }",
+//					st_length_int(ip), st_char_get(ip), bytes, local, strerror_r(local, MEMORYBUF(1024), 1024));
+//
+//				con->network.status = -1;
+//				return -1;
+//			}
+//		}
+
 }
 
 /**

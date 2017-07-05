@@ -21,9 +21,9 @@
 int64_t con_read_line(connection_t *con, bool_t block) {
 
 	ssize_t bytes = 0;
+	int_t counter = 0;
 	bool_t line = false;
-	int_t counter = 0, local = 0;
-	stringer_t *ip = NULL, *cipher = NULL, *error = NULL;
+//	stringer_t *ip = NULL, *cipher = NULL, *error = NULL;
 
 	if (!con || con->network.sockd == -1 || con_status(con) < 0) {
 		if (con) con->network.status = -1;
@@ -61,58 +61,28 @@ int64_t con_read_line(connection_t *con, bool_t block) {
 
 	// Loop until we get a complete line, an error, or the buffer is filled.
 	do {
+//		blocking = st_length_get(con->network.buffer) ? false : true;
+		block = true;
 
-		// Read bytes off the network. Skip past any existing data in the buffer.
 		if (con->network.tls) {
-
-			// If bytes is zero or below and the library isn't asking for another read, then an error occurred.
 			bytes = tls_read(con->network.tls, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
 				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), block);
-
-			// If zero bytes were read, or a negative value was returned to indicate an error, call tls_erorr(), which will return
-			// NULL if the error can be safely ignored. Otherwise log the output for debug purposes.
-			if (bytes <= 0 && (error = tls_error(con->network.tls, bytes, MANAGEDBUF(512)))) {
-				cipher = tls_cipher(con->network.tls, MANAGEDBUF(128));
-				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
-
-				log_pedantic("TLS server read operation failed. { ip = %.*s / protocol = %s / %.*s / result = %zi%s%.*s }",
-					st_length_int(ip), st_char_get(ip), st_char_get(protocol_type(con)), st_length_int(cipher), st_char_get(cipher),
-					bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
-
-
-				con->network.status = -1;
-				return -1;
-			}
-			// This will occur when the read operation results in a 0, or negative value, but TLS error returns NULL to
-			// indicate it was a transient error. For transient errors we simply set bytes equal to 0 so the read call gets retried.
-			else if (bytes <= 0) {
-				bytes = 0;
-			}
 		}
 		else {
-
-			errno = 0;
-
-			bytes = recv(con->network.sockd, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
-				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), (block ? 0 : MSG_DONTWAIT));
-
-			if (bytes <= 0 && tcp_status(con->network.sockd)) {
-
-				local = errno;
-				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
-
-				log_pedantic("TCP server read operation failed. { ip = %.*s / result = %zi / error = %i / message = %s }",
-					st_length_int(ip), st_char_get(ip), bytes, local, strerror_r(local, MEMORYBUF(1024), 1024));
-
-				con->network.status = -1;
-				return -1;
-			}
-
+			bytes = tcp_read(con->network.sockd, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
+				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), block);
 		}
 
-		// We actually read in data, so we need to update the buffer to reflect the amount of data it currently holds.
+		// We actually read in data, so we need to update the buffer to reflect the amount of unprocessed data it currently holds.
 		if (bytes > 0) {
 			st_length_set(con->network.buffer, st_length_get(con->network.buffer) + bytes);
+		}
+		else if (bytes == 0) {
+			usleep(1000);
+		}
+		else {
+			con->network.status = -1;
+			return -1;
 		}
 
 		// Check whether we have a complete line before checking whether the connection was closed.
@@ -127,6 +97,69 @@ int64_t con_read_line(connection_t *con, bool_t block) {
 	}
 
 	return pl_length_get(con->network.line);
+
+//	do {
+//
+//		// Read bytes off the network. Skip past any existing data in the buffer.
+//		if (con->network.tls) {
+//
+//			// If bytes is zero or below and the library isn't asking for another read, then an error occurred.
+//			bytes = tls_read(con->network.tls, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
+//				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), block);
+//
+//			// If zero bytes were read, or a negative value was returned to indicate an error, call tls_erorr(), which will return
+//			// NULL if the error can be safely ignored. Otherwise log the output for debug purposes.
+//			if (bytes <= 0 && (error = tls_error(con->network.tls, bytes, MANAGEDBUF(512)))) {
+//				cipher = tls_cipher(con->network.tls, MANAGEDBUF(128));
+//				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
+//
+//				log_pedantic("TLS server read operation failed. { ip = %.*s / protocol = %s / %.*s / result = %zi%s%.*s }",
+//					st_length_int(ip), st_char_get(ip), st_char_get(protocol_type(con)), st_length_int(cipher), st_char_get(cipher),
+//					bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
+//
+//
+//				con->network.status = -1;
+//				return -1;
+//			}
+//			// This will occur when the read operation results in a 0, or negative value, but TLS error returns NULL to
+//			// indicate it was a transient error. For transient errors we simply set bytes equal to 0 so the read call gets retried.
+//			else if (bytes <= 0) {
+//				bytes = 0;
+//			}
+//		}
+//		else {
+//
+//			errno = 0;
+//
+//			bytes = recv(con->network.sockd, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
+//				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), (block ? 0 : MSG_DONTWAIT));
+//
+//			if (bytes <= 0 && tcp_status(con->network.sockd)) {
+//
+//				local = errno;
+//				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
+//
+//				log_pedantic("TCP server read operation failed. { ip = %.*s / result = %zi / error = %i / message = %s }",
+//					st_length_int(ip), st_char_get(ip), bytes, local, strerror_r(local, MEMORYBUF(1024), 1024));
+//
+//				con->network.status = -1;
+//				return -1;
+//			}
+//
+//		}
+//
+//		// We actually read in data, so we need to update the buffer to reflect the amount of data it currently holds.
+//		if (bytes > 0) {
+//			st_length_set(con->network.buffer, st_length_get(con->network.buffer) + bytes);
+//		}
+//
+//		// Check whether we have a complete line before checking whether the connection was closed.
+//		if (!st_empty(con->network.buffer) && !pl_empty((con->network.line = line_pl_st(con->network.buffer, 0)))) {
+//			line = true;
+//		}
+//
+//	} while (!line && block && counter++ < 128 && st_length_get(con->network.buffer) != st_avail_get(con->network.buffer) && status());
+
 }
 
 /**
@@ -139,9 +172,9 @@ int64_t con_read_line(connection_t *con, bool_t block) {
 int64_t con_read(connection_t *con) {
 
 	ssize_t bytes = 0;
+	int_t counter = 0;
 	bool_t blocking = true;
-	int_t counter = 0, local = 0;
-	stringer_t *ip = NULL, *cipher = NULL, *error = NULL;
+//	stringer_t *ip = NULL, *cipher = NULL, *error = NULL;
 
 	if (!con || con->network.sockd == -1 || con_status(con) < 0) {
 		if (con) con->network.status = -1;
@@ -180,62 +213,30 @@ int64_t con_read(connection_t *con) {
 
 	// Loop until the buffer has data or we get an error.
 	do {
-		blocking = st_length_get(con->network.buffer) ? false : true;
+//		blocking = st_length_get(con->network.buffer) ? false : true;
+		blocking = true;
 
-		// Read bytes off the network. If data is already in the buffer this should be a non-blocking read operation so we can
-		// return the already buffered data without delay.
 		if (con->network.tls) {
-
-			// If bytes is zero or below and the library isn't asking for another read, then an error occurred.
 			bytes = tls_read(con->network.tls, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
 				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), blocking);
-
-			// If zero bytes were read, or a negative value was returned to indicate an error, call tls_erorr(), which will return
-			// NULL if the error can be safely ignored. Otherwise log the output for debug purposes.
-			if (bytes <= 0 && (error = tls_error(con->network.tls, bytes, MANAGEDBUF(512)))) {
-				cipher = tls_cipher(con->network.tls, MANAGEDBUF(128));
-				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
-
-				log_pedantic("TLS server read operation failed. { ip = %.*s / protocol = %s / %.*s / result = %zi%s%.*s }",
-					st_length_int(ip), st_char_get(ip), st_char_get(protocol_type(con)), st_length_int(cipher), st_char_get(cipher),
-					bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
-
-
-				con->network.status = -1;
-				return -1;
-			}
-			// This will occur when the read operation results in a 0, or negative value, but TLS error returns NULL to
-			// indicate it was a transient error. For transient errors we simply set bytes equal to 0 so the read call gets retried.
-			else if (bytes <= 0) {
-				bytes = 0;
-			}
 		}
 		else {
-
-			errno = 0;
-
-			bytes = recv(con->network.sockd, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
-				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), (blocking ? 0 : MSG_DONTWAIT));
-
-			// Check for errors on non-SSL reads in the traditional way.
-			if (bytes <= 0 && tcp_status(con->network.sockd)) {
-
-				local = errno;
-				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
-
-				log_pedantic("TCP server read operation failed. { ip = %.*s / result = %zi / error = %i / message = %s }",
-					st_length_int(ip), st_char_get(ip), bytes, local, strerror_r(local, MEMORYBUF(1024), 1024));
-
-				con->network.status = -1;
-				return -1;
-			}
-
+			bytes = tcp_read(con->network.sockd, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
+				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), blocking);
 		}
 
 		// We actually read in data, so we need to update the buffer to reflect the amount of unprocessed data it currently holds.
 		if (bytes > 0) {
 			st_length_set(con->network.buffer, st_length_get(con->network.buffer) + bytes);
 		}
+		else if (bytes == 0) {
+			usleep(1000);
+		}
+		else {
+			con->network.status = -1;
+			return -1;
+		}
+
 
 	} while (blocking && counter++ < 128 && !st_length_get(con->network.buffer) && status());
 
@@ -244,12 +245,58 @@ int64_t con_read(connection_t *con) {
 	if (st_length_get(con->network.buffer)) {
 		con->network.status = 1;
 	}
-	else if (!bytes) {
-		con->network.status = 2;
-		return -2;
-	}
 
 	return st_length_get(con->network.buffer);
+		// Read bytes off the network. If data is already in the buffer this should be a non-blocking read operation so we can
+		// return the already buffered data without delay.
+//		if (con->network.tls) {
+//
+//			// If bytes is zero or below and the library isn't asking for another read, then an error occurred.
+//			bytes = tls_read(con->network.tls, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
+//				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), blocking);
+//
+//			// If zero bytes were read, or a negative value was returned to indicate an error, call tls_erorr(), which will return
+//			// NULL if the error can be safely ignored. Otherwise log the output for debug purposes.
+//			if (bytes <= 0 && (error = tls_error(con->network.tls, bytes, MANAGEDBUF(512)))) {
+//				cipher = tls_cipher(con->network.tls, MANAGEDBUF(128));
+//				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
+//
+//				log_pedantic("TLS server read operation failed. { ip = %.*s / protocol = %s / %.*s / result = %zi%s%.*s }",
+//					st_length_int(ip), st_char_get(ip), st_char_get(protocol_type(con)), st_length_int(cipher), st_char_get(cipher),
+//					bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
+//
+//
+//				con->network.status = -1;
+//				return -1;
+//			}
+//			// This will occur when the read operation results in a 0, or negative value, but TLS error returns NULL to
+//			// indicate it was a transient error. For transient errors we simply set bytes equal to 0 so the read call gets retried.
+//			else if (bytes <= 0) {
+//				bytes = 0;
+//			}
+//		}
+//		else {
+//
+//			errno = 0;
+//
+//			bytes = recv(con->network.sockd, st_char_get(con->network.buffer) + st_length_get(con->network.buffer),
+//				st_avail_get(con->network.buffer) - st_length_get(con->network.buffer), (blocking ? 0 : MSG_DONTWAIT));
+//
+//			// Check for errors on non-SSL reads in the traditional way.
+//			if (bytes <= 0 && tcp_status(con->network.sockd)) {
+//
+//				local = errno;
+//				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
+//
+//				log_pedantic("TCP server read operation failed. { ip = %.*s / result = %zi / error = %i / message = %s }",
+//					st_length_int(ip), st_char_get(ip), bytes, local, strerror_r(local, MEMORYBUF(1024), 1024));
+//
+//				con->network.status = -1;
+//				return -1;
+//			}
+//
+//		}
+
 }
 
 /**

@@ -146,6 +146,15 @@ int_t chunk_header_read(stringer_t *data, uint8_t *type, uint32_t *size, placer_
 		(*type > PRIME_CHUNK_EPHEMERAL ? (slots_count(*type) * SECP256K1_SHARED_SECRET_LEN) : 0));
 	*size = holder;
 
+	// Bounds check, ensure the provided data buffer is large enough to hold the calculated length.
+	if (pl_length_get(*chunk) > st_length_get(data)) {
+		log_pedantic("The chunk appears invalid. The buffer is to small. { expected = %zu / actual = %zu }",
+			pl_length_get(*chunk), st_length_get(data));
+		*type = PRIME_CHUNK_INVALID;
+		*size = 0;
+		return -1;
+	}
+
 	return 0;
 }
 
@@ -160,6 +169,16 @@ int_t chunk_buffer_read(stringer_t *data, uint8_t *type, uint32_t *payload_size,
 
 	else if ((result = chunk_header_read(data, type, payload_size, chunk)) >= 0) {
 		*buffer_size = *payload_size + (*type < PRIME_SIGNATURE_TREE ? 4 : 1) + (*type > PRIME_CHUNK_EPHEMERAL ? (slots_count(*type) * SECP256K1_SHARED_SECRET_LEN) : 0);
+
+		// Bounds check, ensure the provided data buffer is large enough to hold the calculated length.
+		if (pl_length_get(*chunk) > st_length_get(data)) {
+			log_pedantic("The chunk appears invalid. The buffer is to small. { expected = %zu / actual = %zu }",
+				pl_length_get(*chunk), st_length_get(data));
+			*type = PRIME_CHUNK_INVALID;
+			*payload_size = 0;
+			*buffer_size = 0;
+			return -1;
+		}
 	}
 
 	return result;

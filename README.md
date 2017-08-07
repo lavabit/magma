@@ -4,9 +4,9 @@ Magma was originally designed and developed by Ladar Levison for lavabit.com. Th
 
 # Downloads
 
-##### Magma v6.4.709
+##### Magma
 
-https://codeload.github.com/lavabit/magma/tar.gz/06f99c9873eb64e4f06833d6bc2b8f5b6afc45dc
+https://github.com/lavabit/magma/archive/develop.tar.gz
 
 ##### Magma Development Machine, v1.0.0
 
@@ -17,7 +17,7 @@ https://darkmail.info/downloads/dark-mail-development-machine-1.0.0.tar.gz.sha25
 
 33808e4ed81859cb076ae879fed7ad85164a2561a1b1cd96f66f65f7e3bf7bd7
 
-##### Magma Build Machines, v0.0.8
+##### Magma Build Machines
 
 For those looking for a slim virtual machine pre-configured to build and run magma, consider the following Vagrant boxes which have been created specifically for that purpose. Images have been created to support the VirtualBox, VMware, and libvirt providers. An official Docker image is on the roadmap, but for the time being you might want to consider one of the community supported images. Use the appropriate command below to download and provision a Vagrant instance.
 
@@ -30,6 +30,9 @@ vagrant init lavabit/magma; vagrant up --provider virtualbox
 
 # libvirt
 vagrant init lavabit/magma; vagrant up --provider libvirt
+
+# Hyper-V
+vagrant init lavabit/magma; vagrant up --provider hyperv
 ```
 
 Images are available for alternate platforms [here](https://atlas.hashicorp.com/lavabit).

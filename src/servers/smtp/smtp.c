@@ -242,7 +242,7 @@ void smtp_auth_plain(connection_t *con) {
 	int_t state = 0;
 	auth_t *auth = NULL;
 	smtp_outbound_prefs_t *outbound;
-	stringer_t *decoded = NULL, *argument = NULL, *subnet = NULL, *key = NULL, *ip = NULL;
+	stringer_t *ip = NULL, *choke = NULL, *subnet = NULL, *invalid = NULL, *decoded = NULL, *argument = NULL;
 	placer_t username = { .opts = PLACER_T | JOINTED | STACK | FOREIGNDATA}, password = { .opts = PLACER_T | JOINTED | STACK | FOREIGNDATA},
 		authorize_id = { .opts = PLACER_T | JOINTED | STACK | FOREIGNDATA };
 
@@ -255,11 +255,14 @@ void smtp_auth_plain(connection_t *con) {
 	// Store the subnet for tracking login failures. Make the buffer big enough to hold an IPv6 subnet string.
 	subnet = con_addr_subnet(con, MANAGEDBUF(256));
 
+	// Generate the authentication choke so only one login attempt is processed per subnet at any given time.
+	choke = st_quick(MANAGEDBUF(384), "magma.logins.choke.%.*s", st_length_int(subnet), st_char_get(subnet));
+
 	// Generate the invalid login tracker.
-	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu.%.*s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
+	invalid = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu.%.*s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
 
 	// For now we hard code the maximum number of failed logins.
-	if (st_populated(key) && cache_increment(key, 1, 1, 86400) >= 16) {
+	if (st_populated(invalid) && cache_increment(invalid, 1, 1, 86400) >= 16) {
 		con_write_bl(con, "423 THE MAXIMUM NUMBER OF FAILED LOGIN ATTEMPTS HAS BEEN REACHED - PLEASE TRY AGAIN LATER\r\n", 91);
 		con->protocol.violations++;
 		return;
@@ -270,7 +273,6 @@ void smtp_auth_plain(connection_t *con) {
 		if (con_write_bl(con, "334 \r\n", 6) != -1 && con_read_line(con, true) >= 0) {
 			argument = smtp_parse_auth(&(con->network.line));
 		}
-
 	}
 
 	// Otherwise the authentication data was passed along with the AUTH PLAIN commands, so we simply setup a placer to point_t at it.
@@ -314,8 +316,21 @@ void smtp_auth_plain(connection_t *con) {
 		return;
 	}
 
+	// Obtain the authentication choke.
+	if (lock_get(choke) != 1) {
+		con_write_bl(con, "421 THE MAXIMUM NUMBER OF CONCURRENT LOGIN ATTEMPTS HAS BEEN REACHED - PLEASE TRY AGAIN LATER\r\n", 95);
+		st_free(decoded);
+		return;
+	}
+
+	// Process the username, and password, and turn them into authentication tokens.
+	state = auth_login(&username, &password, &auth);
+
+	// Release the authentication lock so another connection may proceed.
+	lock_release(choke);
+
 	// Create the authentication context.
-	if ((state = auth_login(&username, &password, &auth)) || !auth) {
+	if (state || !auth) {
 		if (state < 0) {
 			con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
 		}
@@ -356,7 +371,7 @@ void smtp_auth_plain(connection_t *con) {
 	}
 
 	// If we have a valid login, we decrement the login counter.
-	if (st_populated(key)) cache_decrement(key, 1, 0, MEMCACHED_EXPIRATION_NOT_ADD);
+	if (st_populated(invalid)) cache_decrement(invalid, 1, 0, MEMCACHED_EXPIRATION_NOT_ADD);
 
 	// If we made it this far then the connection is authenticated.
 	smtp_add_outbound(con, outbound);
@@ -378,7 +393,7 @@ void smtp_auth_login(connection_t *con) {
 	int_t state = 0;
 	auth_t *auth = NULL;
 	smtp_outbound_prefs_t *outbound;
-	stringer_t *username = NULL, *password = NULL, *argument = NULL, *subnet = NULL, *key = NULL, *ip = NULL;
+	stringer_t *ip = NULL, *choke = NULL, *subnet = NULL, *invalid = NULL, *username = NULL, *password = NULL, *argument = NULL;
 
 	// If the user is already authenticated.
 	if (con->smtp.authenticated == true) {
@@ -389,11 +404,14 @@ void smtp_auth_login(connection_t *con) {
 	// Store the subnet for tracking login failures. Make the buffer big enough to hold an IPv6 subnet string.
 	subnet = con_addr_subnet(con, MANAGEDBUF(256));
 
+	// Generate the authentication choke so only one login attempt is processed per subnet at any given time.
+	choke = st_quick(MANAGEDBUF(384), "magma.logins.choke.%.*s", st_length_int(subnet), st_char_get(subnet));
+
 	// Generate the invalid login tracker.
-	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu.%.*s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
+	invalid = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu.%.*s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
 
 	// For now we hard code the maximum number of failed logins.
-	if (st_populated(key) && cache_increment(key, 1, 1, 86400) >= 16) {
+	if (st_populated(invalid) && cache_increment(invalid, 1, 1, 86400) >= 16) {
 		con_write_bl(con, "423 THE MAXIMUM NUMBER OF FAILED LOGIN ATTEMPTS HAS BEEN REACHED - PLEASE TRY AGAIN LATER\r\n", 91);
 		con->protocol.violations++;
 		return;
@@ -436,8 +454,21 @@ void smtp_auth_login(connection_t *con) {
 	st_free(argument);
 	argument = NULL;
 
+	// Obtain the authentication choke.
+	if (lock_get(choke) != 1) {
+		con_write_bl(con, "421 THE MAXIMUM NUMBER OF CONCURRENT LOGIN ATTEMPTS HAS BEEN REACHED - PLEASE TRY AGAIN LATER\r\n", 95);
+		st_cleanup(username, password);
+		return;
+	}
+
+	// Process the username, and password, and turn them into authentication tokens.
+	state = auth_login(username, password, &auth);
+
+	// Release the authentication lock so another connection may proceed.
+	lock_release(choke);
+
 	// Create the authentication context.
-	if ((state = auth_login(username, password, &auth)) || !auth) {
+	if (state || !auth) {
 
 		if (state < 0) {
 			con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
@@ -481,7 +512,7 @@ void smtp_auth_login(connection_t *con) {
 	}
 
 	// If we have a valid login, we decrement the login counter.
-	if (st_populated(key)) cache_decrement(key, 1, 0, MEMCACHED_EXPIRATION_NOT_ADD);
+	if (st_populated(invalid)) cache_decrement(invalid, 1, 0, MEMCACHED_EXPIRATION_NOT_ADD);
 
 	// If we made it this far then the connection is authenticated.
 	smtp_add_outbound(con, outbound);

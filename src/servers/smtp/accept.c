@@ -396,7 +396,7 @@ int_t smtp_accept_message(connection_t *con, smtp_inbound_prefs_t *prefs) {
 	if (prefs->forwarded != NULL) {
 
 		// This function forwards the message.
-		state = smtp_forward_message(con->server, prefs->forwarded, local, con->smtp.message->id, prefs->mark, prefs->signum, prefs->spamkey);
+		state = smtp_forward_message(con->server, prefs->rcptto, prefs->forwarded, local, con->smtp.message->id, prefs->mark, prefs->signum, prefs->spamkey);
 		st_free(local);
 
 		// Check the forwarding result.

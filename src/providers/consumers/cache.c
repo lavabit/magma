@@ -401,7 +401,6 @@ uint64_t cache_increment(stringer_t *key, uint64_t offset, uint64_t initial, tim
 	return output;
 }
 
-
 /**
  * @brief	Decrement the value stored with a key inside memcached, using the specified offset.
  * @see		memcached_decrement_with_initial()

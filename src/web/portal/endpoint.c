@@ -199,7 +199,7 @@ void portal_endpoint_auth(connection_t *con) {
 	auth_t *auth = NULL;
 	meta_user_t *user = NULL;
 	chr_t *username = NULL, *password = NULL;
-	stringer_t *subnet = NULL, *key = NULL;
+	stringer_t *choke = NULL, *subnet = NULL, *invalid = NULL;
 
 	// Check the session state.
 	if (!con->http.session || con->http.session->state != SESSION_STATE_NEUTRAL) {
@@ -210,11 +210,14 @@ void portal_endpoint_auth(connection_t *con) {
 	// Store the subnet for tracking login failures. Make the buffer big enough to hold an IPv6 subnet string.
 	subnet = con_addr_subnet(con, MANAGEDBUF(256));
 
+	// Generate the authentication choke so only one login attempt is processed per subnet at any given time.
+	choke = st_quick(MANAGEDBUF(384), "magma.logins.choke.%.*s", st_length_int(subnet), st_char_get(subnet));
+
 	// Generate the invalid login tracker.
-	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu.%.*s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
+	invalid = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu.%.*s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
 
 	// For now we hard code the maximum number of failed logins.
-	if (st_populated(key) && cache_increment(key, 0, 0, 86400) >= 16) {
+	if (st_populated(invalid) && cache_increment(invalid, 0, 0, 86400) >= 16) {
 		portal_endpoint_error(con, 403, PORTAL_ENDPOINT_ERROR_MODE | PORTAL_ENDPOINT_ERROR_AUTH, "The maximum number of failed login attempts has been reached. Please try again later.");
 		con->protocol.violations++;
 		return;
@@ -224,6 +227,7 @@ void portal_endpoint_auth(connection_t *con) {
 	else if ((json_unpack_ex_d(con->http.portal.params, &err, JSON_STRICT, "{s:s, s:s}", "username", &username, "password", &password))) {
 		log_pedantic("Received invalid portal auth request parameters { user = %s, errmsg = %s }", st_char_get(con->http.session->user->username), err.text);
 		portal_endpoint_error(con, 400, JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS, "Invalid method parameters.");
+		con->protocol.violations++;
 		return;
 	}
 
@@ -255,8 +259,21 @@ void portal_endpoint_auth(connection_t *con) {
 
 */
 
+	// Obtain the authentication choke.
+	if (lock_get(choke) != 1) {
+		portal_endpoint_error(con, 403, PORTAL_ENDPOINT_ERROR_MODE | PORTAL_ENDPOINT_ERROR_AUTH, "The maximum number of failed login attempts has been reached. Please try again later.");
+		con->protocol.violations++;
+		return;
+	}
+
+	// Process the username, and password, and turn them into authentication tokens.
+	state = auth_login(NULLER(username), NULLER(password), &auth);
+
+	// Release the authentication lock so another connection may proceed.
+	lock_release(choke);
+
 	// Convert the strings into a full fledged authentication object.
-	if ((state = auth_login(NULLER(username), NULLER(password), &auth))) {
+	if (state) {
 
 		if (state < 0) {
 			portal_endpoint_error(con, 200, PORTAL_ENDPOINT_ERROR_AUTH, "This server is unable to access your mailbox. Please try again later.");
@@ -270,7 +287,7 @@ void portal_endpoint_auth(connection_t *con) {
 			username);
 
 		// If we have a valid key, we increment the failed login counter.
-		if (st_populated(key) && (fails = cache_increment(key, 1, 1, 86400)) >= 16) {
+		if (st_populated(invalid) && (fails = cache_increment(invalid, 1, 1, 86400)) >= 16) {
 			log_info("Subnet banned. { subnet = %s / fails = %lu }", st_char_get(con_addr_subnet(con, MANAGEDBUF(256))), fails);
 		}
 

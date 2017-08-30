@@ -107,7 +107,7 @@ void imap_login(connection_t *con) {
 
 	int_t state = 1;
 	auth_t *auth = NULL;
-	stringer_t *subnet = NULL, *key = NULL, *ip = NULL;
+	stringer_t *ip = NULL, *choke = NULL, *subnet = NULL, *invalid = NULL;
 
 	// The LOGIN command is only valid in the non-authenticated state.
 	if (con->imap.session_state != 0) {
@@ -118,11 +118,14 @@ void imap_login(connection_t *con) {
 	// Store the subnet for tracking login failures. Make the buffer big enough to hold an IPv6 subnet string.
 	subnet = con_addr_subnet(con, MANAGEDBUF(256));
 
+	// Generate the authentication choke so only one login attempt is processed per subnet at any given time.
+	choke = st_quick(MANAGEDBUF(384), "magma.logins.choke.%.*s", st_length_int(subnet), st_char_get(subnet));
+
 	// Generate the invalid login tracker.
-	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu.%.*s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
+	invalid = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu.%.*s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
 
 	// For now we hard code the maximum number of failed logins.
-	if (st_populated(key) && cache_increment(key, 1, 1, 86400) >= 16) {
+	if (st_populated(invalid) && cache_increment(invalid, 1, 1, 86400) >= 16) {
 		con_print(con, "%.*s NO [ALERT] The maximum number of failed login attempts has been reached. Please try again tomorrow.\r\n",
 			st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		con->protocol.violations++;
@@ -133,12 +136,29 @@ void imap_login(connection_t *con) {
 	if (ar_length_get(con->imap.arguments) != 2 || imap_get_type_ar(con->imap.arguments, 0) == IMAP_ARGUMENT_TYPE_ARRAY ||
 		!imap_get_st_ar(con->imap.arguments, 0) ||	imap_get_type_ar(con->imap.arguments, 1) == IMAP_ARGUMENT_TYPE_ARRAY ||
 		!imap_get_st_ar(con->imap.arguments, 1)) {
-		con_print(con, "%.*s BAD The login command requires two string arguments.\r\n", st_length_int(con->imap.tag), st_char_get(con->imap.tag));
+		con_print(con, "%.*s BAD The login command requires two string arguments.\r\n", st_length_int(con->imap.tag),
+			st_char_get(con->imap.tag));
 		return;
 	}
 
-	// Convert the strings into a full fledged authentication object.
-	if ((state = auth_login(imap_get_st_ar(con->imap.arguments, 0), imap_get_st_ar(con->imap.arguments, 1), &auth))) {
+	// Obtain the authentication choke.
+	if (lock_get(choke) != 1) {
+		con_print(con,  "%.*s NO [UNAVAILABLE] The maximum number of concurrent login attempts has been reached. Please try again later.\r\n",
+			st_length_int(con->imap.tag), st_char_get(con->imap.tag));
+		return;
+	}
+
+	// Process the username, and password, and turn them into authentication tokens.
+	state = auth_login(imap_get_st_ar(con->imap.arguments, 0), imap_get_st_ar(con->imap.arguments, 1), &auth);
+
+	// Release the authentication lock so another connection may proceed.
+	lock_release(choke);
+
+	// If the authentication credentials couldn't be processed, return an error.
+	if (state) {
+
+		// Release the authentication choke so another connection may proceed.
+		lock_release(choke);
 
 		// The AUTHENTICATIONFAILED response code is provided by RFC 5530 which states: "Authentication failed for some reason on which the server is
 		// unwilling to elaborate. Typically, this includes 'unknown user' and 'bad password'."
@@ -147,7 +167,7 @@ void imap_login(connection_t *con) {
 				st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		}
 		else {
-			con_print(con, "%.*s NO [ALERT] Internal server error. Please try again in a few minutes.\r\n",
+			con_print(con, "%.*s NO [UNAVAILABLE] Internal server error. Please try again in a few minutes.\r\n",
 				st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		}
 
@@ -211,7 +231,7 @@ void imap_login(connection_t *con) {
 	}
 
 	// If we have a valid login, we decrement the login counter.
-	if (st_populated(key)) cache_decrement(key, 1, 0, MEMCACHED_EXPIRATION_NOT_ADD);
+	if (st_populated(invalid)) cache_decrement(invalid, 1, 0, MEMCACHED_EXPIRATION_NOT_ADD);
 
 	// Store the username and usernum as part of the session.
 	con->imap.username = st_dupe(auth->username);

@@ -87,7 +87,7 @@ void    smtp_session_reset(connection_t *con);
 
 /// transmit.c
 int_t   smtp_bounce(connection_t *con);
-int_t   smtp_forward_message(server_t *server, stringer_t *address, stringer_t *message, stringer_t *id, int_t mark, uint64_t signum, uint64_t sigkey);
+int_t   smtp_forward_message(server_t *server, stringer_t *sender, stringer_t *address, stringer_t *message, stringer_t *id, int_t mark, uint64_t signum, uint64_t sigkey);
 int_t   smtp_relay_message(connection_t *con, stringer_t **result);
 int_t   smtp_reply(stringer_t *from, stringer_t *to, uint64_t usernum, uint64_t autoreply, int_t spf, int_t dkim);
 int_t   smtp_send_message(stringer_t *to, stringer_t *from, stringer_t *message);

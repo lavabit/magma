@@ -159,6 +159,7 @@ int_t smtp_client_send_helo(client_t *client) {
  */
 int_t smtp_client_send_mailfrom(client_t *client, stringer_t *mailfrom, size_t send_size) {
 
+	/// LOW: Technically we should only be sending the size parameter if the EHLO response indicates support.
 	if (!send_size) {
 		client_print(client, "MAIL FROM: <%.*s>\r\n", st_length_get(mailfrom), st_char_get(mailfrom));
 	} else {

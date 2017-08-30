@@ -169,7 +169,7 @@ void pop_pass(connection_t *con) {
 
 	int_t state;
 	auth_t *auth = NULL;
-	stringer_t *password = NULL, *subnet = NULL, *key = NULL, *ip = NULL;
+	stringer_t *ip = NULL, *choke = NULL, *invalid = NULL, *subnet = NULL, *password = NULL;
 
 	// The PASS command is only available in the pre-authentication state.
 	if (con->pop.session_state != 0) {
@@ -180,11 +180,14 @@ void pop_pass(connection_t *con) {
 	// Store the subnet for tracking login failures. Make the buffer big enough to hold an IPv6 subnet string.
 	subnet = con_addr_subnet(con, MANAGEDBUF(256));
 
+	// Generate the authentication choke so only one login attempt is processed per subnet at any given time.
+	choke = st_quick(MANAGEDBUF(384), "magma.logins.choke.%.*s", st_length_int(subnet), st_char_get(subnet));
+
 	// Generate the invalid login tracker.
-	key = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu.%.*s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
+	invalid = st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu.%.*s", time_datestamp(), st_length_int(subnet), st_char_get(subnet));
 
 	// For now we hard code the maximum number of failed logins.
-	if (st_populated(key) && cache_increment(key, 1, 1, 86400) >= 16) {
+	if (st_populated(invalid) && cache_increment(invalid, 1, 1, 86400) >= 16) {
 		con_write_bl(con, "-ERR [SYS/TEMP] The maximum number of failed login attempts has been reached. Please try again later.\r\n", 103);
 		con->protocol.violations++;
 		return;
@@ -202,8 +205,20 @@ void pop_pass(connection_t *con) {
 		return;
 	}
 
+	// Obtain the authentication choke.
+	if (lock_get(choke) != 1) {
+		con_write_bl(con, "-ERR [SYS/TEMP] The maximum number of concurrent login attempts has been reached. Please try again later.\r\n", 107);
+		return;
+	}
+
+	// Process the username, and password, and turn them into authentication tokens.
+	state = auth_login(con->pop.username, password, &auth);
+
+	// Release the authentication lock so another connection may proceed.
+	lock_release(choke);
+
 	// Authenticate the username and password.
-	if ((state = auth_login(con->pop.username, password, &auth))) {
+	if (state) {
 		if (state < 0) {
 			con_write_bl(con, "-ERR [SYS/TEMP] Internal server error. Please try again later.\r\n", 64);
 		}
@@ -249,7 +264,7 @@ void pop_pass(connection_t *con) {
 	}
 
 	// If we have a valid login, we decrement the login counter.
-	if (st_populated(key)) cache_decrement(key, 1, 0, MEMCACHED_EXPIRATION_NOT_ADD);
+	if (st_populated(invalid)) cache_decrement(invalid, 1, 0, MEMCACHED_EXPIRATION_NOT_ADD);
 
 	// Pull the user info out.
 	if ((state = meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification, META_PROTOCOL_POP,

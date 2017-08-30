@@ -110,7 +110,7 @@ int_t smtp_relay_message(connection_t *con, stringer_t **result) {
 }
 
 // Forwards an inbound message to the user's remote e-mail.
-int_t smtp_forward_message(server_t *server, stringer_t *address, stringer_t *message, stringer_t *id, int_t mark, uint64_t signum, uint64_t sigkey) {
+int_t smtp_forward_message(server_t *server, stringer_t *sender, stringer_t *address, stringer_t *message, stringer_t *id, int_t mark, uint64_t signum, uint64_t sigkey) {
 
 	int_t state;
 	stringer_t *new;
@@ -146,7 +146,7 @@ int_t smtp_forward_message(server_t *server, stringer_t *address, stringer_t *me
 	}
 
 	// Send MAIL FROM.
-	if (smtp_client_send_nullfrom(client) != 1) {
+	if (smtp_client_send_mailfrom(client, sender, st_length_get(new)) != 1) {
 		log_pedantic("An error occurred while trying to send the mail from.");
 		smtp_client_close(client);
 		st_free(new);

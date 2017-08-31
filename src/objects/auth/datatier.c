@@ -212,7 +212,7 @@ int_t auth_data_fetch(auth_t *auth) {
 		return -1;
 	}
 	else if (!st_empty(auth->legacy.token) && ((st_length_get(auth->legacy.token) != 64 || !st_empty(auth->seasoning.salt) ||
-		!st_empty(auth->tokens.verification) || auth->seasoning.bonus != 0))) {
+		!st_empty(auth->tokens.verification) || auth->seasoning.bonus > STACIE_KEY_ROUNDS_MAX))) {
 		log_error("The user should only have valid legacy credentials, but we found STACIE and legacy values. { username = %.*s }", st_length_int(auth->username), st_char_get(auth->username));
 		return -1;
 	}

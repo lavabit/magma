@@ -157,9 +157,6 @@ void imap_login(connection_t *con) {
 	// If the authentication credentials couldn't be processed, return an error.
 	if (state) {
 
-		// Release the authentication choke so another connection may proceed.
-		lock_release(choke);
-
 		// The AUTHENTICATIONFAILED response code is provided by RFC 5530 which states: "Authentication failed for some reason on which the server is
 		// unwilling to elaborate. Typically, this includes 'unknown user' and 'bad password'."
 		if (state > 0) {

@@ -223,7 +223,7 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 
 		// Assign a random salt to the user account, and use the plain text password to generate STACIE tokens before proceeding.
 		if (!(auth->seasoning.salt = stacie_create_salt(NULL)) ||
-			!(stacie = auth_stacie(0, auth->username, password, auth->seasoning.salt, NULL, NULL))) {
+			!(stacie = auth_stacie(auth->seasoning.bonus, auth->username, password, auth->seasoning.salt, NULL, NULL))) {
 			log_pedantic("Unable to calculate the STACIE credentials.");
 			auth_legacy_free(legacy);
 			auth_free(auth);
@@ -269,7 +269,7 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 	/************************** END LEGACY AUTHENTICATION SUPPORT LOGIC **************************/
 
 	// Generate the STACIE tokens based on the provided inputs.
-	else if (!auth->legacy.token && !(stacie = auth_stacie(0, auth->username, password, auth->seasoning.salt, NULL, NULL))) {
+	else if (!auth->legacy.token && !(stacie = auth_stacie(auth->seasoning.bonus, auth->username, password, auth->seasoning.salt, NULL, NULL))) {
 		log_pedantic("Unable to calculate the STACIE verification tokens for comparison.");
 		auth_free(auth);
 		return -1;

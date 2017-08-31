@@ -22,8 +22,9 @@ int_t lock_get(stringer_t *key) {
 
 	uint64_t value;
 	stringer_t *lock = MANAGEDBUF(128);
-	int_t success, iterations = (MAGMA_LOCK_TIMEOUT * 10);
-	const struct timespec delay = { .tv_sec = 0, .tv_nsec = 1000000000 };
+	int_t success, iterations = MAGMA_LOCK_TIMEOUT;
+//	const struct timespec delay = { .tv_sec = 0, .tv_nsec = 1000000000 };
+	const struct timespec delay = { .tv_sec = 1, .tv_nsec = 0 };
 
 	// Build the key.
 	if (st_empty(key) || st_sprint(lock, "%.*s.lock", st_length_int(key), st_char_get(key)) <= 0) {

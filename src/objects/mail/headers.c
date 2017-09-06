@@ -636,13 +636,13 @@ stringer_t * mail_add_inbound_headers(connection_t *con, smtp_inbound_prefs_t *p
 	time_t utime;
 	struct tm ltime;
 	chr_t date_string[40];
-	stringer_t *ip, *result, *reverse;
+	stringer_t *ip, *result, *reverse, *tls_header;
 
 	if (!con) {
 		log_pedantic("Passed a NULL pointer.");
 		return NULL;
 	}
-
+	printf("%d", con_secure(con));
 	// Code to generate a proper timestamp.
 	if ((utime = time(&utime)) == -1) {
 		log_pedantic("Could not determine the proper time.");
@@ -665,6 +665,8 @@ stringer_t * mail_add_inbound_headers(connection_t *con, smtp_inbound_prefs_t *p
 		return NULL;
 	}
 
+	tls_header = con_secure(con) ? "\r\n(version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);\r\n" : "\r\n";
+
 	// We need to make sure the reverse DNS lookup is complete.
 	reverse = con_reverse_check(con, 20);
 
@@ -674,13 +676,13 @@ stringer_t * mail_add_inbound_headers(connection_t *con, smtp_inbound_prefs_t *p
 		if (!con->smtp.mailfrom || !st_cmp_cs_eq(con->smtp.mailfrom, CONSTANT("<>"))) {
 			result =  st_merge_opts(MAPPED_T | JOINTED | HEAP, "nsnsnsnsnsnnns", "Return-Path: <>\r\nReceived: from ", con->smtp.helo, " (", ip, ")\r\n\tby ", con->server->domain,
 				(con->smtp.esmtp == false) ? " with SMTP id " : " with ESMTP id ", con->smtp.message->id, "\r\n\tfor <", prefs->rcptto, ">; ",
-				date_string, "\r\n(version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);\r\n", con->smtp.message->text);
+				date_string, tls_header, con->smtp.message->text);
 		}
 		// The reverse matches, or doesn't exist and there is a mailfrom to print.
 		else {
 			result = st_merge_opts(MAPPED_T | JOINTED | HEAP, "nsnsnsnsnsnsnnns", "Return-Path: <", con->smtp.mailfrom, ">\r\nReceived: from ", con->smtp.helo, " (", ip, ")\r\n\tby ",
 				con->server->domain, (con->smtp.esmtp == false) ? " with SMTP id " : " with ESMTP id ", con->smtp.message->id, "\r\n\tfor <", prefs->rcptto, ">; ",
-				date_string, "\r\n(version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);\r\n", con->smtp.message->text);
+				date_string, tls_header, con->smtp.message->text);
 		}
 
 	}
@@ -688,13 +690,13 @@ stringer_t * mail_add_inbound_headers(connection_t *con, smtp_inbound_prefs_t *p
 	else if (!con->smtp.mailfrom || !st_cmp_cs_eq(con->smtp.mailfrom, CONSTANT("<>"))) {
 			result = st_merge_opts(MAPPED_T | JOINTED | HEAP, "nsnsnsnsnsnsnnns", "Return-Path: <>\r\nReceived: from ", con->smtp.helo, " (", reverse, " [", ip, "])\r\n\tby ", con->server->domain,
 				(con->smtp.esmtp == false) ? " with SMTP id " : " with ESMTP id ", con->smtp.message->id, "\r\n\tfor <", prefs->rcptto, ">; ",
-				date_string, "\r\n(version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);\r\n", con->smtp.message->text);
+				date_string, tls_header, con->smtp.message->text);
 	}
 	// We need to print_t a reverse and the mailfrom.
 	else {
 		result = st_merge_opts(MAPPED_T | JOINTED | HEAP, "nsnsnsnsnsnsnsnnns", "Return-Path: <", con->smtp.mailfrom, ">\r\nReceived: from ", con->smtp.helo, " (", reverse,
 			" [", ip, "])\r\n\tby ", con->server->domain,	(con->smtp.esmtp == false) ? " with SMTP id " : " with ESMTP id ", con->smtp.message->id,
-			"\r\n\tfor <", prefs->rcptto, ">; ", date_string, "\r\n(version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);\r\n", con->smtp.message->text);
+			"\r\n\tfor <", prefs->rcptto, ">; ", date_string, tls_header, con->smtp.message->text);
 	}
 
 	if (!result) {
@@ -835,7 +837,7 @@ void mail_add_forward_headers(server_t *server, stringer_t **message, stringer_t
 /**
  * @brief	Add a Received: header and dkim signature to an outbound relayed smtp message.
  * @note	If the message already has a Received header, the dkim signature will be inserted right before the first instance.
- * @param	con		the connection across which the outbound smtp message is being sent.
+ * @param	con		the connection across which the outbound smtap message is being sent.
  * @return	NULL on failure, or a managed string containing the message data preceded by the Received header
  * 			and including the dkim signature on success.
  */

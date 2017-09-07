@@ -635,14 +635,13 @@ stringer_t * mail_add_inbound_headers(connection_t *con, smtp_inbound_prefs_t *p
 	int_t state;
 	time_t utime;
 	struct tm ltime;
-	chr_t date_string[40];
-	stringer_t *ip, *result, *reverse, *tls_header;
+	chr_t date_string[40], tls_header[70];
+	stringer_t *ip, *result, *reverse;
 
 	if (!con) {
 		log_pedantic("Passed a NULL pointer.");
 		return NULL;
 	}
-	printf("%d", con_secure(con));
 	// Code to generate a proper timestamp.
 	if ((utime = time(&utime)) == -1) {
 		log_pedantic("Could not determine the proper time.");
@@ -664,9 +663,11 @@ stringer_t * mail_add_inbound_headers(connection_t *con, smtp_inbound_prefs_t *p
 		log_pedantic("Could not convert the IP into a string.");
 		return NULL;
 	}
-
-	tls_header = con_secure(con) ? "\r\n(version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);\r\n" : "\r\n";
-
+	if(con_secure(con)) {
+		sprintf(tls_header, "\r\n(version=%s cipher=%s bits=%d)\r\n", tls_version(con->network.tls), tls_suite(con->network.tls), tls_bits(con->network.tls));
+	} else {
+		strcpy(tls_header, "\r\n");
+	}
 	// We need to make sure the reverse DNS lookup is complete.
 	reverse = con_reverse_check(con, 20);
 

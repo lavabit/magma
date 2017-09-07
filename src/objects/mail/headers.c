@@ -770,7 +770,9 @@ void mail_add_forward_headers(server_t *server, stringer_t **message, stringer_t
 
 	while (!pl_empty(line = mail_header_pop(header, &position))) {
 
-		if (st_cmp_ci_starts(&line, CONSTANT("Sender:")) != 0 &&
+		if (st_cmp_cs_starts(&line, CONSTANT("\n")) != 0 &&
+			st_cmp_cs_starts(&line, CONSTANT("\r\n")) != 0 &&
+			st_cmp_ci_starts(&line, CONSTANT("Sender:")) != 0 &&
 			st_cmp_ci_starts(&line, CONSTANT("Return-Path:")) != 0 &&
 			st_cmp_ci_starts(&line, CONSTANT("DKIM-Signature:")) != 0 &&
 			st_cmp_ci_starts(&line, CONSTANT("DomainKey-Signature:")) != 0) {

@@ -269,7 +269,7 @@ prime_message_t * naked_message_set(stringer_t *message, prime_org_key_t *destin
 	holder[6] = mail_header_fetch_cleaned(&header, PLACER("Cc", 2));
 	holder[7] = mail_header_fetch_cleaned(&header, PLACER("Bcc", 3));
 	holder[8] = mail_header_fetch_cleaned(&header, PLACER("In-Reply-To", 11));
-	holder[9] = mail_header_fetch_cleaned(&header, PLACER("Message-ID", 10));
+	holder[9] = mail_header_fetch_cleaned(&header, PLACER("Message-Id", 10));
 
 	/// LOW: Effective, albeit kludgey, logic to ensure common headers are formatted correctly, and each header field is
 	/// 		reformatted values reside on a single line.
@@ -283,7 +283,7 @@ prime_message_t * naked_message_set(stringer_t *message, prime_org_key_t *destin
 		(holder[6] ? "Cc: " : ""), holder[6], (holder[6] ? "\n" : ""),
 		(holder[7] ? "Bcc: " : ""), holder[7], (holder[7] ? "\n" : ""),
 		(holder[8] ? "In-Reply-To: " : ""), holder[8], (holder[8] ? "\n" : ""),
-		(holder[9] ? "Message-ID: " : ""), holder[9], (holder[9] ? "\n" : ""));
+		(holder[9] ? "Message-Id: " : ""), holder[9], (holder[9] ? "\n" : ""));
 
 	st_cleanup(holder[0], holder[1], holder[2], holder[3], holder[4], holder[5], holder[6], holder[7], holder[8], holder[9]);
 

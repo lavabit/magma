@@ -202,7 +202,7 @@ stringer_t * imap_fetch_envelope(stringer_t *header) {
 	holder[6] = mail_header_fetch_cleaned(&header_pl, PLACER("Cc", 2));
 	holder[7] = mail_header_fetch_cleaned(&header_pl, PLACER("Bcc", 3));
 	holder[8] = mail_header_fetch_cleaned(&header_pl, PLACER("In-Reply-To", 11));
-	holder[9] = mail_header_fetch_cleaned(&header_pl, PLACER("Message-ID", 10));
+	holder[9] = mail_header_fetch_cleaned(&header_pl, PLACER("Message-Id", 10));
 
 	parsed[0] = imap_parse_address(holder[2]);
 	parsed[1] = imap_parse_address(holder[3]);

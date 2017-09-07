@@ -79,7 +79,7 @@ INSERT INTO `Domains` VALUES (1,'dark.lavabit.com',0,0,0,0,0,'2010-05-18 02:08:5
 -- ORDER BY:  `foldernum`
 
 /*!40000 ALTER TABLE `Folders` DISABLE KEYS */;
-INSERT INTO `Folders` VALUES (1,1,'Inbox',0,NULL),(2,2,'Inbox',0,NULL),(3,3,'Inbox',0,NULL);
+INSERT INTO `Folders` VALUES (1,1,'Inbox',0,NULL),(2,2,'Inbox',0,NULL),(3,3,'Inbox',0,NULL),(4,4,'Inbox',0,NULL);
 /*!40000 ALTER TABLE `Folders` ENABLE KEYS */;
 
 --
@@ -148,7 +148,7 @@ INSERT INTO `Log` VALUES (1,'0000-00-00 00:00:00','0000-00-00 00:00:00','0000-00
 -- ORDER BY:  `address`
 
 /*!40000 ALTER TABLE `Mailboxes` DISABLE KEYS */;
-INSERT INTO `Mailboxes` VALUES    ('ladar@mailshack.com',3),('ladar@nerdshack.com',3),('ladar@lavabit.com',3),('ladar@example.com',3),('magma@lavabit.com',1),('magma@example.com',1),('princess@example.com',2),('stacie@lavabit.com',4);
+INSERT INTO `Mailboxes` VALUES    ('magma@lavabit.com',1),('magma@example.com',1),('princess@lavabit.com',2),('princess@example.com',2),('ladar@mailshack.com',3),('ladar@nerdshack.com',3),('ladar@lavabit.com',3),('ladar@example.com',3),('stacie@lavabit.com',4),('stacie@example.com',4);
 /*!40000 ALTER TABLE `Mailboxes` ENABLE KEYS */;
 
 --

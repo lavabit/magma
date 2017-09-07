@@ -306,7 +306,7 @@ chcon system_u:object_r:etc_t:s0 /etc/logrotate.d/postfix
 
 # Configure the maps.
 printf "\n\nsmtp_header_checks = pcre:/etc/postfix/header_checks\n" >> /etc/postfix/main.cf
-printf "tansport_maps = hash:/etc/postfix/transport\n\n" >> /etc/postfix/main.cf
+printf "transport_maps = hash:/etc/postfix/transport\n\n" >> /etc/postfix/main.cf
 
 # The postfix hostname, and relay networks.
 printf "myhostname = relay.$DOMAIN\n" >> /etc/postfix/main.cf
@@ -335,7 +335,7 @@ printf "virtual_mailbox_limit = 0\n\n"
 sed -i -e "s/^smtp\([ ]*inet\)/127.0.0.1:2525\1/" /etc/postfix/master.cf 
 
 # Route messages bound for the current domain back to magma over the loopback interface regardless of the DNS/router configuration.
-printf "\n\n$DOMAIN		smtp:[127.0.0.1]:2525\n\n" >> /etc/postfix/transport
+printf "\n\n$DOMAIN		smtp:[127.0.0.1]:25\n\n" >> /etc/postfix/transport
 
 # Remove the extra received line added by postfix during relay operations.
 printf "\n\n/^Received: from .*localhost.*\(Postfix\) with ESMTP.*$/ IGNORE\n\n" >> /etc/postfix/header_checks

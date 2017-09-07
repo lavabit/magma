@@ -5,6 +5,10 @@
 
 #include "magma_check.h"
 
+bool_t mail_tls_header(smtp_message_t *parsed) {
+	return strstr(st_char_get(parsed->text), "(version=");
+}
+
 bool_t check_mail_headers_sthread(stringer_t *errmsg) {
 
 	connection_t con;
@@ -36,6 +40,11 @@ bool_t check_mail_headers_sthread(stringer_t *errmsg) {
 
 		else if (!mail_add_required_headers(&con, parsed)) {
 			st_sprint(errmsg, "Mail message header cleanup failed to add the required headers. { message = %i }", i);
+			result = false;
+		}
+
+		else if(con_secure(con.network.tls) == 1 && !mail_tls_header(parsed)) {
+			st_sprint(errmsg, "Mail message header doesn't have the TLS signature when using TLS", mail_tls_header(parsed));
 			result = false;
 		}
 

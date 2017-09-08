@@ -1012,7 +1012,7 @@ void portal_endpoint_messages_list(connection_t *con) {
 
 		while ((active = inx_cursor_value_next(cursor))) {
 
-			if (active->foldernum == foldernum && (header = mail_load_header(active, con->http.session->user))) {
+			if (active->foldernum == foldernum && (header = mail_load_header(active, con->http.session->user, con->server, true))) {
 
 				fields[0] = mail_header_fetch_cleaned(header, PLACER("From", 4));
 				fields[1] = mail_header_fetch_cleaned(header, PLACER("To", 2));
@@ -1838,7 +1838,7 @@ void portal_endpoint_messages_load(connection_t *con) {
 		return;
 	}
 	else if ((sections & (PORTAL_ENDPOINT_MESSAGE_HEADER | PORTAL_ENDPOINT_MESSAGE_BODY | PORTAL_ENDPOINT_MESSAGE_ATTACHMENTS)) != 0 &&
-		(!(data = mail_load_message(active, con->http.session->user, con->server, 0)) || mail_mime_update(data) != 1))  {
+		(!(data = mail_load_message(active, con->http.session->user, con->server, true)) || mail_mime_update(data) != 1))  {
 			if (data) {
 				mail_destroy(data);
 			}

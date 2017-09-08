@@ -116,22 +116,26 @@ mail_message_t * mail_load_message(meta_message_t *meta, meta_user_t *user, serv
 	if (meta->status & MAIL_STATUS_ENCRYPTED) {
 
 		if (!(header.flags & FMESSAGE_OPT_ENCRYPTED)) {
-			log_pedantic("Message state mismatch: encrypted in database but unencrypted on disk.");
+			log_pedantic("Message state mismatch: encrypted in database but unencrypted on disk. { user = %.*s / number = %lu }",
+				st_length_int(user->username), st_char_get(user->username), meta->messagenum);
 		}
 
 		if (!(user->flags & META_USER_ENCRYPT_DATA)) {
-			log_info("User with secure mode off requested encrypted message.");
+			log_info("User with secure mode off requested encrypted message. { user = %.*s / number = %lu }",
+				st_length_int(user->username), st_char_get(user->username), meta->messagenum);
 		}
 
 		if (!user->prime.key) {
-			log_pedantic("User cannot read encrypted message without a private key!");
+			log_pedantic("User cannot read encrypted messages without a private key. { user = %.*s / number = %lu }",
+				st_length_int(user->username), st_char_get(user->username), meta->messagenum);
 			ns_free(path);
 			st_free(raw);
 			return NULL;
 		}
 
 		else if (!(message = prime_message_decrypt(raw, org_signet, user->prime.key))) {
-			log_pedantic("Unable to decrypt mail message.");
+			log_pedantic("Unable to decrypt mail message. { user = %.*s / number = %lu }",
+				st_length_int(user->username), st_char_get(user->username), meta->messagenum);
 			ns_free(path);
 			st_free(raw);
 			return NULL;
@@ -230,7 +234,7 @@ mail_message_t * mail_load_message(meta_message_t *meta, meta_user_t *user, serv
  * @param	user	the meta user object of the user that owns the message.
  * @return	NULL on failure or a managed string containing the message's header on success.
  */
-stringer_t * mail_load_header(meta_message_t *meta, meta_user_t *user) {
+stringer_t * mail_load_header(meta_message_t *meta, meta_user_t *user, server_t *server, bool_t parse) {
 
 	stringer_t *header;
 	mail_message_t *message;
@@ -240,7 +244,7 @@ stringer_t * mail_load_header(meta_message_t *meta, meta_user_t *user) {
 		return NULL;
 	}
 
-	else if (!(message = mail_load_message(meta, user, NULL, false))) {
+	else if (!(message = mail_load_message(meta, user, server, parse))) {
 		log_pedantic("Could not find the end of the header.");
 		return NULL;
 	}

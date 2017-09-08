@@ -35,9 +35,11 @@ void meta_data_update_log(meta_user_t *user, META_PROTOCOL prot) {
 
 	if (prot == META_PROTOCOL_POP && stmt_exec_affected(stmts.update_log_pop, parameters) != 1) {
 		log_pedantic("Unable to update the POP statistics.");
-	} else if (prot == META_PROTOCOL_IMAP && stmt_exec_affected(stmts.update_log_imap, parameters) != 1) {
+	}
+	else if (prot == META_PROTOCOL_IMAP && stmt_exec_affected(stmts.update_log_imap, parameters) != 1) {
 		log_pedantic("Unable to update the IMAP statistics.");
-	} else if (prot == META_PROTOCOL_WEB && stmt_exec_affected(stmts.update_log_web, parameters) != 1) {
+	}
+	else if (prot == META_PROTOCOL_WEB && stmt_exec_affected(stmts.update_log_web, parameters) != 1) {
 		log_pedantic("Unable to update a users web statistics.");
 	}
 

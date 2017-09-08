@@ -685,7 +685,7 @@ void pop_retr(connection_t *con) {
 	}
 
 	// Load the message and spit back the right number of lines.
-	if (!(message = mail_load_message(meta, con->pop.user, con->server, 1))) {
+	if (!(message = mail_load_message(meta, con->pop.user,  con->server, true))) {
 		meta_user_unlock(con->pop.user);
 		con_write_bl(con, "-ERR The message you requested could not be loaded into memory. It has either been "
 			"deleted by another connection or is corrupted.\r\n", 131);

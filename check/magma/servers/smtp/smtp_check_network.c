@@ -307,6 +307,7 @@ bool_t check_smtp_network_outbound_quota_sthread(stringer_t *errmsg, uint32_t po
 	}
 	// Send the first message and expect a reply of "250 MESSAGE ACCEPTED".
 	else if (!check_smtp_client_mail_rcpt_data(client, "magma@lavabit.com", "ladar@lavabit.com", errmsg) ||
+		client_write(client, PLACER("To: ladar@lavabit.com\r\nFrom: magma@example.com\r\nSubject: Quota Test\r\n\r\n", 71)) != 71 ||
 		client_write(client, PLACER("This is a message body.\r\n.\r\n", 28)) != 28 ||
 		!check_smtp_client_read_end(client) || st_cmp_cs_starts(&(client->line), PLACER("250", 3)) != 0) {
 
@@ -317,6 +318,7 @@ bool_t check_smtp_network_outbound_quota_sthread(stringer_t *errmsg, uint32_t po
 	}
 	// Send the second message and expect a reply of "451 OUTBOUND MAIL QUOTA EXCEEDED".
 	else if (!check_smtp_client_mail_rcpt_data(client, "magma@lavabit.com", "ladar@lavabit.com", errmsg) ||
+		client_write(client, PLACER("To: ladar@lavabit.com\r\nFrom: magma@example.com\r\nSubject: Quota Test\r\n\r\n", 71)) != 71 ||
 		client_write(client, PLACER("This is a message body.\r\n.\r\n", 28)) != 28 ||
 		!check_smtp_client_read_end(client) || st_cmp_cs_starts(&(client->line), PLACER("451", 3)) != 0) {
 

@@ -698,7 +698,7 @@ stringer_t * imap_fetch_return_header(connection_t *con, meta_message_t *meta, m
 	}
 
 	// We need to pull the header off the disk.
-	else if ((*header = mail_load_header(meta, con->imap.user)) != NULL) {
+	else if ((*header = mail_load_header(meta, con->imap.user, con->server, true)) != NULL) {
 		result = *header;
 	}
 
@@ -714,7 +714,7 @@ stringer_t * imap_fetch_return_header(connection_t *con, meta_message_t *meta, m
 stringer_t * imap_fetch_return_text(connection_t *con, meta_message_t *meta, mail_message_t **message, stringer_t **header,
 	imap_fetch_response_t *output) {
 
-	if (*message == NULL && ((*message = mail_load_message(meta, con->imap.user, con->server, 1)) == NULL
+	if (*message == NULL && ((*message = mail_load_message(meta, con->imap.user, con->server, true)) == NULL
 		|| (*message)->text == NULL)) {
 		mail_destroy(*message);
 		mail_destroy_header(*header);
@@ -728,7 +728,7 @@ stringer_t * imap_fetch_return_text(connection_t *con, meta_message_t *meta, mai
 mail_message_t * imap_fetch_return_message(connection_t *con, meta_message_t *meta, mail_message_t **message, stringer_t **header,
 	imap_fetch_response_t *output) {
 
-	if (*message == NULL && ((*message = mail_load_message(meta, con->imap.user, con->server, 1)) == NULL
+	if (*message == NULL && ((*message = mail_load_message(meta, con->imap.user, con->server, true)) == NULL
 		|| (*message)->text == NULL || mail_mime_update(*message) == 0)) {
 		mail_destroy(*message);
 		mail_destroy_header(*header);
@@ -742,7 +742,7 @@ mail_message_t * imap_fetch_return_message(connection_t *con, meta_message_t *me
 mail_mime_t * imap_fetch_return_mime(connection_t *con, meta_message_t *meta, mail_message_t **message, stringer_t **header,
 	imap_fetch_response_t *output) {
 
-	if (*message == NULL && ((*message = mail_load_message(meta, con->imap.user, con->server, 1)) == NULL
+	if (*message == NULL && ((*message = mail_load_message(meta, con->imap.user, con->server, true)) == NULL
 		|| (*message)->text == NULL)) {
 		mail_destroy(*message);
 		mail_destroy_header(*header);
@@ -1091,7 +1091,7 @@ imap_fetch_response_t * imap_fetch_message(connection_t *con, meta_message_t *me
 
 	// Process the RFC822 text.
 	if (items->rfc822_text == 1) {
-		if (message == NULL && ((message = mail_load_message(meta, con->imap.user, con->server, 1)) == NULL
+		if (message == NULL && ((message = mail_load_message(meta, con->imap.user, con->server, true)) == NULL
 			|| mail_mime_update(message) == 0)) {
 			mail_destroy(message);
 			mail_destroy_header(header);
@@ -1109,7 +1109,7 @@ imap_fetch_response_t * imap_fetch_message(connection_t *con, meta_message_t *me
 
 	// Process the entire RFC822 message.
 	if (items->rfc822 == 1) {
-		if (message == NULL && ((message = mail_load_message(meta, con->imap.user, con->server, 1)) == NULL
+		if (message == NULL && ((message = mail_load_message(meta, con->imap.user, con->server, true)) == NULL
 			|| mail_mime_update(message) == 0)) {
 			mail_destroy(message);
 			mail_destroy_header(header);
@@ -1128,7 +1128,7 @@ imap_fetch_response_t * imap_fetch_message(connection_t *con, meta_message_t *me
 
 	// Process the body.
 	if (items->body == 1) {
-		if (message == NULL && ((message = mail_load_message(meta, con->imap.user, con->server, 1)) == NULL
+		if (message == NULL && ((message = mail_load_message(meta, con->imap.user, con->server, true)) == NULL
 			|| mail_mime_update(message) == 0)) {
 			mail_destroy(message);
 			mail_destroy_header(header);
@@ -1146,7 +1146,7 @@ imap_fetch_response_t * imap_fetch_message(connection_t *con, meta_message_t *me
 
 	// Process the bodystructure.
 	if (items->bodystructure == 1) {
-		if (message == NULL && ((message = mail_load_message(meta, con->imap.user, con->server, 1)) == NULL
+		if (message == NULL && ((message = mail_load_message(meta, con->imap.user, con->server, true)) == NULL
 			|| mail_mime_update(message) == 0)) {
 			mail_destroy(message);
 			mail_destroy_header(header);

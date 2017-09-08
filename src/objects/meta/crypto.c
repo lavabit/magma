@@ -22,7 +22,7 @@ int_t meta_crypto_keys_create(uint64_t usernum, stringer_t *username, stringer_t
 
 	// Create the DIME user key.
 	if (!(key = prime_key_generate(PRIME_USER_KEY, NONE)) || !(pair.private = prime_key_encrypt(realm, key, BINARY, NULL))) {
-		log_pedantic("Unable to create a user key. { username = %.*s }", st_length_int(username), st_char_get(username));
+		log_pedantic("Unable to create a user key. { user = %.*s }", st_length_int(username), st_char_get(username));
 		prime_cleanup(key);
 		return -1;
 	}
@@ -30,7 +30,7 @@ int_t meta_crypto_keys_create(uint64_t usernum, stringer_t *username, stringer_t
 	// Create the DIME signing request, and then sign it to create the user's signet.
 	else if (!(request = prime_request_generate(key, NULL)) || !(signet = prime_request_sign(request, org_key)) ||
 		!(pair.public = prime_get(signet, BINARY, NULL))) {
-		log_pedantic("Unable to create a user signet. { username = %.*s }", st_length_int(username), st_char_get(username));
+		log_pedantic("Unable to create a user signet. { user = %.*s }", st_length_int(username), st_char_get(username));
 		prime_cleanup(request);
 		prime_cleanup(signet);
 		st_free(pair.private);
@@ -46,12 +46,12 @@ int_t meta_crypto_keys_create(uint64_t usernum, stringer_t *username, stringer_t
 	// Try storing the keys in the database. If 0 is returned, the new pair was stored, otherwise if a 1 is returned
 	// its possible another process created the keys already, in which case they will be retrieved below.
 	if (meta_data_insert_keys(usernum, username, &pair, transaction) < 0) {
-		log_pedantic("Unable to store the user signet and key. { username = %.*s }", st_length_int(username), st_char_get(username));
+		log_pedantic("Unable to store the user signet and key. { user = %.*s }", st_length_int(username), st_char_get(username));
 		st_cleanup(pair.public, pair.private);
 		return 1;
 	}
 
-	log_info("Created the user signet and key. { username = %.*s }", st_length_int(username), st_char_get(username));
+	log_info("Created the user signet and key. { user = %.*s }", st_length_int(username), st_char_get(username));
 	st_cleanup(pair.public, pair.private);
 	return 0;
 }

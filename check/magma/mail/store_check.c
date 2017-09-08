@@ -83,7 +83,7 @@ bool_t check_mail_store_encrypted_sthread(stringer_t *errmsg) {
 	meta_user_t *user = NULL;
 	meta_folder_t *folder = NULL;
 	uint32_t max = check_message_max();
-	stringer_t *usernames[] = { PLACER("princess", 8), PLACER("magma", 5)}, *passwords[] = { PLACER("password", 8), PLACER("password", 8) },
+	stringer_t *usernames[] = { PLACER("magma", 5)}, *passwords[] = { PLACER("password", 8), PLACER("password", 8) },
 		*data = NULL;
 
 	// The registration check must be run frist, otherwise we won't have a user to check against.

@@ -722,7 +722,7 @@ stringer_t * mail_add_inbound_headers(connection_t *con, smtp_inbound_prefs_t *p
  * @param	sigkey		the optional spam signature key for client verification in the teacher app.
  * @return	This function returns no value.
  */
-// QUESTION: This prototype is stupid. We need to pass message as stringer_t * and return a stringer_t * as well.
+/// LOW: We should be passing the message as a stringer_t * and then returning it as a stringer_t *.
 void mail_add_forward_headers(server_t *server, stringer_t **message, stringer_t *id, int_t mark, uint64_t signum, uint64_t sigkey) {
 
 	uint32_t status = 0;

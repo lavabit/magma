@@ -79,7 +79,7 @@ int_t imap_search_messages_date_compare(stringer_t *one, stringer_t *two) {
 	return 1;
 }
 
-int_t imap_search_messages_date(meta_user_t *user, mail_message_t **data, stringer_t **header, meta_message_t *active, stringer_t *date, int_t internal, int_t expected) {
+int_t imap_search_messages_date(connection_t *con, meta_user_t *user, mail_message_t **data, stringer_t **header, meta_message_t *active, stringer_t *date, int_t internal, int_t expected) {
 
 	time_t utime;
 	struct tm ltime;
@@ -114,7 +114,7 @@ int_t imap_search_messages_date(meta_user_t *user, mail_message_t **data, string
 		else if (*header != NULL) {
 			area = pl_init(st_char_get(*header), st_length_get(*header));
 		}
-		else if ((*header = mail_load_header(active, user)) != NULL){
+		else if ((*header = mail_load_header(active, user, con->server, true)) != NULL){
 			area = pl_init(st_char_get(*header), st_length_get(*header));
 		}
 
@@ -158,7 +158,7 @@ int_t imap_search_messages_date(meta_user_t *user, mail_message_t **data, string
 }
 
 // Search the header.
-int_t imap_search_messages_header(meta_user_t *user, mail_message_t **data, stringer_t **header, meta_message_t *active, stringer_t *field, stringer_t *value) {
+int_t imap_search_messages_header(connection_t *con, meta_user_t *user, mail_message_t **data, stringer_t **header, meta_message_t *active, stringer_t *field, stringer_t *value) {
 
 	size_t location;
 	int_t compare = -1;
@@ -172,7 +172,7 @@ int_t imap_search_messages_header(meta_user_t *user, mail_message_t **data, stri
 	else if (*header != NULL) {
 		area = pl_init(st_char_get(*header), st_length_get(*header));
 	}
-	else if ((*header = mail_load_header(active, user)) != NULL){
+	else if ((*header = mail_load_header(active, user, con->server, true)) != NULL){
 		area = pl_init(st_char_get(*header), st_length_get(*header));
 	}
 
@@ -194,14 +194,14 @@ int_t imap_search_messages_header(meta_user_t *user, mail_message_t **data, stri
 	return compare;
 }
 
-int_t imap_search_messages_body(meta_user_t *user, mail_message_t **data, meta_message_t *active, stringer_t *value) {
+int_t imap_search_messages_body(connection_t *con, meta_user_t *user, mail_message_t **data, meta_message_t *active, stringer_t *value) {
 
 	size_t location;
 	int_t compare = -1;
 	stringer_t *current = NULL;
 
 	// Load the message, if necessary.
-	if (*data == NULL && ((*data = mail_load_message(active, user, NULL, 0)) == NULL || mail_mime_update(*data) == 0)) {
+	if (*data == NULL && ((*data = mail_load_message(active, user, con->server, true)) == NULL || mail_mime_update(*data) == 0)) {
 		compare = -1;
 	}
 
@@ -218,14 +218,14 @@ int_t imap_search_messages_body(meta_user_t *user, mail_message_t **data, meta_m
 	return compare;
 }
 
-int_t imap_search_messages_text(meta_user_t *user, mail_message_t **data, meta_message_t *active, stringer_t *value) {
+int_t imap_search_messages_text(connection_t *con, meta_user_t *user, mail_message_t **data, meta_message_t *active, stringer_t *value) {
 
 	size_t location;
 	int_t compare = -1;
 	stringer_t *current = NULL;
 
 	// Load the message, if necessary.
-	if (*data == NULL && ((*data = mail_load_message(active, user, NULL, 0)) == NULL || mail_mime_update(*data) == 0)) {
+	if (*data == NULL && ((*data = mail_load_message(active, user, con->server, true)) == NULL || mail_mime_update(*data) == 0)) {
 		compare = -1;
 	}
 
@@ -344,7 +344,7 @@ int_t imap_search_messages_range(meta_message_t *active, stringer_t *range, int_
 	return -1;
 }
 
-int_t imap_search_messages_inner(meta_user_t *user, mail_message_t **message, stringer_t **header, meta_message_t *current, imap_arguments_t *array, unsigned recursion) {
+int_t imap_search_messages_inner(connection_t *con, meta_user_t *user, mail_message_t **message, stringer_t **header, meta_message_t *current, imap_arguments_t *array, unsigned recursion) {
 
 	stringer_t *item;
 	unsigned number, increment = 0;
@@ -365,7 +365,7 @@ int_t imap_search_messages_inner(meta_user_t *user, mail_message_t **message, st
 
 		// Handle nested arrays.
 		if (imap_get_type_ar(array, increment) == IMAP_ARGUMENT_TYPE_ARRAY) {
-			eval = imap_search_messages_inner(user, message, header, current, imap_get_ar_ar(array, increment++), recursion + 1);
+			eval = imap_search_messages_inner(con, user, message, header, current, imap_get_ar_ar(array, increment++), recursion + 1);
 		}
 		else if ((item = imap_get_st_ar(array, increment++)) == NULL) {
 			eval = -1;
@@ -419,55 +419,55 @@ int_t imap_search_messages_inner(meta_user_t *user, mail_message_t **message, st
 
 		// Date checks.
 		else if (increment < number && !st_cmp_ci_eq(item, PLACER("BEFORE", 6)) && imap_get_type_ar(array, increment) != IMAP_ARGUMENT_TYPE_ARRAY) {
-			eval = imap_search_messages_date(user, message, header, current, imap_get_st_ar(array, increment++), 1, 0);
+			eval = imap_search_messages_date(con, user, message, header, current, imap_get_st_ar(array, increment++), 1, 0);
 		}
 		else if (increment < number && !st_cmp_ci_eq(item, PLACER("ON", 2)) && imap_get_type_ar(array, increment) != IMAP_ARGUMENT_TYPE_ARRAY) {
-			eval = imap_search_messages_date(user, message, header, current, imap_get_st_ar(array, increment++), 1, 1);
+			eval = imap_search_messages_date(con, user, message, header, current, imap_get_st_ar(array, increment++), 1, 1);
 		}
 		else if (increment < number && !st_cmp_ci_eq(item, PLACER("SINCE", 5)) && imap_get_type_ar(array, increment) != IMAP_ARGUMENT_TYPE_ARRAY) {
-			eval = imap_search_messages_date(user, message, header, current, imap_get_st_ar(array, increment++), 1, 2);
+			eval = imap_search_messages_date(con, user, message, header, current, imap_get_st_ar(array, increment++), 1, 2);
 		}
 		else if (increment < number && !st_cmp_ci_eq(item, PLACER("SENTBEFORE", 10)) && imap_get_type_ar(array, increment) != IMAP_ARGUMENT_TYPE_ARRAY) {
-			eval = imap_search_messages_date(user, message, header, current, imap_get_st_ar(array, increment++), 0, 0);
+			eval = imap_search_messages_date(con, user, message, header, current, imap_get_st_ar(array, increment++), 0, 0);
 		}
 		else if (increment < number && !st_cmp_ci_eq(item, PLACER("SENTON", 6)) && imap_get_type_ar(array, increment) != IMAP_ARGUMENT_TYPE_ARRAY) {
-			eval = imap_search_messages_date(user, message, header, current, imap_get_st_ar(array, increment++), 0, 1);
+			eval = imap_search_messages_date(con, user, message, header, current, imap_get_st_ar(array, increment++), 0, 1);
 		}
 		else if (increment < number && !st_cmp_ci_eq(item, PLACER("SENTSINCE", 9)) && imap_get_type_ar(array, increment) != IMAP_ARGUMENT_TYPE_ARRAY) {
-			eval = imap_search_messages_date(user, message, header, current, imap_get_st_ar(array, increment++), 0, 2);
+			eval = imap_search_messages_date(con, user, message, header, current, imap_get_st_ar(array, increment++), 0, 2);
 		}
 
 		// Header checks.
 		else if (increment < number && !st_cmp_ci_eq(item, PLACER("BCC", 3)) && imap_get_type_ar(array, increment) != IMAP_ARGUMENT_TYPE_ARRAY) {
-			eval = imap_search_messages_header(user, message, header, current, item, imap_get_st_ar(array, increment++));
+			eval = imap_search_messages_header(con, user, message, header, current, item, imap_get_st_ar(array, increment++));
 		}
 		else if (increment < number && !st_cmp_ci_eq(item, PLACER("CC", 2)) && imap_get_type_ar(array, increment) != IMAP_ARGUMENT_TYPE_ARRAY) {
-			eval = imap_search_messages_header(user, message, header, current, item, imap_get_st_ar(array, increment++));
+			eval = imap_search_messages_header(con, user, message, header, current, item, imap_get_st_ar(array, increment++));
 		}
 		else if (increment < number && !st_cmp_ci_eq(item, PLACER("FROM", 4)) && imap_get_type_ar(array, increment) != IMAP_ARGUMENT_TYPE_ARRAY) {
-			eval = imap_search_messages_header(user, message, header, current, item, imap_get_st_ar(array, increment++));
+			eval = imap_search_messages_header(con, user, message, header, current, item, imap_get_st_ar(array, increment++));
 		}
 		else if (increment < number && !st_cmp_ci_eq(item, PLACER("TO", 2)) && imap_get_type_ar(array, increment) != IMAP_ARGUMENT_TYPE_ARRAY) {
-			eval = imap_search_messages_header(user, message, header, current, item, imap_get_st_ar(array, increment++));
+			eval = imap_search_messages_header(con, user, message, header, current, item, imap_get_st_ar(array, increment++));
 		}
 		else if (increment < number && !st_cmp_ci_eq(item, PLACER("SUBJECT", 7)) && imap_get_type_ar(array, increment) != IMAP_ARGUMENT_TYPE_ARRAY) {
-			eval = imap_search_messages_header(user, message, header, current, item, imap_get_st_ar(array, increment++));
+			eval = imap_search_messages_header(con, user, message, header, current, item, imap_get_st_ar(array, increment++));
 		}
 		// This search term takes two parameters.
 		else if (increment + 1 < number && !st_cmp_ci_eq(item, PLACER("HEADER", 6)) && imap_get_type_ar(array, increment) != IMAP_ARGUMENT_TYPE_ARRAY &&
 			imap_get_type_ar(array, increment + 1) != IMAP_ARGUMENT_TYPE_ARRAY) {
-			eval = imap_search_messages_header(user, message, header, current, imap_get_st_ar(array, increment), imap_get_st_ar(array, increment + 1));
+			eval = imap_search_messages_header(con, user, message, header, current, imap_get_st_ar(array, increment), imap_get_st_ar(array, increment + 1));
 			increment += 2;
 		}
 
 		// Body checks.
 		else if (increment < number && !st_cmp_ci_eq(item, PLACER("BODY", 4)) && imap_get_type_ar(array, increment) != IMAP_ARGUMENT_TYPE_ARRAY) {
-			eval = imap_search_messages_body(user, message, current, imap_get_st_ar(array, increment++));
+			eval = imap_search_messages_body(con, user, message, current, imap_get_st_ar(array, increment++));
 		}
 
 		// Full message checks.
 		else if (increment < number && !st_cmp_ci_eq(item, PLACER("TEXT", 4)) && imap_get_type_ar(array, increment) != IMAP_ARGUMENT_TYPE_ARRAY) {
-			eval = imap_search_messages_text(user, message, current, imap_get_st_ar(array, increment++));
+			eval = imap_search_messages_text(con, user, message, current, imap_get_st_ar(array, increment++));
 		}
 
 		// Size checks.
@@ -592,7 +592,7 @@ inx_t * imap_search_messages(connection_t *con) {
 
 			// Check for a match.
 			if (active->foldernum == con->imap.selected &&
-					imap_search_messages_inner(con->imap.user, &message, &header, active, con->imap.arguments, 0) == 1 &&
+					imap_search_messages_inner(con, con->imap.user, &message, &header, active, con->imap.arguments, 0) == 1 &&
 					(key.val.u64 = active->messagenum) && (duplicate = meta_message_dupe(active)) &&
 					inx_append(output, key, duplicate) != true) {
 				meta_message_free(duplicate);

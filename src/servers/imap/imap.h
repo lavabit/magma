@@ -146,14 +146,14 @@ stringer_t *  imap_range_build(size_t length, uint64_t *numbers);
 /// search.c
 int_t    imap_search_flag(uint32_t status, uint32_t flag, int_t has);
 inx_t *  imap_search_messages(connection_t *con);
-int_t    imap_search_messages_body(meta_user_t *user, mail_message_t **data, meta_message_t *active, stringer_t *value);
-int_t    imap_search_messages_date(meta_user_t *user, mail_message_t **data, stringer_t **header, meta_message_t *active, stringer_t *date, int_t internal, int_t expected);
+int_t    imap_search_messages_body(connection_t *con, meta_user_t *user, mail_message_t **data, meta_message_t *active, stringer_t *value);
+int_t    imap_search_messages_date(connection_t *con, meta_user_t *user, mail_message_t **data, stringer_t **header, meta_message_t *active, stringer_t *date, int_t internal, int_t expected);
 int_t    imap_search_messages_date_compare(stringer_t *one, stringer_t *two);
-int_t    imap_search_messages_header(meta_user_t *user, mail_message_t **data, stringer_t **header, meta_message_t *active, stringer_t *field, stringer_t *value);
-int_t    imap_search_messages_inner(meta_user_t *user, mail_message_t **message, stringer_t **header, meta_message_t *current, imap_arguments_t *array, unsigned recursion);
+int_t    imap_search_messages_header(connection_t *con, meta_user_t *user, mail_message_t **data, stringer_t **header, meta_message_t *active, stringer_t *field, stringer_t *value);
+int_t    imap_search_messages_inner(connection_t *con, meta_user_t *user, mail_message_t **message, stringer_t **header, meta_message_t *current, imap_arguments_t *array, unsigned recursion);
 int_t    imap_search_messages_range(meta_message_t *active, stringer_t *range, int_t uid);
 int_t    imap_search_messages_size(meta_message_t *active, stringer_t *value, int_t expected);
-int_t    imap_search_messages_text(meta_user_t *user, mail_message_t **data, meta_message_t *active, stringer_t *value);
+int_t    imap_search_messages_text(connection_t *con, meta_user_t *user, mail_message_t **data, meta_message_t *active, stringer_t *value);
 
 /// sessions.c
 void    imap_session_destroy(connection_t *con);

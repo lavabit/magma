@@ -23,14 +23,20 @@ if [ -z "$PID" ]; then
 	exit 2
 fi
 
-# Success (ladar/test)
+# Success (stacie/password)
 tput setaf 6; echo "Valid STACIE login over POP:"; tput sgr0
 echo ""
-printf "USER stacie\r\nPASS password\r\nQUIT\r\n" | nc localhost 8000
+printf "USER stacie\r\nPASS password\r\nQUIT\r\n" | openssl s_client -quiet -connect localhost:8500 -quiet 2>&1 | grep --color=none -E "^\+|^\-"
+printf "USER stacie\r\nPASS password\r\nQUIT\r\n" | openssl s_client -quiet -connect localhost:8500 -quiet 2>&1 | grep --silent "+OK Password accepted." && \
+(tput setaf 2; printf "\nThe test passed.\n"; tput sgr0) || \
+(tput setaf 1; printf "\nThe test failed.\n"; tput sgr0)
 echo ""
 
-# Fail (ladar/password)
+# Fail (stacie/PASSWORD)
 tput setaf 6; echo "Invalid STACIE login over POP:"; tput sgr0
 echo ""
-printf "USER stacie\r\nPASS password\r\nQUIT\r\n" | nc localhost 8000
+printf "USER stacie\r\nPASS PASSWORD\r\nQUIT\r\n" | openssl s_client -quiet -connect localhost:8500 -quiet 2>&1 | grep --color=none -E "^\+|^\-"
+printf "USER stacie\r\nPASS PASSWORD\r\nQUIT\r\n" | openssl s_client -quiet -connect localhost:8500 -quiet 2>&1 | grep --silent "\-ERR \[AUTH\] The username and password combination is invalid." && \
+(tput setaf 2; printf "\nThe test passed.\n"; tput sgr0) || \
+(tput setaf 1; printf "\nThe test failed.\n"; tput sgr0)
 echo ""

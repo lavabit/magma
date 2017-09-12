@@ -24,4 +24,5 @@ if [ -z "$PID" ]; then
 	exit 2
 fi
 
-openssl s_client -connect localhost:8500
+# The -ign_eof option is to prevent renegotiation whenever a line begins with R.
+openssl s_client -ign_eof -connect localhost:8500

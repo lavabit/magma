@@ -24,4 +24,5 @@ if [ -z "$PID" ]; then
 	exit 2
 fi
 
-openssl s_client -starttls pop3 -connect localhost:8000
+# The -ign_eof option is to prevent renegotiation whenever a line begins with R.
+openssl s_client -ign_eof -starttls pop3 -connect localhost:8000

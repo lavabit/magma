@@ -24,4 +24,5 @@ if [ -z "$PID" ]; then
 	exit 2
 fi
 
-openssl s_client -starttls smtp -connect localhost:7000
+# The -ign_eof option is to prevent renegotiation whenever a line begins with R.
+openssl s_client -ign_eof -starttls smtp -connect localhost:7000

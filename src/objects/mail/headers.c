@@ -653,7 +653,7 @@ stringer_t * mail_add_inbound_headers(connection_t *con, smtp_inbound_prefs_t *p
 		return NULL;
 	}
 
-	if ((state = strftime(date_string, 40, "%a, %d %b %Y %H:%M:%S %z", &ltime)) <= 0) {
+	if ((state = strftime(date_string, 40, "%a, %d %b %Y %H:%M:%S %z\r\n", &ltime)) <= 0) {
 		log_pedantic("Could not build the date string.");
 		return NULL;
 	}
@@ -664,9 +664,9 @@ stringer_t * mail_add_inbound_headers(connection_t *con, smtp_inbound_prefs_t *p
 		return NULL;
 	}
 	if(con_secure(con)) {
-		sprintf(tls_header, "\r\n(version=%s cipher=%s bits=%d)\r\n", tls_version(con->network.tls), tls_suite(con->network.tls), tls_bits(con->network.tls));
+		sprintf(tls_header, "\r\n\t(version=%s cipher=%s bits=%d);\r\n\t", tls_version(con->network.tls), tls_suite(con->network.tls), tls_bits(con->network.tls));
 	} else {
-		strcpy(tls_header, "\r\n");
+		strcpy(tls_header, ";\r\n\t");
 	}
 	// We need to make sure the reverse DNS lookup is complete.
 	reverse = con_reverse_check(con, 20);
@@ -676,28 +676,28 @@ stringer_t * mail_add_inbound_headers(connection_t *con, smtp_inbound_prefs_t *p
 		// The reverse matches, or doesn't exist and there is no mailfrom or it's <>.
 		if (!con->smtp.mailfrom || !st_cmp_cs_eq(con->smtp.mailfrom, CONSTANT("<>"))) {
 			result =  st_merge_opts(MAPPED_T | JOINTED | HEAP, "nsnsnsnsnsnnns", "Return-Path: <>\r\nReceived: from ", con->smtp.helo, " (", ip, ")\r\n\tby ", con->server->domain,
-				(con->smtp.esmtp == false) ? " with SMTP id " : " with ESMTP id ", con->smtp.message->id, "\r\n\tfor <", prefs->rcptto, ">; ",
-				date_string, tls_header, con->smtp.message->text);
+				(con->smtp.esmtp == false) ? " with SMTP id " : " with ESMTP id ", con->smtp.message->id, "\r\n\tfor <", prefs->rcptto, "> ",
+				tls_header, date_string, con->smtp.message->text);
 		}
 		// The reverse matches, or doesn't exist and there is a mailfrom to print.
 		else {
 			result = st_merge_opts(MAPPED_T | JOINTED | HEAP, "nsnsnsnsnsnsnnns", "Return-Path: <", con->smtp.mailfrom, ">\r\nReceived: from ", con->smtp.helo, " (", ip, ")\r\n\tby ",
-				con->server->domain, (con->smtp.esmtp == false) ? " with SMTP id " : " with ESMTP id ", con->smtp.message->id, "\r\n\tfor <", prefs->rcptto, ">; ",
-				date_string, tls_header, con->smtp.message->text);
+				con->server->domain, (con->smtp.esmtp == false) ? " with SMTP id " : " with ESMTP id ", con->smtp.message->id, "\r\n\tfor <", prefs->rcptto, "> ",
+				tls_header, date_string, con->smtp.message->text);
 		}
 
 	}
 	// We need to print_t a reverse, but there is no mailfrom or it's <>.
 	else if (!con->smtp.mailfrom || !st_cmp_cs_eq(con->smtp.mailfrom, CONSTANT("<>"))) {
 			result = st_merge_opts(MAPPED_T | JOINTED | HEAP, "nsnsnsnsnsnsnnns", "Return-Path: <>\r\nReceived: from ", con->smtp.helo, " (", reverse, " [", ip, "])\r\n\tby ", con->server->domain,
-				(con->smtp.esmtp == false) ? " with SMTP id " : " with ESMTP id ", con->smtp.message->id, "\r\n\tfor <", prefs->rcptto, ">; ",
-				date_string, tls_header, con->smtp.message->text);
+				(con->smtp.esmtp == false) ? " with SMTP id " : " with ESMTP id ", con->smtp.message->id, "\r\n\tfor <", prefs->rcptto, "> ",
+				tls_header, date_string, con->smtp.message->text);
 	}
 	// We need to print_t a reverse and the mailfrom.
 	else {
 		result = st_merge_opts(MAPPED_T | JOINTED | HEAP, "nsnsnsnsnsnsnsnnns", "Return-Path: <", con->smtp.mailfrom, ">\r\nReceived: from ", con->smtp.helo, " (", reverse,
 			" [", ip, "])\r\n\tby ", con->server->domain,	(con->smtp.esmtp == false) ? " with SMTP id " : " with ESMTP id ", con->smtp.message->id,
-			"\r\n\tfor <", prefs->rcptto, ">; ", date_string, tls_header, con->smtp.message->text);
+			"\r\n\tfor <", prefs->rcptto, "> ", tls_header, date_string, con->smtp.message->text);
 	}
 
 	if (!result) {

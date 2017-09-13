@@ -170,7 +170,7 @@ int_t meta_crypto_keys_create(uint64_t usernum, stringer_t *username, stringer_t
 
 	ns_free(fcontents);
 
-	if ((fd = get_temp_file_handle(NULL,&ftmpname)) < 0) {
+	if ((fd = file_temp_handle(NULL,&ftmpname)) < 0) {
 		log_pedantic("Unable to get file descriptor for temp file.");
 		ns_free(msgpath);
 		ns_free(write_data);

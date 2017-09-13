@@ -15,7 +15,7 @@
  * @param	output	a managed string where the results of the file read operation will be stored.
  * @return	-1 on failure or the number of bytes read from the file on success.
  */
-int_t file_read(char *name, stringer_t *output) {
+int_t file_read(const char *name, stringer_t *output) {
 
 	int_t fd, result;
 
@@ -48,7 +48,7 @@ int_t file_read(char *name, stringer_t *output) {
  * @param	name	a character pointer to the full pathname of the file to be opened.
  * @return	NULL on failure, or a managed string containing all the data in the file.
  */
-stringer_t * file_load(char *name) {
+stringer_t * file_load(const char *name) {
 
 	int fd;
 	stringer_t *result;
@@ -95,7 +95,7 @@ stringer_t * file_load(char *name) {
  * @param	tmpname		an optional pointer to a managed string to receive the name of the created temp file.
  * @return	-1 on failure or the new temporary file's file descriptor on success.
  */
-int_t get_temp_file_handle(chr_t *pdir, stringer_t **tmpname) {
+int_t file_temp_handle(chr_t *pdir, stringer_t **tmpname) {
 
 	int_t result;
 	stringer_t *opath, *path, *sp = NULL;

@@ -7,8 +7,6 @@
 
 #include "magma.h"
 
-#include "../../../lib/sources/dkim/opendkim/opendkim-ar.h"
-
 /**
  * @brief	Perform a case-sensitive comparison of two memory blocks.
  * @param	a	a pointer to the first buffer in memory to be compared.

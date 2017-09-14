@@ -859,7 +859,7 @@ void mail_add_forward_headers(server_t *server, stringer_t **message, stringer_t
 /**
  * @brief	Add a Received: header and dkim signature to an outbound relayed smtp message.
  * @note	If the message already has a Received header, the dkim signature will be inserted right before the first instance.
- * @param	con		the connection across which the outbound smtap message is being sent.
+ * @param	con		the connection across which the outbound smtp message is being sent.
  * @return	NULL on failure, or a managed string containing the message data preceded by the Received header
  * 			and including the dkim signature on success.
  */
@@ -948,7 +948,7 @@ int_t mail_add_outbound_headers(connection_t *con) {
 	}
 	else {
 		new = st_merge_opts(MAPPED_T | JOINTED | HEAP, "nsnsnsnsnsnsnnnsss", "Received: from ", con->smtp.helo, " (", reverse, " [", ip, "])\r\n\tby ", con->server->domain,
-			(con->smtp.esmtp == false) ? " with SMTP id " : " with ESMTP id ", con->smtp.message->id, "\r\n\tfor <", con->smtp.out_prefs->recipients->address, ">; \r\n",
+			(con->smtp.esmtp == false) ? " with SMTP id " : " with ESMTP id ", con->smtp.message->id, "\r\n\tfor <", con->smtp.out_prefs->recipients->address, ">; ",
 			date_string, "\r\n", first, dk_signature, second);
 	}
 

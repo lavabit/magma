@@ -468,7 +468,7 @@ void mail_mod_subject(stringer_t **message, chr_t *label) {
 			}
 			if (encoding == 0)
 			{
-
+				decoded_subject_string = qp_decode(subject_string); //Allocates mem
 			}
 			else if (encoding == 1)
 			{
@@ -480,7 +480,8 @@ void mail_mod_subject(stringer_t **message, chr_t *label) {
 
 			if (encoding == 0)
 			{
-
+				concatenated_encoded_subject_message = qp_encode(concatenated_decoded_subject_message); //Allocates mem
+				st_free(concatenated_decoded_subject_message);
 			}
 			else if (encoding == 1)
 			{

@@ -420,34 +420,55 @@ void mail_mod_subject(stringer_t **message, chr_t *label) {
 
 		position = 0;
 
-		//Might wanna implement regular expressions here via "regex" lib. Not sure about compability though. So only standard way for now.
+		//Might wanna implement regular expressions here via "regex" lib. Not sure about compatibility though. So only standard way for now.
 
 		line = mail_header_pop(second, &position);
 		line = mail_header_pop(second, &position);
 
 
-		subject_string 	= PLACER(st_data_get(second), (st_char_get(&line)) - st_char_get(second));				//Potential '=?charset?coding?code_message?=' string
+		subject_string 	= PLACER(st_data_get(second), (st_char_get(&line)) - st_char_get(second));				//Potential '=?charset?coding?code_message?= =?charset?coding?code_message?= ... =?charset?coding?code_message?=' string
 		second 			= PLACER(st_data_get(&line), st_length_get(second) - st_length_get(subject_string));	//From the end of decoded_subject_string to message end
 
 		//Skip potential spaces
+		stream = st_char_get(subject_string);
+		streamlen = st_length_get(subject_string);
 
-		line = mail_store_header(st_char_get(subject_string), st_length_get(subject_string));
-
-		if (st_cmp_ci_starts(&line, CONSTANT("=?")) == 0) //Meaning we DO have encoded string. So, we have
+		//Manual trim function. May be replaced if one exists in API.
+		while (*stream == ' ')
 		{
-			stream = st_char_get(&line);
-			streamlen = st_length_get(&line) - 2;
+			stream++;
+			streamlen--;
+		}
+		subject_string = PLACER(stream, streamlen);
 
+		if (st_cmp_ci_starts(subject_string, CONSTANT("=?")) == 0) 	//Meaning we DO have encoded string. So, we have
+		{
+			subject_string = NULL;									//So now we may set it to NULL, for this string is going to became a merge of encoded substrings
+			int local_encoded_string_length = 0;
+			chr_t *start_marker = NULL;
 
-			int delims = 0, encoding = 0; //coding corresponds to B/Q
-			while(delims < 3)
+			int delims = 0, charset = 0, encoding = 0; 				//coding corresponds to B/Q
+			while(streamlen > 0)									//Loop through then stream
 			{
 				if ((*stream) == '?')
 				{
 					delims++;
 					switch (delims)
 					{
+					case 1:
+						stream++;
+						streamlen--;
+						start_marker = stream;
+						break;
 					case 2:
+						result = PLACER(start_marker, local_encoded_string_length);
+						if ((st_cmp_ci_starts(result, CONSTANT("UTF-8")) == 0)				//This works only for UTF-8 charset only for now. Gonna add some more in the future.
+							||
+							(st_cmp_ci_starts(result, CONSTANT("utf-8")) == 0))
+						{
+							charset = 1;
+						}
+						local_encoded_string_length = 0;
 						stream++;
 						streamlen--;
 						if ((*stream) == 'b' || (*stream) == 'B')
@@ -456,24 +477,53 @@ void mail_mod_subject(stringer_t **message, chr_t *label) {
 						}
 						break;
 
-					case 3:
+					case 3:									//This is where yet another part of encoded message begins from
 						stream++;
 						streamlen--;
-						subject_string = PLACER(stream, streamlen);
+						start_marker = stream;				//Mark start of encoded part of message
+						break;
+
+					case 4:									//This is where yet another part of encoded message ends
+						delims = 0;
+
+						if (encoding == 0)
+						{
+							subject_string = qp_decode(PLACER(start_marker, local_encoded_string_length)); //Allocates mem
+						}
+						else if (encoding == 1)
+						{
+							subject_string = base64_decode(PLACER(start_marker, local_encoded_string_length), subject_string); //Allocates mem
+						}
+
+						result = st_merge("ss",
+								decoded_subject_string,
+								subject_string); //Allocates mem
+
+						if (subject_string != NULL)
+						{
+							st_free(subject_string);
+						}
+
+						if (decoded_subject_string != NULL)
+						{
+							st_free(decoded_subject_string);
+						}
+
+						decoded_subject_string = result;
+						result = NULL;
+						local_encoded_string_length = 0;
 						break;
 					}
+				}
+				if ((delims == 1) || (delims == 3))								//We are now on encoded part of message
+				{
+					local_encoded_string_length++;
 				}
 				stream++;
 				streamlen--;
 			}
-			if (encoding == 0)
-			{
-				decoded_subject_string = qp_decode(subject_string); //Allocates mem
-			}
-			else if (encoding == 1)
-			{
-				decoded_subject_string = base64_decode(subject_string, decoded_subject_string); //Allocates mem
-			}
+
+			//Up to this moment we must have entire string, built up from all the encoded parts of message no longer than 76 symbols
 
 			concatenated_decoded_subject_message = st_merge("nns", label, *st_char_get(decoded_subject_string) != ' ' ? " " : NULL, decoded_subject_string); //Allocates mem
 			st_free(decoded_subject_string);
@@ -489,17 +539,55 @@ void mail_mod_subject(stringer_t **message, chr_t *label) {
 				st_free(concatenated_decoded_subject_message);
 			}
 
-			intermediate = st_merge("ssn",
-					PLACER(st_char_get(&line),	st_length_get(&line) - streamlen - 3),
-					concatenated_encoded_subject_message,
-					"?=\n"); //Allocates mem
+			//Here we have encoded concatenated_encoded_subject_message with X length. Gotta split it up, so we could insert it back into the message.
+
+			stream = st_char_get(concatenated_encoded_subject_message);
+			streamlen = st_length_get(concatenated_encoded_subject_message);
+
+			start_marker = stream;
+			while (streamlen > 0)
+			{
+				if (*stream == '\n')
+				{
+					stream++;
+					streamlen--;
+					start_marker = stream;
+					continue;
+				}
+				if (*stream == '\r')
+				{
+					result = st_merge("snnnnnsn",
+							intermediate,															//Previous string
+							" =?",																	//String start
+							(charset == 0)?"UTF-8":"UTF-8",											//This is charset. Let it be utf-8 for now.
+							"?",																	//Second delim
+							(encoding == 0)?"Q":"B",												//Encoding token
+							"?",																	//Third delim
+							PLACER(start_marker, local_encoded_string_length),						//Part of encoded string
+							"?=\r\n"); //Allocates mem												//Ending
+					if (intermediate != NULL)
+					{
+						st_free(intermediate);		//This is old string, gotta delete it
+					}
+					intermediate = result;
+					result = NULL;
+					local_encoded_string_length = 0;
+				} else {
+					local_encoded_string_length++;
+				}
+				stream++;
+				streamlen--;
+			}
+
+
 			st_free(concatenated_encoded_subject_message);
 		}
 		else
 		{
-			intermediate = st_merge("nnsn",
+			intermediate = st_merge("nnnsn",
 					" ",
 					label,
+					" ",
 					subject_string,
 					*st_char_get(second) != ' ' ? " " : NULL); //Allocates mem
 		}
@@ -518,6 +606,8 @@ void mail_mod_subject(stringer_t **message, chr_t *label) {
 		first = PLACER(st_char_get(*message), position);
 		second = PLACER(st_char_get(*message) + position, st_length_get(*message) - position);
 	}
+
+
 
 	if (found == 1) {
 		result = st_merge("sss", first, intermediate, second); //Allocates mem

@@ -28,17 +28,17 @@ bool_t tls_server_create(void *server, uint_t security_level) {
 	server_t *local = server;
 
 	if (security_level == 0) {
-		options = SSL_OP_ALL | \
+		options = (SSL_OP_ALL | \
 			SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION | SSL_OP_CIPHER_SERVER_PREFERENCE | SSL_MODE_AUTO_RETRY);
 		ciphers = MAGMA_CIPHERS_GENERIC;
 	}
 	else if (security_level == 1) {
-		options = (options | SSL_OP_ALL | SSL_OP_NO_SSLv2 | \
+		options = (SSL_OP_ALL | SSL_OP_NO_SSLv2 | \
 			SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION | SSL_OP_CIPHER_SERVER_PREFERENCE | SSL_MODE_AUTO_RETRY);
 		ciphers = SSL_DEFAULT_CIPHER_LIST;
 	}
 	else if (security_level == 2) {
-		options = (options | SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | \
+		options = (SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | \
 			SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION | SSL_OP_CIPHER_SERVER_PREFERENCE | SSL_MODE_AUTO_RETRY | \
 			SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS | SSL_OP_NO_COMPRESSION | SSL_OP_NO_TICKET);
 		// SSL_OP_ALL | SSL_MODE_AUTO_RETRY | SSL_OP_TLS_ROLLBACK_BUG | SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION | SSL_OP_CIPHER_SERVER_PREFERENCE
@@ -46,7 +46,7 @@ bool_t tls_server_create(void *server, uint_t security_level) {
 		ciphers = MAGMA_CIPHERS_MEDIUM;
 	}
 	else if (security_level >= 3) {
-		options = (options | SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1 | \
+		options = (SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1 | \
 			SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION | SSL_OP_CIPHER_SERVER_PREFERENCE | SSL_MODE_AUTO_RETRY | \
 			SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS | SSL_OP_NO_TICKET | SSL_OP_NO_COMPRESSION);
 		ciphers = MAGMA_CIPHERS_HIGH;

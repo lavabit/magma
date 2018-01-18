@@ -138,6 +138,7 @@ sort_buffer_size =16M
 symbolic-links = 0
 thread_cache_size = 64
 tmp_table_size = 64M
+expire_logs_days = 14
 
 general_log_file = /var/log/mysqld-general.log
 slow_query_log_file = /var/log/mysqld-slow.log

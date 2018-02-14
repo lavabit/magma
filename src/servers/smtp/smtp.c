@@ -1022,7 +1022,7 @@ void smtp_data_outbound(connection_t *con) {
 
 
 	// Now check the address in the header.
-	else if ((state = smtp_check_authorized_from(con->smtp.out_prefs->usernum, holder)) == 0) {
+	else if ((state = smtp_check_authorized_from(con->smtp.out_prefs->usernum, auth_sanitize_address(holder))) == 0) {
 		con_print(con, "550 DATA BLOCKED - THIS USER ACCOUNT IS NOT AUTHORIZED TO SEND MESSAGES WITH THE ADDRESS <%.*s> - PLEASE CHECK YOUR " \
 			"EMAIL CLIENT SETTINGS AND TRY AGAIN\r\n", st_length_get(holder), st_char_get(holder));
 		smtp_session_reset(con);

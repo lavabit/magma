@@ -33,15 +33,6 @@ diff -r 5504a985a4e0 -r f59397568d2b Makefile
  EXE_EXT= 
  ARFLAGS= 
  AR= ar $(ARFLAGS) r
-@@ -73,7 +73,7 @@
- PERL= /usr/bin/perl
- TAR= tar
- TARFLAGS= --no-recursion
--MAKEDEPPROG=makedepend
-+MAKEDEPPROG= gcc
- LIBDIR=lib
- 
- # We let the C compiler driver to take care of .s files. This is done in
 @@ -105,7 +105,7 @@
  CMLL_ENC= camellia.o cmll_misc.o cmll_cbc.o
  MODES_ASM_OBJ= 

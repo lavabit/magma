@@ -110,8 +110,16 @@ client_t * smtp_client_connect(int_t premium) {
 int_t smtp_client_send_helo(client_t *client) {
 
 	int_t state;
+	placer_t name = pl_null();
 
-	client_print(client, "EHLO %s\r\n", magma.host.name);
+	if (st_empty(magma.system.domain)) {
+		name = pl_init(magma.host.name, ns_length_get(magma.host.name));
+	}
+	else {
+		name = pl_init(st_char_get(magma.system.domain), st_length_get(magma.system.domain));
+	}
+
+	client_print(client, "EHLO %.*s\r\n", st_length_get(&name), st_char_get(&name));
 
 	if ((client_read_line(client)) <= 0) {
 		log_pedantic("An error occurred while trying to read the hello response.");
@@ -119,7 +127,7 @@ int_t smtp_client_send_helo(client_t *client) {
 	}
 	// This server doesn't appear to support ESMTP
 	else if (*(st_char_get(client->buffer)) != '2') {
-		client_print(client, "HELO %s\r\n", magma.host.name);
+		client_print(client, "HELO %.*s\r\n", st_length_get(&name), st_char_get(&name));
 		state = client_read_line(client);
 
 		if (state <= 0 || *(st_char_get(client->buffer)) != '2') {

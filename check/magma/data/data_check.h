@@ -2,7 +2,7 @@
 /**
  * @file /check/magma/data/data_check.h
  *
- * @brief DESCRIPTIONxxxGOESxxxHERE
+ * @brief The interface used to handle the built in test messages.
  */
 
 #ifndef CHECK_DATA_H

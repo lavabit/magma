@@ -59,9 +59,9 @@ enum {
 typedef struct {
 	placer_t to;
 	placer_t date;
-	placer_t from;
 	placer_t subject;
 	stringer_t *id;
+	stringer_t *from;
 	stringer_t *text;
 	size_t header_length;
 } smtp_message_t;

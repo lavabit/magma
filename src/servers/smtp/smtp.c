@@ -1013,8 +1013,8 @@ void smtp_data_outbound(connection_t *con) {
 		return;
 	}
 
-	// We need to extract just the e-mail address from the message header.
-	else if (!(holder = mail_extract_address(&(con->smtp.message->from)))) {
+	// We need to extract just the email address from the message header.
+	else if (!(holder = mail_extract_address(con->smtp.message->from))) {
 		con_write_bl(con, "550 DATA FAILED - UNABLE TO LOCATE THE \"FROM\" ADDRESS IN THE MESSAGE - PLEASE CHECK YOUR EMAIL CLIENT SETTINGS AND TRY AGAIN\r\n", 126);
 		smtp_session_reset(con);
 		return;

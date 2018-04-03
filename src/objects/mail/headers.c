@@ -129,13 +129,11 @@ stringer_t * mail_header_fetch_cleaned(stringer_t *header, stringer_t *key) {
 		headlen--;
 	}
 
-	// This will trim any trailing whitespace.
-	if (outlen > 0 && *(holder - 1) == ' ') {
-		st_length_set(output, outlen - 1);
-	}
-	else {
-		st_length_set(output, outlen);
-	}
+	// Set the output string length.
+	st_length_set(output, outlen);
+
+	// This will trim any leading/trailing whitespace.
+	st_trim(output);
 
 	return output;
 }
@@ -347,17 +345,22 @@ bool_t mail_headers(smtp_message_t *message) {
 		// Locate the start of headers.
 		if (next == 1 && *stream != '\n') {
 
+
+			// Use a place holder for these fields. Multi-line values will be truncated.
 			if (length - increment >= 3 && mm_cmp_ci_eq(stream, "To:", 3) == 0) {
 				message->to = mail_store_header(stream + 3, length - increment - 3);
-			}
-			else if (length - increment >= 5 && mm_cmp_ci_eq(stream, "From:", 5) == 0) {
-				message->from = mail_store_header(stream + 5, length - increment - 5);
 			}
 			else if (length - increment >= 5 && mm_cmp_ci_eq(stream, "Date:", 5) == 0) {
 				message->date = mail_store_header(stream + 5, length - increment - 5);
 			}
 			else if (length - increment >= 8 && mm_cmp_ci_eq(stream, "Subject:", 8) == 0) {
 				message->subject = mail_store_header(stream + 8, length - increment - 8);
+			}
+
+
+			// Use a stringer for the from field, so we can handle values which require cleanup.
+			else if (length - increment >= 5 && mm_cmp_ci_eq(stream, "From:", 5) == 0) {
+				message->from = mail_header_fetch_cleaned(PLACER(stream, length - increment), PLACER("From", 4));
 			}
 
 			next = 0;
@@ -495,7 +498,7 @@ bool_t mail_add_required_headers(connection_t *con, smtp_message_t *message) {
 	}
 
 	// Build the default from header.
-	if (st_empty(&(message->from))) {
+	if (st_empty(message->from)) {
 
 		if (!con->smtp.mailfrom) {
 			from = st_import("From: \r\n", 8);

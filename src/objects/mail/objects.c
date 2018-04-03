@@ -15,56 +15,10 @@
 void mail_destroy_message(smtp_message_t *message) {
 
 	if (message) {
+		st_cleanup(message->from);
 		st_cleanup(message->text);
 		st_cleanup(message->id);
 		mm_free(message);
-	}
-
-	return;
-}
-
-/**
- * @note	This function is not currently referenced by any other code.
- */
-void mail_setup_basic(basic_message_t *message, stringer_t *text) {
-
-	chr_t *stream;
-	int_t next = 1;
-	size_t length;
-	size_t increment;
-
-	message->text = text;
-	length = mail_header_end(text);
-	stream = st_char_get(message->text);
-
-	// Increment through. When key headers are found, store the locations in placer's.
-	for (increment = 0; increment < length; increment++) {
-
-		// Locate the start of headers.
-		if (next == 1 && *stream != '\n') {
-
-			if (length - increment >= 3 && mm_cmp_ci_eq(stream, "To:", 3) == 0) {
-				message->to = mail_store_header(stream + 3, length - increment - 3);
-			}
-			else if (length - increment >= 5 && mm_cmp_ci_eq(stream, "From:", 5) == 0) {
-				message->from = mail_store_header(stream + 5, length - increment - 5);
-			}
-			else if (length - increment >= 5 && mm_cmp_ci_eq(stream, "Date:", 5) == 0) {
-				message->date = mail_store_header(stream + 5, length - increment - 5);
-			}
-			else if (length - increment >= 8 && mm_cmp_ci_eq(stream, "Subject:", 8) == 0) {
-				message->subject = mail_store_header(stream + 8, length - increment - 8);
-			}
-
-			next = 0;
-		}
-
-		// So we check the start of the next line for a key header.
-		if (next == 0 && (*stream == '\n' || *stream == '\r')) {
-			next = 1;
-		}
-
-		stream++;
 	}
 
 	return;
@@ -78,6 +32,8 @@ void mail_setup_basic(basic_message_t *message, stringer_t *text) {
 void mail_destroy(mail_message_t *message) {
 
 	if (message) {
+
+		st_cleanup(message->from);
 		st_cleanup(message->text);
 
 		if (message->mime) {
@@ -132,17 +88,20 @@ mail_message_t * mail_message(stringer_t *text) {
 		// Locate the start of headers.
 		if (next == 1 && *stream != '\n') {
 
+			// Use a place holder for these fields. Multi-line values will be truncated.
 			if (length - increment >= 3 && mm_cmp_ci_eq(stream, "To:", 3) == 0) {
 				result->to = mail_store_header(stream + 3, length - increment - 3);
-			}
-			else if (length - increment >= 5 && mm_cmp_ci_eq(stream, "From:", 5) == 0) {
-				result->from = mail_store_header(stream + 5, length - increment - 5);
 			}
 			else if (length - increment >= 5 && mm_cmp_ci_eq(stream, "Date:", 5) == 0) {
 				result->date = mail_store_header(stream + 5, length - increment - 5);
 			}
 			else if (length - increment >= 8 && mm_cmp_ci_eq(stream, "Subject:", 8) == 0) {
 				result->subject = mail_store_header(stream + 8, length - increment - 8);
+			}
+
+			// Use a stringer for the from field, so we can handle values which require cleanup.
+			else if (length - increment >= 5 && mm_cmp_ci_eq(stream, "From:", 5) == 0) {
+				result->from = mail_header_fetch_cleaned(PLACER(stream, length - increment), PLACER("From", 4));
 			}
 
 			next = 0;

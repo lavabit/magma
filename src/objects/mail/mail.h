@@ -17,14 +17,6 @@ typedef struct {
 } mail_cache_t;
 
 typedef struct {
-	placer_t to;
-	placer_t from;
-	placer_t date;
-	placer_t subject;
-	stringer_t *text;
-} basic_message_t;
-
-typedef struct {
 	array_t *children;
 	stringer_t *boundary;
 	uint32_t type, encoding;
@@ -32,10 +24,13 @@ typedef struct {
 } mail_mime_t;
 
 typedef struct {
+	placer_t to;
+	placer_t date;
+	placer_t subject;
+	stringer_t *from;
+	stringer_t *text;
 	mail_mime_t *mime;
 	size_t header_length;
-	placer_t to, from, date, subject;
-	stringer_t *text;
 } mail_message_t;
 
 typedef struct {
@@ -113,7 +108,6 @@ mail_message_t * mail_message(stringer_t *text);
 smtp_message_t * mail_create_message(stringer_t *text);
 void             mail_destroy(mail_message_t *message);
 void             mail_destroy_message(smtp_message_t *message);
-void             mail_setup_basic(basic_message_t *message, stringer_t *text);
 
 /// parsing.c
 stringer_t * mail_extract_address(stringer_t *address);

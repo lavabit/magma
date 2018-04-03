@@ -2,7 +2,7 @@
 /**
  * @file /check/magma/data/data_check.c
  *
- * @brief DESCRIPTIONxxxGOESxxxHERE
+ * @brief The interface used to handle the built in test messages.
  */
 
 #include "magma_check.h"
@@ -24,6 +24,7 @@
 #include "message.16.h"
 #include "message.17.h"
 #include "message.18.h"
+#include "message.19.h"
 
 #define DKIM_TEST_NONE 0x00000000
 #define DKIM_TEST_VERIFY 0x00000001
@@ -52,8 +53,8 @@ check_message_data_t messages[] = {
 	{ DKIM_TEST_SIGNING, NULLER(MESSAGE_15) },
 	{ DKIM_TEST_SIGNING, NULLER(MESSAGE_16) },
 	{ DKIM_TEST_VERIFY, NULLER(MESSAGE_17) },
-	{ DKIM_TEST_SIGNING, NULLER(MESSAGE_18) }
-
+	{ DKIM_TEST_SIGNING, NULLER(MESSAGE_18) },
+	{ DKIM_TEST_SIGNING, NULLER(MESSAGE_19) }
 };
 
 uint32_t check_message_max(void) {

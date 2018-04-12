@@ -87,7 +87,7 @@ These instructions are targeted at systems running CentOS 6.
 Install the dependencies (make sure that EPEL is enabled):
 
 ```shell
-yum install -y  gcc make autoconf automake binutils bison flex gcc-c++ gettext libtool make patch pkgconfig mysql-server memcached gettext-devel patch perl perl-Time-HiRes check check-devel ncurses-devel libbsd-devel
+yum -y install gcc make autoconf automake binutils bison flex gcc-c++ gettext libtool make patch pkgconfig mysql-server memcached gettext-devel patch perl perl-Time-HiRes check check-devel ncurses-devel libbsd-devel zlib-devel valgrind valgrind-devel
 ```
 
 **MySQL**

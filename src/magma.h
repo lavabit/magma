@@ -8,8 +8,10 @@
 #ifndef MAGMA_H
 #define MAGMA_H
 
+#ifndef __USE_GNU
 #define __USE_GNU
-
+#endif
+/*
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -50,6 +52,9 @@
 
 // GNU C Library
 #include <gnu/libc-version.h>
+*/
+
+
 
 #include "providers/symbols.h"
 
@@ -64,9 +69,9 @@
 #include "queries.h"
 
 extern magma_t magma;
-/*
+
 extern __thread char threadBuffer[1024];
 #define bufptr (char *)&(threadBuffer)
 #define buflen sizeof(threadBuffer)
-*/
+
 #endif

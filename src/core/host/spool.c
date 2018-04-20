@@ -130,10 +130,10 @@ int_t spool_mktemp(int_t spool, chr_t *prefix) {
 		&& (fd = mkostemp(st_char_get(template), O_EXCL | O_CREAT | O_RDWR | O_SYNC | O_NOATIME)) < 0) {
 #else
 		srand(time(NULL));
-		if ((path = spool_path(spool)) && (template = st_aprint("%.*s%s_%lu_%lu_XXXXXX", st_length_int(path), st_char_get(path), prefix, thread_get_thread_id(), rand()))
+		if ((path = spool_path(spool)) && (template = st_aprint("%.*s%s_%lu_%d_XXXXXX", st_length_int(path), st_char_get(path), prefix, thread_get_thread_id(),  rand()))
 				&& (fd = mkostemp(st_char_get(template), O_EXCL | O_CREAT | O_RDWR | O_SYNC | O_NOATIME)) < 0) {
 #endif
-		}
+
 		// Verify that the spool directory directory tree is valid. If any of the directories are missing, this will try and create them.
 		if ((base = spool_path(MAGMA_SPOOL_BASE)) && !spool_check(base) && !spool_check(path)) {
 
@@ -145,10 +145,10 @@ int_t spool_mktemp(int_t spool, chr_t *prefix) {
 				&& (fd = mkostemp(st_char_get(template), O_EXCL | O_CREAT | O_RDWR | O_SYNC | O_NOATIME)) < 0) {
 #else
 				//rand() should be seeded from above
-				if ((template = st_aprint("%.*s%s_%lu_%lu_XXXXXX", st_length_int(path), st_char_get(path), prefix, thread_get_thread_id(), rand()))
+				if ((template = st_aprint("%.*s%s_%lu_%d_XXXXXX", st_length_int(path), st_char_get(path), prefix, thread_get_thread_id(), rand()))
 								&& (fd = mkostemp(st_char_get(template), O_EXCL | O_CREAT | O_RDWR | O_SYNC | O_NOATIME)) < 0) {
 #endif
-				}
+
 				// Store the errno.
 				err_info = errno;
 

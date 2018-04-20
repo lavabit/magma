@@ -79,7 +79,7 @@ extern __thread char threadBuffer[1024];
 #define bufptr (char *)&(threadBuffer)
 #define buflen sizeof(threadBuffer)
 
-
+#define CORE_THREAD_STACK_SIZE 1048576
 //end
 
 /**

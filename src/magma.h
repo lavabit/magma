@@ -64,9 +64,9 @@
 #include "queries.h"
 
 extern magma_t magma;
-
+/*
 extern __thread char threadBuffer[1024];
 #define bufptr (char *)&(threadBuffer)
 #define buflen sizeof(threadBuffer)
-
+*/
 #endif

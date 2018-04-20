@@ -75,6 +75,11 @@
 // GNU C Library
 #include <gnu/libc-version.h>
 
+extern __thread char threadBuffer[1024];
+#define bufptr (char *)&(threadBuffer)
+#define buflen sizeof(threadBuffer)
+
+
 //end
 
 /**

@@ -54,13 +54,16 @@ stringer_t * spool_path(int_t spool) {
 	}
 
 	// If the spool directory isn't configured, fall back to using /tmp/magma/ instead.
+#ifdef MEGMA_H
 	if (magma.spool) {
 		result = st_merge_opts(NULLER_T | CONTIGUOUS | HEAP, "nnn", magma.spool, (*(magma.spool + ns_length_get(magma.spool) - 1) == '/' ? "" : "/"), folder);
 	}
 	else {
 		result = st_merge_opts(NULLER_T | CONTIGUOUS | HEAP, "nn", "/tmp/magma/", folder);
 	}
-
+#else
+	result = st_merge_opts(NULLER_T | CONTIGUOUS | HEAP, "nn", "/tmp/magma/", folder);
+#endif
 	return result;
 }
 
@@ -121,18 +124,31 @@ int_t spool_mktemp(int_t spool, chr_t *prefix) {
 
 	// Build the a template that includes the thread id and a random number to make the resulting file path harder to predict and try creating the temporary file handle.
 	// The O_EXCL+O_CREAT flags ensure we create the file or the call fails, O_SYNC indicates synchronous IO, and O_NOATIME eliminates access time tracking.
+//TODO
+	#ifdef MAGMA_H
 	if ((path = spool_path(spool)) && (template = st_aprint("%.*s%s_%lu_%lu_XXXXXX", st_length_int(path), st_char_get(path), prefix, thread_get_thread_id(), rand_get_uint64()))
 		&& (fd = mkostemp(st_char_get(template), O_EXCL | O_CREAT | O_RDWR | O_SYNC | O_NOATIME)) < 0) {
-
+#else
+		srand(time(NULL));
+		if ((path = spool_path(spool)) && (template = st_aprint("%.*s%s_%lu_%lu_XXXXXX", st_length_int(path), st_char_get(path), prefix, thread_get_thread_id(), rand()))
+				&& (fd = mkostemp(st_char_get(template), O_EXCL | O_CREAT | O_RDWR | O_SYNC | O_NOATIME)) < 0) {
+#endif
+		}
 		// Verify that the spool directory directory tree is valid. If any of the directories are missing, this will try and create them.
 		if ((base = spool_path(MAGMA_SPOOL_BASE)) && !spool_check(base) && !spool_check(path)) {
 
 			// We need to generate a new file template since the first mkostemp may have overwritten the required X characters.
 			st_free(template);
-
+			//TODO
+#ifdef MAGMA_H
 			if ((template = st_aprint("%.*s%s_%lu_%lu_XXXXXX", st_length_int(path), st_char_get(path), prefix, thread_get_thread_id(), rand_get_uint64()))
 				&& (fd = mkostemp(st_char_get(template), O_EXCL | O_CREAT | O_RDWR | O_SYNC | O_NOATIME)) < 0) {
-
+#else
+				//rand() should be seeded from above
+				if ((template = st_aprint("%.*s%s_%lu_%lu_XXXXXX", st_length_int(path), st_char_get(path), prefix, thread_get_thread_id(), rand()))
+								&& (fd = mkostemp(st_char_get(template), O_EXCL | O_CREAT | O_RDWR | O_SYNC | O_NOATIME)) < 0) {
+#endif
+				}
 				// Store the errno.
 				err_info = errno;
 

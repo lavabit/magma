@@ -5,7 +5,7 @@
  * @brief	Functions to check for string equality.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	Perform a case-sensitive comparison of two memory blocks.

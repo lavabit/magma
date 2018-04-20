@@ -5,7 +5,7 @@
  * @brief	Functions for handling null terminated strings.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /// LOW: The ns_ functions are designed to work with NULL terminated strings. They shouldn't require a length. If the length needs to be
 /// 	provided, then the equivalent mm_ function should be used.

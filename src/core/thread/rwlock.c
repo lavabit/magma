@@ -5,7 +5,7 @@
  * @brief	Functions for thread coordination via a read/write lock.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	Initialize a pthread read/write lock.

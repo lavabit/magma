@@ -5,7 +5,7 @@
  * @brief	An x64 implementation of the Murmur hash function.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 
 /**

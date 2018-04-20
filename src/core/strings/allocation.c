@@ -5,7 +5,7 @@
  * @brief	Functions used to allocate stringers.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	Free a managed string.

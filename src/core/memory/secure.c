@@ -5,7 +5,7 @@
  * @brief	Functions for allocating secure memory. Secure buffers should always be used to hold sensitive information.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 enum {
 	MM_SEC_CHUNK_AVAILABLE = 0,

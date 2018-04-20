@@ -5,7 +5,7 @@
  * @brief	Functions used to compare the starts of strings with other strings.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	Perform a case-sensitive check to see if one string starts with another.

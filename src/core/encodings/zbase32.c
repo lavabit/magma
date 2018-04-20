@@ -6,7 +6,7 @@
  * 			zbase32 strings may be used in URLs without any further encoding.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	Encode data as a zbase32 string.

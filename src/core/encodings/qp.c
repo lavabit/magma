@@ -7,7 +7,7 @@
  * 			It is used as a MIME content encoding, and wraps lines at 76 characters.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	Perform QP (quoted-printable) encoding of a string.

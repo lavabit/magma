@@ -5,7 +5,7 @@
  * @brief	Functions used to parse time.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	Get the number of seconds until midnight.

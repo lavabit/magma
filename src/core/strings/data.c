@@ -5,7 +5,7 @@
  * @brief	Functions used to inspect the data of managed strings.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	A simple method for checking multiple managed strings to see if all of them contain data.

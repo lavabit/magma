@@ -5,7 +5,7 @@
  * @brief	Functions for handling thread local storage keys.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	Create a thread-specific data key.

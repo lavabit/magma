@@ -5,7 +5,7 @@
  * @brief	The functions used to handle Magma memory buffers.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	A checked cleanup function which can be used free a variable number memory buffers.

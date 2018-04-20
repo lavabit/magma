@@ -5,7 +5,7 @@
  * @brief	Interface to the name/value pair parser.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * on success the number of valid pairs is returned

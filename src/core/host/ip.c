@@ -6,7 +6,7 @@
  *
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	An abstract method of retrieving the address family for an IP structure.

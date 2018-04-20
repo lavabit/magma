@@ -5,7 +5,7 @@
  * @brief	Generic system file I/O operations.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	Get the contents of a file on disk.

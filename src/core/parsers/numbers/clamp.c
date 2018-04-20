@@ -5,7 +5,7 @@
  * @brief Provides a collection of functions for clamping a number to a specific range.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	Ensure a number is between the min and max values, otherwise return the boundary value.

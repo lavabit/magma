@@ -5,7 +5,7 @@
  * @brief	A collection of functions used to extract information from stringer options.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 chr_t *st_option_flags[] = {
 	"FOREIGNDATA"

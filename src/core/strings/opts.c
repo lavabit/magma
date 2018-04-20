@@ -5,7 +5,7 @@
  * @brief	Functions for handling managed string options.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	Returns the options variable from a string to the caller. Is intended for use by functions outside of string library.

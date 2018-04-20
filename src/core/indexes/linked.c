@@ -5,7 +5,7 @@
  * @brief	The linked list implementation functions utilized by the generic index interface.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 // Linked lists.
 typedef struct __attribute__ ((packed)) {

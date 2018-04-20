@@ -6,7 +6,7 @@
  *
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief Determine whether the error is a permanent/fatal failure, or a transient error.

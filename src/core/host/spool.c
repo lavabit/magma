@@ -5,7 +5,7 @@
  * @brief	Functions for checking, creating, maintaining and using the spool.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @note	We have to track errors locally so these functions can be used during startup and shutdown when the global statistics system may not be available.

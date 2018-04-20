@@ -5,7 +5,7 @@
  * @brief	Functions for spawning new threads, and retrieving their exit statuses.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	Get the id of the calling thread.

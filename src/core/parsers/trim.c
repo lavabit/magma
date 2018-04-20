@@ -5,7 +5,7 @@
  * @brief	Functions used to trim whitespace from strings.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 static bool_t is_trim(char c) {
 	return c == ' ' || c == '\n' || c == '\r' || c == '\t' || c == '\v';

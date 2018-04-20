@@ -5,7 +5,7 @@
  * @brief	Functions to help handle errno.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 #ifdef EPERM
  #define MAGMA_EPERM EPERM

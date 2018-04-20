@@ -5,7 +5,7 @@
  * @brief Functions for colorizing the console output.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 bool_t color_supported(void) {
 

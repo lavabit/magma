@@ -5,7 +5,7 @@
  * @brief	Functions for managing processes.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	Return the current process identifier using appropriate function for the current system.

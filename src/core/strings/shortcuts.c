@@ -5,7 +5,7 @@
  * @brief	A collection of shortcuts used to call various string functions using sensible default values.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	Return a zero-length placer pointing to NULL data.

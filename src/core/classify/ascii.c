@@ -5,7 +5,7 @@
  * @brief	Functions used to classify ASCII characters.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	Determine whether a specified character is an ASCII character.

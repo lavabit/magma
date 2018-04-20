@@ -5,7 +5,7 @@
  * @brief	Functions capable of performing binary arithmetic on managed strings.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	Perform bitwise operation on two input strings.

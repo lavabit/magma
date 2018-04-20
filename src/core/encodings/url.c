@@ -5,7 +5,7 @@
  * @brief	Functions used to encode and decode website URLs.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	Determine whether a given character is a valid character in a URL.

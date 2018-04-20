@@ -5,7 +5,7 @@
  * @brief	Fnctions used to find stringer lengths.
  */
 
-#include "magma.h"
+#include "../core.h"
 
 /**
  * @brief	Return the length of the data in a managed string.

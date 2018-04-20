@@ -79,7 +79,13 @@ extern __thread char threadBuffer[1024];
 #define bufptr (char *)&(threadBuffer)
 #define buflen sizeof(threadBuffer)
 
+//end
+
+//for core separation
 #define CORE_THREAD_STACK_SIZE 1048576
+#define CORE_SECURE_MEMORY_LENGTH 32768
+//TODO default value is probly wrong
+#define CORE_PAGE_LENGTH 4096
 //end
 
 /**

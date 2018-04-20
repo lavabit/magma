@@ -5,7 +5,7 @@
  * @brief	Functions for extracting a value inside a pair of brackets.
  */
 
-#include "../core.h"
+#include "../../core.h"
 
 /**
  * @brief	Get a pointer to a block of data between a pair of brackets.

@@ -88,9 +88,10 @@ int tcp_continue(int sockd, int result, int syserror) {
 	//TODO better def
 #ifdef MAGMA_H
 	if (!status()) return -1;
+	else
 #endif
 	// Data was processed, so there is no need to retry the operation.
-	else if (result > 0) return result;
+	 if (result > 0) return result;
 
 	// Handle non-errors.
 	else if (result <= 0 && (syserror == 0 || syserror == EWOULDBLOCK || syserror == EAGAIN || syserror == EINTR)) return 0;

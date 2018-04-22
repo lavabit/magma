@@ -1,7 +1,8 @@
 #!/bin/bash
 
-cp -R  ./src/core ./../libcore/src
-cp -R ./check/magma/core ./../libcore/check
+mkdir ./../libcore/src  ./../libcore/check
+cp -Rv  ./src/core/* ./../libcore/src
+cp -Rv ./check/magma/core/* ./../libcore/check
 cd ./../libcore
 git add .
 git commit

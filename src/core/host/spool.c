@@ -6,7 +6,7 @@
  */
 
 #include "../core.h"
-
+#define MAGMA_PEDANTIC 1
 /**
  * @note	We have to track errors locally so these functions can be used during startup and shutdown when the global statistics system may not be available.
  */
@@ -99,7 +99,7 @@ int_t spool_check(stringer_t *path) {
 		spool_errors++;
 		mutex_unlock(&spool_error_lock);
 	}
-
+	printf(" returning %i from check for path %s \n", result, st_char_get(path));
 	return result;
 }
 
@@ -215,6 +215,7 @@ int_t spool_check_file(const char *file, const struct stat *info, int type) {
 			spool_files_cleaned++;
 		}
 	}
+	//printf("returning");
 
 	return 0;
 }
@@ -235,9 +236,9 @@ int_t spool_cleanup(void) {
 	}
 
 	rwlock_lock_write(&spool_creation_lock);
+
 	result = ftw(st_char_get(base), spool_check_file, 32);
 	rwlock_unlock(&spool_creation_lock);
-
 	// Non-zero return values from ftw trigger the return value -1, otherwise we calculate the number of files cleaned and return that value instead.
 	if (result) {
 		log_error("Unable to traverse the spool directory. {path = %.*s}", st_length_int(base), st_char_get(base));
@@ -307,7 +308,9 @@ bool_t spool_start(void) {
 			path = spool_path(MAGMA_SPOOL_SCAN);
 
 		if (path) {
-			if (spool_check(path)) {
+			int temp = spool_check(path);
+			printf(" temp = %i \n", temp);
+			if (temp < 0) {
 				log_critical("Spool path is invalid. {path = %.*s}", st_length_int(path), st_char_get(path));
 				result = false;
 			}

@@ -7,6 +7,7 @@
 
 #include "../core.h"
 
+//TODO
 #define MAGMA_HASHED_BUCKETS 1024
 
 // Hashed lists.

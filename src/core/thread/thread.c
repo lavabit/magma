@@ -7,6 +7,10 @@
 
 #include "../core.h"
 
+#ifdef PACKAGE_MAGMA
+#include "magma.h"
+#endif
+
 /**
  * @brief	Get the id of the calling thread.
  * @return	the id of the calling thread.
@@ -33,7 +37,7 @@ int_t thread_launch(pthread_t *thread, void *function, void *data) {
 		log_pedantic("Could not initialize the thread attribute structure. {pthread_attr_init = %i}", result);
 		return result;
 	}
-#ifdef MAGMA_H
+#ifdef PACKAGE_MAGMA
 	else if ((result = pthread_attr_setstacksize(&attributes, magma.system.thread_stack_size))) {
 #else
 	else if ((result = pthread_attr_setstacksize(&attributes, CORE_THREAD_STACK_SIZE))) {

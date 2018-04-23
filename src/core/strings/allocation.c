@@ -7,6 +7,10 @@
 
 #include "../core.h"
 
+#ifdef PACKAGE_MAGMA
+#include "magma.h"
+#endif
+
 /**
  * @brief	Free a managed string.
  * @see		st_valid_free(), st_valid_opts()
@@ -574,7 +578,7 @@ stringer_t * st_alloc_opts(uint32_t opts, size_t len) {
 		case (MAPPED_T | JOINTED):
 
 			// Ensure the allocated size is always a multiple of the memory page size.
-#ifdef MAGMA_H
+#ifdef PACKAGE_MAGMA
 			avail = align(magma.page_length, len);
 #else
 		//TODO actual page length
@@ -728,7 +732,7 @@ stringer_t * st_realloc(stringer_t *s, size_t len) {
 		case (MAPPED_T | JOINTED):
 
 			// Ensure the allocated size is always a multiple of the memory page size.
-#ifdef MAGMA_H
+#ifdef PACKAGE_MAGMA
 			avail = align(magma.page_length, len);
 #else
 		//TODO actual page length
@@ -758,7 +762,7 @@ stringer_t * st_realloc(stringer_t *s, size_t len) {
 			else {
 				// An error occurred. If the errno is set to EAGAIN and it's secure memory, the most likely problem is that the requested amount of memory exceeds
 				// the amount of locked memory available under this user account.
-#ifdef MAGMA_H
+#ifdef PACKAGE_MAGMA
 				if ((((mapped_t *)s)->opts & SECURE) && errno == EAGAIN && (system_ulimit_cur(RLIMIT_MEMLOCK) < len ||
 						system_ulimit_cur(RLIMIT_MEMLOCK) < (len + magma.secure.memory.length))) {
 					log_pedantic("Unable to resize the secure memory mapped buffer, the requested size exceeds the system limit for locked pages. " \

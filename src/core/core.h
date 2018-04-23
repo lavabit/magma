@@ -8,6 +8,10 @@
 #ifndef MAGMA_CORE_H
 #define MAGMA_CORE_H
 
+#include "package_name.h"
+
+
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -75,17 +79,20 @@
 // GNU C Library
 #include <gnu/libc-version.h>
 
+#ifndef PACKAGE_MAGMA
 extern __thread char threadBuffer[1024];
 #define bufptr (char *)&(threadBuffer)
 #define buflen sizeof(threadBuffer)
-
+#endif
 //end
 
 //for core separation
+#ifndef PACKAGE_MAGMA
 #define CORE_THREAD_STACK_SIZE 1048576
 #define CORE_SECURE_MEMORY_LENGTH 32768
 //TODO default value is probly wrong
 #define CORE_PAGE_LENGTH 4096
+#endif
 //end
 
 /**

@@ -5,7 +5,7 @@
  * @brief	Functions for handling the multi-type structure.
  */
 
-#include "../core.h"
+#include "magma.h"
 
 // implement a generic interface for a variant type; or a single struct/union/type that
 // can hold all of the commonly used data types

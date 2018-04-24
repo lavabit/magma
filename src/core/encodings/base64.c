@@ -5,7 +5,7 @@
  * @brief	Functions for base64 encoding/decoding of data.
  */
 
-#include "../core.h"
+#include "magma.h"
 
 /// TODO: Switch to always using the "_wrap" length function, which can then become base64_(en|de)coded_length().
 

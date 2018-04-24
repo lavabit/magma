@@ -5,7 +5,7 @@
  * @brief	An implementation of the Fletcher hash algorithim.
  */
 
-#include "../core.h"
+#include "magma.h"
 
 /**
  * @brief	Computer a 32-bit Fletcher hash for a block of data.

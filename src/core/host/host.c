@@ -5,7 +5,7 @@
  * @brief	Functions to retrieve information about the operating system.
  */
 
-#include "../core.h"
+#include "magma.h"
 
 /**
  * @brief	Get a description of the local operating system.

@@ -5,7 +5,7 @@
  * @brief	String search functions.
  */
 
-#include "../core.h"
+#include "magma.h"
 
 /**
  * @brief	Search one managed string for an occurrence of another in a case-sensitive manner, and save its location.

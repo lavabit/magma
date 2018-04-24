@@ -6,11 +6,9 @@
  *
  */
 
-#include "../core.h"
-
-#ifdef PACKAGE_MAGMA
 #include "magma.h"
-#endif
+
+
 
 /**
  * @brief	An abstract method of retrieving the address family for an IP structure.

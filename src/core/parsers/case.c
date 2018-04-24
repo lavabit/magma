@@ -5,7 +5,7 @@
  * @brief	A collection of functions used for manipulating the capitalization of characters.
  */
 
-#include "../core.h"
+#include "magma.h"
 
 /**
  * @brief	Return the uppercase representation of a character.

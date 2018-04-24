@@ -5,7 +5,7 @@
  * @brief	Functions for folder operations.
  */
 
-#include "../core.h"
+#include "magma.h"
 
 /**
  * @brief	Check to see if a specified directory exists, or if specified, create it if it doesn't exist.

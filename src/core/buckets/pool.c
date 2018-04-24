@@ -5,7 +5,7 @@
  * @brief	A collection of functions used to create, maintain and safely utilize collections of object pointers that are accessed by multiple threads.
  */
 
-#include "../core.h"
+#include "magma.h"
 
 /**
  * @brief	Free an object pool.

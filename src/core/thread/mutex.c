@@ -5,7 +5,7 @@
  * @brief	Functions for thread coordination via a mutex.
  */
 
-#include "../core.h"
+#include "magma.h"
 
 /**
  * @brief	Initialize a pthread mutex with the given attributes.

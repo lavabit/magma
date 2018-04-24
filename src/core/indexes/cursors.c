@@ -5,7 +5,7 @@
  * @brief	The generic index interface for handling cursors.
  */
 
-#include "../core.h"
+#include "magma.h"
 
 /**
  * @brief	Reset the position of an inx cursor.

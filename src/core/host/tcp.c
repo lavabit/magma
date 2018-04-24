@@ -6,11 +6,9 @@
  *
  */
 
-#include "../core.h"
-
-#ifdef PACKAGE_MAGMA
 #include "magma.h"
-#endif
+
+
 
 /**
  * @brief Determine whether the error is a permanent/fatal failure, or a transient error.
@@ -90,7 +88,7 @@ int tcp_continue(int sockd, int result, int syserror) {
 
 	// Check that the daemon hasn't initiated a shutdown.
 	//TODO better def
-#ifdef PACKAGE_MAGMA
+#ifdef MAGMA_H
 	if (!status()) return -1;
 	else
 #endif

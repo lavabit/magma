@@ -5,7 +5,7 @@
  * @brief	Functions used for string replacement.
  */
 
-#include "../core.h"
+#include "magma.h"
 
 /*
  * @brief	Replace all instances of a substring inside another string.

@@ -5,7 +5,7 @@
  * @brief	Functions used to extract lines from within a larger block of data.
  */
 
-#include "../core.h"
+#include "magma.h"
 
 /**
  * @brief	Get a placer pointing to the specified line ('\n' delimited) of content in a data buffer.

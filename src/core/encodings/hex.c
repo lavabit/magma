@@ -5,7 +5,7 @@
  * @brief	Functions for encoding/decoding hexadecimal data.
  */
 
-#include "../core.h"
+#include "magma.h"
 
 /**
  * @brief	Determine whether a character is a valid hexadecimal (base 16) character.

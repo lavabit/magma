@@ -5,7 +5,7 @@
  * @brief	A collection of functions used to validate stringer allocation option combinations.
  */
 
-#include "../core.h"
+#include "magma.h"
 
 /**
  * @brief	A sanity check to determine whether the managed string is a valid placer.

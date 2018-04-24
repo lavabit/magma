@@ -5,7 +5,7 @@
  * @brief	Function declarations and types for the hashed list.
  */
 
-#include "../core.h"
+#include "magma.h"
 
 //TODO
 #define MAGMA_HASHED_BUCKETS 1024

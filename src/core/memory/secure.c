@@ -5,11 +5,9 @@
  * @brief	Functions for allocating secure memory. Secure buffers should always be used to hold sensitive information.
  */
 
-#include "../core.h"
-
-#ifdef PACKAGE_MAGMA
 #include "magma.h"
-#endif
+
+
 
 enum {
 	MM_SEC_CHUNK_AVAILABLE = 0,
@@ -363,7 +361,7 @@ bool_t mm_sec_start(void) {
 	uchr_t *bndptr;
 	size_t alignment;
 	secured_t *chunk;
-#ifdef PACKAGE_MAGMA
+#ifdef MAGMA_H
 	if (!(secure.enabled = magma.secure.memory.enable)) {
 		log_pedantic("Secure memory management disabled.");
 		return true;
@@ -372,7 +370,7 @@ bool_t mm_sec_start(void) {
 
 
 	// Ensure the page length is positive.
-#ifdef PACKAGE_MAGMA
+#ifdef MAGMA_H
 	if ((alignment = magma.page_length) <= 0) {
 #else
 	if ((alignment = CORE_PAGE_LENGTH) <= 0) {
@@ -386,7 +384,7 @@ bool_t mm_sec_start(void) {
 	}
 
 	// Ensure the default length for secure memory slabs is greater than zero and is aligned by the page table size.
-#ifdef PACKAGE_MAGMA
+#ifdef MAGMA_H
 	if ((secure.slab.length = (magma.secure.memory.length + alignment - 1) & ~(alignment - 1)) < MM_SEC_POOL_LENGTH_MIN) {
 #else
 		if ((secure.slab.length = (CORE_SECURE_MEMORY_LENGTH + alignment - 1) & ~(alignment - 1)) < MM_SEC_POOL_LENGTH_MIN) {
@@ -396,7 +394,7 @@ bool_t mm_sec_start(void) {
 	}
 
 	// Allocate secured boundary pages around the secure slab to prevent against memory underflows and overflows.
-#ifdef PACKAGE_MAGMA
+#ifdef MAGMA_H
 	secure.slab.length_true = secure.slab.length + (magma.page_length * 2);
 #else
 	secure.slab.length_true = secure.slab.length + (CORE_PAGE_LENGTH * 2);
@@ -408,7 +406,7 @@ bool_t mm_sec_start(void) {
 	}
 
 	bndptr = secure.slab.data_true;
-#ifdef PACKAGE_MAGMA
+#ifdef MAGMA_H
 	if (mprotect(bndptr, magma.page_length, PROT_NONE)) {
 #else
 		if (mprotect(bndptr, CORE_PAGE_LENGTH, PROT_NONE)) {
@@ -416,14 +414,14 @@ bool_t mm_sec_start(void) {
 		log_pedantic("Unable to set protections on lower secure memory boundary chunk.");
 		return false;
 	}
-#ifdef PACKAGE_MAGMA
+#ifdef MAGMA_H
 	bndptr += magma.page_length;
 #else
 	bndptr += CORE_PAGE_LENGTH;
 #endif
 	secure.slab.data = bndptr;
 	bndptr += secure.slab.length;
-#ifdef PACKAGE_MAGMA
+#ifdef MAGMA_H
 	if (mprotect(bndptr, magma.page_length, PROT_NONE)) {
 #else
 		if (mprotect(bndptr, CORE_PAGE_LENGTH, PROT_NONE)) {

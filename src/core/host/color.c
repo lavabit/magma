@@ -5,11 +5,9 @@
  * @brief Functions for colorizing the console output.
  */
 
-#include "../core.h"
-
-#ifdef PACKAGE_MAGMA
 #include "magma.h"
-#endif
+
+
 
 bool_t color_supported(void) {
 
@@ -22,7 +20,7 @@ bool_t color_supported(void) {
         !st_cmp_ci_eq(NULLER((chr_t *) term), NULLER("screen-256color")) ||
         !st_cmp_ci_eq(NULLER((chr_t *) term), NULLER("linux")) ||
         !st_cmp_ci_eq(NULLER((chr_t *) term), NULLER("cygwin"));
-#ifdef PACKAGE_MAGMA
+#ifdef MAGMA_H
     return result && !magma.system.daemonize && !magma.output.file;
 #else
     return result;

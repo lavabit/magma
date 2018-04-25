@@ -8,8 +8,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
-#include "magma.h"
-//#include "core/core.h"
+#include "core/core.h"
 #include "providers/symbols.h"
 #include "providers/prime/prime.h"
 
@@ -341,13 +340,13 @@ unsigned char * _serialize_ec_privkey(EC_KEY *key, size_t *outsize) {
  */
 EC_KEY * _deserialize_ec_privkey(unsigned char const *buf, size_t blen) {
 	EC_KEY *result;
-	const unsigned char *new_bufptr = buf;
+	const unsigned char *bufptr = buf;
 
 	if (!buf || !blen) {
 		RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
 	}
 
-	result = secp256k1_private_set(PLACER((unsigned char *)new_bufptr, blen));
+	result = secp256k1_private_set(PLACER((unsigned char *)bufptr, blen));
 
 	/*
 	 * At this point, in most cases bufptr == buf + blen. There may be cases

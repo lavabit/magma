@@ -11,7 +11,7 @@
 #ifndef __USE_GNU
 #define __USE_GNU
 #endif
-/*
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -52,7 +52,7 @@
 
 // GNU C Library
 #include <gnu/libc-version.h>
-*/
+
 
 
 

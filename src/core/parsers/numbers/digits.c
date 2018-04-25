@@ -5,7 +5,7 @@
  * @brief	Functions for counting the digit places in a number, including the sign character for signed numbers.
  */
 
-#include "../../core.h"
+#include "magma.h"
 
 /**
  * @brief	Count the number of digits needed to represent a base-10 64-bit unsigned integer.

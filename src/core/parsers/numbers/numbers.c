@@ -5,7 +5,7 @@
  * @brief	Functions for converting different string types into binary numbers.
  */
 
-#include "../../core.h"
+#include "magma.h"
 
 /**
  * @brief	Convert a managed string to a float.

@@ -1,7 +1,6 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
-#include "magma.h"
-//#include "core/core.h"
+#include "core/core.h"
 
 #include "dime/common/misc.h"
 #include "dime/signet/keys.h"

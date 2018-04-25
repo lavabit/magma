@@ -9,7 +9,5 @@ git commit -a -m "$(git show -s --format='%s' | cat)"
 git push
 
 cd ./../libcore
-if [ !make ]; then
-	echo "WARNING: core is in a broken state and wont build. Please fix."
-fi
+make || echo "WARNING: core is in a broken state and wont build. Please fix."
 cd ./../magma

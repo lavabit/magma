@@ -2,6 +2,7 @@
 
 MESSAGE=$(git show -s --format='%s' | cat)
 
+echo "testing"
 mkdir ./../libcore/src  ./../libcore/check
 cp -R  ./src/core/ ./../libcore/src
 cp -R ./check/magma/core/ ./../libcore/check

@@ -306,7 +306,7 @@
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.toolchain.gnu.base.1042491499.540148943.565922644" name="stacie.h" rcbsApplicability="disable" resourcePath="src/providers/stacie/stacie.h" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="dev/*|web/|sandbox/*|tools/*|res/*" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
+						<entry excluding="dev/*|res/*|web/|tools/*|sandbox/*" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -518,7 +518,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="dev/*|web/|sandbox/*|tools/*|res/*" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
+						<entry excluding="dev/*|res/*|web/|tools/*|sandbox/*" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -625,7 +625,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="dev/*|web/|sandbox/*|tools/*|res/*" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
+						<entry excluding="dev/*|res/*|web/|tools/*|sandbox/*" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

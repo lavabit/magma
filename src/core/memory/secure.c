@@ -7,8 +7,6 @@
 
 #include "magma.h"
 
-
-
 enum {
 	MM_SEC_CHUNK_AVAILABLE = 0,
 	MM_SEC_CHUNK_ALLOCATED = 1

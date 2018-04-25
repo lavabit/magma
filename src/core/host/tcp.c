@@ -85,11 +85,10 @@ int tcp_continue(int sockd, int result, int syserror) {
 	chr_t *message = MEMORYBUF(1024);
 
 	// Check that the daemon hasn't initiated a shutdown.
-	//TODO better def
 	if (!status()) return -1;
-	else
+
 	// Data was processed, so there is no need to retry the operation.
-	 if (result > 0) return result;
+	else if (result > 0) return result;
 
 	// Handle non-errors.
 	else if (result <= 0 && (syserror == 0 || syserror == EWOULDBLOCK || syserror == EAGAIN || syserror == EINTR)) return 0;

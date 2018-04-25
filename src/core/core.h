@@ -8,7 +8,6 @@
 #ifndef MAGMA_CORE_H
 #define MAGMA_CORE_H
 
-
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -740,11 +740,13 @@ START_TEST (check_secmem) {
 
 	log_disable();
 	size_t bsize;
-	void *blocks[1024];
 	stringer_t *errmsg = NULL;
-
+	void *blocks[1024];
+#ifdef MAGMA_CHECK_H
 	if (status() && magma.secure.memory.enable && (bsize = (magma.secure.memory.length / 1024))) {
-
+#else
+		if (status() && (bsize = (CORE_SECURE_MEMORY_LENGTH / 1024))){
+#endif
 		// Now try and trigger an overflow.
 		for (size_t i = 0; i < 1024; i++) {
 			blocks[i] = mm_sec_alloc(bsize + 16);
@@ -782,9 +784,15 @@ START_TEST (check_secmem) {
 		}
 	}
 
+#ifdef MAGMA_CHECK_H
 	log_test("CORE / MEMORY / SECURE ADDRESS RANGE / SINGLE THREADED:",
 			!errmsg ? (status() && magma.secure.memory.enable && (magma.secure.memory.length / 1024)
 					? errmsg : NULLER("SKIPPED")) : errmsg);
+#else
+	log_test("CORE / MEMORY / SECURE ADDRESS RANGE / SINGLE THREADED:",
+				!errmsg ? (status() && true && (CORE_SECURE_MEMORY_LENGTH / 1024)
+						? errmsg : NULLER("SKIPPED")) : errmsg);
+#endif
 	ck_assert_msg(!errmsg, st_char_get(errmsg));
 }
 END_TEST

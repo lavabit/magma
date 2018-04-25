@@ -8,7 +8,6 @@
 #ifndef MAGMA_PROVIDERS_SYMBOLS_H
 #define MAGMA_PROVIDERS_SYMBOLS_H
 
-
 // System Headers
 #include <sys/types.h>
 #include <netinet/in.h>

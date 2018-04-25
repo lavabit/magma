@@ -8,8 +8,6 @@
 
 #include "magma.h"
 
-
-
 /**
  * @brief Determine whether the error is a permanent/fatal failure, or a transient error.
  * @return	return 0 for errors we should ignore, and -1 for permanent/fatal failures.

@@ -40,7 +40,8 @@
 #define CORE_THREAD_STACK_SIZE 1048576
 #define CORE_SECURE_MEMORY_LENGTH 32768
 //TODO default value is probly wrong
-#define CORE_PAGE_LENGTH 4096
+#define CORE_PAGE_LENGTH getpagesize()
+#define MAGMA_FILEPATH_MAX PATH_MAX
 #endif
 //end
 

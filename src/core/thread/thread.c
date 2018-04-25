@@ -7,8 +7,6 @@
 
 #include "magma.h"
 
-
-
 /**
  * @brief	Get the id of the calling thread.
  * @return	the id of the calling thread.

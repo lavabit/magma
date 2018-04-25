@@ -7,8 +7,6 @@
 
 #include "magma.h"
 
-
-
 bool_t color_supported(void) {
 
 	const chr_t *term = getenv("TERM");

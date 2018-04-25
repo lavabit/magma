@@ -19,20 +19,15 @@ int_t folder_exists(stringer_t *path, bool_t create) {
 	int_t result = 0;
 
 	if (!(d = opendir(st_char_get(path)))) {
-		//printf(" should create ");
-		int temp = 100;
-		if (!create || (temp = mkdir(st_char_get(path), S_IRWXU))) {
+		if (!create || (result = mkdir(st_char_get(path), S_IRWXU))) {
 			result = -1;
 		} else {
 			result = 1;
 		}
-		//printf(" temp = %i ", temp);
 	} else {
-		//printf("exists ");
 		closedir(d);
 	}
 
-	//printf(" exists returing %i ", result);
 	return result;
 }
 

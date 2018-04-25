@@ -7,8 +7,6 @@
 
 #include "magma.h"
 
-
-
 /**
  * @brief	Free a managed string.
  * @see		st_valid_free(), st_valid_opts()
@@ -580,7 +578,7 @@ stringer_t * st_alloc_opts(uint32_t opts, size_t len) {
 			avail = align(magma.page_length, len);
 #else
 		//TODO actual page length
-		avail = align(4096, len);
+		avail = align(CORE_PAGE_LENGTH, len);
 #endif
 			//Then truncate the file to ensure it matches the memory map size.
 			if (avail && (handle = spool_mktemp(MAGMA_SPOOL_DATA, "mapped")) != -1 && ftruncate64(handle, avail) == 0 && (result = allocate(sizeof(mapped_t))) &&
@@ -734,7 +732,7 @@ stringer_t * st_realloc(stringer_t *s, size_t len) {
 			avail = align(magma.page_length, len);
 #else
 		//TODO actual page length
-		avail = align(4096, len);
+		avail = align(CORE_PAGE_LENGTH, len);
 #endif
 
 			// If the new length is larger, we will increase the file size using the ftruncate64 function.

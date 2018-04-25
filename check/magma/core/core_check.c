@@ -740,8 +740,9 @@ START_TEST (check_secmem) {
 
 	log_disable();
 	size_t bsize;
-	stringer_t *errmsg = NULL;
 	void *blocks[1024];
+	stringer_t *errmsg = NULL;
+
 #ifdef MAGMA_CHECK_H
 	if (status() && magma.secure.memory.enable && (bsize = (magma.secure.memory.length / 1024))) {
 #else

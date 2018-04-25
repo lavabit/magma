@@ -7,8 +7,6 @@
 
 #include "magma.h"
 
-
-
 /**
  * @note	We have to track errors locally so these functions can be used during startup and shutdown when the global statistics system may not be available.
  */
@@ -101,7 +99,6 @@ int_t spool_check(stringer_t *path) {
 		spool_errors++;
 		mutex_unlock(&spool_error_lock);
 	}
-	//printf(" returning %i from check for path %s \n", result, st_char_get(path));
 	return result;
 }
 
@@ -126,7 +123,7 @@ int_t spool_mktemp(int_t spool, chr_t *prefix) {
 
 	// Build the a template that includes the thread id and a random number to make the resulting file path harder to predict and try creating the temporary file handle.
 	// The O_EXCL+O_CREAT flags ensure we create the file or the call fails, O_SYNC indicates synchronous IO, and O_NOATIME eliminates access time tracking.
-//TODO
+//TODO change to rand_r
 	#ifdef MAGMA_H
 	if ((path = spool_path(spool)) && (template = st_aprint("%.*s%s_%lu_%lu_XXXXXX", st_length_int(path), st_char_get(path), prefix, thread_get_thread_id(), rand_get_uint64()))
 		&& (fd = mkostemp(st_char_get(template), O_EXCL | O_CREAT | O_RDWR | O_SYNC | O_NOATIME)) < 0) {
@@ -141,7 +138,7 @@ int_t spool_mktemp(int_t spool, chr_t *prefix) {
 
 			// We need to generate a new file template since the first mkostemp may have overwritten the required X characters.
 			st_free(template);
-			//TODO
+			//TODO change to rand_r
 #ifdef MAGMA_H
 			if ((template = st_aprint("%.*s%s_%lu_%lu_XXXXXX", st_length_int(path), st_char_get(path), prefix, thread_get_thread_id(), rand_get_uint64()))
 				&& (fd = mkostemp(st_char_get(template), O_EXCL | O_CREAT | O_RDWR | O_SYNC | O_NOATIME)) < 0) {
@@ -217,7 +214,6 @@ int_t spool_check_file(const char *file, const struct stat *info, int type) {
 			spool_files_cleaned++;
 		}
 	}
-	//printf("returning");
 
 	return 0;
 }
@@ -310,9 +306,7 @@ bool_t spool_start(void) {
 			path = spool_path(MAGMA_SPOOL_SCAN);
 
 		if (path) {
-			int temp = spool_check(path);
-			//printf(" temp = %i \n", temp);
-			if (temp < 0) {
+			if (spool_check(path) < 0) {
 				log_critical("Spool path is invalid. {path = %.*s}", st_length_int(path), st_char_get(path));
 				result = false;
 			}

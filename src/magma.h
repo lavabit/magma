@@ -53,9 +53,6 @@
 // GNU C Library
 #include <gnu/libc-version.h>
 
-
-
-
 #include "providers/symbols.h"
 
 #include "core/core.h"

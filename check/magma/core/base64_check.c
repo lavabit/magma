@@ -11,7 +11,9 @@ bool_t check_encoding_base64(bool_t secure_on) {
 
 	stringer_t *b64, *binary;
 	byte_t buffer[BASE64_CHECK_SIZE];
+
 	for (uint64_t i = 0; status() && i < BASE64_CHECK_ITERATIONS; i++) {
+
 		// Fill the buffer with random data and convert the buffer to hex.
 		if (rand_write(PLACER(buffer, BASE64_CHECK_SIZE)) != BASE64_CHECK_SIZE) {
 			return false;

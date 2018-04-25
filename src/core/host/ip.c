@@ -8,8 +8,6 @@
 
 #include "magma.h"
 
-
-
 /**
  * @brief	An abstract method of retrieving the address family for an IP structure.
  * @return	returns a value between AF_UNSPEC (typically defined as 0) and AF_MAX, if an invalid family value is encountered

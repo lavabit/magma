@@ -7,8 +7,6 @@
 
 #include "magma.h"
 
-
-
 /**
  * @brief	Unlock an inx object.
  * @param	inx		a pointer to the inx object to be unlocked.
@@ -324,6 +322,7 @@ inx_t * inx_alloc(uint64_t options, void *data_free) {
 
 	switch (options & MAGMA_INDEX_TYPE) {
 	case M_INX_TREE:
+		//TODO this is in providers
 #ifdef MAGMA_H
 		inx = tree_alloc(options, data_free);
 #endif

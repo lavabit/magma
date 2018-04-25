@@ -130,7 +130,7 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 	else if (client_write(client, PLACER("USER princess\r\n", 15)) != 15 || client_read_line(client) <= 0 ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
-		st_sprint(errmsg, "Failed to return a successful state after USER. 1");
+		st_sprint(errmsg, "Failed to return a successful state after USER.");
 		client_close(client);
 		return false;
 	}
@@ -145,29 +145,17 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 	else if (client_write(client, PLACER("USER princess\r\n", 15)) != 15 || client_read_line(client) <= 0 ||
 		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
-		st_sprint(errmsg, "Failed to return a successful state after USER. 2");
+		st_sprint(errmsg, "Failed to return a successful state after USER.");
 		client_close(client);
 		return false;
 	}
-	else {
-		bool temp1 = client_write(client, PLACER("PASS password\r\n", 15)) != 15;
-		bool temp2 = client_read_line(client) <= 0;
-		bool temp3 = client_status(client) != 1 ;
-		bool temp4 = st_cmp_cs_starts(&(client->line), NULLER("+OK"));
-		bool temp =  temp1 ||
-					temp2 ||
-					temp3 ||
-					temp4;
-		printf("temp = %i, temp4 = %i, client->line =" , temp, temp4);
-		//for (int i = 0 ; i< client->line.length; i++ ){
-		//	putchar(((char*)(client->line.data))[i]);
-		//}
-		if (temp) {
+	else if (client_write(client, PLACER("PASS password\r\n", 15)) != 15 || client_read_line(client) <= 0 ||
+		client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
-			st_sprint(errmsg, "Failed to return a successful state after USER. 3");
-			client_close(client);
-			return false;
-		}
+		st_sprint(errmsg, "Failed to return a successful state after USER.");
+		client_close(client);
+		return false;
+	}
 	// Test the LIST command.
 	else if (client_write(client, PLACER("LIST\r\n", 6)) != 6 || !(message_num = check_pop_client_read_list(client, errmsg)) ||
 		client_status(client) != 1) {
@@ -224,7 +212,6 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 		st_sprint(errmsg, "Failed to return a successful state after QUIT.");
 		client_close(client);
 		return false;
-	}
 	}
 
 	client_close(client);

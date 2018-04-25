@@ -2,13 +2,12 @@
 
 MESSAGE=$(git show -s --format='%s' | cat)
 
-echo "testing 1"
 mkdir ./../libcore/src  ./../libcore/check
 cp -R  ./src/core/ ./../libcore/src
 cp -R ./check/magma/core/ ./../libcore/check
 cd ./../libcore
 git add .
-git commit -a -m "$MESSAGE" -e
+git commit -a -m "$MESSAGE"
 git push
 
 cd ./../libcore

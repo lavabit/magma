@@ -208,7 +208,7 @@ void sql_stop(void) {
 }
 
 /**
- * @brief	Open up a new mysql connection to the magma-configured database server.
+ * @brief	Open up a new mysql connection to the configured database server.
  * @note	The reconnect option will automatically be set on all new mysql connections.
  * @param	silent	if true, suppress logging of failure messages for this function.
  * @return	NULL on failure, or a pointer to a MSQL objection for the newly established connection on success.

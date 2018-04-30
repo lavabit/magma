@@ -6203,7 +6203,7 @@ void portal_upload(connection_t *con) {
 
 /**
  * @brief	A portal debug function that will be disabled and/or deleted completely in production.
- * @note	The debug output is displayed LOCALLY in magmad's console.
+ * @note	The debug output is displayed LOCALLY in the Magma console.
  */
 void portal_debug(connection_t *con) {
 

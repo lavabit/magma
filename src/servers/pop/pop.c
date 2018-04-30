@@ -345,12 +345,12 @@ void pop_capa(connection_t *con) {
 	// If the user is in authorization mode via an insecure channel and there is an TLS context, output the STLS capability.
 	if (con->pop.session_state == 0 && con_secure(con) == 0) {
 		con_print(con, "+OK Capabilities follow.\r\nTOP\r\nUSER\r\nUIDL\r\nSTLS\r\nPIPELINING\r\nEXPIRE NEVER\r\nLOGIN-DELAY 0\r\n"
-			"RESP-CODES\r\nAUTH-RESP-CODE\r\nIMPLEMENTATION magmad %s\r\n.\r\n", build_version());
+			"RESP-CODES\r\nAUTH-RESP-CODE\r\nIMPLEMENTATION Magma %s\r\n.\r\n", build_version());
 	}
 	// Otherwise don't advertise STLS.
 	else {
 		con_print(con, "+OK Capabilities follow.\r\nTOP\r\nUSER\r\nUIDL\r\nPIPELINING\r\nEXPIRE NEVER\r\nLOGIN-DELAY 0\r\n"
-			"RESP-CODES\r\nAUTH-RESP-CODE\r\nIMPLEMENTATION magmad %s\r\n.\r\n", build_version());
+			"RESP-CODES\r\nAUTH-RESP-CODE\r\nIMPLEMENTATION Magma %s\r\n.\r\n", build_version());
 	}
 
 	return;
@@ -723,7 +723,7 @@ void pop_retr(connection_t *con) {
  */
 void pop_init(connection_t *con) {
 
-	con_write_bl(con, "+OK magma\r\n", 11);
+	con_write_bl(con, "+OK Magma\r\n", 11);
 	pop_requeue(con);
 
 	return;

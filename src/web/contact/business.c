@@ -119,7 +119,7 @@ bool_t contact_business_valid_email(stringer_t *email) {
 }
 
 /**
- * @brief	Send the contents of a user-submitted contact or abuse form to the magma-configured contact email address.
+ * @brief	Send the contents of a user submitted contact/abuse form to the configured contact email address.
  * @param	con		the connection of the web client making the request.
  * @param	branch	a null-terminated string containing the destination of the contact form: either "Abuse" or "Contact".
  * @return	This function returns no value.

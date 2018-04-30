@@ -166,7 +166,7 @@ void teacher_add_cookie(connection_t *con, teacher_data_t *teach) {
 	sm_time += 31556926L;
 
 	// Error check. This will catch dates after 2038, if the time_t bug hasn't been fixed by then, or in the year 292277026596
-	// if a 64 bit time value is used. This assumes magmad will run for that long.
+	// if a 64 bit time value is used. This assumes Magma will run for that long.
 	if (difftime(sm_time, current) != 31556926UL) {
 		log_pedantic("Date wrap around error. The time_t datatype is not large enough to hold the plan expiration.");
 		return;
@@ -210,7 +210,7 @@ void teacher_add_cookie(connection_t *con, teacher_data_t *teach) {
 /**
  * @brief	The main entry point for the /teacher web application.
  * @note	Each /teacher request must contain a spam signature and key specified by the user.
- * 			If magma was able to find the signature, the signature's key must match the user-specified key value.
+ * 			If Magma was able to find the signature, the signature's key must match the user-specified key value.
  * 			The signature must also not have been previously trained.
  * 			On successful training, the signature will be freed in memory and in the database, but kept for a couple of hours in distributed cache.
  * 			User password authentication is necessary for training, and this routine manages cookies for subsequent training requests.

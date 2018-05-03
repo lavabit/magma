@@ -574,10 +574,9 @@ stringer_t * st_alloc_opts(uint32_t opts, size_t len) {
 		case (MAPPED_T | JOINTED):
 
 			// Ensure the allocated size is always a multiple of the memory page size.
-#ifdef MAGMA_H
+#ifdef  MAGMA_ENGINE_CONFIG_GLOBAL_H
 			avail = align(magma.page_length, len);
 #else
-		//TODO actual page length
 		avail = align(CORE_PAGE_LENGTH, len);
 #endif
 			//Then truncate the file to ensure it matches the memory map size.
@@ -728,10 +727,9 @@ stringer_t * st_realloc(stringer_t *s, size_t len) {
 		case (MAPPED_T | JOINTED):
 
 			// Ensure the allocated size is always a multiple of the memory page size.
-#ifdef MAGMA_H
+#ifdef  MAGMA_ENGINE_CONFIG_GLOBAL_H
 			avail = align(magma.page_length, len);
 #else
-		//TODO actual page length
 		avail = align(CORE_PAGE_LENGTH, len);
 #endif
 
@@ -758,7 +756,7 @@ stringer_t * st_realloc(stringer_t *s, size_t len) {
 			else {
 				// An error occurred. If the errno is set to EAGAIN and it's secure memory, the most likely problem is that the requested amount of memory exceeds
 				// the amount of locked memory available under this user account.
-#ifdef MAGMA_H
+#ifdef  MAGMA_ENGINE_CONFIG_GLOBAL_H
 				if ((((mapped_t *)s)->opts & SECURE) && errno == EAGAIN && (system_ulimit_cur(RLIMIT_MEMLOCK) < len ||
 						system_ulimit_cur(RLIMIT_MEMLOCK) < (len + magma.secure.memory.length))) {
 					log_pedantic("Unable to resize the secure memory mapped buffer, the requested size exceeds the system limit for locked pages. " \
@@ -768,8 +766,16 @@ stringer_t * st_realloc(stringer_t *s, size_t len) {
 					log_pedantic("An error occurred while resizing a memory mapped buffer. { error = %s }", strerror_r(errno, MEMORYBUF(1024), 1024));
 				}
 #else
-				//TODO the same check needs to be done as if MAGMA_H is deffed, issue is "system_ulimit_cur" is in engine and wont be in core when separated
-				log_pedantic("An error occurred while resizing a memory mapped buffer. { error = %s }", strerror_r(errno, MEMORYBUF(1024), 1024));
+				struct rlimit64 limits = { 0, 0 };
+				getrlimit64(RLIMIT_MEMLOCK, &limits)
+				if ((((mapped_t *)s)->opts & SECURE) && errno == EAGAIN && (limits.rlim_cur < len ||
+						limits.rlim_cur < (len + magma.secure.memory.length))) {
+					log_pedantic("Unable to resize the secure memory mapped buffer, the requested size exceeds the system limit for locked pages. " \
+							"{ limit = %lu / requested = %zu }", system_ulimit_cur(RLIMIT_MEMLOCK), len);
+				}
+				else {
+					log_pedantic("An error occurred while resizing a memory mapped buffer. { error = %s }", strerror_r(errno, MEMORYBUF(1024), 1024));
+				}
 #endif
 			}
 			break;

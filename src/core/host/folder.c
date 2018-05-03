@@ -21,7 +21,8 @@ int_t folder_exists(stringer_t *path, bool_t create) {
 	if (!(d = opendir(st_char_get(path)))) {
 		if (!create || (result = mkdir(st_char_get(path), S_IRWXU))) {
 			result = -1;
-		} else {
+		}
+		else {
 			result = 1;
 		}
 	} else {

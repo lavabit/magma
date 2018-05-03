@@ -54,7 +54,7 @@ stringer_t * spool_path(int_t spool) {
 	}
 
 	// If the spool directory isn't configured, fall back to using /tmp/magma/ instead.
-#ifdef MEGMA_H
+#ifdef  MAGMA_ENGINE_CONFIG_GLOBAL_H
 	if (magma.spool) {
 		result = st_merge_opts(NULLER_T | CONTIGUOUS | HEAP, "nnn", magma.spool, (*(magma.spool + ns_length_get(magma.spool) - 1) == '/' ? "" : "/"), folder);
 	}

@@ -33,7 +33,7 @@ int_t thread_launch(pthread_t *thread, void *function, void *data) {
 		log_pedantic("Could not initialize the thread attribute structure. {pthread_attr_init = %i}", result);
 		return result;
 	}
-#ifdef MAGMA_H
+#ifdef  MAGMA_ENGINE_CONFIG_GLOBAL_H
 	else if ((result = pthread_attr_setstacksize(&attributes, magma.system.thread_stack_size))) {
 #else
 	else if ((result = pthread_attr_setstacksize(&attributes, CORE_THREAD_STACK_SIZE))) {

@@ -767,7 +767,7 @@ stringer_t * st_realloc(stringer_t *s, size_t len) {
 				}
 #else
 				struct rlimit64 limits = { 0, 0 };
-				getrlimit64(RLIMIT_MEMLOCK, &limits)
+				getrlimit64(RLIMIT_MEMLOCK, &limits);
 				if ((((mapped_t *)s)->opts & SECURE) && errno == EAGAIN && (limits.rlim_cur < len ||
 						limits.rlim_cur < (len + magma.secure.memory.length))) {
 					log_pedantic("Unable to resize the secure memory mapped buffer, the requested size exceeds the system limit for locked pages. " \

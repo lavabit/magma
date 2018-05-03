@@ -8,7 +8,6 @@
 	<buildSpec>
 		<buildCommand>
 			<name>org.eclipse.cdt.managedbuilder.core.genmakebuilder</name>
-			<triggers></triggers>
 			<arguments>
 				<dictionary>
 					<key>?name?</key>

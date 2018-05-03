@@ -123,15 +123,8 @@ int_t spool_mktemp(int_t spool, chr_t *prefix) {
 
 	// Build the a template that includes the thread id and a random number to make the resulting file path harder to predict and try creating the temporary file handle.
 	// The O_EXCL+O_CREAT flags ensure we create the file or the call fails, O_SYNC indicates synchronous IO, and O_NOATIME eliminates access time tracking.
-//TODO change to rand_r
-	#ifdef MAGMA_H
 	if ((path = spool_path(spool)) && (template = st_aprint("%.*s%s_%lu_%lu_XXXXXX", st_length_int(path), st_char_get(path), prefix, thread_get_thread_id(), rand_get_uint64()))
 		&& (fd = mkostemp(st_char_get(template), O_EXCL | O_CREAT | O_RDWR | O_SYNC | O_NOATIME)) < 0) {
-#else
-		srand(time(NULL));
-		if ((path = spool_path(spool)) && (template = st_aprint("%.*s%s_%lu_%d_XXXXXX", st_length_int(path), st_char_get(path), prefix, thread_get_thread_id(),  rand()))
-				&& (fd = mkostemp(st_char_get(template), O_EXCL | O_CREAT | O_RDWR | O_SYNC | O_NOATIME)) < 0) {
-#endif
 
 		// Verify that the spool directory directory tree is valid. If any of the directories are missing, this will try and create them.
 		if ((base = spool_path(MAGMA_SPOOL_BASE)) && !spool_check(base) && !spool_check(path)) {
@@ -139,15 +132,9 @@ int_t spool_mktemp(int_t spool, chr_t *prefix) {
 			// We need to generate a new file template since the first mkostemp may have overwritten the required X characters.
 			st_free(template);
 			//TODO change to rand_r
-#ifdef MAGMA_H
+
 			if ((template = st_aprint("%.*s%s_%lu_%lu_XXXXXX", st_length_int(path), st_char_get(path), prefix, thread_get_thread_id(), rand_get_uint64()))
 				&& (fd = mkostemp(st_char_get(template), O_EXCL | O_CREAT | O_RDWR | O_SYNC | O_NOATIME)) < 0) {
-#else
-				//rand() should be seeded from above
-				if ((template = st_aprint("%.*s%s_%lu_%d_XXXXXX", st_length_int(path), st_char_get(path), prefix, thread_get_thread_id(), rand()))
-								&& (fd = mkostemp(st_char_get(template), O_EXCL | O_CREAT | O_RDWR | O_SYNC | O_NOATIME)) < 0) {
-#endif
-
 				// Store the errno.
 				err_info = errno;
 
@@ -205,7 +192,7 @@ int_t spool_check_file(const char *file, const struct stat *info, int type) {
 
 	if (type == FTW_F) {
 		if (unlink(file)) {
-			log_error("An error occurred while trying to unlink a temporary file inside the spool. {%s / %s}", strerror_r(errno, bufptr, buflen), file);
+			log_error("An error occurred while trying to unlink a temporary file inside the spool. {%s / %s}", strerror_r(errno, MEMORYBUF(1024), 1024), file);
 			mutex_lock(&spool_error_lock);
 			spool_errors++;
 			mutex_unlock(&spool_error_lock);

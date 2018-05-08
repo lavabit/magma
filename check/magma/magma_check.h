@@ -16,9 +16,9 @@
 #include <check.h>
 #include <valgrind/valgrind.h>
 
-// Normally the START_TEST macro creates a static testcase function. Unfortunately we can't
-// find those symbols using dlsym() so we can't dynamically select individual test cases at
-// runtime. This redefines the macro without using the static keyword to workaround this problem.
+// Normally the START_TEST macro creates static testcase functions. Unfortunately dlsym() can't find static
+// symbols. We override the default macro with the variant below, which doesn't use the static keyword. This
+// allows us to use the dlsym() function to find and execute individual test case functions.
 #undef START_TEST
 #define START_TEST(__testname) void __testname (int _i CK_ATTRIBUTE_UNUSED) {  tcase_fn_start (""# __testname, __FILE__, __LINE__);
 

@@ -7,12 +7,12 @@
 
 #include "magma.h"
 
-// The thread specific random number generator context.
-__thread uint_t rand_ctx = 0;
-
 // Control version = "\t\r\n"
 // Array version =  " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\n"
 // Print version =  " !\"#$%%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\n"
+
+// The thread specific random number generator context.
+__thread uint_t rand_ctx = 0;
 
 /**
  * @brief	Get a random string of data of a specified size, populated with characters from a chosen set.
@@ -315,7 +315,8 @@ bool_t rand_start(void) {
 	// Seed the random number generator.
 	RAND_load_file_d("/dev/urandom", magma.iface.cryptography.seed_length);
 
-	// Set the context to the current time, in case were unable to generate a secure random number for a seed.
+	// Set the generic random context to the current time, to ensure the results are somewhat random when the secure
+	// random number is unavailable, or fails.
 	srand(rand_r(&seed));
 	rand_ctx = rand_r(&seed);
 

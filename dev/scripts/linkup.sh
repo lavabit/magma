@@ -92,4 +92,9 @@ process "legacy.pl" "legacy"
 
 process "linkup.sh" "linkup"
 
+process "core.move.sh" "core.move"
 
+#set up the post commit hook to move core
+rm -f ./.git/hooks/post-commit
+ln -s $(find $MAGMA_DIST/dev/scripts/ -name post-commit) ./.git/hooks
+chmod +x ./.git/hooks/post-commit

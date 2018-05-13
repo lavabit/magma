@@ -35,7 +35,7 @@ void log_test(chr_t *test, stringer_t *error) {
 	return;
 }
 
-Suite * suite_check_magma(void) {
+Suite * suite_check_single(void) {
   Suite *s = suite_create("\n\tMagma");
   return s;
 }
@@ -261,7 +261,7 @@ int main(int argc, char *argv[]) {
 	cache_flush();
 
 	// Unit Test Config
-	sr = srunner_create(suite_check_magma());
+	sr = srunner_create(suite_check_single());
 
 	// If the command line told us to run a specific test only add that individual test using the special barrister suite.
 	if (barrister_unit_test) {

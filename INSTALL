@@ -69,7 +69,7 @@ fi
 
 if [ ! -e /etc/init.d/memcached ]; then
 	echo "Can't find /etc/init.d/memcached"
-	echo "Is mysql-server installed?"
+	echo "Is memcached installed?"
 	exit 1
 fi
 

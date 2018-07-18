@@ -128,7 +128,7 @@
 // For the portal/user management.
 #define REGISTER_CHECK_USERNAME	"SELECT usernum FROM Users WHERE userid = ?"
 #define REGISTER_INSERT_STACIE_USER "INSERT INTO Users (`userid`, `salt`, `auth`, `bonus`, `plan`, `quota`, `plan_expiration`) VALUES (?, ?, ?, ?, ?, ?, ?)"
-#define REGISTER_INSERT_STACIE_REALMS "INSERT INTO Realms (`usernum`, `serial`, `label`, `shard`) VALUES (?, ?, ?, ?)"
+#define REGISTER_INSERT_STACIE_REALMS "INSERT INTO Realms (`usernum`, `serial`, `label`, `shard`, `rotated`) VALUES (?, ?, ?, ?, ?)"
 #define REGISTER_INSERT_PROFILE "INSERT INTO Profile (`usernum`) VALUES (?)"
 #define REGISTER_INSERT_FOLDERS "INSERT INTO Folders (`usernum`) VALUES (?)"
 #define REGISTER_INSERT_FOLDER_NAME "INSERT INTO Folders (`usernum`, `foldername`) VALUES (?, ?)"
@@ -158,9 +158,9 @@
 
 // The meta data object.
 #define META_FETCH_USER "SELECT Users.userid, Users.auth, Users.tls, Users.overquota, Dispatch.secure FROM Users INNER JOIN Dispatch ON Users.usernum = Dispatch.usernum WHERE Users.usernum = ? AND email = 1 LIMIT 1"
-#define META_FETCH_SHARD "SELECT `shard` FROM `Realms` WHERE `usernum` = ? AND `serial` = ? AND `label` = ?"
+#define META_FETCH_SHARD "SELECT `shard`, `rotated` FROM `Realms` WHERE `usernum` = ? AND `serial` = ? AND `label` = ?"
 #define META_FETCH_MAIL_KEYS "SELECT signet, `key` FROM `Keys` WHERE usernum = ?"
-#define META_INSERT_SHARD "INSERT INTO `Realms` (`usernum`, `serial`, `label`, `shard`) VALUES (?, ?, ?, ?)"
+#define META_INSERT_SHARD "INSERT INTO `Realms` (`usernum`, `serial`, `label`, `shard`, `rotated`) VALUES (?, ?, ?, ?, ?)"
 #define META_INSERT_MAIL_KEYS "INSERT INTO `Keys` (usernum, signet, `key`) VALUES (?, ?, ?)"
 
 /**

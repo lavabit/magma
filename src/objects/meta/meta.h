@@ -40,7 +40,7 @@ int_t   meta_update_contacts(meta_user_t *user, META_LOCK_STATUS locked);
 int_t   meta_update_folders(meta_user_t *user, META_LOCK_STATUS locked);
 int_t   meta_update_keys(meta_user_t *user, META_LOCK_STATUS locked);
 int_t   meta_update_message_folders(meta_user_t *user, META_LOCK_STATUS locked);
-int_t   meta_update_realms(meta_user_t *user, stringer_t *master, META_LOCK_STATUS locked);
+int_t   meta_update_realms(meta_user_t *user, stringer_t *salt, stringer_t *master, META_LOCK_STATUS locked);
 int_t   meta_update_user(meta_user_t *user, META_LOCK_STATUS locked);
 
 /// references.c
@@ -53,7 +53,7 @@ uint64_t   meta_user_ref_total(meta_user_t *user);
 /// meta.c
 meta_user_t *  meta_alloc(void);
 void           meta_free(meta_user_t *user);
-int_t          meta_get(uint64_t usernum, stringer_t *username, stringer_t *master, stringer_t *verification, META_PROTOCOL protocol, META_GET get, meta_user_t **output);
+int_t          meta_get(uint64_t usernum, stringer_t *username, stringer_t *salt, stringer_t *master, stringer_t *verification, META_PROTOCOL protocol, META_GET get, meta_user_t **output);
 
 /// datatier.c
 bool_t     meta_data_acknowledge_alert(uint64_t alertnum, uint64_t usernum, uint32_t transaction);
@@ -64,7 +64,7 @@ inx_t *    meta_data_fetch_all_tags(uint64_t usernum);
 bool_t     meta_data_fetch_folders(meta_user_t *user);
 int_t      meta_data_fetch_keys(meta_user_t *user, key_pair_t *output, int64_t transaction);
 int_t      meta_data_fetch_mailbox_aliases(meta_user_t *user);
-int_t      meta_data_fetch_shard(uint64_t usernum, uint16_t serial, stringer_t *label, stringer_t *output, int64_t transaction);
+int_t      meta_data_fetch_shard(uint64_t usernum, uint16_t serial, stringer_t *label, stringer_t *output, uint_t *rotated, int64_t transaction);
 int_t      meta_data_fetch_user(meta_user_t *user);
 bool_t     meta_data_flags_add(inx_t *messages, uint64_t usernum, uint64_t foldernum, uint32_t flags);
 bool_t     meta_data_flags_remove(inx_t *messages, uint64_t usernum, uint64_t foldernum, uint32_t flags);

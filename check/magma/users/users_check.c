@@ -85,14 +85,14 @@ START_TEST (check_users_meta_valid_s) {
 			result = false;
 		}
 
-		else if ((meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification,
+		else if ((meta_get(auth->usernum, auth->username, auth->seasoning.salt, auth->keys.master, auth->tokens.verification,
 			META_PROTOCOL_POP, META_GET_MESSAGES | META_GET_KEYS, &(pop)))) {
 			st_sprint(errmsg, "User meta login check failed. Get user metadata failure. { username =  %.*s / password = %.*s }",
 				st_length_int(usernames[i]), st_char_get(usernames[i]), st_length_int(passwords[i]), st_char_get(passwords[i]));
 			result = false;
 		}
 
-		else if ((meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification,
+		else if ((meta_get(auth->usernum, auth->username, auth->seasoning.salt, auth->keys.master, auth->tokens.verification,
 			META_PROTOCOL_IMAP, META_GET_KEYS | META_GET_FOLDERS | META_GET_CONTACTS | META_GET_MESSAGES, &(imap)))) {
 			st_sprint(errmsg, "User meta login check failed. Get user metadata failure. { username =  %.*s / password = %.*s }",
 				st_length_int(usernames[i]), st_char_get(usernames[i]), st_length_int(passwords[i]), st_char_get(passwords[i]));
@@ -141,14 +141,14 @@ START_TEST (check_users_meta_invalid_s) {
 		}
 
 		// The verification token is XOR'ed with the master key, which should result in a failure.
-		if (auth && !(meta_get(auth->usernum, auth->username, st_xor(auth->keys.master, auth->tokens.verification, MANAGEDBUF(64)),
+		if (auth && !(meta_get(auth->usernum, auth->username, auth->seasoning.salt, st_xor(auth->keys.master, auth->tokens.verification, MANAGEDBUF(64)),
 			auth->tokens.verification, META_PROTOCOL_POP, META_GET_MESSAGES | META_GET_KEYS, &(user)))) {
 			st_sprint(errmsg, "User meta login check failed. Get user metadata failure. { username =  %.*s / password = %.*s }",
 				st_length_int(usernames[i]), st_char_get(usernames[i]), st_length_int(passwords[i]), st_char_get(passwords[i]));
 			result = false;
 		}
 
-		else if (!(meta_get(auth->usernum, auth->username, auth->keys.master, st_xor(auth->keys.master, auth->tokens.verification,
+		else if (!(meta_get(auth->usernum, auth->username, auth->seasoning.salt, auth->keys.master, st_xor(auth->keys.master, auth->tokens.verification,
 			MANAGEDBUF(64)), META_PROTOCOL_POP, META_GET_MESSAGES | META_GET_KEYS, &(user)))) {
 			st_sprint(errmsg, "User meta login check failed. Get user metadata failure. { username =  %.*s / password = %.*s }",
 				st_length_int(usernames[i]), st_char_get(usernames[i]), st_length_int(passwords[i]), st_char_get(passwords[i]));

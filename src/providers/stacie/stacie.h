@@ -38,7 +38,7 @@
 
 /// realms.c
 stringer_t *  stacie_realm_cipher(stringer_t *realm_key);
-stringer_t *  stacie_realm_key(stringer_t *master_key, stringer_t *realm, stringer_t *shard);
+stringer_t *  stacie_realm_key(stringer_t *master_key, stringer_t *realm,  stringer_t *salt, stringer_t *shard);
 stringer_t *  stacie_realm_tag(stringer_t *realm_key);
 stringer_t *  stacie_realm_vector(stringer_t *realm_key);
 

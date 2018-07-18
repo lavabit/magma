@@ -267,7 +267,7 @@ void pop_pass(connection_t *con) {
 	if (st_populated(invalid)) cache_decrement(invalid, 1, 0, MEMCACHED_EXPIRATION_NOT_ADD);
 
 	// Pull the user info out.
-	if ((state = meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification, META_PROTOCOL_POP,
+	if ((state = meta_get(auth->usernum, auth->username, auth->seasoning.salt, auth->keys.master, auth->tokens.verification, META_PROTOCOL_POP,
 		META_GET_MESSAGES | META_GET_KEYS, &(con->pop.user)))) {
 
 		if (state < 0) {

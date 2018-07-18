@@ -6,9 +6,6 @@
  */
 
 #include "magma.h"
-//#include "dime/signet/keys.h"
-//#include "dime/common/misc.h"
-//#include "dime/common/dcrypto.h"
 
 /**
  * @brief	Fetches the user realm keys and extracts the different components.
@@ -20,11 +17,12 @@
  *
  * @return	-2 if there is a problem extracting the key values, -1 for a system error, 0 for success, and 1 if the keys were created.
  */
-int_t meta_update_realms(meta_user_t *user, stringer_t *master, META_LOCK_STATUS locked) {
+int_t meta_update_realms(meta_user_t *user, stringer_t *salt, stringer_t *master, META_LOCK_STATUS locked) {
 
 	int_t result = 0;
+	uint_t rotated = 0;
 	int64_t transaction = -1;
-	stringer_t *shard = MANAGEDBUF(64), *holder = NULL, *realm_key = NULL;
+	stringer_t *shard = MANAGEDBUF(64), *holder = NULL;
 
 	// Do we need a lock.
 	if (locked == META_NEED_LOCK) {
@@ -46,7 +44,7 @@ int_t meta_update_realms(meta_user_t *user, stringer_t *master, META_LOCK_STATUS
 		}
 
 		// Fetch the mail realm shard. If one isn't found, try generating a new shard value for the user.
-		else if (meta_data_fetch_shard(user->usernum, 0, PLACER("mail", 4), shard, transaction) == 1) {
+		else if (meta_data_fetch_shard(user->usernum, 0, PLACER("mail", 4), shard, &rotated, transaction) == 1) {
 
 			if (!(holder = stacie_create_shard(shard)) || meta_data_insert_shard(user->usernum, 0, PLACER("mail", 4), holder, transaction) < 0) {
 				log_pedantic("Unable to create a user shard for the mail realm. { username = %.*s }", st_length_int(user->username),
@@ -61,7 +59,7 @@ int_t meta_update_realms(meta_user_t *user, stringer_t *master, META_LOCK_STATUS
 				transaction = -1;
 				result = -1;
 			}
-			else if ((transaction = tran_start()) < 0 || meta_data_fetch_shard(user->usernum, 0, PLACER("mail", 4), shard, transaction)) {
+			else if ((transaction = tran_start()) < 0 || meta_data_fetch_shard(user->usernum, 0, PLACER("mail", 4), shard, &rotated, transaction)) {
 				log_pedantic("Unable to create and fetch a user shard for the mail realm. { username = %.*s }", st_length_int(user->username),
 					st_char_get(user->username));
 				result = -1;
@@ -77,16 +75,23 @@ int_t meta_update_realms(meta_user_t *user, stringer_t *master, META_LOCK_STATUS
 		if (!result && st_length_get(shard) == STACIE_SHARD_LENGTH) {
 
 			// Derive the realm key and store the relevant pieces.
-			if (!(user->realm.mail = stacie_realm_key(master, PLACER("mail",  4), shard))) {
+			if (!(user->realm.mail = stacie_realm_key(master, PLACER("mail",  4), (rotated ? salt : shard), shard))) {
 				log_pedantic("Unable to parse the realm key. { username = %.*s }", st_length_int(user->username),
 					st_char_get(user->username));
 				result = -1;
 			}
-
-			st_cleanup(realm_key);
 		}
 
 	}
+
+
+///****/
+//	Why don't we have a valid realm key?
+//	stringer_t *temp = MANAGEDBUF(800);
+//	log_pedantic("rotated = %u", rotated);
+//	temp = base64_encode_mod(user->realm.mail, temp);
+//	log_pedantic("realm = %*.s", st_length_int(temp), st_char_get(temp));
+///****/
 
 	// Do we need to clear the lock.
 	if (locked == META_NEED_LOCK) {

@@ -36,7 +36,7 @@ bool_t check_mail_store_plaintext_sthread(stringer_t *errmsg) {
 			result = false;
 		}
 
-		else if (meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification,
+		else if (meta_get(auth->usernum, auth->username, auth->seasoning.salt, auth->keys.master, auth->tokens.verification,
 			META_PROTOCOL_IMAP, META_GET_KEYS | META_GET_ALIASES | META_GET_FOLDERS | META_GET_CONTACTS | META_GET_MESSAGES, &(user))) {
 			st_sprint(errmsg, "User meta login check failed. Get user metadata failure. { username =  %.*s / password = %.*s }",
 				st_length_int(usernames[i]), st_char_get(usernames[i]), st_length_int(passwords[i]), st_char_get(passwords[i]));
@@ -106,7 +106,7 @@ bool_t check_mail_store_encrypted_sthread(stringer_t *errmsg) {
 			result = false;
 		}
 
-		else if (meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification,
+		else if (meta_get(auth->usernum, auth->username, auth->seasoning.salt, auth->keys.master, auth->tokens.verification,
 			META_PROTOCOL_IMAP, META_GET_KEYS | META_GET_ALIASES | META_GET_FOLDERS | META_GET_CONTACTS | META_GET_MESSAGES, &(user))) {
 			st_sprint(errmsg, "User meta login check failed. Get user metadata failure. { username =  %.*s / password = %.*s }",
 				st_length_int(usernames[i]), st_char_get(usernames[i]), st_length_int(passwords[i]), st_char_get(passwords[i]));

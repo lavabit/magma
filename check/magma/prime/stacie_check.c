@@ -93,7 +93,7 @@ bool_t check_stacie_simple(void) {
 	st_free(extracted);
 
 	// Calculate the symmetric key for the "mail" realm and check extracted cipher and vector key values.
-	if (!(combined_key = stacie_realm_key(master_key, NULLER("mail"), shard)) ||
+	if (!(combined_key = stacie_realm_key(master_key, NULLER("mail"), shard, shard)) ||
 			!(vector_key = stacie_realm_vector(combined_key)) || st_cmp_cs_eq(vector_key, realm_vector_key) ||
 			!(tag_key = stacie_realm_tag(combined_key)) || st_cmp_cs_eq(tag_key, realm_tag_key) ||
 			!(cipher_key = stacie_realm_cipher(combined_key)) || st_cmp_cs_eq(cipher_key, realm_cipher_key)) {
@@ -428,27 +428,27 @@ bool_t check_stacie_parameters(void) {
 		return false;
 	}
 
-	if ((res = stacie_realm_key(NULL, temp_st, temp_st64))) {
+	if ((res = stacie_realm_key(NULL, temp_st, temp_st64, temp_st64))) {
 		st_free(res);
 		return false;
 	}
 
-	if ((res = stacie_realm_key(temp_st, temp_st, temp_st64))) {
+	if ((res = stacie_realm_key(temp_st, temp_st, temp_st64, temp_st64))) {
 		st_free(res);
 		return false;
 	}
 
-	if ((res = stacie_realm_key(temp_st64, NULL, temp_st64))) {
+	if ((res = stacie_realm_key(temp_st64, NULL, temp_st64, temp_st64))) {
 		st_free(res);
 		return false;
 	}
 
-	if ((res = stacie_realm_key(temp_st64, temp_st, NULL))) {
+	if ((res = stacie_realm_key(temp_st64, temp_st, NULL, NULL))) {
 		st_free(res);
 		return false;
 	}
 
-	if ((res = stacie_realm_key(temp_st64, temp_st, temp_st))) {
+	if ((res = stacie_realm_key(temp_st64, temp_st, temp_st, temp_st))) {
 		st_free(res);
 		return false;
 	}

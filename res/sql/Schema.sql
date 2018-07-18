@@ -53,6 +53,20 @@ CREATE TABLE `Banned` (
   PRIMARY KEY (`sequence`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 MIN_ROWS=4294967295 MAX_ROWS=4294967295 AVG_ROW_LENGTH=300 COMMENT='Stores a list of IPs banned from registration.';
 
+DROP TABLE IF EXISTS Codes;
+CREATE TABLE `Codes` (
+  `codeid` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `promo` varchar(64) NOT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `origin` varchar(255) DEFAULT NULL,
+  `plan` enum('STANDARD','PREMIER') NOT NULL DEFAULT 'STANDARD',
+  `usernum` bigint(20) unsigned DEFAULT NULL,
+  `redeemed` datetime DEFAULT '0000-00-00 00:00:00',
+  `created` datetime DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`codeid`),
+  UNIQUE KEY `UNIQ_CODES` (`promo`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1 MAX_ROWS=4294967295 AVG_ROW_LENGTH=128 COMMENT='Promo codes and relevant data.';
+
 DROP TABLE IF EXISTS `Contacts`;
 CREATE TABLE `Contacts`(
     `contactnum` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,

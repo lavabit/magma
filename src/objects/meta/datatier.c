@@ -289,15 +289,17 @@ int_t meta_data_fetch_user(meta_user_t *user) {
 		return 1;
 	}
 
-	// Store the username.
+	// Store the username, if it's missing, but don't overwrite the existing value.
 	if (st_empty(user->username) && !(user->username = res_field_string(row, 0))) {
 		log_pedantic("Unable to copy username into the user object.");
 		res_table_free(result);
 		return -1;
 	}
 
-	// Store the verification token.
-	if (st_empty(user->verification) && !(user->verification = base64_decode_mod(PLACER(res_field_block(row, 1), res_field_length(row, 1)), NULL))) {
+	// Free the verification token, and store it again, so we capture password changes.
+	st_cleanup(user->verification);
+
+	if (!(user->verification = base64_decode_mod(PLACER(res_field_block(row, 1), res_field_length(row, 1)), NULL))) {
 		log_pedantic("Unable to copy password hash.");
 		res_table_free(result);
 		return -1;
@@ -466,21 +468,22 @@ int_t meta_data_insert_keys(uint64_t usernum, stringer_t *username, key_pair_t *
  * @brief	Retrieve a shard value for user account.
  *
  * @param	usernum		the numerical id of the user to whom the alert message belongs.
- * @param	serial		the nummerid serial number associated with the shard value.
+ * @param	serial		the serial number associated with the shard value.
  * @param	label		the textual label associated with the shard value.
  * @param	output		the buffer where the binary output should be stored.
+ * @param	rotated		the buffer where the rotated variable is stored.
  * @param	transaction	the mysql transaction id of the acknowledgment operation, in cases batch changes need to be rolled back.
  *
  * @return	-1 for unexpected program/system error, 0 on success, 1 if no rows are found.
  */
-int_t meta_data_fetch_shard(uint64_t usernum, uint16_t serial, stringer_t *label, stringer_t *output, int64_t transaction) {
+int_t meta_data_fetch_shard(uint64_t usernum, uint16_t serial, stringer_t *label, stringer_t *output, uint_t *rotated, int64_t transaction) {
 
 	row_t *row;
 	table_t *result;
 	MYSQL_BIND parameters[3];
 
 	// Sanity check.
-	if (!usernum || st_empty(label) || !output || !st_valid_destination(st_opt_get(output)) ||
+	if (!usernum || st_empty(label) || !output || !rotated || !st_valid_destination(st_opt_get(output)) ||
 		st_avail_get(output) != STACIE_SHARD_LENGTH) {
 		log_pedantic("Invalid parameters passed to the shard fetch function.");
 		return -1;
@@ -522,6 +525,9 @@ int_t meta_data_fetch_shard(uint64_t usernum, uint16_t serial, stringer_t *label
 		return -1;
 	}
 
+	// Store the rotated variable, so we know which realm key derivation process to use.
+	*rotated = (uint_t)res_field_uint8(row, 1);
+
 	// Free the query results and return the decoded values.
 	res_table_free(result);
 	return 0;
@@ -541,7 +547,8 @@ int_t meta_data_fetch_shard(uint64_t usernum, uint16_t serial, stringer_t *label
 int_t meta_data_insert_shard(uint64_t usernum, uint16_t serial, stringer_t *label, stringer_t *shard, int64_t transaction) {
 
 	int64_t affected;
-	MYSQL_BIND parameters[4];
+	uint8_t rotated = 1;
+	MYSQL_BIND parameters[5];
 	stringer_t *b64_shard = NULL;
 
 	// Sanity check.
@@ -581,6 +588,12 @@ int_t meta_data_insert_shard(uint64_t usernum, uint16_t serial, stringer_t *labe
 	parameters[3].buffer_type = MYSQL_TYPE_STRING;
 	parameters[3].buffer = st_data_get(b64_shard);
 	parameters[3].buffer_length = st_length_get(b64_shard);
+
+	// Rotated
+	parameters[4].buffer_type = MYSQL_TYPE_TINY;
+	parameters[4].buffer_length = sizeof(uint8_t);
+	parameters[4].buffer = &rotated;
+	parameters[4].is_unsigned = true;
 
 	if ((affected = stmt_exec_affected_conn(stmts.meta_insert_shard, parameters, transaction)) != 1 && affected == -1) {
 		log_pedantic("Unable to insert the user shard value. A database error occurred. { usernum = %lu / label = %.*s }",

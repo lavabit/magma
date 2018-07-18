@@ -113,6 +113,7 @@ bool_t register_data_check_username(stringer_t *username) {
  */
 bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *username, stringer_t *password, int64_t transaction, uint64_t *outuser) {
 
+	uint8_t rotated = 1;
 	uint16_t serial = 0;
 	uint32_t bonus = 0;
 	MYSQL_BIND parameters[8];
@@ -243,6 +244,12 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 	parameters[3].buffer_type = MYSQL_TYPE_STRING;
 	parameters[3].buffer = st_data_get(b64_shard);
 	parameters[3].buffer_length = st_length_get(b64_shard);
+
+	// Rotated
+	parameters[4].buffer_type = MYSQL_TYPE_TINY;
+	parameters[4].buffer_length = sizeof(uint8_t);
+	parameters[4].buffer = &rotated;
+	parameters[4].is_unsigned = true;
 
 	// User_Realms table.
 	if (!stmt_exec_conn(stmts.register_insert_stacie_realms, parameters, transaction)) {
@@ -402,7 +409,7 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 	}
 
 	// Finally derive the realm key, and then create the DIME signet and key pair.
-	if (!(realm = stacie_realm_key(stacie->keys.master, PLACER("mail",  4), shard)) || meta_crypto_keys_create(usernum, username, realm, transaction)) {
+	if (!(realm = stacie_realm_key(stacie->keys.master, PLACER("mail",  4), salt, shard)) || meta_crypto_keys_create(usernum, username, realm, transaction)) {
 		log_pedantic("Unable to insert the user into the database. (Failed on Keys table.)");
 		st_cleanup(newaddr, salt, shard, b64_salt, b64_shard, b64_verification);
 		auth_stacie_cleanup(stacie);

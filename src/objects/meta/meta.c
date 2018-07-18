@@ -98,6 +98,7 @@ meta_user_t * meta_alloc(void) {
  *
  * @param 	usernum			the numeric identifier for the user account.
  * @param 	username		the official username stored in the database.
+ * @param	salt			the user specific salt value.
  * @param	master			the user account's master encryption key which will be used to unlock the private storage key.
  * @param 	verification	the verification token.
  * @param	protocol			a set of protocol specifying the protocol used by the calling function. Values can be META_PROT_NONE,
@@ -108,7 +109,7 @@ meta_user_t * meta_alloc(void) {
  *
  * @return	-1 on error, 0 on success, 1 for an authentication issue.
  */
-int_t meta_get(uint64_t usernum, stringer_t *username, stringer_t *master, stringer_t *verification, META_PROTOCOL protocol, META_GET get, meta_user_t **output) {
+int_t meta_get(uint64_t usernum, stringer_t *username, stringer_t *salt, stringer_t *master, stringer_t *verification, META_PROTOCOL protocol, META_GET get, meta_user_t **output) {
 
 	int_t state;
 	meta_user_t *user = NULL;
@@ -119,7 +120,7 @@ int_t meta_get(uint64_t usernum, stringer_t *username, stringer_t *master, strin
 		return -1;
 	}
 
-	// Pull the user from the usernum, or add it.
+	// Pull the user context using the usernum, or add an empty context if it doesn't exist.
 	if (!(user = meta_inx_find(usernum, protocol))) {
 		log_pedantic("Could not find an existing user object, nor could we create one.");
 		return -1;
@@ -142,7 +143,7 @@ int_t meta_get(uint64_t usernum, stringer_t *username, stringer_t *master, strin
 	}
 
 	// Are we supposed to get the realm keys.
-	if ((get & META_GET_KEYS) && meta_update_realms(user, master, META_LOCKED) < 0) {
+	if ((get & META_GET_KEYS) && meta_update_realms(user, salt, master, META_LOCKED) < 0) {
 		meta_user_unlock(user);
 		meta_inx_remove(usernum, protocol);
 		return -1;

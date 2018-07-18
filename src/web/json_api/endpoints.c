@@ -109,7 +109,7 @@ void api_endpoint_auth(connection_t *con) {
 		return;
 	}
 
-	if ((state = meta_get(auth->usernum, auth->username, auth->keys.master, auth->tokens.verification, META_PROTOCOL_JSON, META_GET_NONE, &user))) {
+	if ((state = meta_get(auth->usernum, auth->username, auth->seasoning.salt, auth->keys.master, auth->tokens.verification, META_PROTOCOL_JSON, META_GET_NONE, &user))) {
 		if (state < 0) {
 			api_error(con, HTTP_ERROR_500, JSON_RPC_2_ERROR_SERVER_INTERNAL, "Internal server error.");
 		}

@@ -70,3 +70,5 @@ CREATE TABLE `Realms` (
   CONSTRAINT `User_Realms_ibfk_1` FOREIGN KEY (`usernum`) REFERENCES `Users` (`usernum`) ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1 MAX_ROWS=4294967295 AVG_ROW_LENGTH=100 COMMENT='User shard values for the different realms.';
 
+ALTER TABLE `Realms` 
+ADD COLUMN `rotated` TINYINT(1) NOT NULL DEFAULT '0' AFTER `shard`;

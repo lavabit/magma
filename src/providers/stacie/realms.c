@@ -19,6 +19,7 @@
  *
  * @param	master_key	The master key, which was derived using the user's password.
  * @param	realm	Realm human readable name for the category of data protected using the given symmetric key.
+ * @param	salt	The user specific salt value. For legacy derivations, this will be a shard duplicate.
  * @param   shard	The shard is the realm specific portion of the key. The shard must be exactly 64 bytes in length.
  *
  * @return	provides a managed string with the realm specific key stored in a secure memory buffer, or NULL if an error
@@ -26,13 +27,13 @@
  * 		result in the output being exactly 64 bytes. The output will contain the cipher key, and the initialization vector,
  * 		which will need to parsed out.
  */
-stringer_t * stacie_realm_key(stringer_t *master_key, stringer_t *realm, stringer_t *shard) {
+stringer_t * stacie_realm_key(stringer_t *master_key, stringer_t *realm, stringer_t *salt, stringer_t *shard) {
 
 	EVP_MD_CTX ctx;
 	uint_t hash_len = 64;
 	stringer_t *result = NULL;
-	size_t key_len, realm_len, shard_len;
-	uchr_t *key_data, *realm_data, *shard_data, *hash_data = MEMORYBUF(64);
+	size_t key_len, realm_len, salt_len, shard_len;
+	uchr_t *key_data, *realm_data, *salt_data, *shard_data, *hash_data = MEMORYBUF(64);
 	const EVP_MD *digest = EVP_sha512_d();
 
 	// Ensure the digest pointer was returned correctly. If this fails, odds are OpenSSL wasn't initialized properly, or
@@ -54,6 +55,11 @@ stringer_t * stacie_realm_key(stringer_t *master_key, stringer_t *realm, stringe
 		return NULL;
 	}
 
+	// The salt value will be 64 bytes, for legacy derivation, and 128 bytes, if the salt is being used.
+	else if (st_empty_out(salt, &salt_data, &salt_len) || (salt_len != 64 && salt_len != 128)) {
+		log_error("The STACIE realm key derivation failed because the salt value was empty.");
+		return NULL;
+	}
 	// And the shard value, which must also be 64 bytes in length.
 	else if (st_empty_out(shard, &shard_data, &shard_len) || shard_len != 64) {
 		log_error("The STACIE realm key derivation failed because the shard value was empty.");
@@ -81,7 +87,7 @@ stringer_t * stacie_realm_key(stringer_t *master_key, stringer_t *realm, stringe
 	// Process the input data.
 	if (EVP_DigestUpdate_d(&ctx, key_data, key_len) != 1 ||
 		EVP_DigestUpdate_d(&ctx, realm_data, realm_len) != 1 ||
-		EVP_DigestUpdate_d(&ctx, shard_data, shard_len) != 1) {
+		EVP_DigestUpdate_d(&ctx, salt_data, salt_len) != 1) {
 		log_pedantic("The STACIE realm key derivation failed because an error occurred while trying to process the input data. {%s}",
 			ssl_error_string(MEMORYBUF(256), 256));
 		EVP_MD_CTX_cleanup_d(&ctx);

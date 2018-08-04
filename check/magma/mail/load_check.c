@@ -17,13 +17,6 @@ bool_t check_mail_load_sthread(stringer_t *errmsg) {
 	mail_message_t *message = NULL;
 	stringer_t *usernames[] = { PLACER("princess", 8), PLACER("magma", 5) }, *passwords[] = { PLACER("password", 8), PLACER("password", 8) };
 
-	// The registration check must be run first, otherwise we won't have a user to check against.
-//	if (status() && (!check_username || !check_password)) {
-//		check_users_register_s(0);
-//		usernames[1] = check_username;
-//		passwords[1] = check_password;
-//	}
-
 	for (int_t i = 0; i < (sizeof(usernames)/sizeof(stringer_t *)) && result && status(); i++) {
 
 		if (st_empty(usernames[i]) || st_empty(passwords[i])) {

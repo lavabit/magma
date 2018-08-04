@@ -433,7 +433,7 @@ session_t *sess_create(connection_t *con, stringer_t *path, stringer_t *applicat
  */
 int_t sess_get(connection_t *con, stringer_t *application, stringer_t *path, stringer_t *token) {
 
-	uint64_t *numbers;
+	uint64_t host, stamp, number, validator, *numbers;
 	scramble_t *scramble;
 	stringer_t *binary, *encrypted;
 	multi_t key = { .type = M_TYPE_UINT64, .val.u64 = 0 };
@@ -450,19 +450,22 @@ int_t sess_get(connection_t *con, stringer_t *application, stringer_t *path, str
 		return 0;
 	}
 
+	// Extract and store the binary integers found inside the decrypted buffer.
 	numbers = st_data_get(binary);
+	host = *numbers;
+	stamp = *(numbers + 1);
+	key.val.u64 = number = *(numbers + 2);
+	validator = *(numbers + 3);
+	st_free(binary);
 
-	// QUESTION: Is this necessary? doesn't inx_find() lock the inx?
+	// The sessions object requires manual locking.
 	inx_lock_read(objects.sessions);
-
-	key.val.u64 = *(numbers + 2);
 
 	if ((con->http.session = inx_find(objects.sessions, key))) {
 		sess_ref_add(con->http.session);
 	}
 
 	inx_unlock(objects.sessions);
-	st_free(binary);
 
 	// Return if we didn't find the session or user.
 	if (!con->http.session || !con->http.session->user) {
@@ -470,55 +473,60 @@ int_t sess_get(connection_t *con, stringer_t *application, stringer_t *path, str
 	}
 
 	// We need to do full validation against the cookie and associated session to ensure the token hasn't been hijacked.
-	if ((*numbers != con->http.session->warden.host) || (*(numbers + 1) != con->http.session->warden.stamp) ||
-			(*(numbers + 2) != con->http.session->warden.number)) {
-		log_error("Received mismatched cookie for authenticated session { user = %s }", st_char_get(con->http.session->user->username));
+	if ((host != con->http.session->warden.host) || (stamp != con->http.session->warden.stamp) ||
+			(number != con->http.session->warden.number)) {
+		log_error("Received mismatched cookie for authenticated session. { user = %.*s }",
+			st_length_int(con->http.session->user->username), st_char_get(con->http.session->user->username));
 		result = -2;
 	}
-	else if (*(numbers + 3) != con->http.session->warden.key) {
-		log_error("Cookie contained an incorrect session key { user = %s }", st_char_get(con->http.session->user->username));
+	else if (validator != con->http.session->warden.key) {
+		log_error("Cookie contained an incorrect session key. { user = %.*s }",
+			st_length_int(con->http.session->user->username), st_char_get(con->http.session->user->username));
 		result = -4;
 	}
 	else if (st_cmp_cs_eq(application, con->http.session->request.application)) {
-		log_error("Cookie did not match session's application { user = %s }", st_char_get(con->http.session->user->username));
+		log_error("Cookie did not match session's application. { user = %.*s }",
+			st_length_int(con->http.session->user->username), st_char_get(con->http.session->user->username));
 		result = -2;
 	}
 	else if (st_cmp_cs_eq(path, con->http.session->request.path)) {
-		log_error("Cookie did not match session's path { user = %s }", st_char_get(con->http.session->user->username));
+		log_error("Cookie did not match session's path. { user = %.*s }",
+			st_length_int(con->http.session->user->username), st_char_get(con->http.session->user->username));
 		result = -2;
 	}
 	else if (st_cmp_cs_eq(con->http.agent, con->http.session->warden.agent)) {
-		log_error("Cookie contained a mismatched user agent { user = %s }", st_char_get(con->http.session->user->username));
+		log_error("Cookie contained a mismatched user agent. { user = %.*s }",
+			st_length_int(con->http.session->user->username), st_char_get(con->http.session->user->username));
 		result = -3;
 	}
 	else if (con->http.session->request.secure != (con_secure(con) ? 1 : 0)) {
-		log_error("Cookie was submitted from a mismatched transport layer { user = %s }", st_char_get(con->http.session->user->username));
+		log_error("Cookie was submitted from a mismatched transport layer. { user = %.*s }",
+			st_length_int(con->http.session->user->username), st_char_get(con->http.session->user->username));
 		result = -5;
 	}
 	else if (!ip_addr_eq(&(con->http.session->warden.ip), (ip_t *)con_addr(con, MEMORYBUF(64)))) {
-		log_error("Cookie was submitted from a mismatched IP address { user = %s }", st_char_get(con->http.session->user->username));
+		log_error("Cookie was submitted from a mismatched IP address. { user = %.*s }",
+			st_length_int(con->http.session->user->username), st_char_get(con->http.session->user->username));
 		result = -5;
 	}
 
-	// Now that we know the token is a legitimate reference to a session, ensure the session it references hasn't expired.
+	// Now that we know the token is a legitimate reference to a session, ensure the referenced session hasn't expired.
 	if (magma.http.session_timeout <= (time(NULL) - con->http.session->warden.stamp)) {
-		log_pedantic("User submitted expired or invalidated cookie; marking for deletion { user = %s }", st_char_get(con->http.session->user->username));
+		log_pedantic("User submitted an expired cookie. { user = %.*s }",
+			st_length_int(con->http.session->user->username), st_char_get(con->http.session->user->username));
+
+		sess_ref_dec(con->http.session);
+		con->http.session = NULL;
+
+		if (!inx_delete(objects.sessions, key)) {
+			log_pedantic("Unexpected error occurred attempting to delete the expired cookie. { key = %lu }", key.val.u64);
+		}
+
 		result = -7;
 	}
 
-	// QUESTION: This destruction needs a second look.
-	if (result < 0) {
-
-		if (!inx_delete(objects.sessions, key)) {
-			log_pedantic("Unexpected error occurred attempting to delete expired cookie { user = %s }", st_char_get(con->http.session->user->username));
-		}
-
-		sess_ref_dec(con->http.session);
-		//sess_destroy(con->http.session);
-		con->http.session = NULL;
-	}
-	// Otherwise, if the last session status update is more than 10 minutes ago, check now to see if things are current.
-	// QUESTION: Why is it 600 here and 120 elsewhere?
+	// This gurantees all user data is checked for freshness every 10 minutes. More frequent checks are used to
+	// refresh the portions of the user metadata that will be accessed by this request.
 	else if ((time(NULL) - sess_refresh_stamp(con->http.session)) > 600) {
 		sess_update(con->http.session);
 	}

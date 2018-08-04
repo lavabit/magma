@@ -360,6 +360,7 @@ bool_t mail_headers(smtp_message_t *message) {
 
 			// Use a stringer for the from field, so we can handle values which require cleanup.
 			else if (length - increment >= 5 && mm_cmp_ci_eq(stream, "From:", 5) == 0) {
+				if (message->from) st_free(message->from);
 				message->from = mail_header_fetch_cleaned(PLACER(stream, length - increment), PLACER("From", 4));
 			}
 

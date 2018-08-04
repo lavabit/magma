@@ -394,6 +394,19 @@ CREATE TABLE `Patterns` (
   PRIMARY KEY (`pattern`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 MIN_ROWS=4294967295 MAX_ROWS=4294967295 AVG_ROW_LENGTH=255 COMMENT='Contains strings that result in blocking an outbound message';
 
+CREATE TABLE `Payments` (
+  `paymentnum` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `timestamp` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `creditcard` varchar(19) NOT NULL DEFAULT '',
+  `expiration` varchar(4) NOT NULL DEFAULT '',
+  `name` varchar(30) NOT NULL DEFAULT '',
+  `amount` float NOT NULL DEFAULT '0',
+  `ip` varchar(15) NOT NULL DEFAULT '',
+  `response` varchar(255) NOT NULL DEFAULT '',
+  `comment` varchar(255) NOT NULL DEFAULT '',
+  PRIMARY KEY (`paymentnum`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 MAX_ROWS=4294967295 AVG_ROW_LENGTH=1000 COMMENT='Stores information about credit card payments.';
+
 DROP TABLE IF EXISTS `Profile`;
 CREATE TABLE `Profile` (
   `usernum` bigint(20) unsigned NOT NULL DEFAULT '0',

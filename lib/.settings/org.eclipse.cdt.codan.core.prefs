@@ -19,13 +19,15 @@ org.eclipse.cdt.codan.internal.checkers.AssignmentInConditionProblem.params={lau
 org.eclipse.cdt.codan.internal.checkers.AssignmentToItselfProblem=-Error
 org.eclipse.cdt.codan.internal.checkers.AssignmentToItselfProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Assignment to itself\\")"}
 org.eclipse.cdt.codan.internal.checkers.CaseBreakProblem=-Warning
-org.eclipse.cdt.codan.internal.checkers.CaseBreakProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"No break at end of case\\")",no_break_comment\=>"no break",last_case_param\=>true,empty_case_param\=>false}
+org.eclipse.cdt.codan.internal.checkers.CaseBreakProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"No break at end of case\\")",no_break_comment\=>"no break",last_case_param\=>true,empty_case_param\=>false,enable_fallthrough_quickfix_param\=>false}
 org.eclipse.cdt.codan.internal.checkers.CatchByReference=-Warning
 org.eclipse.cdt.codan.internal.checkers.CatchByReference.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Catching by reference is recommended\\")",unknown\=>false,exceptions\=>()}
 org.eclipse.cdt.codan.internal.checkers.CircularReferenceProblem=-Error
 org.eclipse.cdt.codan.internal.checkers.CircularReferenceProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>false,RUN_ON_INC_BUILD\=>false,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Circular inheritance\\")"}
 org.eclipse.cdt.codan.internal.checkers.ClassMembersInitialization=-Warning
 org.eclipse.cdt.codan.internal.checkers.ClassMembersInitialization.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Class members should be properly initialized\\")",skip\=>true}
+org.eclipse.cdt.codan.internal.checkers.DecltypeAutoProblem=Error
+org.eclipse.cdt.codan.internal.checkers.DecltypeAutoProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Invalid 'decltype(auto)' specifier\\")"}
 org.eclipse.cdt.codan.internal.checkers.FieldResolutionProblem=-Error
 org.eclipse.cdt.codan.internal.checkers.FieldResolutionProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>false,RUN_ON_INC_BUILD\=>false,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Field cannot be resolved\\")"}
 org.eclipse.cdt.codan.internal.checkers.FunctionResolutionProblem=-Error
@@ -70,4 +72,6 @@ org.eclipse.cdt.codan.internal.checkers.UnusedVariableDeclarationProblem=-Warnin
 org.eclipse.cdt.codan.internal.checkers.UnusedVariableDeclarationProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Unused variable declaration in file scope\\")",macro\=>true,exceptions\=>("@(\#)","$Id")}
 org.eclipse.cdt.codan.internal.checkers.VariableResolutionProblem=-Error
 org.eclipse.cdt.codan.internal.checkers.VariableResolutionProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>false,RUN_ON_INC_BUILD\=>false,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Symbol is not resolved\\")"}
+org.eclipse.cdt.qt.core.qtproblem=Warning
+org.eclipse.cdt.qt.core.qtproblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>false,RUN_ON_INC_BUILD\=>false,RUN_ON_FILE_OPEN\=>true,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>null}
 useParentScope=false

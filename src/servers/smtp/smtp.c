@@ -996,7 +996,7 @@ int_t smtp_data_read(connection_t *con, stringer_t **message) {
 void smtp_data_outbound(connection_t *con) {
 
 	int_t state;
-	stringer_t *holder;
+	stringer_t *raw = NULL, *result = NULL, *sanitized = NULL;
 
 	// Check the outbound blocker list.
 	if (pattern_check(con->smtp.message->text) == -2) {
@@ -1012,53 +1012,56 @@ void smtp_data_outbound(connection_t *con) {
 		smtp_session_reset(con);
 		return;
 	}
-
 	// We need to extract just the email address from the message header.
-	else if (!(holder = mail_extract_address(con->smtp.message->from))) {
+	else if (!(raw = mail_extract_address(con->smtp.message->from)) || !(sanitized = auth_sanitize_address(raw))) {
 		con_write_bl(con, "550 DATA FAILED - UNABLE TO LOCATE THE \"FROM\" ADDRESS IN THE MESSAGE - PLEASE CHECK YOUR EMAIL CLIENT SETTINGS AND TRY AGAIN\r\n", 126);
 		smtp_session_reset(con);
+		st_cleanup(raw);
 		return;
 	}
-
-
 	// Now check the address in the header.
-	else if ((state = smtp_check_authorized_from(con->smtp.out_prefs->usernum, auth_sanitize_address(holder))) == 0) {
+	else if ((state = smtp_check_authorized_from(con->smtp.out_prefs->usernum, sanitized)) == 0) {
 		con_print(con, "550 DATA BLOCKED - THIS USER ACCOUNT IS NOT AUTHORIZED TO SEND MESSAGES WITH THE ADDRESS <%.*s> - PLEASE CHECK YOUR " \
-			"EMAIL CLIENT SETTINGS AND TRY AGAIN\r\n", st_length_get(holder), st_char_get(holder));
+			"EMAIL CLIENT SETTINGS AND TRY AGAIN\r\n", st_length_get(raw), st_char_get(raw));
 		smtp_session_reset(con);
-		st_free(holder);
+		st_free(sanitized);
+		st_free(raw);
 		return;
 	}
 	else if (state < 0) {
 		con_print(con, "451 DATA FAILED - AN ERROR OCCURRED WHILE CHECKING WHETHER THIS ACCOUNT IS AUTHORIZED TO SEND MESSAGES USING <%.*s> - " \
-			"PLEASE TRY AGAIN LATER\r\n", st_length_get(holder), st_char_get(holder));
+			"PLEASE TRY AGAIN LATER\r\n", st_length_get(raw), st_char_get(raw));
 		smtp_session_reset(con);
-		st_free(holder);
+		st_free(sanitized);
+		st_free(raw);
 		return;
 	}
 
 	// Check the mail from. If its a designated null sender, use the holder.
 	if (!st_cmp_ci_eq(con->smtp.mailfrom, PLACER("<>", 2))) {
 		st_free(con->smtp.mailfrom);
-		con->smtp.mailfrom = st_dupe(holder);
+		con->smtp.mailfrom = st_dupe(raw);
 	}
 	else if ((state = smtp_check_authorized_from(con->smtp.out_prefs->usernum, con->smtp.mailfrom)) == 0) {
 		con_print(con, "550 DATA BLOCKED - THIS USER ACCOUNT IS NOT AUTHORIZED TO SEND MESSAGES WITH THE ADDRESS <%.*s> - PLEASE CHECK YOUR " \
 			"EMAIL CLIENT SETTINGS AND TRY AGAIN\r\n", st_length_get(con->smtp.mailfrom), st_char_get(con->smtp.mailfrom));
 		smtp_session_reset(con);
-		st_free(holder);
+		st_free(sanitized);
+		st_free(raw);
 		return;
 	}
 	else if (state < 0) {
 		con_print(con, "451 DATA FAILED - AN ERROR OCCURRED WHILE CHECKING WHETHER THIS ACCOUNT IS AUTHORIZED TO SEND MESSAGES USING <%.*s> - " \
 			"PLEASE TRY AGAIN LATER\r\n", st_length_get(con->smtp.mailfrom), st_char_get(con->smtp.mailfrom));
 		smtp_session_reset(con);
-		st_free(holder);
+		st_free(sanitized);
+		st_free(raw);
 		return;
 	}
 
-	st_free(holder);
-	holder = NULL;
+	st_free(sanitized);
+	st_free(raw);
+	raw = sanitized = NULL;
 
 	// Make sure this message does not contain a virus.
 	if ((state = virus_check(con->smtp.message->text)) == -2) {
@@ -1067,22 +1070,19 @@ void smtp_data_outbound(connection_t *con) {
 		return;
 	}
 
-	state = smtp_relay_message(con, &holder);
-	if (state < 0 && holder != NULL) {
-		con_write_st(con, holder);
-		st_free(holder);
-	}
-	else if (state > 0) {
-		con_write_st(con, holder);
-		smtp_update_transmission_stats(con);
-		st_free(holder);
-	}
-	else {
-		con_write_bl(con, "451 DATA FAILED - UNABLE TO RELAY OUTBOUND MESSAGES AT THIS TIME - PLEASE TRY AGAIN LATER\n\n", 91);
-	}
+	state = smtp_relay_message(con, &result);
+
+	// If the state is non-zero, then status is in the result buffer.
+	if (state && result) con_write_st(con, result);
+
+	// Otherwise we print a generic status result
+	else con_write_bl(con, "451 DATA FAILED - UNABLE TO RELAY OUTBOUND MESSAGES AT THIS TIME - PLEASE TRY AGAIN LATER\n\n", 91);
+
+	// If the result was positive, we sent the message and need to update the user statistics.
+	if (state > 0) smtp_update_transmission_stats(con);
 
 	smtp_session_reset(con);
-
+	st_cleanup(result);
 	return;
 }
 

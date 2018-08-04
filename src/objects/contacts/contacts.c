@@ -126,17 +126,17 @@ void contact_name(contact_t *contact, stringer_t *name) {
 	if (contact && !st_empty_out(name, &data, &len) && (data = mm_dupe(data, len + 1))) {
 
 		// If the name isn't foreign data, then we should free it first.
-		if (!st_opt_test(contact->name, FOREIGNDATA)) {
+		if (st_opt_test(contact->name, JOINTED) && !st_opt_test(contact->name, FOREIGNDATA)) {
 			mm_free(st_data_get(contact->name));
 		}
 
 		st_data_set(contact->name, data);
 		st_length_set(contact->name, len);
 
-		// Check whether the existing name is using a foreign buffer that needs to be freed?
-		if (st_opt_test(contact->name, FOREIGNDATA)) {
-			st_opt_set(contact->name, FOREIGNDATA, false);
-		}
+		// Ensure the name is configured correctly, as a jointed string.
+		if (!st_opt_test(contact->name, JOINTED)) st_opt_set(contact->name, JOINTED, true);
+		if (!st_opt_test(contact->name, FOREIGNDATA)) st_opt_set(contact->name, JOINTED, true);
+
 	}
 
 	return;

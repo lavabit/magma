@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 # Name: check.callgrind.sh
 # Author: Ladar Levison
@@ -38,13 +38,13 @@ valgrind --tool=callgrind \
 --trace-jump=yes \
 --collect-atstart=yes \
 --instr-atstart=yes  \
---callgrind-out-file=$HOME/Desktop/callgrind.out \
+--callgrind-out-file=$MAGMA_DIST/callgrind.out \
 --suppressions=/usr/lib64/valgrind/default.supp \
 --suppressions=$MAGMA_DIST/sandbox/etc/magma.suppressions \
 $MAGMA_DIST/magmad.check $MAGMA_DIST/sandbox/etc/magma.sandbox.config 
 
 export VPID=$!
-export VLOG=$HOME/Desktop/callgrind.out
+export VLOG=$MAGMA_DIST/callgrind.out
 
 wait $VPID
 

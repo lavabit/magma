@@ -37,7 +37,7 @@ valgrind --tool=massif \
 --time-unit=i \
 --detailed-freq=10 \
 --max-snapshots=100 \
---massif-out-file=$HOME/massif.out.%p \
+--massif-out-file=$MAGMA_DIST/massif.out.%p \
 --suppressions=/usr/lib64/valgrind/default.supp \
 --suppressions=$MAGMA_DIST/sandbox/etc/magma.suppressions \
 $MAGMA_DIST/magmad.check $MAGMA_DIST/sandbox/etc/magma.sandbox.config

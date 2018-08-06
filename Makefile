@@ -27,6 +27,10 @@ MAGMA_CHECK_PROGRAM_GPROF		= $(addsuffix $(EXEEXT), magmad.check.gprof)
 MAGMA_PROGRAM_PPROF				= $(addsuffix $(EXEEXT), magmad.pprof)
 MAGMA_CHECK_PROGRAM_PPROF		= $(addsuffix $(EXEEXT), magmad.check.pprof)
 
+MAGMA_PROGRAM_STRIPPED				= $(addsuffix .stripped, $(MAGMA_PROGRAM))
+MAGMA_CHECK_PROGRAM_STRIPPED	= $(addsuffix .stripped, $(MAGMA_CHECK_PROGRAM))
+MAGMA_SHARED_LIBRARY_STRIPPED = $(addsuffix .stripped, $(MAGMA_SHARED_LIBRARY))
+
 DIME_PROGRAM					= $(addsuffix $(EXEEXT), dime)
 SIGNET_PROGRAM					= $(addsuffix $(EXEEXT), signet)
 GENREC_PROGRAM					= $(addsuffix $(EXEEXT), genrec)
@@ -229,7 +233,9 @@ endif
 
 all: config warning $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) finished 
 
-strip: config warning stripped-$(MAGMA_PROGRAM) stripped-$(MAGMA_SHARED_LIBRARY) finished
+strip: config warning $(MAGMA_SHARED_LIBRARY_STRIPPED) $(MAGMA_PROGRAM_STRIPPED) $(MAGMA_CHECK_PROGRAM_STRIPPED) finished
+
+stripped: strip
 	
 warning:
 ifeq ($(VERBOSE),no)
@@ -278,30 +284,37 @@ endif
 clean:
 	@$(RM) $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) 
 	@$(RM) $(MAGMA_PROGRAM_PPROF) $(MAGMA_CHECK_PROGRAM_PPROF) $(MAGMA_PROGRAM_GPROF) $(MAGMA_CHECK_PROGRAM_GPROF)
+	@$(RM) $(MAGMA_PROGRAM_STRIPPED) $(MAGMA_CHECK_PROGRAM_STRIPPED) $(MAGMA_SHARED_LIBRARY_STRIPPED)
 	@$(RM) $(MAGMA_OBJFILES) $(DIME_OBJFILES) $(SIGNET_OBJFILES) $(GENREC_OBJFILES) $(MAGMA_CHECK_OBJFILES) $(DIME_CHECK_OBJFILES) $(MAGMA_PROF_OBJFILES) $(MAGMA_CHECK_PROF_OBJFILES) 
 	@$(RM) $(MAGMA_DEPFILES) $(DIME_DEPFILES) $(SIGNET_DEPFILES) $(GENREC_DEPFILES) $(MAGMA_CHECK_DEPFILES) $(DIME_CHECK_DEPFILES)
 	@for d in $(sort $(dir $(MAGMA_OBJFILES)) $(dir $(MAGMA_CHECK_OBJFILES)) $(dir $(DIME_OBJFILES)) $(dir $(SIGNET_OBJFILES)) $(dir $(GENREC_OBJFILES))); \
 		do if test -d "$$d"; then $(RMDIR) "$$d"; fi; done
 	@for d in $(sort $(dir $(MAGMA_DEPFILES)) $(dir $(MAGMA_CHECK_DEPFILES)) $(dir $(DIME_DEPFILES)) $(dir $(SIGNET_DEPFILES)) $(dir $(GENREC_DEPFILES))); \
 		do if test -d "$$d"; then $(RMDIR) "$$d"; fi; done
+	@$(RM) --force gmon.out callgrind.out callgraph.dot callgraph.dot.ps massif.out.* cachegrind.out.* \
+		magmad.pprof.out magmad.check.pprof.out magmad.gprof.* magmad.check.gprof.*
 	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
 
 distclean: 
 	@$(RM) $(MAGMA_PROGRAM) $(DIME_PROGRAM) $(SIGNET_PROGRAM) $(GENREC_PROGRAM) $(MAGMA_CHECK_PROGRAM) $(DIME_CHECK_PROGRAM) 
-	@$(RM) $(MAGMA_PROGRAM_PPROF) $(MAGMA_CHECK_PROGRAM_PPROF) $(MAGMA_PROGRAM_GPROF) $(MAGMA_CHECK_PROGRAM_GPROF) $(MAGMA_SHARED_LIBRARY)
+	@$(RM) $(MAGMA_PROGRAM_STRIPPED) $(MAGMA_CHECK_PROGRAM_STRIPPED) $(MAGMA_SHARED_LIBRARY_STRIPPED)
+	@$(RM) $(MAGMA_PROGRAM_PPROF) $(MAGMA_CHECK_PROGRAM_PPROF) $(MAGMA_PROGRAM_GPROF) $(MAGMA_CHECK_PROGRAM_GPROF)
 	@$(RM) $(MAGMA_OBJFILES) $(DIME_OBJFILES) $(SIGNET_OBJFILES) $(GENREC_OBJFILES) $(MAGMA_CHECK_OBJFILES) $(DIME_CHECK_OBJFILES) $(MAGMA_PROF_OBJFILES) $(MAGMA_CHECK_PROF_OBJFILES)  
 	@$(RM) $(MAGMA_DEPFILES) $(DIME_DEPFILES) $(SIGNET_DEPFILES) $(GENREC_DEPFILES) $(MAGMA_CHECK_DEPFILES) $(DIME_CHECK_DEPFILES)
-	@$(RM) --recursive --force $(DEPDIR) $(OBJDIR) lib/local lib/logs lib/objects lib/sources
+	@$(RM) --force --recursive lib/local lib/logs lib/objects lib/sources $(DEPDIR) $(OBJDIR)
+	@$(RM) --force gmon.out callgrind.out callgraph.dot callgraph.dot.ps massif.out.* cachegrind.out.* \
+		magmad.pprof.out magmad.check.pprof.out magmad.gprof.* magmad.check.gprof.*
+	@$(RM) $(MAGMA_SHARED_LIBRARY)
 	@echo 'Finished' $(BOLD)$(GREEN)$(TARGETGOAL)$(NORMAL)
 
-stripped-%: $(MAGMA_PROGRAM) $(MAGMA_SHARED_LIBRARY)
+%.stripped $(addsuffix $(DYNLIBEXT), %.stripped): %
 ifeq ($(VERBOSE),no)
 	@echo 'Creating' $(RED)$@$(NORMAL)
 else
 	@echo 
 endif
-	$(RUN)$(STRIP) $(STRIPFLAGS) --output-format=$(shell objdump -p "$(subst stripped-,,$@)" | grep "file format" | head -1 | \
-	awk -F'file format' '{print $$2}' | tr --delete [:space:]) -o "$@" "$(subst stripped-,,$@)"
+	$(RUN)$(STRIP) $(STRIPFLAGS) --output-format=$(shell objdump -p "$(subst .stripped,,$@)" | grep "file format" | head -1 | \
+	awk -F'file format' '{print $$2}' | tr --delete [:space:]) -o "$@" "$(subst .stripped,,$@)"
 
 install: $(MAGMA_PROGRAM) $(MAGMA_SHARED_LIBRARY)
 ifeq ($(VERBOSE),no)
@@ -450,6 +463,6 @@ endif
 # Special Make Directives
 .SUFFIXES: .c .cc .cpp .o 
 #.NOTPARALLEL: warning conifg $(PACKAGE_DEPENDENCIES)
-.PHONY: all strip warning config finished check setup clean distclean install pprof gprof
+.PHONY: all strip stripped warning config finished check setup clean distclean install pprof gprof
 
 # vim:set softtabstop=4 shiftwidth=4 tabstop=4:

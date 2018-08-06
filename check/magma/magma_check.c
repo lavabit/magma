@@ -85,7 +85,7 @@ void suite_check_testcase(Suite *s, const char *tags, const char *name, TFun fun
 
 /***
  * @return Will return -1 if the code is unable to determine whether tracing is active, 0 if tracing is disabled and
- *		1 if tracing has been detected.
+ *		1 if tracing has been detected. Tracing indicates the process is running atop a debugger.
  */
 int_t running_on_debugger(void) {
 
@@ -118,6 +118,21 @@ int_t running_on_debugger(void) {
 	}
 
 	return -1;
+}
+
+/***
+ * @return Will return -1 if the code is unable to determine whether profiling is active, 0 if profiling is disabled and
+ *		1 if profiling has been detected.
+ */
+int_t running_on_profiler(void) {
+
+	void *mcount = NULL;
+
+	if ((mcount = dlsym(NULL, "mcount"))) {
+		return 1;
+	}
+
+return 0;
 }
 
 /**
@@ -230,7 +245,7 @@ int_t check_args_parse(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
 
 	SRunner *sr;
-	int_t failed = 0, result;
+	int_t failed = 0, debugger = 0, profiler = 0, result;
 	pthread_t *net_listen_thread = NULL;
 	time_t prog_start, test_start, test_end;
 
@@ -287,17 +302,26 @@ int main(int argc, char *argv[]) {
 		srunner_add_suite(sr, suite_check_regression());
 	}
 
-	// If were being run under Valgrind, we need to disable forking and increase the default timeout.
-	// Under Valgrind, forked checks appear to improperly timeout.
-	if (RUNNING_ON_VALGRIND == 0 && (failed = running_on_debugger()) == 0) {
+
+	// Check whether valgrind, gdb, or gprof are active. Otherwise execute normally. The profiler check should be done
+	// before the debugger check, as the latter involves forking, which will result in a spurious gprof output file if
+	// if profiling is indeed active.
+	if (RUNNING_ON_VALGRIND == 0 && (profiler = running_on_profiler()) == 0 && (debugger = running_on_debugger()) == 0) {
 		log_unit("Not being traced or profiled...\n");
 		srunner_set_fork_status (sr, CK_FORK);
 		case_timeout = RUN_TEST_CASE_TIMEOUT;
 	}
 
-	// Trace detection attempted was thwarted.
+	// A profiler was detected.
+	else if (profiler) {
+		log_unit("A profiler has been detected...\n");
+		srunner_set_fork_status (sr, CK_NOFORK);
+		case_timeout = RUN_TEST_CASE_TIMEOUT;
+	}
+
+	// If were being run under Valgrind, or atop a debugger like gdb, we disable forking and increase the default timeout.
 	else {
-		if (failed == -1) log_unit("Trace detection was thwarted.\n");
+		if (debugger == -1) log_unit("Trace detection was thwarted.\n");
 		else log_unit("Tracing or debugging is active...\n");
 		srunner_set_fork_status (sr, CK_NOFORK);
 		case_timeout = PROFILE_TEST_CASE_TIMEOUT;

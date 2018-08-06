@@ -22,34 +22,46 @@ res/sql/Hostname.sql
 /lib/objects/
 /lib/sources/
 
+# Bundled Dependency Test Tool
+/lib/check/magma.open.check
+
 # Compiled Binaries
 /magmad
-/stripped-magmad
 /magmad.so
-/stripped-magmad.so
 /magmad.check
+
+# Stripped Binaries
+/magmad.stripped
+/magmad.so.stripped
+/magmad.check.stripped
+
+# Crypto Tools
 /dime
 /signet
 /genrec
 /dime.check
-/lib/check/magma.open.check
 
 # Tool Compiler Artifacts and Binaries
-dev/tools/pwtool/pwtool
-dev/tools/runner/runner
-dev/tools/testde/testde
-dev/tools/lockdown/lockdown
-dev/tools/shabench/shabench
-
+/dev/tools/pwtool/pwtool
+/dev/tools/runner/runner
+/dev/tools/testde/testde
+/dev/tools/lockdown/lockdown
+/dev/tools/shabench/shabench
 
 # Profiler Artifacts and Binaries
 /gmon.out
+/callgrind.out
+/massif.out.*
+/cachegrind.out.*
+/magmad.pprof.out
+/magmad.gprof.out.*
+/magmad.check.pprof.out
+/magmad.check.gprof.out.*
+
 /magmad.gprof
 /magmad.gprof.so
 /magmad.check.gprof
 
 /magmad.pprof
-/magmad.pprof.out
 /magmad.check.pprof
-/magmad.check.pprof.out
 

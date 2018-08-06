@@ -30,7 +30,7 @@ valgrind --tool=cachegrind \
 --read-var-info=yes \
 --cache-sim=yes \
 --branch-sim=no \
---cachegrind-out-file=$HOME/cachegrind.out.%p \
+--cachegrind-out-file=$MAGMA_DIST/cachegrind.out.%p \
 --suppressions=/usr/lib64/valgrind/default.supp \
 --suppressions=$MAGMA_DIST/sandbox/etc/magma.suppressions \ 
 $MAGMA_DIST/magmad.check $MAGMA_DIST/sandbox/etc/magma.sandbox.config

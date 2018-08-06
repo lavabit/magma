@@ -74,7 +74,7 @@ bool_t st_valid_free(uint32_t opts) {
 	if (!st_valid_opts(opts)) {
 		return false;
 	}
-	else if ((opts & STACK) || ((opts & FOREIGNDATA) && !(opts & PLACER_T))) {
+	else if ((opts & STACK) && (opts & FOREIGNDATA)) {
 		return false;
 	}
 

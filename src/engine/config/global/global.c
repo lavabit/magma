@@ -897,8 +897,9 @@ bool_t config_load_database_settings(void) {
 				cache_config(name, value);
 			}
 
-			// Otherwise if we still haven't matched a value, report an error.
-			else {
+			// Otherwise if we still haven't matched a value, and it's not one of the valid keys that aren't stored in the
+			// global configuration, we print the error and exit.
+			else if (st_cmp_ci_eq(name, CONSTANT("magma.version"))) {
 				log_critical("%.*s is not a valid setting.", st_length_int(name), st_char_get(name));
 				res_table_free(database_pairs);
 				return false;

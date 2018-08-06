@@ -1,1 +1,1 @@
-UPDATE Hosts SET hostname = 'dark.local' WHERE hostnum = 1;
+INSERT INTO `Hosts` (`hostnum`, `hostname`, `timestamp`) VALUES (1,'dark.local',NOW());

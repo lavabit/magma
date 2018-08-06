@@ -74,37 +74,46 @@ if [ ! -d $MAGMA_RES_STORAGE ]; then
 	echo "The local storage directory appears to be missing. It will be created. { path = $MAGMA_RES_STORAGE }"
 fi
 
-# Generate Start.sql from the user-provided Schema
-echo "DROP DATABASE IF EXISTS \`${MYSQL_SCHEMA}\`;
+# Generate a Start.sql file using the user-provided schema name.
+cat <<-EOF > $MAGMA_RES_SQL/Start.sql
+DROP DATABASE IF EXISTS \`${MYSQL_SCHEMA}\`;
 CREATE DATABASE IF NOT EXISTS \`${MYSQL_SCHEMA}\`;
 USE \`${MYSQL_SCHEMA}\`;
 
 SET SESSION sql_mode = 'ALLOW_INVALID_DATES';
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
-SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;" > $MAGMA_RES_SQL/Start.sql
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+EOF
 
 if [ -z "$HOSTNAME" ]; then
 	HOSTNAME=$(hostname)
 fi
 
-# Generate Hostname.sql with the system's Hostname
-echo "UPDATE Hosts SET hostname = '$HOSTNAME' WHERE hostnum = 1;" > $MAGMA_RES_SQL/Hostname.sql
+# Generate the Hostname.sql file using the system host name.
+echo "INSERT INTO \`Hosts\` (\`hostnum\`, \`hostname\`, \`timestamp\`) VALUES (1,'$HOSTNAME',NOW());" > $MAGMA_RES_SQL/Hostname.sql
+
+# Generate Version.sql file with the correct version number.
+MAGMA_VERSION=`grep --extended-regexp "^PACKAGE_VERSION" Makefile | awk --field-separator='=' '{print \$2}' | awk --field-separator='.' '{print \$1}' | tr --delete [:blank:]`
+echo "INSERT INTO \`Host_Config\` (\`confignum\`, \`hostnum\`, \`application\`, \`name\`, \`value\`, \`timestamp\`) VALUES (1,NULL,'magmad','magma.version','$MAGMA_VERSION',NOW());" > $MAGMA_RES_SQL/Version.sql
 
 # Tell git to skip checking for changes to these SQL files, but we only do this if git is on the system and the files
 # are stored inside a repo.
 GIT_IS_AVAILABLE=`which git &> /dev/null && git log &> /dev/null && echo 1`
 if [[ "$GIT_IS_AVAILABLE" == "1" ]]; then
 	git update-index --skip-worktree "$MAGMA_RES_SQL/Start.sql"
+	git update-index --skip-worktree "$MAGMA_RES_SQL/Version.sql"
 	git update-index --skip-worktree "$MAGMA_RES_SQL/Hostname.sql"
 fi
 
+# Add -vvv to the mysql command line option when the batch fails to assist in troubleshooting.
 cat $MAGMA_RES_SQL/Start.sql \
 	$MAGMA_RES_SQL/Schema.sql \
-	$MAGMA_RES_SQL/Data.sql \
 	$MAGMA_RES_SQL/Migration.sql \
-	$MAGMA_RES_SQL/Finish.sql \
 	$MAGMA_RES_SQL/Hostname.sql \
-| mysql --batch -u "${MYSQL_USER}" --password="${MYSQL_PASSWORD}"
+	$MAGMA_RES_SQL/Version.sql \
+	$MAGMA_RES_SQL/Data.sql \
+	$MAGMA_RES_SQL/Finish.sql \
+| mysql -vvv --batch -u "${MYSQL_USER}" --password="${MYSQL_PASSWORD}"
 
 # Remove the storage tanks.
 rm --force "$MAGMA_RES_TANKS/system.data"

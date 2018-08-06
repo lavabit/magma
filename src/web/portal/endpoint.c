@@ -2665,11 +2665,12 @@ void portal_endpoint_contacts_edit(connection_t *con) {
 
 	/// HIGH: We aren't checking/validating the contact details! And we should probably do our own duplication checks to avoid placing unnecessary load on the database.
 	while (iter && status >= 0) {
-    if ((key = (chr_t *)json_object_iter_key_d(iter)) && (value = json_object_iter_value_d(iter)) && json_is_string(value) &&	(content = (chr_t *)json_string_value_d(value))) {
-    	status = contact_edit(contact, con->http.session->user->usernum, foldernum, NULLER(key), NULLER(content));
+		if ((key = (chr_t *)json_object_iter_key_d(iter)) && (value = json_object_iter_value_d(iter)) && json_is_string(value) &&
+			(content = (chr_t *)json_string_value_d(value))) {
+			status = contact_edit(contact, con->http.session->user->usernum, foldernum, NULLER(key), NULLER(content));
 		}
 
-    iter = json_object_iter_next_d(pairs, iter);
+		iter = json_object_iter_next_d(pairs, iter);
 	}
 
 	sess_serial_check(con->http.session, OBJECT_CONTACTS);

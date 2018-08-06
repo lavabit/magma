@@ -133,9 +133,11 @@ void contact_name(contact_t *contact, stringer_t *name) {
 		st_data_set(contact->name, data);
 		st_length_set(contact->name, len);
 
-		// Ensure the name is configured correctly, as a jointed string.
+		// Ensure the contact name is setup as a jointed string, so the data buffer is freed.
 		if (!st_opt_test(contact->name, JOINTED)) st_opt_set(contact->name, JOINTED, true);
-		if (!st_opt_test(contact->name, FOREIGNDATA)) st_opt_set(contact->name, JOINTED, true);
+
+		// Ensure the contact name has the foreign data flag set to false so the data buffer is freed separately from the header.
+		if (st_opt_test(contact->name, FOREIGNDATA)) st_opt_set(contact->name, FOREIGNDATA, false);
 
 	}
 

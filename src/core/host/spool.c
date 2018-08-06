@@ -54,13 +54,16 @@ stringer_t * spool_path(int_t spool) {
 	}
 
 	// If the spool directory isn't configured, fall back to using /tmp/magma/ instead.
+#ifdef  MAGMA_ENGINE_CONFIG_GLOBAL_H
 	if (magma.spool) {
 		result = st_merge_opts(NULLER_T | CONTIGUOUS | HEAP, "nnn", magma.spool, (*(magma.spool + ns_length_get(magma.spool) - 1) == '/' ? "" : "/"), folder);
 	}
 	else {
 		result = st_merge_opts(NULLER_T | CONTIGUOUS | HEAP, "nn", "/tmp/magma/", folder);
 	}
-
+#else
+	result = st_merge_opts(NULLER_T | CONTIGUOUS | HEAP, "nn", "/tmp/magma/", folder);
+#endif
 	return result;
 }
 
@@ -190,7 +193,7 @@ int_t spool_check_file(const char *file, const struct stat *info, int type) {
 
 	if (type == FTW_F) {
 		if (unlink(file)) {
-			log_error("An error occurred while trying to unlink a temporary file inside the spool. {%s / %s}", strerror_r(errno, bufptr, buflen), file);
+			log_error("An error occurred while trying to unlink a temporary file inside the spool. {%s / %s}", strerror_r(errno, MEMORYBUF(1024), 1024), file);
 			mutex_lock(&spool_error_lock);
 			spool_errors++;
 			mutex_unlock(&spool_error_lock);
@@ -291,7 +294,7 @@ bool_t spool_start(void) {
 			path = spool_path(MAGMA_SPOOL_SCAN);
 
 		if (path) {
-			if (spool_check(path)) {
+			if (spool_check(path) < 0) {
 				log_critical("Spool path is invalid. {path = %.*s}", st_length_int(path), st_char_get(path));
 				result = false;
 			}

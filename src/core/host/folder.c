@@ -19,13 +19,14 @@ int_t folder_exists(stringer_t *path, bool_t create) {
 	int_t result = 0;
 
 	if (!(d = opendir(st_char_get(path)))) {
-		if (!create || !(result = mkdir(st_char_get(path), S_IRWXU))) {
+		if (!create || (result = mkdir(st_char_get(path), S_IRWXU))) {
 			result = -1;
 		}
-		{
+		else {
 			result = 1;
 		}
-	} else {
+	}  
+	else {
 		closedir(d);
 	}
 

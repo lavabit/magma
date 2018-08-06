@@ -162,7 +162,6 @@ enum {
 char * type(M_TYPE type);
 /************ TYPE ************/
 
-
 #include "memory/memory.h"
 #include "strings/strings.h"
 #include "classify/classify.h"

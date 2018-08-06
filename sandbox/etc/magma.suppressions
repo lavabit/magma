@@ -1,6 +1,47 @@
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:my_thread_init
+   fun:sql_thread_start
+   fun:thread_start
+   fun:net_accept
+   fun:start_thread
+   fun:clone
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:allocate_stack
+   fun:pthread_create@@GLIBC_2.2.5
+   fun:thread_launch
+   fun:thread_alloc
+   fun:net_listen
+   fun:start_thread
+   fun:clone
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:mm_alloc
+   fun:thread_alloc
+   fun:net_listen
+   fun:start_thread
+   fun:clone
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
    fun:malloc
    fun:SPF_dns_resolv_lookup
    fun:SPF_dns_lookup

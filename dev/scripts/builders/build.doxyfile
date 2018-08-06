@@ -31,7 +31,7 @@ PROJECT_NAME = Magma
 # This could be handy for archiving the generated documentation or
 # if some version control system is used.
 
-PROJECT_NUMBER = 6.0.2
+PROJECT_NUMBER = 6.4.1058
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute)
 # base path where the generated documentation will be put.
@@ -170,7 +170,7 @@ SEPARATE_MEMBER_PAGES = NO
 # The TAB_SIZE tag can be used to set the number of spaces in a tab.
 # Doxygen uses this value to replace tabs by spaces in code fragments.
 
-TAB_SIZE = 8
+TAB_SIZE = 2
 
 # This tag can be used to specify a number of aliases that acts
 # as commands in the documentation. An alias has the form "name=value".
@@ -429,7 +429,7 @@ SORT_BY_SCOPE_NAME = NO
 # disable (NO) the todo list. This list is created by putting \todo
 # commands in the documentation.
 
-GENERATE_TODOLIST = YES
+GENERATE_TODOLIST = NO
 
 # The GENERATE_TESTLIST tag can be used to enable (YES) or
 # disable (NO) the test list. This list is created by putting \test
@@ -468,7 +468,7 @@ MAX_INITIALIZER_LINES = 30
 # at the bottom of the documentation of classes and structs. If set to YES the
 # list will mention the files that were used to generate the documentation.
 
-SHOW_USED_FILES = YES
+SHOW_USED_FILES = NO
 
 # If the sources in your project are distributed over multiple directories
 # then setting the SHOW_DIRECTORIES tag to YES will show the directory hierarchy
@@ -1030,7 +1030,15 @@ EXTRA_PACKAGES =
 # the first chapter. If it is left blank doxygen will generate a
 # standard header. Notice: only use this tag if you know what you are doing!
 
-LATEX_HEADER = 
+# LATEX_HEADER = header.tex
+
+# The LATEX_FOOTER tag can be used to specify a personal LaTeX footer for the 
+# generated LaTeX document. The footer should contain everything after
+# the last chapter. If it is left blank doxygen will generate a standard 
+# footer. See LATEX_HEADER for more information on how to generate a default 
+# footer and what special commands can be used inside the footer.
+
+# LATEX_FOOTER = footer.tex
 
 # If the PDF_HYPERLINKS tag is set to YES, the LaTeX that is generated
 # is prepared for conversion to pdf (using ps2pdf). The pdf file will
@@ -1050,7 +1058,7 @@ USE_PDFLATEX = YES
 # running if errors occur, instead of asking the user for help.
 # This option is also used when generating formulas in HTML.
 
-LATEX_BATCHMODE = NO
+LATEX_BATCHMODE = YES
 
 # If LATEX_HIDE_INDICES is set to YES then doxygen will not
 # include the index chapters (such as File Index, Compound Index, etc.)
@@ -1058,7 +1066,9 @@ LATEX_BATCHMODE = NO
 
 LATEX_HIDE_INDICES = NO
 
-# If LATEX_SOURCE_CODE is set to YES then doxygen will include source code with syntax highlighting in the LaTeX output. Note that which sources are shown also depends on other settings such as SOURCE_BROWSER.
+# If LATEX_SOURCE_CODE is set to YES then doxygen will include source code with 
+# syntax highlighting in the LaTeX output. Note that which sources are shown also 
+# depends on other settings such as SOURCE_BROWSER.
 
 LATEX_SOURCE_CODE = NO
 

@@ -48,6 +48,10 @@ res/sql/Hostname.sql
 /dev/tools/lockdown/lockdown
 /dev/tools/shabench/shabench
 
+# Doxygen Build Artifacts
+/dev/docs/html/
+/dev/docs/latex/
+
 # Profiler Artifacts and Binaries
 /gmon.out
 /callgrind.out

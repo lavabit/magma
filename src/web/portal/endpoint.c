@@ -1008,6 +1008,9 @@ void portal_endpoint_messages_list(connection_t *con) {
 		return;
 	}
 
+	// Lock the user struct so message structures don't disappear while the request is being processed.
+	meta_user_rlock(con->http.session->user);
+
 	if ((cursor = inx_cursor_alloc(con->http.session->user->messages)))	{
 
 		while ((active = inx_cursor_value_next(cursor))) {
@@ -1061,6 +1064,8 @@ void portal_endpoint_messages_list(connection_t *con) {
 
 		inx_cursor_free(cursor);
 	}
+
+	meta_user_unlock(con->http.session->user);
 
 	portal_endpoint_response(con, "{s:s, s:o, s:I}", "jsonrpc", "2.0", "result", list, "id", con->http.portal.id);
 
@@ -1627,7 +1632,6 @@ void portal_endpoint_messages_tag(connection_t *con) {
 		return;
 	}
 
-
 	// Parse the action.
 	if (!st_cmp_ci_eq(NULLER(method), PLACER("add", 3))) {
 		action = PORTAL_ENDPOINT_ACTION_ADD;
@@ -1770,7 +1774,7 @@ void portal_endpoint_messages_tag(connection_t *con) {
 		}
 	}
 
-	/// TODO: Were holding onto the user lock while were waiting on the response to be sent over the wire; and this function could probably use a rethink.
+	/// LOW: Were holding onto the user lock while were waiting on the response to be sent over the wire; and this function could probably use a rethink.
 	meta_user_unlock(con->http.session->user);
 
 	if (list) {

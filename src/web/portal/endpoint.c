@@ -298,23 +298,27 @@ void portal_endpoint_auth(connection_t *con) {
 	// Locks
 	if (auth->status.locked) {
 
-		if (auth->status.locked == 1) {
-			portal_endpoint_response(con, "{s:s, s:{s:s, s:s}, s:I}", "jsonrpc", "2.0", "result", "auth", "locked", "admin", "message",
-				"This account has been administratively locked.", "id", con->http.portal.id);
-		}
-		else if (auth->status.locked == 2) {
+		if (auth->status.locked == AUTH_LOCK_INACTIVITY) {
 			portal_endpoint_response(con, "{s:s, s:{s:s, s:s}, s:I}", "jsonrpc", "2.0", "result", "auth", "locked", "inactivity", "message",
 				"This account has been locked for inactivity.", "id", con->http.portal.id);
 		}
-		else if (auth->status.locked == 3) {
+		else if (auth->status.locked == AUTH_LOCK_EXPIRED) {
+			portal_endpoint_response(con, "{s:s, s:{s:s, s:s}, s:I}", "jsonrpc", "2.0", "result", "auth", "locked", "inactivity", "message",
+				"This account has been locked because the subscription expired.", "id", con->http.portal.id);
+		}
+		else if (auth->status.locked == AUTH_LOCK_ADMIN) {
+			portal_endpoint_response(con, "{s:s, s:{s:s, s:s}, s:I}", "jsonrpc", "2.0", "result", "auth", "locked", "admin", "message",
+				"This account has been administratively locked.", "id", con->http.portal.id);
+		}
+		else if (auth->status.locked == AUTH_LOCK_ABUSE) {
 			portal_endpoint_response(con, "{s:s, s:{s:s, s:s}, s:I}", "jsonrpc", "2.0", "result", "auth", "locked", "abuse", "message",
 				"This account has been locked on suspicion of abuse.", "id", con->http.portal.id);
 		}
-		else if (auth->status.locked == 4) {
+		else if (auth->status.locked == AUTH_LOCK_USER) {
 			portal_endpoint_response(con, "{s:s, s:{s:s, s:s}, s:I}", "jsonrpc", "2.0", "result", "auth", "locked", "user", "message",
 				"This account has been locked at the request of the user.", "id", con->http.portal.id);
 		}
-		else if (auth->status.locked != 0) {
+		else {
 			portal_endpoint_response(con, "{s:s, s:{s:s, s:s}, s:I}", "jsonrpc", "2.0", "result", "auth", "locked", "generic", "message",
 				"This account has been locked.", "id", con->http.portal.id);
 		}
@@ -598,7 +602,8 @@ void portal_endpoint_folders_add(connection_t *con) {
 			(int)st_length_get(con->http.session->user->username), st_char_get(con->http.session->user->username), (unsigned int) count);
 		portal_endpoint_error(con, 400, JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS, "Invalid method parameters.");
 		return;
-	} else if ((count == 2 && json_unpack_ex_d(con->http.portal.params, &err, JSON_STRICT, "{s:s, s:s}", "context", &method, "name", &name)) ||
+	}
+	else if ((count == 2 && json_unpack_ex_d(con->http.portal.params, &err, JSON_STRICT, "{s:s, s:s}", "context", &method, "name", &name)) ||
 		(count == 3 && json_unpack_ex_d(con->http.portal.params, &err, JSON_STRICT, "{s:s, s:s, s:I}", "context", &method, "name", &name, "parentID", &parent))) {
 		log_pedantic("Received invalid portal folder add request parameters { user = %.*s, errmsg = %s }",
 			(int)st_length_get(con->http.session->user->username), st_char_get(con->http.session->user->username), err.text);
@@ -1186,13 +1191,15 @@ void portal_endpoint_messages_flag(connection_t *con) {
 			(int)st_length_get(con->http.session->user->username), st_char_get(con->http.session->user->username), err.text);
 		portal_endpoint_error(con, 400, JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS, "Invalid method parameters.");
 		return;
-	} else if (json_object_size_d(con->http.portal.params) == 3  && json_unpack_ex_d(con->http.portal.params, &err, JSON_STRICT,
+	}
+	else if (json_object_size_d(con->http.portal.params) == 3  && json_unpack_ex_d(con->http.portal.params, &err, JSON_STRICT,
 			"{s:s, s:o, s:I}", "action", &method, "messageIDs", &messages, "folderID", &folder)) {
 		log_pedantic("Received invalid portal messages flag request parameters { user = %.*s, errmsg = %s }",
 			(int)st_length_get(con->http.session->user->username), st_char_get(con->http.session->user->username), err.text);
 		portal_endpoint_error(con, 400, JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS, "Invalid method parameters.");
 		return;
-	} else if (!json_is_array(messages) || !(count = json_array_size_d(messages))) {
+	}
+	else if (!json_is_array(messages) || !(count = json_array_size_d(messages))) {
 		log_pedantic("Received portal messages flag request with b ad messageIDs parameter  { user = %s }", st_char_get(con->http.session->user->username));
 		portal_endpoint_error(con, 400, JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS, "Invalid method parameters.");
 		return;

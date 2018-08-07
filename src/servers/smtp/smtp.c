@@ -200,6 +200,7 @@ void smtp_quit(connection_t *con) {
 		con_write_bl(con, "421 Network connection failure.\r\n", 33);
 	}
 
+	con_flush(con);
 	con_destroy(con);
 
 	return;
@@ -329,13 +330,14 @@ void smtp_auth_plain(connection_t *con) {
 	// Release the authentication lock so another connection may proceed.
 	lock_release(choke);
 
-	// Create the authentication context.
-	if (state || !auth) {
-		if (state < 0) {
-			con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
+	// If the authentication credentials couldn't be processed, return an error.
+	if (state) {
+
+		if (state > 0) {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - INVALID USERNAME AND PASSWORD COMBINATION\r\n", 72);
 		}
 		else {
-			con_write_bl(con, "535 AUTHENTICATION FAILURE - INVALID USERNAME AND PASSWORD COMBINATION\r\n", 72);
+			con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
 		}
 
 		ip = con_addr_presentation(con, MANAGEDBUF(256));
@@ -347,22 +349,39 @@ void smtp_auth_plain(connection_t *con) {
 		return;
 	}
 
-	// Authorize the user, and securely delete the keys.
-	else if ((state = smtp_fetch_authorization(auth->username, auth->tokens.verification, &outbound)) <= 0) {
-		if (state == -4) {
-			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN LOCKED AT THE REQUEST OF THE USER\r\n", 86);
+	// Check if the account is locked.
+	else if (auth->status.locked) {
+
+		if (auth->status.locked == AUTH_LOCK_EXPIRED) {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - THE SUBSCRIPTION FOR THIS ACCOUNT HAS EXPIRED\r\n", 76);
 		}
-		else if (state == -3) {
-			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN LOCKED ON SUSPICION OF ABUSE POLICY VIOLATIONS\r\n", 99);
-		}
-		else if (state == -2) {
+		else if (auth->status.locked == AUTH_LOCK_ADMIN) {
 			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN ADMINISTRATIVELY LOCKED\r\n", 76);
 		}
-		else if (state == -1) {
-			con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
+		else if (auth->status.locked == AUTH_LOCK_ABUSE) {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN LOCKED ON SUSPICION OF ABUSE POLICY VIOLATIONS\r\n", 99);
+		}
+		else if (auth->status.locked == AUTH_LOCK_USER) {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN LOCKED AT THE REQUEST OF THE USER\r\n", 86);
 		}
 		else {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN LOCKED\r\n", 59);
+		}
+
+		st_free(decoded);
+		auth_free(auth);
+		return;
+	}
+
+	// Authorize the user, and securely delete the keys.
+	else if ((state = smtp_fetch_authorization(auth->username, auth->tokens.verification, &outbound))) {
+
+		// In theory the credentials should have been checked above, but just in case we include this error here.
+		if (state == -1) {
 			con_write_bl(con, "535 AUTHENTICATION FAILURE - INVALID USERNAME AND PASSWORD COMBINATION\r\n", 72);
+		}
+		else if (state == -2) {
+			con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
 		}
 
 		st_free(decoded);
@@ -424,7 +443,7 @@ void smtp_auth_login(connection_t *con) {
 		}
 	}
 
-	// Otherwise the authentication data was passed along with the AUTH PLAIN commands, so we simply setup a placer to point_t at it.
+	// Otherwise the authentication data was passed along with the AUTH PLAIN commands, so we simply setup a placer to point at it.
 	else if (pl_length_get(con->network.line) > 10) {
 		argument = smtp_parse_auth(PLACER(pl_char_get(con->network.line) + 10, pl_length_get(con->network.line) - 10));
 	}
@@ -468,7 +487,7 @@ void smtp_auth_login(connection_t *con) {
 	lock_release(choke);
 
 	// Create the authentication context.
-	if (state || !auth) {
+	if (state) {
 
 		if (state < 0) {
 			con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
@@ -486,25 +505,42 @@ void smtp_auth_login(connection_t *con) {
 		return;
 	}
 
+	// Check if the account is locked.
+	else if (auth->status.locked) {
+
+		if (auth->status.locked == AUTH_LOCK_EXPIRED) {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - THE SUBSCRIPTION FOR THIS ACCOUNT HAS EXPIRED\r\n", 76);
+		}
+		else if (auth->status.locked == AUTH_LOCK_ADMIN) {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN ADMINISTRATIVELY LOCKED\r\n", 76);
+		}
+		else if (auth->status.locked == AUTH_LOCK_ABUSE) {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN LOCKED ON SUSPICION OF ABUSE POLICY VIOLATIONS\r\n", 99);
+		}
+		else if (auth->status.locked == AUTH_LOCK_USER) {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN LOCKED AT THE REQUEST OF THE USER\r\n", 86);
+		}
+		else {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN LOCKED\r\n", 59);
+		}
+
+		st_cleanup(username, password);
+		auth_free(auth);
+		return;
+	}
+
 	// We won't need these again, now that we have the authentication context.
 	st_cleanup(username, password);
 
 	// Authorize the user, and securely delete the keys.
-	if ((state = smtp_fetch_authorization(auth->username, auth->tokens.verification, &outbound)) <= 0) {
-		if (state == -4) {
-			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN LOCKED AT THE REQUEST OF THE USER\r\n", 86);
-		}
-		else if (state == -3) {
-			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN LOCKED ON SUSPICION OF ABUSE POLICY VIOLATIONS\r\n", 99);
+	if ((state = smtp_fetch_authorization(auth->username, auth->tokens.verification, &outbound))) {
+
+		// In theory the credentials should have been checked above, but just in case we include this error here.
+		if (state == -1) {
+			con_write_bl(con, "535 AUTHENTICATION FAILURE - INVALID USERNAME AND PASSWORD COMBINATION\r\n", 72);
 		}
 		else if (state == -2) {
-			con_write_bl(con, "535 AUTHENTICATION FAILURE - THIS ACCOUNT HAS BEEN ADMINISTRATIVELY LOCKED\r\n", 76);
-		}
-		else if (state == -1) {
 			con_write_bl(con, "423 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
-		}
-		else {
-			con_write_bl(con, "535 AUTHENTICATION FAILURE - INVALID USERNAME AND PASSWORD COMBINATION\r\n", 72);
 		}
 
 		auth_free(auth);
@@ -607,36 +643,15 @@ void smtp_rcpt_to(connection_t *con) {
 	state = smtp_fetch_inbound(sanitized, &result);
 	st_free(sanitized);
 
-	// If the account is locked.
-	if (state == -2) {
-		con_print(con, "550 ACCOUNT LOCKED - THE ACCOUNT <%.*s> HAS BEEN ADMINISTRATIVELY LOCKED\r\n", st_length_int(address),
-			st_char_get(lower_st(address)));
+	// Handle errors, starting with an invalid recipient address.
+	if (state == -1) {
+		con_print(con, "554 INVALID RECIPIENT - THE EMAIL ADDRESS <%.*s> DOES NOT MATCH AN ACCOUNT ON THIS SYSTEM\r\n",
+			st_length_int(address), st_char_get(lower_st(address)));
 		st_free(address);
 		return;
 	}
-	// If the account is inactive.
-	else if (state == -3) {
-		con_print(con, "550 ACCOUNT LOCKED - THE ACCOUNT <%.*s> HAS BEEN LOCKED FOR INACTIVITY\r\n", st_length_int(address),
-			st_char_get(lower_st(address)));
-		st_free(address);
-		return;
-	}
-	// The account has been locked for abuse.
-	else if (state == -4) {
-		con_print(con, "550 ACCOUNT LOCKED - THE ACCOUNT <%.*s> HAS BEEN LOCKED FOR ABUSE POLICY VIOLATIONS\r\n", st_length_int(address),
-			st_char_get(lower_st(address)));
-		st_free(address);
-		return;
-	}
-	// The user has locked the account.
-	else if (state == -5) {
-		con_print(con, "550 ACCOUNT LOCKED - THE ACCOUNT <%.*s> HAS BEEN LOCKED AT THE REQUEST OF THE OWNER\r\n", st_length_int(address),
-			st_char_get(lower_st(address)));
-		st_free(address);
-		return;
-	}
-	// The user has locked the account.
-	else if (state == -6) {
+	// Catch recipient addresses that don't match a locally hosted domain name, and return a slightly more helpful error message.
+	else if (state == -2) {
 		if (!mail_domain_get(address, &domain)) {
 			domain = pl_null();
 		}
@@ -645,16 +660,39 @@ void smtp_rcpt_to(connection_t *con) {
 		st_free(address);
 		return;
 	}
-	// If the domain is local but user wasn't found.
-	else if (state == 0) {
-		con_print(con, "554 INVALID RECIPIENT - THE EMAIL ADDRESS <%.*s> DOES NOT MATCH AN ACCOUNT ON THIS SYSTEM\r\n",
-			st_length_int(address), st_char_get(lower_st(address)));
+	// Catch internal errors, and database problems here. The state value should be -3 if an error occurred, but in the interest
+	// of robustness, we simply look for any negative state values we haven't already handled.
+	else if (state < 0 || result == NULL) {
+		con_write_bl(con, "451 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
 		st_free(address);
 		return;
 	}
-	// Catch database or any other error here.
-	else if (state < 0 || result == NULL) {
-		con_write_bl(con, "451 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
+
+	// Handle account locks, starting with inactivity locks.
+	if (state == AUTH_LOCK_INACTIVITY) {
+		con_print(con, "550 ACCOUNT LOCKED - THE ACCOUNT <%.*s> HAS BEEN LOCKED FOR INACTIVITY\r\n", st_length_int(address),
+			st_char_get(lower_st(address)));
+		st_free(address);
+		return;
+	}
+	// We skip locks associated with expired account plans. Handle administrative locks.
+	if (state == AUTH_LOCK_ADMIN) {
+		con_print(con, "550 ACCOUNT LOCKED - THE ACCOUNT <%.*s> HAS BEEN ADMINISTRATIVELY LOCKED\r\n", st_length_int(address),
+			st_char_get(lower_st(address)));
+		st_free(address);
+		return;
+	}
+	// The account has been locked for abuse.
+	else if (state == AUTH_LOCK_ABUSE) {
+		con_print(con, "550 ACCOUNT LOCKED - THE ACCOUNT <%.*s> HAS BEEN LOCKED FOR ABUSE POLICY VIOLATIONS\r\n", st_length_int(address),
+			st_char_get(lower_st(address)));
+		st_free(address);
+		return;
+	}
+	// The user has locked the account.
+	else if (state == AUTH_LOCK_USER) {
+		con_print(con, "550 ACCOUNT LOCKED - THE ACCOUNT <%.*s> HAS BEEN LOCKED AT THE REQUEST OF THE OWNER\r\n", st_length_int(address),
+			st_char_get(lower_st(address)));
 		st_free(address);
 		return;
 	}
@@ -699,15 +737,6 @@ void smtp_rcpt_to(connection_t *con) {
 		if (con->smtp.checked.rbl == 0 || con->smtp.checked.rbl == -1) {
 			con->smtp.checked.rbl = smtp_check_rbl(con);
 		}
-
-		// A temporary error occurred while checking the realtime blacklist, so we'll reject the recipient with a temporary error code.
-		// We need to be careful here. If we enable this code, and something happens to the DNS server, then any user with RBL lists enabled
-		// will start blocking every incoming message.
-//		if (con->smtp.checked.rbl == -2 && result->rblaction == SMTP_ACTION_REJECT) {
-//			con_print(con, "451 MAILBOX UNAVAILABLE - PLEASE TRY AGAIN LATER\r\n");
-//			smtp_free_inbound(result);
-//			return;
-//		}
 
 		// If the user has elected to reject these messages.
 		if (con->smtp.checked.rbl == -2 && result->rblaction == SMTP_ACTION_REJECT) {

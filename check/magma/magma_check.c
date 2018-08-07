@@ -128,11 +128,14 @@ int_t running_on_profiler(void) {
 
 	void *mcount = NULL;
 
-	if ((mcount = dlsym(NULL, "mcount"))) {
+	// This function is still causing problems, so we'll disable it for now.
+	return 0;
+
+	if ((mcount = dlsym(NULL, "_mcount"))) {
 		return 1;
 	}
 
-return 0;
+	return 0;
 }
 
 /**

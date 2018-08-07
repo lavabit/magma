@@ -172,7 +172,7 @@ int_t auth_response(auth_t *auth, stringer_t *ephemeral) {
  *
  * @return 			if a technical error occurs unrelated to the provided credentials, -1 will be returned, if the username
  * 					and password combination are invalid, 1 will be returned. The output parameter
- * 					is invalid, 1 will be returned, and the output will be emptied.
+ * 					is invalid, 1 will be returned, and the output will be emptied, a 0 is returned when login is successful.
  */
 int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 
@@ -202,6 +202,7 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 	}
 
 	/************************** BEGIN LEGACY AUTHENTICATION SUPPORT LOGIC **************************/
+
 	// If the account uses legacy hash values for authentication the legacy token will be populated.
 	if (auth->legacy.token && !(legacy = auth_legacy(auth->username, password))) {
 		log_pedantic("Unable to calculate the legacy hash tokens for comparison.");
@@ -261,6 +262,13 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 		// Cleanup the hex equivalents and then return success.
 		st_cleanup(legacy_hex, salt_b64, verification_b64);
 
+		// If valid login credentials are provided for an account with an inactivity lock, we remove the inactivity lock.
+		if (auth->status.locked == AUTH_LOCK_INACTIVITY) {
+			log_pedantic("Clearing an inactivity lock. { username = %.*s }", st_length_int(username), st_char_get(username));
+			auth_data_update_lock(auth->usernum, AUTH_LOCK_NONE);
+			auth->status.locked = AUTH_LOCK_NONE;
+		}
+
 		// Valid legacy login!
 		*output = auth;
 		return 0;
@@ -294,6 +302,13 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 			log_pedantic("Unable to store the credentials in the auth structure.");
 			auth_free(auth);
 			return -1;
+		}
+
+		// If valid login credentials are provided for an account with an inactivity lock, we remove the inactivity lock.
+		if (auth->status.locked == AUTH_LOCK_INACTIVITY) {
+			log_pedantic("Clearing an inactivity lock. { username = %.*s }", st_length_int(username), st_char_get(username));
+			auth_data_update_lock(auth->usernum, AUTH_LOCK_NONE);
+			auth->status.locked = AUTH_LOCK_NONE;
 		}
 
 		// Valid STACIE login!

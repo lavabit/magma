@@ -158,7 +158,7 @@ void    portal_endpoint_search(connection_t *con);
 void    portal_settings_identity(connection_t *con);
 void    portal_meta(connection_t *con);
 void    portal_endpoint_sort(void);
-void	portal_upload(connection_t *con);
+void		portal_upload(connection_t *con);
 void    portal_endpoint_messages_send(connection_t *con);
 void    portal_debug(connection_t *con);
 

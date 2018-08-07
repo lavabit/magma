@@ -29,7 +29,6 @@
 #define SELECT_USER_SALT "SELECT salt FROM Users WHERE userid = ?"
 #define SELECT_USER_STORAGE_KEYS "SELECT signet, `key` FROM `Keys` WHERE usernum = ?"
 #define UPDATE_USER_STORAGE_KEYS "INSERT INTO `Keys` (usernum, signet, `key`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE signet = ?, `key` = ?"
-#define UPDATE_USER_LOCK "UPDATE Users SET locked = ? WHERE usernum = ?"
 #define UPDATE_USER_QUOTA_ADD "UPDATE Users SET size = size + ?, overquota = IF(size < quota, 0, 1) WHERE usernum = ?"
 #define UPDATE_USER_QUOTA_SUBTRACT "UPDATE Users SET size = size - ?, overquota = IF(size < quota, 0, 1) WHERE usernum = ?"
 
@@ -85,7 +84,7 @@
 #define SELECT_TRANSMITTING  "SELECT COUNT(*) FROM Transmitting WHERE usernum = ? AND timestamp >= DATE_SUB(NOW(), INTERVAL 1 DAY)"
 #define SELECT_RECEIVING "SELECT COUNT(*), SUM(subnet = ?) FROM Receiving WHERE usernum = ? AND timestamp >= DATE_SUB(NOW(), INTERVAL 1 DAY)"
 #define SELECT_USERS_AUTH "SELECT Users.usernum, Users.locked, Users.tls, Users.domain, Dispatch.send_size_limit, Dispatch.daily_send_limit, Dispatch.class FROM Users LEFT JOIN Dispatch ON Users.usernum = Dispatch.usernum WHERE userid = ? AND legacy = ? AND email = 1"
-#define SMTP_SELECT_USER_AUTH "SELECT Users.usernum, Users.locked, Users.tls, Users.domain, Dispatch.send_size_limit, Dispatch.daily_send_limit, Dispatch.class FROM Users LEFT JOIN Dispatch ON Users.usernum = Dispatch.usernum WHERE userid = ? AND auth = ? AND email = 1"
+#define SMTP_SELECT_USER_AUTH "SELECT Users.usernum, Users.tls, Users.domain, Dispatch.send_size_limit, Dispatch.daily_send_limit, Dispatch.class FROM Users LEFT JOIN Dispatch ON Users.usernum = Dispatch.usernum WHERE userid = ? AND auth = ? AND email = 1"
 #define SELECT_PREFS_INBOUND "SELECT Mailboxes.usernum, Users.locked, Users.size, Users.quota, Users.overquota, " \
 		"Users.domain, Dispatch.secure, Dispatch.bounces, Dispatch.forwarded, Dispatch.rollout, " \
 		"Dispatch.spam, Dispatch.spamaction, Dispatch.virus, Dispatch.virusaction, Dispatch.phish, Dispatch.phishaction, " \
@@ -127,12 +126,11 @@
 
 // For the portal/user management.
 #define REGISTER_CHECK_USERNAME	"SELECT usernum FROM Users WHERE userid = ?"
-#define REGISTER_INSERT_STACIE_USER "INSERT INTO Users (`userid`, `salt`, `auth`, `bonus`, `plan`, `quota`, `plan_expiration`) VALUES (?, ?, ?, ?, ?, ?, ?)"
+#define REGISTER_INSERT_STACIE_USER "INSERT INTO Users (`userid`, `salt`, `auth`, `bonus`, `tls`, `plan`, `advertising`, `quota`, `plan_expiration`) VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?)"
 #define REGISTER_INSERT_STACIE_REALMS "INSERT INTO Realms (`usernum`, `serial`, `label`, `shard`, `rotated`) VALUES (?, ?, ?, ?, ?)"
 #define REGISTER_INSERT_PROFILE "INSERT INTO Profile (`usernum`) VALUES (?)"
-#define REGISTER_INSERT_FOLDERS "INSERT INTO Folders (`usernum`) VALUES (?)"
 #define REGISTER_INSERT_FOLDER_NAME "INSERT INTO Folders (`usernum`, `foldername`) VALUES (?, ?)"
-#define REGISTER_INSERT_LOG "INSERT INTO Log (`usernum`, `created_ip`) VALUES (?, ?)"
+#define REGISTER_INSERT_LOG "INSERT INTO Log (`usernum`, `created`, `created_ip`) VALUES (?, NOW(), ?)"
 #define REGISTER_INSERT_DISPATCH "INSERT INTO Dispatch (`usernum`, `spamfolder`, `inbox`, `send_size_limit`, `recv_size_limit`, `daily_send_limit`, `daily_recv_limit`, `daily_recv_limit_ip`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
 #define REGISTER_INSERT_MAILBOXES "INSERT INTO Mailboxes (`address`, `usernum`) VALUES (?, ?)"
 #define REGISTER_FETCH_BLOCKLIST "SELECT sequence FROM Banned"
@@ -152,6 +150,7 @@
 #define STATISTICS_GET_USERS_REGISTERED_WEEK "SELECT COUNT(*) FROM Creation WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
 
 // For handling usernames and authentication.
+#define AUTH_UPDATE_USER_LOCK "UPDATE Users SET locked = ?, lock_expiration = '0000-00-00' WHERE usernum = ?"
 #define AUTH_GET_BY_USERID "SELECT usernum, userid, salt, auth, bonus, legacy, locked FROM Users WHERE userid = ?"
 #define AUTH_GET_BY_ADDRESS "SELECT Users.usernum, userid, salt, auth, bonus, legacy, locked FROM Users LEFT JOIN Mailboxes ON (Users.usernum = Mailboxes.usernum) WHERE Mailboxes.address = ?"
 #define AUTH_UPDATE_LEGACY_TO_STACIE "UPDATE Users SET salt = ?, auth = ?, bonus = ?, legacy = NULL WHERE usernum = ? AND legacy = ?"
@@ -184,7 +183,6 @@
 											SELECT_USER_SALT, \
 											SELECT_USER_STORAGE_KEYS, \
 											UPDATE_USER_STORAGE_KEYS, \
-											UPDATE_USER_LOCK, \
 											UPDATE_USER_QUOTA_ADD, \
 											UPDATE_USER_QUOTA_SUBTRACT, \
 											SELECT_MAILBOX_ALIASES, \
@@ -249,7 +247,6 @@
 											REGISTER_INSERT_STACIE_USER, \
 											REGISTER_INSERT_STACIE_REALMS, \
 											REGISTER_INSERT_PROFILE, \
-											REGISTER_INSERT_FOLDERS, \
 											REGISTER_INSERT_FOLDER_NAME, \
 											REGISTER_INSERT_LOG, \
 											REGISTER_INSERT_DISPATCH, \
@@ -267,6 +264,7 @@
 											STATISTICS_GET_EMAILS_SENT_WEEK, \
 											STATISTICS_GET_USERS_REGISTERED_TODAY, \
 											STATISTICS_GET_USERS_REGISTERED_WEEK, \
+											AUTH_UPDATE_USER_LOCK, \
 											AUTH_GET_BY_USERID, \
 											AUTH_GET_BY_ADDRESS, \
 											AUTH_UPDATE_LEGACY_TO_STACIE, \
@@ -289,7 +287,6 @@
 											**select_user_salt, \
 											**select_user_storage_keys, \
 											**update_user_storage_keys, \
-											**update_user_lock, \
 											**update_user_quota_add, \
 											**update_user_quota_subtract, \
 											**select_mailbox_aliases, \
@@ -354,7 +351,6 @@
 											**register_insert_stacie_user, \
 											**register_insert_stacie_realms, \
 											**register_insert_profile, \
-											**register_insert_folders, \
 											**register_insert_folder_name, \
 											**register_insert_log, \
 											**register_insert_dispatch, \
@@ -372,6 +368,7 @@
 											**statistics_get_emails_sent_week, \
 											**statistics_get_users_registered_today, \
 											**statistics_get_users_registered_week, \
+											**auth_update_user_lock, \
 											**auth_get_by_userid, \
 											**auth_get_by_address, \
 											**auth_update_legacy_to_stacie, \
@@ -380,7 +377,6 @@
 											**meta_fetch_mail_keys, \
 											**meta_insert_shard, \
 											**meta_insert_mail_keys
-
 
 extern chr_t *queries[];
 struct { MYSQL_STMT STMTS_INIT; } stmts __attribute__ ((common));

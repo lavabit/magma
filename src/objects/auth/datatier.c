@@ -17,7 +17,7 @@
  * @param	verification The STACIE verification token, encoded as a hexadecimal string.
  * @param	bonus	The number of bonus hash rounds.
  *
- * @return	0 if the user information was updated correctly, or -1 if an error occurs.
+ * @return 0 if the user information was updated correctly, or -1 if an error occurs.
  */
 int_t auth_data_update_legacy(uint64_t usernum, stringer_t *legacy, stringer_t *salt, stringer_t *verification, uint32_t bonus) {
 
@@ -76,6 +76,49 @@ int_t auth_data_update_legacy(uint64_t usernum, stringer_t *legacy, stringer_t *
 	}
 
 	return 0;
+}
+
+/**
+ * @brief	Update a user lock status in the database.
+ *
+ * @param	usernum the numerical id of the user for whom the lock will be set.
+ * @param	lock tthe new value to which the specified user's lock will be set.
+ *
+ * @return This function returns no value.
+ */
+void auth_data_update_lock(uint64_t usernum, auth_lock_status_t lock) {
+
+	uint8_t tiny;
+	MYSQL_BIND parameters[2];
+
+	// We only want to allow the lock to be reset back to zero.
+	if (!usernum) {
+		log_pedantic("Invalid lock update request. { usernum = %lu / lock = %i }", usernum, lock);
+		return;
+	}
+
+	// We cast the lock value onto a tiny integer to avoid problems with passing it directly to the SQL interface.
+	tiny = (uint8_t)lock;
+
+	mm_wipe(parameters, sizeof(parameters));
+
+	// Lock
+	parameters[0].buffer_type = MYSQL_TYPE_TINY;
+	parameters[0].buffer_length = sizeof(uint8_t);
+	parameters[0].buffer = &tiny;
+	parameters[0].is_unsigned = true;
+
+	// Usernum
+	parameters[1].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[1].buffer_length = sizeof(uint64_t);
+	parameters[1].buffer = &usernum;
+	parameters[1].is_unsigned = true;
+
+	if (stmt_exec_affected(stmts.auth_update_user_lock, parameters) != 1) {
+		log_pedantic("Unable to update the user lock. { usernum = %lu / lock = %hhu }", usernum, tiny);
+	}
+
+	return;
 }
 
 /**

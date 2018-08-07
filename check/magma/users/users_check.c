@@ -179,6 +179,9 @@ Suite * suite_check_users(void) {
 	suite_check_testcase(s, "USERS", "Auth Response/S", check_users_auth_response_s);
 	suite_check_testcase(s, "USERS", "Auth Login/S", check_users_auth_login_s);
 
+	suite_check_testcase(s, "USERS", "Auth Locked/S", check_users_auth_locked_s);
+	suite_check_testcase(s, "USERS", "Auth Inactivity/S", check_users_auth_inactivity_s);
+
 	suite_check_testcase(s, "USERS", "Register/S", check_users_register_s);
 
 	suite_check_testcase(s, "USERS", "Meta Valid/S", check_users_meta_valid_s);

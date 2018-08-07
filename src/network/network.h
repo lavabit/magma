@@ -86,6 +86,7 @@ uint32_t      con_addr_word(connection_t *con, int_t position);
 /// connections.c
 uint64_t        con_decrement_refs(connection_t *con);
 void            con_destroy(connection_t *con);
+void            con_flush(connection_t *con);
 uint64_t        con_increment_refs(connection_t *con);
 connection_t *  con_init(int cond, server_t *server);
 bool_t          con_init_network_buffer(connection_t *con);

@@ -7,7 +7,6 @@
 
 #include "magma.h"
 
-
 /**
  * @brief	Parse an smtp event action string from the Dispatch table.
  * @note	These values describe user-specified actions for events related to the spam filter, virus scanner, phishing detection,
@@ -100,13 +99,22 @@ stringer_t * smtp_fetch_autoreply(uint64_t autoreply, uint64_t usernum) {
 }
 
 /**
- * @brief	Fetch a user's smtp inbound preferences from the database.
- * @param	cred	a pointer to the credential object of a user with
+ * @brief	Fetch a user's SMTP preferences for inbound mail.
+ *
+ * @param	cred a pointer to the credential object of a user with
  * @param	address
  *
+ * @return 0 for success or < 0 for failures, and > 0 for account locks.
  *
- * Returns -1 for errors, -2 for an admin lock, -3 for an inactivity lock, -4 for a user lock, -5 for an abuse lock, -6 if the domain isn't local
- * and 0 if the domain is local but the address wasn't found. If everything works, return 1 to indicate success.
+ * @retval -3: for general server and database errors.
+ * @retval -2: if the domain isn't local.
+ * @retval -1: if the address is local but we didn't find a matching mailbox.
+ * @retval  0: everything worked
+ * @retval  1: the account is locked for inactivity (invalid username/password combination). @see AUTH_LOCK_INACTIVITY
+ * @retval  2: the account plan has expired. @see AUTH_LOCK_EXPIRED
+ * @retval  3: the account is subject to an administrative lock. @see AUTH_LOCK_ADMIN
+ * @retval  4: the account is locked due to suspicion of abuse violations. @see AUTH_LOCK_ABUSE
+ * @retval  5: the account has been locked at the request of the user. @see AUTH_LOCK_USER
  */
 int_t smtp_fetch_inbound(stringer_t *address, smtp_inbound_prefs_t **output) {
 
@@ -123,10 +131,10 @@ int_t smtp_fetch_inbound(stringer_t *address, smtp_inbound_prefs_t **output) {
 	};
 
 	if (st_empty(address) || !output) {
-		return -1;
+		return -3;
 	}
 	else if (mail_domain_get(address, &domain) == NULL) {
-		return -1;
+		return -3;
  	}
 
 	*output = NULL;
@@ -152,55 +160,42 @@ int_t smtp_fetch_inbound(stringer_t *address, smtp_inbound_prefs_t **output) {
 
 	// Server error.
 	if (!result) {
-		return -1;
+		return -3;
 	}
 
 	// Results without any rows indicate the address didn't match a mailbox.
 	if (!(row = res_row_next(result))) {
 		res_table_free(result);
 
-		// If the domain_wildcard search didn't find a domain record, the address can't be local.
+		// If the domain_wildcard search doesn't get a match, then the address isn't local.
 		if (local == -1) {
-			return -6;
+			return -2;
 		}
 
-		// No matching mailboxes.
-		return 0;
+		// The domain name is local, but the recipient address doesn't match a mailbox.
+		return -1;
 	}
 
-	// Admin lock.
-	if ((locked = res_field_int8(row, 1)) == 1) {
+	// If the account is locked, we only need to proceed if the lock is for an expired plan subscription, otherwise we simply
+	// return the lock value to the caller so they can act appropriately.
+	if ((locked = res_field_int8(row, 1)) != AUTH_LOCK_NONE && locked != AUTH_LOCK_EXPIRED) {
 		res_table_free(result);
-		return -2;
-	}
-	// Inactivity lock.
-	else if (locked == 2) {
-		res_table_free(result);
-		return -3;
-	}
-	// Abuse lock.
-	else if (locked == 3) {
-		res_table_free(result);
-		return -4;
-	}
-	// User lock.
-	else if (locked == 4) {
-		res_table_free(result);
-		return -5;
+		return locked;
 	}
 
+	// Allocate an inbound preferences object.
 	if (!(inbound = mm_alloc(sizeof(smtp_inbound_prefs_t)))) {
 		log_pedantic("Could not allocate %zu bytes for the inbound preferences.", sizeof(smtp_inbound_prefs_t));
 		res_table_free(result);
-		return -1;
+		return -3;
 	}
 
 	// Store the result.
 	if (!(inbound->usernum = res_field_uint64(row, 0))) {
-		log_pedantic("Found a zero usernum for the address %.*s.", st_length_int(address), st_char_get(address));
-		mm_free(inbound);
+		log_pedantic("A usernum of 0 was returned. { address = %.*s }", st_length_int(address), st_char_get(address));
 		res_table_free(result);
-		return -1;
+		mm_free(inbound);
+		return -3;
 	}
 
 	inbound->stor_size = res_field_uint64(row, 2);
@@ -232,8 +227,8 @@ int_t smtp_fetch_inbound(stringer_t *address, smtp_inbound_prefs_t **output) {
 	inbound->rblaction = smtp_get_action(res_field_block(row, 28), res_field_length(row, 28));
 	filters = res_field_int8(row, 29);
 
-	// We should only decode and store the public key if the account has storage security enabled. Otherwise the
-	// mail_store_message() function will interpret the presence of the key to mean encryption has been enabled.
+	// We should only decode and store the public key if the account has mail encryption enabled. Otherwise the
+	// mail_store_message function will interpret the presence of the key to mean encryption has been enabled.
 	if (inbound->secure && res_field_length(row, 30)) {
 		if (!(signet = base64_decode_mod(PLACER(res_field_block(row, 30), res_field_length(row, 30)), NULL)) ||
 			!(inbound->signet = prime_set(signet, BINARY, NONE))) {
@@ -253,30 +248,33 @@ int_t smtp_fetch_inbound(stringer_t *address, smtp_inbound_prefs_t **output) {
 	res_table_free(result);
 
 	// Error checking.
-	if (inbound->spamaction <= 0 || inbound->virusaction <= 0 || inbound->phishaction <= 0 || inbound->spfaction <= 0 || inbound->rblaction	<= 0 ||
-		inbound->dkimaction <= 0) {
-		log_pedantic("Found an invalid action field. {%.*s}", st_length_int(address), st_char_get(address));
+	if (inbound->spamaction <= 0 || inbound->virusaction <= 0 || inbound->phishaction <= 0 || inbound->spfaction <= 0 ||
+		inbound->rblaction	<= 0 || inbound->dkimaction <= 0) {
+		log_pedantic("Found an invalid action field. { address = %.*s }", st_length_int(address), st_char_get(address));
 		smtp_free_inbound(inbound);
-		return -1;
+		return -3;
 	}
 
 	// If there is no Inbox, then we better be forwarding this message.
 	if ((inbound->inbox == 0 || inbound->quota == 0) && inbound->forwarded == NULL) {
-		log_pedantic("Found an account with no Inbox and no forwarding address. {%.*s}", st_length_int(address), st_char_get(address));
+		log_pedantic("Found an account with no inbox and no forwarding address. { address = %.*s }", st_length_int(address), st_char_get(address));
 		smtp_free_inbound(inbound);
-		return -1;
+		return -3;
 	}
 
 	// Initialize recipient and address parameters.
 	if (!(inbound->rcptto = st_dupe(address)) || !(inbound->address = st_dupe_opts(MANAGED_T | CONTIGUOUS | HEAP, address))) {
-		log_pedantic("Could not duplicate the recipient and address.");
+		log_pedantic("Could not duplicate the recipient address. { address = %.*s }", st_length_int(address), st_char_get(address));
 		smtp_free_inbound(inbound);
-		return -1;
+		return -3;
 	}
 
-	// Set the output parameter.
+	// Assign the inbound prefereces to the output parameter so the object is returned. From this point forward, the caller
+	// is responsible its cleanup.
 	*output = inbound;
 
+	// If the filters are enabled, we load them so messages get sorted properly. If an error occurs while loading the filters
+	// we still return success, so the message can be processed without the use of filters.
 	if (filters == 1) {
 
 		// Check for filters.
@@ -295,7 +293,7 @@ int_t smtp_fetch_inbound(stringer_t *address, smtp_inbound_prefs_t **output) {
 			if ((inbound->filters = inx_alloc(M_INX_LINKED, &smtp_list_free_filter)) == NULL) {
 				log_error("Could not create a linked list for the filters.");
 				res_table_free(result);
-				return 1;
+				return 0;
 			}
 
 			// This will build the filters linked list.
@@ -304,7 +302,7 @@ int_t smtp_fetch_inbound(stringer_t *address, smtp_inbound_prefs_t **output) {
 				if ((filter = mm_alloc(sizeof(smtp_inbound_filter_t))) == NULL) {
 					log_error("Could not create allocate %zu bytes for an inbound filter.", sizeof(smtp_inbound_filter_t));
 					res_table_free(result);
-					return 1;
+					return 0;
 				}
 
 				filter->rulenum = key.val.u64 = res_field_uint64(row, 0);
@@ -321,19 +319,22 @@ int_t smtp_fetch_inbound(stringer_t *address, smtp_inbound_prefs_t **output) {
 					& SMTP_FILTER_ACTION_LABEL) == SMTP_FILTER_ACTION_LABEL && filter->label == NULL) || ((filter->location
 					& SMTP_FILTER_LOCATION_FIELD) == SMTP_FILTER_LOCATION_FIELD && filter->field == NULL) || filter->expression == NULL
 					|| filter->rulenum == 0) {
+					log_error("Found an invalid filter. { usernum = %lu / rulenum = %lu }", inbound->usernum, filter->rulenum);
 					smtp_list_free_filter(filter);
-					log_error("Found an invalid filter for the user %lu.", inbound->usernum);
 				}
+
+				// Otherwise add the filter to the collection.
 				else if (!inx_insert(inbound->filters, key, filter)) {
 					smtp_list_free_filter(filter);
 				}
 			}
 
+			// Free the result once all the filters have been loaded.
 			res_table_free(result);
 		}
 	}
 
-	return 1;
+	return 0;
 }
 
 /**
@@ -584,24 +585,22 @@ int_t smtp_check_transmit_quota(uint64_t usernum, size_t num_recipients, smtp_ou
  * 			The number of messages the user has sent in the past 24 hours is also computed from the Transmitting table.
  * @param	cred	a pointer to a credential object for the user, which must be of type CREDENTIAL_AUTH.
  * @param	output	a pointer to the address of an outbound smtp preferences object to receive the value of the lookup.
- * @return  1 on success or <= 0 on failure.
- * 		    0: authentication failure (invalid username/password combination).
- * 		   -1: general or database failure.
- * 		   -2: the account is subject to an administrative lock.
- *		   -3: the account is locked due to suspicion of abuse violations.
- *		   -4: the account has been locked at the request of the user.
+ *
+ * @return 0 on success or < 0 for failures, and > 0 for account locks.
+ *        -2: general server or database error.
+ *        -1: authentication failure (invalid username/password combination).
+ *         0: successful authentication
  */
 int_t smtp_fetch_authorization(stringer_t *username, stringer_t *verification, smtp_outbound_prefs_t **output) {
 
 	row_t *row;
-	int_t locked;
 	table_t *result;
 	MYSQL_BIND parameters[2];
 	stringer_t *encoded = NULL;
 	smtp_outbound_prefs_t *outbound;
 
 	if (!st_populated(username, verification) || !output || !(encoded = base64_encode_mod(verification, NULL))) {
-		return -1;
+		return -2;
 	}
 
 	*output = NULL;
@@ -619,39 +618,24 @@ int_t smtp_fetch_authorization(stringer_t *username, stringer_t *verification, s
 	if (!(result = stmt_get_result(stmts.smtp_select_user_auth, parameters))) {
 		log_pedantic("Authentication attempt failed by database error.");
 		st_free(encoded);
-		return -1;
+		return -2;
 	}
 
 	// Free the encoded version of the verification token.
 	st_free(encoded);
 
-	// Get the first row.
+	// Get the first row. If no rows get returned, then the username or verification token was incorrect, so we indicate
+	// an authentication failure.
 	if (!(row = res_row_next(result))) {
 		res_table_free(result);
-		return 0;
-	}
-
-	// Admin lock.
-	if ((locked = res_field_int8(row, 1)) == 1) {
-		res_table_free(result);
-		return -2;
-	}
-	// Abuse lock.
-	else if (locked == 3) {
-		res_table_free(result);
-		return -3;
-	}
-	// User lock.
-	else if (locked == 4) {
-		res_table_free(result);
-		return -4;
+		return -1;
 	}
 
 	// Allocate storage for the prefs structure.
 	if (!(outbound = mm_alloc(sizeof(smtp_outbound_prefs_t)))) {
 		log_pedantic("Unable to allocate a block of %zu bytes to hold the outbound preferences.", sizeof(smtp_outbound_prefs_t));
 		res_table_free(result);
-		return -1;
+		return -2;
 	}
 
 	// Store the result.
@@ -659,19 +643,14 @@ int_t smtp_fetch_authorization(stringer_t *username, stringer_t *verification, s
 		log_error("Invalid user number. { username = %.*s }", st_length_int(username), st_char_get(username));
 		res_table_free(result);
 		mm_free(outbound);
-		return -1;
+		return -2;
 	}
 
-	outbound->tls = res_field_int8(row, 2);
-	outbound->domain = res_field_string(row, 3);
-	outbound->send_size_limit = res_field_uint32(row, 4);
-	outbound->daily_send_limit = res_field_uint32(row, 5);
-	outbound->importance = res_field_int8(row, 6);
-
-	// Check whether this account is locked as a result of inactivity. If so, unlock.
-	if (locked == 2) {
-		meta_data_update_lock(outbound->usernum, 0);
-	}
+	outbound->tls = res_field_int8(row, 1);
+	outbound->domain = res_field_string(row, 2);
+	outbound->send_size_limit = res_field_uint32(row, 3);
+	outbound->daily_send_limit = res_field_uint32(row, 4);
+	outbound->importance = res_field_int8(row, 5);
 
 	res_table_free(result);
 	*output = outbound;
@@ -687,21 +666,21 @@ int_t smtp_fetch_authorization(stringer_t *username, stringer_t *verification, s
 
 	if (!(result = stmt_get_result(stmts.select_transmitting, parameters))) {
 		log_pedantic("Could not check the transmit quota.");
-		return 1;
+		return -2;
 	}
 
 	// Get the first row.
 	else if (!(row = res_row_next(result))) {
 		log_pedantic("Could not fetch the first SQL result row.");
 		res_table_free(result);
-		return 1;
+		return -2;
 	}
 
 	// Store the number of sent messages and free the result.
 	outbound->sent_today = (uint32_t)res_field_uint64(row, 0);
 	res_table_free(result);
 
-	return 1;
+	return 0;
 }
 
 /**

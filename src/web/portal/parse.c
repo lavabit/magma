@@ -25,10 +25,12 @@ inx_t * portal_parse_json_str_array (json_t *json, size_t *nout) {
 		log_pedantic("Portal cannot parse null json array.");
 		return NULL;
 	// The json object must be an array.
-	} else if (!json_is_array(json)) {
+	}
+	else if (!json_is_array(json)) {
 		log_pedantic("Portal cannot parse mistyped json array.");
 		return NULL;
-	} else if (!(result = inx_alloc(M_INX_LINKED, st_free))) {
+	}
+	else if (!(result = inx_alloc(M_INX_LINKED, st_free))) {
 		log_error("Portal could not allocate space to parse json array.");
 		return NULL;
 	}

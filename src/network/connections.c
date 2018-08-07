@@ -82,6 +82,21 @@ int_t con_status(connection_t *con) {
 }
 
 /**
+ * @brief Attempt to flush any buffered data associated with a network connection.
+ * @param con the input client connection.
+ * @return	This function returns no value.
+ */
+void con_flush(connection_t *con) {
+
+	net_set_nodelay(con->network.sockd, true);
+	send(con->network.sockd, NULL, 0, MSG_OOB);
+	net_set_nodelay(con->network.sockd, false);
+
+	return;
+}
+
+
+/**
  * @brief	Destroy and free a generic connection object after executing its protocol-specific destructor; update any statistics accordingly.
  * @param	con		a pointer to the connection to be destroyed.
  * @return	This function returns no value.
@@ -157,6 +172,7 @@ void con_destroy(connection_t *con) {
 		}
 
 		if (con->network.sockd != -1) {
+			shutdown(con->network.sockd, SHUT_WR);
 			close(con->network.sockd);
 		}
 

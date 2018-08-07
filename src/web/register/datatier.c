@@ -113,15 +113,15 @@ bool_t register_data_check_username(stringer_t *username) {
  */
 bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *username, stringer_t *password, int64_t transaction, uint64_t *outuser) {
 
-	uint8_t rotated = 1;
 	uint16_t serial = 0;
 	uint32_t bonus = 0;
 	MYSQL_BIND parameters[8];
 	auth_stacie_t *stacie = NULL;
-	const chr_t *account_plans[] = { "BASIC", "PERSONAL", "ENHANCED", "PREMIUM" };
+	uint8_t rotated = 1, ads = 0;
+	const chr_t *account_plans[] = { "BASIC", "PERSONAL", "ENHANCED", "PREMIUM", "STANDARD", "PREMIER" };
 	uint64_t name_len, quota = 0, usernum, inbox, size_limit, send_limit, recv_limit;
 	stringer_t *newaddr = NULL, *salt = NULL, *shard = NULL, *b64_salt = NULL, *b64_shard = NULL, *b64_verification = NULL,
-		*ip = NULL, *realm = NULL;
+		*ip = NULL, *realm = NULL, *expiration = MANAGEDBUF(128);
 
 	/// LOW: This function should be passed a number of days (or years) to use for any of the pre-paid account plans.
 	/// LOW: The IP address could be passed in as an ip_t or as a string to avoid the need for the entire connection object.
@@ -129,31 +129,56 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 	// Configure the limits for the plan. We are currently using hard coded values. In the future this may be
 	// setup dynamically by pull the default values out of the limits table.
 	if (plan == 1) {
+		st_sprint(expiration, "0000-00-00");
 		quota = 134217728UL; // 128 MB
 		size_limit = 33554432;
 		recv_limit = 1024;
 		send_limit = 256;
+		ads = 0;
+
 	}
 	else if (plan == 2) {
+		st_sprint(expiration, "0000-00-00");
 		quota = 1073741824UL; // 1,024 MB
 		size_limit = 64UL << 20;
 		recv_limit = 1024;
 		send_limit = 256;
+		ads = 1;
 	}
 	else if (plan == 3) {
+		expiration = time_print_local(expiration, "%Y-%m-%d", time(NULL) + 31536000);
 		quota = 1073741824UL; // 1,024 MB
 		size_limit = 64UL << 20;
 		recv_limit = 1024;
 		send_limit = 512;
+		ads = 0;
 	}
 	else if (plan == 4) {
+		expiration = time_print_local(expiration, "%Y-%m-%d", time(NULL) + 31536000);
 		quota = 8589934592UL; // 8,192 MB
 		size_limit = 128UL << 20;
 		recv_limit = 8192;
 		send_limit = 768;
+		ads = 0;
+	}
+	else if (plan == 5) {
+		expiration = time_print_local(expiration, "%Y-%m-%d", time(NULL) + 31536000);
+		quota = 5368709120UL; // 5,120 MB
+		size_limit = 64UL << 20;
+		recv_limit = 8192;
+		send_limit = 128;
+		ads = 0;
+	}
+	else if (plan == 6) {
+		expiration = time_print_local(expiration, "%Y-%m-%d", time(NULL) + 31536000);
+		quota = 21474836480UL; // 20,480 MB
+		size_limit = 128UL << 20;
+		recv_limit = 8192;
+		send_limit = 128;
+		ads = 0;
 	}
 	else {
-		log_pedantic("Unrecognized account plan. Only values between 1 and 4 are supported. { plan = %hu }", plan);
+		log_pedantic("Unrecognized account plan. Only values between 1 and 6 are supported. { plan = %hu }", plan);
 		return false;
 	}
 
@@ -196,21 +221,26 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 	parameters[3].buffer = &bonus;
 	parameters[3].is_unsigned = true;
 
-	// The name of the account plan.
+	// The advertising boolean.
 	parameters[4].buffer_type = MYSQL_TYPE_STRING;
-	parameters[4].buffer = &(account_plans[plan - 1]);
+	parameters[4].buffer = (chr_t *)account_plans[plan - 1];
 	parameters[4].buffer_length = ns_length_get(account_plans[plan - 1]);
 
+	// The name of the account plan.
+	parameters[5].buffer_type = MYSQL_TYPE_STRING;
+	parameters[5].buffer = (chr_t *)account_plans[plan - 1];
+	parameters[5].buffer_length = ns_length_get(account_plans[plan - 1]);
+
 	// The quota.
-	parameters[5].buffer_type = MYSQL_TYPE_LONGLONG;
-	parameters[5].buffer_length = sizeof(uint64_t);
-	parameters[5].buffer = &quota;
-	parameters[5].is_unsigned = true;
+	parameters[6].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[6].buffer_length = sizeof(uint64_t);
+	parameters[6].buffer = &quota;
+	parameters[6].is_unsigned = true;
 
 	// The expiration date for a pre-paid account plan. Set the all the date to all zeros for a free account plan.
-	parameters[6].buffer_type = MYSQL_TYPE_STRING;
-	parameters[6].buffer = "0000-00-00";
-	parameters[6].buffer_length = 10;
+	parameters[7].buffer_type = MYSQL_TYPE_STRING;
+	parameters[7].buffer = st_data_get(expiration);
+	parameters[7].buffer_length = st_length_get(expiration);
 
 	// Insert the user.
 	if ((usernum = stmt_insert_conn(stmts.register_insert_stacie_user, parameters, transaction)) == 0) {
@@ -259,7 +289,7 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 		return false;
 	}
 
-	// Folders Table
+	// Profile Table
 	mm_wipe(parameters, sizeof(parameters));
 
 	// Usernum
@@ -275,6 +305,15 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 		auth_stacie_cleanup(stacie);
 		return false;
 	}
+
+	// Folders Table
+	mm_wipe(parameters, sizeof(parameters));
+
+	// Usernum
+	parameters[0].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[0].buffer_length = sizeof(uint64_t);
+	parameters[0].buffer = &usernum;
+	parameters[0].is_unsigned = true;
 
 	// The folder where messages are delivered by default.
 	parameters[1].buffer_type = MYSQL_TYPE_STRING;

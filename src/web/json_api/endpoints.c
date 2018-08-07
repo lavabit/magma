@@ -8,27 +8,31 @@
 #include "magma.h"
 
 static bool_t is_locked(auth_t *auth) {
-	return auth->status.locked != 0;
+	return auth->status.locked != AUTH_LOCK_NONE;
 }
 
 static chr_t * lock_error_message(auth_t *auth) {
+
 	chr_t *result;
 
 	switch (auth->status.locked) {
-		case 1:
-			result = "This account has been administratively locked.";
-			break;
-		case 2:
+		case AUTH_LOCK_INACTIVITY:
 			result = "This account has been locked for inactivity.";
 			break;
-		case 3:
+		case AUTH_LOCK_EXPIRED:
+			result = "This account has been locked because the subscription expired.";
+			break;
+		case AUTH_LOCK_ADMIN:
+			result = "This account has been administratively locked.";
+			break;
+		case AUTH_LOCK_ABUSE:
 			result = "This account has been locked on suspicion of abuse.";
 			break;
-		case 4:
+		case AUTH_LOCK_USER:
 			result = "This account has been locked at the request of the user.";
 			break;
 		default:
-			result = "";
+			result = "This account account has been locked.";
 			break;
 	}
 
@@ -135,25 +139,39 @@ void api_endpoint_auth(connection_t *con) {
 }
 
 void api_endpoint_register(connection_t *con) {
-	json_error_t jansson_err;
-	chr_t *username;
-	chr_t *password;
-	chr_t *password_verification;
 
-	int64_t transaction;
+	placer_t value;
 	uint64_t usernum = 0;
+	json_error_t jansson_err;
+	int64_t transaction, plan = 1;
+	chr_t *holder = NULL, *username = NULL, *password = NULL, *password_verification = NULL;
 
-	if (json_unpack_ex_d(con->http.portal.params, &jansson_err, JSON_STRICT, "{s:s, s:s, s:s}", "username", &username, "password", &password, "password_verification",
-		&password_verification) != 0) {
-		log_pedantic(
-			"Received invalid portal auth request parameters "
-			"{ user = %s, errmsg = %s }",
-			st_char_get(con->http.session->user->username),
-			jansson_err.text);
-
+	// Try parsing the parameters with and without the plan key.
+	if (json_unpack_ex_d(con->http.portal.params, &jansson_err, JSON_STRICT, "{s:s, s:s, s:s}", "username", &username,
+		"password", &password, "password_verification",	&password_verification) != 0 &&
+		json_unpack_ex_d(con->http.portal.params, &jansson_err, JSON_STRICT, "{s:s, s:s, s:s, s:s}", "username", &username,
+		"password", &password, "password_verification",	&password_verification, "plan", &holder) != 0) {
+		log_pedantic("Received invalid portal register request parameters. { errmsg = %s }", jansson_err.text);
 		api_error(con, HTTP_ERROR_400, JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS, "Invalid method parameters.");
-
 		goto out;
+	}
+
+	// If a plan was requested, figure out the correct id.
+	else if (holder) {
+
+		value = pl_init(holder, ns_length_get(holder));
+
+		if (!st_cmp_ci_eq(&value, PLACER("BASIC", 5))) plan = 1;
+		else if (!st_cmp_ci_eq(&value, PLACER("PERSONAL", 8))) plan = 2;
+		else if (!st_cmp_ci_eq(&value, PLACER("ENHANCED", 8))) plan = 3;
+		else if (!st_cmp_ci_eq(&value, PLACER("PREMIUM", 7))) plan = 4;
+		else if (!st_cmp_ci_eq(&value, PLACER("STANDARD", 8))) plan = 5;
+		else if (!st_cmp_ci_eq(&value, PLACER("PREMIER", 7))) plan = 6;
+		else {
+			api_error(con, HTTP_ERROR_400, JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS, "Invalid plan requested.");
+			goto out;
+		}
+
 	}
 
 	// Start the transaction.
@@ -164,7 +182,7 @@ void api_endpoint_register(connection_t *con) {
 	}
 
 	// Database insert.
-	if (!register_data_insert_user(con, 1, lower_st(NULLER(username)), NULLER(password), transaction, &usernum)) {
+	if (!register_data_insert_user(con, plan, lower_st(NULLER(username)), NULLER(password), transaction, &usernum)) {
 		tran_rollback(transaction);
 		api_error(con, HTTP_ERROR_500, JSON_RPC_2_ERROR_SERVER_INTERNAL, "Internal server error.");
 		goto out;

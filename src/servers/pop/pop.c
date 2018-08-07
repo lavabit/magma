@@ -242,21 +242,20 @@ void pop_pass(connection_t *con) {
 	// Check if the account is locked.
 	if (auth->status.locked) {
 
-		if (auth->status.locked == 1) {
-			con_write_bl(con, "-ERR [SYS/PERM] This account has been administratively locked.\r\n", 64);
+		if (auth->status.locked == AUTH_LOCK_EXPIRED) {
+			con_write_bl(con, "-ERR [AUTH] The subscription for this account has expired.\r\n", 60);
 		}
-		/// HIGH: Inactivity locks shouldn't prevent a user from logging into the system.
-		else if (auth->status.locked == 2) {
-			con_write_bl(con, "-ERR [SYS/PERM] This account has been locked for inactivity.\r\n", 62);
+		else if (auth->status.locked == AUTH_LOCK_ADMIN) {
+			con_write_bl(con, "-ERR [AUTH] This account has been administratively locked.\r\n", 60);
 		}
-		else if (auth->status.locked == 3) {
-			con_write_bl(con, "-ERR [SYS/PERM] This account has been locked on suspicion of abuse.\r\n", 69);
+		else if (auth->status.locked == AUTH_LOCK_ABUSE) {
+			con_write_bl(con, "-ERR [AUTH] This account has been locked on suspicion of abuse.\r\n", 65);
 		}
-		else if (auth->status.locked == 4) {
-			con_write_bl(con, "-ERR [SYS/PERM] This account has been locked at the request of the user.\r\n", 74);
+		else if (auth->status.locked == AUTH_LOCK_USER) {
+			con_write_bl(con, "-ERR [AUTH] This account has been locked at the request of the user.\r\n", 70);
 		}
 		else if (auth->status.locked != 0) {
-			con_write_bl(con, "-ERR [SYS/PERM] This account has been locked.\r\n", 47);
+			con_write_bl(con, "-ERR [AUTH] This account has been locked.\r\n", 38);
 		}
 
 		auth_free(auth);

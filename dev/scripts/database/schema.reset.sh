@@ -113,7 +113,7 @@ cat $MAGMA_RES_SQL/Start.sql \
 	$MAGMA_RES_SQL/Version.sql \
 	$MAGMA_RES_SQL/Data.sql \
 	$MAGMA_RES_SQL/Finish.sql \
-| mysql -vvv --batch -u "${MYSQL_USER}" --password="${MYSQL_PASSWORD}"
+| mysql --batch -u "${MYSQL_USER}" --password="${MYSQL_PASSWORD}"
 
 # Remove the storage tanks.
 rm --force "$MAGMA_RES_TANKS/system.data"

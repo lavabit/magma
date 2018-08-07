@@ -235,6 +235,98 @@ START_TEST (check_users_auth_login_s) {
 
 } END_TEST
 
+START_TEST (check_users_auth_locked_s) {
+
+	log_disable();
+	auth_t *auth = NULL;
+	int_t result, locks[] = { AUTH_LOCK_EXPIRED, AUTH_LOCK_ADMIN, AUTH_LOCK_ABUSE, AUTH_LOCK_USER, AUTH_LOCK_NONE,
+		AUTH_LOCK_EXPIRED, AUTH_LOCK_ADMIN, AUTH_LOCK_ABUSE, AUTH_LOCK_USER, AUTH_LOCK_NONE };
+	stringer_t *errmsg = NULL, *usernames[] = { PLACER("lock_expired", 12), PLACER("lock_admin", 10),
+		PLACER("lock_abuse", 10), PLACER("lock_user", 9), PLACER("lock_none", 9), PLACER("lock_expired@lavabit.com", 24),
+		PLACER("lock_admin@lavabit.com", 22), PLACER("lock_abuse@lavabit.com", 22), PLACER("lock_user@lavabit.com", 21),
+		PLACER("lock_none@lavabit.com", 21) };
+
+	if (!status()) {
+		log_test("USERS / AUTH / LOCKED / SINGLE THREADED:", errmsg);
+		return;
+	}
+
+	for (int_t i = 0; i < (sizeof(usernames)/sizeof(stringer_t *)) && !errmsg && status(); i++) {
+
+		// Make sure the user can login first.
+		if ((result = auth_login(usernames[i], PLACER("authenticate", 12), &auth))) {
+			errmsg = st_aprint("The account locking test failed to log into the test account. { result = %i / username = %.*s }",
+				result, st_length_int(usernames[i]), st_char_get(usernames[i]));
+		}
+		// The login succeeded, so now we make sure the account is properly locked.
+		else if (auth && auth->status.locked != locks[i]) {
+			errmsg = st_aprint("A locked account failed to return the correct locking value. { lock = %i / username = %.*s }",
+				auth->status.locked, st_length_int(usernames[i]), st_char_get(usernames[i]));
+		}
+
+		// Cleanup the auth structure if the login succeeded.
+		if (auth) {
+			auth_free(auth);
+			auth = NULL;
+		}
+
+	}
+
+	log_test("USERS / AUTH / LOCKED / SINGLE THREADED:", errmsg);
+	fail_unless(!errmsg, st_char_get(errmsg));
+	st_cleanup(errmsg);
+
+} END_TEST
+
+START_TEST (check_users_auth_inactivity_s) {
+
+	log_disable();
+	int64_t result;
+	auth_t *auth = NULL;
+	stringer_t *errmsg = NULL;
+
+	if (!status()) {
+		log_test("USERS / AUTH / INACTIVITY / SINGLE THREADED:", errmsg);
+		return;
+	}
+
+	// This query will ensure the lock_inactive account is locked for inactivity. Without it, repeat check runs would fail, as the
+	// inactivity lock would have already been eliminated.
+	if ((result = sql_write(PLACER("UPDATE `Users` SET `locked` = 1, `lock_expiration` = DATE(DATE_ADD(NOW(), INTERVAL 120 DAY)) " \
+		"WHERE `userid` = 'lock_inactive';", 126))) < 0) {
+		errmsg = st_aprint("Unable to configure the lock_inactive account for the inactivity test. { result = %li }", result);
+	}
+
+	// Make sure the user can login first.
+	else if ((result = auth_login(PLACER("lock_inactive", 13), PLACER("authenticate", 12), &auth))) {
+		errmsg = st_aprint("The inactivity lock test failed to log into the test account. { result = %li / username = lock_inactive }", result);
+	}
+
+	// The login succeeded, now we need to make sure the inactivity lock on the account has been cleared.
+	else if (auth && auth->status.locked != AUTH_LOCK_NONE) {
+		errmsg = st_aprint("A locked account failed to return the correct locking value. { lock = %i / username = lock_inactive }",	auth->status.locked);
+	}
+
+	// Cleanup the auth structure if the login succeeded.
+	if (auth) {
+		auth_free(auth);
+		auth = NULL;
+	}
+
+	// The SQL query above, is designed to place an inactivity lock on the lock_inactive account, but it might not affect any rows, as the
+	// account could already be locked. However, once the test completes, the same query must affect a row, or this test is a failure.
+	if (!errmsg && (result = sql_write(PLACER("UPDATE `Users` SET `locked` = 1, `lock_expiration` = DATE(DATE_ADD(NOW(), INTERVAL 120 DAY)) " \
+		"WHERE `userid` = 'lock_inactive';", 126))) != 1) {
+		errmsg = st_aprint("The lock_inactive account update failed, indicating the lock was never removed, and the test is a " \
+			"failure. { result = %li }", result);
+	}
+
+	log_test("USERS / AUTH / INACTIVITY / SINGLE THREADED:", errmsg);
+	fail_unless(!errmsg, st_char_get(errmsg));
+	st_cleanup(errmsg);
+
+} END_TEST
+
 START_TEST (check_users_auth_address_s) {
 
 	stringer_t *address;

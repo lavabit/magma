@@ -47,45 +47,6 @@ void meta_data_update_log(meta_user_t *user, META_PROTOCOL prot) {
 }
 
 /**
- * @brief	Update a user's lock in the database.
- *
- * @param	usernum		the numerical id of the user for whom the lock will be set.
- * @param	lock		the new value to which the specified user's lock will be set.
- *
- * @return	This function returns no value.
- */
-void meta_data_update_lock(uint64_t usernum, uint8_t lock) {
-
-	MYSQL_BIND parameters[2];
-
-	// We only want to allow the lock to be reset back to zero.
-	if (!usernum || lock) {
-		log_pedantic("Invalid lock update request. {lock = %i / usernum = %lu}", lock, usernum );
-		return;
-	}
-
-	mm_wipe(parameters, sizeof(parameters));
-
-	// Lock
-	parameters[0].buffer_type = MYSQL_TYPE_TINY;
-	parameters[0].buffer_length = sizeof(uint8_t);
-	parameters[0].buffer = &lock;
-	parameters[0].is_unsigned = true;
-
-	// Usernum
-	parameters[1].buffer_type = MYSQL_TYPE_LONGLONG;
-	parameters[1].buffer_length = sizeof(uint64_t);
-	parameters[1].buffer = &usernum;
-	parameters[1].is_unsigned = true;
-
-	if (stmt_exec_affected(stmts.update_user_lock, parameters) != 1) {
-		log_pedantic("Unable to update the user lock. {usernum = %lu / lock = %hhu}", usernum, lock);
-	}
-
-	return;
-}
-
-/**
  * @brief	Retrieve all of a user's message folders from the database.
  *
  * @note	If the user already had a working set of message folders they will be deleted first.

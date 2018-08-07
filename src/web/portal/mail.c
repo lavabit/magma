@@ -38,7 +38,7 @@ bool_t portal_outbound_checks(uint64_t usernum, stringer_t *username, stringer_t
 	}
 
 	// We need to grab the user's outbound credentials before we can check the transmit quota.
-	if (smtp_fetch_authorization(username, verification, &prefs) <= 0) {
+	if (smtp_fetch_authorization(username, verification, &prefs)) {
 		*errmsg = "User failed to meet authorization check.";
 		return false;
 	}

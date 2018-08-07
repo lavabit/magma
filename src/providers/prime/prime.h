@@ -43,9 +43,9 @@ typedef enum {
  * @typedef prime_encoding_t
  */
 typedef enum {
-	BINARY,                               /**< Serialized object in binary form. >*/
-	ARMORED,                              /**< An object that has been aromored using the Privacy Enhanced Message format. >*/
-	DEBUG                                 /**< Printable version of the object, with labels, and binary data encoded using base64. >*/
+	BINARY,                               /**< Serialized object in binary form. */
+	ARMORED,                              /**< An object that has been aromored using the Privacy Enhanced Message format. */
+	DEBUG                                 /**< Printable version of the object, with labels, and binary data encoded using base64. */
 } prime_encoding_t;
 
 /**
@@ -53,38 +53,38 @@ typedef enum {
  */
 typedef enum {
 	NONE,
-	SECURITY                              /**< Store the object in secure memory. >*/
+	SECURITY                              /**< Store the object in secure memory. */
 } prime_flags_t;
 
 /**
  * @typedef prime_message_type_t
  */
 typedef enum {
-    PRIME_MESSAGE_ENCRYPTED = 1847,        /**< An encrypted message. >*/
-    PRIME_MESSAGE_SENT = 1851,             /**< An encrypted, appended, sent message. >*/
-    PRIME_MESSAGE_DRAFT = 1861,            /**< An encrypted, appended, message draft. >*/
-    PRIME_MESSAGE_NAKED = 1908,            /**< An encrypted, imported, unstructured, naked message. >*/
+    PRIME_MESSAGE_ENCRYPTED = 1847,        /**< An encrypted message. */
+    PRIME_MESSAGE_SENT = 1851,             /**< An encrypted, appended, sent message. */
+    PRIME_MESSAGE_DRAFT = 1861,            /**< An encrypted, appended, message draft. */
+    PRIME_MESSAGE_NAKED = 1908,            /**< An encrypted, imported, unstructured, naked message. */
 
-    PRIME_MESSAGE_BOUNCE = 1931,           /**< An encapsulated, encrypted message, that has bounced. >*/
-    PRIME_MESSAGE_FORWARD = 1948,          /**< An encapsulated, encrypted message, that has been forwarded. >*/
-    PRIME_MESSAGE_ABUSE = 2001,            /**< An encapsulated, encrypted message, sent as an abuse complaint. >*/
+    PRIME_MESSAGE_BOUNCE = 1931,           /**< An encapsulated, encrypted message, that has bounced. */
+    PRIME_MESSAGE_FORWARD = 1948,          /**< An encapsulated, encrypted message, that has been forwarded. */
+    PRIME_MESSAGE_ABUSE = 2001,            /**< An encapsulated, encrypted message, sent as an abuse complaint. */
 
-    PRIME_BINARY_OBJECT = 1837,            /**< A binary object. >*/
-    PRIME_PROTOCOL_TICKET = 1841           /**< An encrypted protocol ticket. >*/
+    PRIME_BINARY_OBJECT = 1837,            /**< A binary object. */
+    PRIME_PROTOCOL_TICKET = 1841           /**< An encrypted protocol ticket. */
 } prime_message_type_t;
 
 /**
  * @typedef prime_artifact_type_t
  */
 typedef enum {
-    PRIME_ORG_SIGNET = 1776,               /**< Organizational signet. >*/
-	PRIME_ORG_KEY = 1952,                  /**< Organizational key. >*/
-	PRIME_ORG_KEY_ENCRYPTED = 1947,        /**< Encrypted organizational key. >*/
+    PRIME_ORG_SIGNET = 1776,               /**< Organizational signet. */
+	PRIME_ORG_KEY = 1952,                  /**< Organizational key. */
+	PRIME_ORG_KEY_ENCRYPTED = 1947,        /**< Encrypted organizational key. */
 
-	PRIME_USER_SIGNING_REQUEST = 1215,     /**< User signing request. >*/
-    PRIME_USER_SIGNET = 1789,              /**< User signet. >*/
-	PRIME_USER_KEY = 2013,                 /**< User key. >*/
-	PRIME_USER_KEY_ENCRYPTED = 1976,       /**< Encrypted user key. >*/
+	PRIME_USER_SIGNING_REQUEST = 1215,     /**< User signing request. */
+    PRIME_USER_SIGNET = 1789,              /**< User signet. */
+	PRIME_USER_KEY = 2013,                 /**< User key. */
+	PRIME_USER_KEY_ENCRYPTED = 1976,       /**< Encrypted user key. */
 } prime_artifact_type_t;
 
 /**
@@ -93,19 +93,19 @@ typedef enum {
 	PRIME_CHUNK_INVALID = -1,
 
 	// Tracing
-    PRIME_CHUNK_TRACING = 0,                        /**< Tracing data. >*/
+    PRIME_CHUNK_TRACING = 0,                        /**< Tracing data. */
 
 	// Envelope Block
-	PRIME_CHUNK_EPHEMERAL = 1,                      /**< Ephemeral chunk. >*/
-	PRIME_CHUNK_ORIGIN = 2,                         /**< Origin chunk. >*/
-	PRIME_CHUNK_DESTINATION = 3,                    /**< Destination chunk. >*/
+	PRIME_CHUNK_EPHEMERAL = 1,                      /**< Ephemeral chunk. */
+	PRIME_CHUNK_ORIGIN = 2,                         /**< Origin chunk. */
+	PRIME_CHUNK_DESTINATION = 3,                    /**< Destination chunk. */
 
 	// Metadata Block
-	PRIME_CHUNK_COMMON = 32,                        /**< Common headers chunk. >*/
-	PRIME_CHUNK_HEADERS = 33,                       /**< Remaining headers chunk. >*/
+	PRIME_CHUNK_COMMON = 32,                        /**< Common headers chunk. */
+	PRIME_CHUNK_HEADERS = 33,                       /**< Remaining headers chunk. */
 
 	// Body
-	PRIME_CHUNK_BODY = 48,                          /**< Naked unstructured message body. >*/
+	PRIME_CHUNK_BODY = 48,                          /**< Naked unstructured message body. */
 
 	// Signature Block
 	PRIME_SIGNATURE_TREE = 224,
@@ -121,16 +121,16 @@ typedef enum {
 typedef enum {
 	PRIME_CHUNK_FLAG_INVALID = -1,
 
-	PRIME_CHUNK_FLAG_NONE = 0,                   /**< The empty set. >*/
+	PRIME_CHUNK_FLAG_NONE = 0,                   /**< The empty set. */
 
 	// Envelope Block
-	PRIME_CHUNK_FLAG_ALTERNATE_PADDING = 1,      /**< Alternate chunk padding algorithm. >*/
-	PRIME_CHUNK_FLAG_ALTERNATE_ENCRYPT = 2,      /**< Payload is further encrypted by the alternate cipher suite. >*/
-	PRIME_CHUNK_FLAG_COMPRESSED = 4,             /**< The data was compressed before being encrypted. >*/
+	PRIME_CHUNK_FLAG_ALTERNATE_PADDING = 1,      /**< Alternate chunk padding algorithm. */
+	PRIME_CHUNK_FLAG_ALTERNATE_ENCRYPT = 2,      /**< Payload is further encrypted by the alternate cipher suite. */
+	PRIME_CHUNK_FLAG_COMPRESSED = 4,             /**< The data was compressed before being encrypted. */
 
 	// The values 8, 16, 32, 64 are currently reserved for future use.
 
-	PRIME_CHUNK_FLAG_SPANNING = 128              /**< The payload continues into the next available chunk. >*/
+	PRIME_CHUNK_FLAG_SPANNING = 128              /**< The payload continues into the next available chunk. */
 } prime_message_chunk_flags_t;
 
 /**
@@ -204,12 +204,12 @@ typedef struct __attribute__ ((packed)) {
  * @typedef prime_user_signet_t
  */
 typedef struct __attribute__ ((packed)) {
-	ed25519_key_t *signing;                /**< User signing key, field 1. >*/
-	secp256k1_key_t *encryption;           /**< User encryption key, field 2. >*/
+	ed25519_key_t *signing;                /**< User signing key, field 1. */
+	secp256k1_key_t *encryption;           /**< User encryption key, field 2. */
 	struct {
-		stringer_t *custody;               /**< User chain of custody signature, field 4. >*/
-		stringer_t *user;                  /**< User signature, field 5. >*/
-		stringer_t *org;                   /**< Organizational signature, field 6. >*/
+		stringer_t *custody;               /**< User chain of custody signature, field 4. */
+		stringer_t *user;                  /**< User signature, field 5. */
+		stringer_t *org;                   /**< Organizational signature, field 6. */
 	} signatures;
 } prime_user_signet_t;
 
@@ -217,9 +217,9 @@ typedef struct __attribute__ ((packed)) {
  * @typedef prime_org_signet_t
  */
 typedef struct __attribute__ ((packed)) {
-	ed25519_key_t *signing;                /**< Organizational signing key, field 1. >*/
-	secp256k1_key_t *encryption;           /**< Organizational encryption key, field 3. >*/
-	stringer_t *signature;                 /**< Organizational signature, field 4. >*/
+	ed25519_key_t *signing;                /**< Organizational signing key, field 1. */
+	secp256k1_key_t *encryption;           /**< Organizational encryption key, field 3. */
+	stringer_t *signature;                 /**< Organizational signature, field 4. */
 } prime_org_signet_t;
 
 /**
@@ -263,8 +263,8 @@ typedef struct __attribute__ ((packed)) {
  */
 typedef struct __attribute__ ((packed)) {
 	struct {
-		uint8_t type;                      /**< Chunk type, which curently, should always be 1. >*/
-		uint32_t length;                   /**< Payload length. Currently, this should only be 35 or 69. >*/
+		uint8_t type;                      /**< Chunk type, which curently, should always be 1. */
+		uint32_t length;                   /**< Payload length. Currently, this should only be 35 or 69. */
 	} header;
 	struct {
 		ed25519_key_t *signing;
@@ -278,8 +278,8 @@ typedef struct __attribute__ ((packed)) {
  */
 typedef struct __attribute__ ((packed)) prime_encrypted_chunk_t {
 	struct {
-		uint8_t type;                      /**< Chunk type, 1 through 255. >*/
-		uint32_t length;                   /**< Payload length, must be divisible by 16 and less than 2^24 - 1. >*/
+		uint8_t type;                      /**< Chunk type, 1 through 255. */
+		uint32_t length;                   /**< Payload length, must be divisible by 16 and less than 2^24 - 1. */
 	} header;
 
 	stringer_t *signature;

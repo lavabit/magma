@@ -8,7 +8,6 @@
 #ifndef MAGMA_OBJECTS_MESSAGES_H
 #define MAGMA_OBJECTS_MESSAGES_H
 
-
 // Message marking & status codes.
 enum {
 	MAIL_STATUS_NONE = 0,

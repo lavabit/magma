@@ -180,20 +180,19 @@ void imap_login(connection_t *con) {
 	else if (auth->status.locked) {
 
 		// The CONTACTADMIN response code is provided by RFC 5530 which states: "The user should contact the system administrator or support."
-		if (auth->status.locked == 1) {
+		if (auth->status.locked == AUTH_LOCK_EXPIRED) {
+			con_print(con, "%.*s NO [CONTACTADMIN] The subscription for this account has expired.\r\n",
+				st_length_int(con->imap.tag), st_char_get(con->imap.tag));
+		}
+		else if (auth->status.locked == AUTH_LOCK_ADMIN) {
 			con_print(con, "%.*s NO [CONTACTADMIN] This account has been administratively locked.\r\n",
 				st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		}
-		/// HIGH: Inactivity locks shouldn't prevent a user from logging into the system.
-		else if (auth->status.locked == 2) {
-			con_print(con, "%.*s NO [CONTACTADMIN] This account has been locked for inactivity.\r\n",
-				st_length_int(con->imap.tag), st_char_get(con->imap.tag));
-		}
-		else if (auth->status.locked == 3) {
+		else if (auth->status.locked == AUTH_LOCK_ABUSE) {
 			con_print(con, "%.*s NO [CONTACTADMIN] This account has been locked on suspicion of abuse.\r\n",
 				st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		}
-		else if (auth->status.locked == 4) {
+		else if (auth->status.locked == AUTH_LOCK_USER) {
 			con_print(con, "%.*s NO [CONTACTADMIN] This account has been locked at the request of the user.\r\n",
 				st_length_int(con->imap.tag), st_char_get(con->imap.tag));
 		}

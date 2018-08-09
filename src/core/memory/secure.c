@@ -359,15 +359,28 @@ bool_t mm_sec_start(void) {
 	uchr_t *bndptr;
 	size_t alignment;
 	secured_t *chunk;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 6ddaee87b7e70d0017c35fcbf8935395f94b3fb7
 #ifdef  MAGMA_ENGINE_CONFIG_GLOBAL_H
 	if (!(secure.enabled = magma.secure.memory.enable)) {
 		log_pedantic("Secure memory management disabled.");
 		return true;
 	}
+#endif
+
 
 	// Ensure the page length is positive.
+<<<<<<< HEAD
 	else if ((alignment = magma.page_length) <= 0) {
+=======
+#ifdef  MAGMA_ENGINE_CONFIG_GLOBAL_H
+	if ((alignment = magma.page_length) <= 0) {
+#else
+	if ((alignment = CORE_PAGE_LENGTH) <= 0) {
+#endif
+>>>>>>> 6ddaee87b7e70d0017c35fcbf8935395f94b3fb7
 		log_pedantic("Invalid page size.");
 		return false;
 	}
@@ -392,6 +405,9 @@ bool_t mm_sec_start(void) {
 	// Ensure the default length for secure memory slabs is greater than zero and is aligned by the page table size.
 #ifdef  MAGMA_ENGINE_CONFIG_GLOBAL_H
 	if ((secure.slab.length = (magma.secure.memory.length + alignment - 1) & ~(alignment - 1)) < MM_SEC_POOL_LENGTH_MIN) {
+#else
+		if ((secure.slab.length = (CORE_SECURE_MEMORY_LENGTH + alignment - 1) & ~(alignment - 1)) < MM_SEC_POOL_LENGTH_MIN) {
+#endif
 		log_pedantic("The secure memory pool size is too small. { length = %zu / min = %i }", secure.slab.length, MM_SEC_POOL_LENGTH_MIN);
 		return false;
 	}
@@ -408,7 +424,10 @@ bool_t mm_sec_start(void) {
 #else
 	secure.slab.length_true = secure.slab.length + (CORE_PAGE_LENGTH * 2);
 #endif
+<<<<<<< HEAD
 
+=======
+>>>>>>> 6ddaee87b7e70d0017c35fcbf8935395f94b3fb7
 	// Request an anonymous memory mapping that is aligned according to the system page size. Were asking the kernel to lock returned block into memory.
 	if ((secure.slab.data_true = mmap64(NULL, secure.slab.length_true, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_LOCKED, -1, 0)) == MAP_FAILED) {
 		log_pedantic("Unable to memory map an anonymous file. { error = %s }", strerror_r(errno, MEMORYBUF(1024), 1024));
@@ -416,18 +435,30 @@ bool_t mm_sec_start(void) {
 	}
 
 	bndptr = secure.slab.data_true;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 6ddaee87b7e70d0017c35fcbf8935395f94b3fb7
 #ifdef  MAGMA_ENGINE_CONFIG_GLOBAL_H
 	if (mprotect(bndptr, magma.page_length, PROT_NONE)) {
+#else
+		if (mprotect(bndptr, CORE_PAGE_LENGTH, PROT_NONE)) {
+#endif
 		log_pedantic("Unable to set protections on lower secure memory boundary chunk.");
 		return false;
 	}
-
+#ifdef  MAGMA_ENGINE_CONFIG_GLOBAL_H
 	bndptr += magma.page_length;
+#else
+	bndptr += CORE_PAGE_LENGTH;
+#endif
 	secure.slab.data = bndptr;
 	bndptr += secure.slab.length;
-
+#ifdef  MAGMA_ENGINE_CONFIG_GLOBAL_H
 	if (mprotect(bndptr, magma.page_length, PROT_NONE)) {
+#else
+		if (mprotect(bndptr, CORE_PAGE_LENGTH, PROT_NONE)) {
+#endif
 		log_pedantic("Unable to set protections on upper secure memory boundary chunk.");
 		return false;
 	}

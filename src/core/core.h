@@ -33,6 +33,16 @@
 #include <sys/utsname.h>
 #include <sys/resource.h>
 
+
+//for core separation
+#ifndef PACKAGE_MAGMA
+#define CORE_THREAD_STACK_SIZE 1048576
+#define CORE_SECURE_MEMORY_LENGTH 32768
+#define CORE_PAGE_LENGTH getpagesize()
+#define MAGMA_FILEPATH_MAX PATH_MAX
+#endif
+//end
+
 /**
  * The type definitions used by Magma that are not defined by the system headers.
  * The bool type requires the inclusion of stdbool.h and the use of the C99.

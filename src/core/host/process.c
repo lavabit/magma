@@ -64,7 +64,8 @@ int_t process_kill(stringer_t *name, int_t signum, int_t wait) {
 	int_t ret;
 	struct dirent *entry;
 	pid_t pid, killed[1024];
-	chr_t cmd[MAGMA_FILEPATH_MAX + 1];
+	//TODO
+		chr_t cmd[MAGMA_FILEPATH_MAX + 1];
 	uint_t matches = 0, exited = 0;
 	stringer_t *compare = MANAGEDBUF(1024);
 
@@ -82,7 +83,6 @@ int_t process_kill(stringer_t *name, int_t signum, int_t wait) {
 			// to exclude those arguments.
 			if (snprintf(cmd, MAGMA_FILEPATH_MAX + 1, "%s/%i/cmdline", MAGMA_PROC_PATH, pid) && file_read(cmd, compare) > 0 &&
 				!st_cmp_cs_starts(st_swap(compare, '\0', ' '), name)) {
-
 				if ((ret = kill(pid, signum))) {
 					log_pedantic("The process could not be signaled. { signum = %i / %s }", signum, strerror_r(errno, MEMORYBUF(1024), 1024));
 					return -2;

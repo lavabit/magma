@@ -99,7 +99,6 @@ int_t spool_check(stringer_t *path) {
 		spool_errors++;
 		mutex_unlock(&spool_error_lock);
 	}
-
 	return result;
 }
 
@@ -132,10 +131,10 @@ int_t spool_mktemp(int_t spool, chr_t *prefix) {
 
 			// We need to generate a new file template since the first mkostemp may have overwritten the required X characters.
 			st_free(template);
+			//TODO change to rand_r
 
 			if ((template = st_aprint("%.*s%s_%lu_%lu_XXXXXX", st_length_int(path), st_char_get(path), prefix, thread_get_thread_id(), rand_get_uint64()))
 				&& (fd = mkostemp(st_char_get(template), O_EXCL | O_CREAT | O_RDWR | O_SYNC | O_NOATIME)) < 0) {
-
 				// Store the errno.
 				err_info = errno;
 
@@ -222,9 +221,9 @@ int_t spool_cleanup(void) {
 	}
 
 	rwlock_lock_write(&spool_creation_lock);
+
 	result = ftw(st_char_get(base), spool_check_file, 32);
 	rwlock_unlock(&spool_creation_lock);
-
 	// Non-zero return values from ftw trigger the return value -1, otherwise we calculate the number of files cleaned and return that value instead.
 	if (result) {
 		log_error("Unable to traverse the spool directory. {path = %.*s}", st_length_int(base), st_char_get(base));

@@ -321,8 +321,13 @@ inx_t * inx_alloc(uint64_t options, void *data_free) {
 	inx_t *inx = NULL;
 
 	switch (options & MAGMA_INDEX_TYPE) {
+<<<<<<< HEAD
 #ifdef MAGMA_PROVIDE_TOKYO_PRIVATE_H
+=======
+#ifdef MAGMA_H
+>>>>>>> 6ddaee87b7e70d0017c35fcbf8935395f94b3fb7
 	case M_INX_TREE:
+		//this is in providers
 		inx = tree_alloc(options, data_free);
 		break;
 #endif

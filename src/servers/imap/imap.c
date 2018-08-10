@@ -1711,9 +1711,9 @@ void imap_fetch(connection_t *con) {
 
 void imap_search(connection_t *con) {
 
-	inx_t *messages;
-	inx_cursor_t *cursor;
-	meta_message_t *active;
+	inx_t *messages = NULL;
+	inx_cursor_t *cursor = NULL;
+	meta_message_t *active = NULL;
 	stringer_t *output = NULL, *buffer = MANAGEDBUF(128);
 
 	// Check for the right state.

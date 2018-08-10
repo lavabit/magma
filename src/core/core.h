@@ -131,10 +131,17 @@ typedef __int128_t int128_t;
 */
 
 /**
+ * If we enocunter a system that doesn't define SIGUNUSED, we define it.
+ */
+#ifndef SIGUNUSED
+#define SIGUNUSED 31
+#endif
+
+/**
  * Different types used throughout.
  */
 typedef enum {
-	M_TYPE_EMPTY = 0,
+	M_TYPE_EMPTY = 0,//!< M_TYPE_EMPTY
 	M_TYPE_MULTI = 1,   //!< M_TYPE_MULTI is multi_t
 	M_TYPE_ENUM,		//!< M_TYPE_ENUM is enum
 	M_TYPE_BOOLEAN, //!< M_TYPE_BOOLEAN is bool_t

@@ -363,7 +363,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	bool_t contains_entries[2] = { false, false };
 	const chr_t *json_values[4] = { NULL, NULL, NULL, NULL };
 	chr_t *choices = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", *chr_command = NULL;
-	int32_t folder_ids[2] = { -1, -1 }, contact_ids[3] = { -1, -1, -1 }, alert_ids[2] = { -1, -1 }, message_ids[2] = { -1, -1 };
+	int32_t folder_ids[4] = { -1, -1, -1, -1 }, contact_ids[3] = { -1, -1, -1 }, alert_ids[2] = { -1, -1 }, message_ids[2] = { -1, -1 };
 	stringer_t *cookie = MANAGEDBUF(1024), *command = MANAGEDBUF(2048), *json = NULL,
 		*rand_strs[4] = { MANAGEDBUF(64), MANAGEDBUF(64), MANAGEDBUF(64), MANAGEDBUF(64) };
 

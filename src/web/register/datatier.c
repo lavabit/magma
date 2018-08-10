@@ -221,15 +221,16 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 	parameters[3].buffer = &bonus;
 	parameters[3].is_unsigned = true;
 
-	// The advertising boolean.
+	// The name of the account plan.
 	parameters[4].buffer_type = MYSQL_TYPE_STRING;
 	parameters[4].buffer = (chr_t *)account_plans[plan - 1];
 	parameters[4].buffer_length = ns_length_get(account_plans[plan - 1]);
 
-	// The name of the account plan.
-	parameters[5].buffer_type = MYSQL_TYPE_STRING;
-	parameters[5].buffer = (chr_t *)account_plans[plan - 1];
-	parameters[5].buffer_length = ns_length_get(account_plans[plan - 1]);
+	// The advertising boolean.
+	parameters[5].buffer_type = MYSQL_TYPE_TINY;
+	parameters[5].buffer_length = sizeof(uint8_t);
+	parameters[5].buffer = &ads;
+	parameters[5].is_unsigned = true;
 
 	// The quota.
 	parameters[6].buffer_type = MYSQL_TYPE_LONGLONG;

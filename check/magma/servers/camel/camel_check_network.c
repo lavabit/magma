@@ -893,8 +893,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	else if (!(json_objs[0] = json_loads_d(st_char_get(json), 0, &err)) || json_unpack_d(json_objs[0], "{s:{s:s}}", "result",
 		"contacts.edit", &json_values[0]) != 0) {
 
-		st_sprint(errmsg, "Failed parsing the returned JSON. { command = %.*s, json = %.*s, value = %s}",
-			st_length_int(command), st_char_get(command), st_length_int(json), st_char_get(json), json_values[0]);
+		st_sprint(errmsg, "Failed parsing the returned JSON. { command = %.*s, json = %.*s}",
+			st_length_int(command), st_char_get(command), st_length_int(json), st_char_get(json));
 		if (json_objs[0]) json_decref_d(json_objs[0]);
 		st_free(json);
 		return false;

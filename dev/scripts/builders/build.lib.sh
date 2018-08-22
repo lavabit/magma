@@ -825,10 +825,11 @@ bzip2() {
 			chmod -Rf a+rX,u+w,g-w,o-w . &>> "$M_LOGS/bzip2.txt"; error
 			
 			# We use slightly different patches depending on the bzip2 version.
-			if [[ $BZIP2 == "1.0.5" ]]; then
+			if [[ $BZIP2 == "bzip2-1.0.5" ]]; then
 				cat "$M_PATCHES/bzip2/"bzip2-1.0.4-saneso.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
 				cat "$M_PATCHES/bzip2/"bzip2-1.0.4-cflags.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
-			elif [[ $BZIP2 == "1.0.6" ]]; then
+			elif [[ $BZIP2 == "bzip2-1.0.6" ]]; then
+				cat "$M_PATCHES/bzip2/"saneso_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
 				cat "$M_PATCHES/bzip2/"cflags_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
 				cat "$M_PATCHES/bzip2/"bzip2recover-CVE-2016-3189.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
 			fi
@@ -836,6 +837,15 @@ bzip2() {
 			# This patch applies to 1.0.5 and 1.0.6.
 			cat "$M_PATCHES/bzip2/"bzip2-1.0.4-bzip2recover.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
 			
+			
+			cat "$M_PATCHES/bzip2/"bzip2-1.0.4-makefile-CFLAGS.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
+			cat "$M_PATCHES/bzip2/"bzip2-1.0.4-man-links.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
+			cat "$M_PATCHES/bzip2/"bzip2-1.0.6-progress.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
+			
+			cat "$M_PATCHES/bzip2/"bzip2-1.0.4-POSIX-shell.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
+			
+			cat "$M_PATCHES/bzip2/"bzip2-1.0.6-mingw.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
+			cat "$M_PATCHES/bzip2/"bzip2-1.0.6-out-of-tree-build.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
 		;;
 		bzip2-build)
 			cd "$M_SOURCES/bzip2"; error

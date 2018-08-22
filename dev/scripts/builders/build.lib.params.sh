@@ -30,11 +30,11 @@ UTF8PROCTEST="utf8proc-data-2.1.0"
 
 # Quickly add temporary compiler/linker flags to all builds, using these variables,
 # or to a single build using an environment variable.
-M_CFLAGS="$M_CFLAGS"
-M_FFLAGS="$M_FFLAGS"
-M_LDFLAGS="$M_LDFLAGS"
-M_CPPFLAGS="$M_CPPFLAGS"
-M_CXXFLAGS="$M_CXXFLAGS"
+M_CFLAGS="$M_CFLAGS -pg"
+M_FFLAGS="$M_FFLAGS -pg"
+M_LDFLAGS="$M_LDFLAGS -pg"
+M_CPPFLAGS="$M_CPPFLAGS -pg"
+M_CXXFLAGS="$M_CXXFLAGS -pg"
 
 # Calculate the relative path to various folders.
 M_SO="$M_PROJECT_ROOT/magmad.so"

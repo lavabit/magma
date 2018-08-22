@@ -3,7 +3,7 @@
 # Name: build.lib.sh
 # Author: Ladar Levison
 #
-# Description: Used to compile the external dependencies required by magma, and combine them into the magmad.so shared object file. 
+# Description: Used to compile the external dependencies required by magma, and combine them into the magmad.so shared object file.
 
 
 # Install Sphinx (python-sphinx package) to build Jansson HTML docs
@@ -86,11 +86,11 @@ gd() {
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
-			export CPPFLAGS= $M_CPPFLAGS"$CPPFLAGS \
+			export CPPFLAGS="$CPPFLAGS \
 				-I$M_SOURCES/zlib \
 				-I$M_SOURCES/png \
 				-I$M_SOURCES/jpeg \
-				-I$M_SOURCES/freetype/include"
+				-I$M_SOURCES/freetype/include $M_CPPFLAGS"
 			export LDFLAGS="\
 				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib \
 				-L$M_SOURCES/png/.libs -Wl,-rpath,$M_SOURCES/png/.libs \
@@ -450,8 +450,8 @@ curl() {
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
 			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/openssl/include -I$M_SOURCES/zlib $M_CPPFLAGS"
-			export LDFLAGS= $M_LDFLAGS"-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl \
-				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
+			export LDFLAGS="-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl \
+				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib $M_LDFLAGS"
 
 			./configure --enable-debug --enable-static=yes \
 			--without-librtmp --without-krb4 --without-krb5 --without-libssh2 \
@@ -873,7 +873,7 @@ dspam() {
 
 			make &>> "$M_LOGS/dspam.txt"; error
 			make install &>> "$M_LOGS/dspam.txt"; error
-			
+
 			# I don't know my mysql_drv.h doesn't get copied to the include directory, so the quickest workaround is
 			# is to copy it over ourselves.
 			cp "$M_SOURCES/dspam/src/mysql_drv.h" "$M_LOCAL/include/dspam/"
@@ -1138,8 +1138,8 @@ clamav() {
 				cat "$M_PATCHES/clamav/"shutdown_rarload_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
 
 				# Output the version number and not the git commit hash.
-				cat "$M_PATCHES/clamav/"version_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error 
-				
+				cat "$M_PATCHES/clamav/"version_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
+
 				# Fix the zlib version check, so that 1.2.10+ doesn't trigger a spurious error.
 				cat "$M_PATCHES/clamav/"zlib_check_0992.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
 			fi
@@ -1161,10 +1161,10 @@ clamav() {
 #			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE $M_CFLAGS"
 #			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE $M_CXXFLAGS"
 #			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE $M_CPPFLAGS"
-#			export CPPFLAGS= $M_CPPFLAGS"$CPPFLAGS \
+#			export CPPFLAGS="$CPPFLAGS \
 #				-I$M_SOURCES/curl/include \
 #				-I$M_SOURCES/openssl/include \
-#				-I$M_SOURCES/zlib"
+#				-I$M_SOURCES/zlib $M_CPPFLAGS"
 #			export LDFLAGS="\
 #				-L$M_SOURCES/curl/lib -Wl,-rpath,$M_SOURCES/curl/lib \
 #				-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl \
@@ -1172,17 +1172,17 @@ clamav() {
 
 
 			# Note that at least in version 0.97 and 0.98, --disable-llvm breaks the unit tests. And with ClamAV 0.98.4
-					
+
 ################################################################################################################################
 ################################################################################################################################
-################################################################################################################################															
-			# Updated to work with 0.99.2 but doesn't work with Zlib 1.2.11, yet.				
-				./configure  \
-					--enable-check --enable-static --enable-shared --disable-mempool --disable-llvm --disable-silent-rules \
-					--with-openssl="$M_LOCAL" --with-zlib="$M_LOCAL" --with-xml="$M_LOCAL" --with-libcurl="$M_LOCAL" \
-					--with-libbz2-prefix="$M_LOCAL" --with-libcheck-prefix="$M_LOCAL" \
-					--prefix="$M_LOCAL" --exec-prefix="$M_LOCAL" --libdir="$M_LOCAL/lib" \
-					&>> "$M_LOGS/clamav.txt"; error
+################################################################################################################################
+			# Updated to work with 0.99.2 but doesn't work with Zlib 1.2.11, yet.
+			./configure  \
+				--enable-check --enable-static --enable-shared --disable-mempool --disable-llvm --disable-silent-rules \
+				--with-openssl="$M_LOCAL" --with-zlib="$M_LOCAL" --with-xml="$M_LOCAL" --with-libcurl="$M_LOCAL" \
+				--with-libbz2-prefix="$M_LOCAL" --with-libcheck-prefix="$M_LOCAL" \
+				--prefix="$M_LOCAL" --exec-prefix="$M_LOCAL" --libdir="$M_LOCAL/lib" \
+				&>> "$M_LOGS/clamav.txt"; error
 ################################################################################################################################
 ################################################################################################################################
 ################################################################################################################################
@@ -1191,7 +1191,7 @@ clamav() {
 #				--with-openssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" --with-libcheck-prefix="$M_LOCAL" \
 #				--with-libbz2-prefix="$M_SOURCES/bzip2" --prefix="$M_LOCAL"  --exec-prefix="$M_LOCAL"  --libdir="$M_LOCAL/lib" \
 #				&>> "$M_LOGS/clamav.txt"; error
-			
+
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
 			if [[ $CLAMAV =~ "clamav-0.9"[7-9]"."[1-9] ]]; then
@@ -1370,23 +1370,23 @@ openssl() {
 			# See here for reasoning behind openssl-specific linker flags:
 			# https://mta.openssl.org/pipermail/openssl-users/2015-April/001053.html
 			cd "$M_SOURCES/openssl"; error
-        	grep -E "CentOS Linux release 7|Red Hat Enterprise.*release 7" /etc/system-release >& /dev/null
-        	if [ $? == 0 ]; then
-                	export CONFIGOPTS='-fno-merge-debug-strings '
-        	fi
+			grep -E "CentOS Linux release 7|Red Hat Enterprise.*release 7" /etc/system-release >& /dev/null
+			if [ $? == 0 ]; then
+					export CONFIGOPTS='-fno-merge-debug-strings '
+			fi
 #		    ./config \
 #		        -d shared zlib no-asm --openssldir="$M_LOCAL" --libdir="lib" \
 #				-I"$M_SOURCES/zlib" -O $CONFIGOPTS -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
 #				-L"$M_SOURCES/openssl" -Wl,-rpath,"$M_SOURCES/openssl" \
 #				-L"$M_SOURCES/zlib" -Wl,-rpath,"$M_SOURCES/zlib" \
 #				&>> "$M_LOGS/openssl.txt"; error
-#				
+#
 			./config \
-		        -d shared zlib no-asm --openssldir="$M_LOCAL" --libdir="lib" \
+				-d shared zlib no-asm --openssldir="$M_LOCAL" --libdir="lib" \
 				-I"$M_SOURCES/include/" -O $CONFIGOPTS -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
 				-L"$M_SOURCES/lib/" -Wl,-rpath,"$M_SOURCES/lib/" \
 				&>> "$M_LOGS/openssl.txt"; error
-			
+
 
 			make depend &>> "$M_LOGS/openssl.txt"; error
 			make &>> "$M_LOGS/openssl.txt"; error
@@ -1816,6 +1816,9 @@ memcached() {
 			else
 				# Fix memcached memory function unit tests.
 				cat "$M_PATCHES/memcached/"memfunction_test_fix_1.0.18.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
+				# Disable portable instruction executables so profiling capable builds work properly. Technically this is only
+				# needed so "-pg" can be used, even though the "-pg" flag isn't enabled by default.
+				cat "$M_PATCHES/memcached/"configure_1.0.18.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
 			fi
 		;;
 		memcached-build)
@@ -1826,14 +1829,14 @@ memcached() {
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
-				
+
 			# Recent versions of gcc require libmemcached to be explicitly linked with libm.so and libstdc++.so, and configure
 			# doesn't appear to include the libraries automatically.
 			export LIBS="-lm -lstdc++"
-			
+
 			# For some reason, the unit tests will fail when using this environment variable to find the memcached server.
 			unset MEMCACHED_SERVERS
-			
+
 			# export GEARMAND_BINARY="/usr/local/sbin/gearmand"
 			# export MEMCACHED_BINARY="/usr/local/bin/memcached"
 
@@ -1864,7 +1867,7 @@ memcached() {
 			cd "$M_SOURCES/memcached"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
 			export PATH="$M_BNPATH:$PATH"; error
-			
+
 			# For some reason, the unit tests will fail when using this environment variable to find the memcached server.
 			unset MEMCACHED_SERVERS
 
@@ -1879,8 +1882,8 @@ memcached() {
 		memcached-check-full)
 			cd "$M_SOURCES/memcached"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
-			export PATH="$M_BNPATH:$PATH"; error			
-			
+			export PATH="$M_BNPATH:$PATH"; error
+
 			# For some reason, the unit tests will fail when using this environment variable to find the memcached server.
 			unset MEMCACHED_SERVERS
 
@@ -2003,32 +2006,32 @@ combine() {
 
 	echo ""
 	printf "Creating the shared object... "
-	
+
 	rm -f "$M_SO" &>> "$M_LOGS/combine.txt"; error
-	
-	if [[ ! -f "$M_SOURCES/gd/.libs/libgd.a" || 
-		! -f "$M_SOURCES/png/.libs/libpng16.a" || 
-		! -f "$M_SOURCES/lzo/src/.libs/liblzo2.a" || 
-		! -f "$M_SOURCES/jpeg/.libs/libjpeg.a" || 
-		! -f "$M_SOURCES/spf2/src/libspf2/.libs/libspf2.a" || 
-		! -f "$M_SOURCES/curl/lib/.libs/libcurl.a" || 
-		! -f "$M_SOURCES/xml2/.libs/libxml2.a" || 
-		! -f "$M_SOURCES/dkim/libopendkim/.libs/libopendkim.a" || 
-		! -f "$M_SOURCES/zlib/libz.a" || 
-		! -f "$M_SOURCES/bzip2/libbz2.a" || 
-		! -f "$M_SOURCES/dspam/src/.libs/libdspam.a" || 
-		! -f "$M_SOURCES/mysql/libmysql_r/.libs/libmysqlclient_r.a" || 
-		! -f "$M_SOURCES/geoip/libGeoIP/.libs/libGeoIP.a" || 
-		! -f "$M_SOURCES/clamav/libclamav/.libs/libclamav.a" || 
-		! -f "$M_SOURCES/clamav/libclamav/.libs/libclamunrar.a" || 
-		! -f "$M_SOURCES/clamav/libclamav/.libs/libclamunrar_iface.a" || 
-		! -f "$M_SOURCES/clamav/libltdl/.libs/libltdlc.a" || 
-		! -f "$M_SOURCES/openssl/libcrypto.a" || 
-		! -f "$M_SOURCES/openssl/libssl.a" || 
-		! -f "$M_SOURCES/jansson/src/.libs/libjansson.a" || 
-		! -f "$M_SOURCES/freetype/objs/.libs/libfreetype.a" || 
-		! -f "$M_SOURCES/utf8proc/libutf8proc.a" || 
-		! -f "$M_SOURCES/memcached/libmemcached/.libs/libmemcached.a" || 
+
+	if [[ ! -f "$M_SOURCES/gd/.libs/libgd.a" ||
+		! -f "$M_SOURCES/png/.libs/libpng16.a" ||
+		! -f "$M_SOURCES/lzo/src/.libs/liblzo2.a" ||
+		! -f "$M_SOURCES/jpeg/.libs/libjpeg.a" ||
+		! -f "$M_SOURCES/spf2/src/libspf2/.libs/libspf2.a" ||
+		! -f "$M_SOURCES/curl/lib/.libs/libcurl.a" ||
+		! -f "$M_SOURCES/xml2/.libs/libxml2.a" ||
+		! -f "$M_SOURCES/dkim/libopendkim/.libs/libopendkim.a" ||
+		! -f "$M_SOURCES/zlib/libz.a" ||
+		! -f "$M_SOURCES/bzip2/libbz2.a" ||
+		! -f "$M_SOURCES/dspam/src/.libs/libdspam.a" ||
+		! -f "$M_SOURCES/mysql/libmysql_r/.libs/libmysqlclient_r.a" ||
+		! -f "$M_SOURCES/geoip/libGeoIP/.libs/libGeoIP.a" ||
+		! -f "$M_SOURCES/clamav/libclamav/.libs/libclamav.a" ||
+		! -f "$M_SOURCES/clamav/libclamav/.libs/libclamunrar.a" ||
+		! -f "$M_SOURCES/clamav/libclamav/.libs/libclamunrar_iface.a" ||
+		! -f "$M_SOURCES/clamav/libltdl/.libs/libltdlc.a" ||
+		! -f "$M_SOURCES/openssl/libcrypto.a" ||
+		! -f "$M_SOURCES/openssl/libssl.a" ||
+		! -f "$M_SOURCES/jansson/src/.libs/libjansson.a" ||
+		! -f "$M_SOURCES/freetype/objs/.libs/libfreetype.a" ||
+		! -f "$M_SOURCES/utf8proc/libutf8proc.a" ||
+		! -f "$M_SOURCES/memcached/libmemcached/.libs/libmemcached.a" ||
 		! -f "$M_SOURCES/tokyocabinet/libtokyocabinet.a" ]]; then
 		printf " a required dependency is missing. \n\nCreate the dependencies by running \"build.lib.sh all\" and then try again."
 		tput sgr0; tput setaf 1
@@ -2277,13 +2280,13 @@ generate() {
 
 	# Generate a DKIM private key.
 	"$M_LOCAL/bin/"openssl genrsa -out "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem" 2048 2>&1 >& /dev/null
-	
+
 	# Derive the DKIM public DNS record based on the generated key.
 	"$M_LOCAL/bin/"openssl rsa -in "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem" -pubout -outform PEM 2> /dev/null | \
 	sed -r "s/-----BEGIN PUBLIC KEY-----$//" | sed -r "s/-----END PUBLIC KEY-----//" | tr -d [:space:] | \
 	awk "{ print \"bazinga._domainkey IN TXT \\\"v=DKIM1; k=rsa; p=\" substr(\$1, 1, 208) \"\\\" \\\"\" substr(\$1, 209) \"\\\" ; ----- DKIM bazinga key\" }"  > \
 	"$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pub" ; error
-	
+
 	# The TLS private key and a self-signed certificate.
 	"$M_LOCAL/bin/"openssl req -x509 -nodes -batch -days 1826 -newkey rsa:4096 \
 	-keyout "$M_PROJECT_ROOT/sandbox/etc/tls.localhost.localdomain.pem" \
@@ -2560,7 +2563,7 @@ if [[ "$PARENT" == "$BASHPID" ]]; then
 	fi
 
 	for i in $NUMS; do
-	  printf "\a"; sleep 1
+	printf "\a"; sleep 1
 	done
 
 fi

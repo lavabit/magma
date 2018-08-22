@@ -1,14 +1,14 @@
 #!/bin/bash
 
-GD="gd-2.0.35"
+GD="libgd-2.2.5"
 LZO="lzo-2.10"
-PNG="libpng-1.6.29"
+PNG="libpng-1.6.35"
 CURL="curl-7.23.1"
 SPF2="libspf2-1.2.10"
 XML2="libxml2-2.9.3"
 DKIM="opendkim-2.10.3"
 ZLIB="zlib-1.2.8"
-JPEG="jpeg-9b"
+JPEG="jpeg-9c"
 BZIP2="bzip2-1.0.6"
 DSPAM="dspam-3.10.2"
 MYSQL="mysql-5.1.73"
@@ -20,7 +20,7 @@ GOOGTAP="gtest-tap-listener-0.5"
 GOOGTEST="googletest-release-1.7.0"
 JANSSON="jansson-2.2.1"
 UTF8PROC="utf8proc-2.1.0"
-FREETYPE="freetype-2.6.5"
+FREETYPE="freetype-2.9.1"
 MEMCACHED="libmemcached-1.0.18"
 TOKYOCABINET="tokyocabinet-1.4.48"
 
@@ -30,14 +30,17 @@ UTF8PROCTEST="utf8proc-data-2.1.0"
 
 # Quickly add temporary compiler/linker flags to all builds, using these variables,
 # or to a single build using an environment variable.
-M_CFLAGS="$M_CFLAGS -pg"
-M_FFLAGS="$M_FFLAGS -pg"
-M_LDFLAGS="$M_LDFLAGS -pg"
-M_CPPFLAGS="$M_CPPFLAGS -pg"
-M_CXXFLAGS="$M_CXXFLAGS -pg"
+M_CFLAGS="$M_CFLAGS"
+M_FFLAGS="$M_FFLAGS"
+M_LDFLAGS="$M_LDFLAGS"
+M_CPPFLAGS="$M_CPPFLAGS"
+M_CXXFLAGS="$M_CXXFLAGS"
+
+# If the above flags are modified, it's probably a good idea to also modified the name
+# of the output file.
+M_SO="$M_PROJECT_ROOT/magmad.so"
 
 # Calculate the relative path to various folders.
-M_SO="$M_PROJECT_ROOT/magmad.so"
 M_LOGS="$M_ROOT/logs"
 M_ARCHIVES="$M_ROOT/archives"
 M_PATCHES="$M_ROOT/patches"

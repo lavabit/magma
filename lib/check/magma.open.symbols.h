@@ -185,7 +185,7 @@ extern FT_Error (*FT_Init_FreeType_d)(FT_Library *alibrary);
 extern void (*FT_Library_Version_d)(FT_Library library, FT_Int *amajor, FT_Int *aminor, FT_Int *apatch);
 
 //! GD
-extern const char * (*gd_version_d)(void);
+extern const char * (*gdVersionString_d)(void);
 extern void (*gdFree_d)(void *m);
 extern void * (*gdImageGifPtr_d)(gdImagePtr im, int *size);
 extern void (*gdImageDestroy_d)(gdImagePtr im);

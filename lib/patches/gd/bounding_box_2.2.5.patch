@@ -1,0 +1,74 @@
+diff --git a/src/gdft.c b/src/gdft.c
+index 9fa8295..96c9d05 100755
+--- a/src/gdft.c
++++ b/src/gdft.c
+@@ -1360,66 +1360,68 @@ BGD_DECLARE(char *) gdImageStringFTEx (gdImage * im, int *brect, int fg, char *f
+ 					if (tmpstr)
+ 						gdFree (tmpstr);
+ 					gdCacheDelete (tc_cache);
+ 					gdMutexUnlock (gdFontCacheMutex);
+ 					return "Problem allocating memory";
+ 				}
+ 			}
+ 			xshow_pos += sprintf(strex->xshow + xshow_pos, "%g ",
+ 			                     (double)(penf.x - oldpenf.x) * hdpi / (64 * METRIC_RES));
+ 		}
+ 		oldpenf.x = penf.x;
+ 
+ 		/* load glyph image into the slot (erase previous one) */
+ 		err = FT_Load_Glyph (face, glyph_index, render_mode);
+ 		if (err) {
+ 			if (tmpstr)
+ 				gdFree (tmpstr);
+ 			gdCacheDelete (tc_cache);
+ 			gdMutexUnlock (gdFontCacheMutex);
+ 			return "Problem loading glyph";
+ 		}
+ 
+ 		horiAdvance = slot->metrics.horiAdvance;
+ 
+ 		if (brect) {
+ 			/* only if need brect */
+ 
+ 			glyph_min.x = penf.x + slot->metrics.horiBearingX;
+ 			glyph_min.y = penf.y - slot->metrics.horiBearingY;
+ 
+-#if 0
++// This version of glyph_max.x setting fixes will handle problems with a bounding box that is too large.
++#if 1
+ 			if (ch == ' ') {      /* special case for trailing space */
+ 				glyph_max.x = penf.x + horiAdvance;
+ 			} else {
+ 				glyph_max.x = glyph_min.x + slot->metrics.width;
+ 			}
++// This is the old method, which failed on large bounding boxes.
+ #else
+ 			glyph_max.x = penf.x + horiAdvance;
+ #endif
+ 			glyph_max.y = glyph_min.y + slot->metrics.height;
+ 
+ 			if (i==0) {
+ 				total_min = glyph_min;
+ 				total_max = glyph_max;
+ 			} else {
+ 				if (glyph_min.x < total_min.x)
+ 					total_min.x = glyph_min.x;
+ 				if (glyph_min.y < total_min.y)
+ 					total_min.y = glyph_min.y;
+ 				if (glyph_max.x > total_max.x)
+ 					total_max.x = glyph_max.x;
+ 				if (glyph_max.y > total_max.y)
+ 					total_max.y = glyph_max.y;
+ 			}
+ 		}
+ 
+ 		if (render) {
+ 			FT_Activate_Size (platform_specific);
+ 
+ 			/* load glyph again into the slot (erase previous one)  - this time with scaling */
+ 			err = FT_Load_Glyph (face, glyph_index, render_mode);
+ 			if (err) {
+ 				if (tmpstr)
+ 					gdFree (tmpstr);
+ 				gdCacheDelete (tc_cache);
+ 				gdMutexUnlock (gdFontCacheMutex);

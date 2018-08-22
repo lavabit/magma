@@ -1,0 +1,67 @@
+diff --git a/src/gdft.c b/src/gdft.c
+index 9fa8295..8d79ae5 100755
+--- a/src/gdft.c
++++ b/src/gdft.c
+@@ -53,61 +53,61 @@ static char *font_pattern(char **fontpath, char *fontpattern);
+ #include "entities.h"
+ static char *font_path(char **fontpath, char *name_list);
+ #endif
+ 
+ /* 2.0.30: move these up here so we can build correctly without freetype
+ 	but with fontconfig */
+ 
+ /*
+  * The character (space) used to separate alternate fonts in the
+  * fontlist parameter to gdImageStringFT. 2.0.18: space was a
+  * poor choice for this.
+  */
+ #define LISTSEPARATOR ";"
+ 
+ /*
+  * DEFAULT_FONTPATH and PATHSEPARATOR are host type dependent and
+  * are normally set by configure in config.h.  These are just
+  * some last resort values that might match some Un*x system
+  * if building this version of gd separate from graphviz.
+  */
+ 
+ #ifndef DEFAULT_FONTPATH
+ #  ifdef NETWARE
+ #    define DEFAULT_FONTPATH "sys:/java/nwgfx/lib/x11/fonts/ttf;."
+ #  elif defined(_WIN32)
+ #    define DEFAULT_FONTPATH "C:\\WINDOWS\\FONTS;C:\\WINNT\\FONTS"
+ #  elif defined(__APPLE__) || (defined(__MWERKS__) && defined(macintosh))
+ #    define DEFAULT_FONTPATH "/usr/share/fonts/truetype:/System/Library/Fonts:/Library/Fonts"
+ #  else
+    /* default fontpath for unix systems  - whatever happened to standards ! */
+-#    define DEFAULT_FONTPATH "/usr/X11R6/lib/X11/fonts/TrueType:/usr/X11R6/lib/X11/fonts/truetype:/usr/X11R6/lib/X11/fonts/TTF:/usr/share/fonts/TrueType:/usr/share/fonts/truetype:/usr/openwin/lib/X11/fonts/TrueType:/usr/X11R6/lib/X11/fonts/Type1:/usr/lib/X11/fonts/Type1:/usr/openwin/lib/X11/fonts/Type1"
++#    define DEFAULT_FONTPATH "/usr/share/X11/fonts/Type1:/usr/share/fonts/default/Type1/"
+ #  endif
+ #endif
+ 
+ #ifndef PATHSEPARATOR
+ #  if defined(NETWARE) || defined(_WIN32)
+ #    define PATHSEPARATOR ";"
+ #  else
+ #    define PATHSEPARATOR ":"
+ #  endif
+ #endif
+ 
+ 
+ #ifndef TRUE
+ #define FALSE 0
+ #define TRUE !FALSE
+ #endif
+ 
+ /**
+  * Function: gdImageStringTTF
+  *
+  * Alias of <gdImageStringFT>.
+  */
+ BGD_DECLARE(char *) gdImageStringTTF (gdImage * im, int *brect, int fg, char *fontlist,
+                                       double ptsize, double angle, int x, int y, char *string)
+ {
+ 	/* 2.0.6: valid return */
+ 	return gdImageStringFT (im, brect, fg, fontlist, ptsize,
+ 	                        angle, x, y, string);
+ }
+ 

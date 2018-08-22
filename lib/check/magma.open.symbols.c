@@ -65,7 +65,7 @@ DKIM * (*dkim_sign_d)(DKIM_LIB *libhandle, const unsigned char *id, void *memclo
 FT_Error (*FT_Done_FreeType_d)(FT_Library library) = NULL;
 FT_Error (*FT_Init_FreeType_d)(FT_Library *alibrary) = NULL;
 void (*FT_Library_Version_d)(FT_Library library, FT_Int *amajor, FT_Int *aminor, FT_Int *apatch) = NULL;
-const char * (*gd_version_d)(void) = NULL;
+const char * (*gdVersionString_d)(void) = NULL;
 void (*gdFree_d)(void *m) = NULL;
 void * (*gdImageGifPtr_d)(gdImagePtr im, int *size) = NULL;
 void (*gdImageDestroy_d)(gdImagePtr im) = NULL;
@@ -615,7 +615,7 @@ if ((*(void **)&(dkim_sign_d) = dlsym(magma, "dkim_sign")) == NULL) return "dkim
 if ((*(void **)&(FT_Done_FreeType_d) = dlsym(magma, "FT_Done_FreeType")) == NULL) return "FT_Done_FreeType";
 if ((*(void **)&(FT_Init_FreeType_d) = dlsym(magma, "FT_Init_FreeType")) == NULL) return "FT_Init_FreeType";
 if ((*(void **)&(FT_Library_Version_d) = dlsym(magma, "FT_Library_Version")) == NULL) return "FT_Library_Version";
-if ((*(void **)&(gd_version_d) = dlsym(magma, "gd_version")) == NULL) return "gd_version";
+if ((*(void **)&(gdVersionString_d) = dlsym(magma, "gdVersionString")) == NULL) return "gdVersionString";
 if ((*(void **)&(gdFree_d) = dlsym(magma, "gdFree")) == NULL) return "gdFree";
 if ((*(void **)&(gdImageGifPtr_d) = dlsym(magma, "gdImageGifPtr")) == NULL) return "gdImageGifPtr";
 if ((*(void **)&(gdImageDestroy_d) = dlsym(magma, "gdImageDestroy")) == NULL) return "gdImageDestroy";

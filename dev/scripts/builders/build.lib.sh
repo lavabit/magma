@@ -5,6 +5,31 @@
 #
 # Description: Used to compile the external dependencies required by magma, and combine them into the magmad.so shared object file.
 
+# Preliminary Dependency Matrix
+
+# bzip2 -:-
+# checker -:-
+# clamav -:- zlib bzip libxml2
+# curl -:- zlib openssl
+# dkim -:- openssl
+# dspam -:- mysql
+# freetype -:- zlib bzip2 png
+# gd -:- zlib png jpeg
+# geoip -:- zlib
+# googtap -:-
+# googtest -:-
+# jansson -:-
+# jpeg -:-
+# lzo -:-
+# memcached -:-
+# mysql -:- zlib openssl
+# openssl -:- zlib
+# png -:- zlib
+# spf2 -:-
+# tokyocabinet -:- zlib bzip2
+# utf8proc -:- curl
+# xml2 -:- zlib
+# zlib -:-
 
 # Install Sphinx (python-sphinx package) to build Jansson HTML docs
 # Install LTDL and create the clamav user/group so ClamAV will build correctly
@@ -68,18 +93,31 @@ gd() {
 		;;
 		gd-prep)
 			cd "$M_SOURCES/gd"; error
-			cat "$M_PATCHES/gd/"gd-2.0.33-freetype.patch | patch -s -p1 -b --suffix .freetype --fuzz=0; error
-			cat "$M_PATCHES/gd/"gd-2.0.34-multilib.patch | patch -s -p1 -b --suffix .mlib --fuzz=0; error
-			cat "$M_PATCHES/gd/"gd-loop.patch | patch -s -p1 -b --suffix .loop --fuzz=0; error
-			cat "$M_PATCHES/gd/"gd-2.0.35-overflow.patch | patch -s -p1 -b --suffix .overflow --fuzz=0; error
-			cat "$M_PATCHES/gd/"gd-2.0.34-sparc64.patch | patch -s -p1 -b --suffix .sparc64 --fuzz=0; error
-			cat "$M_PATCHES/gd/"gd-2.0.35-AALineThick.patch | patch -s -p1 -b --suffix .AALineThick --fuzz=0; error
-			cat "$M_PATCHES/gd/"gd-2.0.33-BoxBound.patch | patch -s -p1 -b --suffix .bb --fuzz=0; error
-			cat "$M_PATCHES/gd/"gd-2.0.34-fonts.patch | patch -s -p1 -b --suffix .fonts --fuzz=0; error
-			cat "$M_PATCHES/gd/"gd-2.0.35-time.patch | patch -s -p1 -b --suffix .time --fuzz=0; error
-			cat "$M_PATCHES/gd/"gd-2.0.35-security3.patch | patch -s -p1 -b --suffix .sec3 --fuzz=0; error
-			cat "$M_PATCHES/gd/"gd-version.patch | patch -s -p1 -b --fuzz=0; error
-			cat "$M_PATCHES/gd/"gd-sigcmp.patch | patch -s -p1 -b --fuzz=0; error
+			
+			if [[ $GD == "gd-2.0.35" ]]; then
+				
+				# A stack of patches needed to fix a variety of bugs in the neglected 2.0.X series. 
+				cat "$M_PATCHES/gd/"gd-2.0.33-freetype.patch | patch -s -p1 -b --suffix .freetype --fuzz=0; error
+				cat "$M_PATCHES/gd/"gd-2.0.34-multilib.patch | patch -s -p1 -b --suffix .mlib --fuzz=0; error
+				cat "$M_PATCHES/gd/"gd-loop.patch | patch -s -p1 -b --suffix .loop --fuzz=0; error
+				cat "$M_PATCHES/gd/"gd-2.0.35-overflow.patch | patch -s -p1 -b --suffix .overflow --fuzz=0; error
+				cat "$M_PATCHES/gd/"gd-2.0.34-sparc64.patch | patch -s -p1 -b --suffix .sparc64 --fuzz=0; error
+				cat "$M_PATCHES/gd/"gd-2.0.35-AALineThick.patch | patch -s -p1 -b --suffix .AALineThick --fuzz=0; error
+				cat "$M_PATCHES/gd/"gd-2.0.33-BoxBound.patch | patch -s -p1 -b --suffix .bb --fuzz=0; error
+				cat "$M_PATCHES/gd/"gd-2.0.34-fonts.patch | patch -s -p1 -b --suffix .fonts --fuzz=0; error
+				cat "$M_PATCHES/gd/"gd-2.0.35-time.patch | patch -s -p1 -b --suffix .time --fuzz=0; error
+				cat "$M_PATCHES/gd/"gd-2.0.35-security3.patch | patch -s -p1 -b --suffix .sec3 --fuzz=0; error
+				cat "$M_PATCHES/gd/"gd-version.patch | patch -s -p1 -b --fuzz=0; error
+				cat "$M_PATCHES/gd/"gd-sigcmp.patch | patch -s -p1 -b --fuzz=0; error				
+			else
+				
+				# Of the patches above, these are the only ones still applicable to the 2.2.X series. They have
+				# been updated, so an equivalent change is made to a 2.2.X release.
+				cat "$M_PATCHES/gd/"bounding_box_2.2.5.patch | patch -p1 --verbose ; error
+				cat "$M_PATCHES/gd/"sparc_cflags_2.2.5.patch | patch -p1 --verbose ; error
+				cat "$M_PATCHES/gd/"gd_gif_loop_2.2.5.patch | patch -p1 --verbose ; error
+				cat "$M_PATCHES/gd/"default_fontpath_2.2.25.patch | patch -p1 --verbose ; error
+			fi
 		;;
 		gd-build)
 			cd "$M_SOURCES/gd"; error
@@ -96,11 +134,18 @@ gd() {
 				-L$M_SOURCES/png/.libs -Wl,-rpath,$M_SOURCES/png/.libs \
 				-L$M_SOURCES/jpeg/.libs -Wl,-rpath,$M_SOURCES/jpeg/.libs \
 				-L$M_SOURCES/freetype/objs/.libs -Wl,-rpath,$M_SOURCES/freetype/objs/.libs $M_LDFLAGS"
+				
+			# We need to override the PNG/JPEG flags, otherwise the system include files/libraries might be used by mistake.
+			export PKG_CONFIG_LIBDIR="$M_LOCAL/lib/pkgconfig/" 
+			export LIBPNG_LIBS=" `pkg-config --libs libpng` "
+			export LIBPNG_CFLAGS=" `pkg-config --cflags libpng` "
+			unset PKG_CONFIG_LIBDIR
+			
 			./configure --without-xpm --without-fontconfig --without-x \
 				--with-png="$M_SOURCES/png" --with-jpeg="$M_SOURCES/jpeg" --with-freetype="$M_SOURCES/freetype" \
 				--prefix="$M_LOCAL" \
 				&>> "$M_LOGS/gd.txt"; error
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset LIBPNG_LIBS; unset LIBPNG_CFLAGS
 
 			make --jobs=4 &>> "$M_LOGS/gd.txt"; error
 			make install &>> "$M_LOGS/gd.txt"; error
@@ -156,10 +201,10 @@ png() {
 
 	case "$1" in
 		png-extract)
-		extract $PNG "png" &>> "$M_LOGS/png.txt"
+			extract $PNG "png" &>> "$M_LOGS/png.txt"
 		;;
 		png-prep)
-		cd "$M_SOURCES/png"; error
+			cd "$M_SOURCES/png"; error
 		;;
 		png-build)
 			cd "$M_SOURCES/png"; error
@@ -777,12 +822,20 @@ bzip2() {
 		bzip2-prep)
 			# Apply RHEL bzip2 patches.
 			cd "$M_SOURCES/bzip2"; error
-			if [[ $ZLIB == "1.0.5" ]]; then
-				chmod -Rf a+rX,u+w,g-w,o-w . &>> "$M_LOGS/bzip2.txt"; error
-				cat "$M_PATCHES/bzip2/"bzip2-1.0.4-saneso.patch | patch -p1 -b --suffix .saneso --fuzz=0 &>> "$M_LOGS/bzip2.txt"; error
-				cat "$M_PATCHES/bzip2/"bzip2-1.0.4-cflags.patch | patch -p1 -b --suffix .cflags --fuzz=0 &>> "$M_LOGS/bzip2.txt"; error
-				cat "$M_PATCHES/bzip2/"bzip2-1.0.4-bzip2recover.patch | patch -p1 -b --suffix .bz2recover --fuzz=0 &>> "$M_LOGS/bzip2.txt"; error
+			chmod -Rf a+rX,u+w,g-w,o-w . &>> "$M_LOGS/bzip2.txt"; error
+			
+			# We use slightly different patches depending on the bzip2 version.
+			if [[ $BZIP2 == "1.0.5" ]]; then
+				cat "$M_PATCHES/bzip2/"bzip2-1.0.4-saneso.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
+				cat "$M_PATCHES/bzip2/"bzip2-1.0.4-cflags.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
+			elif [[ $BZIP2 == "1.0.6" ]]; then
+				cat "$M_PATCHES/bzip2/"cflags_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
+				cat "$M_PATCHES/bzip2/"bzip2recover-CVE-2016-3189.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
 			fi
+		
+			# This patch applies to 1.0.5 and 1.0.6.
+			cat "$M_PATCHES/bzip2/"bzip2-1.0.4-bzip2recover.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
+			
 		;;
 		bzip2-build)
 			cd "$M_SOURCES/bzip2"; error
@@ -942,10 +995,11 @@ mysql() {
 			export CXXFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -Wno-narrowing $M_CXXFLAGS"
 			export CPPFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -Wno-narrowing $M_CPPFLAGS"
 			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib $M_CPPFLAGS"
-			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib $M_LDFLAGS"
+			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib \
+				-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl $M_LDFLAGS"
 
 			./configure --with-pic --enable-thread-safe-client --with-readline --with-charset=latin1 \
-			--with-extra-charsets=all --with-plugins=all --prefix="$M_LOCAL" \
+			--with-extra-charsets=all --with-plugins=all --with-ssl="$M_SOURCES/openssl" --prefix="$M_LOCAL" \
 			&>> "$M_LOGS/mysql.txt"; error
 
 			# According to the RHEL build spec, MySQL checks will fail without --with-big-tables,
@@ -1680,8 +1734,15 @@ freetype() {
 			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
 			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib $M_CPPFLAGS"
 			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib $M_LDFLAGS"
+			
+			# We need to override the PNG/JPEG flags, otherwise the system include files/libraries might be used by mistake.
+			export PKG_CONFIG_LIBDIR="$M_LOCAL/lib/pkgconfig/" 
+			export LIBPNG_LIBS=" `pkg-config --libs libpng` "
+			export LIBPNG_CFLAGS=" `pkg-config --cflags libpng` "
+			unset PKG_CONFIG_LIBDIR
+			
 			./configure --prefix="$M_LOCAL" --without-harfbuzz &>> "$M_LOGS/freetype.txt"; error
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset LIBPNG_LIBS; unset LIBPNG_CFLAGS
 
 			make --jobs=4 &>> "$M_LOGS/freetype.txt"; error
 			make install &>> "$M_LOGS/freetype.txt"; error
@@ -2009,7 +2070,7 @@ combine() {
 
 	rm -f "$M_SO" &>> "$M_LOGS/combine.txt"; error
 
-	if [[ ! -f "$M_SOURCES/gd/.libs/libgd.a" ||
+	if [[ ! -f "$M_SOURCES/gd/src/.libs/libgd.a" ||
 		! -f "$M_SOURCES/png/.libs/libpng16.a" ||
 		! -f "$M_SOURCES/lzo/src/.libs/liblzo2.a" ||
 		! -f "$M_SOURCES/jpeg/.libs/libjpeg.a" ||
@@ -2043,7 +2104,7 @@ combine() {
 	rm -rf "$M_OBJECTS/gd" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/gd" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/gd" &>> "$M_LOGS/combine.txt"; error
-	ar xv "$M_SOURCES/gd/.libs/libgd.a" &>> "$M_LOGS/combine.txt"; error
+	ar xv "$M_SOURCES/gd/src/.libs/libgd.a" &>> "$M_LOGS/combine.txt"; error
 
 	rm -rf "$M_OBJECTS/png" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/png" &>> "$M_LOGS/combine.txt"; error

@@ -86,7 +86,7 @@ FT_Error (*FT_Init_FreeType_d)(FT_Library *alibrary) = NULL;
 void (*FT_Library_Version_d)(FT_Library library, FT_Int *amajor, FT_Int *aminor, FT_Int *apatch) = NULL;
 
 //! GD
-const char * (*gd_version_d)(void) = NULL;
+const char * (*gdVersionString_d)(void) = NULL;
 void (*gdFree_d)(void *m) = NULL;
 void * (*gdImageGifPtr_d)(gdImagePtr im, int *size) = NULL;
 void (*gdImageDestroy_d)(gdImagePtr im) = NULL;

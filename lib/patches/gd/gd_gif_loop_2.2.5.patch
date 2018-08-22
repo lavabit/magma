@@ -1,0 +1,77 @@
+diff --git a/src/gd_gif_in.c b/src/gd_gif_in.c
+index c195448..45c54f4 100755
+--- a/src/gd_gif_in.c
++++ b/src/gd_gif_in.c
+@@ -544,69 +544,70 @@ LWZReadByte_(gdIOCtx *fd, LZW_STATIC_DATA *sd, char flag, int input_code_size, i
+ 		} while(sd->firstcode == sd->clear_code);
+ 
+ 		return sd->firstcode;
+ 	}
+ 
+ 	if(sd->sp > sd->stack) {
+ 		return *--sd->sp;
+ 	}
+ 
+ 	while((code = GetCode(fd, &sd->scd, sd->code_size, FALSE, ZeroDataBlockP)) >= 0) {
+ 		if(code == sd->clear_code) {
+ 			for(i = 0; i < sd->clear_code; ++i) {
+ 				sd->table[0][i] = 0;
+ 				sd->table[1][i] = i;
+ 			}
+ 
+ 			for (; i < (1 << MAX_LWZ_BITS); ++i) {
+ 				sd->table[0][i] = sd->table[1][i] = 0;
+ 			}
+ 
+ 			sd->code_size = sd->set_code_size + 1;
+ 			sd->max_code_size = 2 * sd->clear_code;
+ 			sd->max_code = sd->clear_code + 2;
+ 			sd->sp = sd->stack;
+ 			sd->firstcode = sd->oldcode =
+ 			                    GetCode(fd, &sd->scd, sd->code_size, FALSE, ZeroDataBlockP);
+ 
+ 			return sd->firstcode;
+ 		} else if(code == sd->end_code) {
+ 			int count;
++			int max_count = 1024;
+ 			unsigned char buf[260];
+ 
+ 			if(*ZeroDataBlockP) {
+ 				return -2;
+ 			}
+ 
+-			while((count = GetDataBlock(fd, buf, ZeroDataBlockP)) > 0);
++			while((count = GetDataBlock(fd, buf, ZeroDataBlockP)) > 0 && --max_count >= 0 )
+ 
+-			if(count != 0) {
++			if(count != 0 || max_count < 0 ) {
+ 				return -2;
+ 			}
+ 		}
+ 
+ 		incode = code;
+ 
+ 		if(sd->sp == (sd->stack + STACK_SIZE)) {
+ 			/* Bad compressed data stream */
+ 			return -1;
+ 		}
+ 
+ 		if(code >= sd->max_code) {
+ 			*sd->sp++ = sd->firstcode;
+ 			code = sd->oldcode;
+ 		}
+ 
+ 		while(code >= sd->clear_code) {
+ 			if(sd->sp == (sd->stack + STACK_SIZE)) {
+ 				/* Bad compressed data stream */
+ 				return -1;
+ 			}
+ 
+ 			*sd->sp++ = sd->table[1][code];
+ 
+ 			if(code == sd->table[0][code]) {
+ 				/* Oh well */
+ 			}
+ 
+ 			code = sd->table[0][code];
+ 		}

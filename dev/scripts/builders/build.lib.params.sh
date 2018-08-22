@@ -28,6 +28,15 @@ XMLTS="xmlts20130923"
 XML2TEST="libxml2-tests-2.9.3"
 UTF8PROCTEST="utf8proc-data-2.1.0"
 
+# Quickly add temporary compiler/linker flags to all builds, using these variables,
+# or to a single build using an environment variable.
+M_CFLAGS="$M_CFLAGS"
+M_FFLAGS="$M_FFLAGS"
+M_LDFLAGS="$M_LDFLAGS"
+M_CPPFLAGS="$M_CPPFLAGS"
+M_CXXFLAGS="$M_CXXFLAGS"
+
+# Calculate the relative path to various folders.
 M_SO="$M_PROJECT_ROOT/magmad.so"
 M_LOGS="$M_ROOT/logs"
 M_ARCHIVES="$M_ROOT/archives"

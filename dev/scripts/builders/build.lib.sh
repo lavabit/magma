@@ -83,10 +83,10 @@ gd() {
 		;;
 		gd-build)
 			cd "$M_SOURCES/gd"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="$CPPFLAGS \
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			export CPPFLAGS= $M_CPPFLAGS"$CPPFLAGS \
 				-I$M_SOURCES/zlib \
 				-I$M_SOURCES/png \
 				-I$M_SOURCES/jpeg \
@@ -95,7 +95,7 @@ gd() {
 				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib \
 				-L$M_SOURCES/png/.libs -Wl,-rpath,$M_SOURCES/png/.libs \
 				-L$M_SOURCES/jpeg/.libs -Wl,-rpath,$M_SOURCES/jpeg/.libs \
-				-L$M_SOURCES/freetype/objs/.libs -Wl,-rpath,$M_SOURCES/freetype/objs/.libs"
+				-L$M_SOURCES/freetype/objs/.libs -Wl,-rpath,$M_SOURCES/freetype/objs/.libs $M_LDFLAGS"
 			./configure --without-xpm --without-fontconfig --without-x \
 				--with-png="$M_SOURCES/png" --with-jpeg="$M_SOURCES/jpeg" --with-freetype="$M_SOURCES/freetype" \
 				--prefix="$M_LOCAL" \
@@ -163,11 +163,11 @@ png() {
 		;;
 		png-build)
 			cd "$M_SOURCES/png"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
-			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib $M_CPPFLAGS"
+			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib $M_LDFLAGS"
 			# The shared library build is explicitly disabled because using the
 			# bundled zlib version seems to muck up the magic libpng uses to
 			# generate its shared library version script
@@ -235,9 +235,9 @@ lzo() {
 		;;
 		lzo-build)
 			cd "$M_SOURCES/lzo"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
 			./configure --enable-shared --prefix="$M_LOCAL" &>> "$M_LOGS/lzo.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
@@ -303,9 +303,9 @@ jpeg() {
 		;;
 		jpeg-build)
 			cd "$M_SOURCES/jpeg"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
 			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/jpeg.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
@@ -376,9 +376,9 @@ spf2() {
 		;;
 		spf2-build)
 			cd "$M_SOURCES/spf2"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 $M_CFLAGS"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 $M_CXXFLAGS"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 $M_CPPFLAGS"
 			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/spf2.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
@@ -446,11 +446,11 @@ curl() {
 			# Note that if we don't include the debug configure option we can't run a check-full.
 			cd "$M_SOURCES/curl"; error
 
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/openssl/include -I$M_SOURCES/zlib"
-			export LDFLAGS="-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl \
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/openssl/include -I$M_SOURCES/zlib $M_CPPFLAGS"
+			export LDFLAGS= $M_LDFLAGS"-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl \
 				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
 
 			./configure --enable-debug --enable-static=yes \
@@ -488,9 +488,9 @@ curl() {
 			make --jobs=4 test-full &>> "$M_LOGS/curl.txt"; error
 
 			# To pass the torture test we'll need to recompile the library with all of the protocols enabled.
-#			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-#			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-#			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+#			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+#			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+#			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
 #
 #			make distclean &>> "$M_LOGS/curl.txt";
 #			./configure --enable-debug --enable-static=yes --without-librtmp --without-krb4 --without-krb5 --without-libssh2 --without-ca-bundle --without-ca-path --without-libidn \
@@ -558,11 +558,11 @@ xml2() {
 		;;
 		xml2-build)
 			cd "$M_SOURCES/xml2"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
-			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib $M_CPPFLAGS"
+			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib $M_LDFLAGS"
 			./configure --without-lzma --without-python --without-http --without-ftp --prefix="$M_LOCAL" \
 			&>> "$M_LOGS/xml2.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
@@ -632,14 +632,14 @@ dkim() {
 		;;
 		dkim-build)
 			cd "$M_SOURCES/dkim"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib -I$M_SOURCES/openssl/include"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib -I$M_SOURCES/openssl/include $M_CPPFLAGS"
 			export LDFLAGS="\
-				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib\
-				-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl\
-				-L$M_SOURCES/openssl/engines -Wl,-rpath,$M_SOURCES/openssl/engines"
+				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib \
+				-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl \
+				-L$M_SOURCES/openssl/engines -Wl,-rpath,$M_SOURCES/openssl/engines $M_LDFLAGS"
 			./configure \
 				--disable-filter --without-milter --without-sasl --without-gnutls --without-odbx \
 				--without-openldap --with-openssl="$M_SOURCES/openssl" --prefix="$M_LOCAL" \
@@ -708,9 +708,9 @@ zlib() {
 		zlib-build)
 			cd "$M_SOURCES/zlib"; error
 
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export FFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export FFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_FFLAGS"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
 			./configure --prefix="$M_LOCAL" --64 &>> "$M_LOGS/zlib.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset FFLAGS
 
@@ -858,11 +858,11 @@ dspam() {
 		dspam-build)
 			cd "$M_SOURCES/dspam"; error
 			# Can't include because the library isn't there till after MySQL is compiled.
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
-			export LDFLAGS="-L$M_SOURCES/zlib"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib $M_CPPFLAGS"
+			export LDFLAGS="-L$M_SOURCES/zlib $M_LDFLAGS"
 			export LD_LIBRARY_PATH="$M_SOURCES/mysql/libmysql/.libs"
 
 			./configure --enable-static --with-pic --enable-preferences-extension --enable-virtual-users \
@@ -938,11 +938,11 @@ mysql() {
 		;;
 		mysql-build)
 			cd "$M_SOURCES/mysql"; error
-			export CFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
-			export CXXFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -Wno-narrowing"
-			export CPPFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -Wno-narrowing"
-			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
-			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
+			export CFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 $M_CFLAGS"
+			export CXXFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -Wno-narrowing $M_CXXFLAGS"
+			export CPPFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -Wno-narrowing $M_CPPFLAGS"
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib $M_CPPFLAGS"
+			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib $M_LDFLAGS"
 
 			./configure --with-pic --enable-thread-safe-client --with-readline --with-charset=latin1 \
 			--with-extra-charsets=all --with-plugins=all --prefix="$M_LOCAL" \
@@ -1040,11 +1040,11 @@ geoip() {
 		;;
 		geoip-build)
 			cd "$M_SOURCES/geoip"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
-			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib $M_CPPFLAGS"
+			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib $M_LDFLAGS"
 			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/geoip.txt"; error
 
 			make &>> "$M_LOGS/geoip.txt"
@@ -1153,22 +1153,22 @@ clamav() {
 		;;
 		clamav-build)
 			cd "$M_SOURCES/clamav"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE -I$M_LOCAL/include"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE -I$M_LOCAL/include"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE -I$M_LOCAL/include"
-			export LDFLAGS="-L$M_LOCAL/lib -Wl,-rpath,$M_LOCAL/lib"
-#
-#			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
-#			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
-#			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE"
-#			export CPPFLAGS="$CPPFLAGS \
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE -I$M_LOCAL/include $M_CFLAGS"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE -I$M_LOCAL/include $M_CXXFLAGS"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE -I$M_LOCAL/include $M_CPPFLAGS"
+			export LDFLAGS="-L$M_LOCAL/lib -Wl,-rpath,$M_LOCAL/lib $M_LDFLAGS"
+
+#			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE $M_CFLAGS"
+#			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE $M_CXXFLAGS"
+#			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE $M_CPPFLAGS"
+#			export CPPFLAGS= $M_CPPFLAGS"$CPPFLAGS \
 #				-I$M_SOURCES/curl/include \
 #				-I$M_SOURCES/openssl/include \
 #				-I$M_SOURCES/zlib"
 #			export LDFLAGS="\
-#				-L$M_SOURCES/curl/lib -Wl,-rpath,$M_SOURCES/curl/lib\
-#				-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl\
-#				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
+#				-L$M_SOURCES/curl/lib -Wl,-rpath,$M_SOURCES/curl/lib \
+#				-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl \
+#				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib $M_LDFLAGS"
 
 
 			# Note that at least in version 0.97 and 0.98, --disable-llvm breaks the unit tests. And with ClamAV 0.98.4
@@ -1186,7 +1186,7 @@ clamav() {
 ################################################################################################################################
 ################################################################################################################################
 ################################################################################################################################
-#			./configure  \
+#			./configure \
 #				--disable-llvm --disable-jit --with-disable-xml --enable-check --enable-static --disable-silent-rules --disable-libcurl \
 #				--with-openssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" --with-libcheck-prefix="$M_LOCAL" \
 #				--with-libbz2-prefix="$M_SOURCES/bzip2" --prefix="$M_LOCAL"  --exec-prefix="$M_LOCAL"  --libdir="$M_LOCAL/lib" \
@@ -1294,9 +1294,9 @@ checker() {
 		;;
 		checker-build)
 			cd "$M_SOURCES/checker"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
 
 			autoreconf --install &>> "$M_LOGS/checker.txt"; error
 			./configure --disable-subunit --prefix="$M_LOCAL" &>> "$M_LOGS/checker.txt"; error
@@ -1504,8 +1504,8 @@ googtest() {
 		;;
 		googtest-build)
 			cd "$M_SOURCES/googtest"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
 
 			autoreconf --install &>> "$M_LOGS/googtest.txt"; error
 			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/googtest.txt"; error
@@ -1605,9 +1605,9 @@ jansson() {
 		;;
 		jansson-build)
 			cd "$M_SOURCES/jansson"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 $M_CFLAGS"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 $M_CXXFLAGS"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 $M_CPPFLAGS"
 			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/jansson.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
@@ -1675,11 +1675,11 @@ freetype() {
 		;;
 		freetype-build)
 			cd "$M_SOURCES/freetype"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib"
-			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib $M_CPPFLAGS"
+			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib $M_LDFLAGS"
 			./configure --prefix="$M_LOCAL" --without-harfbuzz &>> "$M_LOGS/freetype.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
@@ -1748,7 +1748,7 @@ utf8proc() {
 		;;
 		utf8proc-build)
 			cd "$M_SOURCES/utf8proc"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 $M_CFLAGS"
 			make prefix="$M_LOCAL" &>> "$M_LOGS/utf8proc.txt"; error
 			make prefix="$M_LOCAL" install &>> "$M_LOGS/utf8proc.txt"; error
 			unset CFLAGS;
@@ -1823,9 +1823,9 @@ memcached() {
 
 			# If Dtrace or System Tap support is enabled, the libmemcached_probes.o file will need to be manually added to the shared object
 			# since it doesn't appear to be included in the libmemcached.a archive file (as of v0.49).
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
 				
 			# Recent versions of gcc require libmemcached to be explicitly linked with libm.so and libstdc++.so, and configure
 			# doesn't appear to include the libraries automatically.
@@ -1942,11 +1942,11 @@ tokyocabinet() {
 		;;
 		tokyocabinet-build)
 			cd "$M_SOURCES/tokyocabinet"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2"
-			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib -I$M_SOURCES/bzip2"
-			export LDFLAGS="-L$M_SOURCES/zlib -L$M_SOURCES/bzip2"
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib -I$M_SOURCES/bzip2 $M_CPPFLAGS"
+			export LDFLAGS="-L$M_SOURCES/zlib -L$M_SOURCES/bzip2 $M_LDFLAGS"
 			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/tokyocabinet.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 

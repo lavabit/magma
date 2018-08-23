@@ -97,55 +97,56 @@ gd() {
 			if [[ $GD == "gd-2.0.35" ]]; then
 				
 				# A stack of patches needed to fix a variety of bugs in the neglected 2.0.X series. 
-				cat "$M_PATCHES/gd/"gd-2.0.33-freetype.patch | patch -s -p1 -b --suffix .freetype --fuzz=0; error
-				cat "$M_PATCHES/gd/"gd-2.0.34-multilib.patch | patch -s -p1 -b --suffix .mlib --fuzz=0; error
-				cat "$M_PATCHES/gd/"gd-loop.patch | patch -s -p1 -b --suffix .loop --fuzz=0; error
-				cat "$M_PATCHES/gd/"gd-2.0.35-overflow.patch | patch -s -p1 -b --suffix .overflow --fuzz=0; error
-				cat "$M_PATCHES/gd/"gd-2.0.34-sparc64.patch | patch -s -p1 -b --suffix .sparc64 --fuzz=0; error
-				cat "$M_PATCHES/gd/"gd-2.0.35-AALineThick.patch | patch -s -p1 -b --suffix .AALineThick --fuzz=0; error
-				cat "$M_PATCHES/gd/"gd-2.0.33-BoxBound.patch | patch -s -p1 -b --suffix .bb --fuzz=0; error
-				cat "$M_PATCHES/gd/"gd-2.0.34-fonts.patch | patch -s -p1 -b --suffix .fonts --fuzz=0; error
-				cat "$M_PATCHES/gd/"gd-2.0.35-time.patch | patch -s -p1 -b --suffix .time --fuzz=0; error
-				cat "$M_PATCHES/gd/"gd-2.0.35-security3.patch | patch -s -p1 -b --suffix .sec3 --fuzz=0; error
-				cat "$M_PATCHES/gd/"gd-version.patch | patch -s -p1 -b --fuzz=0; error
-				cat "$M_PATCHES/gd/"gd-sigcmp.patch | patch -s -p1 -b --fuzz=0; error				
+				cat "$M_PATCHES/gd/"gd-2.0.33-freetype.patch | patch -s -p1 -b --suffix .freetype --fuzz= &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-2.0.34-multilib.patch | patch -s -p1 -b --suffix .mlib --fuzz= &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-loop.patch | patch -s -p1 -b --suffix .loop --fuzz= &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-2.0.35-overflow.patch | patch -s -p1 -b --suffix .overflow --fuzz= &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-2.0.34-sparc64.patch | patch -s -p1 -b --suffix .sparc64 --fuzz= &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-2.0.35-AALineThick.patch | patch -s -p1 -b --suffix .AALineThick --fuzz= &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-2.0.33-BoxBound.patch | patch -s -p1 -b --suffix .bb --fuzz= &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-2.0.34-fonts.patch | patch -s -p1 -b --suffix .fonts --fuzz= &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-2.0.35-time.patch | patch -s -p1 -b --suffix .time --fuzz= &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-2.0.35-security3.patch | patch -s -p1 -b --suffix .sec3 --fuzz= &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-version.patch | patch -s -p1 -b --fuzz= &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-sigcmp.patch | patch -s -p1 -b --fuzz= &>> "$M_LOGS/gd.txt" ; error				
 			else
 				
 				# Of the patches above, these are the only ones still applicable to the 2.2.X series. They have
 				# been updated, so an equivalent change is made to a 2.2.X release.
-				cat "$M_PATCHES/gd/"bounding_box_2.2.5.patch | patch -p1 --verbose ; error
-				cat "$M_PATCHES/gd/"sparc_cflags_2.2.5.patch | patch -p1 --verbose ; error
-				cat "$M_PATCHES/gd/"gd_gif_loop_2.2.5.patch | patch -p1 --verbose ; error
-				cat "$M_PATCHES/gd/"default_fontpath_2.2.25.patch | patch -p1 --verbose ; error
+				cat "$M_PATCHES/gd/"sparc_cflags_2.2.5.patch | patch -p1 --verbose &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd_gif_loop_2.2.5.patch | patch -p1 --verbose &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"default_fontpath_2.2.25.patch | patch -p1 --verbose &>> "$M_LOGS/gd.txt" ; error
+				
+				
+				# The bounding box patch is currently broken. 
+				# cat "$M_PATCHES/gd/"bounding_box_2.2.5.patch | patch -p1 --verbose &>> "$M_LOGS/gd.txt" ; error
 			fi
 		;;
 		gd-build)
 			cd "$M_SOURCES/gd"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
-			export CPPFLAGS="$CPPFLAGS \
-				-I$M_SOURCES/zlib \
-				-I$M_SOURCES/png \
-				-I$M_SOURCES/jpeg \
-				-I$M_SOURCES/freetype/include $M_CPPFLAGS"
-			export LDFLAGS="\
-				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib \
-				-L$M_SOURCES/png/.libs -Wl,-rpath,$M_SOURCES/png/.libs \
-				-L$M_SOURCES/jpeg/.libs -Wl,-rpath,$M_SOURCES/jpeg/.libs \
-				-L$M_SOURCES/freetype/objs/.libs -Wl,-rpath,$M_SOURCES/freetype/objs/.libs $M_LDFLAGS"
-				
-			# We need to override the PNG/JPEG flags, otherwise the system include files/libraries might be used by mistake.
-			export PKG_CONFIG_LIBDIR="$M_LOCAL/lib/pkgconfig/" 
+			
+			export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			
+			# We need to override the PNG flags, otherwise the system include files/libraries might be used by mistake.
+			export PKG_CONFIG_LIBDIR="$M_PKGPATH" 
 			export LIBPNG_LIBS=" `pkg-config --libs libpng` "
 			export LIBPNG_CFLAGS=" `pkg-config --cflags libpng` "
 			unset PKG_CONFIG_LIBDIR
 			
+			# We need to override the JPEG flags, otherwise the system include files/libraries might be used by mistake.
+			export PKG_CONFIG_LIBDIR="$M_PKGPATH"
+			export LIBJPEG_LIBS=" `pkg-config --libs libjpeg` "
+			export LIBJPEG_CFLAGS=" `pkg-config --cflags libjpeg` "
+			unset PKG_CONFIG_LIBDIR
+			
 			./configure --without-xpm --without-fontconfig --without-x \
-				--with-png="$M_SOURCES/png" --with-jpeg="$M_SOURCES/jpeg" --with-freetype="$M_SOURCES/freetype" \
+				--with-png="$M_LOCAL" --with-jpeg="$M_LOCAL" --with-freetype="$M_LOCAL" \
 				--prefix="$M_LOCAL" \
 				&>> "$M_LOGS/gd.txt"; error
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset LIBPNG_LIBS; unset LIBPNG_CFLAGS
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset LIBPNG_LIBS; unset LIBPNG_CFLAGS; unset LIBJPEG_LIBS; unset LIBJPEG_CFLAGS
 
 			make --jobs=4 &>> "$M_LOGS/gd.txt"; error
 			make install &>> "$M_LOGS/gd.txt"; error
@@ -822,51 +823,52 @@ bzip2() {
 		bzip2-prep)
 			# Apply RHEL bzip2 patches.
 			cd "$M_SOURCES/bzip2"; error
-			chmod -Rf a+rX,u+w,g-w,o-w . &>> "$M_LOGS/bzip2.txt"; error
+			chmod -Rf a+rX,u+w,g-w,o-w . &>> "$M_LOGS/bzip2.txt" ; error
 			
-			# We use slightly different patches depending on the bzip2 version.
+			# We use slightly different patches depending on the bzip2 version. These patches were largely 
+			# ported from Red Hat.
 			if [[ $BZIP2 == "bzip2-1.0.5" ]]; then
-				cat "$M_PATCHES/bzip2/"bzip2-1.0.4-saneso.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
-				cat "$M_PATCHES/bzip2/"bzip2-1.0.4-cflags.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
+				cat "$M_PATCHES/bzip2/"bzip2-1.0.4-saneso.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+				cat "$M_PATCHES/bzip2/"bzip2-1.0.4-cflags.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
 			elif [[ $BZIP2 == "bzip2-1.0.6" ]]; then
-				cat "$M_PATCHES/bzip2/"saneso_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
-				cat "$M_PATCHES/bzip2/"cflags_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
-				cat "$M_PATCHES/bzip2/"bzip2recover-CVE-2016-3189.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
+				cat "$M_PATCHES/bzip2/"saneso_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+				cat "$M_PATCHES/bzip2/"cflags_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+				cat "$M_PATCHES/bzip2/"bzip2recover_cve_20163189.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
 			fi
 		
-			# This patch applies to 1.0.5 and 1.0.6.
-			cat "$M_PATCHES/bzip2/"bzip2-1.0.4-bzip2recover.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
+			# These patches apply every version since 1.0.4, and were largely ported from the Gentoo repository.
+			cat "$M_PATCHES/bzip2/"bzip2-1.0.4-bzip2recover.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+			cat "$M_PATCHES/bzip2/"bzip2-1.0.4-makefile-flags.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+			cat "$M_PATCHES/bzip2/"bzip2-1.0.4-man-links.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+			cat "$M_PATCHES/bzip2/"bzip2-1.0.6-progress.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+			cat "$M_PATCHES/bzip2/"bzip2-1.0.4-posix-shell.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error			
+			cat "$M_PATCHES/bzip2/"bzip2-1.0.6-mingw.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+			cat "$M_PATCHES/bzip2/"bzip2-1.0.6-out-of-tree-build.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
 			
-			
-			cat "$M_PATCHES/bzip2/"bzip2-1.0.4-makefile-CFLAGS.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
-			cat "$M_PATCHES/bzip2/"bzip2-1.0.4-man-links.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
-			cat "$M_PATCHES/bzip2/"bzip2-1.0.6-progress.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
-			
-			cat "$M_PATCHES/bzip2/"bzip2-1.0.4-POSIX-shell.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
-			
-			cat "$M_PATCHES/bzip2/"bzip2-1.0.6-mingw.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
-			cat "$M_PATCHES/bzip2/"bzip2-1.0.6-out-of-tree-build.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt"; error
+			# These patches are a mess, but were painfully ported from the Debian bzip2 repository. 
+			cat "$M_PATCHES/bzip2/"man_formatting_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+			cat "$M_PATCHES/bzip2/"make_modernize_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
 		;;
 		bzip2-build)
 			cd "$M_SOURCES/bzip2"; error
-			make CC=gcc AR=ar RANLIB=ranlib 'CFLAGS=-O2 -g3 -fPIC -rdynamic -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -D_FILE_OFFSET_BITS=64' &>> "$M_LOGS/bzip2.txt"; error
-			make PREFIX="$M_LOCAL" install &>> "$M_LOGS/bzip2.txt"; error
+			make CC=gcc AR=ar RANLIB=ranlib 'CFLAGS=-O2 -g3 -fPIC -rdynamic -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -D_FILE_OFFSET_BITS=64' &>> "$M_LOGS/bzip2.txt" ; error
+			make PREFIX="$M_LOCAL" install &>> "$M_LOGS/bzip2.txt" ; error
 		;;
 		bzip2-check)
 			cd "$M_SOURCES/bzip2"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
 			export PATH="$M_BNPATH:$PATH"; error
-			make check &>> "$M_LOGS/bzip2.txt"; error
+			make check &>> "$M_LOGS/bzip2.txt" ; error
 		;;
 		bzip2-check-full)
 			cd "$M_SOURCES/bzip2"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
 			export PATH="$M_BNPATH:$PATH"; error
-			make check &>> "$M_LOGS/bzip2.txt"; error
+			make check &>> "$M_LOGS/bzip2.txt" ; error
 		;;
 		bzip2-clean)
 			cd "$M_SOURCES/bzip2"; error
-			make clean &>> "$M_LOGS/bzip2.txt"; error
+			make clean &>> "$M_LOGS/bzip2.txt" ; error
 		;;
 		bzip2-tail)
 			tail --lines=30 --follow=name --retry "$M_LOGS/bzip2.txt"; error
@@ -1745,8 +1747,8 @@ freetype() {
 			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib $M_CPPFLAGS"
 			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib $M_LDFLAGS"
 			
-			# We need to override the PNG/JPEG flags, otherwise the system include files/libraries might be used by mistake.
-			export PKG_CONFIG_LIBDIR="$M_LOCAL/lib/pkgconfig/" 
+			# We need to override the PNG flags, otherwise the system include files/libraries might be used by mistake.
+			export PKG_CONFIG_LIBDIR="$M_PKGPATH"
 			export LIBPNG_LIBS=" `pkg-config --libs libpng` "
 			export LIBPNG_CFLAGS=" `pkg-config --cflags libpng` "
 			unset PKG_CONFIG_LIBDIR

@@ -34,7 +34,7 @@ index 9fa8295..96c9d05 100755
  			glyph_min.y = penf.y - slot->metrics.horiBearingY;
  
 -#if 0
-+// This version of glyph_max.x setting fixes will handle problems with a bounding box that is too large.
++// This logic will handle problems with a bounding box that is too large.
 +#if 1
  			if (ch == ' ') {      /* special case for trailing space */
  				glyph_max.x = penf.x + horiAdvance;

@@ -48,8 +48,9 @@ M_SOURCES="$M_ROOT/sources"
 M_OBJECTS="$M_ROOT/objects"
 M_CHECK="$M_ROOT/check"
 M_LOCAL="$M_ROOT/local"
-M_LDPATH="$M_LOCAL/lib/"
 M_BNPATH="$M_LOCAL/bin/"
+M_LDPATH="$M_LOCAL/lib/"
+M_PKGPATH="$M_LDPATH/pkgconfig/"
 
 # Where the symbols.h file can be found
 M_SYM_FILE="$M_PROJECT_ROOT/src/providers/symbols.h"

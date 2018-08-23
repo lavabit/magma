@@ -47,6 +47,7 @@ extern int case_timeout;
 Suite * suite_check_sample(void);
 void log_test(chr_t *test, stringer_t *error);
 void suite_check_testcase(Suite *s, const char *tags, const char *name, TFun func);
+void suite_check_testcase_timeout(Suite *s, const char *tags, const char *name, TFun func, double timeout);
 
 #endif
 

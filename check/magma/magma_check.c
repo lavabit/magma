@@ -73,11 +73,15 @@ Suite * suite_check_barrister(chr_t *testname) {
 }
 
 void suite_check_testcase(Suite *s, const char *tags, const char *name, TFun func) {
+	suite_check_testcase_timeout(s, tags, name, func, case_timeout);
+}
+
+void suite_check_testcase_timeout(Suite *s, const char *tags, const char *name, TFun func, double timeout) {
 
 	TCase *tc = NULL;
 
 	tcase_add_test((tc = tcase_create(name)), func);
-	tcase_set_timeout(tc, case_timeout);
+	tcase_set_timeout(tc, timeout);
 	tcase_set_tags(tc, tags);
 	suite_add_tcase(s, tc);
 	return;

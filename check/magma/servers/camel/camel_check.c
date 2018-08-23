@@ -39,7 +39,13 @@ Suite * suite_check_camel(void) {
 	Suite *s = suite_create("\tCAMEL");
 
 	suite_check_testcase(s, "HTTP CAMEL", "HTTP Network Camel Auth/S", check_camel_auth_s);
-	suite_check_testcase(s, "HTTP CAMEL", "HTTP Network Camel Basic/S", check_camel_basic_s);
+
+	// The Camel tests will occassionally timeout on slower systems, in part because of how many camelface requests
+	// are made inside this single "testcase" and in part because the camelface makes heavy use of secure memory,
+	// which has significantly more overhead for each allocate/free oepration. As a result we give the camelface
+	// tests twice as much time to complete when applicable. (The timeout is disabled when a debugger, or profiler
+	// is in use.)
+	suite_check_testcase_timeout(s, "HTTP CAMEL", "HTTP Network Camel Basic/S", check_camel_basic_s, ( case_timeout * 2 ));
 
 	return s;
 }

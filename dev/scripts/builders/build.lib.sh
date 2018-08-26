@@ -24,6 +24,7 @@
 # memcached -:-
 # mysql -:- zlib openssl
 # openssl -:- zlib
+# pcre -:-
 # png -:- zlib
 # spf2 -:-
 # tokyocabinet -:- zlib bzip2
@@ -158,8 +159,8 @@ gd() {
 			
 			./configure --without-xpm --without-fontconfig --without-x \
 				--with-png="$M_LOCAL" --with-jpeg="$M_LOCAL" --with-freetype="$M_LOCAL" \
-				--prefix="$M_LOCAL" \
-				&>> "$M_LOGS/gd.txt"; error
+				--prefix="$M_LOCAL" &>> "$M_LOGS/gd.txt"; error
+				
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset LIBPNG_LIBS; unset LIBPNG_CFLAGS; unset LIBJPEG_LIBS; unset LIBJPEG_CFLAGS
 
 			make --jobs=4 &>> "$M_LOGS/gd.txt"; error
@@ -224,12 +225,19 @@ png() {
 		;;
 		png-build)
 			cd "$M_SOURCES/png"; error
+			
+			if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build zlib before png.\n"; tput sgr0
+				return 3
+			fi
+			
+			export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"			
 			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
 			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
 			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
-			export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
 			
 			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/png.txt"; error
+
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make --jobs=4 &>> "$M_LOGS/png.txt"; error
@@ -293,10 +301,13 @@ lzo() {
 		;;
 		lzo-build)
 			cd "$M_SOURCES/lzo"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			
 			./configure --enable-shared --prefix="$M_LOCAL" &>> "$M_LOGS/lzo.txt"; error
+			
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
 			make --jobs=4 &>> "$M_LOGS/lzo.txt"; error
@@ -360,10 +371,13 @@ pcre() {
 		;;
 		pcre-build)
 			cd "$M_SOURCES/pcre"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			
 			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/pcre.txt"; error
+			
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
 			make --jobs=4 &>> "$M_LOGS/pcre.txt"; error
@@ -428,10 +442,13 @@ jpeg() {
 		;;
 		jpeg-build)
 			cd "$M_SOURCES/jpeg"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			
 			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/jpeg.txt"; error
+			
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
 			make --jobs=4 &>> "$M_LOGS/jpeg.txt"; error
@@ -501,10 +518,13 @@ spf2() {
 		;;
 		spf2-build)
 			cd "$M_SOURCES/spf2"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 $M_CFLAGS"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 $M_CXXFLAGS"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 $M_CPPFLAGS"
+			
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			
 			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/spf2.txt"; error
+			
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
 			make --jobs=4 &>> "$M_LOGS/spf2.txt"; error
@@ -571,23 +591,36 @@ curl() {
 			# Note that if we don't include the debug configure option we can't run a check-full.
 			cd "$M_SOURCES/curl"; error
 
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
-			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/openssl/include -I$M_SOURCES/zlib $M_CPPFLAGS"
-			export LDFLAGS="-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl \
-				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib $M_LDFLAGS"
+			if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build zlib before curl.\n"; tput sgr0
+				return 3
+			fi
+			
+			if [ ! -f "$M_LDPATH"/libcrypto.so ] || [ ! -f "$M_LDPATH"/libcrypto.a ] || [ ! -f "$M_PKGPATH"/libcrypto.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build openssl before curl.\n"; tput sgr0
+				return 3
+			fi
+			
+			if [ ! -f "$M_LDPATH"/libssl.so ] || [ ! -f "$M_LDPATH"/libssl.a ] || [ ! -f "$M_PKGPATH"/libssl.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build openssl before curl.\n"; tput sgr0
+				return 3
+			fi
+
+			export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
 
 			./configure --enable-debug --enable-static=yes \
-			--without-librtmp --without-krb4 --without-krb5 --without-libssh2 \
-			--without-ca-bundle --without-ca-path --without-libidn \
-			--disable-file --disable-ftp --disable-ftps --disable-gopher \
-			--disable-imap --disable-imaps --disable-pop3 --disable-pop3s \
-			--disable-rtsp --disable-smtp --disable-smtps --disable-telnet \
-			--disable-tftp --disable-ldap --disable-ssh --disable-dict \
-			--build=x86_64-redhat-linux-gnu --target=x86_64-redhat-linux-gnu --with-pic \
-			--with-ssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" --prefix="$M_LOCAL" \
-			&>> "$M_LOGS/curl.txt"; error
+				--without-librtmp --without-krb4 --without-krb5 --without-libssh2 \
+				--without-ca-bundle --without-ca-path --without-libidn \
+				--disable-file --disable-ftp --disable-ftps --disable-gopher \
+				--disable-imap --disable-imaps --disable-pop3 --disable-pop3s \
+				--disable-rtsp --disable-smtp --disable-smtps --disable-telnet \
+				--disable-tftp --disable-ldap --disable-ssh --disable-dict \
+				--build=x86_64-redhat-linux-gnu --target=x86_64-redhat-linux-gnu --with-pic \
+				--with-ssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" \
+				--prefix="$M_LOCAL" &>> "$M_LOGS/curl.txt"; error
 
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
@@ -597,8 +630,13 @@ curl() {
 		curl-check)
 			# The target 'check' is an alias for the targets 'test' and 'examples'
 			cd "$M_SOURCES/curl"; error
+			
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
 			export PATH="$M_BNPATH:$PATH"; error
+			
+			# To avoid having curl run all of its tests using valgrind, we pass the '-n' option to the runtests.pl script. 
+			sed -i -e "s/^\(TEST = .*runtests.pl\).*/\1 -n/g" tests/Makefile
+			
 			make --jobs=4 examples &>> "$M_LOGS/curl.txt"; error
 			make --jobs=4 test &>> "$M_LOGS/curl.txt"; error
 		;;
@@ -606,27 +644,18 @@ curl() {
 
 			# The target 'check' is an alias for the targets 'test' and 'examples'
 			cd "$M_SOURCES/curl"; error
+			
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
 			export PATH="$M_BNPATH:$PATH"; error
+			
+			# Since valgrind may have been disabled above, we ensure the -n flag is removed here. 
+			sed -i -e "s/^\(TEST = .*runtests.pl\).*/\1/g" tests/Makefile
+			
 			make --jobs=4 examples &>> "$M_LOGS/curl.txt"; error
 			make --jobs=4 test &>> "$M_LOGS/curl.txt"; error
 			make --jobs=4 test-full &>> "$M_LOGS/curl.txt"; error
+			# make --jobs=4 test-torture &>> "$M_LOGS/curl.txt"; error
 
-			# To pass the torture test we'll need to recompile the library with all of the protocols enabled.
-#			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-#			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-#			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
-#
-#			make distclean &>> "$M_LOGS/curl.txt";
-#			./configure --enable-debug --enable-static=yes --without-librtmp --without-krb4 --without-krb5 --without-libssh2 --without-ca-bundle --without-ca-path --without-libidn \
-#				--with-pic --with-ssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" &>> "$M_LOGS/curl.txt"; error
-#			make --jobs=4 &>> "$M_LOGS/curl.txt"; error
-#			make --jobs=4 test-torture &>> "$M_LOGS/curl.txt"; error
-#
-#			# Assuming the torture test passed, rebuild the library using the default settings.
-#			make distclean &>> "$M_LOGS/curl.txt";
-#			curl configure
-#			curl build
 		;;
 		curl-clean)
 			cd "$M_SOURCES/curl"; error
@@ -683,13 +712,20 @@ xml2() {
 		;;
 		xml2-build)
 			cd "$M_SOURCES/xml2"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
-			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib $M_CPPFLAGS"
-			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib $M_LDFLAGS"
-			./configure --without-lzma --without-python --without-http --without-ftp --prefix="$M_LOCAL" \
-			&>> "$M_LOGS/xml2.txt"; error
+			
+			if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build zlib before xml2.\n"; tput sgr0
+				return 3
+			fi
+			
+			export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			
+			./configure --without-lzma --without-python --without-http --without-ftp \
+				--prefix="$M_LOCAL" &>> "$M_LOGS/xml2.txt"; error
+			
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make --jobs=4 &>> "$M_LOGS/xml2.txt"; error
@@ -757,18 +793,27 @@ dkim() {
 		;;
 		dkim-build)
 			cd "$M_SOURCES/dkim"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
-			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib -I$M_SOURCES/openssl/include $M_CPPFLAGS"
-			export LDFLAGS="\
-				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib \
-				-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl \
-				-L$M_SOURCES/openssl/engines -Wl,-rpath,$M_SOURCES/openssl/engines $M_LDFLAGS"
+			
+			if [ ! -f "$M_LDPATH"/libcrypto.so ] || [ ! -f "$M_LDPATH"/libcrypto.a ] || [ ! -f "$M_PKGPATH"/libcrypto.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build openssl before dkim.\n"; tput sgr0
+				return 3
+			fi
+			
+			if [ ! -f "$M_LDPATH"/libssl.so ] || [ ! -f "$M_LDPATH"/libssl.a ] || [ ! -f "$M_PKGPATH"/libssl.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build openssl before dkim.\n"; tput sgr0
+				return 3
+			fi
+			
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH -L$M_LDPATH/engines/ -Wl,-rpath,$M_LDPATH/engines/ $M_LDFLAGS"
+				
 			./configure \
 				--disable-filter --without-milter --without-sasl --without-gnutls --without-odbx \
-				--without-openldap --with-openssl="$M_SOURCES/openssl" --prefix="$M_LOCAL" \
-				&>> "$M_LOGS/dkim.txt"; error
+				--without-openldap --with-openssl="$M_SOURCES/openssl" \
+				--prefix="$M_LOCAL" &>> "$M_LOGS/dkim.txt"; error
+				
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make --jobs=4 &>> "$M_LOGS/dkim.txt"; error
@@ -836,7 +881,9 @@ zlib() {
 			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
 			export FFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_FFLAGS"
 			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			
 			./configure --prefix="$M_LOCAL" --64 &>> "$M_LOGS/zlib.txt"; error
+		
 			unset CFLAGS; unset CXXFLAGS; unset FFLAGS
 
 			make &>> "$M_LOGS/zlib.txt"; error
@@ -900,8 +947,8 @@ bzip2() {
 			extract $BZIP2 "bzip2" &>> "$M_LOGS/bzip2.txt"
 		;;
 		bzip2-prep)
-			# Apply RHEL bzip2 patches.
 			cd "$M_SOURCES/bzip2"; error
+			
 			chmod -Rf a+rX,u+w,g-w,o-w . &>> "$M_LOGS/bzip2.txt" ; error
 			
 			# We use slightly different patches depending on the bzip2 version. These patches were largely 
@@ -1001,18 +1048,24 @@ dspam() {
 		;;
 		dspam-build)
 			cd "$M_SOURCES/dspam"; error
-			# Can't include because the library isn't there till after MySQL is compiled.
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
-			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib $M_CPPFLAGS"
-			export LDFLAGS="-L$M_SOURCES/zlib $M_LDFLAGS"
-			export LD_LIBRARY_PATH="$M_SOURCES/mysql/libmysql/.libs"
+			
+			if [ ! -f "$M_LDPATH"/mysql/libmysqlclient_r.so ] || [ ! -f "$M_LDPATH"/mysql/libmysqlclient_r.a ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build mysql before dspam.\n"; tput sgr0
+				return 3
+			fi
+			
+			export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			
+			export LD_LIBRARY_PATH="$M_LDPATH"
 
 			./configure --enable-static --with-pic --enable-preferences-extension --enable-virtual-users \
-			--with-storage-driver=mysql_drv --disable-trusted-user-security --disable-mysql4-initialization	\
-			--with-mysql-includes="$M_LOCAL/include/mysql/" --with-mysql-libraries="$M_LOCAL/lib/mysql/" \
-			--prefix="$M_LOCAL" &>> "$M_LOGS/dspam.txt"; error
+				--with-storage-driver=mysql_drv --disable-trusted-user-security --disable-mysql4-initialization	\
+				--with-mysql-includes="$M_LOCAL/include/mysql/" --with-mysql-libraries="$M_LOCAL/lib/mysql/" \
+				--prefix="$M_LOCAL" &>> "$M_LOGS/dspam.txt"; error
+				
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset LD_LIBRARY_PATH
 
 			make &>> "$M_LOGS/dspam.txt"; error
@@ -1082,34 +1135,32 @@ mysql() {
 		;;
 		mysql-build)
 			cd "$M_SOURCES/mysql"; error
-			export CFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 $M_CFLAGS"
-			export CXXFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -Wno-narrowing $M_CXXFLAGS"
-			export CPPFLAGS="-g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -Wno-narrowing $M_CPPFLAGS"
-			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib $M_CPPFLAGS"
-			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib \
-				-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl $M_LDFLAGS"
-
-			./configure --with-pic --enable-thread-safe-client --with-readline --with-charset=latin1 \
-			--with-extra-charsets=all --with-plugins=all --with-ssl="$M_SOURCES/openssl" --prefix="$M_LOCAL" \
-			&>> "$M_LOGS/mysql.txt"; error
+			
+			if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build zlib before mysql.\n"; tput sgr0
+				return 3
+			fi
+			
+			if [ ! -f "$M_LDPATH"/libcrypto.so ] || [ ! -f "$M_LDPATH"/libcrypto.a ] || [ ! -f "$M_PKGPATH"/libcrypto.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build openssl before mysql.\n"; tput sgr0
+				return 3
+			fi
+			
+			if [ ! -f "$M_LDPATH"/libssl.so ] || [ ! -f "$M_LDPATH"/libssl.a ] || [ ! -f "$M_PKGPATH"/libssl.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build openssl before mysql.\n"; tput sgr0
+				return 3
+			fi
+			
+			export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
+			export CFLAGS="$M_SYM_INCLUDES -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -g3 -rdynamic -D_FORTIFY_SOURCE=2 -Wno-narrowing $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -g3 -rdynamic -D_FORTIFY_SOURCE=2 -Wno-narrowing $M_CPPFLAGS"
 
 			# According to the RHEL build spec, MySQL checks will fail without --with-big-tables,
-			# And the "with-plugin" and "without-plugin options" do actually work; so we can ignore warnings about them...
-			#./configure \
-			#--with-mysqld-user="ladar" \
-			#--with-extra-charsets=all --with-big-tables --with-pic --with-readline \
-			#--enable-static --enable-shared --enable-largefile --enable-thread-safe-client --enable-local-infile \
-			#--build=x86_64-redhat-linux-gnu --target=x86_64-redhat-linux-gnu --with-debug  &>> "$M_LOGS/mysql.txt"; error
-			#
-			#--with-plugins=innodb_plugin,myisam,heap,csv
-			#--with-client-ldflags=-all-static --with-mysqld-ldflags=-all-static
-			#mkdir working; error
-			#--with-plugin-innobase --with-plugin-partition --without-plugin-innodb_plugin
+			./configure --with-pic --enable-thread-safe-client --with-readline --with-charset=latin1 \
+				--with-extra-charsets=all --with-plugins=all --with-ssl="$M_SOURCES/openssl" \
+				--prefix="$M_LOCAL" &>> "$M_LOGS/mysql.txt"; error
 
-			#--with-plugins=innobase,innodb_plugin,myisam,heap,csv &>> "$M_LOGS/mysql.txt"; error
-
-			# TODO: Develop logic for detecting whether openssl and zlib are built ala DSPAM.
-			#--with-zlib-dir="$M_SOURCES/zlib" --with-openssl="$M_SOURCES/openssl" &>> "$M_LOGS/mysql.txt"; error
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make --jobs=4 &>> "$M_LOGS/mysql.txt"; error
@@ -1185,16 +1236,22 @@ geoip() {
 		;;
 		geoip-build)
 			cd "$M_SOURCES/geoip"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
-			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib $M_CPPFLAGS"
-			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib $M_LDFLAGS"
+			
+			if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build zlib before geoip.\n"; tput sgr0
+				return 3
+			fi
+			
+			export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			
 			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/geoip.txt"; error
 
 			make &>> "$M_LOGS/geoip.txt"
 			if [ $? -ne 0 ]; then
-				# fix for Ubuntu 12.04 LTS
+				# Fix for Ubuntu 12.04 LTS
 				echo "build failed... retrying with libtoolize" > "$M_LOGS/geoip.txt"
 				libtoolize -f &>> "$M_LOGS/geoip.txt"; error
 				./configure &>> "$M_LOGS/geoip.txt"; error
@@ -1306,6 +1363,26 @@ clamav() {
 		;;
 		clamav-build)
 			cd "$M_SOURCES/clamav"; error
+			
+			if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build zlib before clamav.\n"; tput sgr0
+				return 3
+			fi
+			
+			if [ ! -f "$M_LDPATH"/libpcre2-8.so ] || [ ! -f "$M_LDPATH"/libpcre2-8.a ] || [ ! -f "$M_PKGPATH"/libpcre2-8.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build pcre before pcre.\n"; tput sgr0
+				return 3
+			fi
+			
+			if [ ! -f "$M_LDPATH"/libxml2.so ] || [ ! -f "$M_LDPATH"/libxml2.a ] || [ ! -f "$M_PKGPATH"/libxml-2.0.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build xml2 before clamav.\n"; tput sgr0
+				return 3
+			fi
+			
+			if [ ! -f "$M_LDPATH"/libbz2.so ] || [ ! -f "$M_LDPATH"/libbz2.a ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build bzip2 before clamav.\n"; tput sgr0
+				return 3
+			fi
 			
 			export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
 			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE $M_CFLAGS"
@@ -1421,12 +1498,14 @@ checker() {
 		;;
 		checker-build)
 			cd "$M_SOURCES/checker"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
 
 			autoreconf --install &>> "$M_LOGS/checker.txt"; error
 			./configure --disable-subunit --prefix="$M_LOCAL" &>> "$M_LOGS/checker.txt"; error
+			
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make &>> "$M_LOGS/checker.txt"; error
@@ -1497,28 +1576,26 @@ openssl() {
 			# See here for reasoning behind openssl-specific linker flags:
 			# https://mta.openssl.org/pipermail/openssl-users/2015-April/001053.html
 			cd "$M_SOURCES/openssl"; error
+			
+			if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build zlib before openssl.\n"; tput sgr0
+				return 3
+			fi
+			
 			grep -E "CentOS Linux release 7|Red Hat Enterprise.*release 7" /etc/system-release >& /dev/null
 			if [ $? == 0 ]; then
 					export CONFIGOPTS='-fno-merge-debug-strings '
 			fi
-#		    ./config \
-#		        -d shared zlib no-asm --openssldir="$M_LOCAL" --libdir="lib" \
-#				-I"$M_SOURCES/zlib" -O $CONFIGOPTS -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
-#				-L"$M_SOURCES/openssl" -Wl,-rpath,"$M_SOURCES/openssl" \
-#				-L"$M_SOURCES/zlib" -Wl,-rpath,"$M_SOURCES/zlib" \
-#				&>> "$M_LOGS/openssl.txt"; error
-#
+			
 			./config \
 				-d shared zlib no-asm --openssldir="$M_LOCAL" --libdir="lib" \
 				-I"$M_SOURCES/include/" -O $CONFIGOPTS -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
-				-L"$M_SOURCES/lib/" -Wl,-rpath,"$M_SOURCES/lib/" \
-				&>> "$M_LOGS/openssl.txt"; error
-
+				-L"$M_SOURCES/lib/" -Wl,-rpath,"$M_SOURCES/lib/" &>> "$M_LOGS/openssl.txt"; error
 
 			make depend &>> "$M_LOGS/openssl.txt"; error
 			make &>> "$M_LOGS/openssl.txt"; error
 			make install &>> "$M_LOGS/openssl.txt"; error
-
+			
 			# Fool autotools checks into thinking this is a normal OpenSSL install (e.g., ClamAV)
 			ln -s `pwd` lib
 		;;
@@ -1631,11 +1708,13 @@ googtest() {
 		;;
 		googtest-build)
 			cd "$M_SOURCES/googtest"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
 
 			autoreconf --install &>> "$M_LOGS/googtest.txt"; error
 			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/googtest.txt"; error
+			
 			unset CFLAGS; unset CXXFLAGS
 
 			make &>> "$M_LOGS/googtest.txt"; error
@@ -1732,10 +1811,13 @@ jansson() {
 		;;
 		jansson-build)
 			cd "$M_SOURCES/jansson"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 $M_CFLAGS"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 $M_CXXFLAGS"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 $M_CPPFLAGS"
+			
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			
 			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/jansson.txt"; error
+			
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
 			make &>> "$M_LOGS/jansson.txt"; error
@@ -1802,11 +1884,26 @@ freetype() {
 		;;
 		freetype-build)
 			cd "$M_SOURCES/freetype"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
-			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib $M_CPPFLAGS"
-			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib $M_LDFLAGS"
+			
+			if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build zlib before freetype.\n"; tput sgr0
+				return 3
+			fi
+			
+			if [ ! -f "$M_LDPATH"/libpng.so ] || [ ! -f "$M_LDPATH"/libpng.a ] || [ ! -f "$M_PKGPATH"/libpng.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build png before freetype.\n"; tput sgr0
+				return 3
+			fi
+			
+			if [ ! -f "$M_LDPATH"/libbz2.so ] || [ ! -f "$M_LDPATH"/libbz2.a ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build bzip2 before freetype.\n"; tput sgr0
+				return 3
+			fi
+			
+			export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
 			
 			# We need to override the PNG flags, otherwise the system include files/libraries might be used by mistake.
 			export PKG_CONFIG_LIBDIR="$M_PKGPATH"
@@ -1815,6 +1912,7 @@ freetype() {
 			unset PKG_CONFIG_LIBDIR
 			
 			./configure --prefix="$M_LOCAL" --without-harfbuzz &>> "$M_LOGS/freetype.txt"; error
+			
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset LIBPNG_LIBS; unset LIBPNG_CFLAGS
 
 			make --jobs=4 &>> "$M_LOGS/freetype.txt"; error
@@ -1882,9 +1980,17 @@ utf8proc() {
 		;;
 		utf8proc-build)
 			cd "$M_SOURCES/utf8proc"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 $M_CFLAGS"
+			
+			if [ ! -f "$M_LDPATH"/libcurl.so ] || [ ! -f "$M_LDPATH"/libcurl.a ] || [ ! -f "$M_PKGPATH"/libcurl.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build curl before utf8proc.\n"; tput sgr0
+				return 3
+			fi
+			
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			
 			make prefix="$M_LOCAL" &>> "$M_LOGS/utf8proc.txt"; error
 			make prefix="$M_LOCAL" install &>> "$M_LOGS/utf8proc.txt"; error
+			
 			unset CFLAGS;
 		;;
 		utf8proc-check)
@@ -1960,15 +2066,16 @@ memcached() {
 
 			# If Dtrace or System Tap support is enabled, the libmemcached_probes.o file will need to be manually added to the shared object
 			# since it doesn't appear to be included in the libmemcached.a archive file (as of v0.49).
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
 
 			# Recent versions of gcc require libmemcached to be explicitly linked with libm.so and libstdc++.so, and configure
 			# doesn't appear to include the libraries automatically.
 			export LIBS="-lm -lstdc++"
 
-			# For some reason, the unit tests will fail when using this environment variable to find the memcached server.
+			# For some reason, the unit tests will fail if this environment variable is configured.
 			unset MEMCACHED_SERVERS
 
 			# export GEARMAND_BINARY="/usr/local/sbin/gearmand"
@@ -1976,20 +2083,9 @@ memcached() {
 
 			# Options used for 1.0.3+
 			./configure --disable-silent-rules --disable-dtrace --disable-sasl --disable-libinnodb --disable-libevent --disable-mtmalloc \
-			--enable-64bit --enable-largefile --enable-static --enable-shared --with-pic --with-debug \
-			--with-memcached="/usr/local/bin/memcached" --prefix="$M_LOCAL" \
-			&>> "$M_LOGS/memcached.txt"; error
-
-			# Options used for 1.0.2
-			#./configure --disable-silent-rules --disable-dtrace --disable-sasl --disable-libinnodb --disable-libevent --disable-mtmalloc \
-			#--enable-64bit --enable-largefile --enable-static --enable-shared \
-			#--with-pic --with-debug --with-valgrind &>> "$M_LOGS/memcached.txt"; error
-
-			# Options used for 0.51
-			#./configure --disable-silent-rules --disable-dtrace --disable-sasl --disable-libinnodb --disable-libevent --enable-static &>> "$M_LOGS/memcached.txt"; error
-
-			# An alternative and still experimental strategy for configuring the memcached library.
-			# ./configure --disable-silent-rules --disable-sasl --enable-static --with-pic --with-debug --with-valgrind &>> "$M_LOGS/memcached.txt"; error
+				--enable-64bit --enable-largefile --enable-static --enable-shared --with-pic --with-debug \
+				--with-memcached="/usr/local/bin/memcached" \
+				--prefix="$M_LOCAL" &>> "$M_LOGS/memcached.txt"; error
 
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LIBS
 			# unset GEARMAND_BINARY; unset MEMCACHED_BINARY
@@ -2071,20 +2167,33 @@ tokyocabinet() {
 			extract $TOKYOCABINET "tokyocabinet" &>> "$M_LOGS/tokyocabinet.txt"
 		;;
 		tokyocabinet-prep)
-			# Adds tctreegetboth() and tcndbgetboth().
 			cd "$M_SOURCES/tokyocabinet" &>> "$M_LOGS/tokyocabinet.txt"; error
+			
+			# Adds tctreegetboth() and tcndbgetboth().
 			cat "$M_PATCHES/tokyocabinet/"getboth.patch | patch -p1 --verbose &>> "$M_LOGS/tokyocabinet.txt"; error
 			cat "$M_PATCHES/tokyocabinet/"tcndbdup.patch | patch -p3 --verbose &>> "$M_LOGS/tokyocabinet.txt"; error
 			cat "$M_PATCHES/tokyocabinet/"fileopts.patch | patch -p3 --verbose &>> "$M_LOGS/tokyocabinet.txt"; error
 		;;
 		tokyocabinet-build)
 			cd "$M_SOURCES/tokyocabinet"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
-			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib -I$M_SOURCES/bzip2 $M_CPPFLAGS"
-			export LDFLAGS="-L$M_SOURCES/zlib -L$M_SOURCES/bzip2 $M_LDFLAGS"
+			
+			if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build zlib before tokyocabinet.\n"; tput sgr0
+				return 3
+			fi
+			
+			if [ ! -f "$M_LDPATH"/libbz2.so ] || [ ! -f "$M_LDPATH"/libbz2.a ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build bzip2 before tokyocabinet.\n"; tput sgr0
+				return 3
+			fi
+			
+			export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
+			export CFLAGS="$M_SYM_INCLUDES-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			
 			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/tokyocabinet.txt"; error
+			
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make --jobs=4 &>> "$M_LOGS/tokyocabinet.txt"; error
@@ -2486,59 +2595,79 @@ combo() {
 	# If compiling, then proceed sequentially to ensure dependencies are compiled in order.
 	if [[ $1 == "build" ]]; then
 
+		# These libraries don't have any pre-requisites or dependencies.
 		($M_BUILD "zlib-$1") & ZLIB_PID=$!
-		wait $ZLIB_PID; error
-		($M_BUILD "openssl-$1") & OPENSSL_PID=$!
-		wait $OPENSSL_PID; error
-		($M_BUILD "mysql-$1") & MYSQL_PID=$!
-		wait $MYSQL_PID; error
-		($M_BUILD "pcre-$1") & PCRE_PID=$!
-		wait $PCRE_PID; error
-		($M_BUILD "dspam-$1") & DSPAM_PID=$!
-		wait $DSPAM_PID; error
-		($M_BUILD "curl-$1") & CURL_PID=$!
-		wait $CURL_PID; error
-		($M_BUILD "checker-$1") & CHECKER_PID=$!
-		wait $CHECKER_PID; error
-		($M_BUILD "png-$1") & PNG_PID=$!
-		wait $PNG_PID; error
-		($M_BUILD "lzo-$1") & LZO_PID=$!
-		wait $LZO_PID; error
-		($M_BUILD "jpeg-$1") & JPEG_PID=$!
-		wait $JPEG_PID; error
-		($M_BUILD "spf2-$1") & SPF2_PID=$!
-		wait $SPF2_PID; error
-		($M_BUILD "xml2-$1") & XML2_PID=$!
-		wait $XML2_PID; error
-		($M_BUILD "dkim-$1") & DKIM_PID=$!
-		wait $DKIM_PID; error
 		($M_BUILD "bzip2-$1") & BZIP2_PID=$!
-		wait $BZIP2_PID; error
-		($M_BUILD "geoip-$1") & GEOIP_PID=$!
-		wait $GEOIP_PID; error
+		($M_BUILD "jpeg-$1") & JPEG_PID=$!
+		($M_BUILD "lzo-$1") & LZO_PID=$!
+		($M_BUILD "pcre-$1") & PCRE_PID=$!
+		($M_BUILD "spf2-$1") & SPF2_PID=$!
+		($M_BUILD "checker-$1") & CHECKER_PID=$!
 		($M_BUILD "jansson-$1") & JANSSON_PID=$!
-		wait $JANSSON_PID; error
-		($M_BUILD "utf8proc-$1") & UTF8PROC_PID=$!
-		wait $UTF8PROC_PID; error
-		($M_BUILD "freetype-$1") & FREETYPE_PID=$!
-		wait $FREETYPE_PID; error
-		($M_BUILD "memcached-$1") & MEMCACHED_PID=$!
-		wait $MEMCACHED_PID; error
-		($M_BUILD "tokyocabinet-$1") & TOKYOCABINET_PID=$!
-		wait $TOKYOCABINET_PID; error
-		($M_BUILD "gd-$1") & GD_PID=$!
-		wait $GD_PID; error
-		($M_BUILD "clamav-$1") & CLAMAV_PID=$!
-		wait $CLAMAV_PID; error
+		($M_BUILD "memcached-$1") & MEMCACHED_PID=$!	
 		($M_BUILD "googtest-$1") & GOOGTEST_PID=$!
-		wait $GOOGTEST_PID; error
 		($M_BUILD "googtap-$1") & GOOGTAP_PID=$!
+		
+		# These libraries require zlib, but nothing else.
+		wait $ZLIB_PID; error
+		
+		($M_BUILD "png-$1") & PNG_PID=$!
+		($M_BUILD "xml2-$1") & XML2_PID=$!
+		($M_BUILD "openssl-$1") & OPENSSL_PID=$!
+		($M_BUILD "geoip-$1") & GEOIP_PID=$!
+		
+		# These libraries require zlib (above) and openssl.
+		wait $OPENSSL_PID; error
+		
+		($M_BUILD "curl-$1") & CURL_PID=$!
+		($M_BUILD "dkim-$1") & DKIM_PID=$!
+		($M_BUILD "mysql-$1") & MYSQL_PID=$!
+		
+		# These libraries require zlib (above), bzip2, png and jpeg.
+		wait $PNG_PID; error
+		wait $JPEG_PID; error
+		wait $BZIP2_PID; error
+		
+		($M_BUILD "gd-$1") & GD_PID=$!
+		($M_BUILD "freetype-$1") & FREETYPE_PID=$!
+		($M_BUILD "tokyocabinet-$1") & TOKYOCABINET_PID=$!
+		
+		# ClamAV requires zlib (above) and bzip (above), pcre and xml2.
+		wait $XML2_PID; error
+		wait $PCRE_PID; error
+		
+		($M_BUILD "clamav-$1") & CLAMAV_PID=$!
+		
+		# Dspam require MySQL.
+		wait $MYSQL_PID; error
+		
+		($M_BUILD "dspam-$1") & DSPAM_PID=$!
+		
+		# These libraries require curl.
+		wait $CURL_PID; error
+		
+		($M_BUILD "utf8proc-$1") & UTF8PROC_PID=$!
+		
+		# Wait on any remaining build jobs.
+		wait $GD_PID; error
+		wait $LZO_PID; error
+		wait $SPF2_PID; error
+		wait $DKIM_PID; error
+		wait $GEOIP_PID; error
+		wait $DSPAM_PID; error
+		wait $CLAMAV_PID; error
+		wait $CHECKER_PID; error
 		wait $GOOGTAP_PID; error
+		wait $JANSSON_PID; error
+		wait $GOOGTEST_PID; error
+		wait $UTF8PROC_PID; error
+		wait $FREETYPE_PID; error
+		wait $MEMCACHED_PID; error
+		wait $TOKYOCABINET_PID; error
 
-	# Otherwise do everything in parallel.
 	else
 
-		# The ClamAV unit tests will timeout if the system is under heavy load so they run alone.
+		# If this isn't a build, then we kick off everything in parallel. 
 		($M_BUILD "clamav-$1") & CLAMAV_PID=$!
 		($M_BUILD "curl-$1") & CURL_PID=$!
 		($M_BUILD "mysql-$1") & MYSQL_PID=$!

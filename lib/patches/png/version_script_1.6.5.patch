@@ -1,0 +1,33 @@
+diff --git a/scripts/dfn.awk b/scripts/dfn.awk
+index 346b9db..9c3d8a6 100755
+--- a/scripts/dfn.awk
++++ b/scripts/dfn.awk
+@@ -72,22 +72,26 @@ $1 ~ /^PNG_DFN_END_SORT/{
+    # are introduced #line directives.
+    orig=$0
+    line=$0
+    lineno=FNR
+    if (lineno == "") lineno=NR
+ 
+    if (sub(/^[^"]*PNG_DFN *"/,"",line) != 1) {
+ 	print "line", lineno ": processing failed:"
+ 	print orig
+ 	err=1
+-       next
+-   } else {
++		next
++	} 
++	else if (/^[^"]*PNG_EXPORTA[^"]*PNG_DFN *"/) {
++		next
++	}
++	else {
+ 	++out_count
+    }
+ 
+    # Now examine quotes within the value:
+    #
+    #   @" - delete this and any following spaces
+    #   "@ - delete this and any preceding spaces
+    #   @' - replace this by a double quote
+    #
+    # This allows macro substitution by the C compiler thus:

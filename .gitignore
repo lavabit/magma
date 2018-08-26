@@ -27,6 +27,7 @@ res/sql/Hostname.sql
 
 # Compiled Binaries
 /magmad
+/magmad.a
 /magmad.so
 /magmad.check
 

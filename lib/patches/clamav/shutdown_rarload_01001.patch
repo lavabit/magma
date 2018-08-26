@@ -1,0 +1,456 @@
+diff --git a/libclamav/clamav.h b/libclamav/clamav.h
+index b18049c..7829ac4 100644
+--- a/libclamav/clamav.h
++++ b/libclamav/clamav.h
+@@ -202,20 +202,21 @@ struct cl_settings;
+  */
+ int cl_initialize_crypto(void);
+ 
+ /**
+  * Cleanup the crypto system prior to program exit
+  */
+ void cl_cleanup_crypto(void);
+ 
+ #define CL_INIT_DEFAULT	0x0
+ extern int cl_init(unsigned int initoptions);
++extern void cl_shutdown(void);
+ 
+ extern struct cl_engine *cl_engine_new(void);
+ 
+ extern void cl_always_gen_section_hash(void);
+ 
+ enum cl_engine_field {
+     CL_ENGINE_MAX_SCANSIZE,	    /* uint64_t */
+     CL_ENGINE_MAX_FILESIZE,	    /* uint64_t */
+     CL_ENGINE_MAX_RECURSION,	    /* uint32_t	*/
+     CL_ENGINE_MAX_FILES,	    /* uint32_t */
+diff --git a/libclamav/mbox.c b/libclamav/mbox.c
+index 71f540c..eeaff2c 100644
+--- a/libclamav/mbox.c
++++ b/libclamav/mbox.c
+@@ -2671,20 +2671,44 @@ initialiseTables(table_t **rfc821Table, table_t **subtypeTable)
+ 			tableDestroy(*subtypeTable);
+ 			*rfc821Table = NULL;
+ 			*subtypeTable = NULL;
+ 			return -1;
+ 		}
+ 
+ 	return 0;
+ }
+ 
+ /*
++ * Cleanup the various lookup tables
++ */
++void
++cli_mbox_shutdown(void)
++{
++
++#ifdef	CL_THREAD_SAFE
++	pthread_mutex_lock(&tables_mutex);
++#endif
++	if(rfc821) {
++		tableDestroy(rfc821);
++		rfc821 = NULL;
++	}
++	if(subtype) {
++		tableDestroy(subtype);
++		subtype = NULL;
++	}
++#ifdef	CL_THREAD_SAFE
++			pthread_mutex_unlock(&tables_mutex);
++#endif
++
++}
++
++/*
+  * If there's a HTML text version use that, otherwise
+  * use the first text part, otherwise just use the
+  * first one around. HTML text is most likely to include
+  * a scripting worm
+  *
+  * If we can't find one, return -1
+  */
+ static int
+ getTextPart(message *const messages[], size_t size)
+ {
+diff --git a/libclamav/mbox.h b/libclamav/mbox.h
+index 658b021..3e91ec2 100644
+--- a/libclamav/mbox.h
++++ b/libclamav/mbox.h
+@@ -51,11 +51,13 @@ typedef enum {
+ #include "table.h"
+ #include "blob.h"
+ #include "line.h"
+ #include "text.h"
+ #include "message.h"
+ #include "uuencode.h"
+ 
+ size_t	strstrip(char *s);	/* remove trailing white space */
+ int	cli_mbox(const char *dir, cli_ctx *ctx);
+ 
++void cli_mbox_shutdown(void);
++
+ #endif /* __MBOX_H */
+diff --git a/libclamav/message.c b/libclamav/message.c
+index 157b4d8..79ea299 100644
+--- a/libclamav/message.c
++++ b/libclamav/message.c
+@@ -143,20 +143,46 @@ static const unsigned char base64Table[256] = {
+ 	255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+ 	255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+ 	255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+ 	255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+ 	255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+ 	255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+ 	255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+ 	255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
+ };
+ 
++static table_t *mime_table = NULL;
++
++#ifdef	CL_THREAD_SAFE
++	static pthread_mutex_t mime_mutex = PTHREAD_MUTEX_INITIALIZER;
++#endif
++
++/*
++ * Cleanup the various lookup tables
++ */
++void
++cli_mime_shutdown(void)
++{
++
++#ifdef	CL_THREAD_SAFE
++	pthread_mutex_lock(&mime_mutex);
++#endif
++	if(mime_table) {
++		tableDestroy(mime_table);
++		mime_table = NULL;
++	}
++#ifdef	CL_THREAD_SAFE
++			pthread_mutex_unlock(&mime_mutex);
++#endif
++
++}
++
+ message *
+ messageCreate(void)
+ {
+ 	message *m = (message *)cli_calloc(1, sizeof(message));
+ 
+ 	if(m)
+ 		m->mimeType = NOMIME;
+ 
+ 	return m;
+ }
+@@ -211,26 +237,22 @@ messageReset(message *m)
+ 
+ /*
+  * Handle the Content-Type header. The syntax is in RFC1341.
+  * Return success (1) or failure (0). Failure only happens when it's an
+  * unknown type and we've already received a known type, or we've received an
+  * empty type. If we receive an unknown type by itself we default to application
+  */
+ int
+ messageSetMimeType(message *mess, const char *type)
+ {
+-#ifdef	CL_THREAD_SAFE
+-	static pthread_mutex_t mime_mutex = PTHREAD_MUTEX_INITIALIZER;
+-#endif
+ 	const struct mime_map *m;
+ 	int typeval;
+-	static table_t *mime_table;
+ 
+ 	assert(mess != NULL);
+ 	if(type == NULL) {
+ 		cli_dbgmsg("Empty content-type field\n");
+ 		return 0;
+ 	}
+ 
+ 	cli_dbgmsg("messageSetMimeType: '%s'\n", type);
+ 
+ 	/* Ignore leading spaces */
+diff --git a/libclamav/message.h b/libclamav/message.h
+index a090c7a..338587a 100644
+--- a/libclamav/message.h
++++ b/libclamav/message.h
+@@ -87,11 +87,13 @@ text	*bounceBegin(message *m);
+ text	*encodingLine(message *m);
+ unsigned char	*decodeLine(message *m, encoding_type enctype, const char *line, unsigned char *buf, size_t buflen);
+ int	isuuencodebegin(const char *line);
+ void	messageSetCTX(message *m, cli_ctx *ctx);
+ int	messageContainsVirus(const message *m);
+ int messageSavePartial(message *m, const char *dir, const char *id, unsigned part);
+ #if HAVE_JSON
+ json_object *messageGetJObj(message *m);
+ #endif
+ 
++void cli_mime_shutdown(void);
++
+ #endif	/*_MESSAGE_H*/
+diff --git a/libclamav/others.c b/libclamav/others.c
+index 5fdc476..e8df803 100644
+--- a/libclamav/others.c
++++ b/libclamav/others.c
+@@ -163,40 +163,51 @@ static lt_dlhandle lt_dlfind(const char *name, const char *featurename)
+ #endif
+         return rhandle;
+     }
+ 
+     info = lt_dlgetinfo(rhandle);
+     if (info)
+ 	cli_dbgmsg("%s support loaded from %s %s\n", featurename, info->filename ? info->filename : "?", info->name ? info->name : "");
+     return rhandle;
+ }
+ 
++#include <dlfcn.h>
+ static void cli_rarload(void) {
+-    lt_dlhandle rhandle;
+ 
+-    if(is_rar_inited) return;
++    lt_dlhandle rhandle = NULL;
++
++    if(is_rar_inited) return;
+     is_rar_inited = 1;
+ 
+-    rhandle = lt_dlfind("libclamunrar_iface", "unrar");
+-    if (!rhandle)
++  if (!(*(void **)(&cli_unrar_open) = (void *)dlsym(NULL, "libclamunrar_iface_LTX_unrar_open")) ||
++		!(*(void **)(&cli_unrar_extract_next_prepare) = dlsym(NULL, "libclamunrar_iface_LTX_unrar_extract_next_prepare")) ||
++		!(*(void **)(&cli_unrar_extract_next) = dlsym(NULL, "libclamunrar_iface_LTX_unrar_extract_next")) ||
++		!(*(void **)(&cli_unrar_close) = dlsym(NULL, "libclamunrar_iface_LTX_unrar_close"))) {
++
++	  if (!(rhandle = lt_dlfind("libclamunrar_iface", "unrar"))) {
+ 	return;
++	  }
++
++    if (!rhandle) return;
+ 
+     if (!(cli_unrar_open = (int(*)(int, const char *, unrar_state_t *))lt_dlsym(rhandle, "libclamunrar_iface_LTX_unrar_open")) ||
+ 	!(cli_unrar_extract_next_prepare = (int(*)(unrar_state_t *, const char *))lt_dlsym(rhandle, "libclamunrar_iface_LTX_unrar_extract_next_prepare")) ||
+ 	!(cli_unrar_extract_next = (int(*)(unrar_state_t *, const char *))lt_dlsym(rhandle, "libclamunrar_iface_LTX_unrar_extract_next")) ||
+ 	!(cli_unrar_close = (void(*)(unrar_state_t *))lt_dlsym(rhandle, "libclamunrar_iface_LTX_unrar_close"))
+ 	) {
+ 	/* ideally we should never land here, we'd better warn so */
+         cli_warnmsg("Cannot resolve: %s (version mismatch?) - unrar support unavailable\n", lt_dlerror());
+         return;
+     }
+-    have_rar = 1;
++   }
++
++   have_rar = 1;
+ }
+ 
+ void cl_debug(void)
+ {
+     cli_debug_flag = 1;
+ }
+ 
+ void cl_always_gen_section_hash(void)
+ {
+     cli_always_gen_section_hash = 1;
+@@ -309,20 +320,28 @@ int cl_init(unsigned int initoptions)
+     srand(pid + tv.tv_usec*(pid+1) + clock());
+     rc = bytecode_init();
+     if (rc)
+ 	return rc;
+ #ifdef HAVE_LIBXML2
+     xmlInitParser();
+ #endif
+     return CL_SUCCESS;
+ }
+ 
++void cl_shutdown(void) {
++	cli_mbox_shutdown();
++	cli_mime_shutdown();
++	if (lt_dlexit()) {
++		cli_errmsg("lt_dlexit: Library exit error, probably because of an invalid reference counter");
++	}
++}
++
+ struct cl_engine *cl_engine_new(void)
+ {
+     struct cl_engine *new;
+     cli_intel_t *intel;
+ 
+     new = (struct cl_engine *) cli_calloc(1, sizeof(struct cl_engine));
+     if(!new) {
+ 	cli_errmsg("cl_engine_new: Can't allocate memory for cl_engine\n");
+ 	return NULL;
+     }
+@@ -1110,21 +1129,21 @@ int cli_append_possibly_unwanted(cli_ctx * ctx, const char * virname)
+ 
+ int cli_append_virus(cli_ctx * ctx, const char * virname)
+ {
+     if (ctx->virname == NULL)
+         return CL_CLEAN;
+     if (ctx->fmap != NULL && (*ctx->fmap) != NULL && CL_VIRUS != cli_checkfp_virus((*ctx->fmap)->maphash, (*ctx->fmap)->len, ctx, virname))
+         return CL_CLEAN;
+     if (!SCAN_ALL && ctx->num_viruses != 0)
+         if (ctx->options & CL_SCAN_HEURISTIC_PRECEDENCE)
+             return CL_CLEAN;
+-    if (ctx->limit_exceeded == 0 || SCAN_ALL) { 
++    if (ctx->limit_exceeded == 0 || SCAN_ALL) {
+         ctx->num_viruses++;
+         *ctx->virname = virname;
+         cli_virus_found_cb(ctx);
+     }
+ #if HAVE_JSON
+     if (SCAN_PROPERTIES && ctx->wrkproperty) {
+         json_object *arrobj, *virobj;
+         if (!json_object_object_get_ex(ctx->wrkproperty, "Viruses", &arrobj)) {
+             arrobj = json_object_new_array();
+             if (NULL == arrobj) {
+@@ -1207,21 +1226,21 @@ size_t cli_get_container_size(cli_ctx *ctx, int index)
+ 
+ 
+ #ifdef	C_WINDOWS
+ /*
+  * Windows doesn't allow you to delete a directory while it is still open
+  */
+ int
+ cli_rmdirs(const char *name)
+ {
+ 	int rc;
+-	STATBUF statb;	
++	STATBUF statb;
+ 	DIR *dd;
+ 	struct dirent *dent;
+ #if defined(HAVE_READDIR_R_3) || defined(HAVE_READDIR_R_2)
+ 	union {
+ 	    struct dirent d;
+ 	    char b[offsetof(struct dirent, d_name) + NAME_MAX + 1];
+ 	} result;
+ #endif
+ 	char err[128];
+ 
+@@ -1270,21 +1289,21 @@ cli_rmdirs(const char *name)
+ 	    break;
+     }
+ 
+     closedir(dd);
+ 
+     if(rmdir(name) < 0) {
+ 	cli_errmsg("cli_rmdirs: Can't remove temporary directory %s: %s\n", name, cli_strerror(errno, err, sizeof(err)));
+ 	return -1;
+     }
+ 
+-    return rc;	
++    return rc;
+ }
+ #else
+ int cli_rmdirs(const char *dirname)
+ {
+ 	DIR *dd;
+ 	struct dirent *dent;
+ #if defined(HAVE_READDIR_R_3) || defined(HAVE_READDIR_R_2)
+ 	union {
+ 	    struct dirent d;
+ 	    char b[offsetof(struct dirent, d_name) + NAME_MAX + 1];
+@@ -1349,21 +1368,21 @@ int cli_rmdirs(const char *dirname)
+ 				}
+ 			    }
+ 			}
+ 			free(path);
+ 		    }
+ 		}
+ 	    }
+ 	    rewinddir(dd);
+ 	}
+ 
+-    } else { 
++    } else {
+ 	return -1;
+     }
+ 
+     closedir(dd);
+     return 0;
+ }
+ #endif
+ 
+ /* Implement a generic bitset, trog@clamav.net */
+ 
+@@ -1379,21 +1398,21 @@ static unsigned long nearest_power(unsigned long num)
+ 		if (n == 0) {
+ 			return num;
+ 		}
+ 	}
+ 	return n;
+ }
+ 
+ bitset_t *cli_bitset_init(void)
+ {
+ 	bitset_t *bs;
+-	
++
+ 	bs = cli_malloc(sizeof(bitset_t));
+ 	if (!bs) {
+         cli_errmsg("cli_bitset_init: Unable to allocate memory for bs %llu\n", (long long unsigned)sizeof(bitset_t));
+ 		return NULL;
+ 	}
+ 	bs->length = BITSET_DEFAULT_SIZE;
+ 	bs->bitset = cli_calloc(BITSET_DEFAULT_SIZE, 1);
+ 	if (!bs->bitset) {
+         cli_errmsg("cli_bitset_init: Unable to allocate memory for bs->bitset %u\n", BITSET_DEFAULT_SIZE);
+ 	    free(bs);
+@@ -1410,57 +1429,57 @@ void cli_bitset_free(bitset_t *bs)
+ 	if (bs->bitset) {
+ 		free(bs->bitset);
+ 	}
+ 	free(bs);
+ }
+ 
+ static bitset_t *bitset_realloc(bitset_t *bs, unsigned long min_size)
+ {
+ 	unsigned long new_length;
+ 	unsigned char *new_bitset;
+-	
++
+ 	new_length = nearest_power(min_size);
+ 	new_bitset = (unsigned char *) cli_realloc(bs->bitset, new_length);
+ 	if (!new_bitset) {
+ 		return NULL;
+ 	}
+ 	bs->bitset = new_bitset;
+ 	memset(bs->bitset+bs->length, 0, new_length-bs->length);
+ 	bs->length = new_length;
+ 	return bs;
+ }
+ 
+ int cli_bitset_set(bitset_t *bs, unsigned long bit_offset)
+ {
+ 	unsigned long char_offset;
+-	
++
+ 	char_offset = bit_offset / BITS_PER_CHAR;
+ 	bit_offset = bit_offset % BITS_PER_CHAR;
+ 
+ 	if (char_offset >= bs->length) {
+ 		bs = bitset_realloc(bs, char_offset+1);
+ 		if (!bs) {
+ 			return FALSE;
+ 		}
+ 	}
+ 	bs->bitset[char_offset] |= ((unsigned char)1 << bit_offset);
+ 	return TRUE;
+ }
+ 
+ int cli_bitset_test(bitset_t *bs, unsigned long bit_offset)
+ {
+ 	unsigned long char_offset;
+-	
++
+ 	char_offset = bit_offset / BITS_PER_CHAR;
+ 	bit_offset = bit_offset % BITS_PER_CHAR;
+ 
+-	if (char_offset >= bs->length) {	
++	if (char_offset >= bs->length) {
+ 		return FALSE;
+ 	}
+ 	return (bs->bitset[char_offset] & ((unsigned char)1 << bit_offset));
+ }
+ 
+ void cl_engine_set_clcb_pre_cache(struct cl_engine *engine, clcb_pre_cache callback) {
+     engine->cb_pre_cache = callback;
+ }
+ 
+ void cl_engine_set_clcb_pre_scan(struct cl_engine *engine, clcb_pre_scan callback) {

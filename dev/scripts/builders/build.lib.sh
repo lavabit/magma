@@ -117,13 +117,27 @@ gd() {
 				cat "$M_PATCHES/gd/"gd_gif_loop_2.2.5.patch | patch -p1 --verbose &>> "$M_LOGS/gd.txt" ; error
 				cat "$M_PATCHES/gd/"default_fontpath_2.2.25.patch | patch -p1 --verbose &>> "$M_LOGS/gd.txt" ; error
 				
-				
 				# The bounding box patch is currently broken. 
 				# cat "$M_PATCHES/gd/"bounding_box_2.2.5.patch | patch -p1 --verbose &>> "$M_LOGS/gd.txt" ; error
 			fi
 		;;
 		gd-build)
 			cd "$M_SOURCES/gd"; error
+			
+			if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build zlib before gd.\n"; tput sgr0
+				return 3
+			fi
+			
+			if [ ! -f "$M_LDPATH"/libpng.so ] || [ ! -f "$M_LDPATH"/libpng.a ] || [ ! -f "$M_PKGPATH"/libpng.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build png before gd.\n"; tput sgr0
+				return 3
+			fi
+			
+			if [ ! -f "$M_LDPATH"/libjpeg.so ] || [ ! -f "$M_LDPATH"/libjpeg.a ] || [ ! -f "$M_PKGPATH"/libjpeg.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build jpeg before gd.\n"; tput sgr0
+				return 3
+			fi
 			
 			export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
 			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
@@ -206,19 +220,17 @@ png() {
 		;;
 		png-prep)
 			cd "$M_SOURCES/png"; error
+			cat "$M_PATCHES/png/"version_script_1.6.5.patch | patch -p1 --verbose &>> "$M_LOGS/gd.txt" ; error
 		;;
 		png-build)
 			cd "$M_SOURCES/png"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
-			export CPPFLAGS="$CPPFLAGS -I$M_SOURCES/zlib $M_CPPFLAGS"
-			export LDFLAGS="-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib $M_LDFLAGS"
-			# The shared library build is explicitly disabled because using the
-			# bundled zlib version seems to muck up the magic libpng uses to
-			# generate its shared library version script
-			./configure --disable-shared --prefix="$M_LOCAL" &>> "$M_LOGS/png.txt"; error
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset CC
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
+			
+			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/png.txt"; error
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make --jobs=4 &>> "$M_LOGS/png.txt"; error
 			make install &>> "$M_LOGS/png.txt"; error
@@ -851,7 +863,7 @@ bzip2() {
 		;;
 		bzip2-build)
 			cd "$M_SOURCES/bzip2"; error
-			make CC=gcc AR=ar RANLIB=ranlib 'CFLAGS=-O2 -g3 -fPIC -rdynamic -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -D_FILE_OFFSET_BITS=64' &>> "$M_LOGS/bzip2.txt" ; error
+			make CC=gcc AR=ar RANLIB=ranlib CFLAGS='-g3 -fPIC -rdynamic -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -D_FILE_OFFSET_BITS=64' &>> "$M_LOGS/bzip2.txt" ; error
 			make PREFIX="$M_LOCAL" install &>> "$M_LOGS/bzip2.txt" ; error
 		;;
 		bzip2-check)
@@ -1199,15 +1211,23 @@ clamav() {
 				SHA_FILES=`grep --files-with-matches --recursive SHA256_CTX *`; error
 				sed -i -e "s/SHA256_CTX/CL_SHA256_CTX/g" $SHA_FILES; error
 				unset SHA_FILES
-			else
+			elif [[ $CLAMAV =~ "clamav-0.98.7" ]]; then
+				
 				# Add the shutdown and clean up functions and fix the rar library dynamic loading logic.
-				cat "$M_PATCHES/clamav/"shutdown_rarload_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
+				cat "$M_PATCHES/clamav/"shutdown_rarload_0984.patch | patch -p1 --fuzz=100 --verbose &>> "$M_LOGS/clamav.txt"; error
 
 				# Output the version number and not the git commit hash.
 				cat "$M_PATCHES/clamav/"version_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
 
 				# Fix the zlib version check, so that 1.2.10+ doesn't trigger a spurious error.
 				cat "$M_PATCHES/clamav/"zlib_check_0992.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
+			else
+				# Add the shutdown and clean up functions and fix the rar library dynamic loading logic.
+				cat "$M_PATCHES/clamav/"shutdown_rarload_01001.patch | patch -p1 --fuzz=100 --verbose &>> "$M_LOGS/clamav.txt"; error
+
+				# Output the version number and not the git commit hash.
+				cat "$M_PATCHES/clamav/"version_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
+
 			fi
 
 			# Fix reference conflict with libpng over the filename png.h.
@@ -1219,46 +1239,19 @@ clamav() {
 		;;
 		clamav-build)
 			cd "$M_SOURCES/clamav"; error
-			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE -I$M_LOCAL/include $M_CFLAGS"
-			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE -I$M_LOCAL/include $M_CXXFLAGS"
-			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE -I$M_LOCAL/include $M_CPPFLAGS"
-			export LDFLAGS="-L$M_LOCAL/lib -Wl,-rpath,$M_LOCAL/lib $M_LDFLAGS"
+			
+			export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE $M_CPPFLAGS"
 
-#			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE $M_CFLAGS"
-#			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE $M_CXXFLAGS"
-#			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O2 -DGNU_SOURCE $M_CPPFLAGS"
-#			export CPPFLAGS="$CPPFLAGS \
-#				-I$M_SOURCES/curl/include \
-#				-I$M_SOURCES/openssl/include \
-#				-I$M_SOURCES/zlib $M_CPPFLAGS"
-#			export LDFLAGS="\
-#				-L$M_SOURCES/curl/lib -Wl,-rpath,$M_SOURCES/curl/lib \
-#				-L$M_SOURCES/openssl -Wl,-rpath,$M_SOURCES/openssl \
-#				-L$M_SOURCES/zlib -Wl,-rpath,$M_SOURCES/zlib $M_LDFLAGS"
-
-
-			# Note that at least in version 0.97 and 0.98, --disable-llvm breaks the unit tests. And with ClamAV 0.98.4
-
-################################################################################################################################
-################################################################################################################################
-################################################################################################################################
-			# Updated to work with 0.99.2 but doesn't work with Zlib 1.2.11, yet.
 			./configure  \
 				--enable-check --enable-static --enable-shared --disable-mempool --disable-llvm --disable-silent-rules \
 				--with-openssl="$M_LOCAL" --with-zlib="$M_LOCAL" --with-xml="$M_LOCAL" --with-libcurl="$M_LOCAL" \
 				--with-libbz2-prefix="$M_LOCAL" --with-libcheck-prefix="$M_LOCAL" \
-				--prefix="$M_LOCAL" --exec-prefix="$M_LOCAL" --libdir="$M_LOCAL/lib" \
-				&>> "$M_LOGS/clamav.txt"; error
-################################################################################################################################
-################################################################################################################################
-################################################################################################################################
-#			./configure \
-#				--disable-llvm --disable-jit --with-disable-xml --enable-check --enable-static --disable-silent-rules --disable-libcurl \
-#				--with-openssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" --with-libcheck-prefix="$M_LOCAL" \
-#				--with-libbz2-prefix="$M_SOURCES/bzip2" --prefix="$M_LOCAL"  --exec-prefix="$M_LOCAL"  --libdir="$M_LOCAL/lib" \
-#				&>> "$M_LOGS/clamav.txt"; error
+				--prefix="$M_LOCAL" --exec-prefix="$M_LOCAL" --libdir="$M_LOCAL/lib" &>> "$M_LOGS/clamav.txt"; error
 
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			if [[ $CLAMAV =~ "clamav-0.9"[7-9]"."[1-9] ]]; then
 				# The check3_clamd.sh script will fail if LLVM is disabled.
@@ -2077,10 +2070,27 @@ tokyocabinet() {
 
 combine() {
 
-	echo ""
-	printf "Creating the shared object... "
+	case "$1" in
+		combine-tail)
+			tail --lines=30 --follow=name --retry "$M_LOGS/combine.txt"; error
+			exit 0
+		;;
+		combine-log)
+			cat "$M_LOGS/combine.txt"; error
+			exit 0
+		;;
+	esac
 
-	rm -f "$M_SO" &>> "$M_LOGS/combine.txt"; error
+	case "$1" in
+		combine-static)
+			printf "Creating the static archive... "
+		;;
+		*)
+			rm -f "$M_SO" &>> "$M_LOGS/combine.txt"; error
+			printf "Creating the shared object... "
+		;;
+	esac
+
 
 	if [[ ! -f "$M_SOURCES/gd/src/.libs/libgd.a" ||
 		! -f "$M_SOURCES/png/.libs/libpng16.a" ||
@@ -2098,6 +2108,7 @@ combine() {
 		! -f "$M_SOURCES/clamav/libclamav/.libs/libclamav.a" ||
 		! -f "$M_SOURCES/clamav/libclamav/.libs/libclamunrar.a" ||
 		! -f "$M_SOURCES/clamav/libclamav/.libs/libclamunrar_iface.a" ||
+		! -f "$M_SOURCES/clamav/libclamav/libmspack-0.5alpha/.libs/libclammspack.a" ||
 		! -f "$M_SOURCES/clamav/libltdl/.libs/libltdlc.a" ||
 		! -f "$M_SOURCES/openssl/libcrypto.a" ||
 		! -f "$M_SOURCES/openssl/libssl.a" ||
@@ -2182,11 +2193,19 @@ combine() {
 	mkdir "$M_OBJECTS/clamav" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/clamav" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/clamav/libclamav/.libs/libclamav.a" &>> "$M_LOGS/combine.txt"; error
-	ar xv "$M_SOURCES/clamav/libclamav/.libs/libclamunrar.a" &>> "$M_LOGS/combine.txt"; error
-	ar xv "$M_SOURCES/clamav/libclamav/.libs/libclamunrar_iface.a" &>> "$M_LOGS/combine.txt"; error
-
-	# Some systems don't appear to need this archive.
 	ar xv "$M_SOURCES/clamav/libltdl/.libs/libltdlc.a" &>> "$M_LOGS/combine.txt"; error
+	
+	mkdir "$M_OBJECTS/clamav/unrar" &>> "$M_LOGS/combine.txt"; error
+	cd "$M_OBJECTS/clamav/unrar" &>> "$M_LOGS/combine.txt"; error
+	ar xv "$M_SOURCES/clamav/libclamav/.libs/libclamunrar.a" &>> "$M_LOGS/combine.txt"; error
+	
+	mkdir "$M_OBJECTS/clamav/unrar_iface" &>> "$M_LOGS/combine.txt"; error
+	cd "$M_OBJECTS/clamav/unrar_iface" &>> "$M_LOGS/combine.txt"; error
+	ar xv "$M_SOURCES/clamav/libclamav/.libs/libclamunrar_iface.a" &>> "$M_LOGS/combine.txt"; error
+	
+	mkdir "$M_OBJECTS/clamav/mspack" &>> "$M_LOGS/combine.txt"; error
+	cd "$M_OBJECTS/clamav/mspack" &>> "$M_LOGS/combine.txt"; error
+	ar xv "$M_SOURCES/clamav/libclamav/libmspack-0.5alpha/.libs/libclammspack.a" &>> "$M_LOGS/combine.txt"; error
 
 	rm -rf "$M_OBJECTS/crypto" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/crypto" &>> "$M_LOGS/combine.txt"; error
@@ -2226,22 +2245,40 @@ combine() {
 	cd "$M_OBJECTS/tokyocabinet" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/tokyocabinet/libtokyocabinet.a" &>> "$M_LOGS/combine.txt"; error
 
-	gcc -Wl,-Bsymbolic -g3 -fPIC -rdynamic -shared -o "$M_SO" "$M_OBJECTS"/lzo/*.o "$M_OBJECTS"/zlib/*.o "$M_OBJECTS"/bzip2/*.o \
-		"$M_OBJECTS"/geoip/*.o "$M_OBJECTS"/clamav/*.o "$M_OBJECTS"/tokyocabinet/*.o "$M_OBJECTS"/crypto/*.o "$M_OBJECTS"/ssl/*.o \
-		"$M_OBJECTS"/mysql/*.o "$M_OBJECTS"/xml2/*.o "$M_OBJECTS"/spf2/*.o "$M_OBJECTS"/curl/*.o "$M_OBJECTS"/memcached/*.o \
-		"$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o "$M_OBJECTS"/png/*.o "$M_OBJECTS"/jpeg/*.o "$M_OBJECTS"/freetype/*.o \
-		"$M_OBJECTS"/utf8proc/*.o "$M_OBJECTS"/gd/*.o \
-		-lm -lrt -ldl -lnsl -lresolv -lpthread -lstdc++ &>> "$M_LOGS/combine.txt"; error
+	case "$1" in
+		combine-static)
+			# Commands for creating a static version of the library.
+			rm -f "$M_AR"; error
+			ar rs "$M_AR" \
+				"$M_OBJECTS"/lzo/*.o "$M_OBJECTS"/zlib/*.o \
+				"$M_OBJECTS"/bzip2/*.o "$M_OBJECTS"/geoip/*.o \
+				"$M_OBJECTS"/clamav/*.o "$M_OBJECTS"/clamav/unrar/*.o \
+				"$M_OBJECTS"/clamav/unrar_iface/*.o "$M_OBJECTS"/clamav/mspack/*.o \
+			 	"$M_OBJECTS"/tokyocabinet/*.o "$M_OBJECTS"/crypto/*.o "$M_OBJECTS"/ssl/*.o \
+				"$M_OBJECTS"/mysql/*.o "$M_OBJECTS"/xml2/*.o "$M_OBJECTS"/spf2/*.o \
+				"$M_OBJECTS"/curl/*.o "$M_OBJECTS"/memcached/*.o "$M_OBJECTS"/utf8proc/*.o \
+				"$M_OBJECTS"/png/*.o "$M_OBJECTS"/jpeg/*.o "$M_OBJECTS"/freetype/*.o "$M_OBJECTS"/gd/*.o \
+				"$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o &>> "$M_LOGS/combine.txt"; error
+			date +"%n%nFinished creating the static archive at %r on %x%n%n"
+		;;
+		*)
+			rm -f "$M_SO"
+			gcc -Wl,-Bsymbolic -g3 -fPIC -rdynamic -shared -o "$M_SO" \
+				"$M_OBJECTS"/lzo/*.o "$M_OBJECTS"/zlib/*.o \
+				"$M_OBJECTS"/bzip2/*.o "$M_OBJECTS"/geoip/*.o \
+				"$M_OBJECTS"/clamav/*.o "$M_OBJECTS"/clamav/unrar/*.o \
+				"$M_OBJECTS"/clamav/unrar_iface/*.o "$M_OBJECTS"/clamav/mspack/*.o \
+			 	"$M_OBJECTS"/tokyocabinet/*.o "$M_OBJECTS"/crypto/*.o "$M_OBJECTS"/ssl/*.o \
+				"$M_OBJECTS"/mysql/*.o "$M_OBJECTS"/xml2/*.o "$M_OBJECTS"/spf2/*.o \
+				"$M_OBJECTS"/curl/*.o "$M_OBJECTS"/memcached/*.o "$M_OBJECTS"/utf8proc/*.o \
+				"$M_OBJECTS"/png/*.o "$M_OBJECTS"/jpeg/*.o "$M_OBJECTS"/freetype/*.o "$M_OBJECTS"/gd/*.o \
+				"$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o \
+				-lm -lrt -ldl -lnsl -lresolv -lpthread -lstdc++ &>> "$M_LOGS/combine.txt"; error
+			date +"%n%nFinished creating the shared object at %r on %x%n%n"
+		;;
+	esac
 
-	# Commands for creating a static version of the library.
-	# rm -f "$M_ROOT/libmagmad.a"; error
-	# ar -r "$M_ROOT/libmagmad.a" "$M_OBJECTS"/lzo/*.o "$M_OBJECTS"/zlib/*.o "$M_OBJECTS"/bzip2/*.o \
-	#	"$M_OBJECTS"/clamav/*.o "$M_OBJECTS"/tokyocabinet/*.o "$M_OBJECTS"/crypto/*.o "$M_OBJECTS"/ssl/*.o \
-	#	"$M_OBJECTS"/mysql/*.o "$M_OBJECTS"/xml2/*.o "$M_OBJECTS"/spf2/*.o "$M_OBJECTS"/curl/*.o \
-	#	"$M_OBJECTS"/memcached/*.o "$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o
-	#	"$M_OBJECTS"/utf8proc/*.o &>> "$M_LOGS/combine.txt"; error
-
-	date +"%n%nFinished creating the shared object at %r on %x%n%n"
+	exit 0
 }
 
 load() {
@@ -2597,8 +2634,8 @@ elif [[ $1 =~ "memcached" ]]; then memcached "$1"
 elif [[ $1 =~ "tokyocabinet" ]]; then tokyocabinet "$1"
 
 # Globals
+elif [[ $1 =~ "combine" ]]; then combine "$1"
 elif [[ $1 == "generate" ]]; then generate
-elif [[ $1 == "combine" ]]; then combine
 elif [[ $1 == "status" ]]; then status
 elif [[ $1 == "follow" ]]; then follow
 elif [[ $1 == "load" ]]; then load

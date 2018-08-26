@@ -7,13 +7,13 @@ CURL="curl-7.23.1"
 SPF2="libspf2-1.2.10"
 XML2="libxml2-2.9.3"
 DKIM="opendkim-2.10.3"
-ZLIB="zlib-1.2.8"
+ZLIB="zlib-1.2.11"
 JPEG="jpeg-9c"
 BZIP2="bzip2-1.0.6"
 DSPAM="dspam-3.10.2"
 MYSQL="mysql-5.1.73"
 GEOIP="GeoIP-1.4.8"
-CLAMAV="clamav-0.98.7"
+CLAMAV="clamav-0.100.1"
 CHECKER="check-0.11.0"
 OPENSSL="openssl-1.0.2p"
 GOOGTAP="gtest-tap-listener-0.5"
@@ -36,8 +36,10 @@ M_LDFLAGS="$M_LDFLAGS"
 M_CPPFLAGS="$M_CPPFLAGS"
 M_CXXFLAGS="$M_CXXFLAGS"
 
-# If the above flags are modified, it's probably a good idea to also modified the name
-# of the output file.
+# The static archive. This file will only be created if specifically requested.
+M_AR="$M_PROJECT_ROOT/magmad.a"
+
+# The shared object output file. If the above flags are modified, it's a good idea to modified this file name.
 M_SO="$M_PROJECT_ROOT/magmad.so"
 
 # Calculate the relative path to various folders.
@@ -48,17 +50,18 @@ M_SOURCES="$M_ROOT/sources"
 M_OBJECTS="$M_ROOT/objects"
 M_CHECK="$M_ROOT/check"
 M_LOCAL="$M_ROOT/local"
+
 M_BNPATH="$M_LOCAL/bin/"
 M_LDPATH="$M_LOCAL/lib/"
 M_PKGPATH="$M_LDPATH/pkgconfig/"
 
-# Where the symbols.h file can be found
+# Where the symbols.h file can be found.
 M_SYM_FILE="$M_PROJECT_ROOT/src/providers/symbols.h"
 
-# The following symbols are not in defined in any of the public header files
+# The following symbols are not in defined in any of the public header files.
 M_SYM_SKIP="tcndbgetboth|my_once_free|lt_dlexit"
 
-# The paths searched for all of the included header files
+# The paths searched for all of the included header files.
 M_SYM_INCLUDES="-I$M_LOCAL/include -I$M_LOCAL/include/curl -I$M_LOCAL/include/dspam -I$M_LOCAL/include/freetype2 \
 -I$M_LOCAL/include/libmemcached -I$M_LOCAL/include/libxml2 -I$M_LOCAL/include/lzo -I$M_LOCAL/include/mysql \
 -I$M_LOCAL/include/opendkim -I$M_LOCAL/include/openssl -I$M_LOCAL/include/spf2"

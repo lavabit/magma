@@ -6017,7 +6017,7 @@
  
  BIGFILES=-D_FILE_OFFSET_BITS=64
 -CFLAGS+=-Wall -Winline $(BIGFILES) $(CPPFLAGS)
-+CFLAGS=-Wall -Winline $(BIGFILES) $(CFLAGS)
++CFLAGS=-Wall -Winline $(BIGFILES)
  
  # Where you want it installed when you do 'make install'
  PREFIX=/usr/local

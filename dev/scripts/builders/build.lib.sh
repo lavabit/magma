@@ -9,7 +9,7 @@
 
 # bzip2 -:-
 # checker -:-
-# clamav -:- zlib bzip libxml2
+# clamav -:- zlib bzip pcre libxml2
 # curl -:- zlib openssl
 # dkim -:- openssl
 # dspam -:- mysql
@@ -338,6 +338,73 @@ lzo() {
 
 	date +"Finished $1 at %r on %x"
 	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/lzo.txt"
+
+	return $?
+
+}
+
+pcre() {
+
+	if [[ $1 == "pcre-extract" ]]; then
+		rm -f "$M_LOGS/pcre.txt"; error
+	elif [[ $1 != "pcre-log" ]]; then
+		date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/pcre.txt"
+	fi
+
+	case "$1" in
+		pcre-extract)
+			extract $PCRE "pcre" &>> "$M_LOGS/pcre.txt"
+		;;
+		pcre-prep)
+			cd "$M_SOURCES/pcre"; error
+		;;
+		pcre-build)
+			cd "$M_SOURCES/pcre"; error
+			export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+			export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/pcre.txt"; error
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
+
+			make --jobs=4 &>> "$M_LOGS/pcre.txt"; error
+			make install &>> "$M_LOGS/pcre.txt"; error
+		;;
+		pcre-check)
+			cd "$M_SOURCES/pcre"; error
+			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
+			make check &>> "$M_LOGS/pcre.txt"; error
+		;;
+		pcre-check-full)
+			cd "$M_SOURCES/pcre"; error
+			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export PATH="$M_BNPATH:$PATH"; error
+			make check &>> "$M_LOGS/pcre.txt"; error
+		;;
+		pcre-clean)
+			cd "$M_SOURCES/pcre"; error
+			make clean &>> "$M_LOGS/pcre.txt"; error
+		;;
+		pcre-tail)
+			tail --lines=30 --follow=name --retry "$M_LOGS/pcre.txt"; error
+		;;
+		pcre-log)
+			cat "$M_LOGS/pcre.txt"; error
+		;;
+		pcre)
+			pcre "pcre-extract"
+			pcre "pcre-prep"
+			pcre "pcre-build"
+			pcre "pcre-check"
+		;;
+		*)
+			printf "\nUnrecognized request.\n"
+			exit 2
+		;;
+	esac
+
+	date +"Finished $1 at %r on %x"
+	date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/pcre.txt"
 
 	return $?
 
@@ -1248,6 +1315,7 @@ clamav() {
 			./configure  \
 				--enable-check --enable-static --enable-shared --disable-mempool --disable-llvm --disable-silent-rules \
 				--with-openssl="$M_LOCAL" --with-zlib="$M_LOCAL" --with-xml="$M_LOCAL" --with-libcurl="$M_LOCAL" \
+				--with-pcre="$M_LOCAL" \
 				--with-libbz2-prefix="$M_LOCAL" --with-libcheck-prefix="$M_LOCAL" \
 				--prefix="$M_LOCAL" --exec-prefix="$M_LOCAL" --libdir="$M_LOCAL/lib" &>> "$M_LOGS/clamav.txt"; error
 
@@ -2095,6 +2163,7 @@ combine() {
 	if [[ ! -f "$M_SOURCES/gd/src/.libs/libgd.a" ||
 		! -f "$M_SOURCES/png/.libs/libpng16.a" ||
 		! -f "$M_SOURCES/lzo/src/.libs/liblzo2.a" ||
+		! -f "$M_SOURCES/pcre/.libs/libpcre2-8.a" ||
 		! -f "$M_SOURCES/jpeg/.libs/libjpeg.a" ||
 		! -f "$M_SOURCES/spf2/src/libspf2/.libs/libspf2.a" ||
 		! -f "$M_SOURCES/curl/lib/.libs/libcurl.a" ||
@@ -2138,7 +2207,12 @@ combine() {
 	mkdir "$M_OBJECTS/lzo" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/lzo" &>> "$M_LOGS/combine.txt"; error
 	ar xv "$M_SOURCES/lzo/src/.libs/liblzo2.a" &>> "$M_LOGS/combine.txt"; error
-
+	
+	rm -rf "$M_OBJECTS/pcre" &>> "$M_LOGS/combine.txt"; error
+	mkdir "$M_OBJECTS/pcre" &>> "$M_LOGS/combine.txt"; error
+	cd "$M_OBJECTS/pcre" &>> "$M_LOGS/combine.txt"; error
+	ar xv "$M_SOURCES/pcre/.libs/libpcre2-8.a" &>> "$M_LOGS/combine.txt"; error
+	
 	rm -rf "$M_OBJECTS/jpeg" &>> "$M_LOGS/combine.txt"; error
 	mkdir "$M_OBJECTS/jpeg" &>> "$M_LOGS/combine.txt"; error
 	cd "$M_OBJECTS/jpeg" &>> "$M_LOGS/combine.txt"; error
@@ -2251,11 +2325,11 @@ combine() {
 			rm -f "$M_AR"; error
 			ar rs "$M_AR" \
 				"$M_OBJECTS"/lzo/*.o "$M_OBJECTS"/zlib/*.o \
-				"$M_OBJECTS"/bzip2/*.o "$M_OBJECTS"/geoip/*.o \
+				"$M_OBJECTS"/bzip2/*.o "$M_OBJECTS"/pcre/*.o \
 				"$M_OBJECTS"/clamav/*.o "$M_OBJECTS"/clamav/unrar/*.o \
 				"$M_OBJECTS"/clamav/unrar_iface/*.o "$M_OBJECTS"/clamav/mspack/*.o \
 			 	"$M_OBJECTS"/tokyocabinet/*.o "$M_OBJECTS"/crypto/*.o "$M_OBJECTS"/ssl/*.o \
-				"$M_OBJECTS"/mysql/*.o "$M_OBJECTS"/xml2/*.o "$M_OBJECTS"/spf2/*.o \
+				"$M_OBJECTS"/mysql/*.o "$M_OBJECTS"/xml2/*.o "$M_OBJECTS"/spf2/*.o "$M_OBJECTS"/geoip/*.o \
 				"$M_OBJECTS"/curl/*.o "$M_OBJECTS"/memcached/*.o "$M_OBJECTS"/utf8proc/*.o \
 				"$M_OBJECTS"/png/*.o "$M_OBJECTS"/jpeg/*.o "$M_OBJECTS"/freetype/*.o "$M_OBJECTS"/gd/*.o \
 				"$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o &>> "$M_LOGS/combine.txt"; error
@@ -2265,11 +2339,11 @@ combine() {
 			rm -f "$M_SO"
 			gcc -Wl,-Bsymbolic -g3 -fPIC -rdynamic -shared -o "$M_SO" \
 				"$M_OBJECTS"/lzo/*.o "$M_OBJECTS"/zlib/*.o \
-				"$M_OBJECTS"/bzip2/*.o "$M_OBJECTS"/geoip/*.o \
+				"$M_OBJECTS"/bzip2/*.o "$M_OBJECTS"/pcre/*.o \
 				"$M_OBJECTS"/clamav/*.o "$M_OBJECTS"/clamav/unrar/*.o \
 				"$M_OBJECTS"/clamav/unrar_iface/*.o "$M_OBJECTS"/clamav/mspack/*.o \
 			 	"$M_OBJECTS"/tokyocabinet/*.o "$M_OBJECTS"/crypto/*.o "$M_OBJECTS"/ssl/*.o \
-				"$M_OBJECTS"/mysql/*.o "$M_OBJECTS"/xml2/*.o "$M_OBJECTS"/spf2/*.o \
+				"$M_OBJECTS"/mysql/*.o "$M_OBJECTS"/xml2/*.o "$M_OBJECTS"/spf2/*.o "$M_OBJECTS"/geoip/*.o \
 				"$M_OBJECTS"/curl/*.o "$M_OBJECTS"/memcached/*.o "$M_OBJECTS"/utf8proc/*.o \
 				"$M_OBJECTS"/png/*.o "$M_OBJECTS"/jpeg/*.o "$M_OBJECTS"/freetype/*.o "$M_OBJECTS"/gd/*.o \
 				"$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o \
@@ -2418,6 +2492,8 @@ combo() {
 		wait $OPENSSL_PID; error
 		($M_BUILD "mysql-$1") & MYSQL_PID=$!
 		wait $MYSQL_PID; error
+		($M_BUILD "pcre-$1") & PCRE_PID=$!
+		wait $PCRE_PID; error
 		($M_BUILD "dspam-$1") & DSPAM_PID=$!
 		wait $DSPAM_PID; error
 		($M_BUILD "curl-$1") & CURL_PID=$!
@@ -2469,6 +2545,7 @@ combo() {
 		($M_BUILD "gd-$1") & GD_PID=$!
 		($M_BUILD "png-$1") & PNG_PID=$!
 		($M_BUILD "lzo-$1") & LZO_PID=$!
+		($M_BUILD "pcre-$1") & PCRE_PID=$!
 		($M_BUILD "jpeg-$1") & JPEG_PID=$!
 		($M_BUILD "spf2-$1") & SPF2_PID=$!
 		($M_BUILD "xml2-$1") & XML2_PID=$!
@@ -2490,6 +2567,7 @@ combo() {
 		wait $GD_PID; error
 		wait $PNG_PID; error
 		wait $LZO_PID; error
+		wait $PCRE_PID; error
 		wait $JPEG_PID; error
 		wait $CURL_PID; error
 		wait $SPF2_PID; error
@@ -2522,7 +2600,7 @@ follow() {
 	tail -n 0 -F "$M_LOGS/clamav.txt" "$M_LOGS/curl.txt" "$M_LOGS/dspam.txt" "$M_LOGS/jansson.txt" "$M_LOGS/memcached.txt" "$M_LOGS/openssl.txt" \
 		"$M_LOGS/tokyocabinet.txt" "$M_LOGS/zlib.txt" "$M_LOGS/bzip2.txt" "$M_LOGS/dkim.txt" "$M_LOGS/geoip.txt" "$M_LOGS/lzo.txt" \
 		"$M_LOGS/mysql.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt" \
-		"$M_LOGS/utf8proc.txt" "$M_LOGS/checker.txt"
+		"$M_LOGS/utf8proc.txt" "$M_LOGS/checker.txt" "$M_LOGS/pcre.txt"
 }
 
 log() {
@@ -2530,7 +2608,7 @@ log() {
 	cat "$M_LOGS/clamav.txt" "$M_LOGS/curl.txt" "$M_LOGS/dspam.txt" "$M_LOGS/jansson.txt" "$M_LOGS/memcached.txt" "$M_LOGS/openssl.txt" \
 		"$M_LOGS/tokyocabinet.txt" "$M_LOGS/zlib.txt" "$M_LOGS/bzip2.txt" "$M_LOGS/dkim.txt" "$M_LOGS/geoip.txt" "$M_LOGS/lzo.txt" \
 		"$M_LOGS/mysql.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt" \
-		"$M_LOGS/utf8proc.txt" "$M_LOGS/checker.txt"
+		"$M_LOGS/utf8proc.txt" "$M_LOGS/checker.txt" "$M_LOGS/pcre.txt"
 }
 
 advance() {
@@ -2612,6 +2690,7 @@ elif [[ $1 == "clean" ]]; then combo "$1"
 elif [[ $1 =~ "gd" ]]; then gd "$1"
 elif [[ $1 =~ "png" ]]; then png "$1"
 elif [[ $1 =~ "lzo" ]]; then lzo "$1"
+elif [[ $1 =~ "pcre" ]]; then pcre "$1"
 elif [[ $1 =~ "jpeg" ]]; then jpeg "$1"
 elif [[ $1 =~ "curl" ]]; then curl "$1"
 elif [[ $1 =~ "spf2" ]]; then spf2 "$1"
@@ -2650,7 +2729,7 @@ elif [[ $1 == "tail" ]]; then follow
 else
 	echo ""
 	echo " Libraries"
-	echo $"  `basename $0` {gd|png|lzo|jpeg|curl|spf2|xml2|dkim|zlib|bzip2|dspam|mysql|geoip|clamav|checker|openssl|freetype|utf8proc|memcached|tokyocabinet} and/or "
+	echo $"  `basename $0` {gd|png|lzo|pcre|jpeg|curl|spf2|xml2|dkim|zlib|bzip2|dspam|mysql|geoip|clamav|checker|openssl|freetype|utf8proc|memcached|tokyocabinet} and/or "
 	echo ""
 	echo " Stages (which may be combined via a dash with the above)"
 	echo $"  `basename $0` {extract|prep|build|check|check-full|clean|tail|log} or "

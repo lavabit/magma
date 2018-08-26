@@ -974,6 +974,7 @@ bzip2() {
 			# These patches are a mess, but were painfully ported from the Debian bzip2 repository. 
 			cat "$M_PATCHES/bzip2/"man_formatting_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
 			cat "$M_PATCHES/bzip2/"make_modernize_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+			cat "$M_PATCHES/bzip2/"man_path_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
 		;;
 		bzip2-build)
 			cd "$M_SOURCES/bzip2"; error
@@ -1588,7 +1589,7 @@ openssl() {
 			fi
 			
 			./config \
-				-d shared zlib no-asm --openssldir="$M_LOCAL" --libdir="lib" \
+				-d shared zlib no-asm --prefix="$M_LOCAL" --openssldir="share" --libdir="lib" \
 				-I"$M_SOURCES/include/" -O $CONFIGOPTS -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
 				-L"$M_SOURCES/lib/" -Wl,-rpath,"$M_SOURCES/lib/" &>> "$M_LOGS/openssl.txt"; error
 

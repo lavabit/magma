@@ -16,6 +16,7 @@ MAGMA_DIST=`pwd`
 # self modifying code --smc-check=[none,stack,all]
 
 valgrind --tool=helgrind \
+--log-fd=1 \
 --trace-children=yes \
 --child-silent-after-fork=yes \
 --run-libc-freeres=yes \

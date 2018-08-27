@@ -17,6 +17,7 @@ MAGMA_DIST=`pwd`
 #
 
 valgrind --tool=massif \
+--log-fd=1 \
 --trace-children=yes \
 --child-silent-after-fork=yes \
 --run-libc-freeres=yes \

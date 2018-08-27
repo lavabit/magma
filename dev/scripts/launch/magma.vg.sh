@@ -17,6 +17,7 @@ MAGMA_DIST=`pwd`
 # track file descriptors --track-fds=yes
 
 valgrind --tool=memcheck \
+--log-fd=1 \
 --trace-children=yes \
 --child-silent-after-fork=yes \
 --run-libc-freeres=yes \

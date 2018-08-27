@@ -19,6 +19,7 @@ MAGMA_DIST=`pwd`
 #### Still not tracking forks/threads properly!!
 
 valgrind --tool=callgrind \
+--log-fd=1 \
 --trace-children=yes \
 --demangle=yes \
 --num-callers=50 \

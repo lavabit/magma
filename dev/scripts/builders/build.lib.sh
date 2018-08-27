@@ -1169,8 +1169,10 @@ mysql() {
 		;;
 		mysql-check)
 			cd "$M_SOURCES/mysql"; error
+			
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
 			export PATH="$M_BNPATH:$PATH"; error
+	
 			make --jobs=4 test-fast &>> "$M_LOGS/mysql.txt"; error
 		;;
 		mysql-check-full)
@@ -1390,8 +1392,9 @@ clamav() {
 			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE $M_CXXFLAGS"
 			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE $M_CPPFLAGS"
 
+			# --disable-mempool
 			./configure  \
-				--enable-check --enable-static --enable-shared --disable-mempool --disable-llvm --disable-silent-rules \
+				--enable-check --enable-static --enable-shared --disable-llvm --disable-silent-rules \
 				--with-openssl="$M_LOCAL" --with-zlib="$M_LOCAL" --with-xml="$M_LOCAL" --with-libcurl="$M_LOCAL" \
 				--with-pcre="$M_LOCAL" \
 				--with-libbz2-prefix="$M_LOCAL" --with-libcheck-prefix="$M_LOCAL" \
@@ -1505,18 +1508,22 @@ checker() {
 			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
 
 			autoreconf --install &>> "$M_LOGS/checker.txt"; error
-			./configure --disable-subunit --prefix="$M_LOCAL" &>> "$M_LOGS/checker.txt"; error
+			./configure --disable-subunit --enable-timer-replacement --enable-snprintf-replacement \
+				--enable-fork --enable-timeout-tests --prefix="$M_LOCAL" &>> "$M_LOGS/checker.txt"; error
 			
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
 			make &>> "$M_LOGS/checker.txt"; error
 			make install &>> "$M_LOGS/checker.txt"; error
+
 		;;
 		checker-check)
 			cd "$M_SOURCES/checker"; error
+			
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
 			export PATH="$M_BNPATH:$PATH"; error
-			make check &>> "$M_LOGS/checker.txt"; error
+			
+			make --jobs=4 check &>> "$M_LOGS/checker.txt"; error
 		;;
 		checker-check-full)
 			cd "$M_SOURCES/checker"; error

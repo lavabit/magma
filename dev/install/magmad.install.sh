@@ -120,8 +120,8 @@ binlog_cache_size = 64M
 binlog-format = mixed
 innodb_buffer_pool_size = 16G
 innodb_log_buffer_size = 16M
-innodb_log_file_size = 4G
-innodb_log_files_in_group = 4
+innodb_log_file_size = 1G
+innodb_log_files_in_group = 2
 join_buffer_size = 8M
 log-bin=mysql-bin
 long_query_time = 4
@@ -139,9 +139,6 @@ symbolic-links = 0
 thread_cache_size = 64
 tmp_table_size = 64M
 expire_logs_days = 14
-
-general_log_file = /var/log/mysqld-general.log
-slow_query_log_file = /var/log/mysqld-slow.log
 
 [mysqld_safe]
 log-error = /var/log/mysqld-error.log

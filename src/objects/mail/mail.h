@@ -128,7 +128,7 @@ size_t        mail_discover_insertion_point(stringer_t *message, stringer_t *par
 int_t         mail_discover_type(stringer_t *header);
 stringer_t *  mail_extract_tag(chr_t *stream, size_t length);
 stringer_t *  mail_get_boundary(stringer_t *header);
-placer_t *    mail_get_chunk(placer_t *result, stringer_t *message, stringer_t *boundary, int_t chunk);
+placer_t      mail_get_chunk(stringer_t *message, stringer_t *boundary, int_t chunk, bool_t *last);
 stringer_t *  mail_insert_chunk_base64(server_t *server, stringer_t *message, stringer_t *part, uint64_t signum, uint64_t sigkey, int_t disposition, int_t type, int_t encoding);
 stringer_t *  mail_insert_chunk_text(server_t *server, stringer_t *message, stringer_t *part, uint64_t signum, uint64_t sigkey, int_t disposition, int_t type, int_t encoding);
 int_t         mail_modify_part(server_t *server, mail_message_t *message, stringer_t *part, uint64_t signum, uint64_t sigkey, int_t disposition, int_t recursion);

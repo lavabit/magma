@@ -190,7 +190,7 @@ ifneq ($(strip $(MAGMA_REPO)),1)
 	MAGMA_COMMIT				:= "NONE"
 else
 	# Add the --since='YYYY/MM/DD' or --since='TAG' to the git log command below to reset the patch version to 0.
-	MAGMA_VERSION				:= $(PACKAGE_VERSION).$(shell git log  --since='v7.0.0' --format='%H' | wc -l)
+	MAGMA_VERSION				:= $(PACKAGE_VERSION).$(shell git log `git log -n 1 v7.0.0 --pretty='%H'`..`git log --pretty='%H'` --format='%H' | wc -l)
 	MAGMA_COMMIT				:= $(shell git log --format="%H" -n 1 | cut -c33-40)
 endif
 

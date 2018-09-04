@@ -150,6 +150,9 @@ stringer_t * st_merge_opts(uint32_t opts, chr_t *format, ...) {
 		}
 	}
 
+	// If the output isn't going to be zero, we'll need to add an extra byte for the terminating NULL.
+	if (length) length++;
+
 	va_end(list);
 
 	// Allocate a buffer to hold the output.
@@ -202,6 +205,17 @@ stringer_t * st_merge_opts(uint32_t opts, chr_t *format, ...) {
 	}
 
 	va_end(list);
+
+	// Write a terminating NULL byte to the output buffer without incrementing the variable. As a result
+	// the terminator won't get counted as part of the length.
+	if (remaining) *out = '\0';
+
+#ifndef MAGMA_PEDANTIC
+	else {
+		log_pedantic("The number of bytes written exceeded the expected length, which prevented a terminating " \
+			"NULL byte from being written to the output buffer.");
+	}
+#endif
 
 	if (st_valid_tracked(opts)) {
 		st_length_set(result, out - st_char_get(result));

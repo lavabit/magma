@@ -147,7 +147,6 @@ stringer_t * st_append_opts(size_t align, stringer_t *s, stringer_t *append);
 int_t st_append_out(size_t align, stringer_t **s, stringer_t *append);
 
 /// shortcuts.c
-placer_t * pl_init_by_addr(placer_t *result, void *data, size_t len);
 chr_t *    pl_char_get(placer_t place);
 void *     pl_data_get(placer_t place);
 bool_t     pl_empty(placer_t place);

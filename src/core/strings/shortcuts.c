@@ -17,34 +17,6 @@ placer_t pl_null(void) {
 }
 
 /**
- * @brief        Initialize an existing placer that wraps a data buffer of given
- *               size.
- * @param result a non-null pointer to the placer that will store the result
- * @param data   a pointer to the data to be wrapped.
- * @param len    the length, in bytes, of the data.
- * @return       NULL on error or a pointer to a placer referencing the
- *               specified data.
- */
-placer_t *pl_init_by_addr(placer_t *result, void *data, size_t len) {
-
-	if (result == NULL) {
-		log_error("NULL result pointer passed to pl_init_by_addr.");
-		return NULL;
-	}
-
-	if (data == NULL) {
-		log_error("NULL data pointer passed to pl_init_by_addr");
-		return NULL;
-	}
-
-	result->opts = PLACER_T | JOINTED | STACK | FOREIGNDATA;
-	result->data = data;
-	result->length = len;
-
-	return result;
-}
-
-/**
  * @brief	Return a placer wrapping a data buffer of given size.
  * @param	data	a pointer to the data to be wrapped.
  * @param	len		the length, in bytes, of the data.

@@ -357,7 +357,7 @@ bool_t config_validate_settings(void) {
 			"short but invalid passwords.", magma.secure.minimum_password_length);
 	}
 	else if (magma.secure.minimum_password_length >= 20) {
-		log_warn("magma.secure.minimum_password_length is set to %ui any may prove problematic.",
+		log_warn("magma.secure.minimum_password_length is set to %u and such a high value may cause problems.",
 			magma.secure.minimum_password_length);
 	}
 
@@ -915,9 +915,13 @@ bool_t config_load_database_settings(void) {
 			// Otherwise if we still haven't matched a value, and it's not one of the valid keys that aren't stored in the
 			// global configuration, we print the error and exit.
 			else if (st_cmp_ci_eq(name, CONSTANT("magma.version"))) {
-				log_critical("%.*s is not a valid setting.", st_length_int(name), st_char_get(name));
-				res_table_free(database_pairs);
-				return false;
+				log_warn("%.*s is not a valid setting.", st_length_int(name), st_char_get(name));
+
+			  // Uncomment below to switch from giving out warnings over unrecognized parameters, to exiting. Be sure to
+			  // update the bottom of config_load_cmdline_settings() as well.
+				// log_critical("%.*s is not a valid setting.", st_length_int(name), st_char_get(name));
+				// res_table_free(database_pairs);
+				// return false;
 			}
 
 	}
@@ -1014,10 +1018,14 @@ bool_t config_load_cmdline_settings(void) {
 		}
 
 		else {
-			log_critical("%.*s is not a valid setting.", st_length_int(name.val.st), st_char_get(name.val.st));
-			inx_cursor_free(cursor);
-			nvp_free(config_pairs);
-			return false;
+			log_warn("%.*s is not a valid setting.", st_length_int(name.val.st), st_char_get(name.val.st));
+
+			// Uncomment to switch from giving out warnings over unrecognized parameters, to exiting. Be sure to
+			// update the bottom of config_load_database_settings() as well.
+			// log_critical("%.*s is not a valid setting.", st_length_int(name.val.st), st_char_get(name.val.st));
+			// inx_cursor_free(cursor);
+			// nvp_free(config_pairs);
+			// return false;
 		}
 	}
 

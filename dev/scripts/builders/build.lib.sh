@@ -2819,7 +2819,7 @@ all() {
 		$M_BUILD "check"
 	fi
 	
-	date +"%nFinished at %r on %x%n"
+	date +"Finished at %r on %x%n"
 	date +"Finished at %r on %x" &>> "$M_LOGS/build.txt"
 }
 

@@ -374,6 +374,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 		return false;
 	}
 
+	mark_point();
+
 	/// Test config.edit 		: {"id":2,"method":"config.edit","params":{<rand_strs[0]>:<rand_strs[1]>}}"
 	/// Expected Response 	: {"jsonrpc":"2.0","result":{"config.edit":"success"},"id":2}
 
@@ -431,6 +433,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test config.load		: {"id":3,"method":"config.load"}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{<rand_strs[0]>:{"value":<rand_strs[1]>, "flags":[]}, ...}, "id":3}
 
@@ -470,6 +474,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	// Test config.edit		: {"id":4,"method":"config.edit","params":{<rand_strs[0]>:null}}"
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"config.edit":"success"},"id":4}
@@ -518,6 +524,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test config.load		: {"id":5,"method":"config.load"}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{ there should be no key matching <rand_strs[0]> }, "id":5}
 
@@ -548,6 +556,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	// Test config.edit		: {"id":6,"method":"config.edit","params":{<rand_strs[0]>:<rand_strs[1]>}}"
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"config.edit":"success"},"id":6}
@@ -606,6 +616,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test folders.add		: {"id":7,"method":"folders.add","params":{"context":"contacts","name:<rand_strs[0]>}}"
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"folderID":<folder_ids[0]>},"id":7}
 
@@ -650,6 +662,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	// Test folders.list	: {"id":8,"method":"folders.list","params":{"context":"contacts"}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":[{"context":"contacts","folderID":<folder_ids[0],"name":<rand_strs[0]>}], "id":8}
@@ -703,6 +717,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test contacts.add	: {"id\":9,"method":"contacts.add","params":{"folderID":<folder_ids[0]>,
   //												"contact":{"name":"<rand_strs[0]>", "email":"<rand_strs[1]>"}}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"contactID":<contact_ids[0]>},"id":9}
@@ -751,6 +767,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Test contacts.copy	: {"id":10,"method":"contacts.copy","params":{"sourceFolderID":<folder_ids[0]>,
 	//												"targetFolderID":folder_ids[0], "contactID":<contact_ids[0]>}}
@@ -759,7 +777,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
   // Set the current command string.
   chr_command = "{\"id\":10,\"method\":\"contacts.copy\",\"params\":{\"sourceFolderID\":%u, \"targetFolderID\":%u, \"contactID\":%u}}";
-
 
 	// Construct the command string.
 	if (!(st_sprint(command, chr_command, folder_ids[0], folder_ids[0], contact_ids[0]))) {
@@ -792,6 +809,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	// Test contacts.list	: {"id":11,"method":"contacts.list","params":{"folderID":%u}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":[{"contactID":<contact_ids[0]>,"name":<rand_strs[0]>,email:<rand_strs[1]>},
@@ -859,6 +878,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test contacts.edit	: {"id":12,"method":"contacts.edit","params":{"folderID":<folder_ids[0]>, "contactID":<contact_ids[0]>,
 	//												"contact":{"name":"<rand_strs[0]>","email":"rand_strs[1]"}}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"contacts.edit":"success"},"id":12}
@@ -917,6 +938,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test contacts.list	: {"id":13,"method\":"contacts.list","params":{"folderID":<folder_ids[0]>, "contactID":<contact_ids[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"contactID":<contact_ids[0]>, "name":{"value":<rand_strs[0]>, ...},
 	//												"email":{"value":<rand_strs[1]>}}, "id":13}
@@ -967,6 +990,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	/// LOW: This test triggers a bug in the contacts code. "Invalid String Options" at quit.
 	// Test contact.edit	: {"id":14,"method":"contacts.edit","params":{"folderID":<folder_ids[0]>,"contactID":contact_ids[1],
@@ -1029,6 +1054,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test contacts.load	: {"id":15,"method":"contacts.load","params":{"folderID":<folder_ids[0]>, "contactID":<contact_ids[1]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"contactID":<contact_ids[1]>, "name":{"value":<rand_strs[0]>, ...},
 	//							"email":{"value":<rand_strs[1]>, ...}, ... (for phone and notes)...}, "id":15}
@@ -1085,6 +1112,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test folders.add		: {"id":16,"method":"folders.add","params":{"context":"contacts","name:<rand_strs[0]>}}"
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"folderID":<folder_ids[2]>},"id":16}
 
@@ -1131,6 +1160,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	// Test contacts.move	: {"id":17,"method":"contacts.move","params":{"contactID":contact_ids[0], "sourceFolderID":<folder_ids[0]>,
 	//												"targetFolderID":<folder_ids[2]}}
@@ -1181,6 +1212,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	// Test contacts.list	: {"id":18,"method\":"contacts.list","params":{"folderID":<folder_ids[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{ { no object matching contact_ids[0] }, ...}, "id":18}
@@ -1240,6 +1273,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test contacts.list	: {"id":19,"method\":"contacts.list","params":{"folderID":<folder_ids[2]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{ { an object matching contact_ids[0] }, ...}, "id":19}
 
@@ -1298,6 +1333,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test contacts.remove	: {"id":20,"method":"contacts.remove","params":{"folderID":<folder_ids[2]>, "contactID":<contact_ids[0]>}}
 	// Expected Response 		: {"jsonrpc":"2.0","result":{"contacts.remove":"success"},"id":19}
 
@@ -1347,6 +1384,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test contacts.remove	: {"id":21,"method":"contacts.remove","params":{"folderID":<folder_ids[0]>, "contactID":<contact_ids[1]>}}
 	// Expected Response 		: {"jsonrpc":"2.0","result":{"contacts.remove":"success"},"id":19}
 
@@ -1395,6 +1434,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	// Test contacts.list	: {"id":22,"method":"contacts.list","params":{"folderID":<folder_ids[2]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":[{ no objects matching contact_ids[0] }, ...],"id":22}
@@ -1455,6 +1496,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test folders.remove	: {"id":23,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[2]>}}
 	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":23}
 
@@ -1503,6 +1546,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	// Test folders.remove	: {"id":24,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[0]>}}",
 	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":24}
@@ -1555,6 +1600,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test cookies				: {"id":25,"method":"cookies"}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"cookies":"enabled"},"id":25}
 
@@ -1593,6 +1640,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	// Test config.edit		: {"id":26,"method":"alert.list"}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"cookies":"enabled"},"id":26}
@@ -1634,6 +1683,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	// Test alert.acknowledge	: {"id":27,"method":"alert.acknowledge","params":[<alert_ids[0]>]}
 	// Expected Response 			: {"jsonrpc":"2.0","result":{"alert.acknowledge":"success"},"id":24}
@@ -1688,6 +1739,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test alert.list		: {"id":28,"method":"alert.list"}
 	// Expected Response 	: {"jsonrpc":"2.0","result":[ {if alert_ids[0] was set previously, expect to not find a matching alert},
 	//												...], "id":26}
@@ -1740,6 +1793,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test folders.list	: "{\"id\":29,\"method\":\"folders.list\",\"params\":{\"context\":\"mail\"}}",
 	// Expected Response 	: {"jsonrpc":"2.0","result"{ ... },"id":29}
 
@@ -1770,6 +1825,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	/// LOW: The following two checks to not work. When submitting "settings" or "help" as the "context" value
 	///			for the method "folders.list", an error is thrown and the message "Context not supported" is
@@ -1808,6 +1865,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test folders.list	: "{\"id\":31,\"method\":\"folders.list\",\"params\":{\"context\":\"help\"}}",
 	// Expected Response 	: {"jsonrpc":"2.0","result"{ ... },"id":31}
 
@@ -1838,6 +1897,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	*/
 
@@ -1888,6 +1949,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test folders.add		: {"id":33,"method":"folders.add","params":{"context":"mail","parentID":<folder_ids[0]>,
 	//						 					"name":<rand_strs[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"folderID":<folder_ids[1]>},"id":33}
@@ -1936,6 +1999,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test folders.add		: {"id":34,"method":"folders.add","params":{"context":"mail","parentID":<folder_ids[1]>,
 	//											"name":<rand_strs[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"folderID":<folder_ids[2]>},"id":34}
@@ -1983,6 +2048,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	// Test folders.rename	: {"id":35,"method":"folders.rename","params":{"context":"mail","folderID": <folder_ids[0]>,
 	//												"name":<rand_strs[0]>}}
@@ -2042,6 +2109,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test folders.rename	: {"id":36,"method":"folders.rename","params":{"context":"mail","folderID": <folder_ids[1]>,
 	//												"name":<rand_strs[0]>}}
 	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.rename":"success"},"id":36}
@@ -2100,6 +2169,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test folders.remove	: {"id":37,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[0]>}}
 	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":37}
 
@@ -2148,6 +2219,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	// Test folders.remove	: {"id":38,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[1]>}}
 	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":38}
@@ -2198,6 +2271,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test folders.remove	: {"id":39,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[2]>}}
 	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":39}
 
@@ -2247,6 +2322,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test folders.remove	: {"id":40,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[4]>}}
 	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":40}
 
@@ -2284,6 +2361,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	// Test folders.add		: {"id":42,"method":"folders.add","params":{"context":"mail","name":<rand_strs[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"folderID":<folder_ids[3]>},"id":42}
@@ -2330,6 +2409,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	// Test messages.copy	: {"id":43,"method":"messages.copy","params":{"messageIDs":[<message_ids[0]>],"sourceFolderID":<folder_ids[0]>,
 	//											"targetFolderID":<folder_ids[3]>}}",
@@ -2390,6 +2471,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test messages.copy	: {"id":44,"method":"messages.copy","params":{"messageIDs":[<message_ids[0]>],"sourceFolderID":<folder_ids[0]>,
 	//											"targetFolderID":<folder_ids[3]>}}",
 	// Expected Response 	: {"jsonrpc":"2.0","result":[],"id":44}
@@ -2448,6 +2531,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test folders.remove	: {"id":45,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[3]>}}",
 	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":43}
 
@@ -2497,6 +2582,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test folders.add		: {"id":46,"method":"folders.add","params":{"context":"mail","name":<rand_strs[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"folderID":<folder_ids[0]>},"id":46}
 
@@ -2542,6 +2629,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	/// LOW: This method returns "error":{"code":-32602,"message":"Invalid method parameters."}...
 /*
@@ -2593,6 +2682,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 */
 
 	// Test messages.copy	: {"id":48,"method":"messages.copy","params":{"messageIDs":[<message_ids[0]>],"sourceFolderID":<folder_ids[1]>,
@@ -2653,6 +2744,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test folders.remove	: {"id":49,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[0]>}}",
 	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":49}
 
@@ -2701,6 +2794,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	// Test messages.flag	: {"id":50,"method":"messages.flag","params":{"action":"add","flags":["flagged"],
 	//											"messageIDs":[<message_ids[0]>], "folderID":<folder_ids[0]>}}
@@ -2759,6 +2854,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	/// LOW: This api method fails with "error":{"code":10102,"message":"Invalid tag reference."}...
 /*
@@ -2819,6 +2916,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 */
 	// Test messages.flag	: {"id":52,"method":"messages.flag","params":{"action":"list","flags":[], "messageIDs":[,message_ids[0]>],
 	//											"folderID":<folder_ids[0]>}}
@@ -2878,6 +2977,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	/// LOW: This method returns "error":{"code":-32602,"message":"Invalid method parameters."}...
 /*
 	// Test messages.tags	: {"id":53,"method":"messages.tags","params":{"action":"list","messageIDs":[%u], "folderID":<folder_ids[0]>}}
@@ -2926,6 +3027,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 */
 
 	// Test messages.list	: {"id":54,"method":"messages.list","params":{"folderID":<folder_ids[0]>}}",
@@ -2975,6 +3078,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test messages.list	: {"id":55,"method":"messages.list","params":{"context":"mail","folderID":<folder_ids[0]>}}",
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"messages.flag":"success"},"id":55}
 
@@ -3020,6 +3125,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	// Test folders.add		: {"id":56,"method":"folders.add","params":{"context":"mail","name":<rand_strs[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"folderID":<folder_ids[0]>},"id":56}
@@ -3068,13 +3175,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test messages.move	: {"id":57,"method":"messages.move","params":{"messageIDs":[<message_ids[0]>],"sourceFolderID":<folder_ids[0]>,
 	//											"targetFolderID":<folder_ids[1]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"messages.move":"success"},"id":55}
 
   // Set the current command string.
   chr_command = "{\"id\":57,\"method\":\"messages.move\",\"params\":{\"messageIDs\":[%u], \"sourceFolderID\":%u, \"targetFolderID\":%u}}";
-
 
 	// Retrieve the folderID of Inbox and a messageID.
 	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
@@ -3127,6 +3235,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test messages.remove	: {"id":58,"method":"messages.remove","params":{"folderID":%u,"messageIDs":[%u]}}
 	// Expected Response 		: {"jsonrpc":"2.0","result":{"messages.remove":"success"},"id":58}
 
@@ -3176,6 +3286,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json = NULL;
 
+	mark_point();
+
 	// Test folders.remove	: {"id":59,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[0]>}}",
 	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":59}
 
@@ -3224,6 +3336,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	json_decref_d(json_objs[0]);
 
 	json = NULL;
+
+	mark_point();
 
 	// Test logout				: {"id":60,"method":"logout"}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"logout":"success},"id":60}

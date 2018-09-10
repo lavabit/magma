@@ -282,6 +282,11 @@ int main(int argc, char *argv[]) {
 	// During development, we flush the cache system before running the unit tests.
 	cache_flush();
 
+	// A number of the test accounts, and values used involve using passwords of 8 characteres, and will fail if the
+	// minimum valid password length exceeds 8. Which is why we check to see if the value is indeed above 8, and if so
+	// reset it to 8 for the purpose of this test.
+	if (magma.secure.minimum_password_length > 8) magma.secure.minimum_password_length = 8;
+
 	// Unit Test Config
 	sr = srunner_create(suite_check_magma());
 

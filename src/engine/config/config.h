@@ -102,8 +102,6 @@
 #define CONFIG_CHECK_FILE_READWRITE(x)	CONFIG_CHECK_READWRITE(x,"Filename")
 #define CONFIG_CHECK_DIR_READWRITE(x)	CONFIG_CHECK_READWRITE(x,"Directory")
 
-
-
 #include "cache/cache.h"
 #include "relay/relay.h"
 #include "servers/servers.h"

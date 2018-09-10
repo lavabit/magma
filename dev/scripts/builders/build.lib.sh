@@ -62,6 +62,14 @@ fi
 # Read in the build parameters.
 . "$M_PROJECT_ROOT/dev/scripts/builders/build.lib.params.sh"
 
+# This undocumented environment variables makes it easy to use the "all" command line option, but skip still the 
+# normal dependency checks, this making the build process faster. The QUICK option is undocumented, because in general, 
+# developers interacting directly with the build.lib.sh script, should be running the "check" step to ensure
+# they have a valid, and properly configured, and functional platform capable of running magma.
+if [ -z "$QUICK" ] || [ "$QUICK" != "yes" ]; then
+	QUICK="no"	
+fi
+
 error() {
 	if [ $? -ne 0 ]; then
 		tput sgr0; tput setaf 1
@@ -2305,7 +2313,7 @@ combine() {
 		! -f "$M_SOURCES/tokyocabinet/libtokyocabinet.a" ]]; then
 		printf " a required dependency is missing. \n\nCreate the dependencies by running \"build.lib.sh all\" and then try again."
 		tput sgr0; tput setaf 1
-		date +"%n%nFinished $COMMAND failed at %r on %x%n%n"
+		date +"%n%nFinished $COMMAND failed at %r on %x%n"
 		tput sgr0
 		exit 1
 	fi
@@ -2450,7 +2458,7 @@ combine() {
 				"$M_OBJECTS"/curl/*.o "$M_OBJECTS"/memcached/*.o "$M_OBJECTS"/utf8proc/*.o \
 				"$M_OBJECTS"/png/*.o "$M_OBJECTS"/jpeg/*.o "$M_OBJECTS"/freetype/*.o "$M_OBJECTS"/gd/*.o \
 				"$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o &>> "$M_LOGS/combine.txt"; error
-			date +"%n%nFinished creating the static archive at %r on %x%n%n"
+			date +"%n%nFinished creating the static archive at %r on %x%n"
 		;;
 		*)
 			rm -f "$M_SO"
@@ -2465,16 +2473,22 @@ combine() {
 				"$M_OBJECTS"/png/*.o "$M_OBJECTS"/jpeg/*.o "$M_OBJECTS"/freetype/*.o "$M_OBJECTS"/gd/*.o \
 				"$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o \
 				-lm -lrt -ldl -lnsl -lresolv -lpthread -lstdc++ &>> "$M_LOGS/combine.txt"; error
-			date +"%n%nFinished creating the shared object at %r on %x%n%n"
+			date +"%n%nFinished creating the shared object at %r on %x%n"
 		;;
 	esac
+
+	if [ "$MASTER" == "yes" ]; then
+		echo ""
+	fi
 
 	exit 0
 }
 
 load() {
 
-	echo ""
+	if [ "$MASTER" == "yes" ]; then
+		echo ""
+	fi
 	printf "Checking the shared object... "
 
 	if [ ! -f "$M_SO" ]; then
@@ -2557,7 +2571,10 @@ load() {
 
 keys() {
 
-	printf "Fixing the permissions for the DIME, DKIM and TLS keys in the magma sandbox...\n\n"
+	printf "Fixing the permissions for the DIME, DKIM and TLS keys in the magma sandbox...\n"
+	if [ "$MASTER" == "yes" ]; then
+		echo ""
+	fi
 
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/tls.localhost.localdomain.pem"; error
 	chmod 600 "$M_PROJECT_ROOT/sandbox/etc/dkim.localhost.localdomain.pem"; error
@@ -2796,7 +2813,12 @@ all() {
 	$M_BUILD "combine"; error
 	$M_BUILD "load"; error
 	$M_BUILD "keys"; error
-	$M_BUILD "check"
+	
+	# Quick builds don't run the dependency checks, and/or unit tests.
+	if [ "$QUICK" != "yes" ]; then
+		$M_BUILD "check"
+	fi
+	
 	date +"%nFinished at %r on %x%n"
 	date +"Finished at %r on %x" &>> "$M_LOGS/build.txt"
 }
@@ -2806,6 +2828,7 @@ COMMAND="$@"
 
 # Parent
 if [[ "$PARENT" == "" ]]; then
+	MASTER="yes"
 	export PARENT="$BASHPID"
 fi
 

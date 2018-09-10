@@ -454,9 +454,13 @@ endif
 	
 $(PACKAGE_DEPENDENCIES): 
 ifeq ($(VERBOSE),no)
+	@echo 
 	@echo 'Building the '$(YELLOW)'bundled'$(NORMAL)' dependencies.'
+else
+	@echo 
+	@echo 'dev/scripts/builders/build.lib.sh all'
 endif
-	$(RUN)dev/scripts/builders/build.lib.sh all
+	@QUICK=yes dev/scripts/builders/build.lib.sh all
 
 # If we've already generated dependency files, use them to see if a rebuild is required
 -include $(MAGMA_DEPFILES) $(DIME_DEPFILES) $(SIGNET_DEPFILES) $(GENREC_DEPFILES) $(MAGMA_CHECK_DEPFILES) $(DIME_CHECK_DEPFILES)

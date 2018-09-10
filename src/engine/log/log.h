@@ -14,6 +14,7 @@
 typedef enum {
 	M_LOG_PEDANTIC = 1,
 	M_LOG_INFO,
+	M_LOG_WARN,
 	M_LOG_ERROR,
 	M_LOG_CRITICAL,
 	M_LOG_TIME,
@@ -23,6 +24,7 @@ typedef enum {
 	M_LOG_STACK_TRACE,
 	M_LOG_PEDANTIC_DISABLE,
 	M_LOG_INFO_DISABLE,
+	M_LOG_WARN_DISABLE,
 	M_LOG_ERROR_DISABLE,
 	M_LOG_CRITICAL_DISABLE,
 	M_LOG_LINE_FEED_DISABLE,
@@ -34,7 +36,7 @@ typedef enum {
 } M_LOG_OPTIONS;
 
 // All of the different log levels.
-#define MAGMA_LOG_LEVELS (M_LOG_PEDANTIC | M_LOG_INFO | M_LOG_ERROR | M_LOG_CRITICAL)
+#define MAGMA_LOG_LEVELS (M_LOG_PEDANTIC | M_LOG_INFO | M_LOG_WARN | M_LOG_ERROR | M_LOG_CRITICAL)
 
 // log.c
 int_t    print_backtrace();
@@ -66,8 +68,14 @@ bool_t   log_start(void);
 
 #endif
 
-// Used to record information related to daemon performance.
+// Used to record information related to daemon performance, and other epehemeral messages which are not the result,
+// of a problem. Generally this involves logging extra information based on the daemon configuration.
 #define log_info(...) log_internal (__FILE__, __FUNCTION__, __LINE__, M_LOG_INFO, __VA_ARGS__)
+
+// Used to log warnings which affect the system daemon, but are not critical. In particularly, warnings are used
+// hen valid, but potentially unwise configuration values are used, and or, when the server is running with a
+// potentially insecure configuration.
+#define log_warn(...) log_internal (__FILE__, __FUNCTION__, __LINE__, M_LOG_WARN, __VA_ARGS__)
 
 // Used to log errors that may indicate a problem requiring user intervention to solve.
 #define log_error(...) log_internal (__FILE__, __FUNCTION__, __LINE__, M_LOG_ERROR, __VA_ARGS__)

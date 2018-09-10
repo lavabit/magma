@@ -340,10 +340,25 @@ bool_t config_validate_settings(void) {
 		}
 	}
 
-	// A special option. If we're calling --dump from the command line, we don't want to do full validation yet, and we also want to exit immediately afterwards.
+	// A special option. If we're calling --dump from the command line, we don't want to do full validation yet, and
+	// we also want to exit immediately afterwards.
 	if (exit_and_dump) {
 		config_output_settings();
 		return false;
+	}
+
+	// Minimum password length.
+	if (magma.secure.minimum_password_length == 0) {
+		log_critical("magma.secure.minimum_password_length is required to be 1 or larger.");
+		result = false;
+	}
+	else if (magma.secure.minimum_password_length <= 4) {
+		log_warn("magma.secure.minimum_password_length is set to %ui which could allow attackers to overload this server using " \
+			"short but invalid passwords.", magma.secure.minimum_password_length);
+	}
+	else if (magma.secure.minimum_password_length >= 20) {
+		log_warn("magma.secure.minimum_password_length is set to %ui any may prove problematic.",
+			magma.secure.minimum_password_length);
 	}
 
 	// Combination option checks.

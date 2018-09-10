@@ -190,8 +190,14 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 		return -1;
 	}
 
-	// We require at least 4 characters for the password, otheriwse the load will slow down the server.
-	else if (st_length_get(password) < 4) {
+	// We require at least one character for password, which is checked above. Here, we only need to check if the value is
+	// longer than the configurable minimum length. By default, minimum length is currently eight characters, because any
+	// value less than 8, leads to a significant processing load on the server for proxied logins (aka plain text logins).
+	// The value must be over the required minimum in both bytes, and characters. Since unicode characters can be multiple bytes
+	// We check both lengths out an abundance of paranoia, as we don't want a malformed unicode string registering
+	// as long enough here, yet still require excessive processing by the STACIE dervication functions.
+	else if (st_length_get(password) < magma.secure.minimum_password_length ||
+		utf8_length_st(password) < magma.secure.minimum_password_length) {
 		return 1;
 	}
 

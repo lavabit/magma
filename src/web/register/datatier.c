@@ -109,9 +109,9 @@ bool_t register_data_check_username(stringer_t *username) {
  * @param	transaction	a mysql transaction id for all database operations, since they all need to be committed atomically or rolled back.
  * @param	outuser		a pointer to a numerical id to receive the newly generated and inserted user id.
  *
- * @return	true if the new user account was successfully created, or false on failure.
+ * @return	0 if the new user account was successfully created, -1 if a technical error occurs, and 1 if an invalid value is provided.
  */
-bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *username, stringer_t *password, int64_t transaction, uint64_t *outuser) {
+int_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *username, stringer_t *password, int64_t transaction, uint64_t *outuser) {
 
 	uint16_t serial = 0;
 	uint32_t bonus = 0;
@@ -125,6 +125,16 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 
 	/// LOW: This function should be passed a number of days (or years) to use for any of the pre-paid account plans.
 	/// LOW: The IP address could be passed in as an ip_t or as a string to avoid the need for the entire connection object.
+
+		// The password must be longer than the required minimum in both bytes, and and characters. We check both lengths
+		// because we are paranoid. We don't want a malformed unicode string slipping through, because it will
+		// still require excessive processing by the STACIE dervication functions later.
+		if (st_length_get(password) < magma.secure.minimum_password_length ||
+			utf8_length_st(password) < magma.secure.minimum_password_length) {
+			log_pedantic("A user attempt to register with a password that was shorter than the minimum. { length = %zu }", utf8_length_st(password));
+			return 1;
+		}
+
 
 	// Configure the limits for the plan. We are currently using hard coded values. In the future this may be
 	// setup dynamically by pull the default values out of the limits table.
@@ -179,7 +189,7 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 	}
 	else {
 		log_pedantic("Unrecognized account plan. Only values between 1 and 6 are supported. { plan = %hu }", plan);
-		return false;
+		return 1;
 	}
 
 	// We start by generating all of the values we'll need to complete the registration process. The STACIE values are first.
@@ -193,7 +203,7 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 
 		st_cleanup(salt, shard, b64_salt, b64_shard, b64_verification);
 		auth_stacie_cleanup(stacie);
-		return false;
+		return -1;
 	}
 
 	// Users Table
@@ -248,7 +258,7 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 		log_pedantic("Unable to insert the user into the database. (Failed on User table.)");
 		st_cleanup(salt, shard, b64_salt, b64_shard, b64_verification);
 		auth_stacie_cleanup(stacie);
-		return false;
+		return -1;
 	}
 
 	// User_Realms Table
@@ -287,7 +297,7 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 		log_pedantic("Unable to insert the user into the database. (Failed on User_Realms table.)");
 		st_cleanup(salt, shard, b64_salt, b64_shard, b64_verification);
 		auth_stacie_cleanup(stacie);
-		return false;
+		return -1;
 	}
 
 	// Profile Table
@@ -304,7 +314,7 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 		log_pedantic("Unable to insert the user into the database. (Failed on Profile table.)");
 		st_cleanup(salt, shard, b64_salt, b64_shard, b64_verification);
 		auth_stacie_cleanup(stacie);
-		return false;
+		return -1;
 	}
 
 	// Folders Table
@@ -326,7 +336,7 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 		log_pedantic("Unable to insert the user into the database. (Failed on Folders table.)");
 		st_cleanup(salt, shard, b64_salt, b64_shard, b64_verification);
 		auth_stacie_cleanup(stacie);
-		return false;
+		return -1;
 	}
 
 	// Log Table
@@ -356,7 +366,7 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 		log_pedantic("Unable to insert the user into the database. (Failed on Log table.)");
 		st_cleanup(salt, shard, b64_salt, b64_shard, b64_verification);
 		auth_stacie_cleanup(stacie);
-		return false;
+		return -1;
 	}
 
 	// Dispatch Table
@@ -415,7 +425,7 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 		log_pedantic("Unable to insert the user into the database. (Failed on Dispatch table.)");
 		st_cleanup(salt, shard, b64_salt, b64_shard, b64_verification);
 		auth_stacie_cleanup(stacie);
-		return false;
+		return -1;
 	}
 
 	// Mailboxes Table
@@ -426,7 +436,7 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 		log_pedantic("Unable to generate an email address for the new user.");
 		st_cleanup(salt, shard, b64_salt, b64_shard, b64_verification);
 		auth_stacie_cleanup(stacie);
-		return false;
+		return -1;
 	}
 
 	// Username
@@ -445,7 +455,7 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 		log_pedantic("Unable to insert the user into the database. (Failed on Mailboxes table.)");
 		st_cleanup(newaddr, salt, shard, b64_salt, b64_shard, b64_verification);
 		auth_stacie_cleanup(stacie);
-		return false;
+		return -1;
 	}
 
 	// Finally derive the realm key, and then create the DIME signet and key pair.
@@ -453,7 +463,7 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 		log_pedantic("Unable to insert the user into the database. (Failed on Keys table.)");
 		st_cleanup(newaddr, salt, shard, b64_salt, b64_shard, b64_verification);
 		auth_stacie_cleanup(stacie);
-		return false;
+		return -1;
 	}
 
 	// Cleanup and tell the caller everything worked.
@@ -461,5 +471,5 @@ bool_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *u
 	auth_stacie_cleanup(stacie);
 	*outuser = usernum;
 
-	return true;
+	return 0;
 }

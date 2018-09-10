@@ -141,9 +141,11 @@ void api_endpoint_auth(connection_t *con) {
 void api_endpoint_register(connection_t *con) {
 
 	placer_t value;
+	int_t result = 0;
+	uint16_t plan = 1;
 	uint64_t usernum = 0;
+	int64_t transaction = -1;
 	json_error_t jansson_err;
-	int64_t transaction, plan = 1;
 	chr_t *holder = NULL, *username = NULL, *password = NULL, *password_verification = NULL;
 
 	// Try parsing the parameters with and without the plan key.
@@ -182,9 +184,14 @@ void api_endpoint_register(connection_t *con) {
 	}
 
 	// Database insert.
-	if (!register_data_insert_user(con, plan, lower_st(NULLER(username)), NULLER(password), transaction, &usernum)) {
+	if ((result = register_data_insert_user(con, plan, lower_st(NULLER(username)), NULLER(password), transaction, &usernum)) != 0) {
 		tran_rollback(transaction);
-		api_error(con, HTTP_ERROR_500, JSON_RPC_2_ERROR_SERVER_INTERNAL, "Internal server error.");
+		if (result < 0) {
+			api_error(con, HTTP_ERROR_500, JSON_RPC_2_ERROR_SERVER_INTERNAL, "Internal server error.");
+		}
+		else {
+			api_error(con, HTTP_ERROR_500, JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS, "Invalid registration details provided.");
+		}
 		goto out;
 	}
 

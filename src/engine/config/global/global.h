@@ -66,6 +66,8 @@ typedef struct {
 			uint64_t length; /* The size of the secure memory pool. The pool must fit within any memory locking limits. */
 		} memory;
 
+
+		uint32_t minimum_password_length; /* The minimum number of characters a valid password must contain. */
 		stringer_t *salt; /* The string added to hash operations to improve security. */
 		stringer_t *links; /* The string used to encrypt links that reflect back to the daemon. */
 		stringer_t *sessions; /* The string used to encrypt session tokens. */

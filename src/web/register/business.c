@@ -25,7 +25,8 @@ bool_t register_business_validate_password(stringer_t *password) {
 	holder = st_char_get(password);
 	length = st_length_get(password);
 
-	if (length < REGISTER_PASSWORD_MIN_LENGTH || length > REGISTER_PASSWORD_MAX_LENGTH) {
+	if (length < magma.secure.minimum_password_length || utf8_length_st(password) < magma.secure.minimum_password_length ||
+		length > (REGISTER_PASSWORD_MAX_LENGTH > magma.secure.minimum_password_length ? REGISTER_PASSWORD_MAX_LENGTH : magma.secure.minimum_password_length)) {
 		return false;
 	}
 
@@ -134,7 +135,8 @@ chr_t * register_business_step1(connection_t *con, register_session_t *reg) {
 	}
 	else if (!register_business_validate_password(data->value)) {
 		snprintf(msgbuf, sizeof(msgbuf), "\n\t\t\t\t<p id=\"error\">Your password was invalid! Please make sure you use characters that are "
-				"allowed, and that your password is between %u and %u characters long.</p>", REGISTER_PASSWORD_MIN_LENGTH, REGISTER_PASSWORD_MAX_LENGTH);
+				"allowed, and that your password is between %u and %u characters long.</p>", magma.secure.minimum_password_length,
+				(REGISTER_PASSWORD_MAX_LENGTH > magma.secure.minimum_password_length ? REGISTER_PASSWORD_MAX_LENGTH : magma.secure.minimum_password_length));
 		return msgbuf;
 	} else if (st_cmp_ci_eq(data->value, compare->value)) {
 		return "\n\t\t\t\t<p id=\"error\">Your registration request did not contain matching passwords!</p>";
@@ -173,8 +175,9 @@ chr_t * register_business_step1(connection_t *con, register_session_t *reg) {
  */
 chr_t * register_business_step2(connection_t *con, register_session_t *reg) {
 
-	int64_t transaction;
+	int_t result = 0;
 	http_data_t *data;
+	int64_t transaction = -1;
 	stringer_t *to, *from, *welcome;
 	uint64_t usernum = 0;
 
@@ -211,16 +214,15 @@ chr_t * register_business_step2(connection_t *con, register_session_t *reg) {
 	}
 
 	// Database insert.
-	if (
-		!register_data_insert_user(
-			con,
-			reg->plan,
-			reg->username,
-			reg->password,
-			transaction,
-			&usernum))
-	{
+	if ((result = register_data_insert_user(con, reg->plan, reg->username, reg->password, transaction, &usernum)) != 0) {
 		tran_rollback(transaction);
+
+		if (result < 0) {
+			return "\n\t\t\t\t<p id=\"error\">An internal error occurred. Please try again. If you continue " \
+				"to experience problems, please report it via the contact form.</p>";
+		}
+
+		// Otherwise the inputs were invalid.
 		return "\n\t\t\t\t<p id=\"error\">It appears that between the time its taken you to complete step one and step two the username "
 			"you selected has been taken. Please return to step one and select a different username.</p>";
 	}

@@ -22,8 +22,8 @@ START_TEST (check_users_register_s) {
 		// Pass in a blank connection structure. This will be used to store the registration IP address.
 		mm_wipe(&con, sizeof(connection_t));
 
-		// Randomly select one of the available plans. Valid values are 1 through 4.
-		plan = (rand_get_uint16() % 3) + 1;
+		// Randomly select one of the available plans. Valid values are 1 through 6.
+		plan = (rand_get_uint16() % 5) + 1;
 
 		// Generate a random string of numbers as the password and then append the string of numbers to the username
 		// pattern check_user_XYZ to create a username that should always be unique.
@@ -37,7 +37,7 @@ START_TEST (check_users_register_s) {
 		}
 
 		// Database insert.
-		else if (!register_data_insert_user(&con, plan, username, password, transaction, &usernum)) {
+		else if (register_data_insert_user(&con, plan, username, password, transaction, &usernum) != 0) {
 			st_sprint(errmsg, "User registration failed!.");
 			tran_rollback(transaction);
 		}

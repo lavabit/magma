@@ -173,6 +173,18 @@ magma_keys_t magma_keys[] = {
 		.required = false
 	},
 	{
+		.store = (void *)&(magma.secure.minimum_password_length),
+		.norm.type = M_TYPE_UINT32,
+		.norm.val.u32 = 4,
+		.name = "magma.secure.minimum_password_length",
+		.description = "The minimum number of characters a valid password must contain. Any password less than this length will return an automatic error, without being processed.",
+		.file = true,
+		.database = true,
+		.overwrite = true,
+		.set = false,
+		.required = false
+	},
+	{
 		.store = (void *)&(magma.secure.salt),
 		.norm.type = M_TYPE_STRINGER,
 		.norm.val.st = NULL,

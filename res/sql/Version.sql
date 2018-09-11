@@ -1,1 +1,1 @@
-INSERT INTO `Host_Config` (`confignum`, `hostnum`, `application`, `name`, `value`, `timestamp`) VALUES (1,NULL,'magmad','magma.version','6',NOW());
+INSERT INTO `Host_Config` (`hostnum`, `application`, `name`, `value`, `timestamp`) VALUES (NULL,'magmad','magma.version','7',NOW());

@@ -180,7 +180,7 @@ START_TEST (check_config_minimum_password_length_s) {
 
 	magma.secure.minimum_password_length = original_length_value;
 
-	log_test("CONFIG / AUTH / PASSWORD LENGTH / SINGLE THREADED:", errmsg);
+	log_test("CONFIG / SECURITY / PASSWORD LENGTH / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));
 }
 END_TEST

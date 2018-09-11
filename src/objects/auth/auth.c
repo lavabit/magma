@@ -177,6 +177,7 @@ int_t auth_response(auth_t *auth, stringer_t *ephemeral) {
 int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 
 	auth_t *auth = NULL;
+	useconds_t delay = 0;
 	auth_stacie_t *stacie = NULL;
 	auth_legacy_t *legacy = NULL;
 	stringer_t *legacy_hex = NULL, *salt_b64 = NULL, *verification_b64 = NULL;
@@ -194,10 +195,13 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 	// longer than the configurable minimum length. By default, minimum length is currently eight characters, because any
 	// value less than 8, leads to a significant processing load on the server for proxied logins (aka plain text logins).
 	// The value must be over the required minimum in both bytes, and characters. Since unicode characters can be multiple bytes
-	// We check both lengths out an abundance of paranoia, as we don't want a malformed unicode string registering
-	// as long enough here, yet still require excessive processing by the STACIE dervication functions.
+	// We check both lengths out of paranoia. We don't want a malformed unicode string registering as long enough here, yet
+	// still require excessive processing by the STACIE dervication functions. If the check does fail, we sleep random amount
+	// of time between 1 and 5 seconds, to make it slightly less obvious the password was rejected for length reasons.
 	else if (st_length_get(password) < magma.secure.minimum_password_length ||
 		utf8_length_st(password) < magma.secure.minimum_password_length) {
+		delay = 1000000 + (rand_get_uint32() % 4000000);
+		usleep(delay);
 		return 1;
 	}
 

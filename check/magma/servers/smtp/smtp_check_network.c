@@ -281,7 +281,7 @@ bool_t check_smtp_network_auth_sthread(stringer_t *errmsg, uint32_t port, bool_t
     return true;
 }
 
-bool_t check_smtp_network_locked_sthread(stringer_t *errmsg, uint32_t port, bool_t login, stringer_t *username, stringer_t *password, auth_lock_status_t lock) {
+bool_t check_smtp_network_locked_auth_sthread(stringer_t *errmsg, uint32_t port, bool_t login, stringer_t *username, stringer_t *password, auth_lock_status_t lock) {
 
     chr_t token = 0;
     size_t location = 0;
@@ -339,6 +339,73 @@ bool_t check_smtp_network_locked_sthread(stringer_t *errmsg, uint32_t port, bool
 		}
 		else if (lock == AUTH_LOCK_USER && (st_cmp_cs_starts(&(client->line), PLACER("535", 3)) || !st_search_ci(&(client->line), PLACER("USER", 4), NULL))) {
 				st_sprint(errmsg, "A user lock didn't stop a login attempt over SMTP.");
+				outcome = false;
+		}
+
+    check_smtp_client_quit(client, errmsg);
+    client_close(client);
+    return outcome;
+}
+
+bool_t check_smtp_network_locked_rcpt_sthread(stringer_t *errmsg, uint32_t port, stringer_t *from, stringer_t *recipient, auth_lock_status_t lock) {
+
+    size_t location = 0;
+    bool_t outcome = true;
+    client_t *client = NULL;
+    chr_t *line_from = "MAIL FROM: <%.*s>\r\n", *line_to = "RCPT TO: <%.*s>\r\n";
+    size_t size_from = ns_length_get(line_from) + st_length_get(from) - 4, size_to = ns_length_get(line_to) + st_length_get(recipient) - 4;
+
+    // Connect the client.
+    if (!(client = client_connect("localhost", port)) || client_read_line(client) <= 0 ||
+        client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("220")) ||
+        !st_search_cs(&(client->line), NULLER(" ESMTP "), &location)) {
+
+        st_sprint(errmsg, "Failed to connect with the SMTP server.");
+        client_close(client);
+        return false;
+    }
+    // Issue EHLO.
+    else if (client_write(client, PLACER("EHLO localhost\r\n", 16)) != 16 || !check_smtp_client_read_end(client) ||
+        client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("250"))) {
+
+        st_sprint(errmsg, "Failed to return successful status after EHLO.");
+        client_close(client);
+        return false;
+    }
+
+    // Issue MAIL command.
+    else if (client_print(client, line_from, st_length_int(from), st_char_get(from)) != size_from || !check_smtp_client_read_end(client) ||
+        client_status(client) != 1 || st_cmp_cs_starts(&(client->line), NULLER("250"))) {
+        st_sprint(errmsg, "Failed to return successful status after MAIL.");
+        return false;
+    }
+
+    // Issue RCPT command.
+    else if (client_print(client, line_to, st_length_int(recipient), st_char_get(recipient)) != size_to || !check_smtp_client_read_end(client) ||
+        client_status(client) != 1) {
+        st_sprint(errmsg, "Failed to properly print the RCPT command.");
+        return false;
+    }
+
+    // Apply the result logic to see if the right outcome was achieved.
+		if (lock == AUTH_LOCK_INACTIVITY && (st_cmp_cs_starts(&(client->line), PLACER("550", 3)) || !st_search_ci(&(client->line), PLACER("INACTIVITY", 10), NULL))) {
+				st_sprint(errmsg, "An inactivity lock didn't block an inbound SMTP message.");
+				outcome = false;
+		}
+		else if (lock == AUTH_LOCK_EXPIRED && st_cmp_cs_starts(&(client->line), PLACER("250", 3))) {
+				st_sprint(errmsg, "An expired account was blocked from receiving an inbound STMP message.");
+				outcome = false;
+		}
+		else if (lock == AUTH_LOCK_ADMIN && (st_cmp_cs_starts(&(client->line), PLACER("550", 3)) || !st_search_ci(&(client->line), PLACER("ADMIN", 5), NULL))) {
+				st_sprint(errmsg, "An admin lock didn't block an inbound SMTP message.");
+				outcome = false;
+		}
+		else if (lock == AUTH_LOCK_ABUSE && (st_cmp_cs_starts(&(client->line), PLACER("550", 3)) || !st_search_ci(&(client->line), PLACER("ABUSE", 5), NULL))) {
+				st_sprint(errmsg, "An abuse lock didn't block an inbound SMTP message.");
+				outcome = false;
+		}
+		else if (lock == AUTH_LOCK_USER && (st_cmp_cs_starts(&(client->line), PLACER("550", 3)) || !st_search_ci(&(client->line), PLACER("USER", 4), NULL))) {
+				st_sprint(errmsg, "A user lock didn't block an inbound SMTP message.");
 				outcome = false;
 		}
 

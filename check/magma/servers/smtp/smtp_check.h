@@ -26,7 +26,8 @@ bool_t check_smtp_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_
 bool_t check_smtp_network_outbound_quota_sthread(stringer_t *errmsg, uint32_t port, bool_t secure);
 bool_t check_smtp_network_starttls_sthread(stringer_t *errmsg, uint32_t tcp_port, uint32_t tls_port);
 bool_t check_smtp_client_mail_rcpt_data(client_t *client, chr_t *from, chr_t *to, stringer_t *errmsg);
-bool_t check_smtp_network_locked_sthread(stringer_t *errmsg, uint32_t port, bool_t login, stringer_t *username, stringer_t *password, auth_lock_status_t lock);
+bool_t check_smtp_network_locked_rcpt_sthread(stringer_t *errmsg, uint32_t port, stringer_t *from, stringer_t *recipient, auth_lock_status_t lock);
+bool_t check_smtp_network_locked_auth_sthread(stringer_t *errmsg, uint32_t port, bool_t login, stringer_t *username, stringer_t *password, auth_lock_status_t lock);
 
 Suite * suite_check_smtp(void);
 

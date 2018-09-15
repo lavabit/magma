@@ -221,23 +221,6 @@ void smtp_rset(connection_t *con) {
 	return;
 }
 
-/// BUG: The SMTP server is not handling AUTH requests in accordance with
-///		RFC 2554 <http://tools.ietf.org/html/rfc2554> and RFC 4954
-///		<http://tools.ietf.org/html/rfc4954>, according to a user.
-///
-///		In this particular case it's erroring out when users present an AUTH
-///		PLAIN request without the optional initial response. This could affect other
-///		protocols as well.
-///
-///		According to the RFC, a client can send either the following:
-///		1. "AUTH mechanism" (e.g. "AUTH PLAIN"), which the server acknowledges
-///		with a "334 " (note the space). The client then sends the base64-encoded
-///		authentication response on a separate line.
-///
-///		2. "AUTH mechanism [initial response]" (e.g. "AUTH PLAIN
-///		dGVzdAB0ZXN0ADEyMzQ="), where user transmits the auth mechanism and the
-///		base64 authentication response in a single line, so as to minimize the
-///		back-and-forth traffic.
 void smtp_auth_plain(connection_t *con) {
 
 	int_t state = 0;
@@ -660,16 +643,8 @@ void smtp_rcpt_to(connection_t *con) {
 		st_free(address);
 		return;
 	}
-	// Catch internal errors, and database problems here. The state value should be -3 if an error occurred, but in the interest
-	// of robustness, we simply look for any negative state values we haven't already handled.
-	else if (state < 0 || result == NULL) {
-		con_write_bl(con, "451 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
-		st_free(address);
-		return;
-	}
-
 	// Handle account locks, starting with inactivity locks.
-	if (state == AUTH_LOCK_INACTIVITY) {
+	else if (state == AUTH_LOCK_INACTIVITY) {
 		con_print(con, "550 ACCOUNT LOCKED - THE ACCOUNT <%.*s> HAS BEEN LOCKED FOR INACTIVITY\r\n", st_length_int(address),
 			st_char_get(lower_st(address)));
 		st_free(address);
@@ -693,6 +668,14 @@ void smtp_rcpt_to(connection_t *con) {
 	else if (state == AUTH_LOCK_USER) {
 		con_print(con, "550 ACCOUNT LOCKED - THE ACCOUNT <%.*s> HAS BEEN LOCKED AT THE REQUEST OF THE OWNER\r\n", st_length_int(address),
 			st_char_get(lower_st(address)));
+		st_free(address);
+		return;
+	}
+
+	// Catch internal errors, and database problems here. The state value should be -3 if an error occurred, but in the interest
+	// of robustness, we simply look for any negative state values we haven't already handled.
+	else if ((state != 0 && state != AUTH_LOCK_EXPIRED) || result == NULL) {
+		con_write_bl(con, "451 INTERNAL SERVER ERROR - PLEASE TRY AGAIN LATER\r\n", 52);
 		st_free(address);
 		return;
 	}

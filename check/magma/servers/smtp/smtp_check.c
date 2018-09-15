@@ -172,10 +172,10 @@ START_TEST (check_smtp_network_auth_locked_s) {
 		cache_delete(st_quick(MANAGEDBUF(384), "magma.logins.invalid.%lu.127.0.0", time_datestamp()));
 
 		// Provide the locked account credentials to the LOGIN method.
-		outcome = check_smtp_network_locked_sthread(errmsg, server->network.port, true, usernames[i], PLACER("authenticate", 12), locks[i]);
+		outcome = check_smtp_network_locked_auth_sthread(errmsg, server->network.port, true, usernames[i], PLACER("authenticate", 12), locks[i]);
 
 		// If the login method worked properly, try again using the PLAIN method.
-		if (outcome) outcome = check_smtp_network_locked_sthread(errmsg, server->network.port, false, usernames[i], PLACER("authenticate", 12), locks[i]);
+		if (outcome) outcome = check_smtp_network_locked_auth_sthread(errmsg, server->network.port, false, usernames[i], PLACER("authenticate", 12), locks[i]);
 
 	}
 
@@ -187,9 +187,9 @@ START_TEST (check_smtp_network_auth_locked_s) {
 START_TEST (check_smtp_network_auth_inactivity_s) {
 
 	log_disable();
+	int64_t result = 0;
 	bool_t outcome = true;
 	server_t *server = NULL;
-	int64_t result = 0;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	if (!(server = servers_get_by_protocol(SMTP, false))) {
@@ -197,7 +197,7 @@ START_TEST (check_smtp_network_auth_inactivity_s) {
 		outcome = false;
 	}
 
-	// This query will ensure the lock_inactive account is locked for inactivity. Without it, repeat check runs would fail, as the
+	// This query will ensure the lock_inactive account is locked for inactivity. Without it, repeat check runs might fail, as the
 	// inactivity lock would have already been eliminated.
 	else if ((result = sql_write(PLACER("UPDATE `Users` SET `locked` = 1, `lock_expiration` = DATE(DATE_ADD(NOW(), INTERVAL 120 DAY)) " \
 		"WHERE `userid` = 'lock_inactive';", 126))) < 0) {
@@ -206,7 +206,7 @@ START_TEST (check_smtp_network_auth_inactivity_s) {
 	}
 
 	// Provide the locked account credentials to the LOGIN method.
-	else if (outcome) outcome = check_smtp_network_locked_sthread(errmsg, server->network.port, true, PLACER("lock_inactive", 13), PLACER("authenticate", 12), AUTH_LOCK_INACTIVITY);
+	else if (outcome) outcome = check_smtp_network_locked_auth_sthread(errmsg, server->network.port, true, PLACER("lock_inactive", 13), PLACER("authenticate", 12), AUTH_LOCK_INACTIVITY);
 
 	// The SQL query above, is designed to place an inactivity lock on the lock_inactive account, but it might not affect any rows, as the
 	// account could already be locked. However, once the test completes, the same query must affect a row, or this test is a failure.
@@ -218,7 +218,7 @@ START_TEST (check_smtp_network_auth_inactivity_s) {
 	}
 
 	// If the login method worked properly, try again using the PLAIN method.
-	else if (outcome) outcome = check_smtp_network_locked_sthread(errmsg, server->network.port, false, PLACER("lock_inactive", 13), PLACER("authenticate", 12), AUTH_LOCK_INACTIVITY);
+	else if (outcome) outcome = check_smtp_network_locked_auth_sthread(errmsg, server->network.port, false, PLACER("lock_inactive", 13), PLACER("authenticate", 12), AUTH_LOCK_INACTIVITY);
 
 	// The SQL query above, is designed to place an inactivity lock on the lock_inactive account, but it might not affect any rows, as the
 	// account could already be locked. However, once the test completes, the same query must affect a row, or this test is a failure.
@@ -229,6 +229,42 @@ START_TEST (check_smtp_network_auth_inactivity_s) {
 	}
 
 	log_test("SMTP / NETWORK / AUTH / INACTIVITY / SINGLE THREADED:", (outcome ? NULL : errmsg));
+	ck_assert_msg(outcome, st_char_get(errmsg));
+
+} END_TEST
+
+START_TEST (check_smtp_network_rcpt_locked_s) {
+
+	log_disable();
+	int64_t result = 0;
+	bool_t outcome = true;
+	server_t *server = NULL;
+	int_t locks[] = { AUTH_LOCK_EXPIRED, AUTH_LOCK_ADMIN, AUTH_LOCK_ABUSE, AUTH_LOCK_USER,
+		AUTH_LOCK_EXPIRED, AUTH_LOCK_ADMIN, AUTH_LOCK_ABUSE, AUTH_LOCK_USER };
+	stringer_t *errmsg = MANAGEDBUF(1024), *recipients[] = { PLACER("lock_expired@lavabit.com", 24), PLACER("lock_admin@lavabit.com", 22),
+		PLACER("lock_abuse@lavabit.com", 22), PLACER("lock_user@lavabit.com", 21), PLACER("lock_expired@lavabit.com", 24) };
+
+	if (!(server = servers_get_by_protocol(SMTP, false))) {
+		st_sprint(errmsg, "No SMTP servers were configured and available for testing.");
+		outcome = false;
+	}
+
+	// This query will ensure the lock_inactive account is locked for inactivity. Without it, repeat check runs might fail, as the
+	// inactivity lock would have already been eliminated.
+	else if ((result = sql_write(PLACER("UPDATE `Users` SET `locked` = 1, `lock_expiration` = DATE(DATE_ADD(NOW(), INTERVAL 120 DAY)) " \
+		"WHERE `userid` = 'lock_inactive';", 126))) < 0) {
+		st_sprint(errmsg, "Unable to configure the lock_inactive account for the inactivity test. { result = %li }", result);
+		outcome = false;
+	}
+
+	for (int_t i = 0; i < (sizeof(recipients)/sizeof(stringer_t *)) && outcome && status(); i++) {
+
+		// Provide the locked account email address to the RCPT TO command and check the result.
+		outcome = check_smtp_network_locked_rcpt_sthread(errmsg, server->network.port, PLACER("ladar@lavabit.com", 17), recipients[i], locks[i]);
+
+	}
+
+	log_test("SMTP / NETWORK / RECIPIENT / LOCKED / SINGLE THREADED:", (outcome ? NULL : errmsg));
 	ck_assert_msg(outcome, st_char_get(errmsg));
 
 } END_TEST
@@ -291,6 +327,8 @@ Suite * suite_check_smtp(void) {
 	suite_check_testcase(s, "SMTP", "SMTP Network Auth Login/S", check_smtp_network_auth_login_s);
 	suite_check_testcase(s, "SMTP", "SMTP Network Auth Locked/S", check_smtp_network_auth_locked_s);
 	suite_check_testcase(s, "SMTP", "SMTP Network Auth Inactivity/S", check_smtp_network_auth_inactivity_s);
+
+	suite_check_testcase(s, "SMTP", "SMTP Network Recipient Locked/S", check_smtp_network_rcpt_locked_s);
 
 	suite_check_testcase(s, "SMTP", "SMTP Network Outbound Quota/S", check_smtp_network_outbound_quota_s);
 

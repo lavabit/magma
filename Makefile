@@ -184,8 +184,8 @@ BOLD							= $$(tput bold)
 NORMAL							= $$(tput sgr0)
 
 # Calculate the version, commit and timestamp strings.
-MAGMA_REPO						= $(strip $(shell which git 2>&1 > /dev/null && git log 2>&1 > /dev/null && printf '1')) 
-ifneq ($(MAGMA_REPO),1)
+MAGMA_REPO						= $(strip $(shell which git 2>&1 > /dev/null && git log 2>&1 > /dev/null && echo '1')) 
+ifneq ($(strip $(MAGMA_REPO)),1)
 	MAGMA_VERSION				:= $(PACKAGE_VERSION)
 	MAGMA_COMMIT				:= "NONE"
 else

@@ -19,7 +19,7 @@ int_t ip_family(ip_t *address) {
 	int_t result = -1;
 
 	// Valid structures, with what appear to be invalid address families result in AF_UNSPEC.
-	if (address && (address->family < AF_UNSPEC || address->family >= AF_MAX)) {
+	if (address && (address->family <= AF_UNSPEC || address->family >= AF_MAX)) {
 		result = AF_UNSPEC;
 	}
 	else if (address) {

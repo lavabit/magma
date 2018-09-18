@@ -111,8 +111,8 @@ bool_t check_bitwise_determinism(void) {
 	st_free(res2);
 
 	if(!(res1 = st_not(a, NULL)) || !(res2 = st_not(a, NULL))) {
-		st_free(res1);
-		st_free(res2);
+		st_cleanup(res1);
+		st_cleanup(res2);
 		return false;
 	}
 	else if(st_cmp_cs_eq(res1, res2)) {

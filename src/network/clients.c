@@ -29,7 +29,7 @@ int_t client_status(client_t *client) {
 		result = client->status;
 	}
 	// We return -1 if the status is already negative, or connection is otherwise invalid.
-	else {
+	else if (client) {
 		result = client->status = -1;
 	}
 
@@ -142,7 +142,7 @@ client_t * client_connect(chr_t *host, uint32_t port) {
 	if (ret) {
 		log_pedantic("We were unable to connect with the host %s:%u. { connect = %i / errno = %s }",
 			host, port, ret, strerror_r(errno, MEMORYBUF(1024), 1024));
-		close(sd);
+//		close(sd);
 		return NULL;
 	}
 

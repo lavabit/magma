@@ -414,7 +414,7 @@ cryptex_t * ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned cha
 	EVP_CIPHER_CTX cipher;
 	unsigned int mac_length;
 	EC_KEY *user, *ephemeral;
-	size_t envelope_length, block_length, key_length, hexkey_length;
+	size_t envelope_length = 0, block_length = 0, key_length = 0, hexkey_length = 0;
 	uchr_t *kbuf;
 	unsigned char envelope_key[SHA512_DIGEST_LENGTH], iv[EVP_MAX_IV_LENGTH], block[EVP_MAX_BLOCK_LENGTH];
 

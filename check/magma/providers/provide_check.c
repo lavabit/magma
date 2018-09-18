@@ -47,14 +47,14 @@ START_TEST (check_compress_lzo_s) {
 
 	log_disable();
 	bool_t outcome = true;
-	stringer_t *errmsg = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 	check_compress_opt_t opts = {
 		.engine = COMPRESS_ENGINE_LZO
 	};
 
 	if (!check_compress_sthread(&opts)) {
 		outcome = false;
-		errmsg = NULLER("The single-threaded LZO compression test failed.");
+		st_sprint(errmsg, "The single-threaded LZO compression test failed.");
 	}
 
 	log_test("COMPRESSION / LZO / SINGLE THREADED:", errmsg);
@@ -66,14 +66,14 @@ START_TEST (check_compress_lzo_m) {
 
 	log_disable();
 	bool_t outcome = true;
-	stringer_t *errmsg = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 	check_compress_opt_t opts = {
 		.engine = COMPRESS_ENGINE_LZO
 	};
 
 	if (!check_compress_mthread(&opts)) {
 		outcome = false;
-		errmsg = NULLER("The multi-threaded LZO compression test failed.");
+		st_sprint(errmsg, "The multi-threaded LZO compression test failed.");
 	}
 
 	log_test("COMPRESSION / LZO / MULTI THREADED:", errmsg);
@@ -85,14 +85,14 @@ START_TEST (check_compress_zlib_s) {
 
 	log_disable();
 	bool_t outcome = true;
-	stringer_t *errmsg = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 	check_compress_opt_t opts = {
 		.engine = COMPRESS_ENGINE_ZLIB
 	};
 
 	if (!check_compress_sthread(&opts)) {
 		outcome = false;
-		errmsg = NULLER("The single-threaded ZLIB compression test failed.");
+		st_sprint(errmsg, "The single-threaded ZLIB compression test failed.");
 	}
 
 	log_test("COMPRESSION / ZLIB / SINGLE THREADED:", errmsg);
@@ -104,14 +104,14 @@ START_TEST (check_compress_zlib_m) {
 
 	log_disable();
 	bool_t outcome = true;
-	stringer_t *errmsg = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 	check_compress_opt_t opts = {
 		.engine = COMPRESS_ENGINE_ZLIB
 	};
 
 	if (!check_compress_mthread(&opts)) {
 		outcome = false;
-		errmsg = NULLER("The multi-threaded ZLIB compression test failed.");
+		st_sprint(errmsg, "The multi-threaded ZLIB compression test failed.");
 	}
 
 	log_test("COMPRESSION / ZLIB / MULTI THREADED:", errmsg);
@@ -123,14 +123,14 @@ START_TEST (check_compress_bzip_s) {
 
 	log_disable();
 	bool_t outcome = true;
-	stringer_t *errmsg = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 	check_compress_opt_t opts = {
 		.engine = COMPRESS_ENGINE_BZIP
 	};
 
 	if (!check_compress_sthread(&opts)) {
 		outcome = false;
-		errmsg = NULLER("The single-threaded BZIP compression test failed.");
+		st_sprint(errmsg, "The single-threaded BZIP compression test failed.");
 	}
 
 	log_test("COMPRESSION / BZIP / SINGLE THREADED:", errmsg);
@@ -142,14 +142,14 @@ START_TEST (check_compress_bzip_m) {
 
 	log_disable();
 	bool_t outcome = true;
-	stringer_t *errmsg = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 	check_compress_opt_t opts = {
 		.engine = COMPRESS_ENGINE_BZIP
 	};
 
 	if (!check_compress_mthread(&opts)) {
 		outcome = false;
-		errmsg = NULLER("The multi-threaded BZIP compression test failed.");
+		st_sprint(errmsg, "The multi-threaded BZIP compression test failed.");
 	}
 
 	log_test("COMPRESSION / BZIP / MULTI THREADED:", errmsg);
@@ -162,14 +162,14 @@ START_TEST (check_tank_lzo_s) {
 
 	log_disable();
 	bool_t outcome = true;
-	stringer_t *errmsg = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 	check_tank_opt_t opts = {
 		.engine = TANK_COMPRESS_LZO
 	};
 
 	if (!check_tokyo_tank_sthread(&opts)) {
 		outcome = false;
-		errmsg = NULLER("The single-threaded LZO storage tank test failed.");
+		st_sprint(errmsg, "The single-threaded LZO storage tank test failed.");
 	}
 
 	log_test("TANK / LZO / SINGLE THREADED:", errmsg);
@@ -182,14 +182,14 @@ START_TEST (check_tank_lzo_m) {
 
 	log_disable();
 	bool_t outcome = true;
-	stringer_t *errmsg = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 	check_tank_opt_t opts = {
 		.engine = TANK_COMPRESS_LZO
 	};
 
 	if (!check_tokyo_tank_mthread(&opts)) {
 		outcome = false;
-		errmsg = NULLER("The multi-threaded LZO storage tank test failed.");
+		st_sprint(errmsg, "The multi-threaded LZO storage tank test failed.");
 	}
 
 	log_test("TANK / LZO / MULTI THREADED:", errmsg);
@@ -202,14 +202,14 @@ START_TEST (check_tank_zlib_s) {
 
 		log_disable();
 		bool_t outcome = true;
-		stringer_t *errmsg = NULL;
+		stringer_t *errmsg = MANAGEDBUF(1024);
 		check_tank_opt_t opts = {
 			.engine = TANK_COMPRESS_ZLIB
 		};
 
 		if (!check_tokyo_tank_sthread(&opts)) {
 			outcome = false;
-			errmsg = NULLER("The single-threaded ZLIB storage tank test failed.");
+			st_sprint(errmsg, "The single-threaded ZLIB storage tank test failed.");
 		}
 
 		log_test("TANK / ZLIB / SINGLE THREADED:", errmsg);
@@ -223,14 +223,14 @@ START_TEST (check_tank_zlib_m) {
 
 	log_disable();
 	bool_t outcome = true;
-	stringer_t *errmsg = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 	check_tank_opt_t opts = {
 		.engine = TANK_COMPRESS_ZLIB
 	};
 
 	if (!check_tokyo_tank_mthread(&opts)) {
 		outcome = false;
-		errmsg = NULLER("The multi-threaded ZLIB storage tank test failed.");
+		st_sprint(errmsg, "The multi-threaded ZLIB storage tank test failed.");
 	}
 
 	log_test("TANK / ZLIB / MULTI THREADED:", errmsg);
@@ -243,14 +243,14 @@ START_TEST (check_tank_bzip_s) {
 
 	log_disable();
 	bool_t outcome = true;
-	stringer_t *errmsg = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 	check_tank_opt_t opts = {
 		.engine = TANK_COMPRESS_BZIP
 	};
 
 	if (!check_tokyo_tank_sthread(&opts)) {
 		outcome = false;
-		errmsg = NULLER("The single-threaded BZIP storage tank test failed.");
+		st_sprint(errmsg, "The single-threaded BZIP storage tank test failed.");
 	}
 
 	log_test("TANK / BZIP / SINGLE THREADED:", errmsg);
@@ -263,14 +263,14 @@ START_TEST (check_tank_bzip_m) {
 
 	log_disable();
 	bool_t outcome = true;
-	stringer_t *errmsg = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 	check_tank_opt_t opts = {
 		.engine = TANK_COMPRESS_BZIP
 	};
 
 	if (!check_tokyo_tank_mthread(&opts)) {
 		outcome = false;
-		errmsg = NULLER("The multi-threaded BZIP storage tank test failed.");
+		st_sprint(errmsg, "The multi-threaded BZIP storage tank test failed.");
 	}
 
 	log_test("TANK / BZIP / MULTI THREADED:", errmsg);
@@ -285,11 +285,11 @@ START_TEST (check_ecies_s) {
 
 	log_disable();
 	bool_t outcome = true;
-	stringer_t *errmsg = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	if (!check_ecies_sthread()) {
 		outcome = false;
-		errmsg = NULLER("The ECIES test failed.");
+		st_sprint(errmsg, "The ECIES test failed.");
 	}
 
 	log_test("CRYPTOGRAPHY / ECIES / SINGLE THREADED:", errmsg);
@@ -394,11 +394,11 @@ START_TEST (check_scramble_s) {
 
 	log_disable();
 	bool_t outcome = true;
-	stringer_t *errmsg = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	if (!check_scramble_sthread()) {
 		outcome = false;
-		errmsg = NULLER("Failed to check scrable single-threaded.");
+		st_sprint(errmsg, "Failed to check scrable single-threaded.");
 	}
 
 	log_test("CRYPTOGRAPHY / SCRAMBLE / SINGLE THREADED:", errmsg);
@@ -516,11 +516,11 @@ START_TEST (check_dspam_mail_s) {
 
 	log_disable();
 	bool_t outcome = true;
-	stringer_t *errmsg = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	if (status() && !check_dspam_mail_sthread()) {
 		outcome = false;
-		errmsg = NULLER("The check_dspam_mail_s test failed");
+		st_sprint(errmsg, "The check_dspam_mail_s test failed");
 	}
 
 	log_test("CHECKERS / DSPAM / MAIL / SINGLE THREADED:", errmsg);
@@ -532,11 +532,11 @@ START_TEST (check_dspam_bin_s) {
 
 	log_disable();
 	bool_t outcome = true;
-	stringer_t *errmsg = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	if (status() && !check_dspam_binary_sthread()) {
 		outcome = false;
-		errmsg = NULLER("check_dspam_bin_s failed");
+		st_sprint(errmsg, "check_dspam_bin_s failed");
 	}
 
 	log_test("CHECKERS / DSPAM / BINARY / SINGLE THREADED:", errmsg);

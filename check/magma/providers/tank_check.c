@@ -136,21 +136,22 @@ bool_t check_tokyo_tank_load(inx_t *check_collection, check_tank_opt_t *opts) {
 			log_unit("Allocating check_tank_obj_t failed. { message = %i }", i);
 			outcome = false;
 		}
+		else {
+			obj->adler32 = hash_adler32(st_char_get(data), st_length_int(data));
+			obj->fletcher32 = hash_fletcher32(st_char_get(data), st_length_int(data));
+			obj->crc32 = crc32_checksum(st_char_get(data), st_length_int(data));
+			obj->crc64 = crc64_checksum(st_char_get(data), st_length_int(data));
+			obj->murmur32 = hash_murmur32(st_char_get(data), st_length_int(data));
+			obj->murmur64 = hash_murmur64(st_char_get(data), st_length_int(data));
 
-		obj->adler32 = hash_adler32(st_char_get(data), st_length_int(data));
-		obj->fletcher32 = hash_fletcher32(st_char_get(data), st_length_int(data));
-		obj->crc32 = crc32_checksum(st_char_get(data), st_length_int(data));
-		obj->crc64 = crc64_checksum(st_char_get(data), st_length_int(data));
-		obj->murmur32 = hash_murmur32(st_char_get(data), st_length_int(data));
-		obj->murmur64 = hash_murmur64(st_char_get(data), st_length_int(data));
+			// Request the next storage tank.
+			obj->tnum = tank_cycle();
 
-		// Request the next storage tank.
-		obj->tnum = tank_cycle();
-
-		// Try storing the file data.
-		if (!(obj->onum = tank_store(TANK_CHECK_DATA_HNUM, obj->tnum, TANK_CHECK_DATA_UNUM, data, opts->engine))) {
-			log_unit("The tank_store function failed. { message = %i }", i);
-			outcome = false;
+			// Try storing the file data.
+			if (!(obj->onum = tank_store(TANK_CHECK_DATA_HNUM, obj->tnum, TANK_CHECK_DATA_UNUM, data, opts->engine))) {
+				log_unit("The tank_store function failed. { message = %i }", i);
+				outcome = false;
+			}
 		}
 
 		st_cleanup(data);

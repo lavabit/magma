@@ -68,7 +68,7 @@ stringer_t * check_camel_print(stringer_t *command, stringer_t *cookie, bool_t s
 
 	// Submit the command and check the status of the response.
 	if (!(client = check_camel_connect(secure)) || !check_camel_json_write(client, command, cookie, secure) ||
-		(length = check_http_content_length_get(client)) < 0 || !(json = check_camel_json_read(client, length))) {
+		(length = check_http_content_length_get(client)) <= 0 || !(json = check_camel_json_read(client, length))) {
 
 		client_close(client);
 		return false;
@@ -1772,7 +1772,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	for (size_t i = 0; !contains_entries[0] && i < json_array_size_d(json_objs[1]); i++) {
 
 		json_objs[2] = json_array_get_d(json_objs[1], i);
-		if (json_unpack_d(json_objs[2], "{s:i}", "alertID", &alert_ids[1]) == 0 && alert_ids[0] == alert_ids[0]) {
+		if (json_unpack_d(json_objs[2], "{s:i}", "alertID", &alert_ids[1]) == 0 && alert_ids[1] == alert_ids[0]) {
 
 			contains_entries[0] = true;
 		}

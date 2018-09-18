@@ -2091,11 +2091,10 @@ memcached() {
 
 			# export GEARMAND_BINARY="/usr/local/sbin/gearmand"
 			# export MEMCACHED_BINARY="/usr/local/bin/memcached"
-
+			# --with-memcached="/usr/local/bin/memcached"
+			
 			# Options used for 1.0.3+
-			./configure --disable-silent-rules --disable-dtrace --disable-sasl --disable-libinnodb --disable-libevent --disable-mtmalloc \
-				--enable-64bit --enable-largefile --enable-static --enable-shared --with-pic --with-debug \
-				--with-memcached="/usr/local/bin/memcached" \
+			./configure --disable-silent-rules --disable-dtrace --disable-sasl --enable-static --enable-shared --with-pic \
 				--prefix="$M_LOCAL" &>> "$M_LOGS/memcached.txt"; error
 
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LIBS

@@ -701,9 +701,10 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 			contains_entries[0] = true;
 		}
 	}
+
 	if (!contains_entries[0]) {
 
-		st_sprint(errmsg, "Failed to find folder entry in response. { command # = 6, json = %.*s, folder_id = %d, folder_name = %.*s }",
+		st_sprint(errmsg, "Failed to find folder entry in response. { command # = 6, json = %.*s, folder_id = %i, folder_name = %.*s }",
 			st_length_int(json), st_char_get(json), folder_ids[0], st_length_int(rand_strs[0]), st_char_get(rand_strs[0]));
 		json_decref_d(json_objs[0]);
 		st_free(json);

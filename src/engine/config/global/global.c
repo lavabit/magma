@@ -353,7 +353,7 @@ bool_t config_validate_settings(void) {
 		result = false;
 	}
 	else if (magma.secure.minimum_password_length <= 4) {
-		log_warn("magma.secure.minimum_password_length is set to %ui which could allow attackers to overload this server using " \
+		log_warn("magma.secure.minimum_password_length is set to %u which could allow attackers to overload this server using " \
 			"short but invalid passwords.", magma.secure.minimum_password_length);
 	}
 	else if (magma.secure.minimum_password_length >= 20) {

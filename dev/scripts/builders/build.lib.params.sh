@@ -64,6 +64,6 @@ M_SYM_SKIP="tcndbgetboth|my_once_free|lt_dlexit"
 
 # The paths searched for all of the included header files.
 M_SYM_INCLUDES="-I$M_LOCAL/include -I$M_LOCAL/include/curl -I$M_LOCAL/include/dspam -I$M_LOCAL/include/freetype2 \
--I$M_LOCAL/include/libmemcached -I$M_LOCAL/include/libxml2 -I$M_LOCAL/include/lzo -I$M_LOCAL/include/mysql \
--I$M_LOCAL/include/opendkim -I$M_LOCAL/include/openssl -I$M_LOCAL/include/spf2"
+-I$M_LOCAL/include/freetype2/freetype -I$M_LOCAL/include/libmemcached -I$M_LOCAL/include/libxml2 -I$M_LOCAL/include/spf2 \
+-I$M_LOCAL/include/lzo -I$M_LOCAL/include/mysql -I$M_LOCAL/include/opendkim -I$M_LOCAL/include/openssl"
 

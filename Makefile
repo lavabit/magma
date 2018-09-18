@@ -191,7 +191,7 @@ ifneq ($(strip $(MAGMA_REPO)),1)
 else
 	# Use the number of commits since the v7.0.0 tag as the patch level.
 	MAGMA_VERSION				:= $(PACKAGE_VERSION).$(shell git log `git log -n 1 v7.0.0 --pretty='%H'`..`git log --pretty='%H'` --format='%H' | wc -l)
-	MAGMA_COMMIT				:= $(shell git log --format="%H" -n 1 | cut -c33-40)
+	MAGMA_COMMIT				:= $(shell git log --format="%H" -n 1 | cut -1-7)
 endif
 
 MAGMA_TIMESTAMP					= $(shell date +'%Y%m%d.%H%M')

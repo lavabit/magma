@@ -1720,8 +1720,8 @@ googtest() {
 		googtest-build)
 			cd "$M_SOURCES/googtest"; error
 			
-			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O $M_CXXFLAGS"
 
 			autoreconf --install &>> "$M_LOGS/googtest.txt"; error
 			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/googtest.txt"; error

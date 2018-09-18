@@ -33,12 +33,8 @@
 # zlib -:-
 
 # Install Sphinx (python-sphinx package) to build Jansson HTML docs
-# Install LTDL and create the clamav user/group so ClamAV will build correctly
-# DSPAM will require the MySQL development (lib/headers) for a parallel build to complete
-# Install libevent/memcached, and then add /usr/local/lib to the linker config path so memcached can be executed
 
 # Enable the SELinux boolean allow_exestack or the shared object loader will fail
-# Create the test@localhost mysql user and grant the account full access to the test schema
 # The symbols.h file may need to be imported from the magma project for the object load test
 # Note that some platforms may require setting the CFLAGS/CPPFLAGS environment variables to -Wold-style-cast when compiling memcached
 
@@ -731,7 +727,7 @@ xml2() {
 			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
 			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
 			
-			./configure --without-lzma --without-python --without-http --without-ftp \
+			./configure --without-lzma --without-python --without-http --without-ftp --with-zlib=$M_SOURCES/zlib \
 				--prefix="$M_LOCAL" &>> "$M_LOGS/xml2.txt"; error
 			
 			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
@@ -1603,10 +1599,9 @@ openssl() {
 					export CONFIGOPTS='-fno-merge-debug-strings '
 			fi
 			
-			./config \
-				-d shared zlib no-asm --prefix="$M_LOCAL" --openssldir="share" --libdir="lib" \
-				-I"$M_SOURCES/include/" -O $CONFIGOPTS -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
-				-L"$M_SOURCES/lib/" -Wl,-rpath,"$M_SOURCES/lib/" &>> "$M_LOGS/openssl.txt"; error
+			./config -d shared zlib no-asm --prefix="$M_LOCAL" --openssldir="share" --libdir="lib" \
+				-I"$M_LOCAL/include/" -O $CONFIGOPTS -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
+				-L"$M_LOCAL/lib/" -Wl,-rpath,"$M_LOCAL/lib/" &>> "$M_LOGS/openssl.txt"; error
 
 			make depend &>> "$M_LOGS/openssl.txt"; error
 			make &>> "$M_LOGS/openssl.txt"; error
@@ -2272,9 +2267,6 @@ combine() {
 			cat "$M_LOGS/combine.txt"; error
 			exit 0
 		;;
-	esac
-
-	case "$1" in
 		combine-static)
 			printf "Creating the static archive... "
 		;;
@@ -2285,31 +2277,31 @@ combine() {
 	esac
 
 
-	if [[ ! -f "$M_SOURCES/gd/src/.libs/libgd.a" ||
-		! -f "$M_SOURCES/png/.libs/libpng16.a" ||
-		! -f "$M_SOURCES/lzo/src/.libs/liblzo2.a" ||
-		! -f "$M_SOURCES/pcre/.libs/libpcre2-8.a" ||
-		! -f "$M_SOURCES/jpeg/.libs/libjpeg.a" ||
-		! -f "$M_SOURCES/spf2/src/libspf2/.libs/libspf2.a" ||
-		! -f "$M_SOURCES/curl/lib/.libs/libcurl.a" ||
-		! -f "$M_SOURCES/xml2/.libs/libxml2.a" ||
-		! -f "$M_SOURCES/dkim/libopendkim/.libs/libopendkim.a" ||
-		! -f "$M_SOURCES/zlib/libz.a" ||
-		! -f "$M_SOURCES/bzip2/libbz2.a" ||
-		! -f "$M_SOURCES/dspam/src/.libs/libdspam.a" ||
-		! -f "$M_SOURCES/mysql/libmysql_r/.libs/libmysqlclient_r.a" ||
-		! -f "$M_SOURCES/geoip/libGeoIP/.libs/libGeoIP.a" ||
-		! -f "$M_SOURCES/clamav/libclamav/.libs/libclamav.a" ||
-		! -f "$M_SOURCES/clamav/libclamav/.libs/libclamunrar.a" ||
-		! -f "$M_SOURCES/clamav/libclamav/.libs/libclamunrar_iface.a" ||
-		! -f "$M_SOURCES/clamav/libclamav/libmspack-0.5alpha/.libs/libclammspack.a" ||
-		! -f "$M_SOURCES/clamav/libltdl/.libs/libltdlc.a" ||
-		! -f "$M_SOURCES/openssl/libcrypto.a" ||
-		! -f "$M_SOURCES/openssl/libssl.a" ||
-		! -f "$M_SOURCES/jansson/src/.libs/libjansson.a" ||
-		! -f "$M_SOURCES/freetype/objs/.libs/libfreetype.a" ||
-		! -f "$M_SOURCES/utf8proc/libutf8proc.a" ||
-		! -f "$M_SOURCES/memcached/libmemcached/.libs/libmemcached.a" ||
+	if [[ ! -f "$M_SOURCES/gd/src/.libs/libgd.a" || \
+		! -f "$M_SOURCES/png/.libs/libpng16.a" || \
+		! -f "$M_SOURCES/lzo/src/.libs/liblzo2.a" || \
+		! -f "$M_SOURCES/pcre/.libs/libpcre2-8.a" || \
+		! -f "$M_SOURCES/jpeg/.libs/libjpeg.a" || \
+		! -f "$M_SOURCES/spf2/src/libspf2/.libs/libspf2.a" || \
+		! -f "$M_SOURCES/curl/lib/.libs/libcurl.a" || \
+		! -f "$M_SOURCES/xml2/.libs/libxml2.a" || \
+		! -f "$M_SOURCES/dkim/libopendkim/.libs/libopendkim.a" || \
+		! -f "$M_SOURCES/zlib/libz.a" || \
+		! -f "$M_SOURCES/bzip2/libbz2.a" || \
+		! -f "$M_SOURCES/dspam/src/.libs/libdspam.a" || \
+		! -f "$M_SOURCES/mysql/libmysql_r/.libs/libmysqlclient_r.a" || \
+		! -f "$M_SOURCES/geoip/libGeoIP/.libs/libGeoIP.a" || \
+		! -f "$M_SOURCES/clamav/libclamav/.libs/libclamav.a" || \
+		! -f "$M_SOURCES/clamav/libclamav/.libs/libclamunrar.a" || \
+		! -f "$M_SOURCES/clamav/libclamav/.libs/libclamunrar_iface.a" || \
+		! -f "$M_SOURCES/clamav/libclamav/libmspack-0.5alpha/.libs/libclammspack.a" || \
+		! -f "$M_SOURCES/clamav/libltdl/.libs/libltdlc.a" || \
+		! -f "$M_SOURCES/openssl/libcrypto.a" || \
+		! -f "$M_SOURCES/openssl/libssl.a" || \
+		! -f "$M_SOURCES/jansson/src/.libs/libjansson.a" || \
+		! -f "$M_SOURCES/freetype/objs/.libs/libfreetype.a" || \
+		! -f "$M_SOURCES/utf8proc/libutf8proc.a" || \
+		! -f "$M_SOURCES/memcached/libmemcached/.libs/libmemcached.a" || \
 		! -f "$M_SOURCES/tokyocabinet/libtokyocabinet.a" ]]; then
 		printf " a required dependency is missing. \n\nCreate the dependencies by running \"build.lib.sh all\" and then try again."
 		tput sgr0; tput setaf 1
@@ -2482,6 +2474,7 @@ combine() {
 	fi
 
 	exit 0
+	
 }
 
 load() {
@@ -2489,8 +2482,9 @@ load() {
 	if [ "$MASTER" == "yes" ]; then
 		echo ""
 	fi
+	
 	printf "Checking the shared object... "
-
+	
 	if [ ! -f "$M_SO" ]; then
 		printf " the magmad.so file is missing.\n\nCreate the shared object by running \"build.lib.sh all\" and then try again."
 		tput sgr0; tput setaf 1
@@ -2504,7 +2498,7 @@ load() {
 
 	# Copy the current symbols file over.
 	cat $M_SYM_FILE | egrep -v $M_SYM_SKIP > magma.open.symbols.h; error
-
+	
 	# Create a file with a function that assigns the original symbols to the dynamic version.
 	echo "#include \"magma.open.check.h\"" > magma.open.symbols.c; error
 	echo "#include \"magma.open.symbols.h\"" >> magma.open.symbols.c; error
@@ -2520,8 +2514,7 @@ load() {
 		grep -v '^$' | \
 		tr -d '*' | sed 's/_d)//' | \
 		sed 's/SSL_COMP)/SSL_COMP_get_compression_methods/g' | \
-		awk '{ print "if ((*(void **)&(" $1 "_d) = dlsym(magma, \"" $1 "\")) == NULL) return \"" $1 "\";"}' \
-		>> magma.open.symbols.c; error
+		awk '{ print "if ((*(void **)&(" $1 "_d) = dlsym(magma, \"" $1 "\")) == NULL) return \"" $1 "\";"}' >> magma.open.symbols.c; error
 	echo "return NULL;" >> magma.open.symbols.c; error
 	echo "}" >> magma.open.symbols.c; error
 
@@ -2567,6 +2560,8 @@ load() {
 	# Execute the program to see if the library can be loaded successfully at run time.
 	./magma.open.check "$M_SO"; error
 	echo ""
+	return 0
+
 }
 
 keys() {
@@ -2590,6 +2585,7 @@ keys() {
 		git update-index --skip-worktree "$M_PROJECT_ROOT/sandbox/etc/dime.localhost.localdomain.key"
 		git update-index --skip-worktree "$M_PROJECT_ROOT/sandbox/etc/dime.localhost.localdomain.signet"
 	fi
+	
 }
 
 generate() {
@@ -2611,6 +2607,7 @@ generate() {
 	-out "$M_PROJECT_ROOT/sandbox/etc/tls.localhost.localdomain.pem" >& /dev/null ; error
 
 	keys
+	
 }
 
 combo() {

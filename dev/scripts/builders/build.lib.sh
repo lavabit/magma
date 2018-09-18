@@ -1400,7 +1400,7 @@ clamav() {
 			./configure  \
 				--enable-check --enable-static --enable-shared --disable-llvm --disable-silent-rules \
 				--with-openssl="$M_LOCAL" --with-zlib="$M_LOCAL" --with-xml="$M_LOCAL" --with-libcurl="$M_LOCAL" \
-				--with-pcre="$M_LOCAL" \
+				--with-pcre="$M_LOCAL" --with-systemdsystemunitdir="no" \
 				--with-libbz2-prefix="$M_LOCAL" --with-libcheck-prefix="$M_LOCAL" \
 				--prefix="$M_LOCAL" --exec-prefix="$M_LOCAL" --libdir="$M_LOCAL/lib" &>> "$M_LOGS/clamav.txt"; error
 

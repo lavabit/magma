@@ -79,7 +79,7 @@ stringer_t * naked_message_get(stringer_t *message, prime_org_signet_t *org, pri
 	prime_chunk_keks_t *keks = NULL;
 	prime_signature_tree_t *tree = NULL;
 	uchr_t *data = NULL, *position = NULL;
-	placer_t chunk[6], current = pl_null();
+	placer_t chunk[7], current = pl_null();
 	prime_ephemeral_chunk_t *ephemeral = NULL;
 	size_t remaining = 0, processed = 0, consumed = 0;
 	stringer_t *headers = NULL, *body = NULL, *result = NULL;

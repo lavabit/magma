@@ -773,7 +773,7 @@ void portal_endpoint_folders_rename(connection_t *con) {
 
 	json_error_t err;
 	uint64_t foldernum;
-	int_t state, context;
+	int_t context, state = 0;
 	meta_folder_t *active_m = NULL;
 	magma_folder_t *active_c = NULL;
 	chr_t *rename = NULL, *method = NULL;

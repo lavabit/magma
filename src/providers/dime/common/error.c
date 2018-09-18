@@ -244,11 +244,11 @@ errinfo_t *_push_error_stack_syscall(const char *filename, const char *funcname,
     memset(auxmsg, 0, sizeof(auxmsg));
     snprintf(auxmsg, sizeof(auxmsg) - 1, "%s: ", errfunc);
     ptr = auxmsg + strlen(auxmsg);
-#ifdef STRERROR_R_CHAR_P
+//#ifdef STRERROR_R_CHAR_P
     ptr = strerror_r(xerrno, ptr, auxmsg_end - ptr);
-#else
-    strerror_r(xerrno, ptr, auxmsg_end - ptr);
-#endif
+//#else
+//    strerror_r(xerrno, ptr, auxmsg_end - ptr);
+//#endif
 
     return (_push_error_stack(filename, funcname, lineno, ERR_SYSCALL, xerrno, auxmsg));
 }

@@ -42,6 +42,7 @@ int_t tcp_error(int error) {
 int_t tcp_status(int sockd) {
 
 	struct stat info;
+	stringer_t *buffer = MANAGEDBUF(64);
 	int result = 0, holder = 0, error = 0;
 
 	errno = 0;
@@ -52,7 +53,7 @@ int_t tcp_status(int sockd) {
 
 	// In theory the PEEK flag will prevent this call from altering the socket buffer state, while the NOSIGNAL flag
 	// should cause it to return EPIPE if the connection is no longer valid.
-	else if ((holder = recv(sockd, MANAGEDBUF(64), 64, MSG_PEEK | MSG_DONTWAIT | MSG_NOSIGNAL)) <= 0) {
+	else if ((holder = recv(sockd, st_data_get(buffer), 64, MSG_PEEK | MSG_DONTWAIT | MSG_NOSIGNAL)) <= 0) {
 
 		// Duplicate the errno so the log pedantic statement below doesn't accidently overwrite it.
 		error = errno;

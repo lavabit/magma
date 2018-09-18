@@ -118,7 +118,7 @@ user=mysql
 back_log = 128
 binlog_cache_size = 64M
 binlog-format = mixed
-innodb_buffer_pool_size = 16G
+innodb_buffer_pool_size = 1G
 innodb_log_buffer_size = 16M
 innodb_log_file_size = 1G
 innodb_log_files_in_group = 2
@@ -126,7 +126,7 @@ join_buffer_size = 8M
 log-bin=mysql-bin
 long_query_time = 4
 max_allowed_packet = 128M
-max_binlog_size = 4G
+max_binlog_size = 1G
 max_connect_errors = 1048576
 max_connections = 1024
 max_heap_table_size = 512M
@@ -189,7 +189,7 @@ chcon system_u:object_r:etc_t:s0 /etc/security/limits.d/50-magmad.conf
 printf "\n\nnet.ipv6.conf.all.disable_ipv6 = 1\n" >> /etc/sysctl.conf
 
 # Other network and system tuning parameters.
-printf "kernel.random.read_wakeup_threshold = 2048\n" >> /etc/sysctl.conf
+printf "kernel.random.read_wakeup_threshold = 64\n" >> /etc/sysctl.conf
 printf "kernel.random.write_wakeup_threshold = 2048\n" >> /etc/sysctl.conf
 printf "net.core.netdev_max_backlog = 65536\n" >> /etc/sysctl.conf
 printf "net.core.optmem_max = 25165824\n" >> /etc/sysctl.conf
@@ -223,7 +223,7 @@ printf "vm.dirty_ratio = 60\n" >> /etc/sysctl.conf
 printf "vm.swappiness = 10\n" >> /etc/sysctl.conf
 
 # Enable the important settings immediately.
-sysctl -w kernel.random.read_wakeup_threshold=2048
+sysctl -w kernel.random.read_wakeup_threshold=64
 sysctl -w kernel.random.write_wakeup_threshold=2048
 sysctl -w net.core.netdev_max_backlog=65536
 sysctl -w net.core.optmem_max=25165824

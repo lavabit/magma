@@ -14,7 +14,7 @@
 # dkim -:- openssl
 # dspam -:- mysql
 # freetype -:- zlib bzip2 png
-# gd -:- zlib png jpeg
+# gd -:- zlib png jpeg freetype
 # geoip -:- zlib
 # googtap -:-
 # googtest -:-
@@ -1059,7 +1059,7 @@ dspam() {
 				return 3
 			fi
 			
-			export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
+			export LDFLAGS="-L$M_LDPATH/mysql -Wl,-rpath,$M_LDPATH/mysql $M_LDFLAGS"
 			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
 			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
 			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
@@ -1157,9 +1157,9 @@ mysql() {
 			fi
 			
 			export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
-			export CFLAGS="$M_SYM_INCLUDES -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-			export CXXFLAGS="$M_SYM_INCLUDES -g3 -rdynamic -D_FORTIFY_SOURCE=2 -Wno-narrowing $M_CXXFLAGS"
-			export CPPFLAGS="$M_SYM_INCLUDES -g3 -rdynamic -D_FORTIFY_SOURCE=2 -Wno-narrowing $M_CPPFLAGS"
+			export CFLAGS="$M_SYM_INCLUDES -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O -Wno-narrowing $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O -Wno-narrowing $M_CPPFLAGS"
 
 			# According to the RHEL build spec, MySQL checks will fail without --with-big-tables,
 			./configure --with-pic --enable-thread-safe-client --with-readline --with-charset=latin1 \
@@ -1507,9 +1507,9 @@ checker() {
 		checker-build)
 			cd "$M_SOURCES/checker"; error
 			
-			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O0 $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O0 $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O0 $M_CPPFLAGS"
 
 			autoreconf --install &>> "$M_LOGS/checker.txt"; error
 			./configure --disable-subunit --enable-timer-replacement --enable-snprintf-replacement \
@@ -1823,9 +1823,9 @@ jansson() {
 		jansson-build)
 			cd "$M_SOURCES/jansson"; error
 			
-			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O $M_CFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O $M_CPPFLAGS"
 			
 			./configure --prefix="$M_LOCAL" &>> "$M_LOGS/jansson.txt"; error
 			
@@ -2649,7 +2649,6 @@ combo() {
 		wait $JPEG_PID; error
 		wait $BZIP2_PID; error
 		
-		($M_BUILD "gd-$1") & GD_PID=$!
 		($M_BUILD "freetype-$1") & FREETYPE_PID=$!
 		($M_BUILD "tokyocabinet-$1") & TOKYOCABINET_PID=$!
 		
@@ -2659,12 +2658,17 @@ combo() {
 		
 		($M_BUILD "clamav-$1") & CLAMAV_PID=$!
 		
-		# Dspam require MySQL.
+		# The gd library requires zlib (above), png (above), jpeg (above) and freetype.
+		wait $FREETYPE_PID; error
+		
+		($M_BUILD "gd-$1") & GD_PID=$!
+		
+		# The dspam library requires mysql.
 		wait $MYSQL_PID; error
 		
 		($M_BUILD "dspam-$1") & DSPAM_PID=$!
 		
-		# These libraries require curl.
+		# The utf8proc library requires curl.
 		wait $CURL_PID; error
 		
 		($M_BUILD "utf8proc-$1") & UTF8PROC_PID=$!

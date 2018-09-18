@@ -1059,7 +1059,7 @@ dspam() {
 				return 3
 			fi
 			
-			export LDFLAGS="-L$M_LDPATH/mysql -Wl,-rpath,$M_LDPATH/mysql $M_LDFLAGS"
+			export LDFLAGS="-L$M_LDPATH/mysql -L$M_LDPATH -Wl,-rpath,$M_LDPATH/mysql -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
 			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
 			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
 			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"

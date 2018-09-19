@@ -160,7 +160,7 @@ TLS * tls_server_alloc(void *server, int sockd, int flags) {
 	SSL *tls;
 	BIO *bio;
 	server_t *local = server;
-	int_t result = 0, counter = 0;
+	int_t error = 0, result = 0, counter = 0;
 
 	// Clear the error state, so we get accurate indications of a problem.
 	errno = 0;
@@ -196,14 +196,30 @@ TLS * tls_server_alloc(void *server, int sockd, int flags) {
 
 	// If the result code indicates a handshake error, but the TCP connection is still alive, we retry the handshake.
 	do {
-
 		// Attempt the server connection setup.
-		if ((result = SSL_accept_d(tls)) < 0) {
-			log_pedantic("TLS accept error, but the result indicates we should retry. { error = %i }", SSL_get_error_d(tls, result));
-		}
+		if ((result = SSL_accept_d(tls)) <= 0) {
 
-		else if (result < 1) {
-			log_pedantic("TLS accept error. { accept = %i / error = %s }", result, ssl_error_string(MEMORYBUF(512), 512));
+			switch ((error = SSL_get_error_d(tls, result))) {
+
+				// Log these errors with extra information.
+				case (SSL_ERROR_SSL):
+					log_pedantic("TLS accept error. { accept = %i / error = SSL_ERROR_SSL, message = %s }", result,
+						ssl_error_string(MEMORYBUF(512), 512));
+					break;
+				case (SSL_ERROR_SYSCALL):
+					log_pedantic("TLS accept error. { accept = %i / error = SSL_ERROR_SYSCALL / errno = %i / message = %s }", result,
+						errno, errno_name(errno));
+					break;
+
+				// A zero return indicates a socket shutdown. The latter should never happen.
+				case (SSL_ERROR_ZERO_RETURN):
+				case (SSL_ERROR_NONE):
+					break;
+
+				default:
+					log_pedantic("TLS accept error. { accept = %i / error = %i }", result, error);
+					break;
+			}
 		}
 
 	} while (result < 0 && counter++ < 10);

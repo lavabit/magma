@@ -23,11 +23,27 @@ END_TEST
 START_TEST (check_camel_basic_s) {
 
 	log_disable();
+	int64_t result = 0;
 	bool_t outcome = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
-	if (status() && !check_camel_basic_sthread(false, errmsg)) outcome = false;
-	else if (status() && outcome && !check_camel_basic_sthread(true, errmsg)) outcome = false;
+	// Reset the alerts and make the insecure attempt.
+	if (status() && (result = sql_write(PLACER("UPDATE `Alerts` SET `acknowledged` = NULL WHERE `usernum` < 10;", 63))) < 0) {
+		st_sprint(errmsg, "Unable to configure the alerts for the basic camelface test. { result = %li }", result);
+		outcome = false;
+	}
+	else if (status() && !check_camel_basic_sthread(false, errmsg)) {
+		outcome = false;
+	}
+
+	// Reset the alerts again, and make the secure attempt.
+	else if (status() && (result = sql_write(PLACER("UPDATE `Alerts` SET `acknowledged` = NULL WHERE `usernum` < 10;", 63))) < 0) {
+		st_sprint(errmsg, "Unable to configure the alerts for the basic camelface test. { result = %li }", result);
+		outcome = false;
+	}
+	else if (status() && outcome && !check_camel_basic_sthread(true, errmsg)) {
+		outcome = false;
+	}
 
 	log_test("HTTP / NETWORK / CAMEL / BASIC / SINGLE THREADED:", errmsg);
 	ck_assert_msg(outcome, st_char_get(errmsg));

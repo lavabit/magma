@@ -1156,17 +1156,26 @@ mysql() {
 				return 3
 			fi
 			
+			# The MySQL code (as of version 5.1.73) includes uses invalid cast operations. As a result the 
+			# -fpermissive command line option is required for compilation.
+			printf "\n#include <stdlib.h>\n\nint main(int argc, char *argv[]) { return 0; }\n\n" | gcc -o /dev/null -x c++ -fpermissive &> /dev/null
+			if [ $? -eq 0 ]; then
+				$M_EXTRA="-fpermissive"
+			else
+				$M_EXTRA=""
+			fi
+			
 			export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
 			export CFLAGS="$M_SYM_INCLUDES -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O $M_CFLAGS"
-			export CXXFLAGS="$M_SYM_INCLUDES -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O -Wno-narrowing $M_CXXFLAGS"
-			export CPPFLAGS="$M_SYM_INCLUDES -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O -Wno-narrowing $M_CPPFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O -Wno-narrowing $M_EXTRA $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O -Wno-narrowing $M_EXTRA $M_CPPFLAGS"
 
 			# According to the RHEL build spec, MySQL checks will fail without --with-big-tables,
 			./configure --with-pic --enable-thread-safe-client --with-readline --with-charset=latin1 \
 				--with-extra-charsets=all --with-plugins=all --with-ssl="$M_SOURCES/openssl" \
 				--prefix="$M_LOCAL" &>> "$M_LOGS/mysql.txt"; error
 
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset M_EXTRA
 
 			make --jobs=4 &>> "$M_LOGS/mysql.txt"; error
 			make install &>> "$M_LOGS/mysql.txt"; error
@@ -2075,15 +2084,21 @@ memcached() {
 		memcached-build)
 			cd "$M_SOURCES/memcached"; error
 
-			# If Dtrace or System Tap support is enabled, the libmemcached_probes.o file will need to be manually added to the shared object
-			# since it doesn't appear to be included in the libmemcached.a archive file (as of v0.49).
-			
+			# The libmemcached code (as of version 1.0.18) includes comparisons between integers and pointers. This violates 
+			# the ISO C++ standard, which means conformant compilers will fail without the -fpermissive command line option.
+			printf "\n#include <stdlib.h>\n\nint main(int argc, char *argv[]) { return 0; }\n\n" | gcc -o /dev/null -x c++ -fpermissive &> /dev/null
+			if [ $? -eq 0 ]; then
+				$M_EXTRA="-fpermissive"
+			else
+				$M_EXTRA=""
+			fi
+
 			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_EXTRA $M_CXXFLAGS"
+			export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_EXTRA $M_CPPFLAGS"
 
 			# Recent versions of gcc require libmemcached to be explicitly linked with libm.so and libstdc++.so, and configure
-			# doesn't appear to include the libraries automatically.
+			# doesn't appear to include these libraries automatically.
 			export LIBS="-lm -lstdc++"
 
 			# For some reason, the unit tests will fail if this environment variable is configured.
@@ -2097,7 +2112,7 @@ memcached() {
 			./configure --disable-silent-rules --disable-dtrace --disable-sasl --enable-static --enable-shared --with-pic \
 				--prefix="$M_LOCAL" &>> "$M_LOGS/memcached.txt"; error
 
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LIBS
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LIBS; unset M_EXTRA
 			# unset GEARMAND_BINARY; unset MEMCACHED_BINARY
 
 			make --jobs=4 &>> "$M_LOGS/memcached.txt"; error

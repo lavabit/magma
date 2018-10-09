@@ -2013,7 +2013,8 @@ int _initialize_resolver(void) {
 
     _dbgprint(5, "Resolver options: retransmit: %u, retry: %u, options: %lu, nscount: %u, id: %u\n", _res.retrans, _res.retry, _res.options, _res.nscount, _res.id);
 
-    _res.options |= (RES_USE_INET6 | RES_USE_DNSSEC);
+		_res.options |= (RES_USE_DNSSEC);
+//    _res.options |= (RES_USE_INET6 | RES_USE_DNSSEC);
 //  _res.options &= ~(/*RES_USEVC |*/ RES_STAYOPEN | RES_DEFNAMES | RES_DNSRCH);
 
     // TODO: We probably want the CD bit set but not sure how to do this.

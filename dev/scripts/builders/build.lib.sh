@@ -1158,11 +1158,11 @@ mysql() {
 			
 			# The MySQL code (as of version 5.1.73) includes uses invalid cast operations. As a result the 
 			# -fpermissive command line option is required for compilation.
-			printf "\n#include <stdlib.h>\n\nint main(int argc, char *argv[]) { return 0; }\n\n" | gcc -o /dev/null -x c++ -fpermissive &> /dev/null
+			printf "\n#include <stdlib.h>\n\nint main(int argc, char *argv[]) { return 0; }\n\n" | gcc -o /dev/null -x c++ -fpermissive - &> /dev/null
 			if [ $? -eq 0 ]; then
-				$M_EXTRA="-fpermissive"
+				M_EXTRA="-fpermissive"
 			else
-				$M_EXTRA=""
+				M_EXTRA=""
 			fi
 			
 			export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
@@ -2086,11 +2086,11 @@ memcached() {
 
 			# The libmemcached code (as of version 1.0.18) includes comparisons between integers and pointers. This violates 
 			# the ISO C++ standard, which means conformant compilers will fail without the -fpermissive command line option.
-			printf "\n#include <stdlib.h>\n\nint main(int argc, char *argv[]) { return 0; }\n\n" | gcc -o /dev/null -x c++ -fpermissive &> /dev/null
+			printf "\n#include <stdlib.h>\n\nint main(int argc, char *argv[]) { return 0; }\n\n" | gcc -o /dev/null -x c++ -fpermissive - &> /dev/null
 			if [ $? -eq 0 ]; then
-				$M_EXTRA="-fpermissive"
+				M_EXTRA="-fpermissive"
 			else
-				$M_EXTRA=""
+				M_EXTRA=""
 			fi
 
 			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"

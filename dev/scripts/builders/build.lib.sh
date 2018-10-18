@@ -1435,7 +1435,12 @@ clamav() {
 				chmod --changes u-r "$M_SOURCES/clamav/unit_tests/accdenied" &>> "$M_LOGS/clamav.txt"; error
 			fi
 
+			# Increase the default test timeout.
+			export T="300"
+
 			make check &>> "$M_LOGS/clamav.txt"; error
+
+			unset T
 
 			# Add read perms to accdenied file so it can be checked into the version control repo.
 			if [[ -e "$M_SOURCES/clamav/unit_tests/accdenied" ]] && [[ ! -f "$M_SOURCES/clamav/unit_tests/accdenied" ]]; then
@@ -1455,9 +1460,14 @@ clamav() {
 			# Reset the session limits.
 			ulimit -f unlimited || ulimit -i 77233 || ulimit -l 64 || ulimit -m unlimited || ulimit -n 1024 || ulimit -q 819200 || ulimit -r 0 || ulimit -s 10240 || ulimit -c 0 || ulimit -d unlimited || ulimit -e 0 || ulimit -t unlimited || ulimit -u 77233 || ulimit -v unlimited || ulimit -x unlimited || ulimit -p 8
 
+			# Increase the default test timeout.
+			export T="300"
+
 			make check VG=1 HG=1 &>> "$M_LOGS/clamav.txt"; error
 
-			# Add read perms to accdenied file so it can be checked into the version control repo.
+			unset T
+
+			# Add read permissions to accdenied file so it can be checked into the version control repo.
 			if [[ -e "$M_SOURCES/clamav/unit_tests/accdenied" ]] && [[ ! -f "$M_SOURCES/clamav/unit_tests/accdenied" ]]; then
 				chmod --changes u-r "$M_SOURCES/clamav/unit_tests/accdenied" &>> "$M_LOGS/clamav.txt"; error
 			fi

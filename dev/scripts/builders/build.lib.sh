@@ -161,7 +161,7 @@ gd() {
 			export LIBJPEG_CFLAGS=" `pkg-config --cflags libjpeg` "
 			unset PKG_CONFIG_LIBDIR
 			
-			./configure --without-xpm --without-fontconfig --without-x \
+			./configure --without-x --without-xpm --without-tiff --without-fontconfig \
 				--with-png="$M_LOCAL" --with-jpeg="$M_LOCAL" --with-freetype="$M_LOCAL" \
 				--prefix="$M_LOCAL" &>> "$M_LOGS/gd.txt"; error
 				

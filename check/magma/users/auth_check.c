@@ -388,103 +388,113 @@ START_TEST (check_users_auth_address_s) {
 
 START_TEST (check_users_auth_username_s) {
 
+	bool_t result = true;
 	stringer_t *username;
-	char *errmsg = NULL;
+	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	if (!status()) {
 		log_test("USERS / AUTH / USERNAME / SINGLE THREADED:", errmsg);
 		return;
 	}
 
-	if (!(username = auth_sanitize_username(CONSTANT("TEST"))) ||
-		st_cmp_cs_eq(username, CONSTANT("test"))) {
-		errmsg = "Username boiler failed [1].";
+	if (!(username = auth_sanitize_username(CONSTANT("TEST"))) || st_cmp_cs_eq(username, CONSTANT("test"))) {
+		st_sprint(errmsg, "Username boiler failed [1].");
+		result = false;
 	}
 
 	st_cleanup(username);
 	username = NULL;
 
-	if (!errmsg && (!(username = auth_sanitize_username(CONSTANT("TEST.CASE@LAVABIT.COM"))) ||
-		st_cmp_cs_eq(username, CONSTANT("test_case")))) {
-		errmsg = "Username boiler failed [2].";
+	if (result && (!(username = auth_sanitize_username(CONSTANT("TEST.CASE@LAVABIT.COM"))) || st_cmp_cs_eq(username, CONSTANT("test_case")))) {
+		st_sprint(errmsg, "Username boiler failed [2].");
+		result = false;
 	}
 
 	st_cleanup(username);
 	username = NULL;
 
-	if (!errmsg && (!(username = auth_sanitize_username(CONSTANT("test+tag@LAVABIT.com"))) ||
+	if (result && (!(username = auth_sanitize_username(CONSTANT("test+tag@LAVABIT.com"))) ||
 		st_cmp_cs_eq(username, CONSTANT("test")))) {
-		errmsg = "Username boiler failed [3].";
+		st_sprint(errmsg, "Username boiler failed [3].");
+		result = false;
 	}
 
 	st_cleanup(username);
 	username = NULL;
 
-	if (!errmsg && (!(username = auth_sanitize_username(CONSTANT("test.case+tag@sub.domain.com"))) ||
+	if (result && (!(username = auth_sanitize_username(CONSTANT("test.case+tag@sub.domain.com"))) ||
 		st_cmp_cs_eq(username, CONSTANT("test_case@sub.domain.com")))) {
-		errmsg = "Username boiler failed [4].";
+		st_sprint(errmsg, "Username boiler failed [4].");
+		result = false;
 	}
 
 	st_cleanup(username);
 	username = NULL;
 
-	if (!errmsg && (!(username = auth_sanitize_username(CONSTANT("TEST@DOMAIN.COM"))) ||
+	if (result && (!(username = auth_sanitize_username(CONSTANT("TEST@DOMAIN.COM"))) ||
 		st_cmp_cs_eq(username, CONSTANT("test@domain.com")))) {
-		errmsg = "Username boiler failed [5].";
+		st_sprint(errmsg, "Username boiler failed [5].");
+		result = false;
 	}
 
 	st_cleanup(username);
 	username = NULL;
 
-	if (!errmsg && (!(username = auth_sanitize_username(CONSTANT("  TEST  "))) ||
+	if (result && (!(username = auth_sanitize_username(CONSTANT("  TEST  "))) ||
 		st_cmp_cs_eq(username, CONSTANT("test")))) {
-		errmsg = "Username boiler failed [6].";
+		st_sprint(errmsg, "Username boiler failed [6].");
+		result = false;
 	}
 
 	st_cleanup(username);
 	username = NULL;
 
-	if (!errmsg && (!(username = auth_sanitize_username(CONSTANT("  TEST  @  DOMAIN.COM  "))) ||
+	if (result && (!(username = auth_sanitize_username(CONSTANT("  TEST  @  DOMAIN.COM  "))) ||
 		st_cmp_cs_eq(username, CONSTANT("test@domain.com")))) {
-		errmsg = "Username boiler failed [7].";
+		st_sprint(errmsg, "Username boiler failed [7].");
+		result = false;
 	}
 
 	st_cleanup(username);
 	username = NULL;
 
-	if (!errmsg && (!(username = auth_sanitize_username(CONSTANT("TEST.CASE"))) ||
+	if (result && (!(username = auth_sanitize_username(CONSTANT("TEST.CASE"))) ||
 		st_cmp_cs_eq(username, CONSTANT("test_case")))) {
-		errmsg = "Username boiler failed [8].";
+		st_sprint(errmsg, "Username boiler failed [8].");
+		result = false;
 	}
 
 	st_cleanup(username);
 	username = NULL;
 
-	if (!errmsg && (!(username = auth_sanitize_username(CONSTANT("TEST.CASE@LAVABIT.COM"))) ||
+	if (result && (!(username = auth_sanitize_username(CONSTANT("TEST.CASE@LAVABIT.COM"))) ||
 		st_cmp_cs_eq(username, CONSTANT("test_case")))) {
-		errmsg = "Username boiler failed [9].";
+		st_sprint(errmsg, "Username boiler failed [9].");
+		result = false;
 	}
 
 	st_cleanup(username);
 	username = NULL;
 
-	if (!errmsg && (!(username = auth_sanitize_username(CONSTANT("TEST+tag"))) ||
+	if (result && (!(username = auth_sanitize_username(CONSTANT("TEST+tag"))) ||
 		st_cmp_cs_eq(username, CONSTANT("test")))) {
-		errmsg = "Username boiler failed [10].";
+		st_sprint(errmsg, "Username boiler failed [10].");
+		result = false;
 	}
 
 	st_cleanup(username);
 	username = NULL;
 
-	if (!errmsg && (!(username = auth_sanitize_username(CONSTANT("test+tag@nerdshack.com"))) ||
+	if (result && (!(username = auth_sanitize_username(CONSTANT("test+tag@nerdshack.com"))) ||
 		st_cmp_cs_eq(username, CONSTANT("test@nerdshack.com")))) {
-		errmsg = "Username boiler failed [11].";
+		st_sprint(errmsg, "Username boiler failed [11].");
+		result = false;
 	}
 
 	st_cleanup(username);
 	username = NULL;
 
 	log_test("USERS / AUTH / USERNAME / SINGLE THREADED:", errmsg);
-	fail_unless(!errmsg, errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
 
 } END_TEST

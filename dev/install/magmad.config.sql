@@ -62,7 +62,7 @@ INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad'
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[6].tls.certificate', '/etc/pki/tls/private/$TLSFILE', NOW());
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[6].enabled', 'false', NOW());
 
-INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[7].name', 'SUBMISSION', NOW());
+INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[7].name', 'SMTPS', NOW());
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[7].protocol', 'SUBMISSION', NOW());
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[7].network.type', 'TLS', NOW());
 INSERT INTO Host_Config (application, name, `value`, timestamp) VALUES ('magmad', 'magma.servers[7].network.port', '465', NOW());

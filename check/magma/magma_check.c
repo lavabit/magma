@@ -365,7 +365,8 @@ int main(int argc, char *argv[]) {
 	srunner_free(sr);
 
 	// Cleanup the background listening thread.
-	thread_cancel(*net_listen_thread);
+	net_trigger(false);
+
 	thread_join(*net_listen_thread);
 	mm_free(net_listen_thread);
 

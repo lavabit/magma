@@ -35,7 +35,7 @@ bool_t status(void) {
 }
 
 /**
- * @brief	Set the status level to a specified value.
+ * @brief	Set the status level to provided value.
  * @see		status()
  * @param	value	the integer value of the new status level.
  * @return	This function returns no value.

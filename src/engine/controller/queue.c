@@ -136,7 +136,7 @@ void queue_signal(void) {
 
 	for (uint64_t i = 0; queue.workers && i < magma.system.worker_threads; i++) {
 
-		if (queue.workers + i && (ret = thread_signal(*(queue.workers + i), SIGALRM)) && status()) {
+		if (queue.workers + i && (ret = thread_signal(*(queue.workers + i), SIGALRM))) {
 			log_info("Unable to signal the worker thread. {ret = %i}", ret);
 		}
 

@@ -51,18 +51,11 @@ void signal_segfault(int signal) {
  */
 void signal_shutdown(int signal) {
 
-	ip_t ip;
-	char working[64];
-	struct stat64 info;
-	struct rlimit64 limits;
 	pthread_t status_thread;
-	server_t *server = NULL;
-	struct sockaddr *saddr = MEMORYBUF(sizeof(struct sockaddr_in6));
-	socklen_t len = sizeof(struct sockaddr_in6);
 	const struct timespec split = { .tv_sec = 0, .tv_nsec = 100000000 }, single = { .tv_sec = 1, .tv_nsec = 0 };
 
 	// We assume the server is being shutdown for a good reason.
-	log_critical("Signal received. The Magma daemon is attempting a graceful exit. { signal = %s }", signal_name(signal, working, 32));
+	log_critical("Signal received. The Magma daemon is attempting a graceful exit. { signal = %s }", signal_name(signal, MEMORYBUF(32), 32));
 
 	// Clear the thread structure or we'll get a segfault when we attempt the thread join operation.
 	mm_wipe(&status_thread, sizeof(pthread_t));
@@ -70,74 +63,24 @@ void signal_shutdown(int signal) {
 	// Set the status flag so all the worker threads exit nicely.
 	thread_launch(&status_thread, &status_signal, NULL);
 
-	// Loop through and shutdown all of the socket descriptors used to listen for incomoing connections.
-	for (uint64_t i = 0; i < MAGMA_SERVER_INSTANCES; i++) {
-		if ((server = magma.servers[i]) && server->enabled && server->network.sockd > 0) {
-			shutdown(server->network.sockd, SHUT_RDWR);
-		}
-	}
-//
-//	// We give threads 0.1 seconds to ensure the status update is queued and awaiting the lock.
+	// We give threads 0.1 seconds to ensure the status update is queued and awaiting the lock.
 	nanosleep(&split, NULL);
-//
-//	// Signals the worker threads, so they unblock.
-//	queue_signal();
-//
-//	// We give threads 0.1 seconds to let the status update.
-//	nanosleep(&split, NULL);
-//
-//	// Signals the worker threads, so they unblock one more time and see the updated status, thus exiting normally.
-//	queue_signal();
-//
-//	// Then sleep for one second before forcibly shutting down the client connections.
+
+	// Signals the worker threads, so they unblock one more time and see the updated status, thus exiting normally.
+	queue_signal();
+
+	// Then sleep for one second before forcibly shutting down the client connections.
 	nanosleep(&single, NULL);
 	nanosleep(&single, NULL);
 	nanosleep(&single, NULL);
 
-	thread_join(status_thread);
-
-	// Now go through and shutdown all client connections.
-	if (getrlimit64(RLIMIT_NOFILE, &limits)) {
-		log_critical("Unable to determine the maximum legal file descriptor.");
-		thread_join(status_thread);
-		return;
-	}
-
-	// Loop through and check all of the potentially valid file descriptors.
-	for (int fd = 0; fd <= limits.rlim_max; fd++) {
-
-		mm_wipe(&info, sizeof(struct stat64));
-		mm_wipe(&saddr, sizeof(struct sockaddr_in6));
-
-		/// LOW: This only compares the port number for the sockets. We should also ensure the socket is owned by magmad, and/or
-		/// that the server used INADDR_ANY or IN6ADDR_ANY_INIT, otherwise the logic below will close sockets that could be owned by
-		/// other processes on the system that are using the same port number, while bound to a different IP interface.
-		// Look for socket descriptors using ports assigned to server instances and close them.
-		if (!fstat64(fd, &info) && S_ISSOCK(info.st_mode) && !getsockname(fd, saddr, &len)) {
-
-			if (len == sizeof(struct sockaddr_in6) && ((struct sockaddr_in6 *)saddr)->sin6_family == AF_INET6 &&
-				servers_get_count_using_port(ntohs(((struct sockaddr_in6 *)saddr)->sin6_port))) {
-
-				mm_copy(&(ip.ip6), &(((struct sockaddr_in6 *)saddr)->sin6_addr), sizeof(struct in6_addr));
-				ip.family = AF_INET6;
-				log_info("%s:%u is being shutdown.", st_char_get(ip_presentation(&ip, PLACER(working, 64))),
-					ntohs(((struct sockaddr_in6 *)saddr)->sin6_port));
-				shutdown(fd, SHUT_RDWR);
-			}
-			else if (len == sizeof(struct sockaddr_in) && (((struct sockaddr_in *)saddr)->sin_family == AF_INET &&
-				servers_get_count_using_port(ntohs(((struct sockaddr_in *)saddr)->sin_port)))) {
-
-				mm_copy(&(ip.ip4), &(((struct sockaddr_in *)saddr)->sin_addr), sizeof(struct in_addr));
-				ip.family = AF_INET;
-				log_info("%s:%u is being shutdown.", st_char_get(ip_presentation(&ip, PLACER(working, 64))),
-					ntohs(((struct sockaddr_in *)saddr)->sin_port));
-				shutdown(fd, SHUT_RDWR);
-			}
-		}
-	}
+	// Shutdown any remaining threads.
+	net_trigger(true);
 
 	// Signals the worker threads, so they unblock and see the underlying connection has been shutdown.
 	queue_signal();
+
+	thread_join(status_thread);
 	return;
 }
 

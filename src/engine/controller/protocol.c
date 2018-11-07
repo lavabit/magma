@@ -171,8 +171,12 @@ void protocol_secure(connection_t *con) {
 	// Create a new TLS object.
 	if (!(con->network.tls = tls_server_alloc(con->server, con->network.sockd, M_SSL_BIO_NOCLOSE))) {
 
-		log_pedantic("The TLS connection attempt failed. { ip = %s / port = %u / protocol = %.*s }", st_char_get(con_addr_presentation(con, MANAGEDBUF(256))),
-			con->server->network.port, st_length_int(protocol_type(con)), st_char_get(protocol_type(con)));
+#ifdef MAGMA_PEDANTIC
+		if (status()) {
+			log_pedantic("The TLS connection attempt failed. { ip = %s / port = %u / protocol = %.*s }", st_char_get(con_addr_presentation(con, MANAGEDBUF(256))),
+				con->server->network.port, st_length_int(protocol_type(con)), st_char_get(protocol_type(con)));
+		}
+#endif
 
 		// We manually free the connection structure since calling con_destroy() would improperly decrement the statistical counters.
 		if (con->network.tls) tls_free(con->network.tls);

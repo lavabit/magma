@@ -119,7 +119,101 @@ bool_t net_init(server_t *server) {
 	return true;
 }
 
+/**
+ * @brief	Trigers a connection for each server instance, allowing the the listeners to shutdown cleanly. And then purges
+ * 				any remaining sockets.
+ */
+void net_trigger(bool_t verbose) {
 
+	ip_t lip, rip;
+	client_t *client = NULL;
+	server_t *server = NULL;
+	bool_t connected = false;
+	struct rlimit64 limits;
+	struct stat64 info;
+	socklen_t slen = sizeof(struct sockaddr_in6), rlen = sizeof(struct sockaddr_in6);
+	struct sockaddr *saddr = MEMORYBUF(sizeof(struct sockaddr_in6)), *raddr = MEMORYBUF(sizeof(struct sockaddr_in6));
+
+	// Wakeup the listening threads.
+	for (uint64_t i = 0; i < MAGMA_SERVER_INSTANCES; i++) {
+		if ((server = magma.servers[i]) && server->enabled && server->network.sockd > 0) {
+			client_connect("localhost", server->network.port);
+			client_close(client);
+			shutdown(server->network.sockd, SHUT_RDWR);
+		}
+	}
+
+	// Now go through and shutdown all client connections.
+	if (getrlimit64(RLIMIT_NOFILE, &limits)) {
+		log_critical("Unable to determine the maximum legal file descriptor.");
+		return;
+	}
+
+	// Loop through and check all of the potentially valid file descriptors.
+	for (int fd = 0; fd <= limits.rlim_max; fd++) {
+
+		connected = false;
+		mm_wipe(&lip, sizeof(ip_t));
+		mm_wipe(&rip, sizeof(ip_t));
+		mm_wipe(&info, sizeof(struct stat64));
+		mm_wipe(saddr, sizeof(struct sockaddr_in6));
+		mm_wipe(raddr, sizeof(struct sockaddr_in6));
+
+		/// LOW: This only compares the port number for the sockets. We should also ensure the socket is owned by magmad, and/or
+		/// that the server used INADDR_ANY or IN6ADDR_ANY_INIT, otherwise the logic below will close sockets that could be owned by
+		/// other processes on the system that are using the same port number, while bound to a different IP interface.
+		// Look for socket descriptors using ports assigned to server instances and close them.
+		if (!fstat64(fd, &info) && S_ISSOCK(info.st_mode) && !getsockname(fd, saddr, &slen)) {
+
+			if (!getpeername(fd, raddr, &rlen)) {
+				if (rlen == sizeof(struct sockaddr_in6) && ((struct sockaddr_in6 *)raddr)->sin6_family == AF_INET6) {
+					mm_copy(&(rip.ip6), &(((struct sockaddr_in6 *)raddr)->sin6_addr), sizeof(struct in6_addr));
+					rip.family = AF_INET6;
+					connected = true;
+				}
+				else if (rlen == sizeof(struct sockaddr_in) && ((struct sockaddr_in *)raddr)->sin_family == AF_INET) {
+					mm_copy(&(rip.ip4), &(((struct sockaddr_in *)raddr)->sin_addr), sizeof(struct in_addr));
+					rip.family = AF_INET;
+					connected = true;
+				}
+			}
+
+			if (slen == sizeof(struct sockaddr_in6) && ((struct sockaddr_in6 *)saddr)->sin6_family == AF_INET6 &&
+				servers_get_count_using_port(ntohs(((struct sockaddr_in6 *)saddr)->sin6_port))) {
+				mm_copy(&(lip.ip6), &(((struct sockaddr_in6 *)saddr)->sin6_addr), sizeof(struct in6_addr));
+				lip.family = AF_INET6;
+				shutdown(fd, SHUT_RDWR);
+			}
+			else if (slen == sizeof(struct sockaddr_in) && (((struct sockaddr_in *)saddr)->sin_family == AF_INET &&
+				servers_get_count_using_port(ntohs(((struct sockaddr_in *)saddr)->sin_port)))) {
+				mm_copy(&(lip.ip4), &(((struct sockaddr_in *)saddr)->sin_addr), sizeof(struct in_addr));
+				lip.family = AF_INET;
+				shutdown(fd, SHUT_RDWR);
+			}
+			else {
+				connected = false;
+			}
+
+			if (connected && verbose) log_info("%s:%u <-> %s:%u is being shutdown.", st_char_get(ip_presentation(&lip, PLACER(MEMORYBUF(64), 64))),
+				ntohs(((struct sockaddr_in6 *)saddr)->sin6_port), st_char_get(ip_presentation(&rip, PLACER(MEMORYBUF(64), 64))),
+				ntohs(((struct sockaddr_in6 *)raddr)->sin6_port));
+		}
+	}
+
+	// Signals the worker threads, so they unblock and see the underlying connection has been shutdown.
+	queue_signal();
+
+	return;
+}
+
+/**
+ * @brief	Close the listening socket associated with a server.
+ * @return	This function returns no value.
+ */
+void net_shutdown(server_t *server) {
+	close(server->network.sockd);
+	return;
+}
 
 /**
  * @brief	The main network handler entry point; poll the listening socket of each configured protocol server, and dispatch the
@@ -289,12 +383,3 @@ bool_t net_init(server_t *server) {
 //
 //	return true;
 //}
-
-/**
- * @brief	Close the listening socket associated with a server.
- * @return	This function returns no value.
- */
-void net_shutdown(server_t *server) {
-	close(server->network.sockd);
-	return;
-}

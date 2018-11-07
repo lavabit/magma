@@ -84,8 +84,12 @@ client_t * client_connect(chr_t *host, uint32_t port) {
 
 	// Resolve the hostname.
 	if ((ret = getaddrinfo(host, service, &hints, &info)) || !info || info->ai_socktype != SOCK_STREAM) {
-		log_pedantic("Unable to resolve the host %s:%u and create a client connection. { getaddrinfo = %i / errno = %s }", host,
+
+#ifdef MAGMA_PEDANTIC
+		if (status()) log_pedantic("Unable to resolve the host %s:%u and create a client connection. { getaddrinfo = %i / errno = %s }", host,
 			port, ret, strerror_r(errno, MEMORYBUF(256), 256));
+#endif
+
 		if (info) freeaddrinfo(info);
 		return NULL ;
 	}

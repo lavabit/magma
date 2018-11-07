@@ -128,6 +128,7 @@ void          con_reverse_status(connection_t *con, int_t status);
 bool_t   net_init(server_t *server);
 void     net_listen(void);
 void     net_shutdown(server_t *server);
+void     net_trigger(bool_t verbose);
 
 /// write.c
 int64_t   client_print(client_t *client, chr_t *format, ...);

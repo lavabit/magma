@@ -197,7 +197,7 @@ TLS * tls_server_alloc(void *server, int sockd, int flags) {
 	// If the result code indicates a handshake error, but the TCP connection is still alive, we retry the handshake.
 	do {
 		// Attempt the server connection setup.
-		if ((result = SSL_accept_d(tls)) <= 0) {
+		if ((result = SSL_accept_d(tls)) <= 0 && status()) {
 
 			switch ((error = SSL_get_error_d(tls, result))) {
 

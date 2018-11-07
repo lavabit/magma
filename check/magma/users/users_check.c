@@ -26,17 +26,22 @@ START_TEST (check_users_register_s) {
 		// Randomly select one of the available plans. Valid values are 1 through 6.
 		plan = (rand_get_uint16() % 5) + 1;
 
-		// Generate a random, 20 digit string of numbers to use as a unique suffix for the username, with the pattern
-		// check_user_X, which ensures the username is always unique.
-		if (!(password = rand_choices("0123456789", 8, MANAGEDBUF(8))) || !(username = st_quick(MANAGEDBUF(64), "check_user_%.*s", st_length_int(password), st_char_get(password)))) {
+		// Generate a random username, using the pattern check_user_X, which ensures the username is always unique.
+		if (!(password = rand_choices("0123456789", 8, MANAGEDBUF(8))) || !(username = st_quick(MANAGEDBUF(64), "check_user_%.*s",
+			st_length_int(password), st_char_get(password)))) {
 			st_sprint(errmsg, "An internal error occurred. Unable to generate a random username for the registration test.");
 			outcome = false;
 		}
 
-		// We reuse the password buffer, which ensures the password is distinct from the username, and helps us confirm that supplying
-		// an output buffer doesn't lead to a memory leak.
-		else if (!(password = rand_choices("0123456789", 20, MANAGEDBUF(20))) || st_length_get(password) != 20 || st_length_get(username) != 19) {
+		// Create a random password and confirm the length of both values.
+		else if (!(password = rand_choices("0123456789", 20, MANAGEDBUF(20)))) {
 			st_sprint(errmsg, "An internal error occurred. Unable to generate a random password for the registration test.");
+			outcome = false;
+		}
+
+		// Validate the random values.
+		else if (st_length_get(password) != 20 || st_length_get(username) != 19) {
+			st_sprint(errmsg, "The random username/password values failed validation.");
 			outcome = false;
 		}
 
@@ -59,7 +64,8 @@ START_TEST (check_users_register_s) {
 		}
 
 		// Confirm the user was created.
-		if (outcome && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, userid FROM Users WHERE userid = '%.*s';", st_length_int(username), st_char_get(username))) != 1) {
+		if (outcome && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, userid FROM Users WHERE userid = '%.*s';",
+			st_length_int(username), st_char_get(username))) != 1) {
 			st_sprint(errmsg, "Verification of the user table entry after registering a system user failed.");
 			outcome = false;
 		}
@@ -82,17 +88,22 @@ START_TEST (check_users_register_s) {
 		// Randomly select one of the available plans. Valid values are 1 through 6.
 		plan = (rand_get_uint16() % 5) + 1;
 
-		// Generate a random, 20 digit string of numbers to use as a unique suffix for the username, with the pattern
-		// check_user_X@example.com, which ensures the username is always unique.
-		if (!(password = rand_choices("0123456789", 8, MANAGEDBUF(8))) || !(username = st_aprint("check_user_%.*s@example.com", st_length_int(password), st_char_get(password)))) {
+		// Generate a random username, using the pattern check_user_X, which ensures the username is always unique.
+		if (!(password = rand_choices("0123456789", 8, MANAGEDBUF(8))) || !(username = st_aprint("check_user_%.*s@example.com",
+			st_length_int(password), st_char_get(password)))) {
 			st_sprint(errmsg, "An internal error occurred. Unable to generate a random username for the registration test.");
 			outcome = false;
 		}
 
-		// We reuse the password buffer, which ensures the password is distinct from the username, and helps us confirm that supplying
-		// an output buffer doesn't lead to a memory leak.
-		else if (!(password = rand_choices("0123456789", 20, MANAGEDBUF(20))) || st_length_get(password) != 20 || st_length_get(username) != 31) {
+		// Create a random password and confirm the length of both values.
+		else if (!(password = rand_choices("0123456789", 20, MANAGEDBUF(20)))) {
 			st_sprint(errmsg, "An internal error occurred. Unable to generate a random password for the registration test.");
+			outcome = false;
+		}
+
+		// Validate the random values.
+		else if (st_length_get(password) != 20 || st_length_get(username) != 31) {
+			st_sprint(errmsg, "The random username/password values failed validation.");
 			outcome = false;
 		}
 
@@ -115,11 +126,13 @@ START_TEST (check_users_register_s) {
 		}
 
 		// Confirm the user was created.
-		if (outcome && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, userid FROM Users WHERE userid = '%.*s';", st_length_int(username), st_char_get(username))) != 1) {
+		if (outcome && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, userid FROM Users WHERE userid = '%.*s';",
+			st_length_int(username), st_char_get(username))) != 1) {
 			st_sprint(errmsg, "Verification of the user table entry after registering a fully qualified user failed.");
 			outcome = false;
 		}
-		else if (outcome && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, address FROM Mailboxes WHERE address = '%.*s';", st_length_int(username), st_char_get(username))) != 1) {
+		else if (outcome && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, address FROM Mailboxes WHERE address = '%.*s';",
+			st_length_int(username), st_char_get(username))) != 1) {
 			st_sprint(errmsg, "Verification of the mailbox table entry after registering a fully qualified user failed.");
 			outcome = false;
 		}

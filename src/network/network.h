@@ -32,6 +32,7 @@ typedef struct {
 // Setup the structure of variables used to relay and bounce messages.
 typedef struct {
 	ip_t *ip; /* The remote host address information. */
+	uint32_t port; /* The remote host port information. */
 	void *tls; /* The TLS connection object. */
 	int sockd; /* The socket connection. */
 	int status; /* Track whether the last network generated an error. */

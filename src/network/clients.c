@@ -156,6 +156,7 @@ client_t * client_connect(chr_t *host, uint32_t port) {
 	result->ip = ip;
 	result->sockd = sd;
 	result->status = 1;
+	result->port = port;
 	result->line.length = 0;
 	result->line.opts = PLACER_T | JOINTED | STACK | FOREIGNDATA;
 

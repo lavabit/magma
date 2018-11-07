@@ -126,7 +126,8 @@ int_t domain_wildcard(stringer_t *domain) {
 /**
  * @brief	Determine whether outbound messages should be signed via DKIM for a specified domain.
  * @param	domain		a pointer to a managed string containing the name of the domain to be queried.
- * @return	-1 on failure or if the domain wasn't found, 0 if DKIM signing is disabled, or 1 if outbound messages should be signed via DKIM for the domain.
+ * @return	-1 on failure or if the domain wasn't found, 0 if DKIM signing is disabled, or 1 if outbound messages should be signed
+ * 				via DKIM for the domain.
  */
 int_t domain_dkim(stringer_t *domain) {
 

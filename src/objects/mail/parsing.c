@@ -15,7 +15,7 @@
  */
 placer_t * mail_domain_get(stringer_t *address, placer_t *output) {
 
-	if (tok_get_count_st(address, '@') < 2 ||	tok_get_st(address, '@', 1, output) != 1) {
+	if (tok_get_count_st(address, '@') < 2 || tok_get_st(address, '@', 1, output) != 1) {
 		return NULL;
 	}
 

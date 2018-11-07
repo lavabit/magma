@@ -8,10 +8,11 @@
 #include "magma.h"
 
 /**
- * @brief	A simple method for checking multiple managed strings to see if all of them contain data.
+ * @brief	A simple method for checking multiple managed strings to ensure all of the provided strings have
+ * 				contain at least one character of data.
  *
  * @param	len		the number of strings being passed in.
- * @param	va_list	a list of managed strings to be freed.
+ * @param	va_list	a list of managed strings to be validated.
  *
  * @return	true if all of the strings are populated with at least one byte of data, otherwise false.
  */
@@ -32,7 +33,7 @@ bool_t st_populated_variadic(ssize_t len, ...) {
 
 	va_end(list);
 
-	// Return true if we made it this far, unless the list of strings is empty, then return true; which should never actually happen (on purpose).
+	// Return true if we made it this far, unless the list of strings was empty.
 	return (len ? true : false);
 }
 

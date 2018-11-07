@@ -819,7 +819,7 @@ void mail_add_forward_headers(server_t *server, stringer_t **message, stringer_t
 	}
 
 	// Generate the message signature, and insert.
-	if (magma.dkim.enabled && ((signature = dkim_signature_create(id, result)))) {
+	if (magma.dkim.enabled && ((signature = dkim_signature_create(id, NULL, result)))) {
 		cleaned = st_merge_opts(MAPPED_T | JOINTED | HEAP, "sss", first, signature, second);
 		st_free(signature);
 
@@ -850,10 +850,10 @@ int_t mail_add_outbound_headers(connection_t *con) {
 
 	int_t state;
 	time_t utime;
-	placer_t line;
 	struct tm ltime;
 	chr_t date_string[40];
 	size_t position = 0;
+	placer_t line, domain;
 	stringer_t *new, *ip, *reverse, *dk_signature = NULL, *first = NULL, *second = NULL, *header = NULL;
 
 	if (!con || !con->smtp.message || !con->smtp.message->text) {
@@ -896,9 +896,10 @@ int_t mail_add_outbound_headers(connection_t *con) {
 		second = PLACER(st_char_get(con->smtp.message->text), st_length_get(con->smtp.message->text));
 	}
 
-	// Generate the message signature.
-	if (magma.dkim.enabled) {
-		dk_signature = dkim_signature_create(con->smtp.message->id, con->smtp.message->text);
+	// If DKIM is enabled, parse the mail from address to find out which domain the message is from, and then check whether
+	// the domain in question signs outbound messages.
+	if (magma.dkim.enabled && mail_domain_get(con->smtp.mailfrom, &domain) && domain_dkim(&domain) == 1) {
+		dk_signature = dkim_signature_create(con->smtp.message->id, &domain, con->smtp.message->text);
 	}
 
 	// We need to make sure the reverse DNS lookup is complete.

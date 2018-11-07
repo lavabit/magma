@@ -336,7 +336,7 @@ int_t smtp_bounce(connection_t *con) {
 	if (!message) {
 		log_pedantic("Unable to build the bounce message.");
 	}
-	else if ((signature = dkim_signature_create(id, message))) {
+	else if ((signature = dkim_signature_create(id, NULL, message))) {
 
 		if ((holder = st_merge("ss", signature, message))) {
 			st_free(message);
@@ -464,7 +464,7 @@ int_t smtp_reply(stringer_t *from, stringer_t *to, uint64_t usernum, uint64_t au
 	if (!message) {
 		log_pedantic("Unable to build the bounce message.");
 	}
-	else if ((signature = dkim_signature_create(id, message)) != NULL) {
+	else if ((signature = dkim_signature_create(id, NULL, message)) != NULL) {
 		if ((holder = st_merge("ss", signature, message)) != NULL) {
 			st_free(message);
 			message = holder;

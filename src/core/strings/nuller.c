@@ -104,6 +104,38 @@ void ns_free(chr_t *s) {
 }
 
 /**
+ * @brief	A simple method for checking multiple NULL terminated strings to ensure all of the provided pointers lead to a
+ * 				buffer with at least one non-NULL character.
+ *
+ * @param	len		the number of pointers being passed in.
+ * @param	va_list	the list of NULL terminated string pointers to validate.
+ *
+ * @return	true if none of the pointers are NULL, and all point to at least one non-NULL byte, otherwise false.
+ */
+bool_t ns_populated_variadic(ssize_t len, ...) {
+
+	va_list list;
+	chr_t *s = NULL;
+
+	va_start(list, len);
+
+	// Loop through the inputs, and immediately return true if any of the inputs is empty.
+	for (ssize_t i = 0; i < len; i++) {
+		s = va_arg(list, chr_t *);
+		// Ensure the pointer is valid.
+		if (!s) return false;
+
+		// Ensure the buffer doesn't start with a NULL byte.
+		if (!(*s)) return false;
+	}
+
+	va_end(list);
+
+	// Return true if we made it this far, unless the list of strings was empty.
+	return (len ? true : false);
+}
+
+/**
  * @brief	A checked cleanup function which can be used free a variable number of null-terminated strings.
  * @see		ns_free()
  *

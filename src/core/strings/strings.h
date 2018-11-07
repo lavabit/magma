@@ -83,6 +83,7 @@ bool_t   ns_empty(chr_t *s);
 bool_t   ns_empty_out(chr_t *s, chr_t **ptr, size_t *len);
 void     ns_free(chr_t *s);
 //void     ns_cleanup(chr_t *s);
+bool_t   ns_populated_variadic(ssize_t len, ...);
 void     ns_cleanup_variadic(ssize_t len, ...);
 chr_t *  ns_import(void *block, size_t len);
 size_t   ns_length_get(const chr_t *s);
@@ -239,13 +240,19 @@ multi_t    mt_set_type(multi_t multi, M_TYPE target);
 #define st_merge(...) st_merge_opts(MANAGED_T | CONTIGUOUS | HEAP, __VA_ARGS__)
 #define st_vaprint(format, args) st_vaprint_opts(MANAGED_T | CONTIGUOUS | HEAP, format, args)
 
-// Macros are used to allow a variable number of strings to be tested for emptiness, or freed with a single call.
+// The empty functions return true if any of the provided pointers are NULL, or the buffer they point at is empty.
 #define st_empty(...) st_empty_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
-#define st_populated(...) st_populated_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
 
+// The populated functions return true if all of the provided pointers NOT NULL, and point at a buffer with at least 1 byte.
+#define st_populated(...) st_populated_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
+#define ns_populated(...) ns_populated_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
+
+// These functions allow us to test, and free any non-NULL string buffers with a signle function call.
 #define st_cleanup(...) st_cleanup_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
 #define ns_cleanup(...) ns_cleanup_variadic(va_narg(__VA_ARGS__), ##__VA_ARGS__)
 
+// This functions allows us to provide a variable number of managed strings, which are then concatenated
+// and written into the supplied output buffer.
 #define st_write(output, ...) st_write_variadic(output, va_narg(__VA_ARGS__), ##__VA_ARGS__)
 
 // Macro for counting the number of arguments in a variadic list function call.

@@ -21,8 +21,9 @@ typedef struct {
 } check_compress_opt_t;
 
 /// dkim_check.c
-bool_t   check_dkim_sign_sthread(stringer_t *errmsg);
+bool_t   check_dkim_sign_sthread(stringer_t *domain, stringer_t *errmsg);
 bool_t   check_dkim_verify_sthread(stringer_t *errmsg);
+bool_t   check_dkim_sign_mthread(stringer_t *errmsg);
 
 /// symmetric_check.c
 bool_t   check_symmetric_sthread(chr_t *name);

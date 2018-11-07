@@ -108,9 +108,9 @@ START_TEST (check_component_m) {
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	if (status()) result = check_component_test2_mthread(errmsg);
-	//if (status() && result) result = check_component_test2_mthread(errmsg);
+	if (status() && result) result = check_component_test2_mthread(errmsg);
 
-	log_test("COMPONENT / INTERFACE / MILTITHREADED:", errmsg);
+	log_test("COMPONENT / INTERFACE / MILTI THREADED:", errmsg);
 	ck_assert_msg(result, st_char_get(errmsg));
 }
 END_TEST

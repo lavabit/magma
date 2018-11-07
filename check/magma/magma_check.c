@@ -7,9 +7,9 @@
 
 #include "magma_check.h"
 
-int_t case_timeout = RUN_TEST_CASE_TIMEOUT;
-bool_t do_virus_check = true, do_tank_check = true, do_dspam_check = true, do_spf_check = true;
 chr_t *barrister_unit_test = NULL;
+int_t case_timeout = RUN_TEST_CASE_TIMEOUT;
+bool_t do_virus_check = true, do_tank_check = true, do_dspam_check = true, do_spf_check = true, do_dkim_check = true;
 
 /**
  * @brief Enable the log so we can print status information. We're only concerned with whether the

@@ -15,7 +15,7 @@ typedef struct {
 } SPF_dns_test_data_t;
 
 extern pool_t *spf_pool;
-extern bool_t do_tank_check, do_virus_check, do_dspam_check, do_spf_check;
+extern bool_t do_tank_check, do_virus_check, do_dspam_check, do_spf_check, do_dkim_check;
 extern chr_t *virus_check_data_path;
 
 //! Generic Provider Symbol Tests
@@ -545,21 +545,49 @@ START_TEST (check_dspam_bin_s) {
 END_TEST
 
 //! DKIM Tests
-START_TEST (check_dkim_s) {
+START_TEST (check_dkim_verify_s) {
+
+	log_disable();
+	bool_t result = true;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	// If the DKIM engine is disabled we skip these tests.s
+	if (status() && magma.dkim.enabled) result = check_dkim_verify_sthread(errmsg);
+
+	log_test("CHECKERS / DKIM / VERIFY / SINGLE THREADED:", (magma.dkim.enabled ? errmsg : NULLER("SKIPPED")));
+	ck_assert_msg(result, st_char_get(errmsg));
+}
+END_TEST
+
+START_TEST (check_dkim_sign_s) {
 
 	log_disable();
 	bool_t result = true;
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	// If the DKIM engine is disabled we skip these tests.
-	if (status() && magma.dkim.enabled) result = check_dkim_sign_sthread(errmsg);
-	if (status() && magma.dkim.enabled && result) result = check_dkim_verify_sthread(errmsg);
+	if (status() && magma.dkim.enabled) result = check_dkim_sign_sthread(NULL, errmsg);
+	if (status() && magma.dkim.enabled && result) result = check_dkim_sign_sthread(NULLER("magmadaemon.org"), errmsg);
 
-	log_test("CHECKERS / DKIM / SINGLE THREADED:", (magma.dkim.enabled ? errmsg : NULLER("SKIPPED")));
+	log_test("CHECKERS / DKIM / SIGN / SINGLE THREADED:", (magma.dkim.enabled ? errmsg : NULLER("SKIPPED")));
 	ck_assert_msg(result, st_char_get(errmsg));
-
 }
 END_TEST
+
+START_TEST (check_dkim_sign_m) {
+
+	log_disable();
+	bool_t result = true;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	// If the DKIM engine is disabled we skip these tests.
+	if (status() && magma.dkim.enabled) result = check_dkim_sign_mthread(errmsg);
+
+	log_test("CHECKERS / DKIM / SIGN / MULTI THREADED:", (magma.dkim.enabled ? errmsg : NULLER("SKIPPED")));
+	ck_assert_msg(result, st_char_get(errmsg));
+}
+END_TEST
+
 
 //! Encoding/Parser Tests
 START_TEST (check_unicode_s) {
@@ -611,7 +639,7 @@ Suite * suite_check_provide(void) {
 		suite_check_testcase(s, "PROVIDERS", "Tank BZIP/M", check_tank_bzip_m);
 	}
 	else {
-		log_unit("Skipping tank checks...\n");
+		log_unit("Skipping the storage tank checks...\n");
 	}
 
 	if (do_spf_check) {
@@ -621,13 +649,20 @@ Suite * suite_check_provide(void) {
 		log_unit("Skipping SPF checks...\n");
 	}
 
-	suite_check_testcase(s, "PROVIDERS", "DKIM/S", check_dkim_s);
-
 	if (do_virus_check) {
 		suite_check_testcase(s, "PROVIDERS", "Virus/S", check_virus_s);
 	}
 	else {
-		log_unit("Skipping virus checks...\n");
+		log_unit("Skipping the virus scanning checks...\n");
+	}
+
+	if (do_dkim_check) {
+		suite_check_testcase(s, "PROVIDERS", "DKIM Verify/S", check_dkim_verify_s);
+		suite_check_testcase(s, "PROVIDERS", "DKIM Signing/S", check_dkim_sign_s);
+		suite_check_testcase(s, "PROVIDERS", "DKIM Signing/M", check_dkim_sign_m);
+	}
+	else {
+		log_unit("Skipping the DKIM checks...\n");
 	}
 
 	if (do_dspam_check) {
@@ -635,7 +670,7 @@ Suite * suite_check_provide(void) {
 		suite_check_testcase(s, "PROVIDERS", "DSPAM Binary/S", check_dspam_bin_s);
 	}
 	else {
-		log_unit("Skipping DSPAM checks...\n");
+		log_unit("Skipping the DSPAM checks...\n");
 	}
 
 	return s;

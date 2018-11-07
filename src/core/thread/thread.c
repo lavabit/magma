@@ -38,7 +38,7 @@ int_t thread_launch(pthread_t *thread, void *function, void *data) {
 #else
 	else if ((result = pthread_attr_setstacksize(&attributes, CORE_THREAD_STACK_SIZE))) {
 #endif
-		log_pedantic("Could not set the stack size correctly. {pthread_attr_setstacksize = %i}", result);
+		log_pedantic("Could not set the stack size correctly. { pthread_attr_setstacksize = %i }", result);
 		pthread_attr_destroy(&attributes);
 		return result;
 	}

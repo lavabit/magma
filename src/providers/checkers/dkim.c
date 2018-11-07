@@ -131,26 +131,44 @@ void dkim_stop(void) {
  * @brief	Generate a DKIM signature for a message.
  * @note	For this function to work, the magma.dkim.enabled configuration option must be set.
  *			This function also updates the provider.dkim.signed statistic.
- * @param	id			a managed string containing a printable string id for this message.
- * @param	message		a managed string containing the mail message data.
- * @return	NULL on failure or if magma.dkim.enabled is false; otherwise, a managed string containing a DKIM-Signature header
- * 			built using the dkim signature that was generated for the input message.
+ * @param	id		a managed string containing a printable string id for this message.
+ * @param	domain	the domain name hosting the identified DKIM public key.
+ * @param	message	a managed string containing the mail message data.
+ * @return	NULL on failure or if the global magma.dkim.enabled setting is false; otherwise, a managed
+ * 				string containing a DKIM-Signature header built using the dkim signature that was generated
+ * 				for the input message.
  */
-stringer_t * dkim_signature_create(stringer_t *id, stringer_t *message) {
+stringer_t * dkim_signature_create(stringer_t *id, stringer_t *domain, stringer_t *message) {
 
 	DKIM *context;
 	DKIM_STAT status;
 	dkim_sigkey_t key;
+	uchr_t *local = NULL, *selector = NULL;
 	stringer_t *output = NULL, *signature = NULL;
 
-	if (!magma.dkim.enabled && st_populated(magma.dkim.key)) {
+	// We need a key, and a selector to sign a message.
+	if (!magma.dkim.enabled || st_empty(magma.dkim.key) || ns_empty(magma.dkim.selector)) {
 		return NULL;
 	}
 
+	// If a domain parameter is provided, use that. NULL, we can use the system default domain.
+	if (st_populated(domain)) {
+		local = st_uchar_get(domain);
+	}
+	// If the domain parameter is NULL, or empty, then we use the system default domain.
+	else if (ns_populated(magma.dkim.domain)) {
+		local = (uchr_t *)magma.dkim.domain;
+	}
+	// If both are empty, we need to abort.
+	else {
+		return NULL;
+	}
+
+	selector = (uchr_t *)magma.dkim.selector;
 	key = st_uchar_get(magma.dkim.key);
 
 	// Create a new handle to sign the message.
-	if (!(context = dkim_sign_d(dkim_engine, st_data_get(id), NULL, key, (uchr_t *)magma.dkim.selector, (uchr_t *)magma.dkim.domain,
+	if (!(context = dkim_sign_d(dkim_engine, st_data_get(id), NULL, key, selector, local,
 		DKIM_CANON_RELAXED,	DKIM_CANON_RELAXED, DKIM_SIGN_RSASHA256, DKIM_PROCESS_ALL, &status)) ||	status != DKIM_STAT_OK) {
 		log_pedantic("Allocation of the DKIM signature context failed. { %sstatus = %s / error = %s }",
 			     context ? "" : "dkim_sign = NULL / ", dkim_getresultstr_d(status),
@@ -176,17 +194,13 @@ stringer_t * dkim_signature_create(stringer_t *id, stringer_t *message) {
 
 	// Assuming we have a signature, we'll insert it into the message.
 	if (status == DKIM_STAT_OK && st_populated(signature)) {
-
 		output = st_merge("nnsn", DKIM_SIGNHEADER, ": ", signature, "\r\n");
 		stats_adjust_by_name("provider.dkim.signed", 1);
-
 	}
 	else if (status != DKIM_STAT_OK) {
-
 		log_pedantic("An error occurred while trying to generate the DKIM signature. { result = %s / error = %s }",
 			dkim_getresultstr_d(status), dkim_geterror_d(context));
 		stats_adjust_by_name("provider.dkim.error", 1);
-
 	}
 
 	dkim_free_d(context);

@@ -119,7 +119,7 @@ bool_t check_dkim_verify_sthread(stringer_t *errmsg) {
 	return true;
 }
 
-bool_t check_dkim_sign_sthread(stringer_t *errmsg) {
+bool_t check_dkim_sign_sthread(stringer_t *domain, stringer_t *errmsg) {
 
 	uint32_t checked = 0, max = check_message_max();
 	stringer_t *id = NULL, *data = NULL, *signature = NULL;
@@ -139,8 +139,17 @@ bool_t check_dkim_sign_sthread(stringer_t *errmsg) {
 		// We only attempt to generate signatures for messages without an existing signature. Note we have to
 		// run the input messages through the cleanup function, otherwise messages without a proper CRLF line
 		// endings will fail.
-		else if (check_message_dkim_sign(i) && mail_message_cleanup(&data) && !(signature = dkim_signature_create(id, data))) {
+		else if (check_message_dkim_sign(i) && mail_message_cleanup(&data) && !(signature = dkim_signature_create(id, domain, data))) {
 			st_sprint(errmsg, "Failed to generate the domain keys message signature. { message = %i }", i);
+			st_free(data);
+			st_free(id);
+			return false;
+		}
+
+		else if (check_message_dkim_sign(i) && st_populated(domain) && !st_search_cs(signature, st_quick(MANAGEDBUF(256),
+			PLACER("d=", 2), domain, PLACER(";", 1)), NULL)) {
+			st_sprint(errmsg, "Failed to generate the domain keys message signature using the provided domain name. { message = %i }", i);
+			st_free(signature);
 			st_free(data);
 			st_free(id);
 			return false;
@@ -151,9 +160,13 @@ bool_t check_dkim_sign_sthread(stringer_t *errmsg) {
 		// if we actually tried to sign the message. Otherwise a non-NULL pointer from a previous loop will
 		// cause a double free.
 		else if (check_message_dkim_sign(i)) {
+		log_enable();
+		log_pedantic("%.*s",st_length_int(signature), st_char_get(signature));
 			st_free(signature);
 			checked++;
 		}
+
+
 
 		st_free(data);
 		st_free(id);
@@ -166,4 +179,74 @@ bool_t check_dkim_sign_sthread(stringer_t *errmsg) {
 	}
 
 	return true;
+}
+
+void check_dkim_sign_wrapper(void *arg) {
+
+	stringer_t *result = NULL, *domain = (stringer_t *)arg, *errmsg = MANAGEDBUF(1024);
+
+	if (!thread_start()) {
+		log_unit("Unable to setup the thread context.");
+		result = st_aprint("Thread startup error.");
+		pthread_exit(result);
+	}
+
+	if (!check_dkim_sign_sthread(domain, errmsg)) {
+		thread_stop();
+		result = st_dupe_opts(MANAGED_T | CONTIGUOUS | HEAP, errmsg);
+		pthread_exit(result);
+	}
+
+	thread_stop();
+	pthread_exit(NULL);
+	return;
+}
+
+bool_t check_dkim_sign_mthread(stringer_t *errmsg) {
+
+	void *outcome = NULL;
+	bool_t result = true;
+	pthread_t *threads = NULL;
+	stringer_t *domain = NULL, *domains[] = { NULLER("lavabit.com"), NULLER("nerdshack.com"), NULLER("mailshack.com"),
+		NULLER("magmadaemon.org"), NULLER("volcanoclient.org"), NULLER("roboxes.org"), NULLER("darkmail.info"),
+		NULLER("example.com") };
+
+	// Determines the number of threads spawned.
+	if (!DKIM_CHECK_MTHREADS) {
+		return true;
+	}
+	else if (!(threads = mm_alloc(sizeof(pthread_t) * DKIM_CHECK_MTHREADS))) {
+		st_sprint(errmsg, "Thread allocation failed.");
+		return false;
+	}
+
+	// Launch the threads.
+	for (uint64_t counter = 0; counter < DKIM_CHECK_MTHREADS; counter++) {
+
+		if (counter < (sizeof(domains)/sizeof(stringer_t *))) domain = domains[counter];
+		else domain = domains[counter % (sizeof(domains)/sizeof(stringer_t *))];
+
+		if (thread_launch(threads + counter, &check_dkim_sign_wrapper, domain)) {
+			st_sprint(errmsg, "Thread launch failed.");
+			result = false;
+		}
+	}
+
+	// Wait for the threads to finish and check the output value for an error indication.
+	for (uint64_t counter = 0; counter < DKIM_CHECK_MTHREADS; counter++) {
+		if (thread_result(*(threads + counter), &outcome)) {
+			if (!errmsg) st_sprint(errmsg, "Thread join error.");
+			result = false;
+		}
+		else if ((threads + counter) && outcome) {
+			// Only record the result if it's the first error message.
+			if (!errmsg && result) st_sprint(errmsg, "Threaded test failed. { %.*s }", st_length_int((stringer_t *)outcome), st_char_get((stringer_t *)outcome));
+			st_free(outcome);
+			outcome = NULL;
+			result = false;
+		}
+	}
+
+	mm_free(threads);
+	return result;
 }

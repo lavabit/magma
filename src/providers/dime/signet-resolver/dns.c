@@ -466,7 +466,7 @@ int _load_dnskey_file(const char *filename) {
 
         memset(dname, 0, sizeof(dname));
 
-        if (sscanf(lptr, "%s initial-key %u %u %u ", dname, &flags, &protocol, &algorithm) != 4) {
+        if (sscanf(lptr, "%1024s initial-key %u %u %u ", dname, &flags, &protocol, &algorithm) != 4) {
             continue;
         }
 

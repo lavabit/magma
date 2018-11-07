@@ -115,9 +115,9 @@ int_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *us
 
 	uint16_t serial = 0;
 	uint32_t bonus = 0;
-	MYSQL_BIND parameters[8];
+	MYSQL_BIND parameters[9];
 	auth_stacie_t *stacie = NULL;
-	uint8_t rotated = 1, ads = 0;
+	uint8_t rotated = 1, ads = 0, secure = 1;
 	const chr_t *account_plans[] = { "BASIC", "PERSONAL", "ENHANCED", "PREMIUM", "STANDARD", "PREMIER" };
 	uint64_t name_len, quota = 0, usernum, inbox, size_limit, send_limit, recv_limit;
 	stringer_t *newaddr = NULL, *salt = NULL, *shard = NULL, *b64_salt = NULL, *b64_shard = NULL, *b64_verification = NULL,
@@ -378,47 +378,53 @@ int_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *us
 	parameters[0].buffer = &usernum;
 	parameters[0].is_unsigned = true;
 
-	// Spam Folder
-	parameters[1].buffer_type = MYSQL_TYPE_LONGLONG;
-	parameters[1].buffer_length = sizeof(uint64_t);
-	parameters[1].buffer = &inbox;
+	// The secure storage boolean.
+	parameters[1].buffer_type = MYSQL_TYPE_TINY;
+	parameters[1].buffer_length = sizeof(uint8_t);
+	parameters[1].buffer = &secure;
 	parameters[1].is_unsigned = true;
 
-	// Inbox
+	// Spam Folder
 	parameters[2].buffer_type = MYSQL_TYPE_LONGLONG;
 	parameters[2].buffer_length = sizeof(uint64_t);
 	parameters[2].buffer = &inbox;
 	parameters[2].is_unsigned = true;
 
-	// Send size limit.
+	// Inbox
 	parameters[3].buffer_type = MYSQL_TYPE_LONGLONG;
 	parameters[3].buffer_length = sizeof(uint64_t);
-	parameters[3].buffer = (chr_t *)&size_limit;
+	parameters[3].buffer = &inbox;
 	parameters[3].is_unsigned = true;
 
-	// Receive size limit.
+	// Send size limit.
 	parameters[4].buffer_type = MYSQL_TYPE_LONGLONG;
 	parameters[4].buffer_length = sizeof(uint64_t);
 	parameters[4].buffer = (chr_t *)&size_limit;
 	parameters[4].is_unsigned = true;
 
-	// Daily send limit.
+	// Receive size limit.
 	parameters[5].buffer_type = MYSQL_TYPE_LONGLONG;
 	parameters[5].buffer_length = sizeof(uint64_t);
-	parameters[5].buffer = (chr_t *)&send_limit;
+	parameters[5].buffer = (chr_t *)&size_limit;
 	parameters[5].is_unsigned = true;
 
-	// Daily receive limit.
+	// Daily send limit.
 	parameters[6].buffer_type = MYSQL_TYPE_LONGLONG;
 	parameters[6].buffer_length = sizeof(uint64_t);
-	parameters[6].buffer = (chr_t *)&recv_limit;
+	parameters[6].buffer = (chr_t *)&send_limit;
 	parameters[6].is_unsigned = true;
 
-	// Daily receive limit, IP.
+	// Daily receive limit.
 	parameters[7].buffer_type = MYSQL_TYPE_LONGLONG;
 	parameters[7].buffer_length = sizeof(uint64_t);
 	parameters[7].buffer = (chr_t *)&recv_limit;
 	parameters[7].is_unsigned = true;
+
+	// Daily receive limit, IP.
+	parameters[8].buffer_type = MYSQL_TYPE_LONGLONG;
+	parameters[8].buffer_length = sizeof(uint64_t);
+	parameters[8].buffer = (chr_t *)&recv_limit;
+	parameters[8].is_unsigned = true;
 
 	// Dispatch table.
 	if (!stmt_exec_conn(stmts.register_insert_dispatch, parameters, transaction)) {

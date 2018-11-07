@@ -131,7 +131,7 @@
 #define REGISTER_INSERT_PROFILE "INSERT INTO Profile (`usernum`) VALUES (?)"
 #define REGISTER_INSERT_FOLDER_NAME "INSERT INTO Folders (`usernum`, `foldername`) VALUES (?, ?)"
 #define REGISTER_INSERT_LOG "INSERT INTO Log (`usernum`, `created`, `created_ip`) VALUES (?, NOW(), ?)"
-#define REGISTER_INSERT_DISPATCH "INSERT INTO Dispatch (`usernum`, `spamfolder`, `inbox`, `send_size_limit`, `recv_size_limit`, `daily_send_limit`, `daily_recv_limit`, `daily_recv_limit_ip`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+#define REGISTER_INSERT_DISPATCH "INSERT INTO Dispatch (`usernum`, `secure`, `spamfolder`, `inbox`, `send_size_limit`, `recv_size_limit`, `daily_send_limit`, `daily_recv_limit`, `daily_recv_limit_ip`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 #define REGISTER_INSERT_MAILBOXES "INSERT INTO Mailboxes (`address`, `usernum`) VALUES (?, ?)"
 #define REGISTER_FETCH_BLOCKLIST "SELECT sequence FROM Banned"
 #define DELETE_USER "DELETE FROM Users WHERE userid = ?"

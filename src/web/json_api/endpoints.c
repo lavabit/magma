@@ -146,6 +146,7 @@ void api_endpoint_register(connection_t *con) {
 	uint64_t usernum = 0;
 	int64_t transaction = -1;
 	json_error_t jansson_err;
+	stringer_t *sanitized = NULL;
 	chr_t *holder = NULL, *username = NULL, *password = NULL, *password_verification = NULL;
 
 	// Try parsing the parameters with and without the plan key.
@@ -176,6 +177,12 @@ void api_endpoint_register(connection_t *con) {
 
 	}
 
+	// Sanitize the username, and prepare it for the database insert.
+	if (!(sanitized = auth_sanitize_username(NULLER(username)))) {
+		api_error(con, HTTP_ERROR_400, JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS, "Invalid username provided.");
+		goto out;
+	}
+
 	// Start the transaction.
 	transaction = tran_start();
 	if (transaction == -1) {
@@ -184,7 +191,7 @@ void api_endpoint_register(connection_t *con) {
 	}
 
 	// Database insert.
-	if ((result = register_data_insert_user(con, plan, lower_st(NULLER(username)), NULLER(password), transaction, &usernum)) != 0) {
+	if ((result = register_data_insert_user(con, plan, sanitized, NULLER(password), transaction, &usernum)) != 0) {
 		tran_rollback(transaction);
 		if (result < 0) {
 			api_error(con, HTTP_ERROR_500, JSON_RPC_2_ERROR_SERVER_INTERNAL, "Internal server error.");
@@ -203,7 +210,11 @@ void api_endpoint_register(connection_t *con) {
 
 	api_response(con, HTTP_OK, "{s:s, s:{s:s}, s:I}", "jsonrpc", "2.0", "result", "register", "success", "id", con->http.portal.id);
 
-	out: return;
+	out:
+
+	st_cleanup(sanitized);
+
+	return;
 }
 
 void api_endpoint_delete_user(connection_t *con) {

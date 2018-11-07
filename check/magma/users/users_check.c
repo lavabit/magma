@@ -13,10 +13,11 @@ START_TEST (check_users_register_s) {
 	uint16_t plan;
 	connection_t con;
 	uint64_t usernum = 0;
+	bool_t outcome = true;
 	int64_t transaction = -1;
 	stringer_t *errmsg = MANAGEDBUF(128), *username = NULL, *password = NULL;
 
-	// If the check process hasn't been aborted, register new user account using a randomly generated userid/password.
+	// If the check process hasn't been aborted, register a new user account using a randomly generated username/password.
 	if (status()) {
 
 		// Pass in a blank connection structure. This will be used to store the registration IP address.
@@ -25,21 +26,31 @@ START_TEST (check_users_register_s) {
 		// Randomly select one of the available plans. Valid values are 1 through 6.
 		plan = (rand_get_uint16() % 5) + 1;
 
-		// Generate a random string of numbers as the password and then append the string of numbers to the username
-		// pattern check_user_XYZ to create a username that should always be unique.
-		if (!(password = rand_choices("0123456789", 20, NULL)) || !(username = st_aprint("check_user_%.*s", st_length_int(password), st_char_get(password)))) {
-			st_sprint(errmsg, "An internal error occurred. Unable to generate a random username and password for registration.");
+		// Generate a random, 20 digit string of numbers to use as a unique suffix for the username, with the pattern
+		// check_user_X, which ensures the username is always unique.
+		if (!(password = rand_choices("0123456789", 8, MANAGEDBUF(8))) || !(username = st_quick(MANAGEDBUF(64), "check_user_%.*s", st_length_int(password), st_char_get(password)))) {
+			st_sprint(errmsg, "An internal error occurred. Unable to generate a random username for the registration test.");
+			outcome = false;
+		}
+
+		// We reuse the password buffer, which ensures the password is distinct from the username, and helps us confirm that supplying
+		// an output buffer doesn't lead to a memory leak.
+		else if (!(password = rand_choices("0123456789", 20, MANAGEDBUF(20))) || st_length_get(password) != 20 || st_length_get(username) != 19) {
+			st_sprint(errmsg, "An internal error occurred. Unable to generate a random password for the registration test.");
+			outcome = false;
 		}
 
 		// Start the transaction.
 		else if ((transaction = tran_start()) == -1) {
 			st_sprint(errmsg, "An internal error occurred. Unable to start the transaction.");
+			outcome = false;
 		}
 
 		// Database insert.
 		else if (register_data_insert_user(&con, plan, username, password, transaction, &usernum) != 0) {
 			st_sprint(errmsg, "User registration failed!.");
 			tran_rollback(transaction);
+			outcome = false;
 		}
 
 		// Were finally done.
@@ -47,11 +58,77 @@ START_TEST (check_users_register_s) {
 			tran_commit(transaction);
 		}
 
-		st_cleanup(username, password);
+		// Confirm the user was created.
+		if (outcome && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, userid FROM Users WHERE userid = '%.*s';", st_length_int(username), st_char_get(username))) != 1) {
+			st_sprint(errmsg, "Verification of the user table entry after registering a system user failed.");
+			outcome = false;
+		}
+		else if (outcome && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, address FROM Mailboxes WHERE address = '%.*s@%.*s';",
+			st_length_int(username), st_char_get(username), st_length_int(magma.system.domain), st_char_get(magma.system.domain))) != 1) {
+			st_sprint(errmsg, "Verification of the mailbox table entry after registering a system user failed.");
+			outcome = false;
+		}
+
+	}
+
+	mark_point();
+
+	// If the first test passed, try again with a fully qualified username.
+	if (status() && outcome) {
+
+		// Pass in a blank connection structure. This will be used to store the registration IP address.
+		mm_wipe(&con, sizeof(connection_t));
+
+		// Randomly select one of the available plans. Valid values are 1 through 6.
+		plan = (rand_get_uint16() % 5) + 1;
+
+		// Generate a random, 20 digit string of numbers to use as a unique suffix for the username, with the pattern
+		// check_user_X@example.com, which ensures the username is always unique.
+		if (!(password = rand_choices("0123456789", 8, MANAGEDBUF(8))) || !(username = st_aprint("check_user_%.*s@example.com", st_length_int(password), st_char_get(password)))) {
+			st_sprint(errmsg, "An internal error occurred. Unable to generate a random username for the registration test.");
+			outcome = false;
+		}
+
+		// We reuse the password buffer, which ensures the password is distinct from the username, and helps us confirm that supplying
+		// an output buffer doesn't lead to a memory leak.
+		else if (!(password = rand_choices("0123456789", 20, MANAGEDBUF(20))) || st_length_get(password) != 20 || st_length_get(username) != 31) {
+			st_sprint(errmsg, "An internal error occurred. Unable to generate a random password for the registration test.");
+			outcome = false;
+		}
+
+		// Start the transaction.
+		else if ((transaction = tran_start()) == -1) {
+			st_sprint(errmsg, "An internal error occurred. Unable to start the transaction.");
+			outcome = false;
+		}
+
+		// Database insert.
+		else if (register_data_insert_user(&con, plan, username, password, transaction, &usernum) != 0) {
+			st_sprint(errmsg, "User registration failed!.");
+			tran_rollback(transaction);
+			outcome = false;
+		}
+
+		// Were finally done.
+		else {
+			tran_commit(transaction);
+		}
+
+		// Confirm the user was created.
+		if (outcome && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, userid FROM Users WHERE userid = '%.*s';", st_length_int(username), st_char_get(username))) != 1) {
+			st_sprint(errmsg, "Verification of the user table entry after registering a fully qualified user failed.");
+			outcome = false;
+		}
+		else if (outcome && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, address FROM Mailboxes WHERE address = '%.*s';", st_length_int(username), st_char_get(username))) != 1) {
+			st_sprint(errmsg, "Verification of the mailbox table entry after registering a fully qualified user failed.");
+			outcome = false;
+		}
+
 	}
 
 	log_test("USERS / REGISTER / SINGLE THREADED:", errmsg);
-	if (st_populated(errmsg)) ck_abort_msg(st_char_get(errmsg));
+	ck_assert_msg(outcome, st_char_get(errmsg));
+
 }
 END_TEST
 

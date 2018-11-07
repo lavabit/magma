@@ -120,7 +120,7 @@ int_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *us
 	uint8_t rotated = 1, ads = 0, secure = 1;
 	const chr_t *account_plans[] = { "BASIC", "PERSONAL", "ENHANCED", "PREMIUM", "STANDARD", "PREMIER" };
 	uint64_t name_len, quota = 0, usernum, inbox, size_limit, send_limit, recv_limit;
-	stringer_t *newaddr = NULL, *salt = NULL, *shard = NULL, *b64_salt = NULL, *b64_shard = NULL, *b64_verification = NULL,
+	stringer_t *mailbox = NULL, *address = NULL, *salt = NULL, *shard = NULL, *b64_salt = NULL, *b64_shard = NULL, *b64_verification = NULL,
 		*ip = NULL, *realm = NULL, *expiration = MANAGEDBUF(128);
 
 	/// LOW: This function should be passed a number of days (or years) to use for any of the pre-paid account plans.
@@ -437,8 +437,14 @@ int_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *us
 	// Mailboxes Table
 	mm_wipe(parameters, sizeof(parameters));
 
-	// Merge the username with the default system domain name.
-	if (!(newaddr = st_merge("sns", username, "@", magma.system.domain))) {
+
+	// If the username contains a domain name, we should use the entire username as the mailbox.
+	if (st_search_chr(username, '@', NULL)) {
+		mailbox = username;
+	}
+
+	// Other we merge the username with the default system domain name to get the mailbox.
+	else if (!(mailbox = address = st_merge("sns", username, "@", magma.system.domain))) {
 		log_pedantic("Unable to generate an email address for the new user.");
 		st_cleanup(salt, shard, b64_salt, b64_shard, b64_verification);
 		auth_stacie_cleanup(stacie);
@@ -447,8 +453,8 @@ int_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *us
 
 	// Username
 	parameters[0].buffer_type = MYSQL_TYPE_STRING;
-	parameters[0].buffer = (chr_t *)st_char_get(newaddr);
-	parameters[0].buffer_length = st_length_get(newaddr);
+	parameters[0].buffer = (chr_t *)st_char_get(mailbox);
+	parameters[0].buffer_length = st_length_get(mailbox);
 
 	// Usernum
 	parameters[1].buffer_type = MYSQL_TYPE_LONGLONG;
@@ -459,7 +465,7 @@ int_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *us
 	// Insert the email address into the mailboxes table.
 	if (!stmt_exec_conn(stmts.register_insert_mailboxes, parameters, transaction)) {
 		log_pedantic("Unable to insert the user into the database. (Failed on Mailboxes table.)");
-		st_cleanup(newaddr, salt, shard, b64_salt, b64_shard, b64_verification);
+		st_cleanup(address, salt, shard, b64_salt, b64_shard, b64_verification);
 		auth_stacie_cleanup(stacie);
 		return -1;
 	}
@@ -467,13 +473,13 @@ int_t register_data_insert_user(connection_t *con, uint16_t plan, stringer_t *us
 	// Finally derive the realm key, and then create the DIME signet and key pair.
 	if (!(realm = stacie_realm_key(stacie->keys.master, PLACER("mail",  4), salt, shard)) || meta_crypto_keys_create(usernum, username, realm, transaction)) {
 		log_pedantic("Unable to insert the user into the database. (Failed on Keys table.)");
-		st_cleanup(newaddr, salt, shard, b64_salt, b64_shard, b64_verification);
+		st_cleanup(address, salt, shard, b64_salt, b64_shard, b64_verification);
 		auth_stacie_cleanup(stacie);
 		return -1;
 	}
 
 	// Cleanup and tell the caller everything worked.
-	st_cleanup(newaddr, salt, shard, b64_salt, b64_shard, b64_verification, realm);
+	st_cleanup(address, salt, shard, b64_salt, b64_shard, b64_verification, realm);
 	auth_stacie_cleanup(stacie);
 	*outuser = usernum;
 

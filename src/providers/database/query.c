@@ -91,8 +91,6 @@ int64_t sql_query_conn(stringer_t *query, uint32_t connection) {
 	return state;
 }
 
-
-
 MYSQL_RES * sql_query_res(stringer_t *query) {
 
 	MYSQL_RES *result;

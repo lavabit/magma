@@ -431,14 +431,14 @@ bool_t cache_config(stringer_t *name, stringer_t *value) {
 
 	// Make sure were passed a valid value.
 	if (st_cmp_ci_starts(name, CONSTANT("magma.iface.cache.host"))) {
-		log_critical("%*.s is not a valid setting.", st_length_int(name), st_char_get(name));
+		log_critical("%.*s is not a valid setting.", st_length_int(name), st_char_get(name));
 		return false;
 	}
 
 	// Extract the inner bracket value, and convert it to a number. If either step fails, return an error.
 	// We've hard coded an offset of 22 bytes to account for the length of the namespace.
 	if (pl_empty((brack_val = bracket_extract_pl(st_char_get(name) + 22, st_length_get(name) - 22))) || !uint32_conv_bl(pl_char_get(brack_val), pl_length_get(brack_val), &serv_num)) {
-		log_critical("%*.s is not a valid setting.", st_length_int(name), st_char_get(name));
+		log_critical("%.*s is not a valid setting.", st_length_int(name), st_char_get(name));
 		return false;
 	}
 

@@ -90,7 +90,7 @@ int_t meta_update_realms(meta_user_t *user, stringer_t *salt, stringer_t *master
 //	stringer_t *temp = MANAGEDBUF(800);
 //	log_pedantic("rotated = %u", rotated);
 //	temp = base64_encode_mod(user->realm.mail, temp);
-//	log_pedantic("realm = %*.s", st_length_int(temp), st_char_get(temp));
+//	log_pedantic("realm = %.*s", st_length_int(temp), st_char_get(temp));
 ///****/
 
 	// Do we need to clear the lock.

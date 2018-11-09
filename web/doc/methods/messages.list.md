@@ -6,6 +6,14 @@ List messages of the given folder.
 
 - integer
 
+["start"] - *given to skip the specified number of messages in the folder, before constructing the response*
+
+- integer
+
+["limit"] - *stop adding messages to the response, when it reaches this number*
+
+- integer
+
 ### Response Params
 
 "messageID"

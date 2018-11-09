@@ -416,7 +416,6 @@ START_TEST (check_camel_basic_s) {
 }
 END_TEST
 
-
 Suite * suite_check_camel(void) {
 
 	Suite *s = suite_create("\tCAMEL");
@@ -429,7 +428,7 @@ Suite * suite_check_camel(void) {
 	// which has significantly more overhead for each allocate/free oepration. As a result we give the camelface
 	// tests twice as much time to complete when applicable. (The timeout is disabled when a debugger, or profiler
 	// is in use.)
-	suite_check_testcase_timeout(s, "HTTP CAMEL", "HTTP Network Camel Basic/S", check_camel_basic_s, ( case_timeout * 2 ));
+	suite_check_testcase_timeout(s, "HTTP CAMEL", "HTTP Network Camel Basic/S", check_camel_basic_s, ( case_timeout * 4 ));
 
 	return s;
 }

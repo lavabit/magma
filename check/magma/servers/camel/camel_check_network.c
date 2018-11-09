@@ -195,19 +195,17 @@ int32_t check_camel_msg_id(uint32_t folder_id, stringer_t *cookie, bool_t secure
 	int32_t msg_id = -1;
 	stringer_t *command = NULL, *json = NULL;
 	json_t *json_root = NULL, *json_array = NULL, *json_cursor = NULL;
-	chr_t *messages_list = "{\"id\":2,\"method\":\"messages.list\",\"params\":{\"folderID\":%u}}";
+	chr_t *messages_list = "{\"id\":2,\"method\":\"messages.list\",\"params\":{\"folderID\":%u, \"limit\":1}}";
 
 	// Contruct the command string.
 	if (!(command = st_alloc(ns_length_get(messages_list) - 2 + uint32_digits(folder_id) + 1)) ||
 		st_sprint(command, messages_list, folder_id) == -1) {
-
 		st_cleanup(command);
 		return msg_id;
 	}
 	// Query for the contents of the folder.
 	else if (!(json = check_camel_print(command, cookie, secure)) || !(json_root = json_loads_d(st_char_get(json), 0, &err)) ||
 		!(json_array = json_object_get_d(json_root, "result"))) {
-
 		if (json_root) json_decref_d(json_root);
 		st_cleanup(command, json);
 		return msg_id;
@@ -216,7 +214,6 @@ int32_t check_camel_msg_id(uint32_t folder_id, stringer_t *cookie, bool_t secure
 	// If the folder contains mail, return the messageID of the first message.
 	if (json_array_size_d(json_array) <= 0 || !(json_cursor = json_array_get_d(json_array, 0)) ||
 		json_unpack_d(json_cursor, "{s:i}", "messageID", &msg_id) != 0) {
-
 		msg_id = -1;
 	}
 
@@ -379,8 +376,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	/// Test config.edit 		: {"id":2,"method":"config.edit","params":{<rand_strs[0]>:<rand_strs[1]>}}"
 	/// Expected Response 	: {"jsonrpc":"2.0","result":{"config.edit":"success"},"id":2}
 
-  // Set the current command string.
-  chr_command = "{\"id\":2,\"method\":\"config.edit\",\"params\":{\"%.*s\":\"%.*s\"}}";
+	// Set the current command string.
+	chr_command = "{\"id\":2,\"method\":\"config.edit\",\"params\":{\"%.*s\":\"%.*s\"}}";
 
 	// Generate the random inputs for "key" and "value".
 	if (!rand_choices(choices, 64, rand_strs[0]) || !rand_choices(choices, 64, rand_strs[1])) {
@@ -2423,8 +2420,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Retrieve the folderID of Inbox and a messageID.
 	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
 		(message_ids[0] = check_camel_msg_id(folder_ids[0], cookie, secure)) == -1) {
-
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 41 }");
+		st_sprint(errmsg, "Failed to retrieve the folderID of the Inbox or the Inbox is empty. { command # = 41 }");
 		return false;
 	}
 
@@ -2484,8 +2480,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Retrieve the folderID of Inbox and a messageID.
 	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
 		(message_ids[0] = check_camel_msg_id(folder_ids[0], cookie, secure)) == -1) {
-
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 42 }");
+		st_sprint(errmsg, "Failed to retrieve the folderID of the Inbox or the Inbox is empty. { command # = 42 }");
 		return false;
 	}
 
@@ -2588,8 +2583,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Test folders.add		: {"id":46,"method":"folders.add","params":{"context":"mail","name":<rand_strs[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"folderID":<folder_ids[0]>},"id":46}
 
-  // Set the current command string.
-  chr_command = "{\"id\":46,\"method\":\"folders.add\",\"params\":{\"context\":\"mail\",\"name\":\"%.*s\"}}";
+	// Set the current command string.
+	chr_command = "{\"id\":46,\"method\":\"folders.add\",\"params\":{\"context\":\"mail\",\"name\":\"%.*s\"}}";
 
 	// Generate the random input for "name".
 	if (!rand_choices(choices, 16, rand_strs[0])) {
@@ -2646,7 +2641,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if ((folder_ids[1] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
 		(message_ids[0] = check_camel_msg_id(folder_ids[1], cookie, secure)) == -1) {
 
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 45 }");
+		st_sprint(errmsg, "Failed to retrieve the folderID of the Inbox or the Inbox is empty. { command # = 45 }");
 		return false;
 	}
 
@@ -2691,14 +2686,13 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	//											"targetFolderID":<folder_ids[0]>}}",
 	// Expected Response 	: {"jsonrpc":"2.0","result":[],"id":48}
 
-  // Set the current command string.
-  chr_command = "{\"id\":48,\"method\":\"messages.copy\",\"params\":{\"messageIDs\":[%lu],\"sourceFolderID\":%lu,\"targetFolderID\":%lu}}";
+	// Set the current command string.
+	chr_command = "{\"id\":48,\"method\":\"messages.copy\",\"params\":{\"messageIDs\":[%lu],\"sourceFolderID\":%lu,\"targetFolderID\":%lu}}";
 
 	// Retrieve the folderID of Inbox and a messageID.
 	if ((folder_ids[1] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
 		(message_ids[0] = check_camel_msg_id(folder_ids[1], cookie, secure)) == -1) {
-
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 46 }");
+		st_sprint(errmsg, "Failed to retrieve the folderID of the Inbox or the Inbox is empty. { command # = 46 }");
 		return false;
 	}
 
@@ -2750,8 +2744,8 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Test folders.remove	: {"id":49,"method":"folders.remove","params":{"context":"contacts","folderID":<folder_ids[0]>}}",
 	// Expected Response 		: {"jsonrpc":"2.0","result":{"folder.remove":"success"},"id":49}
 
-  // Set the current command string.
-  chr_command = "{\"id\":49,\"method\":\"folders.remove\",\"params\":{\"context\":\"mail\",\"folderID\":%lu}}";
+	// Set the current command string.
+	chr_command = "{\"id\":49,\"method\":\"folders.remove\",\"params\":{\"context\":\"mail\",\"folderID\":%lu}}";
 
 	// Construct the command string.
 	if (!(st_sprint(command, chr_command, folder_ids[0]))) {
@@ -2802,14 +2796,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	//											"messageIDs":[<message_ids[0]>], "folderID":<folder_ids[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"messages.flag":"success"},"id":50}
 
-  // Set the current command string.
-  chr_command = "{\"id\":50,\"method\":\"messages.flag\",\"params\":{\"action\":\"add\",\"flags\":[\"flagged\"],\"messageIDs\":[%lu],\"folderID\":%lu}}";
+	// Set the current command string.
+	chr_command = "{\"id\":50,\"method\":\"messages.flag\",\"params\":{\"action\":\"add\",\"flags\":[\"flagged\"],\"messageIDs\":[%lu],\"folderID\":%lu}}";
 
 	// Retrieve the folderID of Inbox and a messageID.
 	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
 		(message_ids[0] = check_camel_msg_id(folder_ids[0], cookie, secure)) == -1) {
 
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 48 }");
+		st_sprint(errmsg, "Failed to retrieve the folderID of the Inbox or the Inbox is empty. { command # = 48 }");
 		return false;
 	}
 
@@ -2822,7 +2816,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	// Submit the command and check the status of the response.
 	else if (!(json = check_camel_print(command, cookie, secure))) {
-
 		st_sprint(errmsg, "Failed to return a successful HTTP response. { command = %.*s }", st_length_int(command),
 			st_char_get(command));
 		return false;
@@ -2841,7 +2834,6 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	// Check if the returned JSON is correct.
 	else if (st_cmp_cs_eq(NULLER((chr_t *)json_values[0]), PLACER("success", 7))) {
-
 		st_sprint(errmsg, "Failed parsing the returned JSON. { command = %.*s, json = %.*s }", st_length_int(command),
 			st_char_get(command), st_length_int(json), st_char_get(json));
 		json_decref_d(json_objs[0]);
@@ -2871,7 +2863,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
 		(message_ids[0] = check_camel_msg_id(folder_ids[0], cookie, secure)) == -1) {
 
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 49 }");
+		st_sprint(errmsg, "Failed to retrieve the folderID of the Inbox or the Inbox is empty. { command # = 49 }");
 		return false;
 	}
 
@@ -2924,14 +2916,14 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	//											"folderID":<folder_ids[0]>}}
 	// Expected Response 	: {"jsonrpc":"2.0","result":[ { an object matching messageID[0] }, ... ],"id":52}
 
-  // Set the current command string.
-  chr_command = "{\"id\":52,\"method\":\"messages.flag\",\"params\":{\"action\":\"list\",\"messageIDs\":[%lu],\"folderID\":%lu}}";
+	// Set the current command string.
+	chr_command = "{\"id\":52,\"method\":\"messages.flag\",\"params\":{\"action\":\"list\",\"messageIDs\":[%lu],\"folderID\":%lu}}";
 
 	// Retrieve the folderID of Inbox and a messageID.
 	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
 		(message_ids[0] = check_camel_msg_id(folder_ids[0], cookie, secure)) == -1) {
 
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 50 }");
+		st_sprint(errmsg, "Failed to retrieve the folderID of the Inbox or the Inbox is empty. { command # = 50 }");
 		return false;
 	}
 
@@ -2992,7 +2984,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
 		(message_ids[0] = check_camel_msg_id(folder_ids[0], cookie, secure)) == -1) {
 
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 51 }");
+		st_sprint(errmsg, "Failed to retrieve the folderID of the Inbox or the Inbox is empty. { command # = 51 }");
 		return false;
 	}
 
@@ -3035,20 +3027,18 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Test messages.list	: {"id":54,"method":"messages.list","params":{"folderID":<folder_ids[0]>}}",
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"messages.flag":"success"},"id":54}
 
-  // Set the current command string.
-  chr_command = "{\"id\":54,\"method\":\"messages.list\",\"params\":{\"folderID\":%lu}}";
+	// Set the current command string.
+	chr_command = "{\"id\":54,\"method\":\"messages.list\",\"params\":{\"folderID\":%lu}}";
 
 	// Retrieve the folderID of Inbox and a messageID.
 	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
 		(message_ids[0] = check_camel_msg_id(folder_ids[0], cookie, secure)) == -1) {
-
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 52 }");
+		st_sprint(errmsg, "Failed to retrieve the folderID of the Inbox or the Inbox is empty. { command # = 52 }");
 		return false;
 	}
 
 	// Construct the command string.
 	if (!(st_sprint(command, chr_command, folder_ids[0]))) {
-
 		st_sprint(errmsg, "Failed to create command string. { command # = 52 }");
 		return false;
 	}
@@ -3084,13 +3074,13 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Test messages.list	: {"id":55,"method":"messages.list","params":{"context":"mail","folderID":<folder_ids[0]>}}",
 	// Expected Response 	: {"jsonrpc":"2.0","result":{"messages.flag":"success"},"id":55}
 
-  // Set the current command string.
-  chr_command = "{\"id\":55,\"method\":\"folders.tags\",\"params\":{\"context\":\"mail\",\"folderID\":%lu}}";
+	// Set the current command string.
+	chr_command = "{\"id\":55,\"method\":\"folders.tags\",\"params\":{\"context\":\"mail\",\"folderID\":%lu}}";
 
 	// Retrieve the folderID of Inbox.
 	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1) {
 
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 53 }");
+		st_sprint(errmsg, "Failed to retrieve the folderID of the Inbox or the Inbox is empty. { command # = 53 }");
 		return false;
 	}
 
@@ -3188,8 +3178,7 @@ bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 	// Retrieve the folderID of Inbox and a messageID.
 	if ((folder_ids[0] = check_camel_folder_id(PLACER("Inbox", 5), cookie, secure)) == -1 ||
 		(message_ids[0] = check_camel_msg_id(folder_ids[0], cookie, secure)) == -1) {
-
-		st_sprint(errmsg, "Failed to retrieve the folderID of Inbox or Inbox is empty. { command # = 55 }");
+		st_sprint(errmsg, "Failed to retrieve the folderID of the Inbox or the Inbox is empty. { command # = 55 }");
 		return false;
 	}
 

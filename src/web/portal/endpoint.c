@@ -458,7 +458,8 @@ void portal_endpoint_alert_acknowledge(connection_t *con) {
 			(int)st_length_get(con->http.session->user->username), st_char_get(con->http.session->user->username), err.text);
 		portal_endpoint_error(con, 400, JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS, "Invalid method parameters.");
 		return;
-	} else if (!json_is_array(alerts)) {
+	}
+	else if (!json_is_array(alerts)) {
 		portal_endpoint_error(con, 400, JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS, "Invalid method parameters.");
 		return;
 	}
@@ -597,7 +598,7 @@ void portal_endpoint_folders_add(connection_t *con) {
 		return;
 	}
 	// Validate the request format and extract the submitted values.
-	if ((count = json_object_size_d(con->http.portal.params)) && (count > 3 || count < 2)) {
+	else if ((count = json_object_size_d(con->http.portal.params)) && (count > 3 || count < 2)) {
 		log_pedantic("Received invalid portal folder add request parameters { user = %.*s, count = %u }",
 			(int)st_length_get(con->http.session->user->username), st_char_get(con->http.session->user->username), (unsigned int) count);
 		portal_endpoint_error(con, 400, JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS, "Invalid method parameters.");
@@ -989,19 +990,42 @@ void portal_endpoint_folders_tags(connection_t *con) {
  */
 void portal_endpoint_messages_list(connection_t *con) {
 
-	json_error_t err;;
+	json_error_t err;
 	json_t *tags, *list, *entry;
 	inx_cursor_t *cursor;
 	meta_message_t *active;
-	uint64_t foldernum, count;
+	uint64_t foldernum, count, current = 0, start = 0, limit = 0;
 	stringer_t *header, *fields[8];
 
+//	if ((count = json_object_size_d(con->http.portal.params)) && (count > 3 || count < 2)) {
+//		log_pedantic("Received invalid portal folder add request parameters { user = %.*s, count = %u }",
+//			(int)st_length_get(con->http.session->user->username), st_char_get(con->http.session->user->username), (unsigned int) count);
+//		portal_endpoint_error(con, 400, JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS, "Invalid method parameters.");
+//		return;
+//	}
+//	else if ((count == 2 && json_unpack_ex_d(con->http.portal.params, &err, JSON_STRICT, "{s:s, s:s}", "context", &method, "name", &name)) ||
+//		(count == 3 && json_unpack_ex_d(con->http.portal.params, &err, JSON_STRICT, "{s:s, s:s, s:I}", "context", &method, "name", &name, "parentID", &parent))) {
+//		log_pedantic("Received invalid portal folder add request parameters { user = %.*s, errmsg = %s }",
+//			(int)st_length_get(con->http.session->user->username), st_char_get(con->http.session->user->username), err.text);
+//		portal_endpoint_error(con, 400, JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS, "Invalid method parameters.");
+//		return;
+//	}
 	// Check the session state. Method has 1 parameter.
-	if (!portal_validate_request (con, PORTAL_ENDPOINT_ERROR_MESSAGES_LIST, "messages.list", true, 1)) {
+	if (!portal_validate_request (con, PORTAL_ENDPOINT_ERROR_MESSAGES_LIST, "messages.list", true, 0)) {
 		return;
 	}
 	// Validate the request format and extract the submitted values.
-	else if (json_unpack_ex_d(con->http.portal.params, &err, JSON_STRICT, "{s:I}", "folderID", &foldernum)) {
+	else if ((count = json_object_size_d(con->http.portal.params)) && (count < 1 || count > 3)) {
+		log_pedantic("Received invalid portal messages list request parameters { user = %.*s, count = %u }",
+			(int)st_length_get(con->http.session->user->username), st_char_get(con->http.session->user->username), (unsigned int) count);
+		portal_endpoint_error(con, 400, JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS, "Invalid method parameters.");
+		return;
+	}
+	// Validate the request format and extract the submitted values.
+	else if ((count == 1 && json_unpack_ex_d(con->http.portal.params, &err, JSON_STRICT, "{s:I}", "folderID", &foldernum)) ||
+	(count == 2 && json_unpack_ex_d(con->http.portal.params, &err, JSON_STRICT, "{s:I, s:I}", "folderID", &foldernum, "start", &start) &&
+	json_unpack_ex_d(con->http.portal.params, &err, JSON_STRICT, "{s:I, s:I}", "folderID", &foldernum, "limit", &limit)) ||
+	(count == 3 && json_unpack_ex_d(con->http.portal.params, &err, JSON_STRICT, "{s:I, s:I, s:I}", "folderID", &foldernum, "start", &start, "limit", &limit))) {
 		log_pedantic("Received invalid portal messages list request parameters { user = %.*s, errmsg = %s }",
 			(int)st_length_get(con->http.session->user->username), st_char_get(con->http.session->user->username), err.text);
 		portal_endpoint_error(con, 400, JSON_RPC_2_ERROR_SERVER_METHOD_PARAMS, "Invalid method parameters.");
@@ -1018,9 +1042,16 @@ void portal_endpoint_messages_list(connection_t *con) {
 
 	if ((cursor = inx_cursor_alloc(con->http.session->user->messages)))	{
 
-		while ((active = inx_cursor_value_next(cursor))) {
+		while ((active = inx_cursor_value_next(cursor)) && (limit == 0 || current < limit)) {
 
-			if (active->foldernum == foldernum && (header = mail_load_header(active, con->http.session->user, con->server, true))) {
+			// If a start value was provided, then skip the requested number of messagres before we start adding results
+			// to the response object.
+			if (active->foldernum == foldernum && start) {
+				start--;
+			}
+
+			// Otherwise add any messages in the matching folder, which can be loaded.
+			else if (active->foldernum == foldernum && (header = mail_load_header(active, con->http.session->user, con->server, true))) {
 
 				fields[0] = mail_header_fetch_cleaned(header, PLACER("From", 4));
 				fields[1] = mail_header_fetch_cleaned(header, PLACER("To", 2));
@@ -1064,6 +1095,9 @@ void portal_endpoint_messages_list(connection_t *con) {
 
 				// Release header string.
 				st_free(header);
+
+				// Track the number of messages that have been added.
+				current++;
 			}
 		}
 

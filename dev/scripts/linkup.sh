@@ -84,6 +84,7 @@ process "t.http.options.sh" "t.http.options"
 process "t.inbound.attachment.1.sh" "t.inbound.attachment.1"
 process "t.inbound.attachment.2.sh" "t.inbound.attachment.2"
 process "t.colors.sh" "t.colors"
+process "t.syntax.sh" "t.syntax"
 
 process "freshen.clamav.sh" "freshen.clamav"
 process "runner.sh" "runner"

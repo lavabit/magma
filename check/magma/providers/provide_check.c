@@ -588,7 +588,6 @@ START_TEST (check_dkim_sign_m) {
 }
 END_TEST
 
-
 //! Encoding/Parser Tests
 START_TEST (check_unicode_s) {
 

@@ -123,7 +123,7 @@ void suite_check_testcase_timeout(Suite *s, const char *tags, const char *name, 
 #define PRIME_CHECK_ITERATIONS 16
 #define PRIME_CHECK_SPANNING_CHUNK_SIZE (1024 * 1024 * 20) // 20 megabytes
 
-#define DKIM_CHECK_MTHREADS 16 // The number of DKIM signing threads to spawn.
+#define DKIM_CHECK_MTHREADS 8 // The number of DKIM signing threads to spawn.
 
 #define OBJECT_CHECK_ITERATIONS 16 // The number of threads spawn by the multi-threaded object test cases.
 
@@ -209,7 +209,7 @@ void suite_check_testcase_timeout(Suite *s, const char *tags, const char *name, 
 #define SYMMETRIC_CHECK_SIZE_MAX (16 * 1024)
 //#define SYMMETRIC_CHECK_SIZE_MAX (1 * 1024 * 1024) // 1 megabyte
 
-#define DKIM_CHECK_MTHREADS 16 // The number of DKIM signing threads to spawn.
+#define DKIM_CHECK_MTHREADS 256 // The number of DKIM signing threads to spawn.
 
 #define OBJECT_CHECK_ITERATIONS 256 // The number of DKIM signing threads to spawn.
 

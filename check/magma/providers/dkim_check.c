@@ -146,9 +146,12 @@ bool_t check_dkim_sign_sthread(stringer_t *domain, stringer_t *errmsg) {
 			return false;
 		}
 
-		else if (check_message_dkim_sign(i) && st_populated(domain) && !st_search_cs(signature, st_quick(MANAGEDBUF(256),
-			PLACER("d=", 2), domain, PLACER(";", 1)), NULL)) {
-			st_sprint(errmsg, "Failed to generate the domain keys message signature using the provided domain name. { message = %i }", i);
+		else if (check_message_dkim_sign(i) && st_populated(domain) && !st_search_cs(signature, st_quick(MANAGEDBUF(256), "d=%.*s;",
+			st_length_int(domain), st_char_get(domain)), NULL)) {
+			st_sprint(errmsg, "Failed to generate the domain keys message signature using the provided domain name. " \
+			"{ message = %i / domain = %.*s }\n%.*s", i, st_length_int(st_quick(MANAGEDBUF(256), "d=%.*s;", st_length_int(domain),
+			st_char_get(domain))), st_char_get(st_quick(MANAGEDBUF(256), "d=%.*s;", st_length_int(domain), st_char_get(domain))),
+			st_length_int(signature), st_char_get(signature));
 			st_free(signature);
 			st_free(data);
 			st_free(id);
@@ -160,13 +163,9 @@ bool_t check_dkim_sign_sthread(stringer_t *domain, stringer_t *errmsg) {
 		// if we actually tried to sign the message. Otherwise a non-NULL pointer from a previous loop will
 		// cause a double free.
 		else if (check_message_dkim_sign(i)) {
-		log_enable();
-		log_pedantic("%.*s",st_length_int(signature), st_char_get(signature));
 			st_free(signature);
 			checked++;
 		}
-
-
 
 		st_free(data);
 		st_free(id);
@@ -208,8 +207,7 @@ bool_t check_dkim_sign_mthread(stringer_t *errmsg) {
 	bool_t result = true;
 	pthread_t *threads = NULL;
 	stringer_t *domain = NULL, *domains[] = { NULLER("lavabit.com"), NULLER("nerdshack.com"), NULLER("mailshack.com"),
-		NULLER("magmadaemon.org"), NULLER("volcanoclient.org"), NULLER("roboxes.org"), NULLER("darkmail.info"),
-		NULLER("example.com") };
+		NULLER("magmadaemon.org"), NULLER("volcanoclient.org"), NULLER("roboxes.org"), NULLER("darkmail.info"), NULLER("example.com") };
 
 	// Determines the number of threads spawned.
 	if (!DKIM_CHECK_MTHREADS) {
@@ -238,12 +236,17 @@ bool_t check_dkim_sign_mthread(stringer_t *errmsg) {
 			if (!errmsg) st_sprint(errmsg, "Thread join error.");
 			result = false;
 		}
-		else if ((threads + counter) && outcome) {
-			// Only record the result if it's the first error message.
-			if (!errmsg && result) st_sprint(errmsg, "Threaded test failed. { %.*s }", st_length_int((stringer_t *)outcome), st_char_get((stringer_t *)outcome));
+
+		// Only record the result if it's the first error message.
+		else if (result && outcome) {
+			st_sprint(errmsg, "Multi threaded DKIM signing test failed. { %.*s }", st_length_int((stringer_t *)outcome), st_char_get((stringer_t *)outcome));
 			st_free(outcome);
 			outcome = NULL;
 			result = false;
+		}
+		else if (outcome) {
+			st_free(outcome);
+			outcome = NULL;
 		}
 	}
 

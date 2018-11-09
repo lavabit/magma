@@ -16,8 +16,11 @@ void net_accept(server_t *server) {
 	do {
 
 		// Keep calling accept until it fails.
-		if ((connection = accept(server->network.sockd, NULL, NULL)) != -1) {
+		if ((connection = accept(server->network.sockd, NULL, NULL)) != -1 && status()) {
 			protocol_process(server, connection);
+		}
+		else if (connection != -1) {
+			close(connection);
 		}
 
 	} while(status());
@@ -137,7 +140,7 @@ void net_trigger(bool_t verbose) {
 	// Wakeup the listening threads.
 	for (uint64_t i = 0; i < MAGMA_SERVER_INSTANCES; i++) {
 		if ((server = magma.servers[i]) && server->enabled && server->network.sockd > 0) {
-			client_connect("localhost", server->network.port);
+			client = client_connect("localhost", server->network.port);
 			client_close(client);
 			shutdown(server->network.sockd, SHUT_RDWR);
 		}

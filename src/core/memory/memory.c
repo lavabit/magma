@@ -26,6 +26,7 @@ void mm_cleanup_variadic(ssize_t len, ...) {
 		block = va_arg(list, void *);
 		if (block) mm_free(block);
 	}
+
 	va_end(list);
 
 	return;

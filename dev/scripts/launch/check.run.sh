@@ -13,4 +13,8 @@ cd $BASE/../../../
 
 MAGMA_DIST=`pwd`
 
+if [ $# == 1 ]; then
+$MAGMA_DIST/magmad.check --check $1 $MAGMA_DIST/sandbox/etc/magma.sandbox.config
+else
 $MAGMA_DIST/magmad.check $MAGMA_DIST/sandbox/etc/magma.sandbox.config
+fi

@@ -94,7 +94,7 @@ echo "INSERT INTO \`Hosts\` (\`hostnum\`, \`hostname\`, \`timestamp\`) VALUES (1
 
 # Generate Version.sql file with the correct version number.
 MAGMA_VERSION=`grep --extended-regexp "^PACKAGE_VERSION" Makefile | awk --field-separator='=' '{print \$2}' | awk --field-separator='.' '{print \$1}' | tr --delete [:blank:]`
-echo "INSERT INTO \`Host_Config\` (\`confignum\`, \`hostnum\`, \`application\`, \`name\`, \`value\`, \`timestamp\`) VALUES (1,NULL,'magmad','magma.version','$MAGMA_VERSION',NOW());" > $MAGMA_RES_SQL/Version.sql
+echo "INSERT INTO \`Host_Config\` (\`hostnum\`, \`application\`, \`name\`, \`value\`, \`timestamp\`) VALUES (NULL,'magmad','magma.version','$MAGMA_VERSION',NOW());" > $MAGMA_RES_SQL/Version.sql
 
 # Tell git to skip checking for changes to these SQL files, but we only do this if git is on the system and the files
 # are stored inside a repo.

@@ -234,12 +234,18 @@ INSERT INTO `Users` (`usernum`, `userid`, `salt`, `auth`, `bonus`, `legacy`, `tl
 INSERT INTO `Users` (`usernum`, `userid`, `salt`, `auth`, `bonus`, `legacy`, `tls`, `plan`, `locked`, `advertising`, `domain`, `email`, `chat`, `timezone`, `size`, `quota`, `overquota`, `plan_expiration`, `lock_expiration`) VALUES (9,'lock_user','xeyToHadHNNept5xy-yV5IR777gBFx4WGbiPPnbzE3iIJni65hUBhzLOohJHiwhS3kXzHiCCrZKsja036L2-6VZYpwR6f7Q-yQ8V0tQik69W5rKAfhGKS1v27pCNm8gbHkRtNOJZk0fmhpi4OqN3WDT517bUaSujGm_HBw7GFk8','O4sR-aNx1hX381WqXvWp49RiEW6Fg69Pc1eQ0-A0xeZFV05nyQ-88ap0FDxoGuZlN7ipqDivS22-3_1YP53R3A',0,NULL,1,'PREMIER',5,0,NULL,1,1,0,0,5368709120,0,'2018-08-06','2018-12-04');
 INSERT INTO `Users` (`usernum`, `userid`, `salt`, `auth`, `bonus`, `legacy`, `tls`, `plan`, `locked`, `advertising`, `domain`, `email`, `chat`, `timezone`, `size`, `quota`, `overquota`, `plan_expiration`, `lock_expiration`) VALUES (10,'lock_none','kjyZp26SQZjU8OM0xcUTWhyKUl15_stxHeqMpjeFdzMx02Fo8XIVNO5Q8Ah82XSW0XetQ4oEZTik9wyE4SMw02m5lIQGv0HyTDs66o1AjRghWySmuZFFotzJBI_jmx1d66eNNa3HjJENslZJJzmeGBn-uHjT8h_PTlFseNx7EBc','3R38D_2Nucvc7bvTKgAjxr5rV5eawSh9N4sETiqo0EqphM95pRKOFm6xdBxNgxKdfxnSHsfLsiHA1Hc1u_kgyg',0,NULL,1,'STANDARD',0,0,NULL,1,1,0,0,5368709120,0,'2018-08-06','0000-00-00');
 
-INSERT INTO `Mailboxes` (`mailboxnum`, `address`, `usernum`) VALUES (11,'lock_inactive@lavabit.com',5);
-INSERT INTO `Mailboxes` (`mailboxnum`, `address`, `usernum`) VALUES (12,'lock_expired@lavabit.com',6);
-INSERT INTO `Mailboxes` (`mailboxnum`, `address`, `usernum`) VALUES (13,'lock_admin@lavabit.com',7);
-INSERT INTO `Mailboxes` (`mailboxnum`, `address`, `usernum`) VALUES (14,'lock_abuse@lavabit.com',8);
-INSERT INTO `Mailboxes` (`mailboxnum`, `address`, `usernum`) VALUES (15,'lock_user@lavabit.com',9);
-INSERT INTO `Mailboxes` (`mailboxnum`, `address`, `usernum`) VALUES (16,'lock_none@lavabit.com',10);
+INSERT INTO `Mailboxes` (`address`, `usernum`) VALUES ('lock_inactive@lavabit.com',5);
+INSERT INTO `Mailboxes` (`address`, `usernum`) VALUES ('lock_inactive@example.com',5);
+INSERT INTO `Mailboxes` (`address`, `usernum`) VALUES ('lock_expired@lavabit.com',6);
+INSERT INTO `Mailboxes` (`address`, `usernum`) VALUES ('lock_expired@example.com',6);
+INSERT INTO `Mailboxes` (`address`, `usernum`) VALUES ('lock_admin@lavabit.com',7);
+INSERT INTO `Mailboxes` (`address`, `usernum`) VALUES ('lock_admin@example.com',7);
+INSERT INTO `Mailboxes` (`address`, `usernum`) VALUES ('lock_abuse@lavabit.com',8);
+INSERT INTO `Mailboxes` (`address`, `usernum`) VALUES ('lock_abuse@example.com',8);
+INSERT INTO `Mailboxes` (`address`, `usernum`) VALUES ('lock_user@lavabit.com',9);
+INSERT INTO `Mailboxes` (`address`, `usernum`) VALUES ('lock_user@example.com',9);
+INSERT INTO `Mailboxes` (`address`, `usernum`) VALUES ('lock_none@lavabit.com',10);
+INSERT INTO `Mailboxes` (`address`, `usernum`) VALUES ('lock_none@example.com',10);
 
 INSERT INTO `Folders` (`foldernum`, `usernum`, `foldername`, `order`, `type`, `parent`) VALUES (5,5,'Inbox',0,1,0);
 INSERT INTO `Folders` (`foldernum`, `usernum`, `foldername`, `order`, `type`, `parent`) VALUES (6,6,'Inbox',0,1,0);

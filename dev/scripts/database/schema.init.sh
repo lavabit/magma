@@ -22,7 +22,7 @@ case $# in
 		MYSQL_SCHEMA=${MYSQL_SCHEMA:-"Magma"}
 	;;
 	*!3*)
-		echo "Ini "res/sql/" tialize the MySQL database used by the magma daemon."
+		echo "Initialize the MySQL database used by the magma daemon."
 		echo ""
 		echo "Usage:    $0 \<mysql_user\> \<mysql_password\> \<mysql_schema\>"
 		echo "Example:  $0 magma volcano Magma"
@@ -93,13 +93,28 @@ if [[ "$GIT_IS_AVAILABLE" == "1" ]]; then
 	git update-index --skip-worktree "$MAGMA_RES_SQL/Hostname.sql"
 fi
 
-# Add -vvv to the mysql command line option when the batch fails to assist in troubleshooting.
+# Attempt the schema reset silently first.
 cat $MAGMA_RES_SQL/Start.sql \
 	$MAGMA_RES_SQL/Schema.sql \
 	$MAGMA_RES_SQL/Migration.sql \
 	$MAGMA_RES_SQL/Hostname.sql \
 	$MAGMA_RES_SQL/Version.sql \
 	$MAGMA_RES_SQL/Finish.sql \
-| mysql --batch -u "${MYSQL_USER}" --password="${MYSQL_PASSWORD}"
+| mysql --batch --user="${MYSQL_USER}" --password="${MYSQL_PASSWORD}" &> /dev/null
 
+# if the query fails we run it again, verbosely, and print the last 20 lines output, so we know what caused the error.
+if [ $? != 0 ]; then
+	printf "\n"
+	cat $MAGMA_RES_SQL/Start.sql \
+	$MAGMA_RES_SQL/Schema.sql \
+	$MAGMA_RES_SQL/Migration.sql \
+	$MAGMA_RES_SQL/Hostname.sql \
+	$MAGMA_RES_SQL/Version.sql \
+	$MAGMA_RES_SQL/Finish.sql \
+	| mysql --verbose --user="${MYSQL_USER}" --password="${MYSQL_PASSWORD}" | tail -4
+	tput setaf 1; printf "Schema Reset Failed\n\n"; tput sgr0
+	exit 1
+fi
 
+# Done.
+tput setaf 2; printf "Done.\n"; tput sgr0

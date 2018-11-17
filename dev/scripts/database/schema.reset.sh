@@ -105,7 +105,7 @@ if [[ "$GIT_IS_AVAILABLE" == "1" ]]; then
 	git update-index --skip-worktree "$MAGMA_RES_SQL/Hostname.sql"
 fi
 
-# Add -vvv to the mysql command line option when the batch fails to assist in troubleshooting.
+# Attempt the schema reset silently first.
 cat $MAGMA_RES_SQL/Start.sql \
 	$MAGMA_RES_SQL/Schema.sql \
 	$MAGMA_RES_SQL/Migration.sql \
@@ -113,7 +113,22 @@ cat $MAGMA_RES_SQL/Start.sql \
 	$MAGMA_RES_SQL/Version.sql \
 	$MAGMA_RES_SQL/Data.sql \
 	$MAGMA_RES_SQL/Finish.sql \
-| mysql --batch -u "${MYSQL_USER}" --password="${MYSQL_PASSWORD}"
+| mysql  --batch --user="${MYSQL_USER}" --password="${MYSQL_PASSWORD}" &> /dev/null
+
+# if the query fails we run it again, verbosely, and print the last 20 lines output, so we know what caused the error.
+if [ $? != 0 ]; then
+	printf "\n"
+	cat $MAGMA_RES_SQL/Start.sql \
+		$MAGMA_RES_SQL/Schema.sql \
+		$MAGMA_RES_SQL/Migration.sql \
+		$MAGMA_RES_SQL/Hostname.sql \
+		$MAGMA_RES_SQL/Version.sql \
+		$MAGMA_RES_SQL/Data.sql \
+		$MAGMA_RES_SQL/Finish.sql \
+	| mysql --verbose --user="${MYSQL_USER}" --password="${MYSQL_PASSWORD}" | tail -4
+	tput setaf 1; printf "Schema Reset Failed\n\n"; tput sgr0
+	exit 1
+fi
 
 # Remove the storage tanks.
 rm --force "$MAGMA_RES_TANKS/system.data"
@@ -126,4 +141,5 @@ rm --force "$MAGMA_RES_TANKS/tank.4.data"
 rm --recursive --force "$MAGMA_RES_STORAGE"
 mkdir --parents "$MAGMA_RES_STORAGE"
 
-
+# Done.
+tput setaf 2; printf "Done.\n"; tput sgr0

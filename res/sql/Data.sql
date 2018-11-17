@@ -140,7 +140,7 @@ INSERT INTO `Log` VALUES (1,'0000-00-00 00:00:00','0000-00-00 00:00:00','0000-00
 -- ORDER BY:  `address`
 
 /*!40000 ALTER TABLE `Mailboxes` DISABLE KEYS */;
-INSERT INTO `Mailboxes` (`address`, `usernum`) VALUES ('magma@lavabit.com',1),('magma@example.com',1),('princess@lavabit.com',2),('princess@example.com',2),('ladar@mailshack.com',3),('ladar@nerdshack.com',3),('ladar@lavabit.com',3),('ladar@example.com',3),('stacie@lavabit.com',4),('stacie@example.com',4);
+INSERT INTO `Mailboxes` (`address`, `usernum`) VALUES ('magma@lavabit.com',1),('notify@lavabit.com',1),('magma@example.com',1),('princess@lavabit.com',2),('princess@example.com',2),('ladar@mailshack.com',3),('ladar@nerdshack.com',3),('ladar@lavabit.com',3),('ladar@example.com',3),('stacie@lavabit.com',4),('stacie@example.com',4);
 /*!40000 ALTER TABLE `Mailboxes` ENABLE KEYS */;
 
 --

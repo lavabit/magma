@@ -21,6 +21,33 @@
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
+   fun:malloc
+   fun:__libc_res_nsend
+   fun:__libc_res_nquery
+   fun:__res_nquery
+   fun:SPF_dns_resolv_lookup
+   fun:SPF_dns_lookup
+   fun:SPF_dns_cache_lookup
+   fun:SPF_dns_lookup
+   fun:SPF_dns_zone_lookup
+   fun:SPF_dns_lookup
+   fun:SPF_server_get_record
+   fun:SPF_request_query_mailfrom
+   fun:spf_check
+   fun:check_spf_s
+   fun:tcase_run_tfun_nofork
+   fun:srunner_iterate_tcase_tfuns
+   fun:srunner_run_tcase
+   fun:srunner_iterate_suites
+   fun:srunner_run_tagged
+   fun:srunner_run
+   fun:srunner_run_all
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
    fun:calloc
    fun:_dlerror_run
    fun:dlopen@@GLIBC_2.2.5
@@ -137,6 +164,30 @@
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
+   fun:malloc
+   fun:SPF_dns_resolv_lookup
+   fun:SPF_dns_lookup
+   fun:SPF_dns_cache_lookup
+   fun:SPF_dns_lookup
+   fun:SPF_dns_zone_lookup
+   fun:SPF_dns_lookup
+   fun:SPF_server_get_record
+   fun:SPF_request_query_mailfrom
+   fun:spf_check
+   fun:check_spf_s
+   fun:tcase_run_tfun_nofork
+   fun:srunner_iterate_tcase_tfuns
+   fun:srunner_run_tcase
+   fun:srunner_iterate_suites
+   fun:srunner_run_tagged
+   fun:srunner_run
+   fun:srunner_run_all
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
    fun:calloc
    fun:_dl_new_object
    fun:_dl_map_object_from_fd
@@ -190,7 +241,7 @@
    fun:lib_load
    fun:process_start
    fun:main
-} 
+}
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
@@ -212,4 +263,3 @@
    fun:process_start
    fun:main
 }
-

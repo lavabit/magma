@@ -89,7 +89,7 @@ START_TEST (check_users_register_s) {
 		plan = (rand_get_uint16() % 5) + 1;
 
 		// Generate a random username, using the pattern check_user_X, which ensures the username is always unique.
-		if (!(password = rand_choices("0123456789", 8, MANAGEDBUF(8))) || !(username = st_aprint("check_user_%.*s@example.com",
+		if (!(password = rand_choices("0123456789", 8, MANAGEDBUF(8))) || !(username = st_quick(MANAGEDBUF(64), "check_user_%.*s@example.com",
 			st_length_int(password), st_char_get(password)))) {
 			st_sprint(errmsg, "An internal error occurred. Unable to generate a random username for the registration test.");
 			outcome = false;

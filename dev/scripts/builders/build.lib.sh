@@ -2822,7 +2822,12 @@ status() {
 
 		# Refresh the stats for the next loop; note that this takes 4 seconds to complete.
 		CPU=`iostat cpu 4 2 | tail -5 | head -2`
-		DISK=`iostat -m -x sda sdb sdc vda vdb vdc 4 2 | tail -3 | head -2 | sed "s/Device:/device:/" | awk '{print $1 "\t  " $6 "\t" $7 "\t" $14}'`
+		DISK=`iostat -m -x sda sdb sdc vda vdb vdc 4 2 | tail -3 | head -2 | sed "s/Device:/device:/"`
+		
+		# If the status code isn't 0, it means iostat hasn't been installed.
+		if [ $? != 0 ]; then
+			sleep 1;
+		fi
 	done
 }
 

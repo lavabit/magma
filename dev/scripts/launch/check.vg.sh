@@ -35,9 +35,8 @@ valgrind --tool=memcheck \
 --leak-resolution=high \
 --workaround-gcc296-bugs=no \
 --partial-loads-ok=yes \
-`# --track-fds=yes` \
-`# --gen-suppressions=all` \
---suppressions=$MAGMA_DIST/sandbox/etc/magma.suppressions \
+--track-fds=yes \
+--gen-suppressions=all \
 $MAGMA_DIST/magmad.check --check $1 $MAGMA_DIST/sandbox/etc/magma.sandbox.config
 else
 valgrind --tool=memcheck \
@@ -60,8 +59,7 @@ valgrind --tool=memcheck \
 --leak-resolution=high \
 --workaround-gcc296-bugs=no \
 --partial-loads-ok=yes \
-`# --track-fds=yes` \
-`# --gen-suppressions=all` \
+--track-fds=yes \
 --suppressions=$MAGMA_DIST/sandbox/etc/magma.suppressions \
 $MAGMA_DIST/magmad.check $MAGMA_DIST/sandbox/etc/magma.sandbox.config
 fi

@@ -68,9 +68,7 @@ fi
 
 error() {
 	if [ $? -ne 0 ]; then
-		tput sgr0; tput setaf 1
-		date +"%n%n$COMMAND failed at %r on %x%n%n"
-		tput sgr0
+		tput sgr0; tput setaf 1; date +"%n%n$COMMAND failed at %r on %x%n%n";	tput sgr0
 		exit 1
 	fi
 }
@@ -102,18 +100,18 @@ gd() {
 			if [[ $GD == "gd-2.0.35" ]]; then
 				
 				# A stack of patches needed to fix a variety of bugs in the neglected 2.0.X series. 
-				cat "$M_PATCHES/gd/"gd-2.0.33-freetype.patch | patch -s -p1 -b --suffix .freetype --fuzz= &>> "$M_LOGS/gd.txt" ; error
-				cat "$M_PATCHES/gd/"gd-2.0.34-multilib.patch | patch -s -p1 -b --suffix .mlib --fuzz= &>> "$M_LOGS/gd.txt" ; error
-				cat "$M_PATCHES/gd/"gd-loop.patch | patch -s -p1 -b --suffix .loop --fuzz= &>> "$M_LOGS/gd.txt" ; error
-				cat "$M_PATCHES/gd/"gd-2.0.35-overflow.patch | patch -s -p1 -b --suffix .overflow --fuzz= &>> "$M_LOGS/gd.txt" ; error
-				cat "$M_PATCHES/gd/"gd-2.0.34-sparc64.patch | patch -s -p1 -b --suffix .sparc64 --fuzz= &>> "$M_LOGS/gd.txt" ; error
-				cat "$M_PATCHES/gd/"gd-2.0.35-AALineThick.patch | patch -s -p1 -b --suffix .AALineThick --fuzz= &>> "$M_LOGS/gd.txt" ; error
-				cat "$M_PATCHES/gd/"gd-2.0.33-BoxBound.patch | patch -s -p1 -b --suffix .bb --fuzz= &>> "$M_LOGS/gd.txt" ; error
-				cat "$M_PATCHES/gd/"gd-2.0.34-fonts.patch | patch -s -p1 -b --suffix .fonts --fuzz= &>> "$M_LOGS/gd.txt" ; error
-				cat "$M_PATCHES/gd/"gd-2.0.35-time.patch | patch -s -p1 -b --suffix .time --fuzz= &>> "$M_LOGS/gd.txt" ; error
-				cat "$M_PATCHES/gd/"gd-2.0.35-security3.patch | patch -s -p1 -b --suffix .sec3 --fuzz= &>> "$M_LOGS/gd.txt" ; error
-				cat "$M_PATCHES/gd/"gd-version.patch | patch -s -p1 -b --fuzz= &>> "$M_LOGS/gd.txt" ; error
-				cat "$M_PATCHES/gd/"gd-sigcmp.patch | patch -s -p1 -b --fuzz= &>> "$M_LOGS/gd.txt" ; error				
+				cat "$M_PATCHES/gd/"gd-2.0.33-freetype.patch | patch -s -p1 -b --suffix .freetype --fuzz=0 &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-2.0.34-multilib.patch | patch -s -p1 -b --suffix .mlib --fuzz=0 &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-loop.patch | patch -s -p1 -b --suffix .loop --fuzz=0 &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-2.0.35-overflow.patch | patch -s -p1 -b --suffix .overflow --fuzz=0 &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-2.0.34-sparc64.patch | patch -s -p1 -b --suffix .sparc64 --fuzz=0 &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-2.0.35-AALineThick.patch | patch -s -p1 -b --suffix .AALineThick --fuzz=0 &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-2.0.33-BoxBound.patch | patch -s -p1 -b --suffix .bb --fuzz=0 &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-2.0.34-fonts.patch | patch -s -p1 -b --suffix .fonts --fuzz=0 &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-2.0.35-time.patch | patch -s -p1 -b --suffix .time --fuzz=0 &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-2.0.35-security3.patch | patch -s -p1 -b --suffix .sec3 --fuzz=0 &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-version.patch | patch -s -p1 -b --fuzz=0 &>> "$M_LOGS/gd.txt" ; error
+				cat "$M_PATCHES/gd/"gd-sigcmp.patch | patch -s -p1 -b --fuzz=0 &>> "$M_LOGS/gd.txt" ; error				
 			else
 				
 				# Of the patches above, these are the only ones still applicable to the 2.2.X series. They have

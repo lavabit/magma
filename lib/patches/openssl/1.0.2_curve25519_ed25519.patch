@@ -1,47 +1,6 @@
 diff -r 5504a985a4e0 -r f59397568d2b Makefile
 --- a/Makefile	Sat Nov 26 00:47:32 2016 -0600
 +++ b/Makefile	Sat Nov 26 01:03:59 2016 -0600
-@@ -11,11 +11,11 @@
- SHLIB_VERSION_HISTORY=
- SHLIB_MAJOR=1
- SHLIB_MINOR=0.0
--SHLIB_EXT=
--PLATFORM=dist
--OPTIONS= no-ec_nistp_64_gcc_128 no-gmp no-jpake no-krb5 no-libunbound no-md2 no-rc5 no-rfc3779 no-sctp no-shared no-ssl-trace no-ssl2 no-store no-unit-test no-weak-ssl-ciphers no-zlib no-zlib-dynamic static-engine
--CONFIGURE_ARGS=dist
--SHLIB_TARGET=
-+SHLIB_EXT=.so.$(SHLIB_MAJOR).$(SHLIB_MINOR)
-+PLATFORM=debug-linux-x86_64
-+OPTIONS=enable-shared enable-zlib --openssldir= -I/zlib -O -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 -L/openssl -Wl,-rpath,/openssl -L/zlib -Wl,-rpath,/zlib no-asm no-ec_nistp_64_gcc_128 no-gmp no-jpake no-krb5 no-libunbound no-md2 no-rc5 no-rfc3779 no-sctp no-ssl-trace no-ssl2 no-store no-unit-test no-weak-ssl-ciphers no-zlib-dynamic no-static-engine
-+CONFIGURE_ARGS=debug-linux-x86_64 shared zlib no-asm --openssldir= -I/zlib -O -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 -L/openssl -Wl,-rpath,/openssl -L/zlib -Wl,-rpath,/zlib
-+SHLIB_TARGET=linux-shared
- 
- # HERE indicates where this Makefile lives.  This can be used to indicate
- # where sub-Makefiles are expected to be.  Currently has very limited usage,
-@@ -59,11 +59,11 @@
- # equal 4.
- # PKCS1_CHECK - pkcs1 tests.
- 
--CC= cc
--CFLAG= -O
-+CC= gcc
-+CFLAG= -fPIC -DOPENSSL_PIC -DZLIB -DOPENSSL_THREADS -D_REENTRANT -DDSO_DLFCN -DHAVE_DLFCN_H -I/zlib -O -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 -DBN_DEBUG -DREF_CHECK -DCONF_DEBUG -DCRYPTO_MDEBUG -m64 -DL_ENDIAN -g -Wall
- DEPFLAG= -DOPENSSL_NO_EC_NISTP_64_GCC_128 -DOPENSSL_NO_GMP -DOPENSSL_NO_JPAKE -DOPENSSL_NO_LIBUNBOUND -DOPENSSL_NO_MD2 -DOPENSSL_NO_RC5 -DOPENSSL_NO_RFC3779 -DOPENSSL_NO_SCTP -DOPENSSL_NO_SSL_TRACE -DOPENSSL_NO_SSL2 -DOPENSSL_NO_STORE -DOPENSSL_NO_UNIT_TEST -DOPENSSL_NO_WEAK_SSL_CIPHERS
- PEX_LIBS= 
--EX_LIBS= 
-+EX_LIBS= -L/openssl -Wl,-rpath,/openssl -L/zlib -Wl,-rpath,/zlib -ldl -lz
- EXE_EXT= 
- ARFLAGS= 
- AR= ar $(ARFLAGS) r
-@@ -105,7 +105,7 @@
- CMLL_ENC= camellia.o cmll_misc.o cmll_cbc.o
- MODES_ASM_OBJ= 
- ENGINES_ASM_OBJ= 
--PERLASM_SCHEME= 
-+PERLASM_SCHEME= elf
- 
- # KRB5 stuff
- KRB5_INCLUDES=
 @@ -148,7 +148,7 @@
  	objects \
  	md4 md5 sha mdc2 hmac ripemd whrlpool \
@@ -51,19 +10,6 @@ diff -r 5504a985a4e0 -r f59397568d2b Makefile
  	buffer bio stack lhash rand err \
  	evp asn1 pem x509 x509v3 conf txt_db pkcs7 pkcs12 comp ocsp ui krb5 \
  	cms pqueue ts srp cmac
-@@ -176,9 +176,9 @@
- LIBS=   libcrypto.a libssl.a
- SHARED_CRYPTO=libcrypto$(SHLIB_EXT)
- SHARED_SSL=libssl$(SHLIB_EXT)
--SHARED_LIBS=
--SHARED_LIBS_LINK_EXTS=
--SHARED_LDFLAGS=
-+SHARED_LIBS=$(SHARED_CRYPTO) $(SHARED_SSL)
-+SHARED_LIBS_LINK_EXTS=.so.$(SHLIB_MAJOR) .so
-+SHARED_LDFLAGS=-m64
- 
- GENERAL=        Makefile
- BASENAME=       openssl
 diff -r 5504a985a4e0 -r f59397568d2b Makefile.bak
 --- a/Makefile.bak	Sat Nov 26 00:47:32 2016 -0600
 +++ b/Makefile.bak	Sat Nov 26 01:03:59 2016 -0600
@@ -113,85 +59,6 @@ diff -r 5504a985a4e0 -r f59397568d2b config
  do
    if [ ! -d crypto/$i ]
    then
-diff -r 5504a985a4e0 -r f59397568d2b crypto/Makefile
---- a/crypto/Makefile	Sat Nov 26 00:47:32 2016 -0600
-+++ b/crypto/Makefile	Sat Nov 26 01:03:59 2016 -0600
-@@ -148,74 +148,3 @@
- 	@target=dclean; $(RECURSIVE_MAKE)
- 
- # DO NOT DELETE THIS LINE -- make depend depends on it.
--
--cpt_err.o: ../include/openssl/bio.h ../include/openssl/crypto.h
--cpt_err.o: ../include/openssl/e_os2.h ../include/openssl/err.h
--cpt_err.o: ../include/openssl/lhash.h ../include/openssl/opensslconf.h
--cpt_err.o: ../include/openssl/opensslv.h ../include/openssl/ossl_typ.h
--cpt_err.o: ../include/openssl/safestack.h ../include/openssl/stack.h
--cpt_err.o: ../include/openssl/symhacks.h cpt_err.c
--cryptlib.o: ../e_os.h ../include/openssl/bio.h ../include/openssl/buffer.h
--cryptlib.o: ../include/openssl/crypto.h ../include/openssl/e_os2.h
--cryptlib.o: ../include/openssl/err.h ../include/openssl/lhash.h
--cryptlib.o: ../include/openssl/opensslconf.h ../include/openssl/opensslv.h
--cryptlib.o: ../include/openssl/ossl_typ.h ../include/openssl/safestack.h
--cryptlib.o: ../include/openssl/stack.h ../include/openssl/symhacks.h cryptlib.c
--cryptlib.o: cryptlib.h
--cversion.o: ../e_os.h ../include/openssl/bio.h ../include/openssl/buffer.h
--cversion.o: ../include/openssl/crypto.h ../include/openssl/e_os2.h
--cversion.o: ../include/openssl/err.h ../include/openssl/lhash.h
--cversion.o: ../include/openssl/opensslconf.h ../include/openssl/opensslv.h
--cversion.o: ../include/openssl/ossl_typ.h ../include/openssl/safestack.h
--cversion.o: ../include/openssl/stack.h ../include/openssl/symhacks.h buildinf.h
--cversion.o: cryptlib.h cversion.c
--ebcdic.o: ../include/openssl/e_os2.h ../include/openssl/opensslconf.h ebcdic.c
--ex_data.o: ../e_os.h ../include/openssl/bio.h ../include/openssl/buffer.h
--ex_data.o: ../include/openssl/crypto.h ../include/openssl/e_os2.h
--ex_data.o: ../include/openssl/err.h ../include/openssl/lhash.h
--ex_data.o: ../include/openssl/opensslconf.h ../include/openssl/opensslv.h
--ex_data.o: ../include/openssl/ossl_typ.h ../include/openssl/safestack.h
--ex_data.o: ../include/openssl/stack.h ../include/openssl/symhacks.h cryptlib.h
--ex_data.o: ex_data.c
--fips_ers.o: ../include/openssl/opensslconf.h fips_ers.c
--mem.o: ../e_os.h ../include/openssl/bio.h ../include/openssl/buffer.h
--mem.o: ../include/openssl/crypto.h ../include/openssl/e_os2.h
--mem.o: ../include/openssl/err.h ../include/openssl/lhash.h
--mem.o: ../include/openssl/opensslconf.h ../include/openssl/opensslv.h
--mem.o: ../include/openssl/ossl_typ.h ../include/openssl/safestack.h
--mem.o: ../include/openssl/stack.h ../include/openssl/symhacks.h cryptlib.h
--mem.o: mem.c
--mem_clr.o: ../include/openssl/crypto.h ../include/openssl/e_os2.h
--mem_clr.o: ../include/openssl/opensslconf.h ../include/openssl/opensslv.h
--mem_clr.o: ../include/openssl/ossl_typ.h ../include/openssl/safestack.h
--mem_clr.o: ../include/openssl/stack.h ../include/openssl/symhacks.h mem_clr.c
--mem_dbg.o: ../e_os.h ../include/openssl/bio.h ../include/openssl/buffer.h
--mem_dbg.o: ../include/openssl/crypto.h ../include/openssl/e_os2.h
--mem_dbg.o: ../include/openssl/err.h ../include/openssl/lhash.h
--mem_dbg.o: ../include/openssl/opensslconf.h ../include/openssl/opensslv.h
--mem_dbg.o: ../include/openssl/ossl_typ.h ../include/openssl/safestack.h
--mem_dbg.o: ../include/openssl/stack.h ../include/openssl/symhacks.h cryptlib.h
--mem_dbg.o: mem_dbg.c
--o_dir.o: ../e_os.h ../include/openssl/e_os2.h ../include/openssl/opensslconf.h
--o_dir.o: LPdir_unix.c o_dir.c o_dir.h
--o_fips.o: ../e_os.h ../include/openssl/bio.h ../include/openssl/buffer.h
--o_fips.o: ../include/openssl/crypto.h ../include/openssl/e_os2.h
--o_fips.o: ../include/openssl/err.h ../include/openssl/lhash.h
--o_fips.o: ../include/openssl/opensslconf.h ../include/openssl/opensslv.h
--o_fips.o: ../include/openssl/ossl_typ.h ../include/openssl/safestack.h
--o_fips.o: ../include/openssl/stack.h ../include/openssl/symhacks.h cryptlib.h
--o_fips.o: o_fips.c
--o_init.o: ../e_os.h ../include/openssl/bio.h ../include/openssl/crypto.h
--o_init.o: ../include/openssl/e_os2.h ../include/openssl/err.h
--o_init.o: ../include/openssl/lhash.h ../include/openssl/opensslconf.h
--o_init.o: ../include/openssl/opensslv.h ../include/openssl/ossl_typ.h
--o_init.o: ../include/openssl/safestack.h ../include/openssl/stack.h
--o_init.o: ../include/openssl/symhacks.h o_init.c
--o_str.o: ../e_os.h ../include/openssl/e_os2.h ../include/openssl/opensslconf.h
--o_str.o: o_str.c o_str.h
--o_time.o: ../include/openssl/e_os2.h ../include/openssl/opensslconf.h o_time.c
--o_time.o: o_time.h
--uid.o: ../include/openssl/crypto.h ../include/openssl/e_os2.h
--uid.o: ../include/openssl/opensslconf.h ../include/openssl/opensslv.h
--uid.o: ../include/openssl/ossl_typ.h ../include/openssl/safestack.h
--uid.o: ../include/openssl/stack.h ../include/openssl/symhacks.h uid.c
-diff -r 5504a985a4e0 -r f59397568d2b crypto/curve25519/Makefile
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
 +++ b/crypto/curve25519/Makefile	Sat Nov 26 01:03:59 2016 -0600
 @@ -0,0 +1,82 @@

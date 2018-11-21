@@ -374,6 +374,12 @@ int main(int argc, char *argv[]) {
 	process_stop();
 
 	ns_cleanup(barrister_unit_test);
+
+	// Close the console descriptors, if they are still valid.
+	if ((errno = 0) || (fcntl(STDIN_FILENO, F_GETFL) != -1 && errno != EBADF)) close(STDIN_FILENO);
+	if ((errno = 0) || (fcntl(STDOUT_FILENO, F_GETFL) != -1 && errno != EBADF)) close(STDOUT_FILENO);
+	if ((errno = 0) || (fcntl(STDERR_FILENO, F_GETFL) != -1 && errno != EBADF)) close(STDERR_FILENO);
+
 	exit((failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE);
 
 }

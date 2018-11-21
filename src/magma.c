@@ -31,6 +31,12 @@ int main(int argc, char *argv[]) {
 	net_listen();
 
 	process_stop();
+
+	// Close the console descriptors, if they are still valid.
+	if ((errno = 0) || (fcntl(STDIN_FILENO, F_GETFL) != -1 && errno != EBADF)) close(STDIN_FILENO);
+	if ((errno = 0) || (fcntl(STDOUT_FILENO, F_GETFL) != -1 && errno != EBADF)) close(STDOUT_FILENO);
+	if ((errno = 0) || (fcntl(STDERR_FILENO, F_GETFL) != -1 && errno != EBADF)) close(STDERR_FILENO);
+
 	exit(EXIT_SUCCESS);
 }
 

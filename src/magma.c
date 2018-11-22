@@ -7,6 +7,8 @@
 
 #include "magma.h"
 
+extern FILE *log_descriptor;
+
 int main(int argc, char *argv[]) {
 
 	pid_t pid = 0;
@@ -31,6 +33,9 @@ int main(int argc, char *argv[]) {
 	net_listen();
 
 	process_stop();
+
+	// We used a log file handle, we need to close it.
+	if (log_descriptor) fclose(log_descriptor);
 
 	// Close the console descriptors, if they are still valid.
 	if ((errno = 0) || (fcntl(STDIN_FILENO, F_GETFL) != -1 && errno != EBADF)) close(STDIN_FILENO);

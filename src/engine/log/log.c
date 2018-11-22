@@ -9,6 +9,7 @@
 
 uint64_t log_date;
 bool_t log_enabled = true;
+FILE *log_descriptor = NULL;
 pthread_mutex_t log_mutex =	PTHREAD_MUTEX_INITIALIZER;
 
 /**
@@ -34,11 +35,11 @@ void log_enable(void) {
 }
 
 /**
- * @brief	Print the current stack backtrace to stdout.
- * @note	This function was created because backtrace_symbols() can fail due to heap corruption.
+ * @brief	Log the current stack to stdout.
+ * @note	This function was created because backtrace_symbols() can fail if there is heap corruption.
  * @return	-1 if the backtrace failed, or 0 on success.
  */
-int_t print_backtrace(void) {
+int_t log_backtrace(FILE *output) {
 
 	int_t pipefds[2];
 	char strbuf[1024];
@@ -56,9 +57,9 @@ int_t print_backtrace(void) {
 		return -1;
 	}
 
-	backtrace_symbols_fd(buffer,nbt,pipefds[1]);
+	backtrace_symbols_fd(buffer, nbt, pipefds[1]);
 
-	if (write(STDOUT_FILENO, "   ", 3) != 3) {
+	if (fwrite( "   ", 1, 3, output) != 3) {
 		return -1;
 	}
 
@@ -74,7 +75,7 @@ int_t print_backtrace(void) {
 		}
 
 		for (i = 0; i < nread; i++) {
-			if (write (STDOUT_FILENO, &strbuf[i], 1) != 1) {
+			if (fwrite(&strbuf[i], 1, 1, output) != 1) {
 				return -1;
 			}
 
@@ -82,7 +83,7 @@ int_t print_backtrace(void) {
 				nfound++;
 
 				if (nfound != nbt) {
-					if (write(STDOUT_FILENO, "   ", 3) != 3) {
+					if (fwrite("   ", 1, 3, output) != 3) {
 						return -1;
 					}
 				}
@@ -90,7 +91,7 @@ int_t print_backtrace(void) {
 		}
 	}
 
-	fsync(STDOUT_FILENO);
+	fflush(output);
 	close(pipefds[0]);
 	close(pipefds[1]);
 
@@ -113,6 +114,7 @@ void log_internal(const char *file, const char *function, const int line, M_LOG_
 	time_t now;
 	va_list args;
 	struct tm local;
+	FILE *fd = NULL;
 	bool_t output = false;
 	char buffer[128];
 
@@ -121,9 +123,19 @@ void log_internal(const char *file, const char *function, const int line, M_LOG_
 	mutex_lock(&log_mutex);
 
 	// Someone has disabled the log output.
-	if (!log_enabled) {
+	if (!log_enabled && !magma.output.file) {
 		mutex_unlock(&log_mutex);
 		return;
+	}
+
+	// If we are logging to a file, use the log descriptor as our destination.
+	else if (!magma.output.file || !log_descriptor || (M_LOG_CONSOLE == (options & M_LOG_CONSOLE))) {
+		fd = stdout;
+	}
+
+	// If the log file option is disabled, or the log descriptor is unavailable, we fall back to using standard output.
+	else {
+		fd = log_descriptor;
 	}
 
 	if ((magma.log.time || M_LOG_TIME == (options & M_LOG_TIME)) && !(M_LOG_TIME_DISABLE == (options & M_LOG_TIME_DISABLE))) {
@@ -131,38 +143,38 @@ void log_internal(const char *file, const char *function, const int line, M_LOG_
 		localtime_r(&now, &local);
 		strftime(buffer, 128, "%T", &local);
 
-		fprintf(stdout, "%s%s", (output ? " - " : "["), buffer);
+		fprintf(fd, "%s%s", (output ? " - " : "["), buffer);
 		output = true;
 	}
 
 	if ((magma.log.file || M_LOG_FILE == (options & M_LOG_FILE)) && !(M_LOG_FILE_DISABLE == (options & M_LOG_FILE_DISABLE))) {
-		fprintf(stdout, "%s%s", (output ? " - " : "["), file);
+		fprintf(fd, "%s%s", (output ? " - " : "["), file);
 		output = true;
 	}
 
 	if ((magma.log.function || M_LOG_FUNCTION == (options & M_LOG_FUNCTION)) && !(M_LOG_FUNCTION_DISABLE == (options & M_LOG_FUNCTION_DISABLE))) {
-		fprintf(stdout, "%s%s%s", (output ? " - " : "["), function, "()");
+		fprintf(fd, "%s%s%s", (output ? " - " : "["), function, "()");
 		output = true;
 	}
 
 	if ((magma.log.line || M_LOG_LINE == (options & M_LOG_LINE)) && !(M_LOG_LINE_DISABLE == (options & M_LOG_LINE_DISABLE))) {
-		fprintf(stdout, "%s%i", (output ? " - " : "["), line);
+		fprintf(fd, "%s%i", (output ? " - " : "["), line);
 		output = true;
 	}
 
 	if (output)
-		fprintf(stdout, "] = ");
+		fprintf(fd, "] = ");
 
-	vfprintf(stdout, format, args);
+	vfprintf(fd, format, args);
 
 	if (!(M_LOG_LINE_FEED_DISABLE == (options & M_LOG_LINE_FEED_DISABLE))) {
-		fprintf(stdout, "\n");
+		fprintf(fd, "\n");
 	}
 
 	if ((magma.log.stack || M_LOG_STACK_TRACE == (options & M_LOG_STACK_TRACE)) && !(M_LOG_STACK_TRACE_DISABLE == (options & M_LOG_STACK_TRACE_DISABLE))) {
 
-		if (print_backtrace() < 0) {
-			fprintf(stdout, "Error printing stack backtrace to stdout!\n");
+		if (log_backtrace(fd) < 0) {
+			fprintf(fd, "Error printing stack backtrace to stdout!\n");
 		}
 
 		/***
@@ -179,7 +191,7 @@ void log_internal(const char *file, const char *function, const int line, M_LOG_
 		***/
 	}
 
-	fflush(stdout);
+	fflush(fd);
 	mutex_unlock(&log_mutex);
 
 	va_end(args);
@@ -207,19 +219,30 @@ void log_rotate(void) {
 		}
 
 		pthread_mutex_lock(&log_mutex);
-		if (!(stdout = freopen64(log_file, "a", stdout))) {
-			stdout = orig_out;
-			log_critical("Unable to rotate the error log. { file = %s }", log_file);
-			pthread_mutex_unlock(&log_mutex);
-			return;
+
+		// If daemonized, then we rely on standard output descriptor for writing out the log.
+		if (magma.system.daemonize) {
+			if (!(stdout = freopen64(log_file, "a", stdout))) {
+				stdout = orig_out;
+				log_critical("Unable to rotate the error log. { file = %s }", log_file);
+				pthread_mutex_unlock(&log_mutex);
+				return;
+			}
+
+
+			if (!(stderr = freopen64(log_file, "a", stderr))) {
+				fclose(stdout);
+				stdout = orig_out;
+				stderr = orig_err;
+				log_critical("Unable to rotate the error log. { file = %s }", log_file);
+				pthread_mutex_unlock(&log_mutex);
+				return;
+			}
 		}
 
-
-		if (!(stderr = freopen64(log_file, "a", stderr))) {
-			fclose(stdout);
-			stdout = orig_out;
-			stderr = orig_err;
-			log_critical("Unable to rotate the error log. { file = %s }", log_file);
+		// Otherwise we ignore the standard output/error handles and reopen the log descriptor.
+		else if (!(log_descriptor = freopen64(log_file, "a+", log_descriptor))) {
+			log_critical("Unable to open the error log, falling back to console output. { file = %s }", log_file);
 			pthread_mutex_unlock(&log_mutex);
 			return;
 		}
@@ -251,22 +274,32 @@ bool_t log_start(void) {
 			return false;
 		}
 
-		if (!(file_out = freopen64(log_file, "a+", stdout))) {
-			log_critical("Unable to open the error log, sticking with standard out. { file = %s }", log_file);
+		// If we are daemonizing, then we need repoint standard output/error at our designated log files.
+		if (magma.system.daemonize) {
+			if (!(file_out = freopen64(log_file, "a+", stdout))) {
+				log_critical("Unable to open the error log, sticking with standard out. { file = %s }", log_file);
+				return false;
+			}
+
+			if (!(file_err = freopen64(log_file, "a+", stderr))) {
+				log_critical("Unable to open the error log, sticking with standard error. { file = %s }", log_file);
+				fclose(file_out);
+				return false;
+			}
+
+			stdout = file_out;
+			stderr = file_err;
+		}
+
+		// Otherwise we track write to the log file using the log descriptor.
+		else if (!(log_descriptor = fopen64(log_file, "a+"))) {
+			log_critical("Unable to open the error log, falling back to console output. { file = %s }", log_file);
 			return false;
 		}
 
-		if (!(file_err = freopen64(log_file, "a+", stderr))) {
-			log_critical("Unable to open the error log, sticking with standard error. { file = %s }", log_file);
-			fclose(file_out);
-			return false;
-		}
-
-		stdout = file_out;
-		stderr = file_err;
 	}
 
+	// We always close standard input.
 	fclose(stdin);
 	return true;
 }
-

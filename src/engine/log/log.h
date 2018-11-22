@@ -12,27 +12,37 @@
 
 // Options used to control the behavior of the log subsystem.
 typedef enum {
+
+	// The message severity level.
 	M_LOG_PEDANTIC = 1,
-	M_LOG_INFO,
-	M_LOG_WARN,
-	M_LOG_ERROR,
-	M_LOG_CRITICAL,
-	M_LOG_TIME,
-	M_LOG_FILE,
-	M_LOG_LINE,
-	M_LOG_FUNCTION,
-	M_LOG_STACK_TRACE,
-	M_LOG_PEDANTIC_DISABLE,
-	M_LOG_INFO_DISABLE,
-	M_LOG_WARN_DISABLE,
-	M_LOG_ERROR_DISABLE,
-	M_LOG_CRITICAL_DISABLE,
-	M_LOG_LINE_FEED_DISABLE,
-	M_LOG_TIME_DISABLE,
-	M_LOG_FILE_DISABLE,
-	M_LOG_LINE_DISABLE,
-	M_LOG_FUNCTION_DISABLE,
-	M_LOG_STACK_TRACE_DISABLE
+	M_LOG_INFO = 2,
+	M_LOG_WARN = 4,
+	M_LOG_ERROR = 8,
+	M_LOG_CRITICAL = 16,
+
+	// Flags used to control what information is recorded.
+	M_LOG_TIME = 32,
+	M_LOG_FILE = 64,
+	M_LOG_LINE = 128,
+	M_LOG_FUNCTION = 256,
+	M_LOG_STACK_TRACE = 512,
+
+	// This flag forces a log message to output on the console, if available, even though the log file has been enabled.
+	M_LOG_CONSOLE = 1024,
+
+	// Contra flags can be used to overide a flag as needed.
+	M_LOG_PEDANTIC_DISABLE = 2048,
+	M_LOG_INFO_DISABLE = 4096,
+	M_LOG_WARN_DISABLE = 8192,
+	M_LOG_ERROR_DISABLE = 16384,
+	M_LOG_CRITICAL_DISABLE = 32768,
+	M_LOG_LINE_FEED_DISABLE = 65536,
+	M_LOG_TIME_DISABLE = 131072,
+	M_LOG_FILE_DISABLE = 262144,
+	M_LOG_LINE_DISABLE = 524288,
+	M_LOG_FUNCTION_DISABLE = 1048576,
+	M_LOG_STACK_TRACE_DISABLE = 2097152
+
 } M_LOG_OPTIONS;
 
 // All of the different log levels.
@@ -44,6 +54,7 @@ void     log_disable(void);
 void     log_enable(void);
 void     log_rotate(void);
 bool_t   log_start(void);
+int_t    log_backtrace(FILE *output);
 
 #undef log_pedantic
 #undef log_check

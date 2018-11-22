@@ -7,6 +7,7 @@
 
 #include "magma_check.h"
 
+extern FILE *log_descriptor;
 chr_t *barrister_unit_test = NULL;
 int_t case_timeout = RUN_TEST_CASE_TIMEOUT;
 bool_t do_virus_check = true, do_tank_check = true, do_dspam_check = true, do_spf_check = true, do_dkim_check = true;
@@ -374,6 +375,9 @@ int main(int argc, char *argv[]) {
 	process_stop();
 
 	ns_cleanup(barrister_unit_test);
+
+	// We used a log file handle, we need to close it.
+	if (log_descriptor) fclose(log_descriptor);
 
 	// Close the console descriptors, if they are still valid.
 	if ((errno = 0) || (fcntl(STDIN_FILENO, F_GETFL) != -1 && errno != EBADF)) close(STDIN_FILENO);

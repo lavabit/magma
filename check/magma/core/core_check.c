@@ -52,8 +52,6 @@ START_TEST (check_compare) {
 	log_disable();
 	stringer_t *errmsg = NULL;
 
-	log_unit("%-64.64s", "CORE / STRINGS / COMPARE / SINGLE THREADED:");
-
 	if (st_cmp_cs_eq(NULLER(type(M_TYPE_MULTI)), CONSTANT("M_TYPE_MULTI")))
 		errmsg = NULLER("type() did not return M_TYPE_MULTI");
 

@@ -684,7 +684,8 @@ bool_t lib_load(void) {
 		return false;
 	}
 
-	log_pedantic("-------------------------------- VERSIONS --------------------------------\n\n" \
+	log_options(M_LOG_PEDANTIC | M_LOG_TIME_DISABLE | M_LOG_FILE_DISABLE | M_LOG_LINE_DISABLE | M_LOG_FUNCTION_DISABLE | M_LOG_STACK_TRACE_DISABLE, \
+		"-------------------------------- VERSIONS --------------------------------\n\n" \
 		"%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n\n" \
 		"%-10.10s %63.63s\n%-10.10s %63.63s\n\n" \
 		"%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n%-10.10s %63.63s\n\n" \

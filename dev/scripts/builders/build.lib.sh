@@ -1144,7 +1144,8 @@ mysql() {
 		mysql-prep)
 			cd "$M_SOURCES/mysql"; error
 			touch libtoolT; error
-			cat "$M_PATCHES/mysql/"mysql-test-run.patch | patch -p1 --verbose &>> "$M_LOGS/mysql.txt"; error
+			cat "$M_PATCHES/mysql/"5.1.73_mysql_test_run_syntax.patch | patch -p1 --verbose &>> "$M_LOGS/mysql.txt"; error
+			cat "$M_PATCHES/mysql/"5.1.73_perl_inc_path.patch | patch -p1 --verbose &>> "$M_LOGS/mysql.txt"; error
 		;;
 		mysql-build)
 			cd "$M_SOURCES/mysql"; error

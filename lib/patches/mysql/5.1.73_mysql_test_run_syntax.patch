@@ -11,14 +11,14 @@ diff -r 38122040f01c mysql-test/mysql-test-run.pl
        delete $children{$ret_pid};
      }
    }
- 
+
 -  if ( not defined @$completed ) {
 +  if ( not @$completed ) {
      mtr_error("Test suite aborted");
    }
- 
+
    if ( @$completed != $num_tests){
- 
+
      if ($opt_force){
        # All test should have been run, print any that are still in $tests
        #foreach my $test ( @$tests ){

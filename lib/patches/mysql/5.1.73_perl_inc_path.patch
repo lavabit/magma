@@ -1,0 +1,15 @@
+diff --git a/mysql-test/Makefile.in b/mysql-test/Makefile.in
+index 42cb381..797f59b 100644
+--- a/mysql-test/Makefile.in
++++ b/mysql-test/Makefile.in
+@@ -232,8 +232,8 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
+ PATH_SEPARATOR = @PATH_SEPARATOR@
+ PDFLATEX = @PDFLATEX@
+ PDFMANUAL = @PDFMANUAL@
+-PERL = @PERL@
+-PERL5 = @PERL5@
++PERL = @PERL@ -I.
++PERL5 = @PERL5@ -I.
+ PROTOCOL_VERSION = @PROTOCOL_VERSION@
+ PS = @PS@
+ RANLIB = @RANLIB@

@@ -147,7 +147,8 @@ void process_stop(void) {
 		}
 	}
 
-	log_info("Magma shutdown complete.");
+	log_options(M_LOG_INFO | M_LOG_TIME_DISABLE | M_LOG_FILE_DISABLE | M_LOG_LINE_DISABLE | M_LOG_FUNCTION_DISABLE | M_LOG_STACK_TRACE_DISABLE, \
+		"Magma shutdown complete.");
 	return;
 }
 
@@ -340,7 +341,8 @@ bool_t process_start(void) {
 		return false;
 	}
 
-	log_info("Magma initialization complete.");
+	log_options(M_LOG_INFO | M_LOG_TIME_DISABLE | M_LOG_FILE_DISABLE | M_LOG_LINE_DISABLE | M_LOG_FUNCTION_DISABLE | M_LOG_STACK_TRACE_DISABLE, \
+		"Magma initialization complete.");
 	return true;
 }
 

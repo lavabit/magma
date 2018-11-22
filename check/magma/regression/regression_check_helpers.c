@@ -31,7 +31,40 @@ void check_regression_file_descriptors_leak_test(void) {
 }
 
 /**
- * @brief	Reads lines from a client_t* until a line is reached containing token, and if a line is reached
+ * @brief 	Continuously reads data from a client context until a line with a single period is received, signaling the entire
+ * 				POP protocol response has been transmitted.
+ *
+ * @param 	client 	The client_t pointer to read from (which should be connected to a POP server)
+ * @param	size	A uint64_t pointer. If not NULL, the total size of the lines read will be placed at this address.
+ * @param	token	If not NULL, then the size variable will only include the number of bytes read after the token.
+ * @return 	true if a line containing a single period is found, false if an error occurs before we find the end of the message.
+ */
+bool_t check_client_dot_stuff_read_end(client_t *client, uint64_t *size, chr_t *token) {
+
+	bool_t token_found = false;
+
+	if (size) *size = 0;
+	else if (!token) token_found = true;
+
+	// There shouldn't be a token, if we aren't also supposed to be counting the number of bytes.
+	else if (!size && token) return false;
+
+	while (st_cmp_cs_eq(&(client->line), NULLER(".\r\n"))) {
+
+		// Read a line from the client.
+		if (client_read_line(client) <= 0) return false;
+
+		// If we have a size and a token, then keep checking for the token until its found.
+		else if (size && token && !token_found && st_cmp_cs_starts(&(client->line), NULLER(token)) == 0) token_found = true;
+
+		if (size && token_found) *size += pl_length_get(client->line);
+	}
+
+	return true;
+}
+
+/**
+ * @brief	Reads lines from a client until a line is reached containing token, and if a line is reached
  * 			that starts with a period, checks if the line starts with two periods.
  *
  * @param	client	The client_t* to read lines from.
@@ -126,6 +159,21 @@ bool_t check_regression_smtp_dot_stuffing_sthread(stringer_t *errmsg) {
 	else if (!check_client_dot_stuff(client, "Date:")) {
 
 		st_sprint(errmsg, "The received message failed to be properly dot stuffed.");
+		client_close(client);
+		return false;
+	}
+
+	else if (!check_client_dot_stuff_read_end(client, NULL, NULL)) {
+
+		st_sprint(errmsg, "The dot stuffed POP message failed transmit properly.");
+		client_close(client);
+		return false;
+	}
+
+	else if (client_write(client, PLACER("QUIT\r\n", 6)) != 6 || client_read_line(client) <= 0 || client_status(client) != 1 ||
+		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
+
+		st_sprint(errmsg, "Failed to receieve a successful status response after sending the QUIT command.");
 		client_close(client);
 		return false;
 	}

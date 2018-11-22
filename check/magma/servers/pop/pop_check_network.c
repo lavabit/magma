@@ -27,14 +27,13 @@ bool_t check_client_line_presence(client_t *client, stringer_t *line, stringer_t
 }
 
 /**
- * @brief 	Calls client_read_line on a client until it reaches a period only line, returning
- * 			the number of messages in the inbox.
+ * @brief 	Continuously reads data from a client context until a line with a single period is received, signaling the entire
+ * 				POP protocol response has been transmitted.
  *
  * @param 	client 	The client_t pointer to read from (which should be connected to a POP server)
- * @param	size	A uint64_t pointer. If not NULL, the total size of the lines read will be placed
- * 					at this address.
+ * @param	size	A uint64_t pointer. If not NULL, the total size of the lines read will be placed at this address.
  * @param	token	If not NULL, then the size variable will only include the number of bytes read after the token.
- * @return 	true if a line containing a single period is found, false if not.
+ * @return 	true if a line containing a single period is found, false if an error occurs before we find the end of the message.
  */
 bool_t check_pop_client_read_end(client_t *client, uint64_t *size, chr_t *token) {
 
@@ -209,7 +208,7 @@ bool_t check_pop_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t
 	else if (client_write(client, PLACER("QUIT\r\n", 6)) != 6 || client_read_line(client) <= 0 || client_status(client) != 1 ||
 		st_cmp_cs_starts(&(client->line), NULLER("+OK"))) {
 
-		st_sprint(errmsg, "Failed to return a successful state after QUIT.");
+		st_sprint(errmsg, "Failed to receieve a successful status response after sending the QUIT command.");
 		client_close(client);
 		return false;
 	}

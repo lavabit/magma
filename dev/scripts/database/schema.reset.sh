@@ -22,6 +22,7 @@ popd > /dev/null
 cd $BASE/../../../
 
 MAGMA_RES_SQL="res/sql/" 
+MAGMA_RES_LOGS="sandbox/logs/"
 MAGMA_RES_TANKS="sandbox/storage/tanks/"
 MAGMA_RES_STORAGE="sandbox/storage/local/0/"
 
@@ -149,6 +150,9 @@ rm --force "$MAGMA_RES_TANKS/tank.4.data"
 # Remove the local storage folder.
 rm --recursive --force "$MAGMA_RES_STORAGE"
 mkdir --parents "$MAGMA_RES_STORAGE"
+
+# Remove any log files that may have been generated.
+find "$MAGMA_RES_LOGS" -iname "magmad.[0-9]*.log" -exec rm --force {} \;
 
 # Done.
 tput setaf 2; printf "Done.\n"; tput sgr0

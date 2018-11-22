@@ -90,6 +90,9 @@ enum {
 	MAGMA_SPOOL_SCAN = 2
 };
 
+/// backtrace.c
+int_t   backtrace_print(void);
+
 /// color.c
 const    chr_t * color_blue(void);
 const    chr_t * color_blue_bold(void);

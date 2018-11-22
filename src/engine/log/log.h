@@ -39,7 +39,6 @@ typedef enum {
 #define MAGMA_LOG_LEVELS (M_LOG_PEDANTIC | M_LOG_INFO | M_LOG_WARN | M_LOG_ERROR | M_LOG_CRITICAL)
 
 // log.c
-int_t    print_backtrace();
 void     log_internal(const char *file, const char *function, const int line, M_LOG_OPTIONS options, const char *format, ...) __attribute__((format (printf, 5, 6)));
 void     log_disable(void);
 void     log_enable(void);

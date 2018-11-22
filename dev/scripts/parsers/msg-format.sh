@@ -7,9 +7,16 @@
 # so it can be added to the magma unit test corpus. The output is automatically 
 # added to the check/magma/data/ folder.
 
+# Handle self referencing, sourcing etc.
+if [[ $0 != $BASH_SOURCE ]]; then
+  export CMD=`readlink -f $BASH_SOURCE`
+else
+  export CMD=`readlink -f $0`fi
 
-LINK=`readlink -f $0`
-BASE=`dirname $LINK`
+# Cross Platform Base Directory Discovery
+pushd `dirname $CMD` > /dev/null
+BASE=`pwd -P`
+popd > /dev/null
 ORIG=`pwd`
 
 cd $BASE/../../../

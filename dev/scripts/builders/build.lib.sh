@@ -41,8 +41,18 @@
 # To generate a SLOC report for each project:
 # cd $M_SOURCES; find  -maxdepth 1 -type d -printf '\n\n%P\n' -exec sloc --quiet --progress-rate=0 {} \; | grep -v "http://cloc.sourceforge.net"
 
-LINK=`readlink -f $0`
-BASE=`dirname $LINK`
+# Handle self referencing, sourcing etc.
+if [[ $0 != $BASH_SOURCE ]]; then
+  export CMD=`readlink -f $BASH_SOURCE`
+else
+  export CMD=`readlink -f $0`
+fi
+
+# Cross Platform Base Directory Discovery
+pushd `dirname $CMD` > /dev/null
+BASE=`pwd -P`
+popd > /dev/null
+
 M_BUILD=`readlink -f $0`
 
 cd $BASE/../../../lib/

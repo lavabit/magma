@@ -7,8 +7,16 @@
 # magma daemon. This script should be only be run in a development environment. 
 # It may be used at the user's discretion against a development sandbox.
 
-LINK=`readlink -f $0`
-BASE=`dirname $LINK`
+# Handle self referencing, sourcing etc.
+if [[ $0 != $BASH_SOURCE ]]; then
+  export CMD=`readlink -f $BASH_SOURCE`
+else
+  export CMD=`readlink -f $0`fi
+
+# Cross Platform Base Directory Discovery
+pushd `dirname $CMD` > /dev/null
+BASE=`pwd -P`
+popd > /dev/null
 
 cd $BASE/../../../
 

@@ -6,8 +6,16 @@
 # Description: Used to quickly produce a header file for the functions in the current directory. 
 # This script uses protoize instead of ctags. The ctags script is generally preferred over this version.
 
-LINK=`readlink -f $0`
-BASE=`dirname $LINK`
+# Handle self referencing, sourcing etc.
+if [[ $0 != $BASH_SOURCE ]]; then
+  export CMD=`readlink -f $BASH_SOURCE`
+else
+  export CMD=`readlink -f $0`fi
+
+# Cross Platform Base Directory Discovery
+pushd `dirname $CMD` > /dev/null
+BASE=`pwd -P`
+popd > /dev/null
 
 cd $BASE/../../../
 

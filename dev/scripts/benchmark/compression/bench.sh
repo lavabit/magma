@@ -1,7 +1,15 @@
 #!/bin/bash
 
-LINK=`readlink -f $0`
-BASE=`dirname $LINK`
+# Handle self referencing, sourcing etc.
+if [[ $0 != $BASH_SOURCE ]]; then
+  export CMD=`readlink -f $BASH_SOURCE`
+else
+  export CMD=`readlink -f $0`fi
+
+# Cross Platform Base Directory Discovery
+pushd `dirname $CMD` > /dev/null
+BASE=`pwd -P`
+popd > /dev/null
 
 cd $BASE/../../../../
 
@@ -11,8 +19,6 @@ cd $MAGMA_DIST/res/corpus/
 /usr/bin/time -f "%E" tar cf $HOME/Desktop/messages.tar *
 cd $HOME/Desktop/
 du -m messages.tar
-
-
 
 /usr/bin/time -f "%E" pigz -9 -k messages.tar
 du -m messages.tar.gz

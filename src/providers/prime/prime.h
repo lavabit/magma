@@ -93,7 +93,7 @@ typedef enum {
 	PRIME_CHUNK_INVALID = -1,
 
 	// Tracing
-    PRIME_CHUNK_TRACING = 0,                        /**< Tracing data. */
+	PRIME_CHUNK_TRACING = 0,                        /**< Tracing data. */
 
 	// Envelope Block
 	PRIME_CHUNK_EPHEMERAL = 1,                      /**< Ephemeral chunk. */

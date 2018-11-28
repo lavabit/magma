@@ -446,7 +446,7 @@ void portal_endpoint_alert_acknowledge(connection_t *con) {
 	json_error_t err;
 	json_t *alerts;
 	size_t count;
-	uint32_t transaction;
+	int64_t transaction;
 
 	// Check the session state. Method has only one parameter, which may optionally be empty.
 	if (!portal_validate_request (con, PORTAL_ENDPOINT_ERROR_ALERT_ACKNOWLEDGE, "alert.acknowledge", true, 0)) {

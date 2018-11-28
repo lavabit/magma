@@ -10,10 +10,10 @@
 int32_t chunk_buffer_size(stringer_t *chunk) {
 
 	size_t len = 0;
-	uint8_t type = 0;
 	uchr_t *data = NULL;
 	int32_t result = -1;
 	uint32_t big_endian_size = 0;
+  prime_message_chunk_type_t type = 0;
 
 	if (st_empty_out(chunk, &data, &len) || len < 4 || (type = chunk_header_type(chunk)) == PRIME_CHUNK_INVALID) {
 		log_pedantic("The chunk buffer is invalid.");
@@ -40,10 +40,10 @@ int32_t chunk_buffer_size(stringer_t *chunk) {
 int32_t chunk_header_size(stringer_t *chunk) {
 
 	size_t len = 0;
-	uint8_t type = 0;
 	uchr_t *data = NULL;
 	int32_t result = -1;
 	uint32_t big_endian_size = 0;
+	prime_message_chunk_type_t type = 0;
 
 	if (st_empty_out(chunk, &data, &len) || len < 4 || (type = chunk_header_type(chunk)) == PRIME_CHUNK_INVALID) {
 		log_pedantic("The chunk buffer is invalid.");
@@ -127,13 +127,14 @@ prime_message_chunk_type_t chunk_header_type(stringer_t *chunk) {
 int_t chunk_header_read(stringer_t *data, uint8_t *type, uint32_t *size, placer_t *chunk) {
 
 	int32_t holder = 0;
+	prime_message_chunk_type_t local = 0;
 
 	if (!data || !type || !size || !chunk) {
 		log_pedantic("A NULL pointer was supplied to the PRIME chunk read function.");
 		return 1;
 	}
 
-	else if ((*type = chunk_header_type(data)) == PRIME_CHUNK_INVALID) {
+	else if ((local = chunk_header_type(data)) == PRIME_CHUNK_INVALID) {
 		return -1;
 	}
 
@@ -142,9 +143,10 @@ int_t chunk_header_read(stringer_t *data, uint8_t *type, uint32_t *size, placer_
 	}
 
 	// The chunk
-	*chunk = pl_init(st_data_get(data), holder + (*type < PRIME_SIGNATURE_TREE ? 4 : 1) +
-		(*type > PRIME_CHUNK_EPHEMERAL ? (slots_count(*type) * SECP256K1_SHARED_SECRET_LEN) : 0));
+	*chunk = pl_init(st_data_get(data), holder + (local < PRIME_SIGNATURE_TREE ? 4 : 1) +
+		(local > PRIME_CHUNK_EPHEMERAL ? (slots_count(local) * SECP256K1_SHARED_SECRET_LEN) : 0));
 	*size = holder;
+	*type = local;
 
 	// Bounds check, ensure the provided data buffer is large enough to hold the calculated length.
 	if (pl_length_get(*chunk) > st_length_get(data)) {

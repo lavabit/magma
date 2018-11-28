@@ -383,7 +383,7 @@ static int keys_generate(keys_type_t type, char **signet_pem, char **key_pem) {
 		break;
 	}
 
-	if (!(signet = dime_sgnt_signet_create(type))) {
+	if (!(signet = dime_sgnt_signet_create((signet_type_t)type))) {
 		_free_ec_key(enc_key);
 		_free_ed25519_key(sign_key);
 		RET_ERROR_INT(ERR_UNSPEC, "could not create signet object");

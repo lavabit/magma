@@ -101,10 +101,11 @@ size_t prime_field_size_max(uint16_t type, prime_field_type_t field) {
 
 stringer_t * prime_field_write(uint16_t type, prime_field_type_t field, size_t size, stringer_t *data, stringer_t *output) {
 
+  int_t size_len = 0;
 	uchr_t *payload = NULL;
 	stringer_t *result = NULL;
 	uint32_t big_endian_size = 0;
-	size_t total = 0, size_len = 0, payload_len = 0;
+	size_t total = 0, payload_len = 0;
 
 	/// TODO: Add undefined field support.
 	if (field == 251) {

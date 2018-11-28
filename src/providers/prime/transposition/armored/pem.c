@@ -125,7 +125,7 @@ stringer_t * prime_pem_wrap(stringer_t *object, stringer_t *output) {
 		return NULL;
 	}
 	else if (!(begin = prime_pem_begin(type)) || !(end = prime_pem_end(type))) {
-		log_pedantic("The PRIME object type does not support the privacy enhanced message format. { magic = %hhu / type = %s }",
+		log_pedantic("The PRIME object type does not support the privacy enhanced message format. { magic = %hu / type = %s }",
 			type, prime_object_type(type));
 		return NULL;
 	}

@@ -263,7 +263,7 @@ stringer_t * ip_subnet(ip_t *address, stringer_t *output) {
 
 	// For IPv4 addresses use the first 24 bits, out of the total 32 bits available.
 	if (address->family == AF_INET) {
-		len = st_sprint(result, "%hhu.%hhu.%hhu", (0x000000ff & address->ip4.s_addr), ((0x0000ff00 & address->ip4.s_addr) >> 8),
+		len = st_sprint(result, "%u.%u.%u", (0x000000ff & address->ip4.s_addr), ((0x0000ff00 & address->ip4.s_addr) >> 8),
 			((0x00ff0000 & address->ip4.s_addr) >> 16));
 	}
 	// For IPv6 addresses use the first 64 bits, out of the total 128 bits available. The first 64 bits should contain the
@@ -360,7 +360,7 @@ stringer_t * ip_standard(ip_t *address, stringer_t *output) {
 
 	// Store the memory address where the output should be written.
 	if (address->family == AF_INET) {
-		len = st_sprint(result, "%hhu.%hhu.%hhu.%hhu", (0x000000ff & address->ip4.s_addr), 	((0x0000ff00 & address->ip4.s_addr) >> 8),
+		len = st_sprint(result, "%u.%u.%u.%u", (0x000000ff & address->ip4.s_addr), 	((0x0000ff00 & address->ip4.s_addr) >> 8),
 			((0x00ff0000 & address->ip4.s_addr) >> 16), ((0xff000000 & address->ip4.s_addr) >> 24));
 	}
 	else if (address->family == AF_INET6) {
@@ -434,7 +434,7 @@ stringer_t * ip_reversed(ip_t *address, stringer_t *output) {
 
 	// Store the memory address where the output should be written.
 	if (address->family == AF_INET) {
-		len = st_sprint(result, "%hhu.%hhu.%hhu.%hhu", ((0xff000000 & address->ip4.s_addr) >> 24), ((0x00ff0000 & address->ip4.s_addr) >> 16),
+		len = st_sprint(result, "%u.%u.%u.%u", ((0xff000000 & address->ip4.s_addr) >> 24), ((0x00ff0000 & address->ip4.s_addr) >> 16),
 			((0x0000ff00 & address->ip4.s_addr) >> 8), (0x000000ff & address->ip4.s_addr));
 	}
 	else if (address->family == AF_INET6) {

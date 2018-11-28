@@ -300,7 +300,7 @@ bool_t check_camel_login(stringer_t *user, stringer_t *pass, stringer_t *cookie,
 
 	json_error_t err;
 	client_t *client = NULL;
-	size_t content_length = 0;
+	int32_t content_length = 0;
 	json_t *json_root = NULL, *json_result = NULL, *json_key = NULL;
 	uint32_t id = 1, length = 62 + ns_length_get(user) + ns_length_get(pass) + uint32_digits(id);
 	stringer_t *json = NULL, *message = NULLER("POST /portal/camel HTTP/1.1\r\nHost: localhost:10000\r\nAccept: */*\r\n" \
@@ -356,7 +356,7 @@ bool_t check_camel_auth_sthread(bool_t secure, stringer_t *errmsg) {
 bool_t check_camel_basic_sthread(bool_t secure, stringer_t *errmsg) {
 
 	json_error_t err;
-	json_t *json_objs[2] = { NULL, NULL };
+	json_t *json_objs[3] = { NULL, NULL, NULL };
 	bool_t contains_entries[2] = { false, false };
 	const chr_t *json_values[4] = { NULL, NULL, NULL, NULL };
 	chr_t *choices = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", *chr_command = NULL;

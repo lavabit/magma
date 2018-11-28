@@ -329,8 +329,8 @@ START_TEST (check_users_auth_inactivity_s) {
 
 START_TEST (check_users_auth_address_s) {
 
-	stringer_t *address;
 	char *errmsg = NULL;
+	stringer_t *address = NULL;
 
 	if (!status()) {
 		log_test("USERS / AUTH / ADDRESS / SINGLE THREADED:", errmsg);

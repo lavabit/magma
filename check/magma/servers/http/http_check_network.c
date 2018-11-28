@@ -64,9 +64,9 @@ int32_t check_http_content_length_get(client_t *client) {
  * @param	content_length	A unint32_t containing the expected size of the message body.
  * @return	True if the message body size matches content_length, false if not.
  */
-bool_t check_http_content_length_test(client_t *client, uint32_t content_length, stringer_t *errmsg) {
+bool_t check_http_content_length_test(client_t *client, int32_t content_length, stringer_t *errmsg) {
 
-	uint32_t total = 0;
+	int32_t total = 0;
 
 	while (total < content_length) {
 		total += client_read_line(client);
@@ -113,7 +113,7 @@ bool_t check_http_options(client_t *client, chr_t **options, uint32_t options_co
 
 bool_t check_http_network_basic_sthread(stringer_t *errmsg, uint32_t port, bool_t secure) {
 
-	size_t content_length;
+	int32_t content_length;
 	client_t *client = NULL;
 
 	// Test the connection.

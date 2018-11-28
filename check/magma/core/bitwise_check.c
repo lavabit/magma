@@ -60,7 +60,7 @@ bool_t check_bitwise_simple(void) {
 
 bool_t check_bitwise_determinism(void) {
 
-	stringer_t *a, *b, *res1, *res2;
+	stringer_t *a = NULL, *b = NULL, *res1 = NULL, *res2 = NULL;
 
 	unsigned char a_buf[] = {0x00, 0x33, 0x80, 0x04, 0x20};
 	unsigned char b_buf[] = {0x11, 0xCC, 0x78, 0x4B, 0x1E};
@@ -69,61 +69,51 @@ bool_t check_bitwise_determinism(void) {
 	b = PLACER(b_buf, 5);
 
 	if(!(res1 = st_xor(a, b, NULL)) || !(res2 = st_xor(a, b, NULL))) {
-		st_free(res1);
-		st_free(res2);
+		st_cleanup(res1, res2);
 		return false;
 	}
 	else if(st_cmp_cs_eq(res1, res2)) {
-		st_free(res1);
-		st_free(res2);
+		st_cleanup(res1, res2);
 		return false;
 	}
 
-	st_free(res1);
-	st_free(res2);
+	st_cleanup(res1, res2);
+	res1 = res2 = NULL;
 
 	if(!(res1 = st_and(a, b, NULL)) || !(res2 = st_and(a, b, NULL))) {
-		st_free(res1);
-		st_free(res2);
+		st_cleanup(res1, res2);
 		return false;
 	}
 	else if(st_cmp_cs_eq(res1, res2)) {
-		st_free(res1);
-		st_free(res2);
+		st_cleanup(res1, res2);
 		return false;
 	}
 
-	st_free(res1);
-	st_free(res2);
+	st_cleanup(res1, res2);
+	res1 = res2 = NULL;
 
 	if(!(res1 = st_or(a, b, NULL)) || !(res2 = st_or(a, b, NULL))) {
-		st_free(res1);
-		st_free(res2);
+		st_cleanup(res1, res2);
 		return false;
 	}
 	else if(st_cmp_cs_eq(res1, res2)) {
-		st_free(res1);
-		st_free(res2);
+		st_cleanup(res1, res2);
 		return false;
 	}
 
-	st_free(res1);
-	st_free(res2);
+	st_cleanup(res1, res2);
+	res1 = res2 = NULL;
 
 	if(!(res1 = st_not(a, NULL)) || !(res2 = st_not(a, NULL))) {
-		st_cleanup(res1);
-		st_cleanup(res2);
+		st_cleanup(res1, res2);
 		return false;
 	}
 	else if(st_cmp_cs_eq(res1, res2)) {
-		st_free(res1);
-		st_free(res2);
+		st_cleanup(res1, res2);
 		return false;
 	}
 
-	st_free(res1);
-	st_free(res2);
-
+	st_cleanup(res1, res2);
 	return true;
 }
 

@@ -234,11 +234,14 @@ int64_t client_write(client_t *client, stringer_t *s) {
 			// NULL if the error can be safely ignored. Otherwise log the output for debug purposes.
 			if (bytes <= 0 && (error = tls_error(client->tls, bytes, MANAGEDBUF(512)))) {
 				cipher = tls_cipher(client->tls, MANAGEDBUF(128));
+
+#ifdef MAGMA_PEDANTIC
 				ip = ip_presentation(client->ip, MANAGEDBUF(INET6_ADDRSTRLEN));
 
 				log_pedantic("TLS client write operation failed. { ip = %.*s / %.*s / result = %zi%s%.*s }",
 					st_length_int(ip), st_char_get(ip), st_length_int(cipher), st_char_get(cipher),
 					bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
+#endif
 
 				client->status = -1;
 				return -1;
@@ -257,11 +260,13 @@ int64_t client_write(client_t *client, stringer_t *s) {
 
 			if (bytes <= 0 && tcp_status(client->sockd)) {
 
+#ifdef MAGMA_PEDANTIC
 				int_t local = errno;
 				ip = ip_presentation(client->ip, MANAGEDBUF(INET6_ADDRSTRLEN));
 
 				log_pedantic("TCP client write operation failed. { ip = %.*s / result = %zi / error = %i / message = %s }",
 					st_length_int(ip), st_char_get(ip), bytes, local, strerror_r(local, MEMORYBUF(1024), 1024));
+#endif
 
 				client->status = -1;
 				return -1;

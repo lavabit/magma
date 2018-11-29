@@ -83,8 +83,6 @@ int tcp_wait(int sockd) {
  */
 int tcp_continue(int sockd, int result, int syserror) {
 
-	chr_t *message = MEMORYBUF(1024);
-
 	// Check that the daemon hasn't initiated a shutdown.
 	if (!status()) return -1;
 
@@ -95,7 +93,7 @@ int tcp_continue(int sockd, int result, int syserror) {
 	else if (result <= 0 && (syserror == 0 || syserror == EWOULDBLOCK || syserror == EAGAIN || syserror == EINTR)) return 0;
 
 	log_pedantic("A TCP error occurred. { errno = %i / error = %s / message = %s }", syserror, errno_name(syserror),
-		strerror_r(syserror, message, 1024));
+		strerror_r(syserror, MEMORYBUF(1024), 1024));
 	return -1;
 }
 

@@ -152,6 +152,11 @@ gd() {
 				return 3
 			fi
 			
+			if [ ! -f "$M_LDPATH"/libfreetype.so ] || [ ! -f "$M_LDPATH"/libfreetype.a ] || [ ! -f "$M_PKGPATH"/freetype2.pc ]; then
+				tput sgr0; tput setaf 3; printf "\nPlease build freetype before gd.\n"; tput sgr0
+				return 3
+			fi
+			
 			export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
 			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
 			export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
@@ -169,11 +174,15 @@ gd() {
 			export LIBJPEG_CFLAGS=" `pkg-config --cflags libjpeg` "
 			unset PKG_CONFIG_LIBDIR
 			
+			# The PKG_CONFIG_LIBDIR sections above replace the default pkg-config search path. When we run configure 
+			# we only want to append our local pkg config directory to the existing search path. 
+			export PKG_CONFIG_PATH="$M_PKGPATH"
+			
 			./configure --without-x --without-xpm --without-tiff --without-fontconfig \
 				--with-png="$M_LOCAL" --with-jpeg="$M_LOCAL" --with-freetype="$M_LOCAL" \
 				--prefix="$M_LOCAL" &>> "$M_LOGS/gd.txt"; error
 				
-			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset LIBPNG_LIBS; unset LIBPNG_CFLAGS; unset LIBJPEG_LIBS; unset LIBJPEG_CFLAGS
+			unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset LIBPNG_LIBS; unset LIBPNG_CFLAGS; unset LIBJPEG_LIBS; unset LIBJPEG_CFLAGS; unset PKG_CONFIG_PATH
 
 			make --jobs=4 &>> "$M_LOGS/gd.txt"; error
 			make install &>> "$M_LOGS/gd.txt"; error

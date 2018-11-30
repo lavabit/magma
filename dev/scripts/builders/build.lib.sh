@@ -2029,10 +2029,10 @@ utf8proc() {
 		utf8proc-build)
 			cd "$M_SOURCES/utf8proc"; error
 			
-			if [ `which curl &> /dev/null` != 0 ] && [ ! -f "$M_BNPATH"/curl ]; then
+			if [ `which curl &> /dev/null; echo $?` != 0 ] && [ ! -f "$M_BNPATH"/curl ]; then
 				tput sgr0; tput setaf 3; printf "\nPlease build curl before utf8proc.\n"; tput sgr0
 				return 3
-			elif [ `which curl &> /dev/null` != 0 ]; then
+			elif [ `which curl &> /dev/null; echo $?` != 0 ]; then
 				alias curl="$M_BNPATH"/curl
 			fi
 			
@@ -2494,6 +2494,7 @@ combine() {
 				"$M_OBJECTS"/curl/*.o "$M_OBJECTS"/memcached/*.o "$M_OBJECTS"/utf8proc/*.o \
 				"$M_OBJECTS"/png/*.o "$M_OBJECTS"/jpeg/*.o "$M_OBJECTS"/freetype/*.o "$M_OBJECTS"/gd/*.o \
 				"$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o &>> "$M_LOGS/combine.txt"; error
+			find $M_LOCAL -type f -exec touch {} \;
 			date +"%n%nFinished creating the static archive at %r on %x%n"
 		;;
 		*)
@@ -2516,6 +2517,14 @@ combine() {
 	if [ "$MASTER" == "yes" ]; then
 		echo ""
 	fi
+	
+	# We touch the various standalone dependencies so make doesn't try and rebuild them.
+	find "$M_SOURCES/googtest/lib/.libs/" -type f -iname "libgtest.a" -or -iname "libgtest.lib" -exec touch -c {} \;
+	find "$M_LDPATH" -type f -iname "libutf8proc.a" -or -iname "libutf8proc.lib" -exec touch -c {} \;
+	find "$M_LDPATH" -type f -iname "libcrypto.a" -or -iname "libcrypto.lib" -exec touch -c {} \;
+	find "$M_LDPATH" -type f -iname "libcheck.a" -or -iname "libcheck.lib" -exec touch -c {} \;
+	find "$M_LDPATH" -type f -iname "libssl.a" -or -iname "libssl.lib" -exec touch -c {} \;
+	find "$M_LDPATH" -type f -iname "libz.a" -or -iname "libz.lib" -exec touch -c {} \;
 
 	exit 0
 	

@@ -73,7 +73,7 @@ fi
 # developers interacting directly with the build.lib.sh script, should be running the "check" step to ensure
 # they have a valid, and properly configured, and functional platform capable of running magma.
 if [ -z "$QUICK" ] || [ "$QUICK" != "yes" ]; then
-	QUICK="no"	
+	QUICK="no"
 fi
 
 error() {
@@ -213,7 +213,7 @@ gd() {
 			gd "gd-extract"
 			gd "gd-prep"
 			gd "gd-build"
-			gd "gd-check"
+			if [ "$QUICK" != "yes" ]; then gd "gd-check"; fi
 		;;
 		*)
 			printf "\nUnrecognized request.\n"
@@ -290,7 +290,7 @@ png() {
 			png "png-extract"
 			png "png-prep"
 			png "png-build"
-			png "png-check"
+			if [ "$QUICK" != "yes" ]; then png "png-check"; fi
 		;;
 		*)
 			printf "\nUnrecognized request.\n"
@@ -360,7 +360,7 @@ lzo() {
 			lzo "lzo-extract"
 			lzo "lzo-prep"
 			lzo "lzo-build"
-			lzo "lzo-check"
+			if [ "$QUICK" != "yes" ]; then lzo "lzo-check"; fi
 		;;
 		*)
 			printf "\nUnrecognized request.\n"
@@ -430,7 +430,7 @@ pcre() {
 			pcre "pcre-extract"
 			pcre "pcre-prep"
 			pcre "pcre-build"
-			pcre "pcre-check"
+			if [ "$QUICK" != "yes" ]; then pcre "pcre-check"; fi
 		;;
 		*)
 			printf "\nUnrecognized request.\n"
@@ -501,7 +501,7 @@ jpeg() {
 			jpeg "jpeg-extract"
 			jpeg "jpeg-prep"
 			jpeg "jpeg-build"
-			jpeg "jpeg-check"
+			if [ "$QUICK" != "yes" ]; then jpeg "jpeg-check"; fi
 		;;
 		*)
 			printf "\nUnrecognized request.\n"
@@ -692,7 +692,7 @@ curl() {
 			curl "curl-extract"
 			curl "curl-prep"
 			curl "curl-build"
-			curl "curl-check"
+			if [ "$QUICK" != "yes" ]; then curl "curl-check"; fi
 		;;
 		*)
 			printf "\nUnrecognized request.\n"
@@ -866,7 +866,7 @@ dkim() {
 			dkim "dkim-extract"
 			dkim "dkim-prep"
 			dkim "dkim-build"
-			dkim "dkim-check"
+			if [ "$QUICK" != "yes" ]; then dkim "dkim-check"; fi
 		;;
 		*)
 			printf "\nUnrecognized request.\n"
@@ -940,7 +940,7 @@ zlib() {
 			zlib "zlib-extract"
 			zlib "zlib-prep"
 			zlib "zlib-build"
-			zlib "zlib-check"
+			if [ "$QUICK" != "yes" ]; then zlib "zlib-check"; fi
 		;;
 		*)
 			printf "\nUnrecognized request.\n"
@@ -1123,7 +1123,7 @@ dspam() {
 			dspam "dspam-extract"
 			dspam "dspam-prep"
 			dspam "dspam-build"
-			dspam "dspam-check"
+			if [ "$QUICK" != "yes" ]; then dspam "dspam-check"; fi
 		;;
 		*)
 			printf "\nUnrecognized request.\n"
@@ -1238,7 +1238,7 @@ mysql() {
 			mysql "mysql-extract"
 			mysql "mysql-prep"
 			mysql "mysql-build"
-			mysql "mysql-check"
+			if [ "$QUICK" != "yes" ]; then mysql "mysql-check"; fi
 		;;
 		*)
 			printf "\nUnrecognized request.\n"
@@ -1320,7 +1320,7 @@ geoip() {
 			geoip "geoip-extract"
 			geoip "geoip-prep"
 			geoip "geoip-build"
-			geoip "geoip-check"
+			if [ "$QUICK" != "yes" ]; then geoip "geoip-check"; fi
 		;;
 		*)
 			printf "\nUnrecognized request.\n"
@@ -1504,7 +1504,7 @@ clamav() {
 			clamav "clamav-extract"
 			clamav "clamav-prep"
 			clamav "clamav-build"
-			clamav "clamav-check"
+			if [ "$QUICK" != "yes" ]; then clamav "clamav-check"; fi
 		;;
 		*)
 			printf "\nUnrecognized request.\n"
@@ -1586,7 +1586,7 @@ checker() {
 			checker "checker-extract"
 			checker "checker-prep"
 			checker "checker-build"
-			checker "checker-check"
+			if [ "$QUICK" != "yes" ]; then checker "checker-check"; fi
 		;;
 		*)
 			printf "\nUnrecognized request.\n $1"
@@ -1673,7 +1673,7 @@ openssl() {
 			openssl "openssl-extract"
 			openssl "openssl-prep"
 			openssl "openssl-build"
-			openssl "openssl-check"
+			if [ "$QUICK" != "yes" ]; then openssl "openssl-check"; fi
 		;;
 		*)
 			printf "\nUnrecognized request.\n"
@@ -1725,7 +1725,7 @@ googtap() {
 			googtap "googtap-extract"
 			googtap "googtap-prep"
 			googtap "googtap-build"
-			googtap "googtap-check"
+			if [ "$QUICK" != "yes" ]; then googtap "googtap-check"; fi
 		;;
 		*)
 			printf "\nUnrecognized request.\n"
@@ -1817,7 +1817,7 @@ googtest() {
 			googtest "googtest-extract"
 			googtest "googtest-prep"
 			googtest "googtest-build"
-			googtest "googtest-check"
+			if [ "$QUICK" != "yes" ]; then googtest "googtest-check"; fi
 		;;
 		*)
 			printf "\nUnrecognized request.\n"
@@ -1900,7 +1900,7 @@ jansson() {
 			jansson "jansson-extract"
 			jansson "jansson-prep"
 			jansson "jansson-build"
-			jansson "jansson-check"
+			if [ "$QUICK" != "yes" ]; then jansson "jansson-check"; fi
 		;;
 		*)
 			printf "\nUnrecognized request.\n"
@@ -1992,7 +1992,7 @@ freetype() {
 			freetype "freetype-extract"
 			freetype "freetype-prep"
 			freetype "freetype-build"
-			freetype "freetype-check"
+			if [ "$QUICK" != "yes" ]; then freetype "freetype-check"; fi
 		;;
 		*)
 			printf "\nUnrecognized request.\n"
@@ -2192,7 +2192,7 @@ memcached() {
 			memcached "memcached-extract"
 			memcached "memcached-prep"
 			memcached "memcached-build"
-			memcached "memcached-check"
+			if [ "$QUICK" != "yes" ]; then memcached "memcached-check"; fi
 		;;
 		*)
 			printf "\nUnrecognized request.\n"
@@ -2283,7 +2283,7 @@ tokyocabinet() {
 			tokyocabinet "tokyocabinet-extract"
 			tokyocabinet "tokyocabinet-prep"
 			tokyocabinet "tokyocabinet-build"
-			tokyocabinet "tokyocabinet-check"
+			if [ "$QUICK" != "yes" ]; then tokyocabinet "tokyocabinet-check"; fi
 		;;
 		*)
 			printf "\nUnrecognized request.\n"

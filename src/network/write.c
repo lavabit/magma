@@ -25,7 +25,6 @@ int64_t con_write_bl(connection_t *con, char *block, size_t length) {
 
 	int_t counter = 0;
 	ssize_t bytes = 0, position = 0;
-//	stringer_t *ip = NULL, *cipher = NULL, *error = NULL;
 
 	if (!con || con->network.sockd == -1 || con_status(con) < 0) {
 		return -1;
@@ -67,43 +66,6 @@ int64_t con_write_bl(connection_t *con, char *block, size_t length) {
 
 	return position;
 
-			// If zero bytes were written, or a negative value was returned to indicate an error, call tls_erorr(), which will return
-			// NULL if the error can be safely ignored. Otherwise log the output for debug purposes.
-//			if (bytes <= 0 && (error = tls_error(con->network.tls, bytes, MANAGEDBUF(512)))) {
-//				cipher = tls_cipher(con->network.tls, MANAGEDBUF(128));
-//				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
-//
-//				log_pedantic("TLS server write operation failed. { ip = %.*s / protocol = %s / %.*s / result = %zi%s%.*s }",
-//					st_length_int(ip), st_char_get(ip), st_char_get(protocol_type(con)), st_length_int(cipher), st_char_get(cipher),
-//					bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
-//
-//				con->network.status = -1;
-//				return -1;
-//			}
-			// This will occur when the read operation results in a 0, or negative value, but TLS error returns NULL to
-			// indicate it was a transient error. For transient errors we simply set bytes equal to 0 so the read call gets retried.
-//			else if (bytes <= 0) {
-//				bytes = 0;
-//			}
-//		}
-//		else {
-//
-//
-//
-//			// Check for errors on non-SSL writes in the traditional way.
-//			if (bytes <= 0 && tcp_status(con->network.sockd)) {
-//
-//				int_t local = errno;
-//				ip = con_addr_presentation(con, MANAGEDBUF(INET6_ADDRSTRLEN));
-//
-//				log_pedantic("TCP server write operation failed. { ip = %.*s / result = %zi / error = %i / message = %s }",
-//					st_length_int(ip), st_char_get(ip), bytes, local, strerror_r(local, MEMORYBUF(1024), 1024));
-//
-//				con->network.status = -1;
-//				return -1;
-//			}
-//		}
-
 }
 
 /**
@@ -114,7 +76,6 @@ int64_t con_write_bl(connection_t *con, char *block, size_t length) {
  * @return	-1 on general network failure, -2 if the connection was reset or closed, or the number of bytes that were written across the connection.
  */
 int64_t con_write_st(connection_t *con, stringer_t *string) {
-
 	return con_write_bl(con, st_char_get(string), st_length_get(string));
 }
 
@@ -126,7 +87,6 @@ int64_t con_write_st(connection_t *con, stringer_t *string) {
  * @return	-1 on general network failure, -2 if the connection was reset or closed, or the number of bytes that were written across the connection.
  */
 int64_t con_write_ns(connection_t *con, char *string) {
-
 	return con_write_bl(con, string, ns_length_get(string));
 }
 
@@ -138,7 +98,6 @@ int64_t con_write_ns(connection_t *con, char *string) {
  * @return	-1 on general network failure, -2 if the connection was reset or closed, or the number of bytes that were written across the connection.
  */
 int64_t con_write_pl(connection_t *con, placer_t string) {
-
 	return con_write_bl(con, pl_char_get(string), pl_length_get(string));
 }
 
@@ -212,8 +171,13 @@ int64_t client_write(client_t *client, stringer_t *s) {
 	uchr_t *block;
 	size_t length;
 	int_t counter = 0;
+	stringer_t *error = NULL;
 	ssize_t bytes, position = 0;
-	stringer_t *ip = NULL, *cipher = NULL, *error = NULL;
+
+#ifdef MAGMA_PEDANTIC
+	int_t local = 0;
+	stringer_t *ip = NULL, *cipher = NULL;
+#endif
 
 	if (!client || client->sockd == -1 || client_status(client) < 0) {
 		return -1;
@@ -233,16 +197,14 @@ int64_t client_write(client_t *client, stringer_t *s) {
 			// If zero bytes were written, or a negative value was returned to indicate an error, call tls_erorr(), which will return
 			// NULL if the error can be safely ignored. Otherwise log the output for debug purposes.
 			if (bytes <= 0 && (error = tls_error(client->tls, bytes, MANAGEDBUF(512)))) {
-				cipher = tls_cipher(client->tls, MANAGEDBUF(128));
-
 #ifdef MAGMA_PEDANTIC
+				cipher = tls_cipher(client->tls, MANAGEDBUF(128));
 				ip = ip_presentation(client->ip, MANAGEDBUF(INET6_ADDRSTRLEN));
 
 				log_pedantic("TLS client write operation failed. { ip = %.*s / %.*s / result = %zi%s%.*s }",
 					st_length_int(ip), st_char_get(ip), st_length_int(cipher), st_char_get(cipher),
 					bytes, (error ? " / " : ""), st_length_int(error), st_char_get(error));
 #endif
-
 				client->status = -1;
 				return -1;
 			}
@@ -259,15 +221,13 @@ int64_t client_write(client_t *client, stringer_t *s) {
 			bytes = send(client->sockd, block + position, length, 0);
 
 			if (bytes <= 0 && tcp_status(client->sockd)) {
-
 #ifdef MAGMA_PEDANTIC
-				int_t local = errno;
+				local = errno;
 				ip = ip_presentation(client->ip, MANAGEDBUF(INET6_ADDRSTRLEN));
 
 				log_pedantic("TCP client write operation failed. { ip = %.*s / result = %zi / error = %i / message = %s }",
 					st_length_int(ip), st_char_get(ip), bytes, local, strerror_r(local, MEMORYBUF(1024), 1024));
 #endif
-
 				client->status = -1;
 				return -1;
 			}

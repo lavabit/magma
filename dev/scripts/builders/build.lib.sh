@@ -2512,6 +2512,16 @@ combine() {
 				"$M_OBJECTS"/png/*.o "$M_OBJECTS"/jpeg/*.o "$M_OBJECTS"/freetype/*.o "$M_OBJECTS"/gd/*.o \
 				"$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o \
 				-lm -lrt -ldl -lnsl -lresolv -lpthread -lstdc++ &>> "$M_LOGS/combine.txt"; error
+				
+			# This will update the time stamps for the various standalone dependencies, which should prevent make from rebuilding them.
+			find "$M_LOCAL/include" -type f -exec touch -r "$M_SO" -d '+1 minutes' {} \;
+			find "$M_LDPATH" -type f -iname "libz.a" -or -iname "libz.lib" -exec touch -r "$M_SO" -d '+2 minutes' {} \;
+			find "$M_LDPATH" -type f -iname "libcrypto.a" -or -iname "libcrypto.lib" -exec touch -r "$M_SO" -d '+4 minutes' {} \;
+			find "$M_LDPATH" -type f -iname "libssl.a" -or -iname "libssl.lib" -exec touch -r "$M_SO" -d '+6 minutes' {} \;
+			find "$M_LDPATH" -type f -iname "libutf8proc.a" -or -iname "libutf8proc.lib" -exec -r "$M_SO" -d '+8 minutes' {} \;	
+			find "$M_LDPATH" -type f -iname "libcheck.a" -or -iname "libcheck.lib" -exec touch -r "$M_SO" -d '+10 minutes' {} \;
+			find "$M_SOURCES/googtest/lib/.libs/" -type f -iname "libgtest.a" -or -iname "libgtest.lib" -exec touch -r "$M_SO" -d '+12 minutes' {} \;
+			
 			date +"%n%nFinished creating the shared object at %r on %x%n"
 		;;
 	esac
@@ -2520,14 +2530,6 @@ combine() {
 		echo ""
 	fi
 	
-	# We touch the various standalone dependencies so make doesn't try and rebuild them.
-	find "$M_SOURCES/googtest/lib/.libs/" -type f -iname "libgtest.a" -or -iname "libgtest.lib" -exec touch -c {} \;
-	find "$M_LDPATH" -type f -iname "libutf8proc.a" -or -iname "libutf8proc.lib" -exec touch -c {} \;
-	find "$M_LDPATH" -type f -iname "libcrypto.a" -or -iname "libcrypto.lib" -exec touch -c {} \;
-	find "$M_LDPATH" -type f -iname "libcheck.a" -or -iname "libcheck.lib" -exec touch -c {} \;
-	find "$M_LDPATH" -type f -iname "libssl.a" -or -iname "libssl.lib" -exec touch -c {} \;
-	find "$M_LDPATH" -type f -iname "libz.a" -or -iname "libz.lib" -exec touch -c {} \;
-
 	exit 0
 	
 }

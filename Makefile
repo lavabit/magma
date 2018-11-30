@@ -206,7 +206,6 @@ ifeq ($(patsubst undefined,default,$(origin QUICK)),default)
 QUICK  = yes
 endif
 
-
 # C Compiler Options
 CFLAGS                       ?=
 CFLAGS_WARNINGS               = -Wall -Werror -Winline -Wformat-security -Warray-bounds
@@ -220,7 +219,7 @@ CPPFLAGS_COMBINED             = -std=c++0x $(CPPFLAGS_WARNINGS) -Wno-unused-para
 
 # Linker Options
 LDFLAGS                      ?=
-LDFLAGS_COMBINED              = -rdynamic
+LDFLAGS_COMBINED              = -rdynamic $(LDFLAGS)
 
 # Archiver Options
 ARFLAGS                      ?= rcs
@@ -433,7 +432,7 @@ endif
 	$(RUN)$(LD) $(LDFLAGS_COMBINED) -o '$@' $(MAGMA_OBJFILES) -Wl,--start-group $(MAGMA_DYNAMIC) $(MAGMA_STATIC) -Wl,--end-group
 
 # Construct the magma unit test executable.
-$(MAGMA_CHECK_PROGRAM): $(MAGMA_SHARED_LIBRARY) $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) | $(MAGMA_CHECK_STATIC)
+$(MAGMA_CHECK_PROGRAM): $(MAGMA_SHARED_LIBRARY) $(MAGMA_CHECK_OBJFILES) $(filter-out .objs/src/magma.o, $(MAGMA_OBJFILES)) $(MAGMA_CHECK_STATIC)
 ifeq ($(VERBOSE),no)
 	@echo 'Constructing' $(RED)$@$(NORMAL)
 endif
@@ -505,7 +504,7 @@ ifeq ($(VERBOSE),no)
 endif
 	$(RUN)$(LD) $(LDFLAGS_COMBINED) -o '$@' $(DIME_CHECK_OBJFILES) -Wl,--start-group,--whole-archive $(DIME_CHECK_STATIC) -Wl,--no-whole-archive,--end-group $(DIME_CHECK_DYNAMIC)
 
-$(OBJDIR)/check/dime/%.o: check/dime/%.cpp $(MAGMA_SHARED_LIBRARY)
+$(OBJDIR)/check/dime/%.o: check/dime/%.cpp $(MAGMA_SHARED_LIBRARY) $(DIME_CHECK_STATIC)
 ifeq ($(VERBOSE),no)
 	@echo 'Building' $(YELLOW)$<$(NORMAL)
 endif
@@ -551,7 +550,7 @@ endif
 	
 # The recipes needed to build the various statically linked dependencies. They do not actually depend on the Magma shared library,
 # but include the dependency here to keep make from trying to build both at the same time.
-$(TOPDIR)/lib/local/lib/libz$(STATLIBEXT): dev/scripts/builders/build.lib.params.sh | $(MAGMA_SHARED_LIBRARY) 
+$(TOPDIR)/lib/local/lib/libz$(STATLIBEXT): $(MAGMA_SHARED_LIBRARY)
 ifeq ($(VERBOSE),no)
 	@echo 'Building' $(YELLOW)libz$(STATLIBEXT)$(NORMAL)
 	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh zlib &> /dev/null
@@ -560,9 +559,9 @@ else
 	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh zlib
 endif
 
-$(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT): $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) | $(MAGMA_SHARED_LIBRARY) 
+$(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT): $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(MAGMA_SHARED_LIBRARY) 
 
-$(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT): $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT)
+$(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT): $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(MAGMA_SHARED_LIBRARY)
 ifeq ($(VERBOSE),no)
 	@echo 'Building' $(YELLOW)libssl$(STATLIBEXT) libcrypto$(STATLIBEXT)$(NORMAL)
 	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh openssl &> /dev/null
@@ -571,7 +570,7 @@ else
 	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh openssl
 endif
 
-$(TOPDIR)/lib/local/lib/libutf8proc$(STATLIBEXT): $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) | $(MAGMA_SHARED_LIBRARY)
+$(TOPDIR)/lib/local/lib/libutf8proc$(STATLIBEXT): $(MAGMA_SHARED_LIBRARY) $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT)
 ifeq ($(VERBOSE),no)
 	@echo 'Building' $(YELLOW)libutf8proc$(STATLIBEXT)$(NORMAL)
 	$(shell [ "`which curl &> /dev/null; echo $$?`" != 0 ] && QUICK=yes dev/scripts/builders/build.lib.sh curl &> /dev/null)
@@ -582,7 +581,7 @@ else
 	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh utf8proc
 endif
 
-$(TOPDIR)/lib/sources/googtest/lib/.libs/libgtest$(STATLIBEXT): dev/scripts/builders/build.lib.params.sh | $(MAGMA_SHARED_LIBRARY)
+$(TOPDIR)/lib/sources/googtest/lib/.libs/libgtest$(STATLIBEXT): $(MAGMA_SHARED_LIBRARY)
 ifeq ($(VERBOSE),no)
 	@echo 'Building' $(YELLOW)googtest$(STATLIBEXT)$(NORMAL)
 	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh googtest &> /dev/null
@@ -591,7 +590,7 @@ else
 	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh googtest
 endif
 
-$(TOPDIR)/lib/local/lib/libcheck$(STATLIBEXT): dev/scripts/builders/build.lib.params.sh | $(MAGMA_SHARED_LIBRARY)
+$(TOPDIR)/lib/local/lib/libcheck$(STATLIBEXT): $(MAGMA_SHARED_LIBRARY)
 ifeq ($(VERBOSE),no)
 	@echo 'Building' $(YELLOW)libcheck$(STATLIBEXT)$(NORMAL)
 	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh checker &> /dev/null

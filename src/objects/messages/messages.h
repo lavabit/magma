@@ -67,23 +67,23 @@ enum {
 
 typedef struct __attribute__ ((packed)) {
 
-	struct {
+	struct __attribute__ ((packed)) {
 		uint64_t num; /* Unique message number. */
 		uint64_t created; /* When the message record was created. */
 		uint64_t sequence; /* Position in the folder. */
 	} message;
 
-	struct {
+	struct __attribute__ ((packed)) {
 		array_t *tags; /* Any message tags. */
 		uint32_t flags; /* System flags. */
 	} status;
 
-	struct {
+	struct { __attribute__ ((packed))
 		uint64_t num; /* Junk filter signature number. */
 		uint64_t key; /* Junk filter access key. */
 	} signature;
 
-	struct {
+	struct __attribute__ ((packed)) {
 		stringer_t *server; /* The storage node. */
 		stringer_t *header; /* The message header data. */
 		stringer_t *body; /* The message body data. */
@@ -110,7 +110,7 @@ typedef struct __attribute__ ((packed)) {
 	uint8_t magic2;		// second magic byte: 0x76
 	uint8_t reserved;
 	uint8_t flags;
-}  message_header_t;
+} message_header_t;
 
 /// messages.c
 message_t *  message_alloc(uint64_t messagenum, uint64_t created, uint64_t signature, uint64_t key, uint64_t flags, stringer_t *server, size_t size);

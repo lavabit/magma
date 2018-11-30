@@ -30,7 +30,7 @@ typedef struct __attribute__ ((packed)) {
 	uint8_t rec; /*!< The length of the record data. */
 	uint64_t flags; /*!< A collection of bit mask flags to indicate whether the object was compressed, encrypted, or replicated.  */
 
-	struct {
+	struct __attribute__ ((packed)) {
 		uint64_t tnum; /*!< Which local storage tank was used to store the object. */
 		uint64_t unum; /*!< The user number of the object owner. */
 		uint64_t onum; /*!< The object number. */
@@ -38,7 +38,7 @@ typedef struct __attribute__ ((packed)) {
 		uint64_t created; /*!< Time stamp taken when the object is stored. */
 	} meta;
 
-	struct {
+	struct __attribute__ ((packed)) {
 		uint64_t length; /*!< The full length of the original data. */
 		uint64_t compressed; /*!< The compressed length of the data, if applicable. */
 		uint64_t encrypted; /*!< The length of the encrypted data block, if applicable. */
@@ -50,20 +50,20 @@ typedef struct __attribute__ ((packed)) {
 
 	uint8_t ver; /*!< Number indicating the entry version, which also tells us the layout of the data. */
 
-	struct {
-			uint64_t tnum; /*!< Which local storage tank was used to store the object. */
-			uint64_t unum; /*!< The user number of the object owner. */
-			uint64_t onum; /*!< The object number. */
-			uint64_t snum; /*!< The serial number. Starts at zero, and increments for each update. */
-			uint64_t stamp; /*!< Time stamp taken when the object is stored. */
-		} meta;
+	struct __attribute__ ((packed)) {
+		uint64_t tnum; /*!< Which local storage tank was used to store the object. */
+		uint64_t unum; /*!< The user number of the object owner. */
+		uint64_t onum; /*!< The object number. */
+		uint64_t snum; /*!< The serial number. Starts at zero, and increments for each update. */
+		uint64_t stamp; /*!< Time stamp taken when the object is stored. */
+	} meta;
 
-	struct {
+	struct __attribute__ ((packed)) {
 			uint64_t created; /*!< When the object was first created. */
 			uint64_t updated; /*!< When the object was last updated. */
 			uint64_t deleted; /*!< When the object was flagged for deletion. */
 			uint64_t expiration; /*!< When archived/deleted objects can be permanently purged. */
-		} stamps;
+	} stamps;
 
 } entry_t;
 

@@ -77,7 +77,7 @@ typedef struct __attribute__ ((packed)) {
 	stringer_t *display, *address;
 } meta_alias_t;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	size_t size;
 	array_t *tags;
 	chr_t server[33];
@@ -85,14 +85,14 @@ typedef struct {
 	uint64_t messagenum, foldernum, sequencenum, signum, sigkey, created;
 } meta_message_t;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	chr_t name[128]; // Even though we limit folder names to 16 characters, with modified UTF-7 escaping, the string could be longer.
 	uint32_t order;
 	uint64_t parent, foldernum;
 } meta_folder_t;
 
 // All of a user's information is stored using this structure.
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 
 	uint64_t usernum;
 	pthread_rwlock_t lock;
@@ -101,21 +101,21 @@ typedef struct {
 	inx_t *aliases, *messages, *message_folders, *folders, *contacts;
 
 	// The symmetric realm keys.
-	struct {
+	struct __attribute__ ((packed)) {
 		stringer_t *mail;
 	} realm;
 
 	// The user signet and private keys.
-	struct {
+	struct __attribute__ ((packed)) {
 		stringer_t *key;
 		stringer_t *signet;
 	} prime;
 
-	struct {
+	struct __attribute__ ((packed)) {
 		uint64_t user, messages, folders, contacts, aliases;
 	} serials;
 
-	struct {
+	struct __attribute__ ((packed)) {
 		time_t stamp;
 		uint64_t smtp, pop, imap, web, generic;
 		pthread_mutex_t lock;

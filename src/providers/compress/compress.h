@@ -18,12 +18,12 @@ typedef struct __attribute__ ((packed)) {
 
 	uint8_t engine;
 
-	struct {
+	struct __attribute__ ((packed)) {
 		uint64_t original;
 		uint64_t compressed;
 	} length;
 
-	struct {
+	struct __attribute__ ((packed)) {
 		uint64_t original;
 		uint64_t compressed;
 	} hash;

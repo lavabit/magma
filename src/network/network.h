@@ -23,14 +23,14 @@ enum {
 	REVERSE_COMPLETE = 2
 };
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	char *string;
 	size_t length;
 	void *function;
 } command_t;
 
 // Setup the structure of variables used to relay and bounce messages.
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	ip_t *ip; /* The remote host address information. */
 	uint32_t port; /* The remote host port information. */
 	void *tls; /* The TLS connection object. */
@@ -40,7 +40,7 @@ typedef struct {
 	stringer_t *buffer; /* The connection buffer. */
 } client_t;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	union {
 		pop_session_t pop;
 		imap_session_t imap;
@@ -49,19 +49,19 @@ typedef struct {
 		http_session_t http;
 	};
 
-	struct {
+	struct __attribute__ ((packed)) {
 		uint32_t spins;
 		uint32_t violations;
 	} protocol;
 
-	struct {
+	struct __attribute__ ((packed)) {
 		void *tls; /* The TLS connection object. */
 		int sockd; /* The socket connection. */
 		int status; /* Track whether the last network operation generated an error. */
 		placer_t line; /* The current line being processed. */
 		stringer_t *buffer; /* The connection buffer. */
 
-		struct {
+		struct __attribute__ ((packed)) {
 			ip_t *ip;
 			int_t status;
 			stringer_t *domain;

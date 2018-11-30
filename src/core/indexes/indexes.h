@@ -31,7 +31,7 @@ typedef enum {
  */
 #define MAGMA_INDEX_OPTION (M_INX_INDEX_LOCK)
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 
 	// Data and record count
 	void *index, *last;

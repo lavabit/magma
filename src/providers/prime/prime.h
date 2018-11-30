@@ -206,7 +206,7 @@ typedef struct __attribute__ ((packed)) {
 typedef struct __attribute__ ((packed)) {
 	ed25519_key_t *signing;                /**< User signing key, field 1. */
 	secp256k1_key_t *encryption;           /**< User encryption key, field 2. */
-	struct {
+	struct __attribute__ ((packed)) {
 		stringer_t *custody;               /**< User chain of custody signature, field 4. */
 		stringer_t *user;                  /**< User signature, field 5. */
 		stringer_t *org;                   /**< Organizational signature, field 6. */
@@ -262,11 +262,11 @@ typedef struct __attribute__ ((packed)) {
  * @typedef prime_ephemeral_chunk_t
  */
 typedef struct __attribute__ ((packed)) {
-	struct {
+	struct __attribute__ ((packed)) {
 		uint8_t type;                      /**< Chunk type, which curently, should always be 1. */
 		uint32_t length;                   /**< Payload length. Currently, this should only be 35 or 69. */
 	} header;
-	struct {
+	struct __attribute__ ((packed)) {
 		ed25519_key_t *signing;
 		secp256k1_key_t *encryption;
 	} keys;
@@ -277,7 +277,7 @@ typedef struct __attribute__ ((packed)) {
  * @typedef prime_encrypted_chunk_t
  */
 typedef struct __attribute__ ((packed)) prime_encrypted_chunk_t {
-	struct {
+	struct  __attribute__ ((packed)) {
 		uint8_t type;                      /**< Chunk type, 1 through 255. */
 		uint32_t length;                   /**< Payload length, must be divisible by 16 and less than 2^24 - 1. */
 	} header;
@@ -309,22 +309,22 @@ typedef struct __attribute__ ((packed)) {
 	prime_chunk_keys_t keys;
 	prime_chunk_keks_t keks;
 
-	struct {
+	struct __attribute__ ((packed)) {
 		prime_ephemeral_chunk_t *ephemeral;
 		prime_encrypted_chunk_t *origin;
 		prime_encrypted_chunk_t *destination;
 	} envelope;
 
-	struct {
+	struct __attribute__ ((packed)) {
 		prime_encrypted_chunk_t *common;
 		prime_encrypted_chunk_t *headers;
 	} metadata;
 
-	struct {
+	struct __attribute__ ((packed)) {
 		prime_encrypted_chunk_t *body;
 	} content;
 
-	struct {
+	struct __attribute__ ((packed)) {
 		stringer_t *tree;
 		stringer_t *user;
 		stringer_t *org;
@@ -340,19 +340,19 @@ typedef struct __attribute__ ((packed)) {
 typedef struct __attribute__ ((packed)) {
 	prime_type_t type;
 	prime_flags_t flags;
-	struct {
+	struct __attribute__ ((packed)) {
 		union {
 			prime_org_key_t *org;
 			prime_user_key_t *user;
 		};
 	} key;
-	struct {
+	struct __attribute__ ((packed)) {
 		union {
 			prime_org_signet_t *org;
 			prime_user_signet_t *user;
 		};
 	} signet;
-	struct {
+	struct __attribute__ ((packed)) {
 		union {
 			prime_message_t *naked;
 			prime_message_t *native;

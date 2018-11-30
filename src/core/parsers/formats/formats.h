@@ -12,7 +12,7 @@
 
 typedef struct {
 	MAGMA_INDEX options;
-	struct {
+	struct __attribute__ ((packed)) {
 		char comment, value, line;
 	} tokens;
 	inx_t *pairs;

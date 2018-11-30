@@ -9,7 +9,7 @@
 #define MAGMA_PROVIDERS_CONSUMERS_H
 
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	size_t position;
 	stringer_t *data;
 } serialization_t;

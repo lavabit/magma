@@ -43,19 +43,19 @@ typedef enum {
 
 typedef M_POOL_STATUS status_t;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	void *data;
 	struct stacker_node_t *next;
 } stacker_node_t;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	uint64_t items;
 	pthread_mutex_t mutex;
 	stacker_node_t *list, *last;
 	void (*free_function)(void *data);
 } stacker_t;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	uint32_t count; /* Number of objects allocated. */
 	uint32_t timeout; /* How long to wait for an object before timing out. Zero is forever. */
 	uint64_t failures; /* Tracks the number of times a thread was forced to return empty handed. */

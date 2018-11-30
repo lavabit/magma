@@ -8,7 +8,7 @@
 #ifndef MAGMA_PROVIDERS_H
 #define MAGMA_PROVIDERS_H
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	const chr_t *name;
 	void **pointer;
 } symbol_t;

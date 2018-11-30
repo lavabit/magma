@@ -104,7 +104,7 @@ START_TEST (check_inx_linked_s) {
 	check_indexes_linked_simple(&errmsg);
 
 	log_test("CORE / INDEX / LINKED / SINGLE THREADED:", NULLER(errmsg));
-	ck_assert_msg(NULLER(errmsg), errmsg);
+	ck_assert_msg(!errmsg, errmsg);
 }
 END_TEST
 

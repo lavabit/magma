@@ -16,6 +16,15 @@ cd $BASE/../../../
 
 MAGMA_DIST=`pwd`
 
+# If Latex or HTML directories are missing we create them.
+if [ ! -d dev/docs/html/ ]; then
+	mkdir dev/docs/html/
+fi
+
+if [ ! -d dev/docs/latex/ ]; then
+	mkdir dev/docs/latex/
+fi
+
 # Remove any existing Latex files to ensure a clean build process.
 find dev/docs/latex/ -type f -exec rm --force {} \;
 

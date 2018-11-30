@@ -370,7 +370,7 @@ START_TEST (check_prime_chunk_signature_s) {
 		length = st_write(NULL, ephemeral_chunk_buffer(ephemeral), encrypted_chunk_buffer(common), encrypted_chunk_buffer(headers),
 			encrypted_chunk_buffer(body));
 
-		if (!(data = st_alloc(length + 512)) || st_write(data, ephemeral_chunk_buffer(ephemeral), encrypted_chunk_buffer(common), encrypted_chunk_buffer(headers),
+		if (!(data = st_alloc_opts(MANAGED_T | JOINTED | HEAP, length + 512)) || st_write(data, ephemeral_chunk_buffer(ephemeral), encrypted_chunk_buffer(common), encrypted_chunk_buffer(headers),
 			encrypted_chunk_buffer(body), treesig) != length + 161) {
 			st_sprint(errmsg, "Serialized message creation failed.");
 			result = false;

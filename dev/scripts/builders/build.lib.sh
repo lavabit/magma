@@ -1856,6 +1856,8 @@ jansson() {
 			cat "$M_PATCHES/jansson/"jansson-optional-params.patch | patch -p1 --batch &>> "$M_LOGS/jansson.txt"; error
 			echo "$M_PATCHES/jansson/"jansson-typeof-string.patch &>> "$M_LOGS/jansson.txt"; error
 			cat "$M_PATCHES/jansson/"jansson-typeof-string.patch | patch -p1 --batch  &>> "$M_LOGS/jansson.txt"; error
+			echo "$M_PATCHES/jansson/"jansson-error-text-length.patch &>> "$M_LOGS/jansson.txt"; error
+			cat "$M_PATCHES/jansson/"jansson-error-text-length.patch | patch -p1 --batch  &>> "$M_LOGS/jansson.txt"; error
 		;;
 		jansson-build)
 			cd "$M_SOURCES/jansson"; error

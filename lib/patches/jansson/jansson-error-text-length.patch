@@ -1,0 +1,27 @@
+diff --git a/src/jansson.h b/src/jansson.h
+index a8cd619..116ac4b 100644
+--- a/src/jansson.h
++++ b/src/jansson.h
+@@ -91,21 +91,21 @@ json_t *json_null(void);
+ 
+ json_t *json_incref(json_t *json);
+ 
+ /* do not call json_delete directly */
+ void json_delete(json_t *json);
+ 
+ void json_decref(json_t *json);
+ 
+ /* error reporting */
+ 
+-#define JSON_ERROR_TEXT_LENGTH    160
++#define JSON_ERROR_TEXT_LENGTH    320
+ #define JSON_ERROR_SOURCE_LENGTH   80
+ 
+ typedef struct {
+     int line;
+     int column;
+     int position;
+     char source[JSON_ERROR_SOURCE_LENGTH];
+     char text[JSON_ERROR_TEXT_LENGTH];
+ } json_error_t;
+ 

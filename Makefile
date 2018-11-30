@@ -367,7 +367,7 @@ distclean:
 	@$(RM) $(MAGMA_PROGRAM_PPROF) $(MAGMA_CHECK_PROGRAM_PPROF) $(MAGMA_PROGRAM_GPROF) $(MAGMA_CHECK_PROGRAM_GPROF)
 	@$(RM) $(MAGMA_OBJFILES) $(DIME_OBJFILES) $(SIGNET_OBJFILES) $(GENREC_OBJFILES) $(MAGMA_CHECK_OBJFILES) $(DIME_CHECK_OBJFILES) $(MAGMA_PROF_OBJFILES) $(MAGMA_CHECK_PROF_OBJFILES)
 	@$(RM) $(MAGMA_DEPFILES) $(DIME_DEPFILES) $(SIGNET_DEPFILES) $(GENREC_DEPFILES) $(MAGMA_CHECK_DEPFILES) $(DIME_CHECK_DEPFILES)
-	@$(RM) --force --recursive lib/local lib/logs lib/objects lib/sources $(DEPDIR) $(OBJDIR)
+	@$(RM) --force --recursive lib/local lib/logs lib/objects lib/sources dev/docs/html dev/docs/latex $(DEPDIR) $(OBJDIR)
 	@$(RM) --force gmon.out callgrind.out callgraph.dot callgraph.dot.ps massif.out.* cachegrind.out.* \
 	  magmad.pprof.out magmad.check.pprof.out magmad.gprof.* magmad.check.gprof.*
 	@$(RM) $(MAGMA_SHARED_LIBRARY) $(MAGMA_STATIC_LIBRARY)

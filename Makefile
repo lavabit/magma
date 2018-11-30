@@ -548,56 +548,56 @@ endif
 	@test -d $(OBJDIR)/$(dir $<) || $(MKDIR) $(OBJDIR)/$(dir $<)
 	$(RUN)$(CC) -o '$@' $(GPROF) $(CDEFINES) $(CFLAGS_COMBINED) $(CFLAGS.$(<F)) $(CDEFINES.$(<F)) $(MAGMA_CINCLUDES) -MF"$(<:%.c=$(DEPDIR)/%.d)" -MT"$@" "$<"	
 	
-# The recipes needed to build the various statically linked dependencies. They do not actually depend on the Magma shared library,
-# but include the dependency here to keep make from trying to build both at the same time.
-$(TOPDIR)/lib/local/lib/libz$(STATLIBEXT): $(MAGMA_SHARED_LIBRARY)
-ifeq ($(VERBOSE),no)
-	@echo 'Building' $(YELLOW)libz$(STATLIBEXT)$(NORMAL)
-	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh zlib &> /dev/null
-else
-	@echo 'Building' $(YELLOW)libz$(STATLIBEXT)$(NORMAL)
-	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh zlib
-endif
-
-$(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT): $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(MAGMA_SHARED_LIBRARY) 
-
-$(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT): $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) $(MAGMA_SHARED_LIBRARY)
-ifeq ($(VERBOSE),no)
-	@echo 'Building' $(YELLOW)libssl$(STATLIBEXT) libcrypto$(STATLIBEXT)$(NORMAL)
-	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh openssl &> /dev/null
-else
-	@echo 'Building' $(YELLOW)libssl$(STATLIBEXT) libcrypto$(STATLIBEXT)$(NORMAL)
-	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh openssl
-endif
-
-$(TOPDIR)/lib/local/lib/libutf8proc$(STATLIBEXT): $(MAGMA_SHARED_LIBRARY) $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT)
-ifeq ($(VERBOSE),no)
-	@echo 'Building' $(YELLOW)libutf8proc$(STATLIBEXT)$(NORMAL)
-	$(shell [ "`which curl &> /dev/null; echo $$?`" != 0 ] && QUICK=yes dev/scripts/builders/build.lib.sh curl &> /dev/null)
-	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh utf8proc &> /dev/null
-else
-	@echo 'Building' $(YELLOW)libutf8proc$(STATLIBEXT)$(NORMAL)
-	$(shell [ "`which curl &> /dev/null; echo $$?`" != 0 ] && QUICK=yes dev/scripts/builders/build.lib.sh curl)
-	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh utf8proc
-endif
-
-$(TOPDIR)/lib/sources/googtest/lib/.libs/libgtest$(STATLIBEXT): $(MAGMA_SHARED_LIBRARY)
-ifeq ($(VERBOSE),no)
-	@echo 'Building' $(YELLOW)googtest$(STATLIBEXT)$(NORMAL)
-	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh googtest &> /dev/null
-else
-	@echo 'Building' $(YELLOW)googtest$(STATLIBEXT)$(NORMAL)
-	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh googtest
-endif
-
-$(TOPDIR)/lib/local/lib/libcheck$(STATLIBEXT): $(MAGMA_SHARED_LIBRARY)
-ifeq ($(VERBOSE),no)
-	@echo 'Building' $(YELLOW)libcheck$(STATLIBEXT)$(NORMAL)
-	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh checker &> /dev/null
-else
-	@echo 'Building' $(YELLOW)libcheck$(STATLIBEXT)$(NORMAL)
-	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh checker
-endif
+## The recipes needed to build the various statically linked dependencies. They do not actually depend on the Magma shared library,
+## but include the dependency here to keep make from trying to build both at the same time.
+#$(TOPDIR)/lib/local/lib/libz$(STATLIBEXT): $(MAGMA_SHARED_LIBRARY)
+#ifeq ($(VERBOSE),no)
+#	@echo 'Building' $(YELLOW)libz$(STATLIBEXT)$(NORMAL)
+#	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh zlib &> /dev/null
+#else
+#	@echo 'Building' $(YELLOW)libz$(STATLIBEXT)$(NORMAL)
+#	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh zlib
+#endif
+#
+##$(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT): $(MAGMA_SHARED_LIBRARY) | $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT) $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT) 
+#
+#$(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT): $(MAGMA_SHARED_LIBRARY) | $(TOPDIR)/lib/local/lib/libz$(STATLIBEXT)
+#ifeq ($(VERBOSE),no)
+#	@echo 'Building' $(YELLOW)libssl$(STATLIBEXT) libcrypto$(STATLIBEXT)$(NORMAL)
+#	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh openssl &> /dev/null
+#else
+#	@echo 'Building' $(YELLOW)libssl$(STATLIBEXT) libcrypto$(STATLIBEXT)$(NORMAL)
+#	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh openssl
+#endif
+#
+#$(TOPDIR)/lib/local/lib/libutf8proc$(STATLIBEXT): $(MAGMA_SHARED_LIBRARY) | $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT)
+#ifeq ($(VERBOSE),no)
+#	@echo 'Building' $(YELLOW)libutf8proc$(STATLIBEXT)$(NORMAL)
+#	$(shell [ "`which curl &> /dev/null; echo $$?`" != 0 ] && QUICK=yes dev/scripts/builders/build.lib.sh curl &> /dev/null)
+#	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh utf8proc &> /dev/null
+#else
+#	@echo 'Building' $(YELLOW)libutf8proc$(STATLIBEXT)$(NORMAL)
+#	$(shell [ "`which curl &> /dev/null; echo $$?`" != 0 ] && QUICK=yes dev/scripts/builders/build.lib.sh curl)
+#	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh utf8proc
+#endif
+#
+#$(TOPDIR)/lib/sources/googtest/lib/.libs/libgtest$(STATLIBEXT): $(MAGMA_SHARED_LIBRARY)
+#ifeq ($(VERBOSE),no)
+#	@echo 'Building' $(YELLOW)googtest$(STATLIBEXT)$(NORMAL)
+#	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh googtest &> /dev/null
+#else
+#	@echo 'Building' $(YELLOW)googtest$(STATLIBEXT)$(NORMAL)
+#	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh googtest
+#endif
+#
+#$(TOPDIR)/lib/local/lib/libcheck$(STATLIBEXT): $(MAGMA_SHARED_LIBRARY)
+#ifeq ($(VERBOSE),no)
+#	@echo 'Building' $(YELLOW)libcheck$(STATLIBEXT)$(NORMAL)
+#	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh checker &> /dev/null
+#else
+#	@echo 'Building' $(YELLOW)libcheck$(STATLIBEXT)$(NORMAL)
+#	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh checker
+#endif
 
 # The recipe for creating a dynamically loaded shared library with all external dependencies required by Magma.
 $(MAGMA_SHARED_LIBRARY): dev/scripts/builders/build.lib.params.sh

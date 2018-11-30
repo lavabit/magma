@@ -659,7 +659,7 @@ bool_t lib_load(void) {
 
 	chr_t *lib_error = NULL;
 
-	if (!magma.config.file) {
+	if (ns_empty(magma.config.file)) {
 		log_critical("The Magma shared library path is empty.");
 		return false;
 	}

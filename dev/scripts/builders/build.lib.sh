@@ -2029,9 +2029,11 @@ utf8proc() {
 		utf8proc-build)
 			cd "$M_SOURCES/utf8proc"; error
 			
-			if [ ! -f "$M_LDPATH"/libcurl.so ] || [ ! -f "$M_LDPATH"/libcurl.a ] || [ ! -f "$M_PKGPATH"/libcurl.pc ]; then
+			if [ `which curl &> /dev/null` != 0 ] && [ ! -f "$M_BNPATH"/curl ]; then
 				tput sgr0; tput setaf 3; printf "\nPlease build curl before utf8proc.\n"; tput sgr0
 				return 3
+			elif [ `which curl &> /dev/null` != 0 ]; then
+				alias curl="$M_BNPATH"/curl
 			fi
 			
 			export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"

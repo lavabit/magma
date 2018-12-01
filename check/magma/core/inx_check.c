@@ -253,7 +253,7 @@ bool_t check_inx_append_sthread(MAGMA_INDEX inx_type, stringer_t *errmsg) {
 		outcome = false;
 	}
 
-	if (inx_count(inx) != 0 && outcome) {
+	if (outcome && inx_count(inx) != 0) {
 		st_sprint(errmsg, "The index was not properly cleared.");
 		outcome = false;
 	}

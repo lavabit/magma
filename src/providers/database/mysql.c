@@ -317,7 +317,8 @@ int_t sql_ping(uint32_t connection) {
 	else if (mysql_thread_id_d(pool_get_obj(sql_pool, connection)) != thread_id) {
 
 		if (mysql_real_query_d(pool_get_obj(sql_pool, connection), "SET SESSION sql_mode='ALLOW_INVALID_DATES'", 42)) {
-			log_pedantic("An error occurred while attempting to set the SQL mode to allow invalid date values. { error = %s }", sql_error(con));
+			log_pedantic("An error occurred while attempting to set the SQL mode to allow invalid date values. { error = %s }",
+			sql_error(pool_get_obj(sql_pool, connection)));
 		}
 
 		return 1;

@@ -115,12 +115,12 @@ int_t spf_check(void *ip, stringer_t *helo, stringer_t *mailfrom) {
 	placer_t domain;
 	ip_t *addr = ip;
 #ifdef MAGMA_SPF_DEBUG
-	SPF_reason_t reason;
+	SPF_reason_t reason = SPF_REASON_NONE;
 #endif
-	SPF_errcode_t error;
-	SPF_result_t response;
 	SPF_request_t *spf_request = NULL;
 	SPF_response_t *spf_response = NULL;
+	SPF_errcode_t error = SPF_E_SUCCESS;
+	SPF_result_t response = SPF_RESULT_NEUTRAL;
 
 	mail_domain_get(mailfrom, &domain);
 	stats_adjust_by_name("provider.spf.checked", 1);

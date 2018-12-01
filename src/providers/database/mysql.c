@@ -263,6 +263,11 @@ MYSQL * sql_open(bool_t silent) {
 		return NULL;
 	}
 
+	// Enable invalid dates, or the server will reject the '0000-00-00' and '0000-00-00 00:00:00' value.
+	else if (mysql_real_query_d(con, "SET SESSION sql_mode='ALLOW_INVALID_DATES'", 42)) {
+		log_pedantic("An error occurred while attempting to set the SQL mode to allow invalid date values. { error = %s }", sql_error(con));
+	}
+
 	/*
 	 *
 	 *
@@ -278,6 +283,8 @@ MYSQL * sql_open(bool_t silent) {
 //	}
 //
 //	log_pedantic("The MySQL connection is using the character set \"%s\".", mysql_character_set_name_d(con));
+
+
 	return con;
 }
 
@@ -306,8 +313,13 @@ int_t sql_ping(uint32_t connection) {
 		return -1;
 	}
 
-	// And check whether the thread ID has changed.
+	// And check whether the thread ID has changed. If it changes then we reconnected to the server and need to set the SQL mode again.
 	else if (mysql_thread_id_d(pool_get_obj(sql_pool, connection)) != thread_id) {
+
+		if (mysql_real_query_d(pool_get_obj(sql_pool, connection), "SET SESSION sql_mode='ALLOW_INVALID_DATES'", 42)) {
+			log_pedantic("An error occurred while attempting to set the SQL mode to allow invalid date values. { error = %s }", sql_error(con));
+		}
+
 		return 1;
 	}
 

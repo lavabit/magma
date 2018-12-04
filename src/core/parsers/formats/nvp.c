@@ -21,7 +21,7 @@ int nvp_parse(nvp_t *nvp, stringer_t *data) {
 	int r, count = 0;
 	tok_state_t state;
 	placer_t line, name, value;
-	multi_t key = { .type = NULL, .val.st = NULL };
+	multi_t key = { .type = M_TYPE_STRINGER, .val.st = NULL };
 
 	if (nvp == NULL || data == NULL || st_length_get(data) == 0)
 		return -1;

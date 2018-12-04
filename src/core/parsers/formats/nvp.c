@@ -18,10 +18,10 @@ int nvp_parse(nvp_t *nvp, stringer_t *data) {
 	else if (data == NULL || st_length_get(data) == 0)	log_options(M_LOG_PEDANTIC | M_LOG_STACK_TRACE, "Attempted to access a NULL or zero length string. Printing stack:");
 #endif
 
-	multi_t key;
 	int r, count = 0;
 	tok_state_t state;
 	placer_t line, name, value;
+	multi_t key = { .type = NULL, .val.st = NULL };
 
 	if (nvp == NULL || data == NULL || st_length_get(data) == 0)
 		return -1;

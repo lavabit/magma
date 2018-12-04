@@ -800,7 +800,7 @@ START_TEST (check_secmem) {
 					? errmsg : NULLER("SKIPPED")) : errmsg);
 #else
 	log_test("CORE / MEMORY / SECURE ADDRESS RANGE / SINGLE THREADED:",
-				!errmsg ? (status() && true && (CORE_SECURE_MEMORY_LENGTH / 1024)
+				!errmsg ? (status() && (CORE_SECURE_MEMORY_LENGTH / 1024)
 						? errmsg : NULLER("SKIPPED")) : errmsg);
 #endif
 	ck_assert_msg(!errmsg, st_char_get(errmsg));

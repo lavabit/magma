@@ -794,13 +794,14 @@ START_TEST (check_secmem) {
 		}
 	}
 
+
 #ifdef MAGMA_CHECK_H
 	log_test("CORE / MEMORY / SECURE ADDRESS RANGE / SINGLE THREADED:",
-			!errmsg ? (status() && magma.secure.memory.enable && (magma.secure.memory.length / 1024)
+			!errmsg ? (status() && magma.secure.memory.enable && ((magma.secure.memory.length / 1024) > 0)
 					? errmsg : NULLER("SKIPPED")) : errmsg);
 #else
 	log_test("CORE / MEMORY / SECURE ADDRESS RANGE / SINGLE THREADED:",
-				!errmsg ? (status() && (CORE_SECURE_MEMORY_LENGTH / 1024)
+				!errmsg ? (status() && ((CORE_SECURE_MEMORY_LENGTH / 1024) > 0)
 						? errmsg : NULLER("SKIPPED")) : errmsg);
 #endif
 	ck_assert_msg(!errmsg, st_char_get(errmsg));

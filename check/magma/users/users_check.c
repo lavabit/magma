@@ -95,7 +95,7 @@ START_TEST (check_users_register_s) {
 		}
 
 		// The remaining plan types should yield an expiration date in the future.
-		else if (outcome && plan <= 2 && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, userid FROM Users WHERE " \
+		else if (outcome && plan > 2 && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, userid FROM Users WHERE " \
 			"userid = '%.*s' AND plan_expiration = '%.*s';", st_length_int(username), st_char_get(username),
 			st_length_int(expiration), st_char_get(expiration))) != 1) {
 			st_sprint(errmsg, "Verification of the plan expiration date failed. { userid = %.*s / plan = %s / expiration = %.*s }",
@@ -174,7 +174,7 @@ START_TEST (check_users_register_s) {
 		}
 
 		// The remaining plan types should yield an expiration date in the future.
-		else if (outcome && plan <= 2 && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, userid FROM Users WHERE " \
+		else if (outcome && plan > 2 && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, userid FROM Users WHERE " \
 			"userid = '%.*s' AND plan_expiration = '%.*s';", st_length_int(username), st_char_get(username),
 			st_length_int(expiration), st_char_get(expiration))) != 1) {
 			st_sprint(errmsg, "Verification of the plan expiration date failed. { userid = %.*s / plan = %s / expiration = %.*s }",

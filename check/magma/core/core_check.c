@@ -560,6 +560,118 @@ START_TEST (check_digits) {
 }
 END_TEST
 
+START_TEST (check_time_stamp_s) {
+
+	time_t now;
+	log_disable();
+	chr_t buffer[64];
+	uint64_t stamp = 0;
+	struct tm localtime;
+	bool_t result = true;
+	stringer_t *errmsg = MANAGEDBUF(1024);
+
+	if (status()) {
+
+		mm_wipe(buffer, sizeof(buffer));
+		mm_wipe(&localtime, sizeof(struct tm));
+
+		if ((now = time(NULL)) == ((time_t)-1) || !localtime_r(&now, &localtime)) {
+			st_sprint(errmsg, "Local time retrieval failed.");
+			result = false;
+		}
+		else if (strftime(buffer, 64, "%Y%m%d", &localtime) != 8 || ns_length_get(buffer) != 8) {
+			st_sprint(errmsg, "Failed to print the local time into a buffer for comparison.");
+			result = false;
+		}
+		else if (!(stamp = time_datestamp()) || st_cmp_cs_eq(NULLER(buffer), st_quick(MANAGEDBUF(32), "%lu", stamp))) {
+			st_sprint(errmsg, "Failed to produce a proper numeric date stamp. { stamp = %lu }", stamp);
+			result = false;
+		}
+
+	}
+
+	log_test("CORE / PARSERS / TIME / STAMP / SINGLE THREADED:", errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
+
+}
+END_TEST
+
+START_TEST (check_time_print_s) {
+
+	time_t stamp;
+	log_disable();
+	bool_t result = true;
+	stringer_t *buffer = NULL, *errmsg = MANAGEDBUF(1024);
+
+	if (status()) {
+
+		// Ensure an empty buffer.
+		buffer = NULL;
+
+		// December 25th, 1970 at 12:00pm.
+		stamp = 30974400;
+
+		if (!(buffer = time_print_local(MANAGEDBUF(64), "%Y-%m-%d", stamp)) || st_cmp_ci_eq(buffer, PLACER("1970-12-25", 10))) {
+			st_sprint(errmsg, "Historical time stamp to local date string failed. { stamp = %lu / string = %.*s }", stamp,
+				st_length_int(buffer), st_char_get(buffer));
+			result = false;
+		}
+		else if (!(buffer = time_print_gmt(MANAGEDBUF(64), "%Y-%m-%d", stamp)) || st_cmp_ci_eq(buffer, PLACER("1970-12-25", 10))) {
+			st_sprint(errmsg, "Historical time stamp to UTC date string failed. { stamp = %lu / string = %.*s }", stamp,
+				st_length_int(buffer), st_char_get(buffer));
+			result = false;
+		}
+	}
+
+	if (status() && result) {
+
+		// Ensure an empty buffer.
+		buffer = NULL;
+
+		// December 5th, 2018 at 12:00pm.
+		stamp = 1544045553;
+
+		if (!(buffer = time_print_local(MANAGEDBUF(64), "%Y-%m-%d", stamp)) || st_cmp_ci_eq(buffer, PLACER("2018-12-05", 10))) {
+			st_sprint(errmsg, "Modern time stamp to local date string failed. { stamp = %lu / string = %.*s }", stamp,
+				st_length_int(buffer), st_char_get(buffer));
+			result = false;
+		}
+		else if (!(buffer = time_print_gmt(MANAGEDBUF(64), "%Y-%m-%d", stamp)) || st_cmp_ci_eq(buffer, PLACER("2018-12-05", 10))) {
+			st_sprint(errmsg, "Modern time stamp to UTC date string failed. { stamp = %lu / string = %.*s }", stamp,
+				st_length_int(buffer), st_char_get(buffer));
+			result = false;
+		}
+
+	}
+
+	if (status() && result) {
+
+		// Ensure an empty buffer.
+		buffer = NULL;
+
+		// December 5th, 2018 at 12:00pm, add one year to this known timestamp and the result should
+		// be December 25th, 2019 at 12:00pm.
+		stamp = 1544045553;
+
+		if (!(buffer = time_print_local(MANAGEDBUF(64), "%Y-%m-%d", stamp + 31536000UL)) || st_cmp_ci_eq(buffer, PLACER("2019-12-05", 10))) {
+			st_sprint(errmsg, "Manipulated time value to local date string failed. { stamp = %lu / string = %.*s }", stamp,
+				st_length_int(buffer), st_char_get(buffer));
+			result = false;
+		}
+		else if (!(buffer = time_print_gmt(MANAGEDBUF(64), "%Y-%m-%d", stamp + 31536000UL)) || st_cmp_ci_eq(buffer, PLACER("2019-12-05", 10))) {
+			st_sprint(errmsg, "Manipulated time value to local date string failed. { stamp = %lu / string = %.*s }", stamp,
+				st_length_int(buffer), st_char_get(buffer));
+			result = false;
+		}
+
+	}
+
+	log_test("CORE / PARSERS / TIME / PRINT / SINGLE THREADED:", errmsg);
+	ck_assert_msg(result, st_char_get(errmsg));
+
+}
+END_TEST
+
 START_TEST (check_clamp) {
 
 	log_disable();
@@ -926,6 +1038,8 @@ Suite * suite_check_core(void) {
 	suite_check_testcase(s, "CORE", "Parsers / Digits", check_digits);
 	suite_check_testcase(s, "CORE", "Parsers / Clamp", check_clamp);
 	suite_check_testcase(s, "CORE", "Parsers / Capitalization", check_capitalization);
+	suite_check_testcase(s, "CORE", "Parsers / Time / Stamps", check_time_stamp_s);
+	suite_check_testcase(s, "CORE", "Parsers / Time / Print", check_time_print_s);
 
 	suite_check_testcase(s, "CORE", "Classify / ASCII", check_classify);
 

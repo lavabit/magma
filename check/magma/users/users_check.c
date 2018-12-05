@@ -12,10 +12,21 @@ START_TEST (check_users_register_s) {
 	log_disable();
 	uint16_t plan;
 	connection_t con;
+	time_t stamp;
 	uint64_t usernum = 0;
 	bool_t outcome = true;
 	int64_t transaction = -1;
-	stringer_t *errmsg = MANAGEDBUF(128), *username = NULL, *password = NULL;
+	stringer_t *errmsg = MANAGEDBUF(128), *username = NULL, *password = NULL, *expiration = NULL;
+
+#ifdef MAGMA_PEDANTIC
+	const chr_t *account_plans[] = { "BASIC", "PERSONAL", "ENHANCED", "PREMIUM", "STANDARD", "PREMIER" };
+#endif
+
+	// Calculate the future time stamp.
+	stamp = time(NULL) + 31536000UL;
+
+	// Prep the expiration date for comparison.
+	expiration = time_print_local(MANAGEDBUF(64),"%Y-%m-%d", stamp);
 
 	// If the check process hasn't been aborted, register a new user account using a randomly generated username/password.
 	if (status()) {
@@ -72,6 +83,23 @@ START_TEST (check_users_register_s) {
 		else if (outcome && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, address FROM Mailboxes WHERE address = '%.*s@%.*s';",
 			st_length_int(username), st_char_get(username), st_length_int(magma.system.domain), st_char_get(magma.system.domain))) != 1) {
 			st_sprint(errmsg, "Verification of the mailbox table entry after registering a system user failed.");
+			outcome = false;
+		}
+
+		// The Basic and Personal plans should yield a plan expiration date of '0000-00-00'.
+		else if (outcome && plan <= 2 && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, userid FROM Users WHERE " \
+			"userid = '%.*s' AND plan_expiration = '0000-00-00';", st_length_int(username), st_char_get(username))) != 1) {
+			st_sprint(errmsg, "Verification of the plan expiration date failed. { userid = %.*s / plan = %s }",
+				st_length_int(username), st_char_get(username), account_plans[plan]);
+			outcome = false;
+		}
+
+		// The remaining plan types should yield an expiration date in the future.
+		else if (outcome && plan <= 2 && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, userid FROM Users WHERE " \
+			"userid = '%.*s' AND plan_expiration = '%.*s';", st_length_int(username), st_char_get(username),
+			st_length_int(expiration), st_char_get(expiration))) != 1) {
+			st_sprint(errmsg, "Verification of the plan expiration date failed. { userid = %.*s / plan = %s / expiration = %.*s }",
+				st_length_int(username), st_char_get(username), account_plans[plan], st_length_int(expiration), st_char_get(expiration));
 			outcome = false;
 		}
 
@@ -137,6 +165,22 @@ START_TEST (check_users_register_s) {
 			outcome = false;
 		}
 
+		// The Basic and Personal plans should yield a plan expiration date of '0000-00-00'.
+		else if (outcome && plan <= 2 && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, userid FROM Users WHERE " \
+			"userid = '%.*s' AND plan_expiration = '0000-00-00';", st_length_int(username), st_char_get(username))) != 1) {
+			st_sprint(errmsg, "Verification of the plan expiration date failed. { userid = %.*s / plan = %s }",
+				st_length_int(username), st_char_get(username), account_plans[plan]);
+			outcome = false;
+		}
+
+		// The remaining plan types should yield an expiration date in the future.
+		else if (outcome && plan <= 2 && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, userid FROM Users WHERE " \
+			"userid = '%.*s' AND plan_expiration = '%.*s';", st_length_int(username), st_char_get(username),
+			st_length_int(expiration), st_char_get(expiration))) != 1) {
+			st_sprint(errmsg, "Verification of the plan expiration date failed. { userid = %.*s / plan = %s / expiration = %.*s }",
+				st_length_int(username), st_char_get(username), account_plans[plan], st_length_int(expiration), st_char_get(expiration));
+			outcome = false;
+		}
 	}
 
 	log_test("USERS / REGISTER / SINGLE THREADED:", errmsg);

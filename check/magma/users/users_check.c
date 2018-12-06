@@ -17,10 +17,7 @@ START_TEST (check_users_register_s) {
 	bool_t outcome = true;
 	int64_t transaction = -1;
 	stringer_t *errmsg = MANAGEDBUF(128), *username = NULL, *password = NULL, *expiration = NULL;
-
-#ifdef MAGMA_PEDANTIC
 	const chr_t *account_plans[] = { "BASIC", "PERSONAL", "ENHANCED", "PREMIUM", "STANDARD", "PREMIER" };
-#endif
 
 	// Calculate the future time stamp.
 	stamp = time(NULL) + 31536000UL;

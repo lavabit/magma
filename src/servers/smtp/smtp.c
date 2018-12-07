@@ -772,7 +772,7 @@ void smtp_rcpt_to(connection_t *con) {
 	// If this user is enforcing SPF.
 	if (result->spf == 1) {
 		// Perform the SPF check.
-		if (con->smtp.checked.spf == 0) {
+		if (!con->smtp.bypass && con->smtp.checked.spf == 0) {
 			con->smtp.checked.spf = spf_check(con_addr(con, MEMORYBUF(sizeof(ip_t))), con->smtp.helo, con->smtp.mailfrom);
 		}
 

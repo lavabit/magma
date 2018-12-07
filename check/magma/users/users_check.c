@@ -11,8 +11,8 @@ START_TEST (check_users_register_s) {
 
 	log_disable();
 	uint16_t plan;
-	connection_t con;
 	time_t stamp;
+	connection_t con;
 	uint64_t usernum = 0;
 	bool_t outcome = true;
 	int64_t transaction = -1;

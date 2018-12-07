@@ -46,8 +46,20 @@ ip_t * con_addr(connection_t *con, ip_t *output) {
 
 	ip_t *result = NULL;
 
-	if (con) {
-		result = con->network.reverse.ip;
+	// We only attempt the copy if a valid IP address is available.
+	if (con && con->network.reverse.ip) {
+
+		// If the output pointer is NULL, we need to allocate a buffer.
+		if (!output && (result = mm_alloc(sizeof(ip_t)))) {
+			ip_copy(result, con->network.reverse.ip);
+		}
+		// Otherwise, if the output buffer is valid, we use that instead. We could also end up
+		// here if the allocation attempt, fails. So we check that output isn't NULL to avoid an error.
+		else if (output) {
+			result = ip_copy(output, con->network.reverse.ip);
+		}
+
+
 	}
 
 	return result;

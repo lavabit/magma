@@ -567,7 +567,8 @@ bool_t ip_subnet_st(chr_t *substr, subnet_t *out) {
 
 	if (!i || i > 2) {
 		return false;
-	} else if (i == 1) {
+	}
+	else if (i == 1) {
 
 		if (!ip_addr_st(substr, &addr)) {
 			return false;

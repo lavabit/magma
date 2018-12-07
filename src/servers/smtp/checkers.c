@@ -301,7 +301,16 @@ bool_t smtp_bypass_check(connection_t *con) {
 	}
 
 	while (!result && (subnet = inx_cursor_value_next(cursor))) {
-		if (ip_matches_subnet(subnet, &remote)) result = true;
+
+		// If the subnet mask is 32 for a v4 address, or 128 for v6 address, do a straight comparison.
+		if (((subnet->address.family == AF_INET && subnet->mask == 32) ||
+			(subnet->address.family == AF_INET6 && subnet->mask == 128)) &&
+			ip_addr_eq(&(subnet->address), &remote)) result = true;
+
+		// Otherwise do a subnet comparison.
+		else if (((subnet->address.family == AF_INET && subnet->mask != 32) ||
+			(subnet->address.family == AF_INET6 && subnet->mask != 128)) &&
+			ip_matches_subnet(subnet, &remote)) result = true;
 	}
 
 	inx_cursor_free(cursor);

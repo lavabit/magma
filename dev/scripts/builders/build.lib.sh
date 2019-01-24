@@ -912,8 +912,8 @@ zlib() {
 			make install &>> "$M_LOGS/zlib.txt"; error
 
 			# Fool Autotools checks into thinking this is a normal zlib install (e.g., ClamAV)
-			[ ! -d lib ] && ln -s `pwd` lib
-			[ ! -d include ] && ln -s `pwd` include
+			if [ ! -d lib ]; then ln -s `pwd` lib fi
+		  if [ ! -d include ]; then ln -s `pwd` include fi
 		;;
 		zlib-check)
 			cd "$M_SOURCES/zlib"; error
@@ -1653,7 +1653,7 @@ openssl() {
 			make install &>> "$M_LOGS/openssl.txt"; error
 			
 			# Fool Autotools checks into thinking this is a normal OpenSSL install (e.g., ClamAV)
-			[ ! -d lib ] && ln -s `pwd` lib
+			if [ ! -d lib ]; then ln -s `pwd` lib fi
 		;;
 		openssl-check)
 			cd "$M_SOURCES/openssl"; error
@@ -1779,7 +1779,7 @@ googtest() {
 			cd "$M_SOURCES/googtest"; error
 			make check &>> "$M_LOGS/googtest.txt"; error
 
-			[ ! -d build ] && mkdir build; error
+			if [ ! -d build ]; then mkdir build ; error fi
 			cd build; error
 			
 			cmake -Dgtest_build_samples=ON "$M_SOURCES/googtest" &>> "$M_LOGS/googtest.txt"; error
@@ -1799,7 +1799,7 @@ googtest() {
 			cd "$M_SOURCES/googtest"; error
 			make check &>> "$M_LOGS/googtest.txt"; error
 
-			[ ! -d build ] && mkdir build; error
+			if [ ! -d build ]; then mkdir build ; error fi
 			cd build; error
 			
 			cmake -Dgtest_build_samples=ON "$M_SOURCES/googtest" &>> "$M_LOGS/googtest.txt"; error
@@ -2562,7 +2562,7 @@ load() {
 		exit 1
 	fi
 
-	[ ! -d $M_CHECK ] && mkdir -p "$M_CHECK"; error
+	if [ ! -d $M_CHECK ]; then mkdir -p "$M_CHECK" ; error fi
 	cd "$M_CHECK"; error
 
 	# Copy the current symbols file over.

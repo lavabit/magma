@@ -911,9 +911,9 @@ zlib() {
 			make &>> "$M_LOGS/zlib.txt"; error
 			make install &>> "$M_LOGS/zlib.txt"; error
 
-			# Fool Autotools checks into thinking this is a normal OpenSSL install (e.g., clamav)
-			ln -s `pwd` lib
-			ln -s `pwd` include
+			# Fool Autotools checks into thinking this is a normal zlib install (e.g., ClamAV)
+			if [ ! -d lib ] && ln -s `pwd` lib
+			if [ ! -d include ] && ln -s `pwd` include
 		;;
 		zlib-check)
 			cd "$M_SOURCES/zlib"; error
@@ -1652,8 +1652,8 @@ openssl() {
 			make &>> "$M_LOGS/openssl.txt"; error
 			make install &>> "$M_LOGS/openssl.txt"; error
 			
-			# Fool autotools checks into thinking this is a normal OpenSSL install (e.g., ClamAV)
-			ln -s `pwd` lib
+			# Fool Autotools checks into thinking this is a normal OpenSSL install (e.g., ClamAV)
+			[ ! -d lib ] && ln -s `pwd` lib
 		;;
 		openssl-check)
 			cd "$M_SOURCES/openssl"; error

@@ -1,0 +1,13 @@
+diff --git a/tests/runtests.pl b/tests/runtests.pl
+index 54eb539..319f56c 100755
+--- a/tests/runtests.pl
++++ b/tests/runtests.pl
+@@ -3012,7 +3012,7 @@ sub singletest {
+     if($cmdtype eq "perl") {
+         # run the command line prepended with "perl"
+         $cmdargs ="$cmd";
+-        $CMDLINE = "perl ";
++        $CMDLINE = "perl -I. ";
+         $tool=$CMDLINE;
+         $disablevalgrind=1;
+     }

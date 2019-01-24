@@ -1,0 +1,45 @@
+diff --git a/libtest/gearmand.cc b/libtest/gearmand.cc
+index 852cf19..866d3e6 100644
+--- a/libtest/gearmand.cc
++++ b/libtest/gearmand.cc
+@@ -139,7 +139,7 @@ bool Gearmand::build()
+     add_option("-u", "root");
+   }
+ 
+-  add_option("--listen=localhost");
++  add_option("--listen=127.0.0.1");
+ 
+   return true;
+ }
+diff --git a/libtest/memcached.cc b/libtest/memcached.cc
+index 15fcbff..0127356 100644
+--- a/libtest/memcached.cc
++++ b/libtest/memcached.cc
+@@ -71,7 +71,7 @@ public:
+             const bool is_socket_arg,
+             const std::string& username_arg,
+             const std::string& password_arg) :
+-    libtest::Server(host_arg, port_arg, 
++    libtest::Server(host_arg, port_arg,
+                     memcached_binary(), false, is_socket_arg),
+     _username(username_arg),
+     _password(password_arg)
+@@ -156,7 +156,8 @@ public:
+   {
+     char buffer[30];
+     snprintf(buffer, sizeof(buffer), "%d", int(arg));
+-    app.add_option("-p", buffer); 
++    app.add_option("-p", buffer);
++    app.add_option("-U", buffer);
+   }
+ 
+   bool has_port_option() const
+@@ -201,7 +202,7 @@ bool Memcached::build()
+     add_option("-u", "root");
+   }
+ 
+-  add_option("-l", "localhost");
++  add_option("-l", "127.0.0.1");
+ #ifdef __APPLE__
+ #else
+   add_option("-m", "128");

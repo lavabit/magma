@@ -2123,6 +2123,9 @@ memcached() {
 				# Disable portable instruction executables so profiling capable builds work properly. Technically this is only
 				# needed so "-pg" can be used, even though the "-pg" flag isn't enabled by default.
 				cat "$M_PATCHES/memcached/"configure_1.0.18.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
+				# On some IPv6 systems localhost resolves to ::1 which results in the memcached binary getting port binding failures, 
+				# and without a server to test against, the unit tests will fail.
+				cat "$M_PATCHES/memcached/"1.0.18_fix_ipv6_and_udp_test_failures.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
 			fi
 		;;
 		memcached-build)

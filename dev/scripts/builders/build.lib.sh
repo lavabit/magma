@@ -1779,7 +1779,9 @@ googtest() {
 			cd "$M_SOURCES/googtest"; error
 			make check &>> "$M_LOGS/googtest.txt"; error
 
-			mkdir build && cd build; error
+			[ ! -d build ] && mkdir build; error
+			cd build; error
+			
 			cmake -Dgtest_build_samples=ON "$M_SOURCES/googtest" &>> "$M_LOGS/googtest.txt"; error
 			make &>> "$M_LOGS/googtest.txt"; error
 			./sample1_unittest &>> "$M_LOGS/googtest.txt"; error
@@ -1797,7 +1799,9 @@ googtest() {
 			cd "$M_SOURCES/googtest"; error
 			make check &>> "$M_LOGS/googtest.txt"; error
 
-			mkdir build && cd build; error
+			[ ! -d build ] && mkdir build; error
+			cd build; error
+			
 			cmake -Dgtest_build_samples=ON "$M_SOURCES/googtest" &>> "$M_LOGS/googtest.txt"; error
 			make &>> "$M_LOGS/googtest.txt"; error
 			./sample1_unittest &>> "$M_LOGS/googtest.txt"; error
@@ -2558,7 +2562,7 @@ load() {
 		exit 1
 	fi
 
-	mkdir -p "$M_CHECK"; error
+	[ ! -d $M_CHECK ] && mkdir -p "$M_CHECK"; error
 	cd "$M_CHECK"; error
 
 	# Copy the current symbols file over.

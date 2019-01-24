@@ -1556,21 +1556,28 @@ checker() {
 
 			make &>> "$M_LOGS/checker.txt"; error
 			make install &>> "$M_LOGS/checker.txt"; error
-
 		;;
 		checker-check)
 			cd "$M_SOURCES/checker"; error
 			
-			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			export CK_DEFAULT_TIMEOUT=64; error
 			export PATH="$M_BNPATH:$PATH"; error
+			export LD_LIBRARY_PATH="$M_LDPATH"; error
 			
-			make --jobs=4 check &>> "$M_LOGS/checker.txt"; error
+			make check &>> "$M_LOGS/checker.txt"; error
+			
+			unset CK_DEFAULT_TIMEOUT
 		;;
 		checker-check-full)
 			cd "$M_SOURCES/checker"; error
-			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			
+			export CK_DEFAULT_TIMEOUT=64; error
 			export PATH="$M_BNPATH:$PATH"; error
+			export LD_LIBRARY_PATH="$M_LDPATH"; error
+			
 			make check &>> "$M_LOGS/checker.txt"; error
+			
+			unset CK_DEFAULT_TIMEOUT
 		;;
 		checker-clean)
 			cd "$M_SOURCES/checker"; error

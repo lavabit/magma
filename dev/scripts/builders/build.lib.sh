@@ -912,8 +912,8 @@ zlib() {
 			make install &>> "$M_LOGS/zlib.txt"; error
 
 			# Fool Autotools checks into thinking this is a normal zlib install (e.g., ClamAV)
-			if [ ! -d lib ] && ln -s `pwd` lib
-			if [ ! -d include ] && ln -s `pwd` include
+			[ ! -d lib ] && ln -s `pwd` lib
+			[ ! -d include ] && ln -s `pwd` include
 		;;
 		zlib-check)
 			cd "$M_SOURCES/zlib"; error

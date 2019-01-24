@@ -1561,24 +1561,24 @@ checker() {
 		checker-check)
 			cd "$M_SOURCES/checker"; error
 			
-			export CK_DEFAULT_TIMEOUT=64; error
+			# export CK_DEFAULT_TIMEOUT=64; error
 			export PATH="$M_BNPATH:$PATH"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
 			
 			make check &>> "$M_LOGS/checker.txt"; error
 			
-			unset CK_DEFAULT_TIMEOUT
+			# unset CK_DEFAULT_TIMEOUT
 		;;
 		checker-check-full)
 			cd "$M_SOURCES/checker"; error
 			
-			export CK_DEFAULT_TIMEOUT=64; error
+			# export CK_DEFAULT_TIMEOUT=64; error
 			export PATH="$M_BNPATH:$PATH"; error
 			export LD_LIBRARY_PATH="$M_LDPATH"; error
 			
 			make check &>> "$M_LOGS/checker.txt"; error
 			
-			unset CK_DEFAULT_TIMEOUT
+			# unset CK_DEFAULT_TIMEOUT
 		;;
 		checker-clean)
 			cd "$M_SOURCES/checker"; error

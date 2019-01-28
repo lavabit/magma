@@ -2131,6 +2131,9 @@ memcached() {
         cat "$M_PATCHES/memcached/"1.0.18_fix_unittest_doesnotexist.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
         # Adjust the slab count based on the memcached server version.
         cat "$M_PATCHES/memcached/"1.0.18_fix_dump_return_code.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
+        # The memcached dump code doesn't work properly on all platforms. This patch will rule out compiler 
+        # optimization as the culprit. 
+        cat "$M_PATCHES/memcached/"1.0.18_disable_compiler_optimizations.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
       fi
     ;;
     memcached-build)

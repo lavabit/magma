@@ -1,0 +1,89 @@
+diff --git a/configure b/configure
+index c4c72cc..4cb9a86 100755
+--- a/configure
++++ b/configure
+@@ -3327,13 +3327,13 @@ if test "$ac_test_CFLAGS" = set; then
+   CFLAGS=$ac_save_CFLAGS
+ elif test $ac_cv_prog_cc_g = yes; then
+   if test "$GCC" = yes; then
+-    CFLAGS="-g -O2"
++    CFLAGS="-g -O0"
+   else
+     CFLAGS="-g"
+   fi
+ else
+   if test "$GCC" = yes; then
+-    CFLAGS="-O2"
++    CFLAGS="-O0"
+   else
+     CFLAGS=
+   fi
+@@ -3674,13 +3674,13 @@ if test "$ac_test_CXXFLAGS" = set; then
+   CXXFLAGS=$ac_save_CXXFLAGS
+ elif test $ac_cv_prog_cxx_g = yes; then
+   if test "$GXX" = yes; then
+-    CXXFLAGS="-g -O2"
++    CXXFLAGS="-g -O0"
+   else
+     CXXFLAGS="-g"
+   fi
+ else
+   if test "$GXX" = yes; then
+-    CXXFLAGS="-O2"
++    CXXFLAGS="-O0"
+   else
+     CXXFLAGS=
+   fi
+@@ -25189,7 +25189,7 @@ done
+ 
+ 
+ 
+-for flag in -O2; do
++for flag in -O0; do
+   as_CACHEVAR=`$as_echo "ax_cv_check_cflags_-Werror_$flag" | $as_tr_sh`
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C compiler accepts $flag" >&5
+ $as_echo_n "checking whether C compiler accepts $flag... " >&6; }
+@@ -31304,7 +31304,7 @@ done
+ 
+ 
+ 
+-for flag in -O2; do
++for flag in -O0; do
+   as_CACHEVAR=`$as_echo "ax_cv_check_cxxflags_-Werror_$flag" | $as_tr_sh`
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts $flag" >&5
+ $as_echo_n "checking whether C++ compiler accepts $flag... " >&6; }
+diff --git a/m4/ax_harden_compiler_flags.m4 b/m4/ax_harden_compiler_flags.m4
+index 5d5bfdc..907634c 100644
+--- a/m4/ax_harden_compiler_flags.m4
++++ b/m4/ax_harden_compiler_flags.m4
+@@ -143,7 +143,7 @@ AC_DEFUN([_HARDEN_CC_COMPILER_FLAGS],
+            _APPEND_COMPILE_FLAGS_ERROR([-fno-omit-frame-pointer])
+            ],[
+            _APPEND_COMPILE_FLAGS_ERROR([-g])
+-           _APPEND_COMPILE_FLAGS_ERROR([-O2])
++           _APPEND_COMPILE_FLAGS_ERROR([-O0])
+            ])
+ 
+          AS_IF([test "x$ac_cv_vcs_checkout" = xyes],
+@@ -253,7 +253,7 @@ AC_DEFUN([_HARDEN_CXX_COMPILER_FLAGS],
+            _APPEND_COMPILE_FLAGS_ERROR([-fno-omit-frame-pointer])
+            ],[
+            _APPEND_COMPILE_FLAGS_ERROR([-g])
+-           _APPEND_COMPILE_FLAGS_ERROR([-O2])
++           _APPEND_COMPILE_FLAGS_ERROR([-O0])
+            ])
+ 
+          AS_IF([test "x$ac_cv_vcs_checkout" = xyes],
+diff --git a/m4/libtool.m4 b/m4/libtool.m4
+index f12cfdf..db5c5dc 100644
+--- a/m4/libtool.m4
++++ b/m4/libtool.m4
+@@ -7633,7 +7633,7 @@ AC_DEFUN([LT_PROG_GCJ],
+ [m4_ifdef([AC_PROG_GCJ], [AC_PROG_GCJ],
+   [m4_ifdef([A][M_PROG_GCJ], [A][M_PROG_GCJ],
+     [AC_CHECK_TOOL(GCJ, gcj,)
+-      test "x${GCJFLAGS+set}" = xset || GCJFLAGS="-g -O2"
++      test "x${GCJFLAGS+set}" = xset || GCJFLAGS="-g -O0"
+       AC_SUBST(GCJFLAGS)])])[]dnl
+ ])
+ 

@@ -1,7 +1,7 @@
 
 diff -r --unified a/configure b/configure
---- a/configure	2014-02-09 03:52:52.000000000 -0800
-+++ b/configure	2014-02-09 03:52:52.000000000 -0800
+--- a/configure	2019-01-28 13:48:25.283300693 -0800
++++ b/configure	2019-01-28 13:54:04.783037927 -0800
 @@ -3327,13 +3327,13 @@
    CFLAGS=$ac_save_CFLAGS
  elif test $ac_cv_prog_cc_g = yes; then
@@ -43,78 +43,7 @@ diff -r --unified a/configure b/configure
    as_CACHEVAR=`$as_echo "ax_cv_check_cflags_-Werror_$flag" | $as_tr_sh`
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C compiler accepts $flag" >&5
  $as_echo_n "checking whether C compiler accepts $flag... " >&6; }
-@@ -29050,70 +29050,6 @@
- 
- 
- 
--for flag in -fPIE -pie; do
--  as_CACHEVAR=`$as_echo "ax_cv_check_cflags_-Werror_$flag" | $as_tr_sh`
--{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C compiler accepts $flag" >&5
--$as_echo_n "checking whether C compiler accepts $flag... " >&6; }
--if eval \${$as_CACHEVAR+:} false; then :
--  $as_echo_n "(cached) " >&6
--else
--
--  ax_check_save_flags=$CFLAGS
--  CFLAGS="$CFLAGS -Werror $flag"
--  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
--/* end confdefs.h.  */
--
--int
--main ()
--{
--
--  ;
--  return 0;
--}
--_ACEOF
--if ac_fn_c_try_compile "$LINENO"; then :
--  eval "$as_CACHEVAR=yes"
--else
--  eval "$as_CACHEVAR=no"
--fi
--rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
--  CFLAGS=$ax_check_save_flags
--fi
--eval ac_res=\$$as_CACHEVAR
--	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
--$as_echo "$ac_res" >&6; }
--if test x"`eval 'as_val=${'$as_CACHEVAR'};$as_echo "$as_val"'`" = xyes; then :
--  if ${CFLAGS+:} false; then :
--  case " $CFLAGS " in
--    *" $flag "*)
--      { { $as_echo "$as_me:${as_lineno-$LINENO}: : CFLAGS already contains \$flag"; } >&5
--  (: CFLAGS already contains $flag) 2>&5
--  ac_status=$?
--  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
--  test $ac_status = 0; }
--      ;;
--    *)
--      { { $as_echo "$as_me:${as_lineno-$LINENO}: : CFLAGS=\"\$CFLAGS \$flag\""; } >&5
--  (: CFLAGS="$CFLAGS $flag") 2>&5
--  ac_status=$?
--  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
--  test $ac_status = 0; }
--      CFLAGS="$CFLAGS $flag"
--      ;;
--   esac
--else
--  CFLAGS="$flag"
--fi
--
--else
--  :
--fi
--
--done
--
--
--
--
- for flag in -Wsizeof-pointer-memaccess; do
-   as_CACHEVAR=`$as_echo "ax_cv_check_cflags_-Werror_$flag" | $as_tr_sh`
- { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C compiler accepts $flag" >&5
-@@ -31304,7 +31240,7 @@
+@@ -31240,7 +31240,7 @@
  
  
  
@@ -123,78 +52,6 @@ diff -r --unified a/configure b/configure
    as_CACHEVAR=`$as_echo "ax_cv_check_cxxflags_-Werror_$flag" | $as_tr_sh`
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts $flag" >&5
  $as_echo_n "checking whether C++ compiler accepts $flag... " >&6; }
-@@ -34846,70 +34782,6 @@
-   as_CACHEVAR=`$as_echo "ax_cv_check_cxxflags_-Werror_$flag" | $as_tr_sh`
- { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts $flag" >&5
- $as_echo_n "checking whether C++ compiler accepts $flag... " >&6; }
--if eval \${$as_CACHEVAR+:} false; then :
--  $as_echo_n "(cached) " >&6
--else
--
--  ax_check_save_flags=$CXXFLAGS
--  CXXFLAGS="$CXXFLAGS -Werror $flag"
--  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
--/* end confdefs.h.  */
--
--int
--main ()
--{
--
--  ;
--  return 0;
--}
--_ACEOF
--if ac_fn_cxx_try_compile "$LINENO"; then :
--  eval "$as_CACHEVAR=yes"
--else
--  eval "$as_CACHEVAR=no"
--fi
--rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
--  CXXFLAGS=$ax_check_save_flags
--fi
--eval ac_res=\$$as_CACHEVAR
--	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
--$as_echo "$ac_res" >&6; }
--if test x"`eval 'as_val=${'$as_CACHEVAR'};$as_echo "$as_val"'`" = xyes; then :
--  if ${CXXFLAGS+:} false; then :
--  case " $CXXFLAGS " in
--    *" $flag "*)
--      { { $as_echo "$as_me:${as_lineno-$LINENO}: : CXXFLAGS already contains \$flag"; } >&5
--  (: CXXFLAGS already contains $flag) 2>&5
--  ac_status=$?
--  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
--  test $ac_status = 0; }
--      ;;
--    *)
--      { { $as_echo "$as_me:${as_lineno-$LINENO}: : CXXFLAGS=\"\$CXXFLAGS \$flag\""; } >&5
--  (: CXXFLAGS="$CXXFLAGS $flag") 2>&5
--  ac_status=$?
--  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
--  test $ac_status = 0; }
--      CXXFLAGS="$CXXFLAGS $flag"
--      ;;
--   esac
--else
--  CXXFLAGS="$flag"
--fi
--
--else
--  :
--fi
--
--done
--
--
--
--
--for flag in -fPIE -pie; do
--  as_CACHEVAR=`$as_echo "ax_cv_check_cxxflags_-Werror_$flag" | $as_tr_sh`
--{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts $flag" >&5
--$as_echo_n "checking whether C++ compiler accepts $flag... " >&6; }
- if eval \${$as_CACHEVAR+:} false; then :
-   $as_echo_n "(cached) " >&6
- else
-Binary files a/.git/index and b/.git/index differ
 diff -r --unified a/m4/ax_harden_compiler_flags.m4 b/m4/ax_harden_compiler_flags.m4
 --- a/m4/ax_harden_compiler_flags.m4	2014-02-09 03:52:42.000000000 -0800
 +++ b/m4/ax_harden_compiler_flags.m4	2014-02-09 03:52:42.000000000 -0800

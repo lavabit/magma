@@ -2128,6 +2128,8 @@ memcached() {
         cat "$M_PATCHES/memcached/"1.0.18_fix_ipv6_and_udp_test_failures.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
         # Fix the return code comparison for the missing binary unit test.
         cat "$M_PATCHES/memcached/"1.0.18_fix_unittest_doesnotexist.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
+        # Adjust the slab count based on the memcached server version.
+        cat "$M_PATCHES/memcached/"1.0.18_fix_dump_return_code.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
       fi
     ;;
     memcached-build)

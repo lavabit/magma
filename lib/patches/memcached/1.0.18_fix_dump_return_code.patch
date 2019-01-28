@@ -1,0 +1,74 @@
+diff --git a/libmemcached/dump.cc b/libmemcached/dump.cc
+index 8ddb2ee..e7f5ff4 100644
+--- a/libmemcached/dump.cc
++++ b/libmemcached/dump.cc
+@@ -1,5 +1,5 @@
+ /*  vim:expandtab:shiftwidth=2:tabstop=2:smarttab:
+- * 
++ *
+  *  Libmemcached library
+  *
+  *  Copyright (C) 2011 Data Differential, http://datadifferential.com/
+@@ -46,6 +46,8 @@
+ 
+ static memcached_return_t ascii_dump(Memcached *memc, memcached_dump_fn *callback, void *context, uint32_t number_of_callbacks)
+ {
++
++//`	if memc->server_info.version
+   /* MAX_NUMBER_OF_SLAB_CLASSES is defined to 200 in Memcached 1.4.10 */
+   for (uint32_t x= 0; x < 200; x++)
+   {
+@@ -53,7 +55,7 @@ static memcached_return_t ascii_dump(Memcached *memc, memcached_dump_fn *callbac
+     int buffer_length= snprintf(buffer, sizeof(buffer), "%u", x);
+     if (size_t(buffer_length) >= sizeof(buffer) or buffer_length < 0)
+     {
+-      return memcached_set_error(*memc, MEMCACHED_MEMORY_ALLOCATION_FAILURE, MEMCACHED_AT, 
++      return memcached_set_error(*memc, MEMCACHED_MEMORY_ALLOCATION_FAILURE, MEMCACHED_AT,
+                                  memcached_literal_param("snprintf(MEMCACHED_DEFAULT_COMMAND_SIZE)"));
+     }
+ 
+@@ -70,6 +72,12 @@ static memcached_return_t ascii_dump(Memcached *memc, memcached_dump_fn *callbac
+     {
+       memcached_instance_st* instance= memcached_instance_fetch(memc, server_key);
+ 
++      // Starting with version 1.4.23 the slab size went from 200 to 63.
++      if ((instance->major_version > 1 || instance->minor_version > 4 || instance->micro_version > 22) && x > 63)
++      {
++      	continue;
++      }
++
+       memcached_return_t vdo_rc;
+       if (memcached_success((vdo_rc= memcached_vdo(instance, vector, 3, true))))
+       {
+@@ -86,6 +94,13 @@ static memcached_return_t ascii_dump(Memcached *memc, memcached_dump_fn *callbac
+     memcached_return_t read_ret= MEMCACHED_SUCCESS;
+     while ((instance= memcached_io_get_readable_server(memc, read_ret)))
+     {
++
++      // Starting with version 1.4.23 the slab size went from 200 to 63.
++      if ((instance->major_version > 1 || instance->minor_version > 4 || instance->micro_version > 22) && x > 63)
++      {
++      	continue;
++      }
++
+       memcached_return_t response_rc= memcached_response(instance, buffer, MEMCACHED_DEFAULT_COMMAND_SIZE, NULL);
+       if (response_rc == MEMCACHED_ITEM)
+       {
+@@ -111,7 +126,7 @@ static memcached_return_t ascii_dump(Memcached *memc, memcached_dump_fn *callbac
+         }
+       }
+       else if (response_rc == MEMCACHED_END)
+-      { 
++      {
+         // All items have been returned
+       }
+       else if (response_rc == MEMCACHED_SERVER_ERROR or response_rc == MEMCACHED_CLIENT_ERROR or response_rc == MEMCACHED_ERROR)
+@@ -146,7 +161,7 @@ memcached_return_t memcached_dump(memcached_st *shell, memcached_dump_fn *callba
+     return rc;
+   }
+ 
+-  /* 
++  /*
+     No support for Binary protocol yet
+     @todo Fix this so that we just flush, switch to ascii, and then go back to binary.
+   */

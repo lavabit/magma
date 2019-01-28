@@ -79,6 +79,7 @@ fi
 error() {
   if [ $? -ne 0 ]; then
     tput sgr0; tput setaf 1; date +"%n%n$COMMAND failed at %r on %x%n%n";  tput sgr0
+    wait
     exit 1
   fi
 }

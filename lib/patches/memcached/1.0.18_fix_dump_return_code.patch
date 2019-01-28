@@ -1,5 +1,5 @@
 diff --git a/libmemcached/dump.cc b/libmemcached/dump.cc
-index 8ddb2ee..fbd4448 100644
+index 8ddb2ee..864374d 100644
 --- a/libmemcached/dump.cc
 +++ b/libmemcached/dump.cc
 @@ -1,5 +1,5 @@
@@ -9,13 +9,12 @@ index 8ddb2ee..fbd4448 100644
   *  Libmemcached library
   *
   *  Copyright (C) 2011 Data Differential, http://datadifferential.com/
-@@ -46,14 +46,16 @@
+@@ -46,14 +46,15 @@
  
  static memcached_return_t ascii_dump(Memcached *memc, memcached_dump_fn *callback, void *context, uint32_t number_of_callbacks)
  {
 -  /* MAX_NUMBER_OF_SLAB_CLASSES is defined to 200 in Memcached 1.4.10 */
 +
-+//`  if memc->server_info.version
 +  /* MAX_NUMBER_OF_SLAB_CLASSES is defined as 200 for memcached versions up to 1.4.22 and redefined to 64 above that.*/
    for (uint32_t x= 0; x < 200; x++)
    {
@@ -28,7 +27,7 @@ index 8ddb2ee..fbd4448 100644
                                   memcached_literal_param("snprintf(MEMCACHED_DEFAULT_COMMAND_SIZE)"));
      }
  
-@@ -70,22 +72,34 @@ static memcached_return_t ascii_dump(Memcached *memc, memcached_dump_fn *callbac
+@@ -70,22 +71,34 @@ static memcached_return_t ascii_dump(Memcached *memc, memcached_dump_fn *callbac
      {
        memcached_instance_st* instance= memcached_instance_fetch(memc, server_key);
  
@@ -70,7 +69,7 @@ index 8ddb2ee..fbd4448 100644
        memcached_return_t response_rc= memcached_response(instance, buffer, MEMCACHED_DEFAULT_COMMAND_SIZE, NULL);
        if (response_rc == MEMCACHED_ITEM)
        {
-@@ -111,18 +125,18 @@ static memcached_return_t ascii_dump(Memcached *memc, memcached_dump_fn *callbac
+@@ -111,18 +124,18 @@ static memcached_return_t ascii_dump(Memcached *memc, memcached_dump_fn *callbac
          }
        }
        else if (response_rc == MEMCACHED_END)
@@ -96,7 +95,7 @@ index 8ddb2ee..fbd4448 100644
          assert(response_rc == MEMCACHED_SUCCESS); // Just fail
          return response_rc;
        }
-@@ -146,7 +160,7 @@ memcached_return_t memcached_dump(memcached_st *shell, memcached_dump_fn *callba
+@@ -146,7 +159,7 @@ memcached_return_t memcached_dump(memcached_st *shell, memcached_dump_fn *callba
      return rc;
    }
  

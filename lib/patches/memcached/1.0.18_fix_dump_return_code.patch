@@ -1,5 +1,5 @@
 diff --git a/libmemcached/dump.cc b/libmemcached/dump.cc
-index 8ddb2ee..2f93452 100644
+index 8ddb2ee..36068ee 100644
 --- a/libmemcached/dump.cc
 +++ b/libmemcached/dump.cc
 @@ -1,5 +1,5 @@
@@ -27,7 +27,7 @@ index 8ddb2ee..2f93452 100644
                                   memcached_literal_param("snprintf(MEMCACHED_DEFAULT_COMMAND_SIZE)"));
      }
  
-@@ -70,22 +71,28 @@ static memcached_return_t ascii_dump(Memcached *memc, memcached_dump_fn *callbac
+@@ -70,66 +71,80 @@ static memcached_return_t ascii_dump(Memcached *memc, memcached_dump_fn *callbac
      {
        memcached_instance_st* instance= memcached_instance_fetch(memc, server_key);
  
@@ -61,38 +61,100 @@ index 8ddb2ee..2f93452 100644
 -    while ((instance= memcached_io_get_readable_server(memc, read_ret)))
 +    for (uint32_t server_key= 0; server_key < memcached_server_count(memc); server_key++)
      {
+-      memcached_return_t response_rc= memcached_response(instance, buffer, MEMCACHED_DEFAULT_COMMAND_SIZE, NULL);
+-      if (response_rc == MEMCACHED_ITEM)
 +      memcached_instance_st* instance= memcached_instance_fetch(memc, server_key);
-+      memcached_return_t read_ret= memcached_io_wait_for_read(instance);
-       memcached_return_t response_rc= memcached_response(instance, buffer, MEMCACHED_DEFAULT_COMMAND_SIZE, NULL);
-       if (response_rc == MEMCACHED_ITEM)
++
++       // Starting with version 1.4.23 the slab size went from 200 to 63.
++      if (x <= 63 ||
++       (instance->major_version == 1 && instance->minor_version == 4 && instance->micro_version < 23) ||
++       (instance->major_version <= 1 && instance->minor_version < 4))
        {
-@@ -111,18 +118,18 @@ static memcached_return_t ascii_dump(Memcached *memc, memcached_dump_fn *callbac
+-        char *string_ptr, *end_ptr;
+ 
+-        string_ptr= buffer;
+-        string_ptr+= 5; /* Move past ITEM */
++        memcached_return_t read_ret= memcached_io_wait_for_read(instance);
++        memcached_return_t response_rc= memcached_response(instance, buffer, MEMCACHED_DEFAULT_COMMAND_SIZE, NULL);
++        if (response_rc == MEMCACHED_ITEM)
++        {
++          char *string_ptr, *end_ptr;
+ 
+-        for (end_ptr= string_ptr; isgraph(*end_ptr); end_ptr++) {} ;
++          string_ptr= buffer;
++          string_ptr+= 5; /* Move past ITEM */
+ 
+-        char *key= string_ptr;
+-        key[(size_t)(end_ptr-string_ptr)]= 0;
++          for (end_ptr= string_ptr; isgraph(*end_ptr); end_ptr++) {} ;
+ 
+-        for (uint32_t callback_counter= 0; callback_counter < number_of_callbacks; callback_counter++)
+-        {
+-          memcached_return_t callback_rc= (*callback[callback_counter])(memc, key, (size_t)(end_ptr-string_ptr), context);
+-          if (callback_rc != MEMCACHED_SUCCESS)
++          char *key= string_ptr;
++          key[(size_t)(end_ptr-string_ptr)]= 0;
++
++          for (uint32_t callback_counter= 0; callback_counter < number_of_callbacks; callback_counter++)
+           {
+-            // @todo build up a message for the error from the value
+-            memcached_set_error(*instance, callback_rc, MEMCACHED_AT);
+-            break;
++            memcached_return_t callback_rc= (*callback[callback_counter])(memc, key, (size_t)(end_ptr-string_ptr), context);
++            if (callback_rc != MEMCACHED_SUCCESS)
++            {
++              // @todo build up a message for the error from the value
++              memcached_set_error(*instance, callback_rc, MEMCACHED_AT);
++              break;
++            }
+           }
          }
-       }
-       else if (response_rc == MEMCACHED_END)
+-      }
+-      else if (response_rc == MEMCACHED_END)
 -      { 
-+      {
-         // All items have been returned
-       }
-       else if (response_rc == MEMCACHED_SERVER_ERROR or response_rc == MEMCACHED_CLIENT_ERROR or response_rc == MEMCACHED_ERROR)
-       {
-         /* If we try to request stats cachedump for a slab class that is too big
+-        // All items have been returned
+-      }
+-      else if (response_rc == MEMCACHED_SERVER_ERROR or response_rc == MEMCACHED_CLIENT_ERROR or response_rc == MEMCACHED_ERROR)
+-      {
+-        /* If we try to request stats cachedump for a slab class that is too big
 -         * the server will return an incorrect error message:
 -         * "MEMCACHED_SERVER_ERROR failed to allocate memory"
 -         * This isn't really a fatal error, so let's just skip it. I want to
 -         * fix the return value from the memcached server to a CLIENT_ERROR,
 -         * so let's add support for that as well right now.
 -       */
-+        * the server will return an incorrect error message:
-+        * "MEMCACHED_SERVER_ERROR failed to allocate memory"
-+        * This isn't really a fatal error, so let's just skip it. I want to
-+        * fix the return value from the memcached server to a CLIENT_ERROR,
-+        * so let's add support for that as well right now.
-+      */
-         assert(response_rc == MEMCACHED_SUCCESS); // Just fail
-         return response_rc;
+-        assert(response_rc == MEMCACHED_SUCCESS); // Just fail
+-        return response_rc;
+-      }
+-      else
+-      {
+-        // IO error of some sort must have occurred
+-        return response_rc;
++        else if (response_rc == MEMCACHED_END)
++        {
++          // All items have been returned
++        }
++        else if (response_rc == MEMCACHED_SERVER_ERROR or response_rc == MEMCACHED_CLIENT_ERROR or response_rc == MEMCACHED_ERROR)
++        {
++          /* If we try to request stats cachedump for a slab class that is too big
++          * the server will return an incorrect error message:
++          * "MEMCACHED_SERVER_ERROR failed to allocate memory"
++          * This isn't really a fatal error, so let's just skip it. I want to
++          * fix the return value from the memcached server to a CLIENT_ERROR,
++          * so let's add support for that as well right now.
++        */
++          assert(response_rc == MEMCACHED_SUCCESS); // Just fail
++          return response_rc;
++        }
++        else
++        {
++          // IO error of some sort must have occurred
++          return response_rc;
++        }
        }
-@@ -146,7 +153,7 @@ memcached_return_t memcached_dump(memcached_st *shell, memcached_dump_fn *callba
+     }
+   }
+@@ -146,7 +161,7 @@ memcached_return_t memcached_dump(memcached_st *shell, memcached_dump_fn *callba
      return rc;
    }
  

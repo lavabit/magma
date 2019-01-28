@@ -171,3 +171,34 @@ index 8ddb2ee..cc53ec6 100644
      No support for Binary protocol yet
      @todo Fix this so that we just flush, switch to ascii, and then go back to binary.
    */
+diff --git a/tests/libmemcached-1.0/dump.cc b/tests/libmemcached-1.0/dump.cc
+index 03704cf..a5429f3 100644
+--- a/tests/libmemcached-1.0/dump.cc
++++ b/tests/libmemcached-1.0/dump.cc
+@@ -1,5 +1,5 @@
+ /*  vim:expandtab:shiftwidth=2:tabstop=2:smarttab:
+- * 
++ *
+  *  Libmemcached library
+  *
+  *  Copyright (C) 2012 Data Differential, http://datadifferential.com/
+@@ -49,8 +49,8 @@ using namespace libtest;
+ #include "tests/libmemcached-1.0/dump.h"
+ 
+ static memcached_return_t callback_dump_counter(const memcached_st *,
+-                                                const char*, // key,
+-                                                size_t, // length,
++                                                const char* key,
++                                                size_t length,
+                                                 void *context)
+ {
+   size_t *counter= (size_t *)context;
+@@ -122,7 +122,7 @@ test_return_t memcached_dump_TEST2(memcached_st *memc)
+     test_compare(MEMCACHED_SUCCESS,
+                  memcached_set(memc, key, length,
+                                NULL, 0, // Zero length values
+-                               time_t(0), uint32_t(0)));
++                               time_t(0) + 120, uint32_t(0)));
+   }
+   memcached_quit(memc);
+ 

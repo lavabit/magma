@@ -1,0 +1,29 @@
+diff --git a/libtest/unittest.cc b/libtest/unittest.cc
+index a2843d2..e55a575 100644
+--- a/libtest/unittest.cc
++++ b/libtest/unittest.cc
+@@ -618,15 +618,7 @@ static test_return_t application_doesnotexist_BINARY(void *)
+   true_app.will_fail();
+ 
+   const char *args[]= { "--fubar", 0 };
+-#if defined(__APPLE__) && __APPLE__
+-  ASSERT_EQ(Application::INVALID_POSIX_SPAWN, true_app.run(args));
+-#elif defined(__FreeBSD__) && __FreeBSD__
+   ASSERT_EQ(Application::INVALID_POSIX_SPAWN, true_app.run(args));
+-#else
+-  ASSERT_EQ(Application::SUCCESS, true_app.run(args));
+-  ASSERT_EQ(Application::INVALID_POSIX_SPAWN, true_app.join());
+-#endif
+-
+   test_zero(true_app.stdout_result().size());
+ 
+   return TEST_SUCCESS;
+@@ -877,7 +869,7 @@ static test_return_t get_free_port_TEST(void *)
+ static test_return_t fatal_TEST(void *)
+ {
+   ASSERT_EQ(fatal_calls++, fatal::disabled_counter());
+-  throw libtest::fatal(LIBYATL_DEFAULT_PARAM, "Testing va_args based fatal(): %d", 10); 
++  throw libtest::fatal(LIBYATL_DEFAULT_PARAM, "Testing va_args based fatal(): %d", 10);
+ 
+   return TEST_SUCCESS;
+ }

@@ -172,7 +172,7 @@ index 8ddb2ee..cc53ec6 100644
      @todo Fix this so that we just flush, switch to ascii, and then go back to binary.
    */
 diff --git a/tests/libmemcached-1.0/dump.cc b/tests/libmemcached-1.0/dump.cc
-index 03704cf..a5429f3 100644
+index 03704cf..2bb2db8 100644
 --- a/tests/libmemcached-1.0/dump.cc
 +++ b/tests/libmemcached-1.0/dump.cc
 @@ -1,5 +1,5 @@
@@ -193,6 +193,15 @@ index 03704cf..a5429f3 100644
                                                  void *context)
  {
    size_t *counter= (size_t *)context;
+@@ -59,7 +59,7 @@ static memcached_return_t callback_dump_counter(const memcached_st *,
+   std::cerr.write(key, length);
+   std::cerr << std::endl;
+ #endif
+-
++  usleep(100);
+   *counter= *counter +1;
+ 
+   return MEMCACHED_SUCCESS;
 @@ -122,7 +122,7 @@ test_return_t memcached_dump_TEST2(memcached_st *memc)
      test_compare(MEMCACHED_SUCCESS,
                   memcached_set(memc, key, length,

@@ -78,7 +78,14 @@ fi
 
 error() {
   if [ $? -ne 0 ]; then
-    tput sgr0; tput setaf 1; date +"%n%n$COMMAND failed at %r on %x%n%n";  tput sgr0
+  	wait
+    tput sgr0; tput setaf 1; date +"%n%n$COMMAND failed at %r on %x%n%n"; tput sgr0
+    exit 1
+  fi
+}
+
+silent() {
+  if [ $? -ne 0 ]; then
     wait
     exit 1
   fi
@@ -2890,19 +2897,19 @@ status() {
 }
 
 all() {
-  rm -f "$M_LOGS/build.txt"; error
+  rm -f "$M_LOGS/build.txt"; silent
   date +"%nStarting at %r on %x%n"
   date +"Starting at %r on %x" &>> "$M_LOGS/build.txt"
-  $M_BUILD "extract"; error
-  $M_BUILD "prep"; error
-  $M_BUILD "build"; error
-  $M_BUILD "combine"; error
-  $M_BUILD "load"; error
-  $M_BUILD "keys"; error
+  $M_BUILD "extract"; silent
+  $M_BUILD "prep"; silent
+  $M_BUILD "build"; silent
+  $M_BUILD "combine"; silent
+  $M_BUILD "load"; silent
+  $M_BUILD "keys"; silent
 
   # Quick builds don't run the dependency checks, and/or unit tests.
   if [ "$QUICK" != "yes" ]; then
-    $M_BUILD "check"
+    $M_BUILD "check"; silent
   fi
 
   date +"Finished at %r on %x%n"

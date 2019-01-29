@@ -36,13 +36,13 @@ index 8ddb2ee..ce09190 100644
 +
 +	  /* The lru_metacrawler metadump doesn't arrive until version 1.4.33. */
 +	  if ((instance->major_version == 1 && instance->minor_version == 4 && instance->micro_version < 33) ||
-+      (instance->major_version <= 1 && instance->minor_version < 4)) {
++      (instance->major_version <= 1 && instance->minor_version < 4) || (instance->major_version <= 99)) {
 +
 +      uint32_t slabs= 64;
 +      int buffer_length;
 +      char buffer[MEMCACHED_DEFAULT_COMMAND_SIZE];
 +
-+      /* The number of slabs descreased from 200 to 64 with version 1.4.23. Dumping versions with 256 slabs is unsupported. */
++      /* The number of slabs decreased from 200 to 64 with version 1.4.23. Dumping versions with 256 slabs is unsupported. */
 +      if (instance->major_version == 1 && instance->minor_version == 4 && instance->micro_version < 23)
 +        slabs= 200;
 +
@@ -163,7 +163,7 @@ index 8ddb2ee..ce09190 100644
 +      while ((response_rc = memcached_response(instance, buffer, MEMCACHED_DEFAULT_COMMAND_SIZE, NULL)) != MEMCACHED_END) {
  
 -        string_ptr= buffer;
--        string_ptr+= 5; /* Move past ITEM */
+-        string_ptr+= 4; /* Move past key= */
 +        if (response_rc == MEMCACHED_ITEM)
 +        {
 +          char *string_ptr, *end_ptr;

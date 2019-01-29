@@ -1,0 +1,38 @@
+diff --git a/libmemcached/memcached.cc b/libmemcached/memcached.cc
+index 337f918..9e1ed0e 100644
+--- a/libmemcached/memcached.cc
++++ b/libmemcached/memcached.cc
+@@ -1,5 +1,5 @@
+ /*  vim:expandtab:shiftwidth=2:tabstop=2:smarttab:
+- * 
++ *
+  *  Libmemcached library
+  *
+  *  Copyright (C) 2011 Data Differential, http://datadifferential.com/
+@@ -146,6 +146,8 @@ static void __memcached_free(Memcached *ptr, bool release_st)
+ 
+   libmemcached_free(ptr, ptr->ketama.continuum);
+   ptr->ketama.continuum= NULL;
++  ptr->ketama.continuum_count= 0;
++  ptr->ketama.continuum_points_counter= 0;
+ 
+   memcached_array_free(ptr->_namespace);
+   ptr->_namespace= NULL;
+@@ -244,7 +246,7 @@ memcached_st *memcached(const char *string, size_t length)
+   {
+     rc= memcached_parse_configure_file(*memc, memcached_parse_filename(memc), memcached_parse_filename_length(memc));
+   }
+-    
++
+   if (memcached_failed(rc))
+   {
+     memcached_free(memc);
+@@ -285,6 +287,8 @@ void memcached_servers_reset(memcached_st *shell)
+   {
+     libmemcached_free(self, self->ketama.continuum);
+     self->ketama.continuum= NULL;
++    self->ketama.continuum_count= 0;
++    self->ketama.continuum_points_counter= 0;
+ 
+     memcached_instance_list_free(memcached_instance_list(self), self->number_of_hosts);
+     memcached_instance_set(self, NULL, 0);

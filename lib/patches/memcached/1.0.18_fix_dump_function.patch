@@ -1,5 +1,5 @@
 diff --git a/libmemcached/dump.cc b/libmemcached/dump.cc
-index 8ddb2ee..36068ee 100644
+index 8ddb2ee..ce09190 100644
 --- a/libmemcached/dump.cc
 +++ b/libmemcached/dump.cc
 @@ -1,5 +1,5 @@
@@ -9,40 +9,59 @@ index 8ddb2ee..36068ee 100644
   *  Libmemcached library
   *
   *  Copyright (C) 2011 Data Differential, http://datadifferential.com/
-@@ -46,14 +46,15 @@
+@@ -46,32 +46,113 @@
  
  static memcached_return_t ascii_dump(Memcached *memc, memcached_dump_fn *callback, void *context, uint32_t number_of_callbacks)
  {
 -  /* MAX_NUMBER_OF_SLAB_CLASSES is defined to 200 in Memcached 1.4.10 */
+-  for (uint32_t x= 0; x < 200; x++)
 +
-+  /* MAX_NUMBER_OF_SLAB_CLASSES is defined as 200 for memcached versions up to 1.4.22 and redefined to 64 above that.*/
-   for (uint32_t x= 0; x < 200; x++)
++  if (memcached_server_count(memc) == 0)
++    return MEMCACHED_NO_SERVERS;
++
++  if (memcached_version(memc) != MEMCACHED_SUCCESS)
++    return MEMCACHED_ERROR;
++
++
++  for (uint32_t server_key= 0; server_key < memcached_server_count(memc); server_key++)
    {
-     char buffer[MEMCACHED_DEFAULT_COMMAND_SIZE];
-     int buffer_length= snprintf(buffer, sizeof(buffer), "%u", x);
-     if (size_t(buffer_length) >= sizeof(buffer) or buffer_length < 0)
-     {
+-    char buffer[MEMCACHED_DEFAULT_COMMAND_SIZE];
+-    int buffer_length= snprintf(buffer, sizeof(buffer), "%u", x);
+-    if (size_t(buffer_length) >= sizeof(buffer) or buffer_length < 0)
+-    {
 -      return memcached_set_error(*memc, MEMCACHED_MEMORY_ALLOCATION_FAILURE, MEMCACHED_AT, 
-+      return memcached_set_error(*memc, MEMCACHED_MEMORY_ALLOCATION_FAILURE, MEMCACHED_AT,
-                                  memcached_literal_param("snprintf(MEMCACHED_DEFAULT_COMMAND_SIZE)"));
-     }
- 
-@@ -70,66 +71,80 @@ static memcached_return_t ascii_dump(Memcached *memc, memcached_dump_fn *callbac
-     {
-       memcached_instance_st* instance= memcached_instance_fetch(memc, server_key);
- 
--      memcached_return_t vdo_rc;
--      if (memcached_success((vdo_rc= memcached_vdo(instance, vector, 3, true))))
--      {
--        // We have sent the message to the server successfully
--      }
--      else
-+      // Starting with version 1.4.23 the slab size went from 200 to 63.
-+      if (x <= 63 ||
-+       (instance->major_version == 1 && instance->minor_version == 4 && instance->micro_version < 23) ||
-+       (instance->major_version <= 1 && instance->minor_version < 4))
-       {
--        return vdo_rc;
+-                                 memcached_literal_param("snprintf(MEMCACHED_DEFAULT_COMMAND_SIZE)"));
++
++	  memcached_instance_st* instance= memcached_instance_fetch(memc, server_key);
++
++	  /* The lru_metacrawler metadump doesn't arrive until version 1.4.33. */
++	  if ((instance->major_version == 1 && instance->minor_version == 4 && instance->micro_version < 33) ||
++      (instance->major_version <= 1 && instance->minor_version < 4)) {
++
++      uint32_t slabs= 64;
++      int buffer_length;
++      char buffer[MEMCACHED_DEFAULT_COMMAND_SIZE];
++
++      /* The number of slabs descreased from 200 to 64 with version 1.4.23. Dumping versions with 256 slabs is unsupported. */
++      if (instance->major_version == 1 && instance->minor_version == 4 && instance->micro_version < 23)
++        slabs= 200;
++
++      for (uint32_t x= 0; x < slabs; x++)
++      {
++        buffer_length= snprintf(buffer, sizeof(buffer), "%u", x);
++        if (size_t(buffer_length) >= sizeof(buffer) or buffer_length < 0)
++        {
++          return memcached_set_error(*memc, MEMCACHED_MEMORY_ALLOCATION_FAILURE, MEMCACHED_AT,
++                                     memcached_literal_param("snprintf(MEMCACHED_DEFAULT_COMMAND_SIZE)"));
++        }
++
++        libmemcached_io_vector_st vector[]=
++        {
++          { memcached_literal_param("stats cachedump ") },
++          { buffer, size_t(buffer_length) },
++          { memcached_literal_param(" 0\r\n") }
++        };
++
 +        memcached_return_t vdo_rc;
 +        if (memcached_success((vdo_rc= memcached_vdo(instance, vector, 3, true))))
 +        {
@@ -52,30 +71,99 @@ index 8ddb2ee..36068ee 100644
 +        {
 +          return vdo_rc;
 +        }
-       }
++
++        memcached_return_t response_rc;
++        while ((response_rc = memcached_response(instance, buffer, MEMCACHED_DEFAULT_COMMAND_SIZE, NULL)) != MEMCACHED_END) {
++          if (response_rc == MEMCACHED_ITEM)
++          {
++            char *string_ptr, *end_ptr;
++
++            string_ptr= buffer;
++            string_ptr+= 5; /* Move past ITEM */
++
++            for (end_ptr= string_ptr; isgraph(*end_ptr); end_ptr++) {} ;
++
++            char *key= string_ptr;
++            key[(size_t)(end_ptr-string_ptr)]= 0;
++
++            for (uint32_t callback_counter= 0; callback_counter < number_of_callbacks; callback_counter++)
++            {
++              memcached_return_t callback_rc= (*callback[callback_counter])(memc, key, (size_t)(end_ptr-string_ptr), context);
++              if (callback_rc != MEMCACHED_SUCCESS)
++              {
++                // @todo build up a message for the error from the value
++                memcached_set_error(*instance, callback_rc, MEMCACHED_AT);
++                break;
++              }
++            }
++          }
++          else if (response_rc == MEMCACHED_SERVER_ERROR or response_rc == MEMCACHED_CLIENT_ERROR or response_rc == MEMCACHED_ERROR)
++          {
++            /* If we try to request stats cachedump for a slab class that is too big
++            * the server will return an incorrect error message:
++            * "MEMCACHED_SERVER_ERROR failed to allocate memory"
++            * This isn't really a fatal error, so let's just skip it. I want to
++            * fix the return value from the memcached server to a CLIENT_ERROR,
++            * so let's add support for that as well right now.
++          */
++            assert(response_rc == MEMCACHED_SUCCESS); // Just fail
++            return response_rc;
++          }
++          else
++          {
++            // IO error of some sort must have occurred
++            return response_rc;
++          }
++        }
++      }
++
      }
  
-     // Collect the returned items
+-    // @NOTE the hard coded zero means "no limit"
+-    libmemcached_io_vector_st vector[]=
+-    {
+-      { memcached_literal_param("stats cachedump ") },
+-      { buffer, size_t(buffer_length) },
+-      { memcached_literal_param(" 0\r\n") }
+-    };
++    else  {
+ 
+-    // Send message to all servers
+-    for (uint32_t server_key= 0; server_key < memcached_server_count(memc); server_key++)
+-    {
+-      memcached_instance_st* instance= memcached_instance_fetch(memc, server_key);
++      libmemcached_io_vector_st vector[]=
++      {
++        { memcached_literal_param("lru_crawler metadump all\r\n") }
++      };
+ 
+       memcached_return_t vdo_rc;
+-      if (memcached_success((vdo_rc= memcached_vdo(instance, vector, 3, true))))
++      if (memcached_success((vdo_rc= memcached_vdo(instance, vector, 1, true))))
+       {
+         // We have sent the message to the server successfully
+       }
+@@ -79,62 +160,59 @@ static memcached_return_t ascii_dump(Memcached *memc, memcached_dump_fn *callbac
+       {
+         return vdo_rc;
+       }
+-    }
+ 
+-    // Collect the returned items
 -    memcached_instance_st* instance;
 -    memcached_return_t read_ret= MEMCACHED_SUCCESS;
 -    while ((instance= memcached_io_get_readable_server(memc, read_ret)))
-+    for (uint32_t server_key= 0; server_key < memcached_server_count(memc); server_key++)
-     {
+-    {
 -      memcached_return_t response_rc= memcached_response(instance, buffer, MEMCACHED_DEFAULT_COMMAND_SIZE, NULL);
 -      if (response_rc == MEMCACHED_ITEM)
-+      memcached_instance_st* instance= memcached_instance_fetch(memc, server_key);
-+
-+       // Starting with version 1.4.23 the slab size went from 200 to 63.
-+      if (x <= 63 ||
-+       (instance->major_version == 1 && instance->minor_version == 4 && instance->micro_version < 23) ||
-+       (instance->major_version <= 1 && instance->minor_version < 4))
-       {
+-      {
 -        char *string_ptr, *end_ptr;
++      memcached_return_t response_rc;
++      char buffer[MEMCACHED_DEFAULT_COMMAND_SIZE];
++      while ((response_rc = memcached_response(instance, buffer, MEMCACHED_DEFAULT_COMMAND_SIZE, NULL)) != MEMCACHED_END) {
  
 -        string_ptr= buffer;
 -        string_ptr+= 5; /* Move past ITEM */
-+        memcached_return_t read_ret= memcached_io_wait_for_read(instance);
-+        memcached_return_t response_rc= memcached_response(instance, buffer, MEMCACHED_DEFAULT_COMMAND_SIZE, NULL);
 +        if (response_rc == MEMCACHED_ITEM)
 +        {
 +          char *string_ptr, *end_ptr;
@@ -130,10 +218,7 @@ index 8ddb2ee..36068ee 100644
 -      {
 -        // IO error of some sort must have occurred
 -        return response_rc;
-+        else if (response_rc == MEMCACHED_END)
-+        {
-+          // All items have been returned
-+        }
+-      }
 +        else if (response_rc == MEMCACHED_SERVER_ERROR or response_rc == MEMCACHED_CLIENT_ERROR or response_rc == MEMCACHED_ERROR)
 +        {
 +          /* If we try to request stats cachedump for a slab class that is too big
@@ -151,10 +236,18 @@ index 8ddb2ee..36068ee 100644
 +          // IO error of some sort must have occurred
 +          return response_rc;
 +        }
-       }
++
++       }
      }
++
    }
-@@ -146,7 +161,7 @@ memcached_return_t memcached_dump(memcached_st *shell, memcached_dump_fn *callba
+ 
+   return memcached_has_current_error(*memc) ? MEMCACHED_SOME_ERRORS : MEMCACHED_SUCCESS;
++
+ }
+ 
+ memcached_return_t memcached_dump(memcached_st *shell, memcached_dump_fn *callback, void *context, uint32_t number_of_callbacks)
+@@ -146,7 +224,7 @@ memcached_return_t memcached_dump(memcached_st *shell, memcached_dump_fn *callba
      return rc;
    }
  
@@ -164,7 +257,7 @@ index 8ddb2ee..36068ee 100644
      @todo Fix this so that we just flush, switch to ascii, and then go back to binary.
    */
 diff --git a/tests/libmemcached-1.0/dump.cc b/tests/libmemcached-1.0/dump.cc
-index 03704cf..28a26d0 100644
+index 03704cf..faf495e 100644
 --- a/tests/libmemcached-1.0/dump.cc
 +++ b/tests/libmemcached-1.0/dump.cc
 @@ -1,5 +1,5 @@
@@ -185,23 +278,7 @@ index 03704cf..28a26d0 100644
                                                  void *context)
  {
    size_t *counter= (size_t *)context;
-@@ -105,11 +105,14 @@ test_return_t memcached_dump_TEST(memcached_st *memc)
- }
- #endif
- 
--#define memcached_dump_TEST2_COUNT 64
-+#define memcached_dump_TEST2_COUNT 4096
- test_return_t memcached_dump_TEST2(memcached_st *memc)
- {
-   test_skip(false, memcached_behavior_get(memc, MEMCACHED_BEHAVIOR_BINARY_PROTOCOL));
- 
-+  test_compare(MEMCACHED_SUCCESS, memcached_behavior_set(memc, MEMCACHED_BEHAVIOR_DISTRIBUTION, MEMCACHED_DISTRIBUTION_CONSISTENT));
-+  test_compare(MEMCACHED_SUCCESS, memcached_behavior_set(memc, MEMCACHED_BEHAVIOR_HASH, (uint64_t)MEMCACHED_HASH_MURMUR));
-+
-   /* The dump test relies on there being at least 32 items in memcached */
-   for (uint32_t x= 0; x < memcached_dump_TEST2_COUNT; x++)
-   {
-@@ -121,9 +124,10 @@ test_return_t memcached_dump_TEST2(memcached_st *memc)
+@@ -121,8 +121,8 @@ test_return_t memcached_dump_TEST2(memcached_st *memc)
  
      test_compare(MEMCACHED_SUCCESS,
                   memcached_set(memc, key, length,
@@ -210,7 +287,5 @@ index 03704cf..28a26d0 100644
 +                               key, length, // Zero length values
 +                               time_t(0) + 120, uint32_t(0)));
    }
-+  memcached_flush_buffers(memc);
    memcached_quit(memc);
  
-   uint64_t counter= 0;

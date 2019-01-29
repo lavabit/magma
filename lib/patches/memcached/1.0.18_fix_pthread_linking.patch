@@ -1,0 +1,18 @@
+diff --git a/build-aux/ltmain.sh b/build-aux/ltmain.sh
+index 63ae69d..a27fe41 100644
+--- a/build-aux/ltmain.sh
++++ b/build-aux/ltmain.sh
+@@ -5664,6 +5664,13 @@ func_mode_link ()
+ 	    *" $arg "*) ;;
+ 	    * ) func_append new_inherited_linker_flags " $arg" ;;
+ 	esac
++	# Handle the need for linking against libpthread even though nostdlib is in use.
++	if test "$tagname" = CXX -a x"$with_gcc" = xyes; then
++	 case "$arg" in
++	   -pthread*) func_append deplibs " -lpthread" ;;
++	 esac
++	fi
++
+ 	continue
+ 	;;
+ 

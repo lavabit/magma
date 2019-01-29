@@ -1,0 +1,18 @@
+diff --git a/configure.ac b/configure.ac
+index 17b7351..9cc1690 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -12,12 +12,12 @@ m4_include([version.m4])
+ 
+ AC_PREREQ([2.61])
+ AC_INIT([libmemcached],VERSION_NUMBER,[http://libmemcached.org/])
++AC_CONFIG_AUX_DIR([build-aux])
+ 
+ # Setup the compilers early on
+ AC_PROG_CC([cc gcc clang])
+ AC_PROG_CXX([c++ g++ clang++])
+ 
+-AC_CONFIG_AUX_DIR([build-aux])
+ AC_CONFIG_MACRO_DIR([m4])
+ 
+ AC_CANONICAL_HOST

@@ -2136,30 +2136,44 @@ memcached() {
         cat "$M_PATCHES/memcached/"1.0.18_fix_ipv6_and_udp_test_failures.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
         # Fix the return code comparison for the missing binary unit test.
         cat "$M_PATCHES/memcached/"1.0.18_fix_unittest_doesnotexist.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
-        # Adjust the slab count based on the memcached server version.
-        cat "$M_PATCHES/memcached/"1.0.18_fix_dump_return_code.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
+        
+        # Overhauled dump function, fixing unit test failures.
+    	  cat "$M_PATCHES/memcached/"1.0.18_fix_dump_function.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
         # The memcached dump code doesn't work properly on all platforms. This patch will rule out compiler 
         # optimization as the culprit. 
         cat "$M_PATCHES/memcached/"1.0.18_disable_compiler_optimizations.patch | patch -p1 --set-time --verbose &>> "$M_LOGS/memcached.txt"; error
+        # Remove the invalid comparison test triggering the need for -fpermissive.
+    	  cat "$M_PATCHES/memcached/"1.0.18_fix_invalid_comparison.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error  
+        # Some non-GNU platforms need a couple of syntax tweaks to compile properly.
+    	  cat "$M_PATCHES/memcached/"1.0.18_fix_alt_platform_build_errors.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
+        # If the ketama algorithm is being used, and the server context is reset, it will leave behind variables which will
+        # trigger a segmentation fault when the context is reused. This patch fixes the problem by properly clearing the variables.
+    	  cat "$M_PATCHES/memcached/"1.0.18_fix_ketama_segfaults.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
+    	  # Handle systems which require the use of -nostdlib by adding -lpthread to the linker flags.
+    	  cat "$M_PATCHES/memcached/"1.0.18_fix_pthread_linking.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
+    	  
+    	  # New versions of aclocal fail if the AC_CONFIG_AUX_DIR directive follows the AC_PROG_{CC,CXX} lines.
+    	  # cat "$M_PATCHES/memcached/"1.0.18_fix_aclocal_errors.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
+    	  
         # Automatically retry the calls to the dump function before allowing a count value of 0 to fail the test.
-        cat "$M_PATCHES/memcached/"1.0.18_retry_failed_dump_tests.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
+        # cat "$M_PATCHES/memcached/"1.0.18_retry_failed_dump_tests.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
       fi
     ;;
     memcached-build)
       cd "$M_SOURCES/memcached"; error
 
-      # The libmemcached code (as of version 1.0.18) includes comparisons between integers and pointers. This violates
-      # the ISO C++ standard, which means conformant compilers will fail without the -fpermissive command line option.
-      printf "\n#include <stdlib.h>\n\nint main(int argc, char *argv[]) { return 0; }\n\n" | gcc -o /dev/null -x c++ -fpermissive - &> /dev/null
-      if [ $? -eq 0 ]; then
-        M_EXTRA="-fpermissive"
-      else
-        M_EXTRA=""
-      fi
+      # # The libmemcached code (as of version 1.0.18) includes comparisons between integers and pointers. This violates
+      # # the ISO C++ standard, which means conformant compilers will fail without the -fpermissive command line option.
+      # printf "\n#include <stdlib.h>\n\nint main(int argc, char *argv[]) { return 0; }\n\n" | gcc -o /dev/null -x c++ -fpermissive - &> /dev/null
+      # if [ $? -eq 0 ]; then
+      #   M_EXTRA="-fpermissive"
+      # else
+      #   M_EXTRA=""
+      # fi
 
       export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-      export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_EXTRA $M_CXXFLAGS"
-      export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_EXTRA $M_CPPFLAGS"
+      export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+      export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
 
       # Recent versions of gcc require libmemcached to be explicitly linked with libm.so and libstdc++.so, and configure
       # doesn't appear to include these libraries automatically.

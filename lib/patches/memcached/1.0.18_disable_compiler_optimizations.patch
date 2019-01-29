@@ -7,7 +7,7 @@ diff -r --unified a/configure b/configure
  elif test $ac_cv_prog_cc_g = yes; then
    if test "$GCC" = yes; then
 -    CFLAGS="-g -O2"
-+    CFLAGS="-g -O0"
++    CFLAGS=""
    else
      CFLAGS="-g"
    fi
@@ -23,14 +23,14 @@ diff -r --unified a/configure b/configure
  elif test $ac_cv_prog_cxx_g = yes; then
    if test "$GXX" = yes; then
 -    CXXFLAGS="-g -O2"
-+    CXXFLAGS="-g -O0"
++    CXXFLAGS=""
    else
      CXXFLAGS="-g"
    fi
  else
    if test "$GXX" = yes; then
 -    CXXFLAGS="-O2"
-+    CXXFLAGS="-O0"
++    CXXFLAGS=""
    else
      CXXFLAGS=
    fi

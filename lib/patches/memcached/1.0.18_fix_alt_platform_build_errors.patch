@@ -1,0 +1,141 @@
+diff --git a/libtest/cmdline.cc b/libtest/cmdline.cc
+index 29a22de..b1da8df 100644
+--- a/libtest/cmdline.cc
++++ b/libtest/cmdline.cc
+@@ -62,7 +62,7 @@ using namespace libtest;
+ #include <stdexcept>
+ 
+ #ifndef __USE_GNU
+-static char **environ= NULL;
++char **environ= NULL;
+ #endif
+ 
+ #ifndef FD_CLOEXEC
+@@ -137,7 +137,7 @@ Application::Application(const std::string& arg, const bool _use_libtool_arg) :
+   _pid(-1),
+   _status(0),
+   _app_exit_state(UNINITIALIZED)
+-  { 
++  {
+     if (_use_libtool)
+     {
+       if (libtool() == NULL)
+@@ -210,7 +210,7 @@ Application::error_t Application::run(const char *args[])
+   fatal_assert(posix_spawnattr_setpgroup(&spawnattr, 0) == 0);
+ 
+   fatal_assert(posix_spawnattr_setflags(&spawnattr, flags) == 0);
+-  
++
+   create_argv(args);
+ 
+   int spawn_ret;
+@@ -221,7 +221,7 @@ Application::error_t Application::run(const char *args[])
+     file_stream.open(gdb_run_file.c_str(), std::fstream::out | std::fstream::trunc);
+ 
+     _gdb_filename= create_tmpfile(_exectuble_name);
+-    file_stream 
++    file_stream
+       << "set logging redirect on" << std::endl
+       << "set logging file " << _gdb_filename << std::endl
+       << "set logging overwrite on" << std::endl
+@@ -244,8 +244,8 @@ Application::error_t Application::run(const char *args[])
+         const_cast<char *>("-batch"),
+         const_cast<char *>("-f"),
+         const_cast<char *>("-x"),
+-        const_cast<char *>(gdb_run_file.c_str()), 
+-        const_cast<char *>(_exectuble_with_path.c_str()), 
++        const_cast<char *>(gdb_run_file.c_str()),
++        const_cast<char *>(_exectuble_with_path.c_str()),
+         0};
+ 
+       spawn_ret= posix_spawnp(&_pid, libtool(), &file_actions, &spawnattr, argv, environ);
+@@ -258,8 +258,8 @@ Application::error_t Application::run(const char *args[])
+         const_cast<char *>("-batch"),
+         const_cast<char *>("-f"),
+         const_cast<char *>("-x"),
+-        const_cast<char *>(gdb_run_file.c_str()), 
+-        const_cast<char *>(_exectuble_with_path.c_str()), 
++        const_cast<char *>(gdb_run_file.c_str()),
++        const_cast<char *>(_exectuble_with_path.c_str()),
+         0};
+       spawn_ret= posix_spawnp(&_pid, "gdb", &file_actions, &spawnattr, argv, environ);
+     }
+@@ -419,7 +419,7 @@ Application::error_t Application::join()
+     /*
+       What we are looking for here is how the exit status happened.
+       - 127 means that posix_spawn() itself had an error.
+-      - If WEXITSTATUS is positive we need to see if it is a signal that we sent to kill the process. If not something bad happened in the process itself. 
++      - If WEXITSTATUS is positive we need to see if it is a signal that we sent to kill the process. If not something bad happened in the process itself.
+       - Finally something has happened that we don't currently understand.
+     */
+     if (WEXITSTATUS(_status) == 127)
+@@ -466,7 +466,7 @@ Application::error_t Application::join()
+       if (DEBUG)
+       {
+         Out << "waitpid() application terminated at request"
+-          << " pid:" << _pid 
++          << " pid:" << _pid
+           << " name:" << built_argv[0];
+       }
+ #endif
+@@ -474,7 +474,7 @@ Application::error_t Application::join()
+     else
+     {
+       _app_exit_state= Application::UNKNOWN;
+-      Error << "Unknown logic state at exit:" << WEXITSTATUS(_status) 
++      Error << "Unknown logic state at exit:" << WEXITSTATUS(_status)
+         << " pid:" << _pid
+         << " name:" << built_argv[0];
+     }
+@@ -591,7 +591,7 @@ bool Application::Pipe::read(libtest::vchar_t& arg)
+ void Application::Pipe::nonblock()
+ {
+   int flags;
+-  do 
++  do
+   {
+     flags= fcntl(_pipe_fd[READ], F_GETFL, 0);
+   } while (flags == -1 and (errno == EINTR or errno == EAGAIN));
+@@ -641,10 +641,10 @@ void Application::Pipe::cloexec()
+ {
+   //if (SOCK_CLOEXEC == 0)
+   {
+-    if (FD_CLOEXEC) 
++    if (FD_CLOEXEC)
+     {
+       int flags;
+-      do 
++      do
+       {
+         flags= fcntl(_pipe_fd[WRITE], F_GETFD, 0);
+       } while (flags == -1 and (errno == EINTR or errno == EAGAIN));
+@@ -657,7 +657,7 @@ void Application::Pipe::cloexec()
+ 
+       int rval;
+       do
+-      { 
++      {
+         rval= fcntl(_pipe_fd[WRITE], F_SETFD, flags | FD_CLOEXEC);
+       } while (rval == -1 && (errno == EINTR or errno == EAGAIN));
+ 
+@@ -752,7 +752,7 @@ void Application::create_argv(const char *args[])
+   else if (_use_ptrcheck)
+   {
+     /*
+-      valgrind --error-exitcode=1 --tool=exp-ptrcheck --log-file= 
++      valgrind --error-exitcode=1 --tool=exp-ptrcheck --log-file=
+     */
+     vchar::append(built_argv, "valgrind");
+     vchar::append(built_argv, "--error-exitcode=1");
+diff --git a/util/log.hpp b/util/log.hpp
+index 662ef5f..1e3c35b 100644
+--- a/util/log.hpp
++++ b/util/log.hpp
+@@ -40,6 +40,7 @@
+ #include <cstdarg>
+ #include <cstdio>
+ #include <fcntl.h>
++#include <cstring>
+ #include <iostream>
+ #include <string>
+ #include <syslog.h>

@@ -163,14 +163,14 @@ index 8ddb2ee..ce09190 100644
 +      while ((response_rc = memcached_response(instance, buffer, MEMCACHED_DEFAULT_COMMAND_SIZE, NULL)) != MEMCACHED_END) {
  
 -        string_ptr= buffer;
--        string_ptr+= 4; /* Move past key= */
+-        string_ptr+= 5; /* Move past ITEM */
 +        if (response_rc == MEMCACHED_ITEM)
 +        {
 +          char *string_ptr, *end_ptr;
  
 -        for (end_ptr= string_ptr; isgraph(*end_ptr); end_ptr++) {} ;
 +          string_ptr= buffer;
-+          string_ptr+= 5; /* Move past ITEM */
++          string_ptr+= 4; /* Move past key= */
  
 -        char *key= string_ptr;
 -        key[(size_t)(end_ptr-string_ptr)]= 0;

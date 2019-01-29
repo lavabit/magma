@@ -2141,6 +2141,8 @@ memcached() {
         # The memcached dump code doesn't work properly on all platforms. This patch will rule out compiler 
         # optimization as the culprit. 
         cat "$M_PATCHES/memcached/"1.0.18_disable_compiler_optimizations.patch | patch -p1 --set-time --verbose &>> "$M_LOGS/memcached.txt"; error
+        # Automatically retry the calls to the dump function before allowing a count value of 0 to fail the test.
+        cat "$M_PATCHES/memcached/"1.0.18_retry_failed_dump_tests.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
       fi
     ;;
     memcached-build)

@@ -2151,6 +2151,8 @@ memcached() {
     	  cat "$M_PATCHES/memcached/"1.0.18_fix_ketama_segfaults.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
     	  # Handle systems which require the use of -nostdlib by adding -lpthread to the linker flags.
     	  cat "$M_PATCHES/memcached/"1.0.18_fix_pthread_linking.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
+    	  # Return key responses from lru_crawler requests.
+    	  cat "$M_PATCHES/memcached/"1.0.18_add_key_response_support.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
     	  
     	  # New versions of aclocal fail if the AC_CONFIG_AUX_DIR directive follows the AC_PROG_{CC,CXX} lines.
     	  # cat "$M_PATCHES/memcached/"1.0.18_fix_aclocal_errors.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error

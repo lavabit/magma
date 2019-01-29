@@ -1,0 +1,66 @@
+diff --git a/libmemcached/response.cc b/libmemcached/response.cc
+index ad3c078..dc66a68 100644
+--- a/libmemcached/response.cc
++++ b/libmemcached/response.cc
+@@ -182,7 +182,7 @@ static memcached_return_t textual_value_fetch(memcached_instance_st* instance,
+     if ((destination= hashkit_decrypt(&instance->root->hashkit,
+                                       memcached_result_value(result), memcached_result_length(result))) == NULL)
+     {
+-      rc= memcached_set_error(*instance->root, MEMCACHED_FAILURE, 
++      rc= memcached_set_error(*instance->root, MEMCACHED_FAILURE,
+                               MEMCACHED_AT, memcached_literal_param("hashkit_decrypt() failed"));
+     }
+     else
+@@ -190,7 +190,7 @@ static memcached_return_t textual_value_fetch(memcached_instance_st* instance,
+       memcached_result_reset_value(result);
+       if (memcached_failed(memcached_result_set_value(result, hashkit_string_c_str(destination), hashkit_string_length(destination))))
+       {
+-        rc= memcached_set_error(*instance->root, MEMCACHED_FAILURE, 
++        rc= memcached_set_error(*instance->root, MEMCACHED_FAILURE,
+                                 MEMCACHED_AT, memcached_literal_param("hashkit_decrypt() failed"));
+       }
+     }
+@@ -295,7 +295,7 @@ static memcached_return_t textual_read_one_response(memcached_instance_st* insta
+       }
+       // SERVER_ERROR
+       else if (buffer[1] == 'E' and buffer[2] == 'R' and buffer[3] == 'V' and buffer[4] == 'E' and buffer[5] == 'R'
+-               and buffer[6] == '_' 
++               and buffer[6] == '_'
+                and buffer[7] == 'E' and buffer[8] == 'R' and buffer[9] == 'R' and buffer[10] == 'O' and buffer[11] == 'R' )
+       {
+         if (total_read == memcached_literal_param_size("SERVER_ERROR"))
+@@ -348,14 +348,14 @@ static memcached_return_t textual_read_one_response(memcached_instance_st* insta
+   case 'N':
+     {
+       // NOT_FOUND
+-      if (buffer[1] == 'O' and buffer[2] == 'T' 
++      if (buffer[1] == 'O' and buffer[2] == 'T'
+           and buffer[3] == '_'
+           and buffer[4] == 'F' and buffer[5] == 'O' and buffer[6] == 'U' and buffer[7] == 'N' and buffer[8] == 'D')
+       {
+         return MEMCACHED_NOTFOUND;
+       }
+       // NOT_STORED
+-      else if (buffer[1] == 'O' and buffer[2] == 'T' 
++      else if (buffer[1] == 'O' and buffer[2] == 'T'
+                and buffer[3] == '_'
+                and buffer[4] == 'S' and buffer[5] == 'T' and buffer[6] == 'O' and buffer[7] == 'R' and buffer[8] == 'E' and buffer[9] == 'D')
+       {
+@@ -415,6 +415,17 @@ static memcached_return_t textual_read_one_response(memcached_instance_st* insta
+     }
+     break;
+ 
++  case 'k': /* key */
++  {
++    // lru_crawler key responses
++    if (buffer[1] == 'e' and buffer[2] == 'y' and buffer[3] == '=')
++    {
++      /* We add back in one because we will need to search for END */
++      memcached_server_response_increment(instance);
++      return MEMCACHED_ITEM;
++    }
++  }
++
+   case 'C': /* CLIENT ERROR */
+     {
+       // CLIENT_ERROR

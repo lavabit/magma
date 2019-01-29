@@ -36,7 +36,7 @@ index 8ddb2ee..ce09190 100644
 +
 +	  /* The lru_metacrawler metadump doesn't arrive until version 1.4.33. */
 +	  if ((instance->major_version == 1 && instance->minor_version == 4 && instance->micro_version < 33) ||
-+      (instance->major_version <= 1 && instance->minor_version < 4) || (instance->major_version <= 99)) {
++      (instance->major_version <= 1 && instance->minor_version < 4)) {
 +
 +      uint32_t slabs= 64;
 +      int buffer_length;

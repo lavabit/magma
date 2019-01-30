@@ -72,8 +72,13 @@ fi
 # normal dependency checks, this making the build process faster. The QUICK option is undocumented, because in general,
 # developers interacting directly with the build.lib.sh script, should be running the "check" step to ensure
 # they have a valid, and properly configured, and functional platform capable of running magma.
-if [ -z "$QUICK" ] || [ "$QUICK" != "yes" ]; then
+if [ -z QUICK ] || [ "$QUICK" != "yes" ]; then
   QUICK="no"
+fi
+
+# If the TERM environment variable is missing, then tput may trigger a fatal error.
+if [ -z TERM ] || [ "$TERM" == "" ]; then
+  export TERM="vt100"
 fi
 
 error() {

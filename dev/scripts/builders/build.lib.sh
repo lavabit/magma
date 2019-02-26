@@ -1564,7 +1564,7 @@ checker() {
 
       autoreconf --install &>> "$M_LOGS/checker.txt"; error
       ./configure --disable-subunit --enable-timer-replacement --enable-snprintf-replacement \
-        --enable-fork --enable-timeout-tests --prefix="$M_LOCAL" &>> "$M_LOGS/checker.txt"; error
+        --enable-fork --disable-timeout-tests --prefix="$M_LOCAL" &>> "$M_LOGS/checker.txt"; error
 
       unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
@@ -1574,24 +1574,26 @@ checker() {
     checker-check)
       cd "$M_SOURCES/checker"; error
 
-      # export CK_DEFAULT_TIMEOUT=64; error
+      export CK_DEFAULT_TIMEOUT=0; error
+      export CK_TIMEOUT_MULTIPLIER=10; error
       export PATH="$M_BNPATH:$PATH"; error
       export LD_LIBRARY_PATH="$M_LDPATH"; error
 
       make check &>> "$M_LOGS/checker.txt"; error
 
-      # unset CK_DEFAULT_TIMEOUT
+      unset CK_DEFAULT_TIMEOUT; unset CK_TIMEOUT_MULTIPLIER
     ;;
     checker-check-full)
       cd "$M_SOURCES/checker"; error
 
-      # export CK_DEFAULT_TIMEOUT=64; error
+      export CK_DEFAULT_TIMEOUT=0; error
+      export CK_TIMEOUT_MULTIPLIER=10; error
       export PATH="$M_BNPATH:$PATH"; error
       export LD_LIBRARY_PATH="$M_LDPATH"; error
 
       make check &>> "$M_LOGS/checker.txt"; error
-
-      # unset CK_DEFAULT_TIMEOUT
+      
+      unset CK_DEFAULT_TIMEOUT; unset CK_TIMEOUT_MULTIPLIER
     ;;
     checker-clean)
       cd "$M_SOURCES/checker"; error

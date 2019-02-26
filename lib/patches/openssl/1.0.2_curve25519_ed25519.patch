@@ -10,31 +10,6 @@ diff -r 5504a985a4e0 -r f59397568d2b Makefile
  	buffer bio stack lhash rand err \
  	evp asn1 pem x509 x509v3 conf txt_db pkcs7 pkcs12 comp ocsp ui krb5 \
  	cms pqueue ts srp cmac
-diff -r 5504a985a4e0 -r f59397568d2b Makefile.bak
---- a/Makefile.bak	Sat Nov 26 00:47:32 2016 -0600
-+++ b/Makefile.bak	Sat Nov 26 01:03:59 2016 -0600
-@@ -26,10 +26,10 @@
- # for, say, /usr/ and yet have everything installed to /tmp/somedir/usr/.
- # Normally it is left empty.
- INSTALL_PREFIX=
--INSTALLTOP=/usr/local/ssl
-+INSTALLTOP=/home/ladar/Lavabit/magma/lib/local
- 
- # Do not edit this manually. Use Configure --openssldir=DIR do change this!
--OPENSSLDIR=/usr/local/ssl
-+OPENSSLDIR=/home/ladar/Lavabit/magma/lib/local
- 
- # NO_IDEA - Define to build without the IDEA algorithm
- # NO_RC4  - Define to build without the RC4 algorithm
-@@ -148,7 +148,7 @@
- 	objects \
- 	md4 md5 sha mdc2 hmac ripemd whrlpool \
- 	des aes rc2 rc4 idea bf cast camellia seed modes \
--	bn ec rsa dsa ecdsa dh ecdh dso engine \
-+	bn curve25519 ec rsa dsa ecdsa dh ecdh dso engine \
- 	buffer bio stack lhash rand err \
- 	evp asn1 pem x509 x509v3 conf txt_db pkcs7 pkcs12 comp ocsp ui krb5 \
- 	cms pqueue ts srp cmac
 diff -r 5504a985a4e0 -r f59397568d2b Makefile.org
 --- a/Makefile.org	Sat Nov 26 00:47:32 2016 -0600
 +++ b/Makefile.org	Sat Nov 26 01:03:59 2016 -0600

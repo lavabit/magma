@@ -28,7 +28,6 @@
 #include <pthread.h>
 #include <stdarg.h>
 #include <dlfcn.h>
-#include <execinfo.h>
 #include <stdbool.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -50,8 +49,14 @@
 #include <semaphore.h>
 #include <sys/mman.h>
 
+#if (__linux__ && __GLIBC__) || __APPLE__
+#include <execinfo.h>
+#endif
+
 // GNU C Library
+#if defined(__GNU_LIBRARY__)
 #include <gnu/libc-version.h>
+#endif
 
 #include "providers/symbols.h"
 

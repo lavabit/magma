@@ -14,7 +14,8 @@
  */
 int_t backtrace_print(void) {
 
-	int_t pipefds[2];
+#if (__linux__ && __GLIBC__) || __APPLE__
+  int_t pipefds[2];
 	char strbuf[1024];
 	void *buffer[1024];
 	int_t nbt, nread, nfound = 0, result = 0, i;
@@ -69,4 +70,8 @@ int_t backtrace_print(void) {
 	close(pipefds[1]);
 
 	return result;
+#else
+	return 0;
+#endif
+
 }

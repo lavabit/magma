@@ -178,7 +178,7 @@ octet_t ip_octet(ip_t *address, int_t position) {
 
 	}
 	else if (address->family == AF_INET6 && position >= 0 && position <= 15) {
-		result = address->ip6.__in6_u.__u6_addr8[position];
+		result = address->ip6.s6_addr[position];
 	}
 
 	return result;
@@ -205,7 +205,7 @@ segment_t ip_segment(ip_t *address, int_t position) {
 
 	}
 	else if (address->family == AF_INET6 && position >= 0 && position <= 7) {
-		result = address->ip6.__in6_u.__u6_addr16[position];
+		result = address->ip6.s6_addr16[position];
 	}
 
 	return result;
@@ -226,7 +226,7 @@ uint32_t ip_word(ip_t *address, int_t position) {
 		result = address->ip4.s_addr;
 	}
 	else if (address->family == AF_INET6 && position >= 0 && position <= 3) {
-		result = address->ip6.__in6_u.__u6_addr32[position];
+		result = address->ip6.s6_addr32[position];
 	}
 
 	return result;
@@ -269,9 +269,9 @@ stringer_t * ip_subnet(ip_t *address, stringer_t *output) {
 	// For IPv6 addresses use the first 64 bits, out of the total 128 bits available. The first 64 bits should contain the
 	// routing prefix, plus the subnet id.
 	else if (address->family == AF_INET6) {
-		len = st_sprint(result, "%02x%02x:%02x%02x:%02x%02x:%02x%02x", address->ip6.__in6_u.__u6_addr8[0], address->ip6.__in6_u.__u6_addr8[1],
-			address->ip6.__in6_u.__u6_addr8[2], address->ip6.__in6_u.__u6_addr8[3], address->ip6.__in6_u.__u6_addr8[4],
-			address->ip6.__in6_u.__u6_addr8[5], address->ip6.__in6_u.__u6_addr8[6], address->ip6.__in6_u.__u6_addr8[7]);
+		len = st_sprint(result, "%02x%02x:%02x%02x:%02x%02x:%02x%02x", address->ip6.s6_addr[0], address->ip6.s6_addr[1],
+			address->ip6.s6_addr[2], address->ip6.s6_addr[3], address->ip6.s6_addr[4],
+			address->ip6.s6_addr[5], address->ip6.s6_addr[6], address->ip6.s6_addr[7]);
 	}
 
 	if (!len || len > INET6_ADDRSTRLEN) {
@@ -316,7 +316,7 @@ stringer_t * ip_presentation(ip_t *address, stringer_t *output) {
 	}
 
 	// Write the address out.
-	if (!(ret = (chr_t *)inet_ntop(address->family, (address->family == AF_INET ? (void *)&(address->ip4.s_addr) : (void *)&(address->ip6.__in6_u.__u6_addr32)), st_char_get(result), len))) {
+	if (!(ret = (chr_t *)inet_ntop(address->family, (address->family == AF_INET ? (void *)&(address->ip4.s_addr) : (void *)&(address->ip6.s6_addr32)), st_char_get(result), len))) {
 		log_pedantic("An error occurred while trying to translate the address into a string. {inet_ntop = NULL / error = %s}", strerror_r(errno, MEMORYBUF(1024), 1024));
 		if (!output) st_free(result);
 		return NULL;
@@ -369,7 +369,7 @@ stringer_t * ip_standard(ip_t *address, stringer_t *output) {
 		p = st_char_get(result);
 		for (uint32_t i = 0; i < 4; i++) {
 
-			snprintf(holder, 20, "%08x", htonl(address->ip6.__in6_u.__u6_addr32[i]));
+			snprintf(holder, 20, "%08x", htonl(address->ip6.s6_addr32[i]));
 
 			*p++ = holder[0];
 			*p++ = holder[1];
@@ -442,7 +442,7 @@ stringer_t * ip_reversed(ip_t *address, stringer_t *output) {
 
 		for (uint32_t i = 0; i < 4; i++) {
 
-			snprintf(holder, 20, "%08x", htonl(address->ip6.__in6_u.__u6_addr32[3 - i]));
+			snprintf(holder, 20, "%08x", htonl(address->ip6.s6_addr32[3 - i]));
 
 			*p++ = holder[7];
 			*p++ = '.';
@@ -567,8 +567,7 @@ bool_t ip_subnet_st(chr_t *substr, subnet_t *out) {
 
 	if (!i || i > 2) {
 		return false;
-	}
-	else if (i == 1) {
+	} else if (i == 1) {
 
 		if (!ip_addr_st(substr, &addr)) {
 			return false;

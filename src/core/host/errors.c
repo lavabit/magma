@@ -297,12 +297,14 @@ chr_t * errno_name(int error) {
  */
 chr_t * errno_string(int errnum, char *buf, size_t len) {
 
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && ! _GNU_SOURCE
+#if defined(__USE_GNU) && __ANDROID_API__ >= 23
+  return __gnu_strerror_r(errnum, buf, len);
+#elif defined(__GLIBC__)
+ return strerror_r(errnum, buf, len);
+#else
   int_t result = 0;
   result = strerror_r(errnum, buf, len);
   return (result == 0 ? buf : NULL);
-#else
-  return strerror_r(errnum, buf, buflen);
 #endif
 
 }

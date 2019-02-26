@@ -28,7 +28,7 @@ int_t tcp_error(int error) {
 	// logic remains compatible with systems where they differ.
 	else if (result < 0 && (error != EWOULDBLOCK || error != EAGAIN || error != EINTR)) {
 		log_pedantic("Ambiguous TCP error code. { errno = %i / error = %s }",
-			error, strerror_r(error, MEMORYBUF(1024), 1024));
+			error, errno_string(error, MEMORYBUF(1024), 1024));
 	}
 
 	return result;
@@ -93,7 +93,7 @@ int tcp_continue(int sockd, int result, int syserror) {
 	else if (result <= 0 && (syserror == 0 || syserror == EWOULDBLOCK || syserror == EAGAIN || syserror == EINTR)) return 0;
 
 	log_pedantic("A TCP error occurred. { errno = %i / error = %s / message = %s }", syserror, errno_name(syserror),
-		strerror_r(syserror, MEMORYBUF(1024), 1024));
+		errno_string(syserror, MEMORYBUF(1024), 1024));
 	return -1;
 }
 

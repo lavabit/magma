@@ -226,7 +226,7 @@ int64_t client_write(client_t *client, stringer_t *s) {
 				ip = ip_presentation(client->ip, MANAGEDBUF(INET6_ADDRSTRLEN));
 
 				log_pedantic("TCP client write operation failed. { ip = %.*s / result = %zi / error = %i / message = %s }",
-					st_length_int(ip), st_char_get(ip), bytes, local, strerror_r(local, MEMORYBUF(1024), 1024));
+					st_length_int(ip), st_char_get(ip), bytes, local, errno_string(local, MEMORYBUF(1024), 1024));
 #endif
 				client->status = -1;
 				return -1;

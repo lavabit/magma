@@ -411,7 +411,7 @@ bool_t mm_sec_start(void) {
 
 	// Request an anonymous memory mapping that is aligned according to the system page size. Were asking the kernel to lock returned block into memory.
 	if ((secure.slab.data_true = mmap64(NULL, secure.slab.length_true, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_LOCKED, -1, 0)) == MAP_FAILED) {
-		log_pedantic("Unable to memory map an anonymous file. { error = %s }", strerror_r(errno, MEMORYBUF(1024), 1024));
+		log_pedantic("Unable to memory map an anonymous file. { error = %s }", errno_string(errno, MEMORYBUF(1024), 1024));
 		return false;
 	}
 

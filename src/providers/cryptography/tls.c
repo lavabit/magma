@@ -456,7 +456,7 @@ stringer_t * tls_error(TLS *tls, int_t code, stringer_t *output) {
 
 	// Note that if errno is non-zero, then the SSL error was probably just an indication we had a system level event, like a peer disconnect.
 	if (syserr != 0) {
-		st_sprint(result, "error = %i / errno = %i / message = %s", tlserr, syserr, strerror_r(syserr, message, 1024));
+		st_sprint(result, "error = %i / errno = %i / message = %s", tlserr, syserr, errno_string(syserr, message, 1024));
 	}
 	// If the operation returned a negative value, but errno indicate no particular problem, then we record that scenario here.
 	else if (code < 0 && syserr == 0) {

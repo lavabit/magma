@@ -26,7 +26,7 @@ int_t file_read(const char *name, stringer_t *output) {
 
 	// Open returns the new file descriptor, or -1 if an error occurred (in which case, errno is set appropriately).
 	if ((fd = open(name, O_RDONLY)) == -1) {
-		log_info("Could not open the file %s for reading. {errno = %i & strerror = %s}", name, errno, strerror_r(errno, MEMORYBUF(1024), 1024));
+		log_info("Could not open the file %s for reading. {errno = %i & strerror = %s}", name, errno, errno_string(errno, MEMORYBUF(1024), 1024));
 		return -1;
 	}
 
@@ -36,7 +36,7 @@ int_t file_read(const char *name, stringer_t *output) {
 		st_length_set(output, result);
 	}
 	else {
-		log_info("Could not read the file %s. {errno = %i & strerror = %s}", name, errno, strerror_r(errno, MEMORYBUF(1024), 1024));
+		log_info("Could not read the file %s. {errno = %i & strerror = %s}", name, errno, errno_string(errno, MEMORYBUF(1024), 1024));
 	}
 
 	close(fd);
@@ -58,13 +58,13 @@ stringer_t * file_load(const char *name) {
 	// Open returns the new file descriptor, or -1 if an error occurred (in which case, errno is set appropriately).
 	if ((fd = open(name, O_RDONLY)) == -1) {
 		log_info("Could not open the file %s for reading. {errno = %i & strerror = %s}", name, errno,
-				(strerror_r(errno, estring, 1024) == 0 ? estring : "Unknown error"));
+				(errno_string(errno, estring, 1024) == 0 ? estring : "Unknown error"));
 		return NULL;
 	}
 	// On success, fstat returns zero.  On error, -1 is returned, and errno is set appropriately.
 	else if (fstat(fd, &info) == -1) {
 		log_info("Could not fstat the file %s. {errno = %i & strerror = %s}", name, errno,
-				(strerror_r(errno, estring, 1024) == 0 ? estring : "Unknown error"));
+				(errno_string(errno, estring, 1024) == 0 ? estring : "Unknown error"));
 		close(fd);
 		return NULL;
 	}
@@ -78,7 +78,7 @@ stringer_t * file_load(const char *name) {
 	// advanced by this number. On error, -1 is returned, and errno is set appropriately.
 	else if (read(fd, st_data_get(result), st_avail_get(result)) != info.st_size) {
 		log_info("Could not read the entire file %s. {errno = %i & strerror = %s}", name, errno,
-				(strerror_r(errno, estring, 1024) == 0 ? estring : "Unknown error"));
+				(errno_string(errno, estring, 1024) == 0 ? estring : "Unknown error"));
 		close(fd);
 		return NULL;
 	}

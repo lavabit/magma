@@ -86,7 +86,7 @@
 #define CONFIG_CHECK_EXISTS(option,ptype) \
 	do { \
 		if (option && !file_accessible(option)) { \
-		log_critical(#ptype " specified in " #option " is not accessible: { path = %s, error = %s }", option, strerror_r(errno, bufptr, buflen)); \
+		log_critical(#ptype " specified in " #option " is not accessible: { path = %s, error = %s }", option, errno_string(errno, bufptr, buflen)); \
 		result = false; \
 		} \
 	} while (0)
@@ -95,7 +95,7 @@
 #define CONFIG_CHECK_READWRITE(option,ptype) \
 	do { \
 		if (option && !file_readwritable(option)) { \
-		log_critical(#ptype " specified in " #option " is not accessible for reading and writing: { path = %s, error = %s }", option, strerror_r(errno, bufptr, buflen)); \
+		log_critical(#ptype " specified in " #option " is not accessible for reading and writing: { path = %s, error = %s }", option, errno_string(errno, bufptr, buflen)); \
 		result = false; \
 		} \
 	} while (0)

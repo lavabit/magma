@@ -162,11 +162,11 @@ bool_t http_load_file(int_t template, chr_t *filename) {
 
 	// Open and read the file.
 	else if ((fd = open(filename, O_RDONLY)) == -1) {
-		log_pedantic("Unable to open a file. { file = \"%s\" / error = %s }", filename, strerror_r(errno, MEMORYBUF(1024), 1024));
+		log_pedantic("Unable to open a file. { file = \"%s\" / error = %s }", filename, errno_string(errno, MEMORYBUF(1024), 1024));
 		return false;
 	}
 	else if (fstat(fd, &file_info) == -1) {
-		log_pedantic("Unable to fstat a file. { file = \"%s\" / error = %s }", filename, strerror_r(errno, MEMORYBUF(1024), 1024));
+		log_pedantic("Unable to fstat a file. { file = \"%s\" / error = %s }", filename, errno_string(errno, MEMORYBUF(1024), 1024));
 		close(fd);
 		return false;
 	}
@@ -181,7 +181,7 @@ bool_t http_load_file(int_t template, chr_t *filename) {
 		return false;
 	}
 	else if (read(fd, st_char_get(data), file_info.st_size) != file_info.st_size) {
-		log_pedantic("Unable to read a file. { file = \"%s\" / error = %s }", filename, strerror_r(errno, MEMORYBUF(1024), 1024));
+		log_pedantic("Unable to read a file. { file = \"%s\" / error = %s }", filename, errno_string(errno, MEMORYBUF(1024), 1024));
 		close(fd);
 		return false;
 	}
@@ -317,7 +317,7 @@ bool_t http_content_load_directory(int_t template, chr_t *directory) {
 	struct dirent *entry;
 
 	if (!(dir = opendir(directory))) {
-		log_info("Unable to access the web content directory. { directory = \"%s\" / error = %s }", directory, strerror_r(errno, MEMORYBUF(1024), 1024));
+		log_info("Unable to access the web content directory. { directory = \"%s\" / error = %s }", directory, errno_string(errno, MEMORYBUF(1024), 1024));
 		return false;
 	}
 
@@ -367,7 +367,7 @@ bool_t http_content_load_fonts(void) {
 	multi_t key = { .type = M_TYPE_UINT64, .val.u64 = 1 };
 
 	if (!(dir = opendir(magma.http.fonts))) {
-		log_pedantic("Unable to open the font directory. { directory = \"%s\" / error = %s }", magma.http.fonts, strerror_r(errno, MEMORYBUF(1024), 1024));
+		log_pedantic("Unable to open the font directory. { directory = \"%s\" / error = %s }", magma.http.fonts, errno_string(errno, MEMORYBUF(1024), 1024));
 		return false;
 	}
 

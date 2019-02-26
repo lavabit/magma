@@ -288,3 +288,21 @@ chr_t * errno_name(int error) {
 
 	return string;
 }
+
+/**
+ * @brief Handle different versions of strerror, which can return either an integer or a character pointer.
+ * @param errnum  the error number.
+ * @param buf     a pointer to the output buffer.
+ * @return  NULL on failure, or a pointer to a the buffer with the error string.
+ */
+chr_t * errno_string(int errnum, char *buf, size_t len) {
+
+#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && ! _GNU_SOURCE
+  int_t result = 0;
+  result = strerror_r(errnum, buf, len);
+  return (result == 0 ? buf : NULL);
+#else
+  return strerror_r(errnum, buf, buflen);
+#endif
+
+}

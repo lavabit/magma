@@ -30,7 +30,7 @@ pid_t process_find_pid(stringer_t *name) {
 
 	if (!(dir = opendir(MAGMA_PROC_PATH))) {
 		log_pedantic("The system path could not be opened. { path = %s / %s }",
-				MAGMA_PROC_PATH, strerror_r(errno, MEMORYBUF(1024), 1024));
+				MAGMA_PROC_PATH, errno_string(errno, MEMORYBUF(1024), 1024));
 		return 0;
 	}
 
@@ -70,7 +70,7 @@ int_t process_kill(stringer_t *name, int_t signum, int_t wait) {
 
 	if (!(dir = opendir(MAGMA_PROC_PATH))) {
 		log_pedantic("The system path could not be opened. { path = %s / %s }",
-				MAGMA_PROC_PATH, strerror_r(errno, MEMORYBUF(1024), 1024));
+				MAGMA_PROC_PATH, errno_string(errno, MEMORYBUF(1024), 1024));
 		return -2;
 	}
 
@@ -84,7 +84,7 @@ int_t process_kill(stringer_t *name, int_t signum, int_t wait) {
 				!st_cmp_cs_starts(st_swap(compare, '\0', ' '), name)) {
 
 				if ((ret = kill(pid, signum))) {
-					log_pedantic("The process could not be signaled. { signum = %i / %s }", signum, strerror_r(errno, MEMORYBUF(1024), 1024));
+					log_pedantic("The process could not be signaled. { signum = %i / %s }", signum, errno_string(errno, MEMORYBUF(1024), 1024));
 					return -2;
 				}
 				else {

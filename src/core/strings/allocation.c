@@ -749,7 +749,7 @@ stringer_t * st_realloc(stringer_t *s, size_t len) {
 
 			// If the new length is larger, we will increase the file size using the ftruncate64 function.
 			if (avail >= ((mapped_t *)s)->avail && ftruncate64(((mapped_t *)s)->handle, avail)) {
-				log_pedantic("An error occurred while resizing a memory mapped file descriptor. { error = %s }", strerror_r(errno, MEMORYBUF(1024), 1024));
+				log_pedantic("An error occurred while resizing a memory mapped file descriptor. { error = %s }", errno_string(errno, MEMORYBUF(1024), 1024));
 			}
 
 			// If we end up shrinking the available memory then we'll need to update the length variable to reflect that.
@@ -777,7 +777,7 @@ stringer_t * st_realloc(stringer_t *s, size_t len) {
 							"{ limit = %lu / requested = %zu }", system_ulimit_cur(RLIMIT_MEMLOCK), len);
 				}
 				else {
-					log_pedantic("An error occurred while resizing a memory mapped buffer. { error = %s }", strerror_r(errno, MEMORYBUF(1024), 1024));
+					log_pedantic("An error occurred while resizing a memory mapped buffer. { error = %s }", errno_string(errno, MEMORYBUF(1024), 1024));
 				}
 #else
 				struct rlimit64 limits = { 0, 0 };
@@ -788,7 +788,7 @@ stringer_t * st_realloc(stringer_t *s, size_t len) {
 							"{ limit = %lu / requested = %zu }", limits.rlim_cur, len);
 				}
 				else {
-					log_pedantic("An error occurred while resizing a memory mapped buffer. { error = %s }", strerror_r(errno, MEMORYBUF(1024), 1024));
+					log_pedantic("An error occurred while resizing a memory mapped buffer. { error = %s }", errno_string(errno, MEMORYBUF(1024), 1024));
 				}
 #endif
 			}

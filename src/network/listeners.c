@@ -232,7 +232,7 @@ void net_shutdown(server_t *server) {
 //
 //	if ((ed = epoll_create(MAGMA_SERVER_INSTANCES)) == -1) {
 //		log_critical("The epoll_create() call returned an error. { error = %s }",
-//			strerror_r(errno, MEMORYBUF(1024), 1024));
+//			errno_string(errno, MEMORYBUF(1024), 1024));
 //		status_set(-2);
 //		return;
 //	}
@@ -254,7 +254,7 @@ void net_shutdown(server_t *server) {
 //
 //			if ((epoll_ctl(ed, EPOLL_CTL_ADD, server->network.sockd, &epoll_context)) == -1) {
 //				log_info("The epoll_ctl() call returned an error. { error = %s }",
-//					strerror_r(errno, MEMORYBUF(1024), 1024));
+//					errno_string(errno, MEMORYBUF(1024), 1024));
 //				mm_free(events);
 //				status_set(-2);
 //				close(ed);
@@ -271,7 +271,7 @@ void net_shutdown(server_t *server) {
 //		// Get back a list of sockets ready for data.
 //		if ((ready = epoll_wait(ed, events, MAGMA_SERVER_INSTANCES, 100000)) < 0 && errno != EINTR) {
 //			log_info("The connection accepter returned an error. { epoll_wait = -1 / error = %s }",
-//				strerror_r(errno, MEMORYBUF(1024), 1024));
+//				errno_string(errno, MEMORYBUF(1024), 1024));
 //		}
 //
 //		// Skip socket processing if a timeout occurs.
@@ -297,7 +297,7 @@ void net_shutdown(server_t *server) {
 //						// Keep calling accept until we get an error, but only log errors that are unexpected.
 //						else if (errno != EAGAIN && errno == EWOULDBLOCK) {
 //							log_info("Socket connection attempt failed. { accept = -1 / error = %s }",
-//								strerror_r(errno, MEMORYBUF(1024), 1024));
+//								errno_string(errno, MEMORYBUF(1024), 1024));
 //						}
 //
 //					} while (connection != -1);

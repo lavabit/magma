@@ -241,7 +241,7 @@ bool_t servers_validate(void) {
 
 				if (sval &&  !file_readwritable(sval)) {
 					log_critical("TLS certificate/key file could not be opened for reading. { path = %s / error = %s }", sval,
-						strerror_r(errno, bufptr, buflen));
+						errno_string(errno, bufptr, buflen));
 					result = false;
 				}
 				else if (sval && file_world_accessible(sval)) {

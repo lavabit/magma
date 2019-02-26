@@ -28,7 +28,7 @@ bool_t net_set_keepalive(int sd, bool_t keepalive, int_t idle, int_t interval, i
 		setsockopt(sd, IPPROTO_TCP, TCP_KEEPIDLE, &idle, (socklen_t)sizeof(int_t)) ||
 		setsockopt(sd, IPPROTO_TCP, TCP_KEEPINTVL, &interval, (socklen_t)sizeof(int_t)) ||
 		setsockopt(sd, IPPROTO_TCP, TCP_KEEPCNT, &tolerance, (socklen_t)sizeof(int_t))) {
-		log_pedantic("Socket keepalive configuration failed. {%s}", strerror_r(errno, bufptr, buflen));
+		log_pedantic("Socket keepalive configuration failed. {%s}", errno_string(errno, bufptr, buflen));
 		return false;
 	}
 
@@ -46,7 +46,7 @@ bool_t net_set_nodelay(int sd, bool_t nodelay) {
 	int_t val = (nodelay ? 1 : 0);
 
 	if (setsockopt(sd, IPPROTO_TCP, TCP_NODELAY, &val, sizeof(val)))  {
-		log_pedantic("Socket nodelay configuration failed. {%s}", strerror_r(errno, bufptr, buflen));
+		log_pedantic("Socket nodelay configuration failed. {%s}", errno_string(errno, bufptr, buflen));
 		return false;
 	}
 
@@ -68,7 +68,7 @@ bool_t net_set_linger(int sd, bool_t linger, int_t timeout) {
   };
 
   if (setsockopt(sd, SOL_SOCKET, SO_LINGER, &val, (socklen_t)sizeof(struct linger))) {
-	  log_pedantic("Socket linger configuration failed. {%s}", strerror_r(errno, bufptr, buflen));
+	  log_pedantic("Socket linger configuration failed. {%s}", errno_string(errno, bufptr, buflen));
 	  return false;
   }
 
@@ -86,7 +86,7 @@ bool_t net_set_reuseable_address(int sd, bool_t reuse) {
 	int val = (reuse ? 1 : 0);
 
 	if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)))  {
-		log_pedantic("Socket address reuse configuration failed. {%s}", strerror_r(errno, bufptr, buflen));
+		log_pedantic("Socket address reuse configuration failed. {%s}", errno_string(errno, bufptr, buflen));
 		return false;
 	}
 
@@ -108,7 +108,7 @@ bool_t net_set_blocking(int sd, bool_t blocking) {
 	int flags = blocking ? ((fcntl(sd, F_GETFL, 0) | O_NONBLOCK) ^ O_NONBLOCK) : (fcntl(sd, F_GETFL, 0) | O_NONBLOCK);
 
 	if (fcntl(sd, F_SETFL, flags) == -1)  {
-		log_pedantic("Socket blocking configuration failed. {%s}", strerror_r(errno, bufptr, buflen));
+		log_pedantic("Socket blocking configuration failed. {%s}", errno_string(errno, bufptr, buflen));
 		return false;
 	}
 
@@ -138,7 +138,7 @@ bool_t net_set_timeout(int sd, uint32_t timeout_recv, uint32_t timeout_send) {
 	timeout_sock.tv_sec = timeout_recv;
 
 	if (setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO, &timeout_sock, sizeof(timeout_sock))) {
-		log_pedantic("Socket receive timeout configuration failed. {%s}", strerror_r(errno, bufptr, buflen));
+		log_pedantic("Socket receive timeout configuration failed. {%s}", errno_string(errno, bufptr, buflen));
 		return false;
 	}
 
@@ -146,7 +146,7 @@ bool_t net_set_timeout(int sd, uint32_t timeout_recv, uint32_t timeout_send) {
 	timeout_sock.tv_sec = timeout_send;
 
 	if (setsockopt(sd, SOL_SOCKET, SO_SNDTIMEO, &timeout_sock, sizeof(timeout_sock))) {
-		log_pedantic("Socket send timeout configuration failed. {%s}", strerror_r(errno, bufptr, buflen));
+		log_pedantic("Socket send timeout configuration failed. {%s}", errno_string(errno, bufptr, buflen));
 		return false;
 	}
 
@@ -163,12 +163,12 @@ bool_t net_set_timeout(int sd, uint32_t timeout_recv, uint32_t timeout_send) {
 bool_t net_set_buffer_length(int sd, int buffer_recv, int buffer_send) {
 
 	if (setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &buffer_recv, sizeof(buffer_recv))) {
-		log_pedantic("Socket receive buffer length configuration failed. {%s}", strerror_r(errno, bufptr, buflen));
+		log_pedantic("Socket receive buffer length configuration failed. {%s}", errno_string(errno, bufptr, buflen));
 		return false;
 	}
 
 	if (setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &buffer_send, sizeof(buffer_send))) {
-		log_pedantic("Socket send buffer length configuration failed. {%s}", strerror_r(errno, bufptr, buflen));
+		log_pedantic("Socket send buffer length configuration failed. {%s}", errno_string(errno, bufptr, buflen));
 		return false;
 	}
 

@@ -10,6 +10,7 @@
 #include "dime/common/error.h"
 #include "dime/common/misc.h"
 
+#include "core/core.h"
 #include "providers/symbols.h"
 
 // sizeof(errinfo_t) and number elements chosen so the entire data structure fits inside one 4,096 byte page.
@@ -244,11 +245,7 @@ errinfo_t *_push_error_stack_syscall(const char *filename, const char *funcname,
     memset(auxmsg, 0, sizeof(auxmsg));
     snprintf(auxmsg, sizeof(auxmsg) - 1, "%s: ", errfunc);
     ptr = auxmsg + strlen(auxmsg);
-//#ifdef STRERROR_R_CHAR_P
-    ptr = strerror_r(xerrno, ptr, auxmsg_end - ptr);
-//#else
-//    strerror_r(xerrno, ptr, auxmsg_end - ptr);
-//#endif
+    ptr = errno_string(xerrno, ptr, auxmsg_end - ptr);
 
     return (_push_error_stack(filename, funcname, lineno, ERR_SYSCALL, xerrno, auxmsg));
 }

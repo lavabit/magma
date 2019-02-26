@@ -45,7 +45,7 @@ int_t folder_count(stringer_t *path, bool_t recursive, bool_t strict) {
 
 	if (st_empty(path) || !(dir = opendir(st_char_get(path)))) {
 		log_info("Unable to access the requested directory. { directory = \"%s\" / error = %s }",
-			(st_empty(path) ? "NULL" : st_char_get(path)), strerror_r(errno, MEMORYBUF(1024), 1024));
+			(st_empty(path) ? "NULL" : st_char_get(path)), errno_string(errno, MEMORYBUF(1024), 1024));
 		return -1;
 	}
 

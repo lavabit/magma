@@ -19,7 +19,7 @@ int mutex_init(pthread_mutex_t *lock, pthread_mutexattr_t *attr) {
 #ifdef MAGMA_PEDANTIC
 	int result = pthread_mutex_init(lock, attr);
 	if (result) {
-		log_pedantic("Could not initialize the mutex. {pthread_mutex_init = %i / error = %s}", result, strerror_r(errno, MEMORYBUF(1024), 1024));
+		log_pedantic("Could not initialize the mutex. {pthread_mutex_init = %i / error = %s}", result, errno_string(errno, MEMORYBUF(1024), 1024));
 	}
 	return result;
 #else
@@ -39,7 +39,7 @@ int mutex_lock(pthread_mutex_t *lock) {
 #ifdef MAGMA_PEDANTIC
 	int result = pthread_mutex_lock(lock);
 	if (result) {
-		log_options(M_LOG_PEDANTIC | M_LOG_STACK_TRACE, "Could not lock the mutex. {pthread_mutex_lock = %i / error = %s}", result, strerror_r(errno, MEMORYBUF(1024), 1024));
+		log_options(M_LOG_PEDANTIC | M_LOG_STACK_TRACE, "Could not lock the mutex. {pthread_mutex_lock = %i / error = %s}", result, errno_string(errno, MEMORYBUF(1024), 1024));
 	}
 	return result;
 #else
@@ -59,7 +59,7 @@ int mutex_unlock(pthread_mutex_t *lock) {
 #ifdef MAGMA_PEDANTIC
 	int result = pthread_mutex_unlock(lock);
 	if (result) {
-		log_options(M_LOG_PEDANTIC | M_LOG_STACK_TRACE, "Could not unlock the mutex. {pthread_mutex_unlock = %i / error = %s}", result, strerror_r(errno, MEMORYBUF(1024), 1024));
+		log_options(M_LOG_PEDANTIC | M_LOG_STACK_TRACE, "Could not unlock the mutex. {pthread_mutex_unlock = %i / error = %s}", result, errno_string(errno, MEMORYBUF(1024), 1024));
 	}
 	return result;
 #else
@@ -79,7 +79,7 @@ int mutex_destroy(pthread_mutex_t *lock) {
 #ifdef MAGMA_PEDANTIC
 	int result = pthread_mutex_destroy(lock);
 	if (result) {
-		log_pedantic("Could not destroy the mutex. {pthread_mutex_destroy = %i / error = %s}", result, strerror_r(errno, MEMORYBUF(1024), 1024));
+		log_pedantic("Could not destroy the mutex. {pthread_mutex_destroy = %i / error = %s}", result, errno_string(errno, MEMORYBUF(1024), 1024));
 	}
 	return result;
 #else

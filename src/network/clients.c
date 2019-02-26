@@ -87,7 +87,7 @@ client_t * client_connect(chr_t *host, uint32_t port) {
 
 #ifdef MAGMA_PEDANTIC
 		if (status()) log_pedantic("Unable to resolve the host %s:%u and create a client connection. { getaddrinfo = %i / errno = %s }", host,
-			port, ret, strerror_r(errno, MEMORYBUF(256), 256));
+			port, ret, errno_string(errno, MEMORYBUF(256), 256));
 #endif
 
 		if (info) freeaddrinfo(info);
@@ -103,7 +103,7 @@ client_t * client_connect(chr_t *host, uint32_t port) {
 		// Create a socket.
 		if ((sd = socket(holder->ai_family, holder->ai_socktype, holder->ai_protocol)) == -1) {
 			log_pedantic("Unable to create a socket connection with the host %s:%u. { socket = -1 / errno = %s }",
-				host, port, strerror_r(errno, MEMORYBUF(1024), 1024));
+				host, port, errno_string(errno, MEMORYBUF(1024), 1024));
 			freeaddrinfo(info);
 			return NULL;
 		}
@@ -145,7 +145,7 @@ client_t * client_connect(chr_t *host, uint32_t port) {
 
 	if (ret) {
 		log_pedantic("We were unable to connect with the host %s:%u. { connect = %i / errno = %s }",
-			host, port, ret, strerror_r(errno, MEMORYBUF(1024), 1024));
+			host, port, ret, errno_string(errno, MEMORYBUF(1024), 1024));
 //		close(sd);
 		return NULL;
 	}

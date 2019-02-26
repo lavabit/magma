@@ -156,6 +156,7 @@ stringer_t *  host_version(stringer_t *output);
 
 /// errors.c
 chr_t *  errno_name(int error);
+chr_t *  errno_string(int errnum, char *buf, size_t len);
 
 /// signals.c
 chr_t *  signal_name(int signal, char *buffer, size_t length);

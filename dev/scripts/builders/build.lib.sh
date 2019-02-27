@@ -2283,6 +2283,12 @@ memcached() {
     	  # Return key responses from lru_crawler requests.
     	  cat "$M_PATCHES/memcached/"1.0.18_add_key_response_support.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
     	  
+    	  # Enable parallel builds. Note man pages must be made with --jobs=1 or it will fail.
+    	  cat "$M_PATCHES/memcached/"1.0.18_enable_parallel_build.patch  | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
+    	  
+  			# We need to reset the modification time on these files after applying the parallelization patch, or an autoreconf will be triggered.
+    	  touch -t 201402090552.42 Makefile.am && touch -t 201402090552.42 man/include.am
+    	  
     	  # New versions of aclocal fail if the AC_CONFIG_AUX_DIR directive follows the AC_PROG_{CC,CXX} lines.
     	  # cat "$M_PATCHES/memcached/"1.0.18_fix_aclocal_errors.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
     	  

@@ -1,0 +1,26 @@
+diff --git a/Makefile.in b/Makefile.in
+index c615ef2..cec8cd8 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -10355,7 +10355,7 @@ uninstall-man: uninstall-man1 uninstall-man3
+ @BUILD_WIN32_FALSE@$(dist_man_MANS): $(top_srcdir)/configure.ac
+ @BUILD_WIN32_FALSE@	$(MAKE) $(AM_MAKEFLAGS) man
+ 
+-@BUILD_WIN32_FALSE@.NOTPARALLEL: $(dist_man_MANS)
++@BUILD_WIN32_FALSE@: $(dist_man_MANS)
+ 
+ @BUILD_WIN32_FALSE@libmemcached/csl/parser.h: libmemcached/csl/parser.cc
+ 
+diff --git a/man/include.am b/man/include.am
+index 602cfa9..774c168 100644
+--- a/man/include.am
++++ b/man/include.am
+@@ -6,8 +6,6 @@
+ $(dist_man_MANS): $(top_srcdir)/configure.ac
+ 	$(MAKE) $(AM_MAKEFLAGS) man
+ 
+-.NOTPARALLEL: $(dist_man_MANS)
+-
+ dist_man_MANS+= man/memaslap.1
+ dist_man_MANS+= man/memcapable.1
+ dist_man_MANS+= man/memcat.1

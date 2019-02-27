@@ -224,6 +224,7 @@ extern my_bool (*mysql_stmt_reset_d)(MYSQL_STMT *stmt);
 extern my_ulonglong (*mysql_insert_id_d)(MYSQL *mysql);
 extern unsigned long (*mysql_thread_id_d)(MYSQL *mysql);
 extern MYSQL_STMT * (*mysql_stmt_init_d)(MYSQL * mysql);
+extern const char * (*mysql_get_connector_info_d)(void);
 extern MYSQL_ROW (*mysql_fetch_row_d)(MYSQL_RES *result);
 extern unsigned long (*mysql_get_client_version_d)(void);
 extern MYSQL_RES * (*mysql_store_result_d)(MYSQL * mysql);

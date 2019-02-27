@@ -1,4 +1,4 @@
-module local 1.0;
+module postfix.selinux 1.0;
 
 require {
     type postfix_master_t;

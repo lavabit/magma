@@ -237,7 +237,10 @@ bool_t virus_start(void) {
 	stats_set_by_name("provider.virus.signatures.total", virus_sigs_total());
 
 	// TODO: Create function to load each signature database found inside the ClamAV directory, and then output the ver/sig count using cl_cvdparse().
-	log_pedantic("------------------------------- SIGNATURES -------------------------------\n%-10.10s %63.lu\n%-10.10s %63.lu\n", "LOADED:", loaded, "AVAILABLE:", virus_sigs_total());
+	log_options(M_LOG_INFO | M_LOG_TIME_DISABLE | M_LOG_FILE_DISABLE | M_LOG_LINE_DISABLE | M_LOG_FUNCTION_DISABLE | M_LOG_STACK_TRACE_DISABLE | M_LOG_LINE_FEED_DISABLE, \
+    "------------------------------- SIGNATURES -------------------------------\n" \
+    "%-10.10s %63.lu\n%-10.10s %63.lu\n", \
+    "LOADED:", loaded, "AVAILABLE:", virus_sigs_total());
 
 	return true;
 }

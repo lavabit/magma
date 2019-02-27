@@ -18,7 +18,6 @@ EC_KEY *ecdh512 = NULL, *ecdh1024 = NULL;
  * @return	a pointer to a character string containing the libopenssl version information.
  */
 const char * lib_version_openssl(void) {
-
 	return ssl_version;
 }
 

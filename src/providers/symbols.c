@@ -119,10 +119,12 @@ int (*mysql_stmt_fetch_d)(MYSQL_STMT *stmt) = NULL;
 my_bool (*mysql_stmt_close_d)(MYSQL_STMT *) = NULL;
 unsigned int (*mysql_errno_d)(MYSQL *mysql) = NULL;
 const char * (*mysql_error_d)(MYSQL *mysql) = NULL;
+my_bool (*mariadb_connection_d)(MYSQL *mysql) = NULL;
 int (*mysql_stmt_execute_d)(MYSQL_STMT *stmt) = NULL;
 void (*mysql_free_result_d)(MYSQL_RES *result) = NULL;
 my_bool (*mysql_stmt_reset_d)(MYSQL_STMT *stmt) = NULL;
 my_ulonglong (*mysql_insert_id_d)(MYSQL *mysql) = NULL;
+const char * (*mysql_get_connector_info_d)(void) = NULL;
 unsigned long (*mysql_thread_id_d)(MYSQL *mysql) = NULL;
 MYSQL_STMT * (*mysql_stmt_init_d)(MYSQL * mysql) = NULL;
 MYSQL_ROW (*mysql_fetch_row_d)(MYSQL_RES *result) = NULL;
@@ -718,8 +720,8 @@ bool_t lib_load(void) {
     "JANSSON:", lib_version_jansson(),
     "JPEG", lib_version_jpeg(),
     "LZO:", lib_version_lzo(),
+    "MARIA:", lib_version_mysql(),
     "MEMCACHED:", lib_version_cache(),
-    "MYSQL:", lib_version_mysql(),
     "OPENSSL:", lib_version_openssl(),
     "PNG", lib_version_png(),
     "SPF:", lib_version_spf(),

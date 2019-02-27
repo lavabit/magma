@@ -148,9 +148,10 @@ struct {
 	char serv_charset[16];
 	char serv_schema[32];
 
-	const chr_t *type_serv, *type_embed, *dash;
+	const chr_t *type_mysql, *type_mariadb, *type_embed, *dash;
 } sql = {
-	.type_serv = "MySQL",
+	.type_mysql = "MySQL",
+	.type_mariadb = "MariaDB",
 	.type_embed  = "Embedded",
 	.dash = "-"
 };
@@ -408,23 +409,27 @@ bool_t sql_thread_start(void) {
 }
 
 /**
- * @brief	Determine whether the mysql library in use is embedded or not.
- * @return	sql.type_embed ("Embedded") or sql.type_serv ("MySQL");
+ * @brief	Determine whether the mysql is connected to a MySQL, MariaDB or embedded database.
+ * @return	sql.type_embed ("Embedded") or sql.type_mysql ("MySQL"), or sql.type_mysql ("MariaDB");
  */
 const char * serv_type_mysql(void) {
 
-	const chr_t *ret;
+  MYSQL *con;
 
-	/*if (mysql_embedded_d()) {
-		ret = sql.type_embed;
-	}
-	else {
-		 ret = sql.type_serv;
-	}*/
+  if (!(con = sql_open(true))) {
+    return sql.dash;
+  }
+  else if (mariadb_connection_d(con)) {
+    mysql_close_d(con);
+    return sql.type_mariadb;
+  }
+  else {
+    mysql_close_d(con);
+    return sql.type_mysql;
+  }
 
-	ret = sql.type_serv;
-
-	return ret;
+  mysql_close_d(con);
+	return sql.dash;
 }
 
 const char * serv_charset_mysql(void) {
@@ -485,20 +490,11 @@ const char * serv_version_mysql(void) {
  */
 const char * lib_version_mysql(void) {
 
-	unsigned long holder;
-	short version, release, major;
-
-	if (!(holder = mysql_get_client_version_d())) {
+  if (!(mysql_get_connector_info_d())) {
 		return NULL;
 	}
 
-	version = holder % 100;
-	holder /= 100;
-	release = holder % 100;
-	holder /= 100;
-	major = holder % 100;
-
-	snprintf(sql.lib_version, sizeof(sql.lib_version), "%hi.%hi.%hi", major, release, version);
+	snprintf(sql.lib_version, sizeof(sql.lib_version), "%s", mysql_get_connector_info_d());
 	return sql.lib_version;
 }
 
@@ -519,7 +515,8 @@ bool_t lib_load_mysql(void) {
 		M_BIND(mysql_stmt_execute),	M_BIND(mysql_stmt_fetch), M_BIND(mysql_stmt_free_result), M_BIND(mysql_stmt_init),
 		M_BIND(mysql_stmt_insert_id), M_BIND(mysql_stmt_num_rows), M_BIND(mysql_stmt_prepare), M_BIND(mysql_stmt_reset),
 		M_BIND(mysql_stmt_result_metadata),	M_BIND(mysql_stmt_store_result), M_BIND(mysql_store_result), M_BIND(mysql_thread_end),
-		M_BIND(mysql_thread_id), M_BIND(mysql_thread_init),	M_BIND(mysql_thread_safe)
+		M_BIND(mysql_thread_id), M_BIND(mysql_thread_init),	M_BIND(mysql_thread_safe), M_BIND(mariadb_connection),
+		M_BIND(mysql_get_connector_info)
 	};
 
 	if (lib_symbols(sizeof(mysql) / sizeof(symbol_t), mysql) != 1) {

@@ -93,7 +93,6 @@ my_bool (*mysql_stmt_close_d)(MYSQL_STMT *) = NULL;
 unsigned int (*mysql_errno_d)(MYSQL *mysql) = NULL;
 const char * (*mysql_error_d)(MYSQL *mysql) = NULL;
 int (*mysql_stmt_execute_d)(MYSQL_STMT *stmt) = NULL;
-my_bool	(*mysql_embedded_d)(void) = NULL;
 void (*mysql_free_result_d)(MYSQL_RES *result) = NULL;
 my_bool (*mysql_stmt_reset_d)(MYSQL_STMT *stmt) = NULL;
 my_ulonglong (*mysql_insert_id_d)(MYSQL *mysql) = NULL;
@@ -643,7 +642,6 @@ if ((*(void **)&(mysql_stmt_close_d) = dlsym(magma, "mysql_stmt_close")) == NULL
 if ((*(void **)&(mysql_errno_d) = dlsym(magma, "mysql_errno")) == NULL) return "mysql_errno";
 if ((*(void **)&(mysql_error_d) = dlsym(magma, "mysql_error")) == NULL) return "mysql_error";
 if ((*(void **)&(mysql_stmt_execute_d) = dlsym(magma, "mysql_stmt_execute")) == NULL) return "mysql_stmt_execute";
-if ((*(void **)&(mysql_embedded_d) = dlsym(magma, "mysql_embedded")) == NULL) return "mysql_embedded";
 if ((*(void **)&(mysql_free_result_d) = dlsym(magma, "mysql_free_result")) == NULL) return "mysql_free_result";
 if ((*(void **)&(mysql_stmt_reset_d) = dlsym(magma, "mysql_stmt_reset")) == NULL) return "mysql_stmt_reset";
 if ((*(void **)&(mysql_insert_id_d) = dlsym(magma, "mysql_insert_id")) == NULL) return "mysql_insert_id";

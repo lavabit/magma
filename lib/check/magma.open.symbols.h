@@ -21,9 +21,9 @@
 // ClamAV
 #include <clamav.h>
 
-// MySQL
-#include <mysql/mysql.h>
-#include <mysql/errmsg.h>
+// MariaDB Connector/C
+#include <mariadb/mysql.h>
+#include <mariadb/errmsg.h>
 
 // OpenSSL
 #include <openssl/conf.h>
@@ -219,7 +219,6 @@ extern my_bool (*mysql_stmt_close_d)(MYSQL_STMT *);
 extern unsigned int (*mysql_errno_d)(MYSQL *mysql);
 extern const char * (*mysql_error_d)(MYSQL *mysql);
 extern int (*mysql_stmt_execute_d)(MYSQL_STMT *stmt);
-extern my_bool	(*mysql_embedded_d)(void);
 extern void (*mysql_free_result_d)(MYSQL_RES *result);
 extern my_bool (*mysql_stmt_reset_d)(MYSQL_STMT *stmt);
 extern my_ulonglong (*mysql_insert_id_d)(MYSQL *mysql);

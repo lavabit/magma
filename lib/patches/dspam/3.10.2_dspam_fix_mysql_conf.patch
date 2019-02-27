@@ -1,0 +1,44 @@
+diff --git a/configure b/configure
+index 61eea2f..e29dd43 100755
+--- a/configure
++++ b/configure
+@@ -13280,7 +13280,7 @@ then
+     #include <mysql.h>
+     #include <mysqld_error.h>
+     #include <errmsg.h>
+-    #if defined(PROTOCOL_VERSION) && defined(ER_LOCK_DEADLOCK) && defined(ER_LOCK_WAIT_TIMEOUT) && defined(ER_LOCK_OR_ACTIVE_TRANSACTION) && defined(CR_ERROR_FIRST)
++    #if defined(PROTOCOL_VERSION) && defined(ER_LOCK_DEADLOCK) && defined(ER_LOCK_WAIT_TIMEOUT) && defined(ER_LOCK_OR_ACTIVE_TRANSACTION)
+     /* Success */
+     #else
+     #error Unsupported version of MySQL
+@@ -13293,7 +13293,7 @@ else
+ 
+                 { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+ $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+-as_fn_error $? "Unsupported version of MySQL (no PROTOCOL_VERSION or ER_LOCK_DEADLOCK or ER_LOCK_WAIT_TIMEOUT or ER_LOCK_OR_ACTIVE_TRANSACTION or CR_ERROR_FIRST defined)
++as_fn_error $? "Unsupported version of MySQL (no PROTOCOL_VERSION or ER_LOCK_DEADLOCK or ER_LOCK_WAIT_TIMEOUT or ER_LOCK_OR_ACTIVE_TRANSACTION defined)
+ See \`config.log' for more details" "$LINENO" 5; }
+                 mysql_headers_success=no
+ 
+diff --git a/m4/mysql_drv.m4 b/m4/mysql_drv.m4
+index bd820f2..b19f013 100644
+--- a/m4/mysql_drv.m4
++++ b/m4/mysql_drv.m4
+@@ -80,7 +80,7 @@ then
+     #include <mysql.h>
+     #include <mysqld_error.h>
+     #include <errmsg.h>
+-    #if defined(PROTOCOL_VERSION) && defined(ER_LOCK_DEADLOCK) && defined(ER_LOCK_WAIT_TIMEOUT) && defined(ER_LOCK_OR_ACTIVE_TRANSACTION) && defined(CR_ERROR_FIRST)
++    #if defined(PROTOCOL_VERSION) && defined(ER_LOCK_DEADLOCK) && defined(ER_LOCK_WAIT_TIMEOUT) && defined(ER_LOCK_OR_ACTIVE_TRANSACTION)
+     /* Success */
+     #else
+     #error Unsupported version of MySQL 
+@@ -88,7 +88,7 @@ then
+             ]])],
+             [],
+             [
+-                AC_MSG_FAILURE([Unsupported version of MySQL (no PROTOCOL_VERSION or ER_LOCK_DEADLOCK or ER_LOCK_WAIT_TIMEOUT or ER_LOCK_OR_ACTIVE_TRANSACTION or CR_ERROR_FIRST defined)])
++                AC_MSG_FAILURE([Unsupported version of MySQL (no PROTOCOL_VERSION or ER_LOCK_DEADLOCK or ER_LOCK_WAIT_TIMEOUT or ER_LOCK_OR_ACTIVE_TRANSACTION defined)])
+                 mysql_headers_success=no
+             ])
+ fi

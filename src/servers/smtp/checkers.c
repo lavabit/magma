@@ -246,7 +246,7 @@ int_t smtp_check_filters(smtp_inbound_prefs_t *prefs, stringer_t **local) {
  * @param	subnet	a pointer to a managed string containing the IP address or subnet address to be bypassed for checks.
  * @return	true if the entry was valid and was added, or false on failure.
  */
-bool_t smtp_add_bypass_entry(stringer_t *subnet) {
+bool_t smtp_bypass_add(stringer_t *subnet) {
 
 	subnet_t *sn;
 	multi_t key;
@@ -278,6 +278,21 @@ bool_t smtp_add_bypass_entry(stringer_t *subnet) {
 	}
 
 	return true;
+}
+
+
+
+/**
+ * @brief Free the SMTP bypass list at shutdown.
+ * @return  This function returns no value.
+ */
+void smtp_bypass_free(void) {
+
+  if (magma.smtp.bypass_subnets) {
+    inx_free(magma.smtp.bypass_subnets);
+    magma.smtp.bypass_subnets = NULL;
+  }
+
 }
 
 /**

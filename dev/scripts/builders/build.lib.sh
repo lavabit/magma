@@ -1081,16 +1081,22 @@ dspam() {
 
       cat "$M_PATCHES/dspam/"dspam_version.patch | patch -p1 --verbose &>> "$M_LOGS/dspam.txt"; error
       cat "$M_PATCHES/dspam/"dspam_headers_3.10.2.patch | patch -p1 --verbose &>> "$M_LOGS/dspam.txt"; error
+      cat "$M_PATCHES/dspam/"3.10.2_dspam_fix_mysql_conf.patch | patch -p1 --verbose &>> "$M_LOGS/dspam.txt"; error
     ;;
     dspam-build)
       cd "$M_SOURCES/dspam"; error
 
-      if [ ! -f "$M_LDPATH"/mysql/libmysqlclient_r.so ] || [ ! -f "$M_LDPATH"/mysql/libmysqlclient_r.a ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build mysql before dspam.\n"; tput sgr0
+      # if [ ! -f "$M_LDPATH"/mysql/libmysqlclient_r.so ] || [ ! -f "$M_LDPATH"/mysql/libmysqlclient_r.a ]; then
+      #  tput sgr0; tput setaf 3; printf "\nPlease build mysql before dspam.\n"; tput sgr0
+      #  return 3
+      # fi
+
+      if [ ! -f "$M_LDPATH"/mariadb/libmariadb.so ] || [ ! -f "$M_LDPATH"/mariadb/libmariadbclient.a ]; then
+        tput sgr0; tput setaf 3; printf "\nPlease build mariadb before dspam.\n"; tput sgr0
         return 3
       fi
 
-      export LDFLAGS="-L$M_LDPATH/mysql -L$M_LDPATH -Wl,-rpath,$M_LDPATH/mysql -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
+      export LDFLAGS="-L$M_LDPATH/mariadb -L$M_LDPATH -Wl,-rpath,$M_LDPATH/mariadb -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
       export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
       export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
       export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
@@ -1099,7 +1105,7 @@ dspam() {
 
       ./configure --enable-static --with-pic --enable-preferences-extension --enable-virtual-users \
         --with-storage-driver=mysql_drv --disable-trusted-user-security --disable-mysql4-initialization  \
-        --with-mysql-includes="$M_LOCAL/include/mysql/" --with-mysql-libraries="$M_LOCAL/lib/mysql/" \
+        --with-mysql-includes="$M_LOCAL/include/" --with-mysql-libraries="$M_LOCAL/lib/mariadb/" \
         --prefix="$M_LOCAL" &>> "$M_LOGS/dspam.txt"; error
 
       unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset LD_LIBRARY_PATH
@@ -1528,6 +1534,122 @@ clamav() {
 
   date +"Finished $1 at %r on %x"
   date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/clamav.txt"
+
+  return $?
+
+}
+
+# VERSION=2.3.7
+# git clone https://github.com/MariaDB/mariadb-connector-c 
+# cd mariadb-connector-c
+# git checkout v_${VERSION}
+# tar czvf ~/Lavabit/magma/lib/archives/mariadb-connector-c-${VERSION}.tar.gz --transform 's,^,mariadb-connector-c-${VERSION}/,' *
+
+mariadb() {
+
+  if [[ $1 == "mariadb-extract" ]]; then
+    rm -f "$M_LOGS/mariadb.txt"; error
+  elif [[ $1 != "mariadb-log" ]]; then
+    date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/mariadb.txt"
+  fi
+
+  case "$1" in
+    mariadb-extract)
+      extract $MARIADB "mariadb" &>> "$M_LOGS/mariadb.txt"
+    ;;
+    mariadb-prep)
+      cd "$M_SOURCES/mariadb"; error
+    ;;
+    mariadb-build)
+      cd "$M_SOURCES/mariadb"; error
+
+			mkdir build && cd build && cmake -DWITH_UNIT_TESTS=ON -DWITH_OPENSSL=ON -DWITH_EXTERNAL_ZLIB=ON \
+			-DOPENSSL_SSL_LIBRARY="$M_LOCAL/lib/libssl.so" -DOPENSSL_CRYPTO_LIBRARY="$M_LOCAL/lib/libcrypto.so" -DZLIB_LIBRARY="$M_LOCAL/lib/libz.so" \
+			-DZLIB_INCLUDE_DIR="$M_LOCAL/include" -DOPENSSL_INCLUDE_DIR="$M_LOCAL/include/openssl" \
+			-DCMAKE_INSTALL_PREFIX="$M_LOCAL" .. &>> "$M_LOGS/mariadb.txt"; error
+			
+			make VERBOSE=1 &>> "$M_LOGS/mariadb.txt"; error
+			make install &>> "$M_LOGS/mariadb.txt"; error
+			
+			ln -s "$M_LOCAL/include/mariadb" "$M_LOCAL/include/mysql"
+    ;;
+    mariadb-check)
+    	cd "$M_SOURCES/mariadb"; error
+      
+      # cp /etc/pki/sql/certs/ca.pem "$M_SOURCES/mariadb"/unittest/libmariadb/certs/ca-cert.pem ; error
+      # openssl x509 -in /etc/pki/sql/certs/server.pem -sha1 -fingerprint -noout | awk -F'=' '{print $2}'| tr -d ":" > "$M_SOURCES/mariadb"/unittest/libmariadb/fingerprint.list ; error
+      
+      # sudo cp unittest/libmariadb/certs/ca-cert.pem /etc/pki/sql/certs/ca.pem 
+      # sudo cp unittest/libmariadb/certs/server-cert.pem /etc/pki/sql/certs/server.pem 
+      # sudo cp unittest/libmariadb/certs/server-key.pem /etc/pki/sql/private/server.pem
+      	
+      # cd build/unittest/libmariadb/
+      # echo "DROP SCHEMA IF EXISTS \`test\`;" | mysql ; error
+      # echo "CREATE SCHEMA \`test\` DEFAULT CHARACTER SET utf8;" | mysql ; error
+      
+      export MYSQL_TEST_HOST=127.0.0.1
+      export MYSQL_TEST_USER=mytool
+      export MYSQL_TEST_PASSWD=aComplex1
+      export MYSQL_TEST_DB=Sandbox
+      export MYSQL_TEST_PORT=3306
+      export MYSQL_TEST_SOCKET=/var/lib/mysql/mysql.sock	
+      export MYSQL_TEST_BINDADDR=127.0.0.1
+           
+			# ctest -v -VV &>> "$M_LOGS/mariadb.txt"; error
+			
+			unset MYSQL_TEST_HOST; unset MYSQL_TEST_USER; unset MYSQL_TEST_PASSWD; unset MYSQL_TEST_DB; unset MYSQL_TEST_PORT; unset MYSQL_TEST_BINDADDR
+    ;;
+    mariadb-check-full)
+
+      cd "$M_SOURCES/mariadb"; error
+      
+      # cp /etc/pki/sql/certs/ca.pem "$M_SOURCES/mariadb"/unittest/libmariadb/certs/ca-cert.pem ; error
+      # openssl x509 -in /etc/pki/sql/certs/server.pem -sha1 -fingerprint -noout | awk -F'=' '{print $2}'| tr -d ":" > "$M_SOURCES/mariadb"/unittest/libmariadb/fingerprint.list ; error
+
+      # sudo cp unittest/libmariadb/certs/ca-cert.pem /etc/pki/sql/certs/ca.pem 
+      # sudo cp unittest/libmariadb/certs/server-cert.pem /etc/pki/sql/certs/server.pem 
+      # sudo cp unittest/libmariadb/certs/server-key.pem /etc/pki/sql/private/server.pem
+
+      # cd build/unittest/libmariadb/
+      # echo "DROP SCHEMA IF EXISTS \`test\`;" | mysql ; error
+      # echo "CREATE SCHEMA \`test\` DEFAULT CHARACTER SET utf8;" | mysql ; error
+      
+      export MYSQL_TEST_HOST=127.0.0.1
+      export MYSQL_TEST_USER=mytool
+      export MYSQL_TEST_PASSWD=aComplex1
+      export MYSQL_TEST_DB=Sandbox
+      export MYSQL_TEST_PORT=3306
+      export MYSQL_TEST_SOCKET=/var/lib/mysql/mysql.sock	
+      export MYSQL_TEST_BINDADDR=127.0.0.1
+           
+			# ctest -v -VV &>> "$M_LOGS/mariadb.txt"; error
+			
+			unset MYSQL_TEST_HOST; unset MYSQL_TEST_USER; unset MYSQL_TEST_PASSWD; unset MYSQL_TEST_DB; unset MYSQL_TEST_PORT; unset MYSQL_TEST_BINDADDR
+    ;;
+    mariadb-clean)
+      cd "$M_SOURCES/mariadb"; error
+      cd build && make clean &>> "$M_LOGS/mariadb.txt"; error
+    ;;
+    mariadb-tail)
+      tail --lines=30 --follow=name --retry "$M_LOGS/mariadb.txt"; error
+    ;;
+    mariadb-log)
+      cat "$M_LOGS/mariadb.txt"; error
+    ;;
+    mariadb)
+      mariadb "mariadb-extract"
+      mariadb "mariadb-prep"
+      mariadb "mariadb-build"
+      if [ "$QUICK" != "yes" ]; then mariadb "mariadb-check"; fi
+    ;;
+    *)
+      printf "\nUnrecognized request.\n"
+      exit 2
+    ;;
+  esac
+
+  date +"Finished $1 at %r on %x"
+  date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/mariadb.txt"
 
   return $?
 
@@ -2377,7 +2499,6 @@ combine() {
     ;;
   esac
 
-
   if [[ ! -f "$M_SOURCES/gd/src/.libs/libgd.a" || \
     ! -f "$M_SOURCES/png/.libs/libpng16.a" || \
     ! -f "$M_SOURCES/lzo/src/.libs/liblzo2.a" || \
@@ -2390,7 +2511,7 @@ combine() {
     ! -f "$M_SOURCES/zlib/libz.a" || \
     ! -f "$M_SOURCES/bzip2/libbz2.a" || \
     ! -f "$M_SOURCES/dspam/src/.libs/libdspam.a" || \
-    ! -f "$M_SOURCES/mysql/libmysql_r/.libs/libmysqlclient_r.a" || \
+    ! -f "$M_SOURCES/mariadb/build/libmariadb/libmariadbclient.a" || \
     ! -f "$M_SOURCES/geoip/libGeoIP/.libs/libGeoIP.a" || \
     ! -f "$M_SOURCES/clamav/libclamav/.libs/libclamav.a" || \
     ! -f "$M_SOURCES/clamav/libclamav/.libs/libclamunrar.a" || \
@@ -2471,10 +2592,10 @@ combine() {
   cd "$M_OBJECTS/dspam" &>> "$M_LOGS/combine.txt"; error
   ar xv "$M_SOURCES/dspam/src/.libs/libdspam.a" &>> "$M_LOGS/combine.txt"; error
 
-  rm -rf "$M_OBJECTS/mysql" &>> "$M_LOGS/combine.txt"; error
-  mkdir "$M_OBJECTS/mysql" &>> "$M_LOGS/combine.txt"; error
-  cd "$M_OBJECTS/mysql" &>> "$M_LOGS/combine.txt"; error
-  ar xv "$M_SOURCES/mysql/libmysql_r/.libs/libmysqlclient_r.a" &>> "$M_LOGS/combine.txt"; error
+	rm -rf "$M_OBJECTS/mariadb" &>> "$M_LOGS/combine.txt"; error
+  mkdir "$M_OBJECTS/mariadb" &>> "$M_LOGS/combine.txt"; error
+  cd "$M_OBJECTS/mariadb" &>> "$M_LOGS/combine.txt"; error
+  ar xv "$M_SOURCES/mariadb/build/libmariadb/libmariadbclient.a" &>> "$M_LOGS/combine.txt"; error
 
   rm -rf "$M_OBJECTS/geoip" &>> "$M_LOGS/combine.txt"; error
   mkdir "$M_OBJECTS/geoip" &>> "$M_LOGS/combine.txt"; error
@@ -2547,7 +2668,7 @@ combine() {
         "$M_OBJECTS"/clamav/*.o "$M_OBJECTS"/clamav/unrar/*.o \
         "$M_OBJECTS"/clamav/unrar_iface/*.o "$M_OBJECTS"/clamav/mspack/*.o \
         "$M_OBJECTS"/tokyocabinet/*.o "$M_OBJECTS"/crypto/*.o "$M_OBJECTS"/ssl/*.o \
-        "$M_OBJECTS"/mysql/*.o "$M_OBJECTS"/xml2/*.o "$M_OBJECTS"/spf2/*.o "$M_OBJECTS"/geoip/*.o \
+        "$M_OBJECTS"/mariadb/*.o "$M_OBJECTS"/xml2/*.o "$M_OBJECTS"/spf2/*.o "$M_OBJECTS"/geoip/*.o \
         "$M_OBJECTS"/curl/*.o "$M_OBJECTS"/memcached/*.o "$M_OBJECTS"/utf8proc/*.o \
         "$M_OBJECTS"/png/*.o "$M_OBJECTS"/jpeg/*.o "$M_OBJECTS"/freetype/*.o "$M_OBJECTS"/gd/*.o \
         "$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o &>> "$M_LOGS/combine.txt"; error
@@ -2562,7 +2683,7 @@ combine() {
         "$M_OBJECTS"/clamav/*.o "$M_OBJECTS"/clamav/unrar/*.o \
         "$M_OBJECTS"/clamav/unrar_iface/*.o "$M_OBJECTS"/clamav/mspack/*.o \
         "$M_OBJECTS"/tokyocabinet/*.o "$M_OBJECTS"/crypto/*.o "$M_OBJECTS"/ssl/*.o \
-        "$M_OBJECTS"/mysql/*.o "$M_OBJECTS"/xml2/*.o "$M_OBJECTS"/spf2/*.o "$M_OBJECTS"/geoip/*.o \
+        "$M_OBJECTS"/mariadb/*.o "$M_OBJECTS"/xml2/*.o "$M_OBJECTS"/spf2/*.o "$M_OBJECTS"/geoip/*.o \
         "$M_OBJECTS"/curl/*.o "$M_OBJECTS"/memcached/*.o "$M_OBJECTS"/utf8proc/*.o \
         "$M_OBJECTS"/png/*.o "$M_OBJECTS"/jpeg/*.o "$M_OBJECTS"/freetype/*.o "$M_OBJECTS"/gd/*.o \
         "$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o \
@@ -2755,7 +2876,8 @@ combo() {
 
     ($M_BUILD "curl-$1") & CURL_PID=$!
     ($M_BUILD "dkim-$1") & DKIM_PID=$!
-    ($M_BUILD "mysql-$1") & MYSQL_PID=$!
+    # ($M_BUILD "mysql-$1") & MYSQL_PID=$!
+    ($M_BUILD "mariadb-$1") & MARIADB_PID=$!
 
     # These libraries require zlib (above), bzip2, png and jpeg.
     wait $PNG_PID; error
@@ -2777,7 +2899,8 @@ combo() {
     ($M_BUILD "gd-$1") & GD_PID=$!
 
     # The dspam library requires mysql.
-    wait $MYSQL_PID; error
+    # wait $MYSQL_PID; error
+    wait $MARIADB_PID; error
 
     ($M_BUILD "dspam-$1") & DSPAM_PID=$!
 
@@ -2808,7 +2931,8 @@ combo() {
     # If this isn't a build, then we kick off everything in parallel.
     ($M_BUILD "clamav-$1") & CLAMAV_PID=$!
     ($M_BUILD "curl-$1") & CURL_PID=$!
-    ($M_BUILD "mysql-$1") & MYSQL_PID=$!
+    # ($M_BUILD "mysql-$1") & MYSQL_PID=$!
+    ($M_BUILD "mariadb-$1") & MARIADB_PID=$!
     ($M_BUILD "gd-$1") & GD_PID=$!
     ($M_BUILD "png-$1") & PNG_PID=$!
     ($M_BUILD "lzo-$1") & LZO_PID=$!
@@ -2843,7 +2967,8 @@ combo() {
     wait $ZLIB_PID; error
     wait $BZIP2_PID; error
     wait $DSPAM_PID; error
-    wait $MYSQL_PID; error
+    # wait $MYSQL_PID; error
+    wait $MARIADB_PID; error
     wait $GEOIP_PID; error
     wait $CLAMAV_PID; error
     wait $CHECKER_PID; error
@@ -2866,7 +2991,7 @@ follow() {
   # Note that the build.txt and combo.txt log files are intentionally excluded from this list because they don't belong to a bundled package file.
   tail -n 0 -F "$M_LOGS/clamav.txt" "$M_LOGS/curl.txt" "$M_LOGS/dspam.txt" "$M_LOGS/jansson.txt" "$M_LOGS/memcached.txt" "$M_LOGS/openssl.txt" \
     "$M_LOGS/tokyocabinet.txt" "$M_LOGS/zlib.txt" "$M_LOGS/bzip2.txt" "$M_LOGS/dkim.txt" "$M_LOGS/geoip.txt" "$M_LOGS/lzo.txt" \
-    "$M_LOGS/mysql.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt" \
+    "$M_LOGS/mysql.txt" "$M_LOGS/mariadb.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt" \
     "$M_LOGS/utf8proc.txt" "$M_LOGS/checker.txt" "$M_LOGS/pcre.txt"
 }
 
@@ -2874,7 +2999,7 @@ log() {
   # Note that the build.txt and combo.txt log files are intentionally excluded from this list because they don't belong to a bundled package file.
   cat "$M_LOGS/clamav.txt" "$M_LOGS/curl.txt" "$M_LOGS/dspam.txt" "$M_LOGS/jansson.txt" "$M_LOGS/memcached.txt" "$M_LOGS/openssl.txt" \
     "$M_LOGS/tokyocabinet.txt" "$M_LOGS/zlib.txt" "$M_LOGS/bzip2.txt" "$M_LOGS/dkim.txt" "$M_LOGS/geoip.txt" "$M_LOGS/lzo.txt" \
-    "$M_LOGS/mysql.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt" \
+    "$M_LOGS/mysql.txt" "$M_LOGS/mariadb.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt" \
     "$M_LOGS/utf8proc.txt" "$M_LOGS/checker.txt" "$M_LOGS/pcre.txt"
 }
 
@@ -2980,6 +3105,7 @@ elif [[ $1 =~ "dspam" ]]; then dspam "$1"
 elif [[ $1 =~ "mysql" ]]; then mysql "$1"
 elif [[ $1 =~ "geoip" ]]; then geoip "$1"
 elif [[ $1 =~ "clamav" ]]; then clamav "$1"
+elif [[ $1 =~ "mariadb" ]]; then mariadb "$1"
 elif [[ $1 =~ "checker" ]]; then checker "$1"
 elif [[ $1 =~ "openssl" ]]; then openssl "$1"
 elif [[ $1 =~ "googtap" ]]; then googtap "$1"
@@ -3007,7 +3133,7 @@ elif [[ $1 == "tail" ]]; then follow
 else
   echo ""
   echo " Libraries"
-  echo $"  `basename $0` {gd|png|lzo|pcre|jpeg|curl|spf2|xml2|dkim|zlib|bzip2|dspam|mysql|geoip|clamav|checker|openssl|freetype|utf8proc|memcached|tokyocabinet} and/or "
+  echo $"  `basename $0` {gd|png|lzo|pcre|jpeg|curl|spf2|xml2|dkim|zlib|bzip2|dspam|mysql|geoip|clamav|mariadb|checker|openssl|freetype|utf8proc|memcached|tokyocabinet} and/or "
   echo ""
   echo " Stages (which may be combined via a dash with the above)"
   echo $"  `basename $0` {extract|prep|build|check|check-full|clean|tail|log} or "

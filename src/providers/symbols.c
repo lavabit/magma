@@ -111,7 +111,6 @@ void (*my_once_free_d)(void) = NULL;
 void (*mysql_server_end_d)(void) = NULL;
 void (*mysql_thread_end_d)(void) = NULL;
 int (*mysql_ping_d)(MYSQL *mysql) = NULL;
-my_bool (*mysql_embedded_d)(void) = NULL;
 void (*mysql_close_d)(MYSQL *mysql) = NULL;
 my_bool (*mysql_thread_init_d)(void) = NULL;
 MYSQL * (*mysql_init_d)(MYSQL *mysql) = NULL;

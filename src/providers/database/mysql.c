@@ -415,12 +415,14 @@ const char * serv_type_mysql(void) {
 
 	const chr_t *ret;
 
-	if (mysql_embedded_d()) {
+	/*if (mysql_embedded_d()) {
 		ret = sql.type_embed;
 	}
 	else {
 		 ret = sql.type_serv;
-	}
+	}*/
+
+	ret = sql.type_serv;
 
 	return ret;
 }
@@ -507,7 +509,7 @@ const char * lib_version_mysql(void) {
 bool_t lib_load_mysql(void) {
 
 	symbol_t mysql[] = {
-		M_BIND(my_once_free), M_BIND(mysql_affected_rows), M_BIND(mysql_character_set_name), M_BIND(mysql_close), M_BIND(mysql_embedded),
+		M_BIND(my_once_free), M_BIND(mysql_affected_rows), M_BIND(mysql_character_set_name), M_BIND(mysql_close),
 		M_BIND(mysql_errno), M_BIND(mysql_error), M_BIND(mysql_escape_string), M_BIND(mysql_fetch_field), M_BIND(mysql_fetch_row),
 		M_BIND(mysql_free_result), M_BIND(mysql_get_client_version), M_BIND(mysql_get_server_info),	M_BIND(mysql_init),
 		M_BIND(mysql_insert_id), M_BIND(mysql_num_fields), M_BIND(mysql_num_rows), M_BIND(mysql_options), M_BIND(mysql_ping),

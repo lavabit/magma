@@ -98,6 +98,7 @@ my_bool (*mysql_stmt_reset_d)(MYSQL_STMT *stmt) = NULL;
 my_ulonglong (*mysql_insert_id_d)(MYSQL *mysql) = NULL;
 unsigned long (*mysql_thread_id_d)(MYSQL *mysql) = NULL;
 MYSQL_STMT * (*mysql_stmt_init_d)(MYSQL * mysql) = NULL;
+const char * (*mysql_get_connector_info_d)(void) = NULL;
 MYSQL_ROW (*mysql_fetch_row_d)(MYSQL_RES *result) = NULL;
 unsigned long (*mysql_get_client_version_d)(void) = NULL;
 MYSQL_RES * (*mysql_store_result_d)(MYSQL * mysql) = NULL;
@@ -648,6 +649,7 @@ if ((*(void **)&(mysql_stmt_reset_d) = dlsym(magma, "mysql_stmt_reset")) == NULL
 if ((*(void **)&(mysql_insert_id_d) = dlsym(magma, "mysql_insert_id")) == NULL) return "mysql_insert_id";
 if ((*(void **)&(mysql_thread_id_d) = dlsym(magma, "mysql_thread_id")) == NULL) return "mysql_thread_id";
 if ((*(void **)&(mysql_stmt_init_d) = dlsym(magma, "mysql_stmt_init")) == NULL) return "mysql_stmt_init";
+if ((*(void **)&(mysql_get_connector_info_d) = dlsym(magma, "mysql_get_connector_info")) == NULL) return "mysql_get_connector_info";
 if ((*(void **)&(mysql_fetch_row_d) = dlsym(magma, "mysql_fetch_row")) == NULL) return "mysql_fetch_row";
 if ((*(void **)&(mysql_get_client_version_d) = dlsym(magma, "mysql_get_client_version")) == NULL) return "mysql_get_client_version";
 if ((*(void **)&(mysql_store_result_d) = dlsym(magma, "mysql_store_result")) == NULL) return "mysql_store_result";

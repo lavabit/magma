@@ -63,6 +63,7 @@ void config_free(void) {
 	cache_free();
 	relay_free();
 	servers_free();
+	smtp_bypass_free();
 	return;
 }
 
@@ -554,7 +555,7 @@ bool_t config_value_set(magma_keys_t *setting, stringer_t *value) {
 				return true;
 			}
 
-			if (!smtp_add_bypass_entry(value)) {
+			if (!smtp_bypass_add(value)) {
 				log_critical("Unable to add smtp bypass entry { entry = %s }", st_char_get(value));
 				return false;
 			}

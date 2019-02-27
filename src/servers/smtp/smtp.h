@@ -15,11 +15,12 @@ int_t   smtp_store_message(smtp_inbound_prefs_t *prefs, stringer_t **local);
 bool_t  smtp_store_spamsig(smtp_inbound_prefs_t *prefs, int_t spam);
 
 /// checkers.c
-int_t   smtp_check_filters(smtp_inbound_prefs_t *prefs, stringer_t **local);
-int_t   smtp_check_greylist(connection_t *con, smtp_inbound_prefs_t *prefs);
-int_t   smtp_check_rbl(connection_t *con);
-bool_t  smtp_add_bypass_entry(stringer_t *subnet);
-bool_t  smtp_bypass_check(connection_t *con);
+bool_t   smtp_bypass_add(stringer_t *subnet);
+bool_t   smtp_bypass_check(connection_t *con);
+void     smtp_bypass_free(void);
+int_t    smtp_check_filters(smtp_inbound_prefs_t *prefs, stringer_t **local);
+int_t    smtp_check_greylist(connection_t *con, smtp_inbound_prefs_t *prefs);
+int_t    smtp_check_rbl(connection_t *con);
 
 /// commands.c
 void smtp_requeue(connection_t *con);

@@ -1,0 +1,29 @@
+diff --git a/include/mysql.h b/include/mysql.h
+index d930b2c..9a209bd 100644
+--- a/include/mysql.h
++++ b/include/mysql.h
+@@ -482,6 +482,7 @@ int STDCALL mysql_set_server_option(MYSQL *mysql,
+                                     enum enum_mysql_set_option option);
+ const char * STDCALL mysql_get_client_info(void);
+ unsigned long STDCALL mysql_get_client_version(void);
++const char * STDCALL mysql_get_connector_info(void);
+ my_bool STDCALL mariadb_connection(MYSQL *mysql);
+ const char * STDCALL mysql_get_server_name(MYSQL *mysql);
+ CHARSET_INFO * STDCALL mysql_get_charset_by_name(const char *csname);
+diff --git a/libmariadb/libmariadb.c b/libmariadb/libmariadb.c
+index 2f0953f..0e10c10 100644
+--- a/libmariadb/libmariadb.c
++++ b/libmariadb/libmariadb.c
+@@ -2955,6 +2955,12 @@ mysql_get_client_info(void)
+   return (char*) MYSQL_CLIENT_VERSION;
+ }
+ 
++const char * STDCALL
++mysql_get_connector_info(void)
++{
++  return (char*) MARIADB_PACKAGE_VERSION;
++}
++
+ static size_t get_store_length(size_t length)
+ {
+   if (length < (size_t) L64(251))

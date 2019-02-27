@@ -1559,6 +1559,7 @@ mariadb() {
     ;;
     mariadb-prep)
       cd "$M_SOURCES/mariadb"; error
+      cat "$M_PATCHES/mariadb/"2.3.7_get_connector_info.patch | patch -p1 --verbose &>> "$M_LOGS/mariadb.txt"; error
     ;;
     mariadb-build)
       cd "$M_SOURCES/mariadb"; error

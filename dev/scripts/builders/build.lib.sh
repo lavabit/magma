@@ -68,6 +68,13 @@ fi
 # Read in the build parameters.
 . "$M_PROJECT_ROOT/dev/scripts/builders/build.lib.params.sh"
 
+# If the TERM environment variable is missing, then tput may trigger a fatal error.
+if [[ -n "$TERM" ]] && [[ "$TERM" -ne "dumb" ]]; then
+  export TPUT="tput"
+else
+  export TPUT="tput -Tvt100"
+fi
+
 # This undocumented environment variables makes it easy to use the "all" command line option, but skip still the
 # normal dependency checks, this making the build process faster. The QUICK option is undocumented, because in general,
 # developers interacting directly with the build.lib.sh script, should be running the "check" step to ensure
@@ -76,15 +83,10 @@ if [ -z QUICK ] || [ "$QUICK" != "yes" ]; then
   QUICK="no"
 fi
 
-# If the TERM environment variable is missing, then tput may trigger a fatal error.
-if [ -z TERM ] || [ "$TERM" == "" ]; then
-  export TERM="vt100"
-fi
-
 error() {
   if [ $? -ne 0 ]; then
   	wait
-    tput sgr0; tput setaf 1; date +"%n%n$COMMAND failed at %r on %x%n%n"; tput sgr0
+    ${TPUT} sgr0; ${TPUT} setaf 1; date +"%n%n$COMMAND failed at %r on %x%n%n"; ${TPUT} sgr0
     exit 1
   fi
 }
@@ -151,22 +153,22 @@ gd() {
       cd "$M_SOURCES/gd"; error
 
       if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build zlib before gd.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build zlib before gd.\n"; ${TPUT} sgr0
         return 3
       fi
 
       if [ ! -f "$M_LDPATH"/libpng.so ] || [ ! -f "$M_LDPATH"/libpng.a ] || [ ! -f "$M_PKGPATH"/libpng.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build png before gd.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build png before gd.\n"; ${TPUT} sgr0
         return 3
       fi
 
       if [ ! -f "$M_LDPATH"/libjpeg.so ] || [ ! -f "$M_LDPATH"/libjpeg.a ] || [ ! -f "$M_PKGPATH"/libjpeg.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build jpeg before gd.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build jpeg before gd.\n"; ${TPUT} sgr0
         return 3
       fi
 
       if [ ! -f "$M_LDPATH"/libfreetype.so ] || [ ! -f "$M_LDPATH"/libfreetype.a ] || [ ! -f "$M_PKGPATH"/freetype2.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build freetype before gd.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build freetype before gd.\n"; ${TPUT} sgr0
         return 3
       fi
 
@@ -261,7 +263,7 @@ png() {
       cd "$M_SOURCES/png"; error
 
       if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build zlib before png.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build zlib before png.\n"; ${TPUT} sgr0
         return 3
       fi
 
@@ -627,17 +629,17 @@ curl() {
       cd "$M_SOURCES/curl"; error
 
       if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build zlib before curl.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build zlib before curl.\n"; ${TPUT} sgr0
         return 3
       fi
 
       if [ ! -f "$M_LDPATH"/libcrypto.so ] || [ ! -f "$M_LDPATH"/libcrypto.a ] || [ ! -f "$M_PKGPATH"/libcrypto.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build openssl before curl.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build openssl before curl.\n"; ${TPUT} sgr0
         return 3
       fi
 
       if [ ! -f "$M_LDPATH"/libssl.so ] || [ ! -f "$M_LDPATH"/libssl.a ] || [ ! -f "$M_PKGPATH"/libssl.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build openssl before curl.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build openssl before curl.\n"; ${TPUT} sgr0
         return 3
       fi
 
@@ -749,7 +751,7 @@ xml2() {
       cd "$M_SOURCES/xml2"; error
 
       if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build zlib before xml2.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build zlib before xml2.\n"; ${TPUT} sgr0
         return 3
       fi
 
@@ -830,12 +832,12 @@ dkim() {
       cd "$M_SOURCES/dkim"; error
 
       if [ ! -f "$M_LDPATH"/libcrypto.so ] || [ ! -f "$M_LDPATH"/libcrypto.a ] || [ ! -f "$M_PKGPATH"/libcrypto.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build openssl before dkim.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build openssl before dkim.\n"; ${TPUT} sgr0
         return 3
       fi
 
       if [ ! -f "$M_LDPATH"/libssl.so ] || [ ! -f "$M_LDPATH"/libssl.a ] || [ ! -f "$M_PKGPATH"/libssl.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build openssl before dkim.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build openssl before dkim.\n"; ${TPUT} sgr0
         return 3
       fi
 
@@ -1087,12 +1089,12 @@ dspam() {
       cd "$M_SOURCES/dspam"; error
 
       # if [ ! -f "$M_LDPATH"/mysql/libmysqlclient_r.so ] || [ ! -f "$M_LDPATH"/mysql/libmysqlclient_r.a ]; then
-      #  tput sgr0; tput setaf 3; printf "\nPlease build mysql before dspam.\n"; tput sgr0
+      #  ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build mysql before dspam.\n"; ${TPUT} sgr0
       #  return 3
       # fi
 
       if [ ! -f "$M_LDPATH"/mariadb/libmariadb.so ] || [ ! -f "$M_LDPATH"/mariadb/libmariadbclient.a ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build mariadb before dspam.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build mariadb before dspam.\n"; ${TPUT} sgr0
         return 3
       fi
 
@@ -1180,17 +1182,17 @@ mysql() {
       cd "$M_SOURCES/mysql"; error
 
       if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build zlib before mysql.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build zlib before mysql.\n"; ${TPUT} sgr0
         return 3
       fi
 
       if [ ! -f "$M_LDPATH"/libcrypto.so ] || [ ! -f "$M_LDPATH"/libcrypto.a ] || [ ! -f "$M_PKGPATH"/libcrypto.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build openssl before mysql.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build openssl before mysql.\n"; ${TPUT} sgr0
         return 3
       fi
 
       if [ ! -f "$M_LDPATH"/libssl.so ] || [ ! -f "$M_LDPATH"/libssl.a ] || [ ! -f "$M_PKGPATH"/libssl.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build openssl before mysql.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build openssl before mysql.\n"; ${TPUT} sgr0
         return 3
       fi
 
@@ -1292,7 +1294,7 @@ geoip() {
       cd "$M_SOURCES/geoip"; error
 
       if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build zlib before geoip.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build zlib before geoip.\n"; ${TPUT} sgr0
         return 3
       fi
 
@@ -1419,22 +1421,22 @@ clamav() {
       cd "$M_SOURCES/clamav"; error
 
       if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build zlib before clamav.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build zlib before clamav.\n"; ${TPUT} sgr0
         return 3
       fi
 
       if [ ! -f "$M_LDPATH"/libpcre2-8.so ] || [ ! -f "$M_LDPATH"/libpcre2-8.a ] || [ ! -f "$M_PKGPATH"/libpcre2-8.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build pcre before pcre.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build pcre before pcre.\n"; ${TPUT} sgr0
         return 3
       fi
 
       if [ ! -f "$M_LDPATH"/libxml2.so ] || [ ! -f "$M_LDPATH"/libxml2.a ] || [ ! -f "$M_PKGPATH"/libxml-2.0.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build xml2 before clamav.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build xml2 before clamav.\n"; ${TPUT} sgr0
         return 3
       fi
 
       if [ ! -f "$M_LDPATH"/libbz2.so ] || [ ! -f "$M_LDPATH"/libbz2.a ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build bzip2 before clamav.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build bzip2 before clamav.\n"; ${TPUT} sgr0
         return 3
       fi
 
@@ -1773,7 +1775,7 @@ openssl() {
       cd "$M_SOURCES/openssl"; error
 
       if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build zlib before openssl.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build zlib before openssl.\n"; ${TPUT} sgr0
         return 3
       fi
 
@@ -2086,17 +2088,17 @@ freetype() {
       cd "$M_SOURCES/freetype"; error
 
       if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build zlib before freetype.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build zlib before freetype.\n"; ${TPUT} sgr0
         return 3
       fi
 
       if [ ! -f "$M_LDPATH"/libpng.so ] || [ ! -f "$M_LDPATH"/libpng.a ] || [ ! -f "$M_PKGPATH"/libpng.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build png before freetype.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build png before freetype.\n"; ${TPUT} sgr0
         return 3
       fi
 
       if [ ! -f "$M_LDPATH"/libbz2.so ] || [ ! -f "$M_LDPATH"/libbz2.a ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build bzip2 before freetype.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build bzip2 before freetype.\n"; ${TPUT} sgr0
         return 3
       fi
 
@@ -2182,7 +2184,7 @@ utf8proc() {
       cd "$M_SOURCES/utf8proc"; error
 
       if [ `which curl &> /dev/null; echo $?` != 0 ] && [ ! -f "$M_BNPATH"/curl ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build curl before utf8proc.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build curl before utf8proc.\n"; ${TPUT} sgr0
         return 3
       elif [ `which curl &> /dev/null; echo $?` != 0 ]; then
         alias curl="$M_BNPATH"/curl
@@ -2419,12 +2421,12 @@ tokyocabinet() {
       cd "$M_SOURCES/tokyocabinet"; error
 
       if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build zlib before tokyocabinet.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build zlib before tokyocabinet.\n"; ${TPUT} sgr0
         return 3
       fi
 
       if [ ! -f "$M_LDPATH"/libbz2.so ] || [ ! -f "$M_LDPATH"/libbz2.a ]; then
-        tput sgr0; tput setaf 3; printf "\nPlease build bzip2 before tokyocabinet.\n"; tput sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build bzip2 before tokyocabinet.\n"; ${TPUT} sgr0
         return 3
       fi
 
@@ -2533,9 +2535,9 @@ combine() {
     ! -f "$M_SOURCES/memcached/libmemcached/.libs/libmemcached.a" || \
     ! -f "$M_SOURCES/tokyocabinet/libtokyocabinet.a" ]]; then
     printf " a required dependency is missing. \n\nCreate the dependencies by running \"build.lib.sh all\" and then try again."
-    tput sgr0; tput setaf 1
+    ${TPUT} sgr0; ${TPUT} setaf 1
     date +"%n%nFinished $COMMAND failed at %r on %x%n"
-    tput sgr0
+    ${TPUT} sgr0
     exit 1
   fi
 
@@ -2727,9 +2729,9 @@ load() {
 
   if [ ! -f "$M_SO" ]; then
     printf " the magmad.so file is missing.\n\nCreate the shared object by running \"build.lib.sh all\" and then try again."
-    tput sgr0; tput setaf 1
+    ${TPUT} sgr0; ${TPUT} setaf 1
     date +"%n%nFinished $COMMAND failed at %r on %x%n%n"
-    tput sgr0
+    ${TPUT} sgr0
     exit 1
   fi
 
@@ -3022,7 +3024,7 @@ status() {
 
   while true; do
     clear
-    tput sgr0;  tput sgr 0 1; tput setaf 6; printf "\n# Commands\n\n"; tput sgr0
+    ${TPUT} sgr0; ${TPUT} sgr 0 1; ${TPUT} setaf 6; printf "\n# Commands\n\n"; ${TPUT} sgr0
     ps --no-headers -C build -C build.sh -C build.lib -C build.lib.sh -o command:100,etime | grep -v status | cat - |
     while read line; do
       BASE=`echo "$line" | awk '{print $1}'`
@@ -3035,11 +3037,11 @@ status() {
       fi
       echo "$C $line"
     done
-    tput sgr0;  tput sgr 0 1; tput setaf 6; printf "\n# Load\n\n"; tput sgr0
+    ${TPUT} sgr0;  ${TPUT} sgr 0 1; ${TPUT} setaf 6; printf "\n# Load\n\n"; ${TPUT} sgr0
     uptime | sed "s/^.*load average://" | awk -F',' '{print "avg-load: " $1 ", " $2 ", " $3 }'
-    tput sgr0;  tput sgr 0 1; tput setaf 6; printf "\n# Processor\n\n"; tput sgr0
+    ${TPUT} sgr0;  ${TPUT} sgr 0 1; ${TPUT} setaf 6; printf "\n# Processor\n\n"; ${TPUT} sgr0
     echo "$CPU"
-    tput sgr0;  tput sgr 0 1; tput setaf 6; printf "\n# Disk\n\n"; tput sgr0
+    ${TPUT} sgr0;  ${TPUT} sgr 0 1; ${TPUT} setaf 6; printf "\n# Disk\n\n"; ${TPUT} sgr0
     echo "$DISK"
 
     # Refresh the stats for the next loop; note that this takes 4 seconds to complete.

@@ -239,16 +239,25 @@ RM                            = rm --force
 RMDIR                         = rmdir --parents --ignore-fail-on-non-empty
 MKDIR                         = mkdir --parents
 
-# Text Coloring
-RED                           = $$(tput setaf 1)
-BLUE                          = $$(tput setaf 4)
-GREEN                         = $$(tput setaf 2)
-WHITE                         = $$(tput setaf 7)
-YELLOW                        = $$(tput setaf 3)
-
-# Text Weighting
-BOLD                          = $$(tput bold)
-NORMAL                        = $$(tput sgr0)
+# Control the Text Color/Weight if the TERM supports it. If no TERM is available, then
+# default to using vt100 as the terminal type.
+ifdef TERM
+  RED                           = $$(tput setaf 1)
+  BLUE                          = $$(tput setaf 4)
+  GREEN                         = $$(tput setaf 2)
+  WHITE                         = $$(tput setaf 7)
+  YELLOW                        = $$(tput setaf 3)
+  BOLD                          = $$(tput bold)
+  NORMAL                        = $$(tput sgr0)
+else
+  RED                           = $$(tput -Tvt100 setaf 1)
+  BLUE                          = $$(tput -Tvt100 setaf 4)
+  GREEN                         = $$(tput -Tvt100 setaf 2)
+  WHITE                         = $$(tput -Tvt100 setaf 7)
+  YELLOW                        = $$(tput -Tvt100 setaf 3)
+  BOLD                          = $$(tput -Tvt100 bold)
+  NORMAL                        = $$(tput -Tvt100 sgr0)
+endif
 
 # Calculate the version, commit and timestamp strings.
 MAGMA_REPO                    = $(strip $(shell which git 2>&1 > /dev/null && git log 2>&1 > /dev/null && echo '1'))

@@ -608,6 +608,16 @@ endif
 #	@QUICK=$(QUICK) dev/scripts/builders/build.lib.sh checker
 #endif
 
+$(DIME_STATIC): $(MAGMA_SHARED_LIBRARY)
+
+$(SIGNET_STATIC): $(MAGMA_SHARED_LIBRARY)
+
+$(GENREC_STATIC): $(MAGMA_SHARED_LIBRARY)
+
+$(DIME_CHECK_STATIC): $(MAGMA_SHARED_LIBRARY)
+
+$(MAGMA_CHECK_STATIC): $(MAGMA_SHARED_LIBRARY)
+
 # The recipe for creating a dynamically loaded shared library with all external dependencies required by Magma.
 $(MAGMA_SHARED_LIBRARY): dev/scripts/builders/build.lib.params.sh
 	@echo

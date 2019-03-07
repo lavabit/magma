@@ -13,6 +13,7 @@ void   molten_init(connection_t *con);
 void   molten_invalid(connection_t *con);
 void   molten_quit(connection_t *con);
 void   molten_stats(connection_t *con);
+void   molten_version(connection_t *con);
 
 /// commands.c
 int_t   molten_compare(const void *compare, const void *command);

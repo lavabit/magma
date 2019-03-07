@@ -17,6 +17,10 @@ command_t molten_commands[] = {
 			.string = "STATS",
 			.length = 5,
 			.function = &molten_stats
+		},{
+			.string = "VERSION",
+			.length = 7,
+			.function = &molten_version
 		}
 };
 

@@ -12,7 +12,7 @@
 # clamav -:- zlib bzip pcre libxml2
 # curl -:- zlib openssl
 # dkim -:- openssl
-# dspam -:- mysql
+# dspam -:- mariadb
 # freetype -:- zlib bzip2 png
 # gd -:- zlib png jpeg freetype
 # geoip -:- zlib
@@ -22,7 +22,7 @@
 # jpeg -:-
 # lzo -:-
 # memcached -:-
-# mysql -:- zlib openssl
+# mariadb -:- zlib openssl
 # openssl -:- zlib
 # pcre -:-
 # png -:- zlib
@@ -1088,11 +1088,6 @@ dspam() {
     dspam-build)
       cd "$M_SOURCES/dspam"; error
 
-      # if [ ! -f "$M_LDPATH"/mysql/libmysqlclient_r.so ] || [ ! -f "$M_LDPATH"/mysql/libmysqlclient_r.a ]; then
-      #  ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build mysql before dspam.\n"; ${TPUT} sgr0
-      #  return 3
-      # fi
-
       if [ ! -f "$M_LDPATH"/mariadb/libmariadb.so ] || [ ! -f "$M_LDPATH"/mariadb/libmariadbclient.a ]; then
         ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build mariadb before dspam.\n"; ${TPUT} sgr0
         return 3
@@ -1155,121 +1150,6 @@ dspam() {
 
   date +"Finished $1 at %r on %x"
   date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/dspam.txt"
-
-  return $?
-
-}
-
-mysql() {
-
-  if [[ $1 == "mysql-extract" ]]; then
-    rm -f "$M_LOGS/mysql.txt"; error
-  elif [[ $1 != "mysql-log" ]]; then
-    date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/mysql.txt"
-  fi
-
-  case "$1" in
-    mysql-extract)
-      extract $MYSQL "mysql" &>> "$M_LOGS/mysql.txt"
-    ;;
-    mysql-prep)
-      cd "$M_SOURCES/mysql"; error
-      touch libtoolT; error
-      cat "$M_PATCHES/mysql/"5.1.73_mysql_test_run_syntax.patch | patch -p1 --verbose &>> "$M_LOGS/mysql.txt"; error
-      cat "$M_PATCHES/mysql/"5.1.73_perl_inc_path.patch | patch -p1 --verbose &>> "$M_LOGS/mysql.txt"; error
-    ;;
-    mysql-build)
-      cd "$M_SOURCES/mysql"; error
-
-      if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
-        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build zlib before mysql.\n"; ${TPUT} sgr0
-        return 3
-      fi
-
-      if [ ! -f "$M_LDPATH"/libcrypto.so ] || [ ! -f "$M_LDPATH"/libcrypto.a ] || [ ! -f "$M_PKGPATH"/libcrypto.pc ]; then
-        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build openssl before mysql.\n"; ${TPUT} sgr0
-        return 3
-      fi
-
-      if [ ! -f "$M_LDPATH"/libssl.so ] || [ ! -f "$M_LDPATH"/libssl.a ] || [ ! -f "$M_PKGPATH"/libssl.pc ]; then
-        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build openssl before mysql.\n"; ${TPUT} sgr0
-        return 3
-      fi
-
-      # The MySQL code (as of version 5.1.73) includes uses invalid cast operations. As a result the
-      # -fpermissive command line option is required for compilation.
-      printf "\n#include <stdlib.h>\n\nint main(int argc, char *argv[]) { return 0; }\n\n" | gcc -o /dev/null -x c++ -fpermissive - &> /dev/null
-      if [ $? -eq 0 ]; then
-        M_EXTRA="-fpermissive"
-      else
-        M_EXTRA=""
-      fi
-
-      export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
-      export CFLAGS="$M_SYM_INCLUDES -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O $M_CFLAGS"
-      export CXXFLAGS="$M_SYM_INCLUDES -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O -Wno-narrowing $M_EXTRA $M_CXXFLAGS"
-      export CPPFLAGS="$M_SYM_INCLUDES -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O -Wno-narrowing $M_EXTRA $M_CPPFLAGS"
-
-      # According to the RHEL build spec, MySQL checks will fail without --with-big-tables,
-      ./configure --with-pic --enable-thread-safe-client --with-readline --with-charset=latin1 \
-        --with-extra-charsets=all --with-plugins=all --with-ssl="$M_SOURCES/openssl" \
-        --prefix="$M_LOCAL" &>> "$M_LOGS/mysql.txt"; error
-
-      unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset M_EXTRA
-
-      make --jobs=4 &>> "$M_LOGS/mysql.txt"; error
-      make install &>> "$M_LOGS/mysql.txt"; error
-    ;;
-    mysql-check)
-      cd "$M_SOURCES/mysql"; error
-
-      export LD_LIBRARY_PATH="$M_LDPATH"; error
-      export PATH="$M_BNPATH:$PATH"; error
-
-      make --jobs=4 test-fast &>> "$M_LOGS/mysql.txt"; error
-    ;;
-    mysql-check-full)
-
-      cd "$M_SOURCES/mysql"; error
-      export LD_LIBRARY_PATH="$M_LDPATH"; error
-      export PATH="$M_BNPATH:$PATH"; error
-
-      # The test suite will use this variable to offset the port numbers and prevent clashing.
-      export MTR_BUILD_THREAD=86
-
-      # test-full combines the test, test-nr and test-ps targets
-      make clean &>> "$M_LOGS/mysql.txt"; error
-      make --jobs=4 &>> "$M_LOGS/mysql.txt"; error
-      make --jobs=4 test-full &>> "$M_LOGS/mysql.txt"; error
-
-      # make clean &>> "$M_LOGS/mysql.txt"; error
-      #make --jobs=2 &>> "$M_LOGS/mysql.txt"; error
-      #make test-full-qa &>> "$M_LOGS/mysql.txt"; error
-    ;;
-    mysql-clean)
-      cd "$M_SOURCES/mysql"; error
-      make clean &>> "$M_LOGS/mysql.txt"; error
-    ;;
-    mysql-tail)
-      tail --lines=30 --follow=name --retry "$M_LOGS/mysql.txt"; error
-    ;;
-    mysql-log)
-      cat "$M_LOGS/mysql.txt"; error
-    ;;
-    mysql)
-      mysql "mysql-extract"
-      mysql "mysql-prep"
-      mysql "mysql-build"
-      if [ "$QUICK" != "yes" ]; then mysql "mysql-check"; fi
-    ;;
-    *)
-      printf "\nUnrecognized request.\n"
-      exit 2
-    ;;
-  esac
-
-  date +"Finished $1 at %r on %x"
-  date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/mysql.txt"
 
   return $?
 
@@ -1567,17 +1447,17 @@ mariadb() {
       cd "$M_SOURCES/mariadb"; error
 
 			if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
-        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build zlib before mysql.\n"; ${TPUT} sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build zlib before mariadb.\n"; ${TPUT} sgr0
         return 3
       fi
 
       if [ ! -f "$M_LDPATH"/libcrypto.so ] || [ ! -f "$M_LDPATH"/libcrypto.a ] || [ ! -f "$M_PKGPATH"/libcrypto.pc ]; then
-        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build openssl before mysql.\n"; ${TPUT} sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build openssl before mariadb.\n"; ${TPUT} sgr0
         return 3
       fi
 
       if [ ! -f "$M_LDPATH"/libssl.so ] || [ ! -f "$M_LDPATH"/libssl.a ] || [ ! -f "$M_PKGPATH"/libssl.pc ]; then
-        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build openssl before mysql.\n"; ${TPUT} sgr0
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build openssl before mariadb.\n"; ${TPUT} sgr0
         return 3
       fi
       
@@ -2900,7 +2780,6 @@ combo() {
 
     ($M_BUILD "curl-$1") & CURL_PID=$!
     ($M_BUILD "dkim-$1") & DKIM_PID=$!
-    # ($M_BUILD "mysql-$1") & MYSQL_PID=$!
     ($M_BUILD "mariadb-$1") & MARIADB_PID=$!
 
     # These libraries require zlib (above), bzip2, png and jpeg.
@@ -2922,8 +2801,7 @@ combo() {
 
     ($M_BUILD "gd-$1") & GD_PID=$!
 
-    # The dspam library requires mysql.
-    # wait $MYSQL_PID; error
+    # The dspam library requires MariaDB/MySQL client library.
     wait $MARIADB_PID; error
 
     ($M_BUILD "dspam-$1") & DSPAM_PID=$!
@@ -2955,7 +2833,6 @@ combo() {
     # If this isn't a build, then we kick off everything in parallel.
     ($M_BUILD "clamav-$1") & CLAMAV_PID=$!
     ($M_BUILD "curl-$1") & CURL_PID=$!
-    # ($M_BUILD "mysql-$1") & MYSQL_PID=$!
     ($M_BUILD "mariadb-$1") & MARIADB_PID=$!
     ($M_BUILD "gd-$1") & GD_PID=$!
     ($M_BUILD "png-$1") & PNG_PID=$!
@@ -2991,7 +2868,6 @@ combo() {
     wait $ZLIB_PID; error
     wait $BZIP2_PID; error
     wait $DSPAM_PID; error
-    # wait $MYSQL_PID; error
     wait $MARIADB_PID; error
     wait $GEOIP_PID; error
     wait $CLAMAV_PID; error
@@ -3015,7 +2891,7 @@ follow() {
   # Note that the build.txt and combo.txt log files are intentionally excluded from this list because they don't belong to a bundled package file.
   tail -n 0 -F "$M_LOGS/clamav.txt" "$M_LOGS/curl.txt" "$M_LOGS/dspam.txt" "$M_LOGS/jansson.txt" "$M_LOGS/memcached.txt" "$M_LOGS/openssl.txt" \
     "$M_LOGS/tokyocabinet.txt" "$M_LOGS/zlib.txt" "$M_LOGS/bzip2.txt" "$M_LOGS/dkim.txt" "$M_LOGS/geoip.txt" "$M_LOGS/lzo.txt" \
-    "$M_LOGS/mysql.txt" "$M_LOGS/mariadb.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt" \
+    "$M_LOGS/mariadb.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt" \
     "$M_LOGS/utf8proc.txt" "$M_LOGS/checker.txt" "$M_LOGS/pcre.txt"
 }
 
@@ -3023,7 +2899,7 @@ log() {
   # Note that the build.txt and combo.txt log files are intentionally excluded from this list because they don't belong to a bundled package file.
   cat "$M_LOGS/clamav.txt" "$M_LOGS/curl.txt" "$M_LOGS/dspam.txt" "$M_LOGS/jansson.txt" "$M_LOGS/memcached.txt" "$M_LOGS/openssl.txt" \
     "$M_LOGS/tokyocabinet.txt" "$M_LOGS/zlib.txt" "$M_LOGS/bzip2.txt" "$M_LOGS/dkim.txt" "$M_LOGS/geoip.txt" "$M_LOGS/lzo.txt" \
-    "$M_LOGS/mysql.txt" "$M_LOGS/mariadb.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt" \
+    "$M_LOGS/mariadb.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt" \
     "$M_LOGS/utf8proc.txt" "$M_LOGS/checker.txt" "$M_LOGS/pcre.txt"
 }
 
@@ -3126,7 +3002,6 @@ elif [[ $1 =~ "dkim" ]]; then dkim "$1"
 elif [[ $1 =~ "zlib" ]]; then zlib "$1"
 elif [[ $1 =~ "bzip2" ]]; then bzip2 "$1"
 elif [[ $1 =~ "dspam" ]]; then dspam "$1"
-elif [[ $1 =~ "mysql" ]]; then mysql "$1"
 elif [[ $1 =~ "geoip" ]]; then geoip "$1"
 elif [[ $1 =~ "clamav" ]]; then clamav "$1"
 elif [[ $1 =~ "mariadb" ]]; then mariadb "$1"
@@ -3157,7 +3032,7 @@ elif [[ $1 == "tail" ]]; then follow
 else
   echo ""
   echo " Libraries"
-  echo $"  `basename $0` {gd|png|lzo|pcre|jpeg|curl|spf2|xml2|dkim|zlib|bzip2|dspam|mysql|geoip|clamav|mariadb|checker|openssl|freetype|utf8proc|memcached|tokyocabinet} and/or "
+  echo $"  `basename $0` {gd|png|lzo|pcre|jpeg|curl|spf2|xml2|dkim|zlib|bzip2|dspam|geoip|clamav|mariadb|checker|openssl|freetype|utf8proc|memcached|tokyocabinet} and/or "
   echo ""
   echo " Stages (which may be combined via a dash with the above)"
   echo $"  `basename $0` {extract|prep|build|check|check-full|clean|tail|log} or "
@@ -3170,17 +3045,17 @@ else
   exit 2
 fi
 
-# Beep the speaker 10 times to let us know when 'all' is done or 3 times for something else.
+# Beep the speaker 4 times to let us know when 'all' is done or 2 times when a more specific target finishes.
 if [[ "$PARENT" == "$BASHPID" ]]; then
 
   if [[ $1 == "all" ]]; then
-    NUMS="1 2 3 4 5 6 7 8 9 10"
+    NUMS="1 2 3 4"
   else
-    NUMS="1 2 3"
+    NUMS="1 2"
   fi
 
   for i in $NUMS; do
-  printf "\a"; sleep 1
+    printf "\a"; sleep 1
   done
 
 fi

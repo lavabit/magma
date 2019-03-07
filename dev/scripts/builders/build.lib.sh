@@ -1566,6 +1566,21 @@ mariadb() {
     mariadb-build)
       cd "$M_SOURCES/mariadb"; error
 
+			if [ ! -f "$M_LDPATH"/libz.so ] || [ ! -f "$M_LDPATH"/libz.a ] || [ ! -f "$M_PKGPATH"/zlib.pc ]; then
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build zlib before mysql.\n"; ${TPUT} sgr0
+        return 3
+      fi
+
+      if [ ! -f "$M_LDPATH"/libcrypto.so ] || [ ! -f "$M_LDPATH"/libcrypto.a ] || [ ! -f "$M_PKGPATH"/libcrypto.pc ]; then
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build openssl before mysql.\n"; ${TPUT} sgr0
+        return 3
+      fi
+
+      if [ ! -f "$M_LDPATH"/libssl.so ] || [ ! -f "$M_LDPATH"/libssl.a ] || [ ! -f "$M_PKGPATH"/libssl.pc ]; then
+        ${TPUT} sgr0; ${TPUT} setaf 3; printf "\nPlease build openssl before mysql.\n"; ${TPUT} sgr0
+        return 3
+      fi
+      
 			mkdir build && cd build && cmake -DWITH_UNIT_TESTS=ON -DWITH_OPENSSL=ON -DWITH_EXTERNAL_ZLIB=ON \
 			-DOPENSSL_SSL_LIBRARY="$M_LOCAL/lib/libssl.so" -DOPENSSL_CRYPTO_LIBRARY="$M_LOCAL/lib/libcrypto.so" -DZLIB_LIBRARY="$M_LOCAL/lib/libz.so" \
 			-DZLIB_INCLUDE_DIR="$M_LOCAL/include" -DOPENSSL_INCLUDE_DIR="$M_LOCAL/include/openssl" \

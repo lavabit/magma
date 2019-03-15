@@ -69,7 +69,7 @@ fi
 . "$M_PROJECT_ROOT/dev/scripts/builders/build.lib.params.sh"
 
 # If the TERM environment variable is missing, then tput may trigger a fatal error.
-if [[ -n "$TERM" ]] && [[ "$TERM" -ne "dumb" ]]; then
+if [[ -n "$TERM" ]] && [[ "$TERM" != "dumb" ]]; then
   export TPUT="tput"
 else
   export TPUT="tput -Tvt100"

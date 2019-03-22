@@ -27,6 +27,13 @@ MYSQL_USER=${MYSQL_USER:-"mytool"}
 MYSQL_PASSWORD=${MYSQL_PASSWORD:-"aComplex1"}
 MYSQL_SCHEMA=${MYSQL_SCHEMA:-"Sandbox"}
 
+# If the TERM environment variable is missing, then tput may trigger a fatal error.
+if [[ -n "$TERM" ]] && [[ "$TERM" != "dumb" ]]; then
+  export TPUT="tput"
+else
+  export TPUT="tput -Tvt100"
+fi
+
 # Check and make sure mysqld is running before attempting a connection.
 PID=`pidof mysqld`       
 

@@ -26,6 +26,13 @@ MAGMA_RES_LOGS="sandbox/logs/"
 MAGMA_RES_TANKS="sandbox/storage/tanks/"
 MAGMA_RES_STORAGE="sandbox/storage/local/0/"
 
+# If the TERM environment variable is missing, then tput may trigger a fatal error.
+if [[ -n "$TERM" ]] && [[ "$TERM" != "dumb" ]]; then
+  export TPUT="tput"
+else
+  export TPUT="tput -Tvt100"
+fi
+
 case $# in
 	0) 
     	echo "Using the default sandbox values for the MySQL username, password and schema name."

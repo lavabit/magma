@@ -21,7 +21,14 @@ popd > /dev/null
 
 cd $BASE/../../../
 
-MAGMA_RES_SQL="res/sql/" 
+MAGMA_RES_SQL="res/sql/"
+
+# If the TERM environment variable is missing, then tput may trigger a fatal error.
+if [[ -n "$TERM" ]] && [[ "$TERM" != "dumb" ]]; then
+  export TPUT="tput"
+else
+  export TPUT="tput -Tvt100"
+fi
 
 case $# in
 	0) 

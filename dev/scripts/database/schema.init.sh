@@ -128,9 +128,9 @@ if [ $? != 0 ]; then
 	$MAGMA_RES_SQL/Version.sql \
 	$MAGMA_RES_SQL/Finish.sql \
 	| mysql --verbose --user="${MYSQL_USER}" --password="${MYSQL_PASSWORD}" | tail -4
-	tput setaf 1; printf "Schema Reset Failed\n\n"; tput sgr0
+	${TPUT} setaf 1; printf "Schema Reset Failed\n\n"; ${TPUT} sgr0
 	exit 1
 fi
 
 # Done.
-tput setaf 2; printf "Done.\n"; tput sgr0
+${TPUT} setaf 2; printf "Done.\n"; ${TPUT} sgr0

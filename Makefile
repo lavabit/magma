@@ -242,21 +242,21 @@ MKDIR                         = mkdir --parents
 # Control the Text Color/Weight if the TERM supports it. If no TERM is available, then
 # default to using vt100 as the terminal type.
 ifdef TERM
-  RED                           = $$(tput setaf 1)
-  BLUE                          = $$(tput setaf 4)
-  GREEN                         = $$(tput setaf 2)
-  WHITE                         = $$(tput setaf 7)
-  YELLOW                        = $$(tput setaf 3)
-  BOLD                          = $$(tput bold)
-  NORMAL                        = $$(tput sgr0)
+  RED                           = $$([[ -t 0 ]] && tput setaf 1 || true)
+  BLUE                          = $$([[ -t 0 ]] && tput setaf 4 || true)
+  GREEN                         = $$([[ -t 0 ]] && tput setaf 2 || true)
+  WHITE                         = $$([[ -t 0 ]] && tput setaf 7 || true)
+  YELLOW                        = $$([[ -t 0 ]] && tput setaf 3 || true)
+  BOLD                          = $$([[ -t 0 ]] && tput bold || true)
+  NORMAL                        = $$([[ -t 0 ]] && tput sgr0 || true)
 else
-  RED                           = $$(tput -Tvt100 setaf 1)
-  BLUE                          = $$(tput -Tvt100 setaf 4)
-  GREEN                         = $$(tput -Tvt100 setaf 2)
-  WHITE                         = $$(tput -Tvt100 setaf 7)
-  YELLOW                        = $$(tput -Tvt100 setaf 3)
-  BOLD                          = $$(tput -Tvt100 bold)
-  NORMAL                        = $$(tput -Tvt100 sgr0)
+  RED                           = $$([[ -t 0 ]] && tput -Tvt100 setaf 1 || true)
+  BLUE                          = $$([[ -t 0 ]] && tput -Tvt100 setaf 4 || true)
+  GREEN                         = $$([[ -t 0 ]] && tput -Tvt100 setaf 2 || true)
+  WHITE                         = $$([[ -t 0 ]] && tput -Tvt100 setaf 7 || true)
+  YELLOW                        = $$([[ -t 0 ]] && tput -Tvt100 setaf 3 || true)
+  BOLD                          = $$([[ -t 0 ]] && tput -Tvt100 bold || true)
+  NORMAL                        = $$([[ -t 0 ]] && tput -Tvt100 sgr0 || true)
 endif
 
 # Calculate the version, commit and timestamp strings.

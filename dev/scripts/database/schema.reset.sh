@@ -143,7 +143,7 @@ if [ $? != 0 ]; then
 		$MAGMA_RES_SQL/Data.sql \
 		$MAGMA_RES_SQL/Finish.sql \
 	| mysql --verbose --user="${MYSQL_USER}" --password="${MYSQL_PASSWORD}" | tail -4
-	${TPUT} setaf 1; printf "Schema Reset Failed\n\n"; ${TPUT} sgr0
+	[[ -t 0 ]] && ${TPUT} setaf 1 || true ; printf "Schema Reset Failed\n\n" ; [[ -t 0 ]] && ${TPUT} sgr0 || true
 	exit 1
 fi
 
@@ -162,4 +162,4 @@ mkdir --parents "$MAGMA_RES_STORAGE"
 find "$MAGMA_RES_LOGS" -iname "magmad.[0-9]*.log" -exec rm --force {} \;
 
 # Done.
-${TPUT} setaf 2; printf "Done.\n"; ${TPUT} sgr0
+[[ -t 0 ]] && ${TPUT} setaf 2 || true ; printf "Done.\n" ; [[ -t 0 ]] && ${TPUT} sgr0 || true

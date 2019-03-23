@@ -38,21 +38,21 @@ fi
 PID=`pidof mysqld`       
 
 if [ -z "$PID" ]; then
-	${TPUT} setaf 1; ${TPUT} bold; echo "The MySQL server process isn't running."; ${TPUT} sgr0
+	[[ -t 0 ]] && ${TPUT} setaf 1 || true; [[ -t 0 ]] && ${TPUT} bold || true ; echo "The MySQL server process isn't running." ; [[ -t 0 ]] && ${TPUT} sgr0 || true
 	exit 2
 fi
 
 # Check and make sure the mysql command line client has been installed.
 which mysql &>/dev/null
 if [ $? -ne 0 ]; then
-	${TPUT} setaf 1; ${TPUT} bold; echo "The mysql client command isn't available. It may need to be installed."; ${TPUT} sgr0
+	[[ -t 0 ]] && ${TPUT} setaf 1 || true ; [[ -t 0 ]] && ${TPUT} bold || true ; echo "The mysql client command isn't available. It may need to be installed."; [[ -t 0 ]] && ${TPUT} sgr0 || true
 	exit 1
 fi
 
 # Check and make sure the mysqldump command line utility has been installed.
 which mysql &>/dev/null
 if [ $? -ne 0 ]; then
-	${TPUT} setaf 1; ${TPUT} bold; echo "The mysqldump command line utility isn't available. It may need to be installed."; ${TPUT} sgr0
+	[[ -t 0 ]] && ${TPUT} setaf 1 || true ; [[ -t 0 ]] && ${TPUT} bold || true ; echo "The mysqldump command line utility isn't available. It may need to be installed."; [[ -t 0 ]] && ${TPUT} sgr0 || true
 	exit 1
 fi
 

@@ -132,7 +132,7 @@ cat $MAGMA_RES_SQL/Start.sql \
 	$MAGMA_RES_SQL/Finish.sql \
 | mysql  --batch --user="${MYSQL_USER}" --password="${MYSQL_PASSWORD}" &> /dev/null
 
-# if the query fails we run it again, verbosely, and print the last 20 lines output, so we know what caused the error.
+# If the query fails we run it again, verbosely, and print the last 20 lines output, so we know what caused the error.
 if [ $? != 0 ]; then
 	printf "\n"
 	cat $MAGMA_RES_SQL/Start.sql \

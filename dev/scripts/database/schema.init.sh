@@ -118,7 +118,7 @@ cat $MAGMA_RES_SQL/Start.sql \
 	$MAGMA_RES_SQL/Finish.sql \
 | mysql --batch --user="${MYSQL_USER}" --password="${MYSQL_PASSWORD}" &> /dev/null
 
-# if the query fails we run it again, verbosely, and print the last 20 lines output, so we know what caused the error.
+# If the query fails we run it again, verbosely, and print the last 20 lines output, so we know what caused the error.
 if [ $? != 0 ]; then
 	printf "\n"
 	cat $MAGMA_RES_SQL/Start.sql \
@@ -128,7 +128,7 @@ if [ $? != 0 ]; then
 	$MAGMA_RES_SQL/Version.sql \
 	$MAGMA_RES_SQL/Finish.sql \
 	| mysql --verbose --user="${MYSQL_USER}" --password="${MYSQL_PASSWORD}" | tail -4
-	[[ -t 0 ]] && ${TPUT} setaf 1 || true ; printf "Schema Reset Failed\n\n" ; [[ -t 0 ]] && ${TPUT} sgr0 || true
+	[[ -t 0 ]] && ${TPUT} setaf 1 || true ; printf "Schema Initialization Failed\n\n" ; [[ -t 0 ]] && ${TPUT} sgr0 || true
 	exit 1
 fi
 

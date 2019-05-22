@@ -1469,7 +1469,13 @@ mariadb() {
 			make VERBOSE=1 &>> "$M_LOGS/mariadb.txt"; error
 			make install &>> "$M_LOGS/mariadb.txt"; error
 			
-			ln -s "$M_LOCAL/include/mariadb" "$M_LOCAL/include/mysql"
+			# Older versions of this script used a symbolic link which needs to be unlinked first.
+			if [ -L "$M_LOCAL/include/mysql" ]; then
+					unlink "$M_LOCAL/include/mysql"
+			fi
+			
+			# Duplicate the header files into a mysql subdirectory so that legacy include directives still function properly.
+			cp --force --recursive "$M_LOCAL/include/mariadb" "$M_LOCAL/include/mysql"
     ;;
     mariadb-check)
     	cd "$M_SOURCES/mariadb"; error
@@ -2240,10 +2246,10 @@ memcached() {
       unset MEMCACHED_SERVERS
 
       # Doesn't appear to be necessary anymore...
-      #rm -vf /tmp/memcached.pid* &>> "$M_LOGS/memcached.txt"; error
+      # rm -vf /tmp/memcached.pid* &>> "$M_LOGS/memcached.txt"; error
 
       # For some reason the included version of memcached is being used and causing the unit tests to fail, so overwrite the binary
-      #cp /usr/local/bin/memcached "$M_SOURCES/memcached/memcached"
+      # cp /usr/local/bin/memcached "$M_SOURCES/memcached/memcached"
 
       make check &>> "$M_LOGS/memcached.txt"; error
     ;;
@@ -2256,7 +2262,7 @@ memcached() {
       unset MEMCACHED_SERVERS
 
       # Doesn't appear to be necessary anymore...
-      #rm -vf /tmp/memcached.pid* &>> "$M_LOGS/memcached.txt"; error
+      # rm -vf /tmp/memcached.pid* &>> "$M_LOGS/memcached.txt"; error
 
       make check &>> "$M_LOGS/memcached.txt"; error
       make valgrind &>> "$M_LOGS/memcached.txt"; error
@@ -2656,10 +2662,10 @@ load() {
   echo "}" >> magma.open.symbols.c; error
 
   ## Because GeoIPDBDescription is an array of pointers it doesn't need the leading ampersand.
-  #sed -i -e "s/GeoIPDBDescription_d = &GeoIPDBDescription;/GeoIPDBDescription_d = GeoIPDBDescription;/g" magma.open.symbols.c; error
+  # sed -i -e "s/GeoIPDBDescription_d = &GeoIPDBDescription;/GeoIPDBDescription_d = GeoIPDBDescription;/g" magma.open.symbols.c; error
 
   ## This function prototype is prefixed with a macro in parentheses which fools the default parsing rules.
-  #sed -i -e "s/SSL_COMP)/SSL_COMP_get_compression_methods/g" magma.open.symbols.c; error
+  # sed -i -e "s/SSL_COMP)/SSL_COMP_get_compression_methods/g" magma.open.symbols.c; error
 
   # The name dkim_getsighdr_d is taken by the OpenDKIM library, so we had to break convention and use dkim_getsighdrx_d.
   sed -i -e "s/\"dkim_getsighdrx\"/\"dkim_getsighdr\"/g" magma.open.symbols.c; error

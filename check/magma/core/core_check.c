@@ -596,12 +596,13 @@ START_TEST (check_time_stamp_s) {
 }
 END_TEST
 
+
 START_TEST (check_time_print_s) {
 
 	time_t stamp;
 	log_disable();
 	bool_t result = true;
-	stringer_t *buffer = NULL, *errmsg = MANAGEDBUF(1024);
+	stringer_t *buffer = NULL, *errmsg = MANAGEDBUF(1024), *comparator = MANAGEDBUF(10);
 
 	if (status()) {
 
@@ -611,14 +612,25 @@ START_TEST (check_time_print_s) {
 		// December 25th, 1970 at 12:00pm.
 		stamp = 30974400;
 
-		if (!(buffer = time_print_local(MANAGEDBUF(64), "%Y-%m-%d", stamp)) || st_cmp_ci_eq(buffer, PLACER("1970-12-25", 10))) {
-			st_sprint(errmsg, "Historical time stamp to local date string failed. { stamp = %lu / string = %.*s }", stamp,
-				st_length_int(buffer), st_char_get(buffer));
+		// If the system time zone is -12 hours from UTC, then we'll get a different result, so we test for that here.
+		if (!st_cmp_ci_eq(time_print_local(MANAGEDBUF(64), "%z", stamp), PLACER("+1200", 5)) ||
+			!st_cmp_ci_eq(time_print_local(MANAGEDBUF(64), "%z", stamp), PLACER("+1300", 5))) {
+			st_write(comparator, PLACER("1970-12-26", 10));
+		}
+		else {
+			st_write(comparator, PLACER("1970-12-25", 10));
+		}
+
+		if (!(buffer = time_print_local(MANAGEDBUF(64), "%Y-%m-%d", stamp)) || st_cmp_ci_eq(buffer, comparator)) {
+			st_sprint(errmsg, "Historical time stamp to local date string failed. { stamp = %lu / string = %.*s / tz = %.*s }", stamp,
+				st_length_int(buffer), st_char_get(buffer), st_length_int(time_print_local(MANAGEDBUF(64), "%z", stamp)),
+				st_char_get(time_print_local(MANAGEDBUF(64), "%z", stamp)));
 			result = false;
 		}
 		else if (!(buffer = time_print_gmt(MANAGEDBUF(64), "%Y-%m-%d", stamp)) || st_cmp_ci_eq(buffer, PLACER("1970-12-25", 10))) {
-			st_sprint(errmsg, "Historical time stamp to UTC date string failed. { stamp = %lu / string = %.*s }", stamp,
-				st_length_int(buffer), st_char_get(buffer));
+			st_sprint(errmsg, "Historical time stamp to UTC date string failed. { stamp = %lu / string = %.*s / tz = %.*s }", stamp,
+				st_length_int(buffer), st_char_get(buffer), st_length_int(time_print_local(MANAGEDBUF(64), "%z", stamp)),
+				st_char_get(time_print_local(MANAGEDBUF(64), "%z", stamp)));
 			result = false;
 		}
 	}
@@ -629,16 +641,27 @@ START_TEST (check_time_print_s) {
 		buffer = NULL;
 
 		// December 5th, 2018 at 12:00pm.
-		stamp = 1544045553;
+		stamp = 1544011200;
 
-		if (!(buffer = time_print_local(MANAGEDBUF(64), "%Y-%m-%d", stamp)) || st_cmp_ci_eq(buffer, PLACER("2018-12-05", 10))) {
-			st_sprint(errmsg, "Modern time stamp to local date string failed. { stamp = %lu / string = %.*s }", stamp,
-				st_length_int(buffer), st_char_get(buffer));
+		// If the system time zone is -12 hours from UTC, then we'll get a different result, so we test for that here.
+		if (!st_cmp_ci_eq(time_print_local(MANAGEDBUF(64), "%z", stamp), PLACER("+1200", 5)) ||
+			!st_cmp_ci_eq(time_print_local(MANAGEDBUF(64), "%z", stamp), PLACER("+1300", 5))) {
+			st_write(comparator, PLACER("2018-12-06", 10));
+		}
+		else {
+			st_write(comparator, PLACER("2018-12-05", 10));
+		}
+
+		if (!(buffer = time_print_local(MANAGEDBUF(64), "%Y-%m-%d", stamp)) || st_cmp_ci_eq(buffer, comparator)) {
+			st_sprint(errmsg, "Modern time stamp to local date string failed. { stamp = %lu / string = %.*s / tz = %.*s }", stamp,
+				st_length_int(buffer), st_char_get(buffer), st_length_int(time_print_local(MANAGEDBUF(64), "%z", stamp)),
+				st_char_get(time_print_local(MANAGEDBUF(64), "%z", stamp)));
 			result = false;
 		}
 		else if (!(buffer = time_print_gmt(MANAGEDBUF(64), "%Y-%m-%d", stamp)) || st_cmp_ci_eq(buffer, PLACER("2018-12-05", 10))) {
-			st_sprint(errmsg, "Modern time stamp to UTC date string failed. { stamp = %lu / string = %.*s }", stamp,
-				st_length_int(buffer), st_char_get(buffer));
+			st_sprint(errmsg, "Modern time stamp to UTC date string failed. { stamp = %lu / string = %.*s / tz = %.*s }", stamp,
+				st_length_int(buffer), st_char_get(buffer), st_length_int(time_print_local(MANAGEDBUF(64), "%z", stamp)),
+				st_char_get(time_print_local(MANAGEDBUF(64), "%z", stamp)));
 			result = false;
 		}
 
@@ -651,16 +674,28 @@ START_TEST (check_time_print_s) {
 
 		// December 5th, 2018 at 12:00pm, add one year to this known timestamp and the result should
 		// be December 25th, 2019 at 12:00pm.
-		stamp = 1544045553;
+		stamp = 1544011200;
 
-		if (!(buffer = time_print_local(MANAGEDBUF(64), "%Y-%m-%d", stamp + 31536000UL)) || st_cmp_ci_eq(buffer, PLACER("2019-12-05", 10))) {
-			st_sprint(errmsg, "Manipulated time value to local date string failed. { stamp = %lu / string = %.*s }", stamp,
-				st_length_int(buffer), st_char_get(buffer));
+		// If the system time zone is -12 hours from UTC, then we'll get a different result, so we test for that here.
+		if (!st_cmp_ci_eq(time_print_local(MANAGEDBUF(64), "%z", stamp), PLACER("+1200", 5)) ||
+			!st_cmp_ci_eq(time_print_local(MANAGEDBUF(64), "%z", stamp), PLACER("+1300", 5))) {
+			st_write(comparator, PLACER("2019-12-06", 10));
+		}
+		else {
+			st_write(comparator, PLACER("2019-12-05", 10));
+		}
+
+
+		if (!(buffer = time_print_local(MANAGEDBUF(64), "%Y-%m-%d", stamp + 31536000UL)) || st_cmp_ci_eq(buffer, comparator)) {
+			st_sprint(errmsg, "Manipulated time value to local date string failed. { stamp = %lu / string = %.*s / tz = %.*s }", stamp,
+				st_length_int(buffer), st_char_get(buffer), st_length_int(time_print_local(MANAGEDBUF(64), "%z", stamp)),
+				st_char_get(time_print_local(MANAGEDBUF(64), "%z", stamp)));
 			result = false;
 		}
 		else if (!(buffer = time_print_gmt(MANAGEDBUF(64), "%Y-%m-%d", stamp + 31536000UL)) || st_cmp_ci_eq(buffer, PLACER("2019-12-05", 10))) {
-			st_sprint(errmsg, "Manipulated time value to local date string failed. { stamp = %lu / string = %.*s }", stamp,
-				st_length_int(buffer), st_char_get(buffer));
+			st_sprint(errmsg, "Manipulated time value to local date string failed. { stamp = %lu / string = %.*s / tz = %.*s }", stamp,
+				st_length_int(buffer), st_char_get(buffer), st_length_int(time_print_local(MANAGEDBUF(64), "%z", stamp)),
+				st_char_get(time_print_local(MANAGEDBUF(64), "%z", stamp)));
 			result = false;
 		}
 

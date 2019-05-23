@@ -111,7 +111,7 @@ int replace_ns_ns_ns(char **target, ssize_t target_length, const char *pattern, 
 	return new_length;
 }
 
-void send_message(char *entrypath, FILE *buf_d) {
+void send_message(char *entrypath, FILE *buf_d, char *to) {
 
 	int fd;
 	int new;
@@ -144,8 +144,12 @@ void send_message(char *entrypath, FILE *buf_d) {
 		return;
 	}
 	memset(input, 0, 1000);
-
-	fprintf(buf_d, "RCPT TO: <magma@lavabit.com>\r\n");
+	if (to) {
+		fprintf(buf_d, "RCPT TO: <%s>\r\n", to);
+	}
+	else {
+		fprintf(buf_d, "RCPT TO: <magma@lavabit.com>\r\n");
+	}
 	fflush(buf_d);
 	fgets(input, 1000, buf_d);
 	if (*input != '2') {
@@ -217,7 +221,7 @@ void send_message(char *entrypath, FILE *buf_d) {
 	return;
 }
 
-void process_directory(char *path) {
+void process_directory(char *path, char *to) {
 
 	int socket_descriptor;
 	struct sockaddr_in pin;
@@ -241,7 +245,7 @@ void process_directory(char *path) {
 
 		if (*(entry->d_name) != '.' && entry->d_type == 8) {
 
-			bzero(entrypath, 1000);
+			bzero(entrypath, 5000);
 
 			snprintf(entrypath, 5000, "%s%s%s", path, "/", entry->d_name);
 			printf("File : %s ", entrypath);
@@ -273,7 +277,7 @@ void process_directory(char *path) {
 			buf_d = fdopen(socket_descriptor, "a+");
 			errno = 0;
 
-			send_message(entrypath, buf_d);
+			send_message(entrypath, buf_d, to);
 
 			fclose(buf_d);
 			fflush(stdout);
@@ -288,7 +292,7 @@ void process_directory(char *path) {
 
 			snprintf(entrypath, 5000, "%s%s%s", path, "/", entry->d_name);
 			printf("\n\nDirectory : %s\n\n", entrypath);
-			process_directory(entrypath);
+			process_directory(entrypath, to);
 
 		}
 	}
@@ -305,13 +309,65 @@ int main(int argc, char *argv[]) {
 	struct hostent *server_host_name;
 	struct linger linger_timeout;
 	FILE *buf_d;
-
+	struct stat info;
 	server_host_name = gethostbyname(hostname);
 
-	if (argc == 1) {
-		process_directory(".");
+	if (argc == 1 || argc == 3) {
 
-	} else {
+		if (argc > 2) {
+
+			if (!stat(argv[1], &info) && !S_ISDIR(info.st_mode)) {
+
+				printf("File : %s ", argv[1]);
+
+				bzero(&pin, sizeof(pin));
+				pin.sin_family = AF_INET;
+				pin.sin_addr.s_addr = htonl(INADDR_ANY);
+				pin.sin_addr.s_addr = ((struct in_addr *) (server_host_name->h_addr))->s_addr;
+				pin.sin_port = htons(port);
+
+				if ((socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+					perror("Error opening socket.\n");
+					exit(1);
+				}
+
+				if ((connect(socket_descriptor, (void *) &pin, sizeof(pin))) == -1) {
+					perror("Error connecting to socket.\n");
+					exit(1);
+				}
+
+				// Setup a low linger timeout so we don't hang around forever.
+				linger_timeout.l_onoff = 1;
+				linger_timeout.l_linger = 1;
+				if (setsockopt(socket_descriptor, SOL_SOCKET, SO_LINGER, &linger_timeout, sizeof(linger_timeout)) != 0) {
+					printf("Error while setting main socket timeout.\n");
+					exit(1);
+				}
+
+				buf_d = fdopen(socket_descriptor, "a+");
+				errno = 0;
+
+				send_message(argv[1], buf_d, argv[2]);
+
+				fclose(buf_d);
+				fflush(stdout);
+
+				if (errno != 0) {
+					perror("random error -");
+				}
+
+			}
+			else {
+				process_directory(argv[1], argv[2]);
+			}
+		}
+		else {
+			process_directory(".", NULL);
+		}
+
+
+	}
+	else {
 
 		printf("File : %s ", argv[1]);
 
@@ -343,7 +399,13 @@ int main(int argc, char *argv[]) {
 		buf_d = fdopen(socket_descriptor, "a+");
 		errno = 0;
 
-		send_message(argv[1], buf_d);
+		if (argc > 2) {
+			send_message(argv[1], buf_d, argv[2]);
+		}
+		else {
+			send_message(argv[1], buf_d, NULL);
+		}
+
 
 		fclose(buf_d);
 		fflush(stdout);

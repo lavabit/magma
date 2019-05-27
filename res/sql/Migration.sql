@@ -72,3 +72,5 @@ CREATE TABLE `Realms` (
 
 ALTER TABLE `Realms` 
 ADD COLUMN `rotated` TINYINT(1) NOT NULL DEFAULT '0' AFTER `shard`;
+
+ALTER TABLE `Codes` ADD COLUMN `years` tinyint(2) NOT NULL DEFAULT '1' AFTER `plan`;

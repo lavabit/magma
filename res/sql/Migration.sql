@@ -74,6 +74,7 @@ ALTER TABLE `Realms`
 ADD COLUMN `rotated` TINYINT(1) NOT NULL DEFAULT '0' AFTER `shard`;
 
 ALTER TABLE `Codes` ADD COLUMN `years` tinyint(2) NOT NULL DEFAULT '1' AFTER `plan`;
+ALTER TABLE `Codes` CHANGE COLUMN `plan` `plan` VARCHAR(255) NOT NULL DEFAULT 'STANDARD';
 
 ALTER TABLE `Users` ADD COLUMN `admin` tinyint(2) NOT NULL DEFAULT '0' AFTER `overquota`;
 

@@ -312,7 +312,7 @@ INSERT INTO `Keys` (`usernum`, `signet`, `key`) VALUES (11,'Bv0AAMcBILoZ8zQDuMx5
 INSERT INTO `Keys` (`usernum`, `signet`, `key`) VALUES (12,'Bv0AAMcBIGBTTwHowkoHI45E5zgEwe4Nl9YRFUs_GoDCNxA3JT4NAiECYDYmnRdVCdL6ED5Nn89mIrUEeNMeq01llGgbCeQ0FocF_-7tYLUWLAD4Qtvlk-Qcp0Nd3up5UMdnqraPCjamA6cQVvAK57LngMttC67lXNGWVxYgL5LfVwh3Few0Rs1eDQbR0lz_337hnejZi7MR5BvzANWnSxuFmcaE564iTlox-thNpxM7vXBenuAVtHaW7XF52amKPxuE3-bT3R0aPiMK','B7gAAABwT47uOrTNCUW3mChwL3ymuA6oK9LWQ_XAuUFK7tuLGYy5uB4qZREjMbqMUCz8TP1P5dDOa3pvHvD03v_QV-Nmn_ORIUjBqkyVLofalYwfjCU4ZvT-5Zcy1vyVOfIt6eGL_ie89t2fCjOUaKu-NR1Eow');
 INSERT INTO `Keys` (`usernum`, `signet`, `key`) VALUES (13,'Bv0AAMcBIDrvP_YEY1Ezdu1KYH3B8Mezo8MjwT3oisB350UVq_AUAiECciTVt7IIE4HfYMCLKjNNObqdQ4a7m1XbEX1m5kM62XEF1HpnNn5aDQuSHYguI7LmUzMjZX12tfvIQvEZMcaOhWRCg5JiuhZ07jfQeZGa8alEBAvosGpfWjND0TrbI9TgDAbkHmT5nrvKYmy31cWL9cvrVODElPo0IGRaS5iGtbL0fW96U6r1NF8W9fqgbrLDTt8TOOp4ROuQ38A5DneGoYAA','B7gAAABwsSknrPu6nvgvWu1eqg4w0uO2g9O4mduzUlycvZK-o5p3OxiP4p5mEM97ngOFJShttQxZVHtSBrQICT7jwaLC1EsA-GMY3jT8inqH2YoPdzHYSZ67yPG3FDmRjmLjtiS029prA5JbXWTl09hI6pTbUg');
 
-UPDATE `Users` SET `admin` = 1, `domain` = 'admin@domain.tld' WHERE `userid` = 'admin@domain.tld';
+UPDATE `Users` SET `admin` = 1, `domain` = 'domain.tld' WHERE `userid` = 'admin@domain.tld';
 INSERT INTO `Domains` (`domnum`, `domain`, `restricted`, `mailboxes`, `wildcard`, `dkim`, `spf`, `updated`, `created`) VALUES (NULL,'domain.tld',0,0,0,0,0,'0000-00-00 00:00:00','2019-06-06 21:52:17');
 
 UPDATE `Users` SET `admin` = 2 WHERE `userid` = 'admin';

@@ -73,4 +73,27 @@ CREATE TABLE `Realms` (
 ALTER TABLE `Realms` 
 ADD COLUMN `rotated` TINYINT(1) NOT NULL DEFAULT '0' AFTER `shard`;
 
-ALTER TABLE `Codes` ADD COLUMN `years` tinyint(2) NOT NULL DEFAULT '1' AFTER `plan`;
+ALTER TABLE `Codes` ADD COLUMN `years` TINYINT(2) NOT NULL DEFAULT '1' AFTER `plan`;
+
+ALTER TABLE `Limits` ADD COLUMN `quota` BIGINT(20) NOT NULL DEFAULT '21474836480' AFTER `daily_recv_limit_ip_max`;
+DROP TABLE IF EXISTS `Requests`;
+CREATE TABLE `Requests` (
+  `requestnum` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `usernum` bigint(20) unsigned NOT NULL,
+  `requester` bigint(20) unsigned DEFAULT NULL,
+  `requested` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `reviewer` bigint(20) unsigned DEFAULT NULL,
+  `reviewed` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `action` enum('RESET','DELETE') NOT NULL,
+  `disposition` enum('PENDING', 'APPROVED','REJECTED') DEFAULT 'PENDING',
+  `notes` text,
+  `filename` varchar(255) NOT NULL,
+  `attachment` mediumblob,
+  PRIMARY KEY (`requestnum`),
+  KEY `IX_REQUESTNUM` (`requestnum`),
+  CONSTRAINT `Requests_ibfk_1` FOREIGN KEY (`usernum`) REFERENCES `Users` (`usernum`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `Requests_ibfk_2` FOREIGN KEY (`requester`) REFERENCES `Users` (`usernum`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `Requests_ibfk_4` FOREIGN KEY (`reviewer`) REFERENCES `Users` (`usernum`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 MAX_ROWS=4294967295 AVG_ROW_LENGTH=1000 COMMENT='Store administrative action requests which require approval.';
+
+

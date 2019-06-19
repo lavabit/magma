@@ -73,9 +73,12 @@ CREATE TABLE `Realms` (
 ALTER TABLE `Realms` 
 ADD COLUMN `rotated` TINYINT(1) NOT NULL DEFAULT '0' AFTER `shard`;
 
-ALTER TABLE `Codes` ADD COLUMN `years` TINYINT(2) NOT NULL DEFAULT '1' AFTER `plan`;
+ALTER TABLE `Codes` ADD COLUMN `years` tinyint(2) NOT NULL DEFAULT '1' AFTER `plan`;
 
-ALTER TABLE `Limits` ADD COLUMN `quota` BIGINT(20) NOT NULL DEFAULT '21474836480' AFTER `daily_recv_limit_ip_max`;
+ALTER TABLE `Users` ADD COLUMN `admin` tinyint(2) NOT NULL DEFAULT '0' AFTER `overquota`;
+
+ALTER TABLE `Limits` ADD COLUMN `quota` bigint(20) NOT NULL DEFAULT '21474836480' AFTER `daily_recv_limit_ip_max`;
+
 DROP TABLE IF EXISTS `Requests`;
 CREATE TABLE `Requests` (
   `requestnum` bigint(20) unsigned NOT NULL AUTO_INCREMENT,

@@ -28,7 +28,6 @@
 #include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/stat.h>
 #include <sys/mman.h>
 #include <sys/utsname.h>
 #include <sys/resource.h>

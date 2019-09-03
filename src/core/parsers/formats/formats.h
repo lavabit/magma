@@ -18,7 +18,7 @@ typedef struct {
 	inx_t *pairs;
 } nvp_t;
 
-nvp_t * nvp_alloc();
+nvp_t * nvp_alloc(void);
 void nvp_free(nvp_t *nvp);
 void nvp_init(nvp_t *nvp);
 int nvp_parse(nvp_t *nvp, stringer_t *data);

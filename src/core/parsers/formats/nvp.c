@@ -70,7 +70,7 @@ int nvp_parse(nvp_t *nvp, stringer_t *data) {
  * @note	Defaults use "\n" for a line separator, "#" for a comment starting character, and "=" as the assignment character.
  * @return	NULL on failure, or a pointer to the newly allocated name/value pair object.
  */
-nvp_t * nvp_alloc() {
+nvp_t * nvp_alloc(void) {
 
 	nvp_t *result = NULL;
 

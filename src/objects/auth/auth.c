@@ -223,7 +223,7 @@ int_t auth_login(stringer_t *username, stringer_t *password, auth_t **output) {
 	// the username/password combination is incorrect.
 	else if (auth->legacy.token && st_cmp_cs_eq(auth->legacy.token, legacy->token)) {
 #ifdef MAGMA_AUTH_PEDANTIC
-		log_pedantic("The user provided incorecct login credentials for a legacy account. { username = %.*s }", st_length_int(username), st_char_get(username));
+		log_pedantic("The user provided incorrect login credentials for a legacy account. { username = %.*s }", st_length_int(username), st_char_get(username));
 #endif
 		auth_legacy_free(legacy);
 		auth_free(auth);

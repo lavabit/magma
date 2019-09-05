@@ -100,4 +100,6 @@ CREATE TABLE `Requests` (
   CONSTRAINT `Requests_ibfk_4` FOREIGN KEY (`reviewer`) REFERENCES `Users` (`usernum`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 MAX_ROWS=4294967295 AVG_ROW_LENGTH=1000 COMMENT='Store administrative action requests which require approval.';
 
+/* Start the migration to Unicode. */
+ALTER TABLE `Payments` CHANGE COLUMN `name` `name` VARCHAR(30) CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci' NOT NULL DEFAULT '' ;
 

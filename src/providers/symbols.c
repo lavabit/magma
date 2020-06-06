@@ -49,7 +49,7 @@ int (*cl_countsigs_d)(const char *path, unsigned int countoptions, unsigned int 
 int (*cl_engine_set_num_d)(struct cl_engine *engine, enum cl_engine_field field, long long num) = NULL;
 int (*cl_engine_set_str_d)(struct cl_engine *engine, enum cl_engine_field field, const char *str) = NULL;
 int (*cl_load_d)(const char *path, struct cl_engine *engine, unsigned int *signo, unsigned int dboptions) = NULL;
-int (*cl_scandesc_d)(int desc, const char **virname, unsigned long int *scanned, const struct cl_engine *engine, struct cl_scan_options *scanoptions) = NULL;
+int (*cl_scandesc_d)(int desc, const char *filename, const char **virname, unsigned long int *scanned, const struct cl_engine *engine, struct cl_scan_options *scanoptions) = NULL;
 
 //! DSPAM
 const char * (*dspam_version_d)(void) = NULL;

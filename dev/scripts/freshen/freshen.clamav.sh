@@ -23,8 +23,8 @@ cd $BASE/../../../
 
 export MAGMA_DIST=`pwd`
 
-export LD_LIBRARY_PATH=$MAGMA_DIST/lib/sources/clamav/libclamav/.libs/ 
-lib/sources/clamav/freshclam/.libs/freshclam --user $USER --datadir=sandbox/virus --config-file=sandbox/etc/freshclam.conf
+export LD_LIBRARY_PATH=$MAGMA_DIST/lib/sources/clamav/libclamav/.libs/:$MAGMA_DIST/lib/sources/clamav/libfreshclam/.libs/
+lib/sources/clamav/freshclam/.libs/freshclam --debug --verbose --user $USER --ca=$MAGMA_DIST/sandbox/etc/ca-bundle.crt --datadir=$MAGMA_DIST/sandbox/virus --config-file=$MAGMA_DIST/sandbox/etc/freshclam.conf 
 printf "\n\n"
 find sandbox/virus/ \( -type f -name "*.cvd" -print0 \) -or \( -type f -name "*.cld" -print0 \) | xargs -0 --replace={} bash -c '$MAGMA_DIST/lib/sources/clamav/sigtool/sigtool --info={} | grep -v Builder | grep -v MD5 | grep -v "Digital signature" ; printf "\n"'
 

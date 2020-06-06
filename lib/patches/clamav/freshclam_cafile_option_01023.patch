@@ -1,0 +1,107 @@
+diff --git a/freshclam/freshclam.c b/freshclam/freshclam.c
+index b638ad7..1a15257 100644
+--- a/freshclam/freshclam.c
++++ b/freshclam/freshclam.c
+@@ -154,6 +154,7 @@ static void help(void)
+     printf("\n");
+     printf("    --config-file=FILE                   Read configuration from FILE.\n");
+     printf("    --log=FILE           -l FILE         Log into FILE\n");
++    printf("    --ca=FILE                            Override the certificate bundle FILE location\n");
+     printf("    --daemon             -d              Run in daemon mode\n");
+     printf("    --pid=FILE           -p FILE         Save daemon's pid in FILE\n");
+ #ifndef _WIN32
+@@ -856,6 +857,7 @@ static fc_error_t initialize(struct optstruct *opts)
+     if ((optget(opts, "LocalIPAddress"))->enabled)
+         fcConfig.localIP = (optget(opts, "LocalIPAddress"))->strarg;
+ 
++    fcConfig.caFile = optget(opts, "CAFile")->strarg;
+     fcConfig.databaseDirectory = optget(opts, "DatabaseDirectory")->strarg;
+ 
+     /* Select a path for the temp directory:  databaseDirectory/tmp */
+diff --git a/libfreshclam/libfreshclam.c b/libfreshclam/libfreshclam.c
+index c32646c..23e70be 100644
+--- a/libfreshclam/libfreshclam.c
++++ b/libfreshclam/libfreshclam.c
+@@ -206,6 +206,9 @@ fc_error_t fc_initialize(fc_config *fcConfig)
+     if (NULL != fcConfig->proxyPassword) {
+         g_proxyPassword = cli_strdup(fcConfig->proxyPassword);
+     }
++    if (NULL != fcConfig->caFile) {
++        g_caFile = cli_strdup(fcConfig->caFile);
++    }
+ 
+ #ifdef _WIN32
+     if ((fcConfig->databaseDirectory[strlen(fcConfig->databaseDirectory) - 1] != '/') &&
+@@ -270,6 +273,10 @@ void fc_cleanup(void)
+         free(g_userAgent);
+         g_userAgent = NULL;
+     }
++    if (NULL != g_caFile) {
++        free(g_caFile);
++        g_caFile = NULL;
++    }
+     if (NULL != g_proxyServer) {
+         free(g_proxyServer);
+         g_proxyServer = NULL;
+diff --git a/libfreshclam/libfreshclam.h b/libfreshclam/libfreshclam.h
+index a83a338..a32f29b 100644
+--- a/libfreshclam/libfreshclam.h
++++ b/libfreshclam/libfreshclam.h
+@@ -50,6 +50,7 @@ typedef struct fc_config_ {
+     uint32_t connectTimeout;         /**< CURLOPT_CONNECTTIMEOUT, Timeout for the. connection phase (seconds). */
+     uint32_t requestTimeout;         /**< CURLOPT_TIMEOUT, Timeout for libcurl transfer operation (seconds). */
+     uint32_t bCompressLocalDatabase; /**< If set, will apply gz compression to CLD databases. */
++    const char *caFile;              /**< (optional) CA file to use for certificate verification, if desired. */
+     const char *logFile;             /**< (optional) Filepath to use for log output, if desired. */
+     const char *logFacility;         /**< (optional) System logging facility (I.e. "syslog"), if desired. */
+     const char *localIP;             /**< (optional) client IP for multihomed systems. */
+diff --git a/libfreshclam/libfreshclam_internal.c b/libfreshclam/libfreshclam_internal.c
+index 9907254..3d98364 100644
+--- a/libfreshclam/libfreshclam_internal.c
++++ b/libfreshclam/libfreshclam_internal.c
+@@ -108,6 +108,7 @@ uint16_t g_proxyPort  = 0;
+ char *g_proxyUsername = NULL;
+ char *g_proxyPassword = NULL;
+ 
++char *g_caFile            = NULL;
+ char *g_tempDirectory     = NULL;
+ char *g_databaseDirectory = NULL;
+ 
+@@ -422,6 +423,12 @@ static fc_error_t create_curl_handle(
+         }
+     }
+ 
++    if (g_caFile) {
++        if (CURLE_OK != curl_easy_setopt(curl, CURLOPT_CAINFO, g_caFile)) {
++            logg("!create_curl_handle: Failed to set CURLOPT_CAINFO (%s)!\n", g_caFile);
++        }
++    }
++
+ #if defined(C_DARWIN) || defined(_WIN32)
+     if (CURLE_OK != curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, *sslctx_function)) {
+         logg("*create_curl_handle: Failed to set SSL CTX function. Your libcurl may use an SSL backend that does not support CURLOPT_SSL_CTX_FUNCTION.\n");
+diff --git a/libfreshclam/libfreshclam_internal.h b/libfreshclam/libfreshclam_internal.h
+index 747e3ee..1d01c62 100644
+--- a/libfreshclam/libfreshclam_internal.h
++++ b/libfreshclam/libfreshclam_internal.h
+@@ -46,6 +46,7 @@ extern uint16_t g_proxyPort;
+ extern char *g_proxyUsername;
+ extern char *g_proxyPassword;
+ 
++extern char *g_caFile;
+ extern char *g_tempDirectory;
+ extern char *g_databaseDirectory;
+ 
+diff --git a/shared/optparser.c b/shared/optparser.c
+index bb597c7..2c0ed39 100644
+--- a/shared/optparser.c
++++ b/shared/optparser.c
+@@ -218,6 +218,8 @@ const struct clam_option __clam_options[] = {
+ 
+     {"DatabaseDirectory", "datadir", 0, CLOPT_TYPE_STRING, NULL, -1, DATADIR, 0, OPT_CLAMD | OPT_FRESHCLAM | OPT_SIGTOOL, "This option allows you to change the default database directory.\nIf you enable it, please make sure it points to the same directory in\nboth clamd and freshclam.", "/var/lib/clamav"},
+ 
++    {"CAFile", "ca", 0, CLOPT_TYPE_STRING, NULL, -1, NULL, 0, OPT_FRESHCLAM, "This option allows you to override the location of the CA bundle file used by freshclam.\nIf you enable it, please make sure it points to a valid certifcate bundle file.\n", ""},
++
+     {"OfficialDatabaseOnly", "official-db-only", 0, CLOPT_TYPE_BOOL, MATCH_BOOL, 0, NULL, 0, OPT_CLAMD | OPT_CLAMSCAN, "Only load the official signatures published by the ClamAV project.", "no"},
+ 
+     {"YaraRules", "yara-rules", 0, CLOPT_TYPE_STRING, NULL, 0, NULL, 0, OPT_CLAMSCAN, "By default, yara rules will be loaded. This option allows you to exclude yara rules when scanning and also to scan only using yara rules. Valid options are yes|no|only", "yes"},

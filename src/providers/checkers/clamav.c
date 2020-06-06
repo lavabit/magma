@@ -402,7 +402,7 @@ int virus_check(stringer_t *data) {
 	mm_wipe(&options, sizeof(struct cl_scan_options));
 	options.parse |= ~0;
 
-	state = cl_scandesc_d(fd, (const char **)&virname, &scanned, virus_engine, &options);
+	state = cl_scandesc_d(fd, NULL, (const char **)&virname, &scanned, virus_engine, &options);
 
 	// If we found something, then spit it back.
 	// http://wiki.clamav.net/Main/MalwareNaming has naming conventions.

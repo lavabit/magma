@@ -1299,6 +1299,9 @@ clamav() {
 				# Add the shutdown and clean up functions and fix the rar library dynamic loading logic.
         cat "$M_PATCHES/clamav/"shutdown_rarload_01023.patch | patch -p1 --fuzz=100 --verbose &>> "$M_LOGS/clamav.txt"; error
 
+        # Add the ability to dictate the CA bundle file location when running freshclam.
+        cat "$M_PATCHES/clamav/"freshclam_cafile_option_01023.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
+        
         # Output the version number and not the git commit hash.
         cat "$M_PATCHES/clamav/"version_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
       fi

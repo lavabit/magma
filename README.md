@@ -35,7 +35,7 @@ vagrant init lavabit/magma; vagrant up --provider libvirt
 vagrant init lavabit/magma; vagrant up --provider hyperv
 ```
 
-Images are available for alternate platforms [here](https://atlas.hashicorp.com/lavabit).
+Images are available for alternate platforms [here](https://app.vagrantup.com/lavabit).
 
 # Credits
 

@@ -222,16 +222,16 @@ LDFLAGS                      ?=
 LDFLAGS_COMBINED              = -rdynamic $(LDFLAGS)
 
 # Archiver Options
-ARFLAGS                      ?= rcs
+ARFLAGS                       = rcs
 
 # Strip Options
-STRIPFLAGS                   ?= --strip-debug
+STRIPFLAGS                    = --strip-debug
 
 # GProf Options
-GPROF                        ?= -pg -finstrument-functions -fprofile-arcs -ftest-coverage
+GPROF                         = -pg -finstrument-functions -fprofile-arcs -ftest-coverage
 
 # PProf Options
-PPROF                        ?= -lprofiler
+PPROF                         = -lprofiler
 
 # Miscellaneous External programs
 MV                            = mv --force

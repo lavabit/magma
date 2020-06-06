@@ -1,0 +1,12 @@
+diff --git a/libtest/memcached.cc b/libtest/memcached.cc
+index 0127356..7fc5c4e 100644
+--- a/libtest/memcached.cc
++++ b/libtest/memcached.cc
+@@ -197,6 +197,7 @@ public:
+ 
+ bool Memcached::build()
+ {
++  add_option("-d");
+   if (getuid() == 0 or geteuid() == 0)
+   {
+     add_option("-u", "root");

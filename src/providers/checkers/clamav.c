@@ -367,6 +367,7 @@ int virus_check(stringer_t *data) {
 	char *virname;
 	ssize_t written;
 	unsigned long int scanned;
+	struct cl_scan_options options;
 
 	// If we are not supposed to be scanning messages.
 	if (!magma.iface.virus.available) {
@@ -396,7 +397,12 @@ int virus_check(stringer_t *data) {
 
 	// Scan the message.
 	pthread_rwlock_rdlock(&virus_lock);
-	state = cl_scandesc_d(fd, (const char **)&virname, &scanned, virus_engine, CL_SCAN_STDOPT);
+
+	// Enable all of the ClamAV parsers.
+	mm_wipe(&options, sizeof(struct cl_scan_options));
+	options.parse |= ~0;
+
+	state = cl_scandesc_d(fd, (const char **)&virname, &scanned, virus_engine, &options);
 
 	// If we found something, then spit it back.
 	// http://wiki.clamav.net/Main/MalwareNaming has naming conventions.

@@ -1,0 +1,93 @@
+diff --git a/configure b/configure
+index b14f4df..309d009 100755
+--- a/configure
++++ b/configure
+@@ -16162,7 +16162,7 @@ if ${ac_cv_lib_mcheck_main+:} false; then :
+   $as_echo_n "(cached) " >&6
+ else
+   ac_check_lib_save_LIBS=$LIBS
+-LIBS="-lmcheck  $LIBS"
++LIBS="$LIBS"
+ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+ 
+@@ -16256,79 +16256,6 @@ fi
+ fi
+ 
+ 
+-    if test "$ax_cv_have_MCHECK" = "yes"; then :
+-
+-$as_echo "#define HAVE_MCHECK 1" >>confdefs.h
+-
+-
+-
+-for flag in -lmcheck; do
+-  as_CACHEVAR=`$as_echo "ax_cv_check_ldflags__$flag" | $as_tr_sh`
+-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts $flag" >&5
+-$as_echo_n "checking whether the linker accepts $flag... " >&6; }
+-if eval \${$as_CACHEVAR+:} false; then :
+-  $as_echo_n "(cached) " >&6
+-else
+-
+-  ax_check_save_flags=$LDFLAGS
+-  LDFLAGS="$LDFLAGS  $flag"
+-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+-/* end confdefs.h.  */
+-
+-int
+-main ()
+-{
+-
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-if ac_fn_c_try_link "$LINENO"; then :
+-  eval "$as_CACHEVAR=yes"
+-else
+-  eval "$as_CACHEVAR=no"
+-fi
+-rm -f core conftest.err conftest.$ac_objext \
+-    conftest$ac_exeext conftest.$ac_ext
+-  LDFLAGS=$ax_check_save_flags
+-fi
+-eval ac_res=\$$as_CACHEVAR
+-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+-$as_echo "$ac_res" >&6; }
+-if test x"`eval 'as_val=${'$as_CACHEVAR'};$as_echo "$as_val"'`" = xyes; then :
+-  if ${LDFLAGS+:} false; then :
+-  case " $LDFLAGS " in
+-    *" $flag "*)
+-      { { $as_echo "$as_me:${as_lineno-$LINENO}: : LDFLAGS already contains \$flag"; } >&5
+-  (: LDFLAGS already contains $flag) 2>&5
+-  ac_status=$?
+-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+-  test $ac_status = 0; }
+-      ;;
+-    *)
+-      { { $as_echo "$as_me:${as_lineno-$LINENO}: : LDFLAGS=\"\$LDFLAGS \$flag\""; } >&5
+-  (: LDFLAGS="$LDFLAGS $flag") 2>&5
+-  ac_status=$?
+-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+-  test $ac_status = 0; }
+-      LDFLAGS="$LDFLAGS $flag"
+-      ;;
+-   esac
+-else
+-  LDFLAGS="$flag"
+-fi
+-
+-else
+-  :
+-fi
+-
+-done
+-
+-else
+-  :
+-fi
+-
+-
+ 
+ 
+ 

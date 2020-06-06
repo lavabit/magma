@@ -1,0 +1,77 @@
+diff --git a/data/Makefile b/data/Makefile
+index 8c6470f..e0f3aa2 100644
+--- a/data/Makefile
++++ b/data/Makefile
+@@ -9,13 +9,14 @@ RUBY=ruby
+ PERL=perl
+ MAKE=make
+ JULIA=julia
+-CURLFLAGS = --retry 5 --location
++FONTFORGE=fontforge
++CURLFLAGS = --retry 5 --location --insecure
+ 
+ .PHONY: clean
+ 
+ .DELETE_ON_ERROR:
+ 
+-utf8proc_data.c.new: data_generator.rb UnicodeData.txt GraphemeBreakProperty.txt DerivedCoreProperties.txt CompositionExclusions.txt CaseFolding.txt CharWidths.txt emoji-data.txt
++utf8proc_data.c.new: data_generator.rb UnicodeData.txt GraphemeBreakProperty.txt DerivedCoreProperties.txt CompositionExclusions.txt CaseFolding.txt GraphemeBreakTest.txt emoji-data.txt unifont.ttf unifont_upper.ttf unifont.sfd unifont_upper.sfd CharWidths.txt
+ 	$(RUBY) data_generator.rb < UnicodeData.txt > $@
+ 
+ CharWidths.txt: charwidths.jl EastAsianWidth.txt
+@@ -24,33 +25,46 @@ CharWidths.txt: charwidths.jl EastAsianWidth.txt
+ # Unicode data version (must also update utf8proc_unicode_version function)
+ UNICODE_VERSION=13.0.0
+ 
++# Grab the corresponding GNU Unifont files in case we need to render a character.
++UNIFONT_VERSION=13.0.02
++
+ UnicodeData.txt:
+-	$(CURL) $(CURLFLAGS) -o $@ -O http://www.unicode.org/Public/$(UNICODE_VERSION)/ucd/UnicodeData.txt
++	$(CURL) $(CURLFLAGS) -o $@ https://www.unicode.org/Public/$(UNICODE_VERSION)/ucd/UnicodeData.txt
+ 
+ EastAsianWidth.txt:
+-	$(CURL) $(CURLFLAGS) -o $@ -O $(URLCACHE)http://www.unicode.org/Public/$(UNICODE_VERSION)/ucd/EastAsianWidth.txt
++	$(CURL) $(CURLFLAGS) -o $@ https://www.unicode.org/Public/$(UNICODE_VERSION)/ucd/EastAsianWidth.txt
+ 
+ GraphemeBreakProperty.txt:
+-	$(CURL) $(CURLFLAGS) -o $@ -O $(URLCACHE)http://www.unicode.org/Public/$(UNICODE_VERSION)/ucd/auxiliary/GraphemeBreakProperty.txt
++	$(CURL) $(CURLFLAGS) -o $@ https://www.unicode.org/Public/$(UNICODE_VERSION)/ucd/auxiliary/GraphemeBreakProperty.txt
+ 
+ DerivedCoreProperties.txt:
+-	$(CURL) $(CURLFLAGS) -o $@ -O $(URLCACHE)http://www.unicode.org/Public/$(UNICODE_VERSION)/ucd/DerivedCoreProperties.txt
++	$(CURL) $(CURLFLAGS) -o $@ https://www.unicode.org/Public/$(UNICODE_VERSION)/ucd/DerivedCoreProperties.txt
+ 
+ CompositionExclusions.txt:
+-	$(CURL) $(CURLFLAGS) -o $@ -O $(URLCACHE)http://www.unicode.org/Public/$(UNICODE_VERSION)/ucd/CompositionExclusions.txt
++	$(CURL) $(CURLFLAGS) -o $@ https://www.unicode.org/Public/$(UNICODE_VERSION)/ucd/CompositionExclusions.txt
+ 
+ CaseFolding.txt:
+-	$(CURL) $(CURLFLAGS) -o $@ -O $(URLCACHE)http://www.unicode.org/Public/$(UNICODE_VERSION)/ucd/CaseFolding.txt
++	$(CURL) $(CURLFLAGS) -o $@ https://www.unicode.org/Public/$(UNICODE_VERSION)/ucd/CaseFolding.txt
+ 
+ NormalizationTest.txt:
+-	$(CURL) $(CURLFLAGS) -o $@ -O $(URLCACHE)http://www.unicode.org/Public/$(UNICODE_VERSION)/ucd/NormalizationTest.txt
++	$(CURL) $(CURLFLAGS) -o $@ https://www.unicode.org/Public/$(UNICODE_VERSION)/ucd/NormalizationTest.txt
+ 
+ GraphemeBreakTest.txt:
+-	$(CURL) $(CURLFLAGS) $(URLCACHE)http://www.unicode.org/Public/$(UNICODE_VERSION)/ucd/auxiliary/GraphemeBreakTest.txt | $(PERL) -pe 's,÷,/,g;s,×,+,g' > $@
++	$(CURL) $(CURLFLAGS) https://www.unicode.org/Public/$(UNICODE_VERSION)/ucd/auxiliary/GraphemeBreakTest.txt | $(PERL) -pe 's,÷,/,g;s,×,+,g' > $@
+ 
+ emoji-data.txt:
+-	$(CURL) $(CURLFLAGS) -o $@ -O $(URLCACHE)http://unicode.org/Public/$(UNICODE_VERSION)/ucd/emoji/emoji-data.txt
++	$(CURL) $(CURLFLAGS) -o $@ http://unicode.org/Public/$(UNICODE_VERSION)/ucd/emoji/emoji-data.txt
++
++unifont.ttf:
++	$(CURL) $(CURLFLAGS) -o $@ https://mirrors.kernel.org/gnu/unifont/unifont-$(UNIFONT_VERSION)/unifont-$(UNIFONT_VERSION).ttf
++
++unifont_upper.ttf:
++	$(CURL) $(CURLFLAGS) -o $@ https://mirrors.kernel.org/gnu/unifont/unifont-$(UNIFONT_VERSION)/unifont_upper-$(UNIFONT_VERSION).ttf
++
++%.sfd: %.ttf
++	$(FONTFORGE) -lang=ff -c "Open(\"$<\");Save(\"$@\");Quit(0);"
+ 
+ clean:
+ 	rm -f UnicodeData.txt EastAsianWidth.txt GraphemeBreakProperty.txt DerivedCoreProperties.txt CompositionExclusions.txt CaseFolding.txt NormalizationTest.txt GraphemeBreakTest.txt CharWidths.txt emoji-data.txt
++	rm -f unifont.ttf unifont_upper.ttf unifont.sfd unifont_upper.sfd
+ 	rm -f utf8proc_data.c.new

@@ -1,0 +1,44 @@
+diff --git a/tests/libmemcached-1.0/mem_functions.cc b/tests/libmemcached-1.0/mem_functions.cc
+index 74d13c3..20648d6 100644
+--- a/tests/libmemcached-1.0/mem_functions.cc
++++ b/tests/libmemcached-1.0/mem_functions.cc
+@@ -4722,8 +4722,12 @@ test_return_t regression_bug_583031(memcached_st *)
+   test_false(value);
+   test_zero(length);
+ 
+-  test_compare(MEMCACHED_TIMEOUT, memc);
+-
++  if (rc == MEMCACHED_ERRNO) {
++       test_compare(EHOSTUNREACH, memcached_last_error_errno(memc));
++  }
++  else {
++       test_compare(MEMCACHED_TIMEOUT, memc);
++  }
+   memcached_free(memc);
+ 
+   return TEST_SUCCESS;
+@@ -5074,15 +5078,21 @@ test_return_t kill_HUP_TEST(memcached_st *original_memc)
+                              test_literal_param(__func__), // Keys
+                              test_literal_param(__func__), // Values
+                              0, 0));
+-  test_true_got(kill(pid, SIGHUP) == 0, strerror(errno));
++  test_true_got(kill(pid, SIGTERM) == 0, strerror(errno));
++  int status;
++  waitpid(pid, &status, NULL);
+ 
+   memcached_return_t ret= memcached_set(memc, 
+                                         test_literal_param(__func__), // Keys
+                                         test_literal_param(__func__), // Values
+                                         0, 0);
+   test_compare(ret, memc);
+-  test_compare(MEMCACHED_CONNECTION_FAILURE, memc);
+-
++  if (ret == MEMCACHED_ERRNO) {
++    test_compare(EPIPE, memcached_last_error_errno(memc));
++  }
++  else {
++    test_compare(MEMCACHED_CONNECTION_FAILURE, memc);
++  }
+   memcached_free(memc);
+ 
+   return TEST_SUCCESS;

@@ -1,0 +1,13 @@
+diff --git a/tests/libmemcached-1.0/encoding_key.cc b/tests/libmemcached-1.0/encoding_key.cc
+index 2470758..0c1f741 100644
+--- a/tests/libmemcached-1.0/encoding_key.cc
++++ b/tests/libmemcached-1.0/encoding_key.cc
+@@ -337,7 +337,7 @@ test_return_t memcached_set_encoding_key_set_grow_key_TEST(memcached_st* memc)
+                                            uint32_t(0));
+ 
+       // If we run out of space on the server, we just end the test early.
+-      if (rc == MEMCACHED_SERVER_MEMORY_ALLOCATION_FAILURE)
++      if (rc == MEMCACHED_SERVER_MEMORY_ALLOCATION_FAILURE || rc == MEMCACHED_SERVER_ERROR)
+       {
+         break;
+       }

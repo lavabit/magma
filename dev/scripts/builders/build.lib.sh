@@ -985,38 +985,46 @@ bzip2() {
     ;;
     bzip2-prep)
       cd "$M_SOURCES/bzip2"; error
-
-      chmod -Rf a+rX,u+w,g-w,o-w . &>> "$M_LOGS/bzip2.txt" ; error
-
-      # We use slightly different patches depending on the bzip2 version. These patches were largely
-      # ported from Red Hat.
-      if [[ $BZIP2 == "bzip2-1.0.5" ]]; then
-        cat "$M_PATCHES/bzip2/"bzip2-1.0.4-saneso.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
-        cat "$M_PATCHES/bzip2/"bzip2-1.0.4-cflags.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
-      elif [[ $BZIP2 == "bzip2-1.0.6" ]]; then
-        cat "$M_PATCHES/bzip2/"saneso_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
-        cat "$M_PATCHES/bzip2/"cflags_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
-        cat "$M_PATCHES/bzip2/"bzip2recover_cve_20163189.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
-      fi
-
-      # These patches apply every version since 1.0.4, and were largely ported from the Gentoo repository.
-      cat "$M_PATCHES/bzip2/"bzip2-1.0.4-bzip2recover.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
-      cat "$M_PATCHES/bzip2/"bzip2-1.0.4-makefile-flags.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
-      cat "$M_PATCHES/bzip2/"bzip2-1.0.4-man-links.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
-      cat "$M_PATCHES/bzip2/"bzip2-1.0.6-progress.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
-      cat "$M_PATCHES/bzip2/"bzip2-1.0.4-posix-shell.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
-      cat "$M_PATCHES/bzip2/"bzip2-1.0.6-mingw.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
-      cat "$M_PATCHES/bzip2/"bzip2-1.0.6-out-of-tree-build.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
-
-      # These patches are a mess, but were painfully ported from the Debian bzip2 repository.
-      cat "$M_PATCHES/bzip2/"man_formatting_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
-      cat "$M_PATCHES/bzip2/"make_modernize_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
-      cat "$M_PATCHES/bzip2/"man_path_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+#
+#      chmod -Rf a+rX,u+w,g-w,o-w . &>> "$M_LOGS/bzip2.txt" ; error
+#
+#      # We use slightly different patches depending on the bzip2 version. These patches were largely
+#      # ported from Red Hat.
+#      if [[ $BZIP2 == "bzip2-1.0.5" ]]; then
+#        cat "$M_PATCHES/bzip2/"bzip2-1.0.4-saneso.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+#        cat "$M_PATCHES/bzip2/"bzip2-1.0.4-cflags.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+#      elif [[ $BZIP2 == "bzip2-1.0.6" ]]; then
+#        cat "$M_PATCHES/bzip2/"saneso_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+#        cat "$M_PATCHES/bzip2/"cflags_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+#        cat "$M_PATCHES/bzip2/"bzip2recover_cve_20163189.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+#      fi
+#
+#      # These patches apply every version since 1.0.4, and were largely ported from the Gentoo repository.
+#      cat "$M_PATCHES/bzip2/"bzip2-1.0.4-bzip2recover.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+#      cat "$M_PATCHES/bzip2/"bzip2-1.0.4-makefile-flags.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+#      cat "$M_PATCHES/bzip2/"bzip2-1.0.4-man-links.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+#      cat "$M_PATCHES/bzip2/"bzip2-1.0.6-progress.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+#      cat "$M_PATCHES/bzip2/"bzip2-1.0.4-posix-shell.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+#      cat "$M_PATCHES/bzip2/"bzip2-1.0.6-mingw.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+#      cat "$M_PATCHES/bzip2/"bzip2-1.0.6-out-of-tree-build.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+#
+#      # These patches are a mess, but were painfully ported from the Debian bzip2 repository.
+#      cat "$M_PATCHES/bzip2/"man_formatting_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+#      cat "$M_PATCHES/bzip2/"make_modernize_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
+#      cat "$M_PATCHES/bzip2/"man_path_1.0.6.patch | patch -p1 --verbose &>> "$M_LOGS/bzip2.txt" ; error
     ;;
     bzip2-build)
       cd "$M_SOURCES/bzip2"; error
-      make CC=gcc AR=ar RANLIB=ranlib CFLAGS='-g3 -fPIC -rdynamic -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -D_FILE_OFFSET_BITS=64' &>> "$M_LOGS/bzip2.txt" ; error
+      make -f Makefile-libbz2_so CC="gcc -g3 -fPIC -rdynamic -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -D_FILE_OFFSET_BITS=64 $LDFLAGS" &>> "$M_LOGS/bzip2.txt" ; error
+  		make bzip2 bzip2recover CC="gcc -g3 -fPIC -rdynamic -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -D_FILE_OFFSET_BITS=64 $LDFLAGS" &>> "$M_LOGS/bzip2.txt" ; error
+#      make CC=gcc AR=ar RANLIB=ranlib CFLAGS='-g3 -fPIC -rdynamic -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -D_FILE_OFFSET_BITS=64' &>> "$M_LOGS/bzip2.txt" ; error
+
+			BZIP2_VERSION="`echo $BZIP2 | sed "s/bzip2-//g"`"
       make PREFIX="$M_LOCAL" install &>> "$M_LOGS/bzip2.txt" ; error
+      cp -a libbz2.so.$BZIP2_VERSION "$M_LOCAL/lib/" &>> "$M_LOGS/bzip2.txt" ; error
+		  ( cd "$M_LOCAL/lib/" ; ln -f -s libbz2.so.$BZIP2_VERSION "libbz2.so" ) &>> "$M_LOGS/bzip2.txt" ; error
+  		( cd "$M_LOCAL/lib/" ; ln -f -s libbz2.so.$BZIP2_VERSION "libbz2.so.1" ) &>> "$M_LOGS/bzip2.txt" ; error
+  		cd "$M_SOURCES/bzip2"; error
     ;;
     bzip2-check)
       cd "$M_SOURCES/bzip2"; error
@@ -1281,13 +1289,18 @@ clamav() {
 
         # Fix the zlib version check, so that 1.2.10+ doesn't trigger a spurious error.
         cat "$M_PATCHES/clamav/"zlib_check_0992.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
-      else
+      elif [[ $CLAMAV =~ "clamav-0.100.2" ]]; then
         # Add the shutdown and clean up functions and fix the rar library dynamic loading logic.
         cat "$M_PATCHES/clamav/"shutdown_rarload_01001.patch | patch -p1 --fuzz=100 --verbose &>> "$M_LOGS/clamav.txt"; error
 
         # Output the version number and not the git commit hash.
         cat "$M_PATCHES/clamav/"version_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
+			else 
+				# Add the shutdown and clean up functions and fix the rar library dynamic loading logic.
+        cat "$M_PATCHES/clamav/"shutdown_rarload_01023.patch | patch -p1 --fuzz=100 --verbose &>> "$M_LOGS/clamav.txt"; error
 
+        # Output the version number and not the git commit hash.
+        cat "$M_PATCHES/clamav/"version_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
       fi
 
       # Fix reference conflict with libpng over the filename png.h.
@@ -1327,7 +1340,8 @@ clamav() {
 
       # --disable-mempool
       ./configure  \
-        --enable-check --enable-static --enable-shared --disable-llvm --disable-silent-rules \
+        --enable-check --enable-static --enable-shared --disable-llvm --disable-silent-rules --disable-clamonacc \
+				--disable-clamsubmit --disable-clamdtop --disable-milter \
         --with-openssl="$M_LOCAL" --with-zlib="$M_LOCAL" --with-xml="$M_LOCAL" --with-libcurl="$M_LOCAL" \
         --with-pcre="$M_LOCAL" --with-systemdsystemunitdir="no" \
         --with-libbz2-prefix="$M_LOCAL" --with-libcheck-prefix="$M_LOCAL" \
@@ -2080,6 +2094,12 @@ utf8proc() {
       if [[ $UTF8PROC =~ "utf8proc-1.3.1" ]]; then
         cat "$M_PATCHES/utf8proc/"utf8proc.release.version.patch | patch -p1 --verbose &>> "$M_LOGS/utf8proc.txt"; error
       fi
+      
+      # For v2.3.0 and higher, we resurect the unifont download targets.
+      UTF8PROC_VERSION="`echo $UTF8PROC | sed \"s/utf8proc-//g\"`"
+      if [ `(echo 2.3.0; echo $UTF8PROC_VERSION) | sort -Vk3 | tail -1` != "2.3.0" ]; then
+        cat "$M_PATCHES/utf8proc/"unifont.download.patch | patch -p1 --verbose &>> "$M_LOGS/utf8proc.txt"; error
+      fi
     ;;
     utf8proc-build)
       cd "$M_SOURCES/utf8proc"; error
@@ -2190,6 +2210,13 @@ memcached() {
     	  # Enable parallel builds. Note man pages must be made with --jobs=1 or it will fail.
     	  cat "$M_PATCHES/memcached/"1.0.18_enable_parallel_build.patch  | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
     	  
+    	  # Handle certain types of errors in unit tests properly.
+    	  cat "$M_PATCHES/memcached/"1.0.18_fix_conn_test_errors.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
+    	  cat "$M_PATCHES/memcached/"1.0.18_fix_allocation_test.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
+#    	  cat "$M_PATCHES/memcached/"1.0.18_disable_mcheck.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
+#    	  cat "$M_PATCHES/memcached/"1.0.18_disable_mcheck_conf.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
+#    	  cat "$M_PATCHES/memcached/"1.0.18_fix_memcached_opts.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
+    	  
   			# We need to reset the modification time on these files after applying the parallelization patch, or an autoreconf will be triggered.
     	  touch -t 201402090552.42 Makefile.am && touch -t 201402090552.42 man/include.am
     	  
@@ -2223,16 +2250,19 @@ memcached() {
       # For some reason, the unit tests will fail if this environment variable is configured.
       unset MEMCACHED_SERVERS
 
-      # export GEARMAND_BINARY="/usr/local/sbin/gearmand"
-      # export MEMCACHED_BINARY="/usr/local/bin/memcached"
-      # --with-memcached="/usr/local/bin/memcached"
-
-      # Options used for 1.0.3+
-      ./configure --disable-silent-rules --disable-dtrace --disable-sasl --enable-static --enable-shared --with-pic \
-        --prefix="$M_LOCAL" &>> "$M_LOGS/memcached.txt"; error
-
-      unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LIBS; unset M_EXTRA
-      # unset GEARMAND_BINARY; unset MEMCACHED_BINARY
+			# Find the memcached binary, and configure accordingly.
+			# --enable-memaslap=off
+			# --disable-silent-rules
+      MEMCACHED_BINARY="`which memcached`"
+			if [ "$MEMCACHED_BINARY" != "" ]; then
+			 ./configure --disable-dtrace --disable-sasl --enable-static --enable-shared --with-pic \
+         --enable-jobserver=no --with-memcached="$MEMCACHED_BINARY" --prefix="$M_LOCAL" &>> "$M_LOGS/memcached.txt"; error
+			else
+				./configure --disable-dtrace --disable-sasl --enable-static --enable-shared --with-pic \ 
+         --enable-jobserver=no --prefix="$M_LOCAL" &>> "$M_LOGS/memcached.txt"; error
+			fi
+      
+      unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LIBS; unset M_EXTRA ; unset MEMCACHED_BINARY
 
       make --jobs=4 &>> "$M_LOGS/memcached.txt"; error
       make install &>> "$M_LOGS/memcached.txt"; error
@@ -2426,7 +2456,7 @@ combine() {
     ! -f "$M_SOURCES/clamav/libclamav/.libs/libclamav.a" || \
     ! -f "$M_SOURCES/clamav/libclamav/.libs/libclamunrar.a" || \
     ! -f "$M_SOURCES/clamav/libclamav/.libs/libclamunrar_iface.a" || \
-    ! -f "$M_SOURCES/clamav/libclamav/libmspack-0.5alpha/.libs/libclammspack.a" || \
+    ! -f "$M_SOURCES/clamav/libclamav/.libs/libclammspack.a" || \
     ! -f "$M_SOURCES/clamav/libltdl/.libs/libltdlc.a" || \
     ! -f "$M_SOURCES/openssl/libcrypto.a" || \
     ! -f "$M_SOURCES/openssl/libssl.a" || \
@@ -2528,7 +2558,7 @@ combine() {
 
   mkdir "$M_OBJECTS/clamav/mspack" &>> "$M_LOGS/combine.txt"; error
   cd "$M_OBJECTS/clamav/mspack" &>> "$M_LOGS/combine.txt"; error
-  ar xv "$M_SOURCES/clamav/libclamav/libmspack-0.5alpha/.libs/libclammspack.a" &>> "$M_LOGS/combine.txt"; error
+  ar xv "$M_SOURCES/clamav/libclamav/.libs/libclammspack.a" &>> "$M_LOGS/combine.txt"; error
 
   rm -rf "$M_OBJECTS/crypto" &>> "$M_LOGS/combine.txt"; error
   mkdir "$M_OBJECTS/crypto" &>> "$M_LOGS/combine.txt"; error
@@ -2796,10 +2826,11 @@ combo() {
     ($M_BUILD "freetype-$1") & FREETYPE_PID=$!
     ($M_BUILD "tokyocabinet-$1") & TOKYOCABINET_PID=$!
 
-    # ClamAV requires zlib (above) and bzip (above), pcre and xml2.
+    # ClamAV requires zlib (above) and bzip (above), curl, pcre and xml2.
     wait $XML2_PID; error
     wait $PCRE_PID; error
-
+		wait $CURL_PID; error
+		
     ($M_BUILD "clamav-$1") & CLAMAV_PID=$!
 
     # The gd library requires zlib (above), png (above), jpeg (above) and freetype.
@@ -2811,10 +2842,6 @@ combo() {
     wait $MARIADB_PID; error
 
     ($M_BUILD "dspam-$1") & DSPAM_PID=$!
-
-    # The utf8proc library requires curl.
-    wait $CURL_PID; error
-
     ($M_BUILD "utf8proc-$1") & UTF8PROC_PID=$!
 
     # Wait on any remaining build jobs.

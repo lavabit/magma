@@ -344,7 +344,7 @@ void tls_free(TLS *tls) {
 	 stringer_t *result = NULL;
 	 chr_t *version = NULL, *name = NULL;
 
-	 if (!(cipher = SSL_get_current_cipher_d(tls))) {
+	 if (!(cipher = (SSL_CIPHER *)SSL_get_current_cipher_d(tls))) {
 		 return NULL;
 	 }
 	 else if (!(version = (chr_t *)SSL_get_version_d(tls))) {
@@ -371,7 +371,7 @@ void tls_free(TLS *tls) {
 	 int_t bits = 0;
 	 SSL_CIPHER *cipher = NULL;
 
-	 if (!tls || !(cipher = SSL_get_current_cipher_d(tls)) || !SSL_CIPHER_get_bits_d(cipher, &bits)) {
+	 if (!tls || !(cipher = (SSL_CIPHER *)SSL_get_current_cipher_d(tls)) || !SSL_CIPHER_get_bits_d(cipher, &bits)) {
 		 return 0;
 	 }
 
@@ -387,7 +387,7 @@ chr_t * tls_version(TLS *tls) {
 	chr_t *version = NULL;
 	SSL_CIPHER *cipher = NULL;
 
-	if (!tls || !(cipher = SSL_get_current_cipher_d(tls)) || !(version = (chr_t *)SSL_get_version_d(tls))) {
+	if (!tls || !(cipher = (SSL_CIPHER *)SSL_get_current_cipher_d(tls)) || !(version = (chr_t *)SSL_get_version_d(tls))) {
 		return NULL ;
 	}
 
@@ -405,7 +405,7 @@ chr_t * tls_suite(TLS *tls) {
 	chr_t *suite = NULL;
 	SSL_CIPHER *cipher = NULL;
 
-	if (!tls || !(cipher = SSL_get_current_cipher_d(tls)) || !(suite = (chr_t *)SSL_CIPHER_get_name_d(cipher))) {
+	if (!tls || !(cipher = (SSL_CIPHER *)SSL_get_current_cipher_d(tls)) || !(suite = (chr_t *)SSL_CIPHER_get_name_d(cipher))) {
 		 return NULL;
 	}
 

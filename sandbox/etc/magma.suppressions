@@ -3,6 +3,64 @@
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
+   fun:__res_context_send
+   fun:__res_context_query
+   fun:__res_nquery
+   fun:SPF_dns_resolv_lookup
+   fun:SPF_dns_lookup
+   fun:SPF_dns_cache_lookup
+   fun:SPF_dns_lookup
+   fun:SPF_dns_zone_lookup
+   fun:SPF_dns_lookup
+   fun:SPF_server_get_record
+   fun:SPF_request_query_mailfrom
+   fun:spf_check
+   fun:check_spf_s
+   fun:tcase_run_tfun_nofork
+   fun:srunner_iterate_tcase_tfuns
+   fun:srunner_run_tcase
+   fun:srunner_iterate_suites
+   fun:srunner_run_tagged
+   fun:srunner_run
+   fun:srunner_run_all
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_dl_close_worker
+   fun:_dl_close
+   fun:_dl_catch_error
+   fun:__libc_dlclose
+   fun:free_mem
+   fun:__libc_freeres
+   fun:_vgnU_freeres
+   fun:__run_exit_handlers
+   fun:exit
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:__libc_alloc_buffer_allocate
+   fun:__resolv_conf_allocate
+   fun:__resolv_conf_load
+   fun:__resolv_conf_get_current
+   fun:__res_vinit
+   fun:dkim_init
+   fun:dkim_start
+   fun:process_start
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
    fun:_dl_scope_free
    fun:_dl_map_object_deps
    fun:dl_open_worker

@@ -1,7 +1,8 @@
 
 #include "magma.open.check.h"
 
-const char * symbols_check(void *);
+const char * symbols_check_load(void *);
+const char * symbols_check_assign(void *);
 
 int main(int argc, char **argv) {
 
@@ -29,7 +30,7 @@ int main(int argc, char **argv) {
 	if (copypath) free(copypath);
 
 	// Check and see if any of our symbols trigger an error.
-	if ((funcname = symbols_check(handle))) {
+	if ((funcname = symbols_check_load(handle))) {
 		fprintf(stderr, "\nThe %s() symbol is missing.\nThe shared object check failed.\n", funcname);
 
 		exit(EXIT_FAILURE);

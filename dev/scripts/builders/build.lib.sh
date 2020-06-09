@@ -2686,7 +2686,21 @@ load() {
     sed "s/extern //" | \
     sed "s/;/ = NULL;/g" \
     >> magma.open.symbols.c; error
-  echo "const char * symbols_check(void *magma) {" >> magma.open.symbols.c; error
+  
+  # Check whether the function pointers can be assigned.
+  echo "const char * symbols_check_assign(void) {" >> magma.open.symbols.c; error
+  cat magma.open.symbols.h | \
+    grep "extern" | \
+    awk -F'(' '{print $2}' | \
+    grep -v '^$' | \
+    tr -d '*' | sed 's/_d)//' | \
+    sed 's/SSL_COMP)/SSL_COMP_get_compression_methods/g' | \
+    awk '{ print $1 "_d = &" $1 ";" }' >> magma.open.symbols.c; error
+  echo "return NULL;" >> magma.open.symbols.c; error
+  echo "}" >> magma.open.symbols.c; error
+  
+  # Check whether the symbols can be loaded at runtime.
+  echo "const char * symbols_check_load(void *magma) {" >> magma.open.symbols.c; error
   cat magma.open.symbols.h | \
     grep "extern" | \
     awk -F'(' '{print $2}' | \
@@ -2704,11 +2718,12 @@ load() {
   # sed -i -e "s/SSL_COMP)/SSL_COMP_get_compression_methods/g" magma.open.symbols.c; error
 
   # The name dkim_getsighdr_d is taken by the OpenDKIM library, so we had to break convention and use dkim_getsighdrx_d.
+  sed -i -e "s/\&dkim_getsighdrx\;/\&dkim_getsighdr\;/g" magma.open.symbols.c; error
   sed -i -e "s/\"dkim_getsighdrx\"/\"dkim_getsighdr\"/g" magma.open.symbols.c; error
 
   # Compile the source files. If an error occurs at compile time it is probably because we have a mismatch somewhere.
   gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_INCLUDES $M_SO \
-    -g3 -rdynamic -Wall -Wextra -Werror -o magma.open.check magma.open.check.c magma.open.symbols.c -ldl; error
+    -g3 -rdynamic -Wall -Wextra -Werror -o magma.open.check magma.open.check.c magma.open.symbols.c -ldl
 
   # If errors are generated from invalid symbols, this should print out the specific lines that are invalid.
   if [ $? -ne 0 ]; then
@@ -2720,16 +2735,14 @@ load() {
     # Only output the symbol info we found lines to print.
     if [ "$LNS" != "" ]; then
 
-      printf "printing invalid symbols...\n"
-      echo "lines = " $LNS
-      echo ""
+      printf "\n\nPrinting the invalid symbols...\n\n"
 
       LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_INCLUDES $M_SO -g3 -rdynamic -Wall -Wextra -Werror \
         -o magma.open.check magma.open.check.c magma.open.symbols.c -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
         grep "[0-9*]" | awk '{print $1 "p;" }' | sort -gu | uniq | tr -d "\n"`
 
-      cat magma.open.symbols.c | sed -n "$LNS"; error
-
+      cat magma.open.symbols.c | sed -n "$LNS" | sed "s/.*\&\(.*\)\;.*/\1/g" | sort | uniq
+      
     fi
 
     echo ""

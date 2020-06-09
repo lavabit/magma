@@ -46,6 +46,7 @@ valgrind --tool=memcheck \
 --partial-loads-ok=yes \
 --track-fds=yes \
 --gen-suppressions=all \
+--suppressions=$MAGMA_DIST/sandbox/etc/magma.suppressions \
 $MAGMA_DIST/magmad.check --check $1 $MAGMA_DIST/sandbox/etc/magma.sandbox.config
 else
 valgrind --tool=memcheck \

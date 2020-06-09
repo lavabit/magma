@@ -7,7 +7,7 @@
 
 #include "magma_check.h"
 
-#define COMPONENT_CHECK_MTHREADS 2
+#define COMPONENT_CHECK_MTHREADS 4
 #define COMPONENT_CHECK_ITERATIONS 16
 
 bool_t check_component_test1_sthread(stringer_t *errmsg) {
@@ -62,14 +62,14 @@ bool_t check_component_test2_mthread(stringer_t *errmsg) {
 		return true;
 	}
 	else if (!(threads = mm_alloc(sizeof(pthread_t) * COMPONENT_CHECK_MTHREADS))) {
-		st_sprint(errmsg, "Thread allocation failed.");
+		if (errmsg) st_sprint(errmsg, "Thread allocation failed.");
 		return false;
 	}
 
 	// Launch the threads.
 	for (uint64_t counter = 0; counter < COMPONENT_CHECK_MTHREADS; counter++) {
 		if (thread_launch(threads + counter, &check_component_test2_wrap, NULL)) {
-			st_sprint(errmsg, "Thread launch failed.");
+			if (errmsg) st_sprint(errmsg, "Thread launch failed.");
 			result = false;
 		}
 	}
@@ -77,11 +77,11 @@ bool_t check_component_test2_mthread(stringer_t *errmsg) {
 	// Wait for the threads to finish and check the output value for an error indication.
 	for (uint64_t counter = 0; counter < COMPONENT_CHECK_MTHREADS; counter++) {
 		if (thread_result(*(threads + counter), &outcome)) {
-			if (!errmsg) st_sprint(errmsg, "Thread join error.");
+			if (errmsg) st_sprint(errmsg, "Thread join error.");
 			result = false;
 		}
 		else if ((threads + counter) && outcome) {
-			if (!errmsg) st_sprint(errmsg, "Threaded test failed. {%.*s}", st_length_int((stringer_t *)outcome), st_char_get((stringer_t *)outcome));
+			if (errmsg) st_sprint(errmsg, "Threaded test failed. {%.*s}", st_length_int((stringer_t *)outcome), st_char_get((stringer_t *)outcome));
 			st_free(outcome);
 			result = false;
 		}
@@ -96,7 +96,6 @@ START_TEST (check_component_s) {
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	if (status()) result = check_component_test1_sthread(errmsg);
-	//if (status() && result) result = check_component_test2_sthread(errmsg);
 
 	log_test("COMPONENT / INTERFACE / SINGLE THREADED:", errmsg);
 	ck_assert_msg(result, st_char_get(errmsg));
@@ -108,7 +107,6 @@ START_TEST (check_component_m) {
 	stringer_t *errmsg = MANAGEDBUF(1024);
 
 	if (status()) result = check_component_test2_mthread(errmsg);
-	if (status() && result) result = check_component_test2_mthread(errmsg);
 
 	log_test("COMPONENT / INTERFACE / MILTI THREADED:", errmsg);
 	ck_assert_msg(result, st_char_get(errmsg));

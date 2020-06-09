@@ -1,0 +1,13 @@
+diff --git a/lib/mk-ca-bundle.pl b/lib/mk-ca-bundle.pl
+index 189ed01..aa5b71b 100755
+--- a/lib/mk-ca-bundle.pl
++++ b/lib/mk-ca-bundle.pl
+@@ -36,7 +36,7 @@ use LWP::UserAgent;
+ use strict;
+ use vars qw($opt_b $opt_h $opt_i $opt_l $opt_n $opt_q $opt_t $opt_u $opt_v);
+ 
+-my $url = 'http://mxr.mozilla.org/mozilla/source/security/nss/lib/ckfw/builtins/certdata.txt?raw=1';
++my $url = 'https://hg.mozilla.org/mozilla-central/raw-file/tip/security/nss/lib/ckfw/builtins/certdata.txt';
+ # If the OpenSSL commandline is not in search path you can configure it here!
+ my $openssl = 'openssl';
+ 

@@ -621,8 +621,8 @@ curl() {
     ;;
     curl-prep)
       cd "$M_SOURCES/curl"; error
-      cat "$M_PATCHES/curl/"skip_test172-version7.23.1.patch | patch -p1 --verbose &>> "$M_LOGS/curl.txt"; error
       if [ "$CURL" == "curl-7.23.1" ]; then
+        cat "$M_PATCHES/curl/"skip_test172-version7.23.1.patch | patch -p1 --verbose &>> "$M_LOGS/curl.txt"; error
         cat "$M_PATCHES/curl/"7.23.1_curl_exec_perm_fix.patch | patch -p1 --verbose &>> "$M_LOGS/curl.txt"; error
         cat "$M_PATCHES/curl/"7.23.1_fix_ca_bundle_url.patch | patch -p1 --verbose &>> "$M_LOGS/curl.txt"; error  
       fi
@@ -647,9 +647,9 @@ curl() {
       fi
 
       export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
-      export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-      export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-      export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+      export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+      export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+      export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
 
       ./configure --enable-debug --enable-static=yes \
         --without-librtmp --without-krb4 --without-krb5 --without-libssh2 \
@@ -657,7 +657,7 @@ curl() {
         --disable-file --disable-ftp --disable-ftps --disable-gopher \
         --disable-imap --disable-imaps --disable-pop3 --disable-pop3s \
         --disable-rtsp --disable-smtp --disable-smtps --disable-telnet \
-        --disable-tftp --disable-ldap --disable-ssh --disable-dict \
+        --disable-tftp --disable-ldap --disable-ssh --disable-dict --disable-smb \
         --build=x86_64-redhat-linux-gnu --target=x86_64-redhat-linux-gnu --with-pic \
         --with-ssl="$M_SOURCES/openssl" --with-zlib="$M_SOURCES/zlib" \
         --prefix="$M_LOCAL" &>> "$M_LOGS/curl.txt"; error
@@ -1340,9 +1340,9 @@ clamav() {
       fi
 
       export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
-      export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE $M_CFLAGS"
-      export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE $M_CXXFLAGS"
-      export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE $M_CPPFLAGS"
+      export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE $M_CFLAGS"
+      export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE $M_CXXFLAGS"
+      export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE $M_CPPFLAGS"
 
       # --disable-mempool
       ./configure  \

@@ -250,13 +250,13 @@ ifdef TERM
   BOLD                          = $$(tput bold || true)
   NORMAL                        = $$(tput sgr0 || true)
 else
-  RED                           = $$([[ -t 0 ]] && tput -Tvt100 setaf 1 || true)
-  BLUE                          = $$([[ -t 0 ]] && tput -Tvt100 setaf 4 || true)
-  GREEN                         = $$([[ -t 0 ]] && tput -Tvt100 setaf 2 || true)
-  WHITE                         = $$([[ -t 0 ]] && tput -Tvt100 setaf 7 || true)
-  YELLOW                        = $$([[ -t 0 ]] && tput -Tvt100 setaf 3 || true)
-  BOLD                          = $$([[ -t 0 ]] && tput -Tvt100 bold || true)
-  NORMAL                        = $$([[ -t 0 ]] && tput -Tvt100 sgr0 || true)
+  RED                           = $$(if [ -t 0 ]; then tput -Tvt100 setaf 1 ; else true ; fi)
+  BLUE                          = $$(if [ -t 0 ]; then tput -Tvt100 setaf 4 ; else true ; fi)
+  GREEN                         = $$(if [ -t 0 ]; then tput -Tvt100 setaf 2 ; else true ; fi)
+  WHITE                         = $$(if [ -t 0 ]; then tput -Tvt100 setaf 7 ; else true ; fi)
+  YELLOW                        = $$(if [ -t 0 ]; then tput -Tvt100 setaf 3 ; else true ; fi)
+  BOLD                          = $$(if [ -t 0 ]; then tput -Tvt100 bold ; else true ; fi)
+  NORMAL                        = $$(if [ -t 0 ]; then tput -Tvt100 sgr0 ; else true ; fi)
 endif
 
 # Calculate the version, commit and timestamp strings.

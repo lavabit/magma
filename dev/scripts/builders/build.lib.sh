@@ -2722,14 +2722,15 @@ load() {
   sed -i -e "s/\"dkim_getsighdrx\"/\"dkim_getsighdr\"/g" magma.open.symbols.c; error
 
   # Compile the source files. If an error occurs at compile time it is probably because we have a mismatch somewhere.
-  gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_INCLUDES -L$M_PROJECT_ROOT -l:magmad.so \
-    -g3 -rdynamic -Wall -Wextra -Werror -o magma.open.check magma.open.check.c magma.open.symbols.c -ldl
+  # Alternatively, we could use the syntax "-L$M_PROJECT_ROOT -l:magmad.so" ...
+  gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_INCLUDES \
+    -g3 -rdynamic -Wall -Wextra -Werror -o magma.open.check magma.open.check.c magma.open.symbols.c $M_SO -ldl
 
   # If errors are generated from invalid symbols, this should print out the specific lines that are invalid.
   if [ $? -ne 0 ]; then
 
-    LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_INCLUDES -L$M_PROJECT_ROOT -l:magmad.so -g3 -rdynamic -Wall -Wextra -Werror \
-      -o magma.open.check magma.open.check.c magma.open.symbols.c -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
+    LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_INCLUDES -g3 -rdynamic -Wall -Wextra -Werror \
+      -o magma.open.check magma.open.check.c magma.open.symbols.c $M_SO -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
       grep "[0-9*]" | awk '{print $1 ", " }' | sort -gu | uniq | tr -d "\n" | sed "s/, $//g"`
 
     # Only output the symbol info we found lines to print.
@@ -2738,7 +2739,7 @@ load() {
       printf "\n\nPrinting the invalid symbols...\n\n"
 
       LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_INCLUDES -L$M_PROJECT_ROOT -l:magmad.so -g3 -rdynamic -Wall -Wextra -Werror \
-        -o magma.open.check magma.open.check.c magma.open.symbols.c -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
+        -o magma.open.check magma.open.check.c magma.open.symbols.c $M_SO -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
         grep "[0-9*]" | awk '{print $1 "p;" }' | sort -gu | uniq | tr -d "\n"`
 
       cat magma.open.symbols.c | sed -n "$LNS" | sed "s/.*\&\(.*\)\;.*/\1/g" | sort | uniq

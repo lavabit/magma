@@ -2245,9 +2245,9 @@ memcached() {
       #   M_EXTRA=""
       # fi
 
-      export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-      export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-      export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+      export CFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+      export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+      export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
 
       # Recent versions of gcc require libmemcached to be explicitly linked with libm.so and libstdc++.so, and configure
       # doesn't appear to include these libraries automatically.

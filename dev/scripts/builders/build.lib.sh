@@ -625,7 +625,8 @@ curl() {
         cat "$M_PATCHES/curl/"skip_test172-version7.23.1.patch | patch -p1 --verbose &>> "$M_LOGS/curl.txt"; error
         cat "$M_PATCHES/curl/"7.23.1_curl_exec_perm_fix.patch | patch -p1 --verbose &>> "$M_LOGS/curl.txt"; error
         cat "$M_PATCHES/curl/"7.23.1_fix_ca_bundle_url.patch | patch -p1 --verbose &>> "$M_LOGS/curl.txt"; error  
-      fi
+     fi
+        cat "$M_PATCHES/curl/"7.70.0_skip_test_1541.patch | patch -p1 --verbose &>> "$M_LOGS/curl.txt"; error
     ;;
     curl-build)
       # Note that if we don't include the debug configure option we can't run a check-full.

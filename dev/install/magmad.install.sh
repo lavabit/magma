@@ -68,7 +68,7 @@ printf "Bytecode yes\n" > /etc/freshclam.conf
 printf "LogSyslog yes\n" >> /etc/freshclam.conf
 printf "SafeBrowsing yes\n" >> /etc/freshclam.conf 
 printf "LogFileMaxSize 8M\n" >> /etc/freshclam.conf 
-printf "DatabaseOwner clam\n" >> /etc/freshclam.conf 
+printf "DatabaseOwner clamav\n" >> /etc/freshclam.conf 
 printf "CompressLocalDatabase no\n" >> /etc/freshclam.conf 
 printf "DatabaseDirectory /var/lib/clamav\n" >> /etc/freshclam.conf 
 printf "DatabaseMirror database.clamav.net\n" >> /etc/freshclam.conf 

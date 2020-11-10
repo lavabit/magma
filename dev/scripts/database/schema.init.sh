@@ -115,6 +115,7 @@ cat $MAGMA_RES_SQL/Start.sql \
 	$MAGMA_RES_SQL/Schema.sql \
 	$MAGMA_RES_SQL/Migration.sql \
 	$MAGMA_RES_SQL/Hostname.sql \
+	$MAGMA_RES_SQL/Limits.sql \
 	$MAGMA_RES_SQL/Version.sql \
 	$MAGMA_RES_SQL/Finish.sql \
 | mysql --batch --user="${MYSQL_USER}" --password="${MYSQL_PASSWORD}" &> /dev/null
@@ -126,6 +127,7 @@ if [ $? != 0 ]; then
 	$MAGMA_RES_SQL/Schema.sql \
 	$MAGMA_RES_SQL/Migration.sql \
 	$MAGMA_RES_SQL/Hostname.sql \
+	$MAGMA_RES_SQL/Limits.sql \
 	$MAGMA_RES_SQL/Version.sql \
 	$MAGMA_RES_SQL/Finish.sql \
 	| mysql --verbose --user="${MYSQL_USER}" --password="${MYSQL_PASSWORD}" | tail -4

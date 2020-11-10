@@ -81,6 +81,7 @@ fi
 
 # Generate a Start.sql file using the user-provided schema name.
 cat <<-EOF > $MAGMA_RES_SQL/Start.sql
+DROP DATABASE IF EXISTS \`${MYSQL_SCHEMA}\`;
 CREATE DATABASE IF NOT EXISTS \`${MYSQL_SCHEMA}\`;
 USE \`${MYSQL_SCHEMA}\`;
 

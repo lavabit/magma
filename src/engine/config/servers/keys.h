@@ -102,7 +102,7 @@ server_keys_t server_keys[] = {
 		.offset = offsetof (server_t, violations.cutoff),
 		.norm.type = M_TYPE_UINT32,
 		.norm.val.u32 = 100,
-		.name = ".violations.delay",
+		.name = ".violations.cutoff",
 		.description = "The number of protocol or authentication errors allowed before terminating a connection.",
 		.required = false
 	}

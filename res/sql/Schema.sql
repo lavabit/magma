@@ -83,6 +83,7 @@ CREATE TABLE `Contacts`(
     CONSTRAINT `fk_Contacts_2` FOREIGN KEY (`foldernum`) REFERENCES `Folders` (`foldernum`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 MAX_ROWS=4294967295 AVG_ROW_LENGTH=100 COMMENT='Address book contacts.';
 
+DROP TABLE IF EXISTS `Contact_Details`;
 CREATE TABLE `Contact_Details` (
   `contactdetailnum` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `contactnum` bigint(20) unsigned NOT NULL,
@@ -394,6 +395,7 @@ CREATE TABLE `Patterns` (
   PRIMARY KEY (`pattern`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 MIN_ROWS=4294967295 MAX_ROWS=4294967295 AVG_ROW_LENGTH=255 COMMENT='Contains strings that result in blocking an outbound message';
 
+DROP TABLE IF EXISTS `Payments`;
 CREATE TABLE `Payments` (
   `paymentnum` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `timestamp` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -494,6 +496,7 @@ CREATE TABLE `Users` (
   KEY `DEX_LEGACY` (`userid`,`legacy`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 MAX_ROWS=4294967295 AVG_ROW_LENGTH=1000 COMMENT='Basic user account information and settings.';
 
+DROP TABLE IF EXISTS `User_Config`;
 CREATE TABLE `User_Config` (
   `userconfignum` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `usernum` bigint(20) unsigned NOT NULL,

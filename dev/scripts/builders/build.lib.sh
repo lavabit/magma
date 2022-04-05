@@ -1299,12 +1299,23 @@ clamav() {
 
         # Output the version number and not the git commit hash.
         cat "$M_PATCHES/clamav/"version_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
-			else 
-				# Add the shutdown and clean up functions and fix the rar library dynamic loading logic.
+      elif [[ $CLAMAV =~ "clamav-0.102.3" ]]; then 
+        # Add the shutdown and clean up functions and fix the rar library dynamic loading logic.
         cat "$M_PATCHES/clamav/"shutdown_rarload_01023.patch | patch -p1 --fuzz=100 --verbose &>> "$M_LOGS/clamav.txt"; error
 
         # Add the ability to dictate the CA bundle file location when running freshclam.
         cat "$M_PATCHES/clamav/"freshclam_cafile_option_01023.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
+        
+        # Output the version number and not the git commit hash.
+        cat "$M_PATCHES/clamav/"version_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
+
+      # Applied to most recent version.
+      else
+        # Add the shutdown and clean up functions and fix the rar library dynamic loading logic.
+        cat "$M_PATCHES/clamav/"shutdown_rarload_01042.patch | patch -p1 --fuzz=100 --verbose &>> "$M_LOGS/clamav.txt"; error
+
+        # Add the ability to dictate the CA bundle file location when running freshclam.
+        cat "$M_PATCHES/clamav/"freshclam_cafile_option_01042.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
         
         # Output the version number and not the git commit hash.
         cat "$M_PATCHES/clamav/"version_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error

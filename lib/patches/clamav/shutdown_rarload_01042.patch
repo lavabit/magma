@@ -1,0 +1,178 @@
+diff --git a/libclamav/clamav.h b/libclamav/clamav.h
+index d4be07e..c49c484 100644
+--- a/libclamav/clamav.h
++++ b/libclamav/clamav.h
+@@ -261,6 +261,7 @@ void cl_cleanup_crypto(void);
+ /**
+  * @brief Initialize the ClamAV library.
+  *
++extern void cl_shutdown(void);
+  * @param initoptions   Unused.
+  * @return cl_error_t   CL_SUCCESS if everything initalized correctly.
+  */
+diff --git a/libclamav/mbox.c b/libclamav/mbox.c
+index 1f1e1c3..ac97d18 100644
+--- a/libclamav/mbox.c
++++ b/libclamav/mbox.c
+@@ -3052,6 +3052,30 @@ initialiseTables(table_t **rfc821Table, table_t **subtypeTable)
+ }
+ 
+ /*
++ * Cleanup the various lookup tables
++ */
++void
++cli_mbox_shutdown(void)
++{
++
++#ifdef	CL_THREAD_SAFE
++	pthread_mutex_lock(&tables_mutex);
++#endif
++	if(rfc821) {
++		tableDestroy(rfc821);
++		rfc821 = NULL;
++	}
++	if(subtype) {
++		tableDestroy(subtype);
++		subtype = NULL;
++	}
++#ifdef	CL_THREAD_SAFE
++			pthread_mutex_unlock(&tables_mutex);
++#endif
++
++}
++
++/*
+  * If there's a HTML text version use that, otherwise
+  * use the first text part, otherwise just use the
+  * first one around. HTML text is most likely to include
+diff --git a/libclamav/mbox.h b/libclamav/mbox.h
+index 63ee0c4..fb767f5 100644
+--- a/libclamav/mbox.h
++++ b/libclamav/mbox.h
+@@ -75,4 +75,6 @@ typedef enum {
+ size_t strstrip(char *s); /* remove trailing white space */
+ int cli_mbox(const char *dir, cli_ctx *ctx);
+ 
++void cli_mbox_shutdown(void);
++
+ #endif /* __MBOX_H */
+diff --git a/libclamav/message.c b/libclamav/message.c
+index 75c86ec..cc2fb7b 100644
+--- a/libclamav/message.c
++++ b/libclamav/message.c
+@@ -137,6 +137,32 @@ static const unsigned char base64Table[256] = {
+     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255};
+ 
++static table_t *mime_table = NULL;
++
++#ifdef	CL_THREAD_SAFE
++	static pthread_mutex_t mime_mutex = PTHREAD_MUTEX_INITIALIZER;
++#endif
++
++/*
++ * Cleanup the various lookup tables
++ */
++void
++cli_mime_shutdown(void)
++{
++
++#ifdef	CL_THREAD_SAFE
++	pthread_mutex_lock(&mime_mutex);
++#endif
++	if(mime_table) {
++		tableDestroy(mime_table);
++		mime_table = NULL;
++	}
++#ifdef	CL_THREAD_SAFE
++			pthread_mutex_unlock(&mime_mutex);
++#endif
++
++}
++
+ message *
+ messageCreate(void)
+ {
+@@ -211,12 +237,8 @@ void messageReset(message *m)
+  */
+ int messageSetMimeType(message *mess, const char *type)
+ {
+-#ifdef CL_THREAD_SAFE
+-    static pthread_mutex_t mime_mutex = PTHREAD_MUTEX_INITIALIZER;
+-#endif
+     const struct mime_map *m;
+     int typeval;
+-    static table_t *mime_table;
+ 
+     if (mess == NULL) {
+         cli_dbgmsg("messageSetMimeType: NULL message pointer\n");
+diff --git a/libclamav/message.h b/libclamav/message.h
+index 62f6b85..a0ec5cd 100644
+--- a/libclamav/message.h
++++ b/libclamav/message.h
+@@ -93,4 +93,6 @@ int messageSavePartial(message *m, const char *dir, const char *id, unsigned par
+ json_object *messageGetJObj(message *m);
+ #endif
+ 
++void cli_mime_shutdown(void);
++
+ #endif /*_MESSAGE_H*/
+diff --git a/libclamav/others.c b/libclamav/others.c
+index 4c31381..20a0fdf 100644
+--- a/libclamav/others.c
++++ b/libclamav/others.c
+@@ -302,20 +302,26 @@ static void rarload(void)
+     cli_unrar_skip_file        = unrar_skip_file;
+     cli_unrar_close            = unrar_close;
+ #else
+-    rhandle = load_module("libclamunrar_iface", "unrar");
+-    if (NULL == rhandle)
+-        return;
+-
+-    if ((NULL == (cli_unrar_open = (cl_unrar_error_t(*)(const char *, void **, char **, uint32_t *, uint8_t))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_open"))) ||
+-        (NULL == (cli_unrar_peek_file_header = (cl_unrar_error_t(*)(void *, unrar_metadata_t *))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_peek_file_header"))) ||
+-        (NULL == (cli_unrar_extract_file = (cl_unrar_error_t(*)(void *, const char *, char *))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_extract_file"))) ||
+-        (NULL == (cli_unrar_skip_file = (cl_unrar_error_t(*)(void *))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_skip_file"))) ||
+-        (NULL == (cli_unrar_close = (void (*)(void *))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_close")))) {
+ 
+-        cli_warnmsg("Failed to load function from UnRAR module\n");
+-        cli_warnmsg("Version mismatch?\n");
+-        cli_warnmsg("UnRAR support unavailable\n");
+-        return;
++    if ((NULL == (cli_unrar_open = (cl_unrar_error_t(*)(const char *, void **, char **, uint32_t *, uint8_t))get_module_function(NULL, "libclamunrar_iface_LTX_unrar_open"))) ||
++        (NULL == (cli_unrar_peek_file_header = (cl_unrar_error_t(*)(void *, unrar_metadata_t *))get_module_function(NULL, "libclamunrar_iface_LTX_unrar_peek_file_header"))) ||
++        (NULL == (cli_unrar_extract_file = (cl_unrar_error_t(*)(void *, const char *, char *))get_module_function(NULL, "libclamunrar_iface_LTX_unrar_extract_file"))) ||
++        (NULL == (cli_unrar_skip_file = (cl_unrar_error_t(*)(void *))get_module_function(NULL, "libclamunrar_iface_LTX_unrar_skip_file"))) ||
++        (NULL == (cli_unrar_close = (void (*)(void *))get_module_function(NULL, "libclamunrar_iface_LTX_unrar_close")))) {
++
++	    rhandle = load_module("libclamunrar_iface", "unrar");
++	    if (NULL == rhandle) return;
++
++		if ((NULL == (cli_unrar_open = (cl_unrar_error_t(*)(const char *, void **, char **, uint32_t *, uint8_t))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_open"))) ||
++				(NULL == (cli_unrar_peek_file_header = (cl_unrar_error_t(*)(void *, unrar_metadata_t *))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_peek_file_header"))) ||
++				(NULL == (cli_unrar_extract_file = (cl_unrar_error_t(*)(void *, const char *, char *))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_extract_file"))) ||
++				(NULL == (cli_unrar_skip_file = (cl_unrar_error_t(*)(void *))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_skip_file"))) ||
++				(NULL == (cli_unrar_close = (void (*)(void *))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_close")))) {
++		    cli_warnmsg("Failed to load function from UnRAR module\n");
++		    cli_warnmsg("Version mismatch?\n");
++		    cli_warnmsg("UnRAR support unavailable\n");
++		    return;
++		}
+     }
+ #endif
+ 
+@@ -440,6 +446,14 @@ cl_error_t cl_init(unsigned int initoptions)
+     return CL_SUCCESS;
+ }
+ 
++void cl_shutdown(void) {
++	cli_mbox_shutdown();
++	cli_mime_shutdown();
++	if (lt_dlexit()) {
++		cli_errmsg("lt_dlexit: Library exit error, probably because of an invalid reference counter");
++	}
++}
++
+ struct cl_engine *cl_engine_new(void)
+ {
+     struct cl_engine *new;

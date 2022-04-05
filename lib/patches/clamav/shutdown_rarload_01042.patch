@@ -1,15 +1,15 @@
 diff --git a/libclamav/clamav.h b/libclamav/clamav.h
-index d4be07e..c49c484 100644
+index d4be07e..70e9c72 100644
 --- a/libclamav/clamav.h
 +++ b/libclamav/clamav.h
-@@ -261,6 +261,7 @@ void cl_cleanup_crypto(void);
- /**
-  * @brief Initialize the ClamAV library.
-  *
-+extern void cl_shutdown(void);
-  * @param initoptions   Unused.
+@@ -265,6 +265,7 @@ void cl_cleanup_crypto(void);
   * @return cl_error_t   CL_SUCCESS if everything initalized correctly.
   */
+ extern cl_error_t cl_init(unsigned int initoptions);
++extern void cl_shutdown(void);
+ 
+ /**
+  * @brief Allocate a new scanning engine and initialize default settings.
 diff --git a/libclamav/mbox.c b/libclamav/mbox.c
 index 1f1e1c3..ac97d18 100644
 --- a/libclamav/mbox.c
@@ -118,23 +118,45 @@ index 62f6b85..a0ec5cd 100644
 +
  #endif /*_MESSAGE_H*/
 diff --git a/libclamav/others.c b/libclamav/others.c
-index 4c31381..20a0fdf 100644
+index 4c31381..f3a9c3b 100644
 --- a/libclamav/others.c
 +++ b/libclamav/others.c
-@@ -302,20 +302,26 @@ static void rarload(void)
+@@ -268,7 +268,9 @@ static void *get_module_function(void *handle, const char *name)
+ {
+     void *procAddress = NULL;
+     procAddress = dlsym(handle, name);
+-    if (NULL == procAddress) {
++
++    // Ignore missing symbols when the handle is NULL. This only means the symbol wasn't statically linked or otherwise loaded already.
++    if (NULL == procAddress && handle != NULL) {
+         const char *err = dlerror();
+         if (NULL == err) {
+             cli_warnmsg("Failed to get function \"%s\": Unknown error.\n", name);
+@@ -276,6 +278,10 @@ static void *get_module_function(void *handle, const char *name)
+             cli_warnmsg("Failed to get function \"%s\": %s\n", name, err);
+         }
+     }
++    // If the symbol wasn't found, and the handle is NULL, this will call dlerror(), which will reset the error queue.
++    else if (NULL == procAddress && handle == NULL) {
++    	dlerror();
++    }
+     return procAddress;
+ }
+ #endif // !_WIN32
+@@ -302,20 +308,26 @@ static void rarload(void)
      cli_unrar_skip_file        = unrar_skip_file;
      cli_unrar_close            = unrar_close;
  #else
 -    rhandle = load_module("libclamunrar_iface", "unrar");
 -    if (NULL == rhandle)
 -        return;
--
+ 
 -    if ((NULL == (cli_unrar_open = (cl_unrar_error_t(*)(const char *, void **, char **, uint32_t *, uint8_t))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_open"))) ||
 -        (NULL == (cli_unrar_peek_file_header = (cl_unrar_error_t(*)(void *, unrar_metadata_t *))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_peek_file_header"))) ||
 -        (NULL == (cli_unrar_extract_file = (cl_unrar_error_t(*)(void *, const char *, char *))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_extract_file"))) ||
 -        (NULL == (cli_unrar_skip_file = (cl_unrar_error_t(*)(void *))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_skip_file"))) ||
 -        (NULL == (cli_unrar_close = (void (*)(void *))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_close")))) {
- 
+-
 -        cli_warnmsg("Failed to load function from UnRAR module\n");
 -        cli_warnmsg("Version mismatch?\n");
 -        cli_warnmsg("UnRAR support unavailable\n");
@@ -161,15 +183,19 @@ index 4c31381..20a0fdf 100644
      }
  #endif
  
-@@ -440,6 +446,14 @@ cl_error_t cl_init(unsigned int initoptions)
+@@ -440,6 +452,18 @@ cl_error_t cl_init(unsigned int initoptions)
      return CL_SUCCESS;
  }
  
 +void cl_shutdown(void) {
 +	cli_mbox_shutdown();
 +	cli_mime_shutdown();
++	// Uncomment this fix once we patch libltdl to let us check the initialized counter. Until then use the ugly warning below as a reminder.
++	// if (lt_dlinitialized() && lt_dlexit()) {
++	// 	cli_errmsg("lt_dlexit: Library exit error, probably because of an invalid reference counter");
++	// }
 +	if (lt_dlexit()) {
-+		cli_errmsg("lt_dlexit: Library exit error, probably because of an invalid reference counter");
++		cli_errmsg("lt_dlexit: Library exit error, probably because of an invalid reference counter [LIBLTDL NO LONGER BUNDLED / OTHERWISE WE'D USE 0.103.5 PATCH TO CHECK INITALIZED]");
 +	}
 +}
 +

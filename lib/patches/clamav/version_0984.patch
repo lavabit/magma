@@ -3,4 +3,3 @@ diff -r 946577531cae libclamav/version.h.static
 +++ b/libclamav/version.h.static	Fri Oct 10 05:45:20 2014 -0500
 @@ -0,0 +1,1 @@
 +#define REPO_VERSION VERSION
-

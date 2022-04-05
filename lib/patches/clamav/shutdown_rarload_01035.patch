@@ -1,0 +1,256 @@
+diff --git a/libclamav/clamav.h b/libclamav/clamav.h
+index 4e34d63..c947482 100644
+--- a/libclamav/clamav.h
++++ b/libclamav/clamav.h
+@@ -264,6 +264,7 @@ void cl_cleanup_crypto(void);
+  * @return cl_error_t   CL_SUCCESS if everything initalized correctly.
+  */
+ extern cl_error_t cl_init(unsigned int initoptions);
++extern void cl_shutdown(void);
+ 
+ /**
+  * @brief Allocate a new scanning engine and initialize default settings.
+diff --git a/libclamav/mbox.c b/libclamav/mbox.c
+index 19feb67..414acf0 100644
+--- a/libclamav/mbox.c
++++ b/libclamav/mbox.c
+@@ -3090,6 +3090,30 @@ initialiseTables(table_t **rfc821Table, table_t **subtypeTable)
+ }
+ 
+ /*
++ * Cleanup the various lookup tables
++ */
++void
++cli_mbox_shutdown(void)
++{
++
++#ifdef	CL_THREAD_SAFE
++	pthread_mutex_lock(&tables_mutex);
++#endif
++	if(rfc821) {
++		tableDestroy(rfc821);
++		rfc821 = NULL;
++	}
++	if(subtype) {
++		tableDestroy(subtype);
++		subtype = NULL;
++	}
++#ifdef	CL_THREAD_SAFE
++			pthread_mutex_unlock(&tables_mutex);
++#endif
++
++}
++
++/*
+  * If there's a HTML text version use that, otherwise
+  * use the first text part, otherwise just use the
+  * first one around. HTML text is most likely to include
+diff --git a/libclamav/mbox.h b/libclamav/mbox.h
+index 63ee0c4..fb767f5 100644
+--- a/libclamav/mbox.h
++++ b/libclamav/mbox.h
+@@ -75,4 +75,6 @@ typedef enum {
+ size_t strstrip(char *s); /* remove trailing white space */
+ int cli_mbox(const char *dir, cli_ctx *ctx);
+ 
++void cli_mbox_shutdown(void);
++
+ #endif /* __MBOX_H */
+diff --git a/libclamav/message.c b/libclamav/message.c
+index 75c86ec..cc2fb7b 100644
+--- a/libclamav/message.c
++++ b/libclamav/message.c
+@@ -137,6 +137,32 @@ static const unsigned char base64Table[256] = {
+     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255};
+ 
++static table_t *mime_table = NULL;
++
++#ifdef	CL_THREAD_SAFE
++	static pthread_mutex_t mime_mutex = PTHREAD_MUTEX_INITIALIZER;
++#endif
++
++/*
++ * Cleanup the various lookup tables
++ */
++void
++cli_mime_shutdown(void)
++{
++
++#ifdef	CL_THREAD_SAFE
++	pthread_mutex_lock(&mime_mutex);
++#endif
++	if(mime_table) {
++		tableDestroy(mime_table);
++		mime_table = NULL;
++	}
++#ifdef	CL_THREAD_SAFE
++			pthread_mutex_unlock(&mime_mutex);
++#endif
++
++}
++
+ message *
+ messageCreate(void)
+ {
+@@ -211,12 +237,8 @@ void messageReset(message *m)
+  */
+ int messageSetMimeType(message *mess, const char *type)
+ {
+-#ifdef CL_THREAD_SAFE
+-    static pthread_mutex_t mime_mutex = PTHREAD_MUTEX_INITIALIZER;
+-#endif
+     const struct mime_map *m;
+     int typeval;
+-    static table_t *mime_table;
+ 
+     if (mess == NULL) {
+         cli_dbgmsg("messageSetMimeType: NULL message pointer\n");
+diff --git a/libclamav/message.h b/libclamav/message.h
+index 62f6b85..a0ec5cd 100644
+--- a/libclamav/message.h
++++ b/libclamav/message.h
+@@ -93,4 +93,6 @@ int messageSavePartial(message *m, const char *dir, const char *id, unsigned par
+ json_object *messageGetJObj(message *m);
+ #endif
+ 
++void cli_mime_shutdown(void);
++
+ #endif /*_MESSAGE_H*/
+diff --git a/libclamav/others.c b/libclamav/others.c
+index 7a0e92f..f021ffc 100644
+--- a/libclamav/others.c
++++ b/libclamav/others.c
+@@ -288,7 +288,9 @@ static void *get_module_function(void *handle, const char *name)
+ {
+     void *procAddress = NULL;
+     procAddress = dlsym(handle, name);
+-    if (NULL == procAddress) {
++
++    // Ignore missing symbols when the handle is NULL. This only means the symbol wasn't statically linked or otherwise loaded already.
++    if (NULL == procAddress && handle != NULL) {
+         const char *err = dlerror();
+         if (NULL == err) {
+             cli_warnmsg("Failed to get function \"%s\": Unknown error.\n", name);
+@@ -296,6 +298,10 @@ static void *get_module_function(void *handle, const char *name)
+             cli_warnmsg("Failed to get function \"%s\": %s\n", name, err);
+         }
+     }
++    // If the symbol wasn't found, and the handle is NULL, this will call dlerror(), which will reset the error queue.
++    else if (NULL == procAddress && handle == NULL) {
++    	dlerror();
++    }
+     return procAddress;
+ }
+ #endif // !_WIN32
+@@ -317,20 +323,25 @@ static void rarload(void)
+ 
+     if (have_rar) return;
+ 
+-    rhandle = load_module("libclamunrar_iface", "unrar");
+-    if (NULL == rhandle)
+-        return;
+-
+-    if ((NULL == (cli_unrar_open = (cl_unrar_error_t(*)(const char *, void **, char **, uint32_t *, uint8_t))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_open"))) ||
+-        (NULL == (cli_unrar_peek_file_header = (cl_unrar_error_t(*)(void *, unrar_metadata_t *))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_peek_file_header"))) ||
+-        (NULL == (cli_unrar_extract_file = (cl_unrar_error_t(*)(void *, const char *, char *))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_extract_file"))) ||
+-        (NULL == (cli_unrar_skip_file = (cl_unrar_error_t(*)(void *))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_skip_file"))) ||
+-        (NULL == (cli_unrar_close = (void (*)(void *))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_close")))) {
+-
+-        cli_warnmsg("Failed to load function from UnRAR module\n");
+-        cli_warnmsg("Version mismatch?\n");
+-        cli_warnmsg("UnRAR support unavailable\n");
+-        return;
++    if ((NULL == (cli_unrar_open = (cl_unrar_error_t(*)(const char *, void **, char **, uint32_t *, uint8_t))get_module_function(NULL, "libclamunrar_iface_LTX_unrar_open"))) ||
++        (NULL == (cli_unrar_peek_file_header = (cl_unrar_error_t(*)(void *, unrar_metadata_t *))get_module_function(NULL, "libclamunrar_iface_LTX_unrar_peek_file_header"))) ||
++        (NULL == (cli_unrar_extract_file = (cl_unrar_error_t(*)(void *, const char *, char *))get_module_function(NULL, "libclamunrar_iface_LTX_unrar_extract_file"))) ||
++        (NULL == (cli_unrar_skip_file = (cl_unrar_error_t(*)(void *))get_module_function(NULL, "libclamunrar_iface_LTX_unrar_skip_file"))) ||
++        (NULL == (cli_unrar_close = (void (*)(void *))get_module_function(NULL, "libclamunrar_iface_LTX_unrar_close")))) {
++
++	    rhandle = load_module("libclamunrar_iface", "unrar");
++	    if (NULL == rhandle) return;
++
++			if ((NULL == (cli_unrar_open = (cl_unrar_error_t(*)(const char *, void **, char **, uint32_t *, uint8_t))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_open"))) ||
++					(NULL == (cli_unrar_peek_file_header = (cl_unrar_error_t(*)(void *, unrar_metadata_t *))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_peek_file_header"))) ||
++					(NULL == (cli_unrar_extract_file = (cl_unrar_error_t(*)(void *, const char *, char *))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_extract_file"))) ||
++					(NULL == (cli_unrar_skip_file = (cl_unrar_error_t(*)(void *))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_skip_file"))) ||
++					(NULL == (cli_unrar_close = (void (*)(void *))get_module_function(rhandle, "libclamunrar_iface_LTX_unrar_close")))) {
++					cli_warnmsg("Failed to load function from UnRAR module\n");
++					cli_warnmsg("Version mismatch?\n");
++					cli_warnmsg("UnRAR support unavailable\n");
++					return;
++			}
+     }
+     have_rar = 1;
+ }
+@@ -460,6 +471,14 @@ cl_error_t cl_init(unsigned int initoptions)
+     return CL_SUCCESS;
+ }
+ 
++void cl_shutdown(void) {
++	cli_mbox_shutdown();
++	cli_mime_shutdown();
++	if (lt_dlinitialized() && lt_dlexit()) {
++		cli_errmsg("lt_dlexit: Library exit error, probably because of an invalid reference counter");
++	}
++}
++
+ struct cl_engine *cl_engine_new(void)
+ {
+     struct cl_engine *new;
+diff --git a/libltdl/ltdl.c b/libltdl/ltdl.c
+index 6013f2a..6dc57ea 100644
+--- a/libltdl/ltdl.c
++++ b/libltdl/ltdl.c
+@@ -91,7 +91,7 @@ static	const char	sys_dlsearch_path[]	= LT_DLSEARCH_PATH;
+ 
+ 
+ 
+-
++
+ /* --- DYNAMIC MODULE LOADING --- */
+ 
+ 
+@@ -262,6 +262,12 @@ lt_dlinit (void)
+ }
+ 
+ int
++lt_dlinitialized (void)
++{
++	return initialized;
++}
++
++int
+ lt_dlexit (void)
+ {
+   /* shut down libltdl */
+diff --git a/libltdl/ltdl.h b/libltdl/ltdl.h
+index f811399..ee9b03a 100644
+--- a/libltdl/ltdl.h
++++ b/libltdl/ltdl.h
+@@ -43,7 +43,7 @@ LT_BEGIN_C_DECLS
+ /* LT_STRLEN can be used safely on NULL pointers.  */
+ #define LT_STRLEN(s)	(((s) && (s)[0]) ? strlen (s) : 0)
+ 
+-
++
+ /* --- DYNAMIC MODULE LOADING API --- */
+ 
+ 
+@@ -52,6 +52,7 @@ typedef	struct lt__handle *lt_dlhandle;	/* A loaded module.  */
+ /* Initialisation and finalisation functions for libltdl. */
+ LT_SCOPE int	    lt_dlinit		(void);
+ LT_SCOPE int	    lt_dlexit		(void);
++LT_SCOPE int	    lt_dlinitialized		(void);
+ 
+ /* Module search path manipulation.  */
+ LT_SCOPE int	    lt_dladdsearchdir	 (const char *search_dir);
+@@ -110,7 +111,7 @@ extern LT_DLSYM_CONST lt_dlsymlist lt__PROGRAM__LTX_preloaded_symbols[];
+ 
+ 
+ 
+-
++
+ /* --- MODULE INFORMATION --- */
+ 
+ 

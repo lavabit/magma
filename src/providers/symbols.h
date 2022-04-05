@@ -139,19 +139,19 @@ extern int (*BZ2_bzBuffToBuffCompress_d)(char *dest, unsigned int *destLen, char
 extern int (*lt_dlexit_d)(void);
 extern void (*cl_shutdown_d)(void);
 extern const char * (*cl_retver_d)(void);
-extern int (*cl_init_d)(unsigned int initoptions);
+extern cl_error_t (*cl_init_d)(unsigned int initoptions);
 extern const char * (*cl_strerror_d)(int clerror);
 extern struct cl_engine * (*cl_engine_new_d)(void);
-extern int (*cl_statfree_d)(struct cl_stat *dbstat);
-extern int (*cl_engine_free_d)(struct cl_engine *engine);
-extern int (*cl_engine_compile_d)(struct cl_engine *engine);
+extern cl_error_t (*cl_statfree_d)(struct cl_stat *dbstat);
+extern cl_error_t (*cl_engine_free_d)(struct cl_engine *engine);
+extern cl_error_t (*cl_engine_compile_d)(struct cl_engine *engine);
 extern int (*cl_statchkdir_d)(const struct cl_stat *dbstat);
-extern int (*cl_statinidir_d)(const char *dirname, struct cl_stat *dbstat);
-extern int (*cl_countsigs_d)(const char *path, unsigned int countoptions, unsigned int *sigs);
-extern int (*cl_engine_set_num_d)(struct cl_engine *engine, enum cl_engine_field field, long long num);
-extern int (*cl_engine_set_str_d)(struct cl_engine *engine, enum cl_engine_field field, const char *str);
-extern int (*cl_load_d)(const char *path, struct cl_engine *engine, unsigned int *signo, unsigned int dboptions);
-extern int (*cl_scandesc_d)(int desc, const char *filename, const char **virname, unsigned long int *scanned, const struct cl_engine *engine, struct cl_scan_options *scanoptions);
+extern cl_error_t (*cl_statinidir_d)(const char *dirname, struct cl_stat *dbstat);
+extern cl_error_t (*cl_countsigs_d)(const char *path, unsigned int countoptions, unsigned int *sigs);
+extern cl_error_t (*cl_engine_set_num_d)(struct cl_engine *engine, enum cl_engine_field field, long long num);
+extern cl_error_t (*cl_engine_set_str_d)(struct cl_engine *engine, enum cl_engine_field field, const char *str);
+extern cl_error_t (*cl_load_d)(const char *path, struct cl_engine *engine, unsigned int *signo, unsigned int dboptions);
+extern cl_error_t (*cl_scandesc_d)(int desc, const char *filename, const char **virname, unsigned long int *scanned, const struct cl_engine *engine, struct cl_scan_options *scanoptions);
 
 //! DSPAM
 extern const char * (*dspam_version_d)(void);

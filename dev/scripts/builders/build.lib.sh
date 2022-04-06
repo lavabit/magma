@@ -54,6 +54,11 @@ BASE=`pwd -P`
 popd > /dev/null
 
 M_BUILD=`readlink -f $0`
+if [ $(command -v nproc) ]; then 
+	M_JOBS=$(nproc)
+else
+	M_JOBS=6
+fi
 
 cd $BASE/../../../lib/
 
@@ -199,7 +204,7 @@ gd() {
 
       unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset LIBPNG_LIBS; unset LIBPNG_CFLAGS; unset LIBJPEG_LIBS; unset LIBJPEG_CFLAGS; unset PKG_CONFIG_PATH
 
-      make --jobs=4 &>> "$M_LOGS/gd.txt"; error
+      make --jobs=${M_JOBS} &>> "$M_LOGS/gd.txt"; error
       make install &>> "$M_LOGS/gd.txt"; error
     ;;
     gd-check)
@@ -276,7 +281,7 @@ png() {
 
       unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
-      make --jobs=4 &>> "$M_LOGS/png.txt"; error
+      make --jobs=${M_JOBS} &>> "$M_LOGS/png.txt"; error
       make install &>> "$M_LOGS/png.txt"; error
     ;;
     png-check)
@@ -346,7 +351,7 @@ lzo() {
 
       unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
-      make --jobs=4 &>> "$M_LOGS/lzo.txt"; error
+      make --jobs=${M_JOBS} &>> "$M_LOGS/lzo.txt"; error
       make install &>> "$M_LOGS/lzo.txt"; error
     ;;
     lzo-check)
@@ -416,7 +421,7 @@ pcre() {
 
       unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
-      make --jobs=4 &>> "$M_LOGS/pcre.txt"; error
+      make --jobs=${M_JOBS} &>> "$M_LOGS/pcre.txt"; error
       make install &>> "$M_LOGS/pcre.txt"; error
     ;;
     pcre-check)
@@ -487,7 +492,7 @@ jpeg() {
 
       unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
-      make --jobs=4 &>> "$M_LOGS/jpeg.txt"; error
+      make --jobs=${M_JOBS} &>> "$M_LOGS/jpeg.txt"; error
       make install &>> "$M_LOGS/jpeg.txt"; error
     ;;
     jpeg-check)
@@ -563,7 +568,7 @@ spf2() {
 
       unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS
 
-      make --jobs=4 &>> "$M_LOGS/spf2.txt"; error
+      make --jobs=${M_JOBS} &>> "$M_LOGS/spf2.txt"; error
       make install &>> "$M_LOGS/spf2.txt"; error
     ;;
     spf2-check)
@@ -665,7 +670,7 @@ curl() {
 
       unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
-      make --jobs=4 &>> "$M_LOGS/curl.txt"; error
+      make --jobs=${M_JOBS} &>> "$M_LOGS/curl.txt"; error
       make install &>> "$M_LOGS/curl.txt"; error
     ;;
     curl-check)
@@ -678,8 +683,8 @@ curl() {
       # To avoid having curl run all of its tests using valgrind, we pass the '-n' option to the runtests.pl script.
       sed -i -e "s/^\(TEST = .*runtests.pl\).*/\1 -n/g" tests/Makefile
 
-      make --jobs=4 examples &>> "$M_LOGS/curl.txt"; error
-      make --jobs=4 test &>> "$M_LOGS/curl.txt"; error
+      make --jobs=${M_JOBS} examples &>> "$M_LOGS/curl.txt"; error
+      make --jobs=${M_JOBS} test &>> "$M_LOGS/curl.txt"; error
     ;;
     curl-check-full)
 
@@ -692,10 +697,10 @@ curl() {
       # Since valgrind may have been disabled above, we ensure the -n flag is removed here.
       sed -i -e "s/^\(TEST = .*runtests.pl\).*/\1/g" tests/Makefile
 
-      make --jobs=4 examples &>> "$M_LOGS/curl.txt"; error
-      make --jobs=4 test &>> "$M_LOGS/curl.txt"; error
-      make --jobs=4 test-full &>> "$M_LOGS/curl.txt"; error
-      # make --jobs=4 test-torture &>> "$M_LOGS/curl.txt"; error
+      make --jobs=${M_JOBS} examples &>> "$M_LOGS/curl.txt"; error
+      make --jobs=${M_JOBS} test &>> "$M_LOGS/curl.txt"; error
+      make --jobs=${M_JOBS} test-full &>> "$M_LOGS/curl.txt"; error
+      # make --jobs=${M_JOBS} test-torture &>> "$M_LOGS/curl.txt"; error
 
     ;;
     curl-clean)
@@ -769,7 +774,7 @@ xml2() {
 
       unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
-      make --jobs=4 &>> "$M_LOGS/xml2.txt"; error
+      make --jobs=${M_JOBS} &>> "$M_LOGS/xml2.txt"; error
       make install &>> "$M_LOGS/xml2.txt"; error
     ;;
     xml2-check)
@@ -857,7 +862,7 @@ dkim() {
 
       unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
-      make --jobs=4 &>> "$M_LOGS/dkim.txt"; error
+      make --jobs=${M_JOBS} &>> "$M_LOGS/dkim.txt"; error
       make install &>> "$M_LOGS/dkim.txt"; error
     ;;
     dkim-check)
@@ -1393,7 +1398,7 @@ clamav() {
         printf "\x23\x21/bin/bash\nexit 77\n" > "$M_SOURCES/clamav/unit_tests/check4_clamd.sh"; error
       fi
 
-      make --jobs=4 &>> "$M_LOGS/clamav.txt"; error
+      make --jobs=${M_JOBS} &>> "$M_LOGS/clamav.txt"; error
       make install &>> "$M_LOGS/clamav.txt"; error
     ;;
     clamav-check)
@@ -2067,7 +2072,7 @@ freetype() {
 
       unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset LIBPNG_LIBS; unset LIBPNG_CFLAGS
 
-      make --jobs=4 &>> "$M_LOGS/freetype.txt"; error
+      make --jobs=${M_JOBS} &>> "$M_LOGS/freetype.txt"; error
       make install &>> "$M_LOGS/freetype.txt"; error
     ;;
     freetype-check)
@@ -2242,7 +2247,7 @@ memcached() {
     	  # Return key responses from lru_crawler requests.
     	  cat "$M_PATCHES/memcached/"1.0.18_add_key_response_support.patch | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
     	  
-    	  # Enable parallel builds. Note man pages must be made with --jobs=1 or it will fail.
+    	  # Enable parallel builds. Note this patch still builds the man pages with --jobs=1 because they will fail otherwise.
     	  cat "$M_PATCHES/memcached/"1.0.18_enable_parallel_build.patch  | patch -p1 --verbose &>> "$M_LOGS/memcached.txt"; error
     	  
     	  # Handle certain types of errors in unit tests properly.
@@ -2299,7 +2304,7 @@ memcached() {
       
       unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LIBS; unset M_EXTRA ; unset MEMCACHED_BINARY
 
-      make --jobs=4 &>> "$M_LOGS/memcached.txt"; error
+      make --jobs=${M_JOBS} &>> "$M_LOGS/memcached.txt"; error
       make install &>> "$M_LOGS/memcached.txt"; error
     ;;
     memcached-check)
@@ -2405,7 +2410,7 @@ tokyocabinet() {
 
       unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS
 
-      make --jobs=4 &>> "$M_LOGS/tokyocabinet.txt"; error
+      make --jobs=${M_JOBS} &>> "$M_LOGS/tokyocabinet.txt"; error
       make install &>> "$M_LOGS/tokyocabinet.txt"; error
     ;;
     tokyocabinet-check)

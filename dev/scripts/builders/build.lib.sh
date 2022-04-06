@@ -1365,13 +1365,21 @@ clamav() {
       export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE $M_CXXFLAGS"
       export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -DGNU_SOURCE $M_CPPFLAGS"
 
-      # --disable-mempool
-      ./configure  \
-        --enable-check --enable-static --enable-shared --disable-llvm --disable-silent-rules --disable-clamonacc \
-				--disable-clamsubmit --disable-clamdtop --disable-milter \
+      # The configuration used with 0.102.3 and below. 
+      # ./configure  \
+      #   --enable-check --enable-static --enable-shared --disable-llvm --disable-silent-rules --disable-clamonacc \
+			# 	--disable-clamsubmit --disable-clamdtop --disable-milter \
+      #   --with-openssl="$M_LOCAL" --with-zlib="$M_LOCAL" --with-xml="$M_LOCAL" --with-libcurl="$M_LOCAL" \
+      #   --with-pcre="$M_LOCAL" --with-systemdsystemunitdir="no" \
+      #   --with-libbz2-prefix="$M_LOCAL" --with-libcheck-prefix="$M_LOCAL" \
+      #   --prefix="$M_LOCAL" --exec-prefix="$M_LOCAL" --libdir="$M_LOCAL/lib" &>> "$M_LOGS/clamav.txt"; error
+
+      ./configure \
         --with-openssl="$M_LOCAL" --with-zlib="$M_LOCAL" --with-xml="$M_LOCAL" --with-libcurl="$M_LOCAL" \
-        --with-pcre="$M_LOCAL" --with-systemdsystemunitdir="no" \
-        --with-libbz2-prefix="$M_LOCAL" --with-libcheck-prefix="$M_LOCAL" \
+        --with-pcre="$M_LOCAL" --with-libbz2-prefix="$M_LOCAL" --with-libcheck-prefix="$M_LOCAL" \
+        --enable-check --enable-static --enable-shared \
+        --disable-llvm --disable-silent-rules --disable-clamonacc --disable-clamsubmit --disable-clamdtop --disable-milter \
+        --with-systemdsystemunitdir="no" --with-system-libmspack="no" --with-included-ltdl="yes" \
         --prefix="$M_LOCAL" --exec-prefix="$M_LOCAL" --libdir="$M_LOCAL/lib" &>> "$M_LOGS/clamav.txt"; error
 
       unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS

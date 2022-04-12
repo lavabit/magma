@@ -54,15 +54,26 @@ BASE=`pwd -P`
 popd > /dev/null
 
 M_BUILD=`readlink -f $0`
-if [ $(command -v nproc) ]; then 
-	M_JOBS=$(nproc)
-else
-	M_JOBS=6
+cd $BASE/../../../lib/
+M_ROOT=`pwd`
+
+# Explicitly control the number of build jobs. If a value is provided, it must be a number. 
+if [ -n "$M_JOBS" ] && [ -z "${M_JOBS##*[!0-9]*}" ]; then
+	printf "\nInvalid number of build jobs requested. Using the default value instead.\n"
+	unset M_JOBS
 fi
 
-cd $BASE/../../../lib/
+# If M_JOBS wasn't defined, use nproc to get a CPU count, and use that value. If nproc isn't 
+# available, or doesn't provide a number when called, we will use the hard coded value below.
+if [ ! -n "$M_JOBS" ] && [ $(command -v nproc) ]; then 
+	M_JOBS=$(nproc)
+	[ -z "${M_JOBS##*[!0-9]*}" ] && unset M_JOBS
+fi
 
-M_ROOT=`pwd`
+# Use a hard coded value of 6 jobs, if this point is reached without a value. 
+if [ ! -n "$M_JOBS" ]; then
+	M_JOBS=6
+fi
 
 # Set parent directory as project root by default (used to find scripts,
 # bundled tarballs, patches, etc.)

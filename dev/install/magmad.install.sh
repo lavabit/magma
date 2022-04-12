@@ -326,10 +326,10 @@ printf "tls_random_bytes = 255\n" >> /etc/postfix/main.cf
 printf "tls_random_reseed_period = 1800s\n\n" >> /etc/postfix/main.cf 
 
 # Postfix size limits. 
-printf "body_checks_size_limit = 134217728\n"
-printf "mailbox_size_limit = 0\n"
-printf "message_size_limit = 134217728\n"
-printf "virtual_mailbox_limit = 0\n\n"
+printf "body_checks_size_limit = 134217728\n" >> /etc/postfix/main.cf
+printf "mailbox_size_limit = 0\n" >> /etc/postfix/main.cf
+printf "message_size_limit = 134217728\n" >> /etc/postfix/main.cf
+printf "virtual_mailbox_limit = 0\n\n" >> /etc/postfix/main.cf
 
 # Configure postfix to listen for relays on port 2525, instead of port 25, so postfix won't conflict with a magma installation.
 sed -i -e "s/^smtp\([ ]*inet\)/127.0.0.1:2525\1/" /etc/postfix/master.cf 

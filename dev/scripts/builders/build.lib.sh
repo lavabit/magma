@@ -2305,18 +2305,15 @@ memcached() {
       # For some reason, the unit tests will fail if this environment variable is configured.
       unset MEMCACHED_SERVERS
 
-			# Find the memcached binary, and configure accordingly.
+			# Find the memcached binary, and configure accordingly. Since the dump() unit tests will no longer
+			# pass if the installed memcached is newer than version X.X.X, we simply force libmemcached to use
+			# the bundled daemon for unit testing. 
 			# --enable-memaslap=off
 			# --disable-silent-rules
-      MEMCACHED_BINARY="`which memcached`"
-			if [ "$MEMCACHED_BINARY" != "" ]; then
-			 ./configure --disable-dtrace --disable-sasl --enable-static --enable-shared --with-pic \
+      # MEMCACHED_BINARY="`which memcached`"
+      MEMCACHED_BINARY=/dev/null
+		 ./configure --disable-dtrace --disable-sasl --enable-static --enable-shared --with-pic \
          --enable-jobserver=no --with-memcached="$MEMCACHED_BINARY" --prefix="$M_LOCAL" &>> "$M_LOGS/memcached.txt"; error
-			else
-				./configure --disable-dtrace --disable-sasl --enable-static --enable-shared --with-pic \ 
-         --enable-jobserver=no --prefix="$M_LOCAL" &>> "$M_LOGS/memcached.txt"; error
-			fi
-      
       unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LIBS; unset M_EXTRA ; unset MEMCACHED_BINARY
 
       make --jobs=${M_JOBS} &>> "$M_LOGS/memcached.txt"; error

@@ -668,7 +668,11 @@ curl() {
       export CXXFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
       export CPPFLAGS="-fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
 
-      ./configure --enable-debug --enable-static=yes \
+      # We may want to enable libidn2 in the future. --without-libidn2
+     ./configure --enable-debug --enable-static=yes \
+        --without-libmetalink --without-libpsl --without-brotli --without-mesalink \
+        --without-wolfssl --without-bearssl --without-nss --without-mbedtls --without-gnutls \
+        --without-nghttp2 --without-nghttp3 --without-quiche --without-ngtcp2 \
         --without-librtmp --without-krb4 --without-krb5 --without-libssh2 \
         --without-ca-bundle --without-ca-path --without-libidn \
         --disable-file --disable-ftp --disable-ftps --disable-gopher \

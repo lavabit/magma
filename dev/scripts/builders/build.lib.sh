@@ -1338,6 +1338,9 @@ clamav() {
         # Output the version number and not the git commit hash.
         cat "$M_PATCHES/clamav/"version_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
 
+        # Fixes pattern matching and logic bugs in the clamd unit test, so we avoid check failures on some the affected platforms. 
+      	cat "$M_PATCHES/clamav/"check_clamd_fixes_01035.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
+      	
       # Applied to most recent version.
       else
         # Add the shutdown and clean up functions and fix the rar library dynamic loading logic.
@@ -1348,6 +1351,10 @@ clamav() {
         
         # Output the version number and not the git commit hash.
         cat "$M_PATCHES/clamav/"version_0984.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
+        
+        # These fixes may not be required with 0.104.2.
+        # Fixes pattern matching and logic bugs in the clamd unit test, so we avoid check failures on some the affected platforms. 
+      	# cat "$M_PATCHES/clamav/"check_clamd_fixes_01035.patch | patch -p1 --verbose &>> "$M_LOGS/clamav.txt"; error
       fi
 
       # Fix reference conflict with libpng over the filename png.h.

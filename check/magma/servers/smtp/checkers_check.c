@@ -23,13 +23,18 @@ bool_t check_smtp_checkers_greylist_sthread(stringer_t *errmsg) {
 	con.smtp.bypass = true;
 	con.smtp.mailfrom = NULLER("check@example.com");
 
-	con.network.reverse.ip = mm_alloc(sizeof(ip_t));
+	if (!(con.network.reverse.ip = mm_alloc(sizeof(ip_t)))) {
+		st_sprint(errmsg, "The SMTP greylist check failed to allocate required memory.");
+		client_close(client);
+		return false;
+	}
+
 	ip_addr_st("127.0.0.1", con.network.reverse.ip);
 
 	if (!(addr = con_addr_reversed(&con, addr)) ||
 		st_sprint(key, "magma.greylist.%lu.%.*s", prefs.usernum, st_length_int(addr), st_char_get(addr)) <= 0) {
-
 		st_sprint(errmsg, "The SMTP greylist check failed to create a valid lookup key.");
+		mm_free(con.network.reverse.ip);
 		client_close(client);
 		return false;
 	}
@@ -39,6 +44,7 @@ bool_t check_smtp_checkers_greylist_sthread(stringer_t *errmsg) {
 
 	if (smtp_check_greylist(&con, &prefs) != 1) {
 		st_sprint(errmsg, "The SMTP greylist function failed to return 1 when bypass is enabled.");
+		mm_free(con.network.reverse.ip);
 		client_close(client);
 		return false;
 	}
@@ -46,6 +52,7 @@ bool_t check_smtp_checkers_greylist_sthread(stringer_t *errmsg) {
 	// Run the check with bypass disabled.
 	else if ((con.smtp.bypass = false) || smtp_check_greylist(&con, &prefs) != 0) {
 		st_sprint(errmsg, "The SMTP greylist function failed to return 0 after the initial try.");
+		mm_free(con.network.reverse.ip);
 		client_close(client);
 		return false;
 	}
@@ -53,6 +60,7 @@ bool_t check_smtp_checkers_greylist_sthread(stringer_t *errmsg) {
 	// Check that an immediate resubmission fails.
 	else if (smtp_check_greylist(&con, &prefs) != 0) {
 		st_sprint(errmsg, "The SMTP greylist check function failed to return 0 when resubmitted too fast.");
+		mm_free(con.network.reverse.ip);
 		client_close(client);
 		return false;
 	}
@@ -61,6 +69,7 @@ bool_t check_smtp_checkers_greylist_sthread(stringer_t *errmsg) {
 	else if (!(now = time(NULL) - 100) || !(value = cache_get(key)) || !(*(((uint64_t *)st_data_get(value)) + 1) = now) ||
 		(cache_set(key, value, 2592000) != 1)) {
 		st_sprint(errmsg, "The SMTP check greylist function failed while attempting to update the cached greylist timestamp.");
+		mm_free(con.network.reverse.ip);
 		client_close(client);
 		st_cleanup(value);
 		return false;
@@ -68,11 +77,13 @@ bool_t check_smtp_checkers_greylist_sthread(stringer_t *errmsg) {
 
 	else if (smtp_check_greylist(&con, &prefs) != 0) {
 		st_sprint(errmsg, "The SMTP check greylist function failed to return 1 when the last timestamp is old enough.");
+		mm_free(con.network.reverse.ip);
 		client_close(client);
 		st_free(value);
 		return false;
 	}
 
+	// Client is never used, so this will test whether calling close on a NULL client handle doesn't result in an error.
 	mm_free(con.network.reverse.ip);
 	client_close(client);
 	st_free(value);

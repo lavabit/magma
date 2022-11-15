@@ -1125,11 +1125,11 @@ dspam() {
         return 3
       fi
 
-      # The bundled MariaDB client library requires the OpenSSL libraries for TLS support, so we add
-      # them here, otherwise the MySQL client version test fails to compile/run because of the missing dependency.
-      export LIBS="-lcrypto -lssl"
-      
-      export LDFLAGS="-L$M_LDPATH/mariadb -L$M_LDPATH -Wl,-rpath,$M_LDPATH/mariadb -Wl,-rpath,$M_LDPATH $M_LDFLAGS"
+      # The bundled MariaDB client library supports TLS connects, which means it must also be linked against the  
+      # OpenSSL libraries. We manually add those linker flags below, so the MySQL configuration test 
+      # will compile and run. Otherwise, on some platforms, the missing TLS symbols trick autoconf into
+      # thinking the supplied MySQL client library is too old.
+      export LDFLAGS="-L$M_LDPATH/mariadb -L$M_LDPATH -Wl,-rpath,$M_LDPATH/mariadb -Wl,-rpath,$M_LDPATH -lcrypto -lssl $M_LDFLAGS"
       export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
       export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
       export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
@@ -1141,7 +1141,7 @@ dspam() {
         --with-mysql-includes="$M_LOCAL/include/" --with-mysql-libraries="$M_LOCAL/lib/mariadb/" \
         --prefix="$M_LOCAL" &>> "$M_LOGS/dspam.txt"; error
 
-      unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset LIBS; unset LD_LIBRARY_PATH
+      unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset LD_LIBRARY_PATH
 
       make &>> "$M_LOGS/dspam.txt"; error
       make install &>> "$M_LOGS/dspam.txt"; error

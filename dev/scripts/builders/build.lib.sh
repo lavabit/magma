@@ -1130,7 +1130,7 @@ dspam() {
       export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
       export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
 
-      export LD_LIBRARY_PATH="$M_LDPATH"
+      export LD_LIBRARY_PATH="$M_LDPATH:$M_LDPATH/mariadb/"
 
       ./configure --enable-static --with-pic --enable-preferences-extension --enable-virtual-users \
         --with-storage-driver=mysql_drv --disable-trusted-user-security --disable-mysql4-initialization  \

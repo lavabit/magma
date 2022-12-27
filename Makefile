@@ -115,7 +115,7 @@ DIME_CHECK_CPPINCLUDES        = -Icheck/dime \
                                 $(MAGMA_CINCLUDES)
 
 CDEFINES                      = -D_REENTRANT -D_GNU_SOURCE -D_LARGEFILE64_SOURCE \
-                                -DHAVE_NS_TYPE -DFORTIFY_SOURCE=2 -DMAGMA_PEDANTIC
+                                -DHAVE_NS_TYPE -D_FORTIFY_SOURCE=2 -DMAGMA_PEDANTIC
 CDEFINES.build.c              = -DMAGMA_VERSION=\"$(MAGMA_VERSION)\" \
                                 -DMAGMA_COMMIT=\"$(MAGMA_COMMIT)\" \
                                 -DMAGMA_TIMESTAMP=\"$(MAGMA_TIMESTAMP)\"

@@ -46,7 +46,7 @@ kernel-headers libgomp mpfr ppl perl perl-Module-Pluggable perl-Pod-Escapes \
 perl-Pod-Simple perl-libs perl-version patch sysstat perl-Time-HiRes cmake \
 libbsd libbsd-devel inotify-tools libarchive libevent memcached mysql \
 mysql-server perl-DBI perl-DBD-MySQL git rsync perl-Git perl-Error perl-libintl \
-perl-Text-Unidecode policycoreutils checkpolicy
+perl-Text-Unidecode policycoreutils checkpolicy mariadb mariadb-server \
 
 # Configure the entropy gathering daemon to autostart, then launch it. Extra entropy will 
 # speed a number of randomness intensive operations. 

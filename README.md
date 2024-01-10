@@ -87,7 +87,7 @@ These instructions are targeted at systems running CentOS 6.
 Install the dependencies (make sure that EPEL is enabled):
 
 ```shell
-yum -y install gcc make autoconf automake binutils bison flex gcc-c++ gettext libtool make patch pkgconfig mysql-server memcached gettext-devel patch perl perl-Time-HiRes check check-devel ncurses-devel libbsd-devel zlib-devel valgrind valgrind-devel
+yum -y install gcc make autoconf automake binutils bison flex gcc-c++ gettext libtool make patch pkgconfig mysql-server memcached gettext-devel patch perl perl-Time-HiRes check check-devel ncurses-devel libbsd-devel zlib-devel valgrind valgrind-devel mariadb mariadb-server
 ```
 
 **MySQL**
@@ -95,7 +95,7 @@ yum -y install gcc make autoconf automake binutils bison flex gcc-c++ gettext li
 To start MySQL and configure the magma username run the commands below. The supplied password should be replaced with value unique to your environment. You may also want to limit the permissions of the magma database user to the database it will need to access. The global permission is only needed to setup the table schema.
 
 ```shell
-chkconfig mysqld on && service mysqld start
+chkconfig mariadb on && service mariadb start
 
 echo "CREATE USER 'magma'@'localhost' IDENTIFIED BY 'volcano';" | mysql -u root
 echo "GRANT ALL PRIVILEGES ON *.* TO 'magma'@'localhost' WITH GRANT OPTION;" | mysql -u root
@@ -172,7 +172,6 @@ The best way to get an issue fixed is to create a pull request with a unit test 
 Inside the res/pages/webmail directory is a compiled copy of the webmail code. Locate script.js file and change the magma.portalUrl = true variable to false, and it will use a set of hard coded test requests/responses. These hard coded requests, and responses are useful for checking/developing the webmail code without a running version of the magma server. Currently the files are configured to access the JSON-RPC interface using the hostname "localhost" and the HTTP port 10000. This should work using the default magma.config and magma.sandbox.config files.
 
 The static files inside the res/pages/webmail folder are compiled using the files inside the web directory. See the web/WORKFLOW.md file for details.
-
 
 
 

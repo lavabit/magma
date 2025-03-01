@@ -410,7 +410,7 @@ void http_response_header(connection_t *con, int_t status, stringer_t *type, siz
  * @brief	Make a response to an http client request.
  * @note	The following http methods aren't supported: PUT, DELETE, HEAD, TRACE, and CONNECT.
  * 			The http server will first attempt to retrieve the requested url as a static page; otherwise the following special locations
- * 			are supported: /portal, /portal/camel, /register, /contact, /report_abuse, /teacher, and /statistics.
+ * 			are supported: /portal, /portal/camel, /register, /contact, /report_abuse, and /statistics.
  *
  *
  *
@@ -495,11 +495,6 @@ void http_response(connection_t *con) {
 			contact_process(con, "Abuse");
 		}
 
-	}
-	// The statistical filter needs teaching.
-	else if (!st_cmp_cs_starts(con->http.location, PLACER("/teacher", 8))) {
-		http_parse_pairs(con);
-		teacher_process(con);
 	}
 	// The statistics page.
 	else if (!st_cmp_cs_eq(con->http.location, PLACER("/statistics", 11))) {

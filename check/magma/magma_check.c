@@ -151,7 +151,7 @@ void check_display_help (chr_t *invalid_option) {
 
 	log_info("%s%s%s" \
 			"\tmagmad.check [options] [config_file]\n\n" \
-			"\t%-25.25s\t\t%s\n\n\t%-25.25s\t\t%s\n\t%-25.25s\t\t%s\n\t%-25.25s\t\t%s\n\t%-25.25s\t\t%s\n\n\t%-25.25s\t\t%s\n\t%-25.25s\t\t%s\n\n",
+			"\t%-25.25s\t\t%s\n\n\t%-25.25s\t\t%s\n\t%-25.25s\t\t%s\n\t%-25.25s\t\t%s\n\n\t%-25.25s\t\t%s\n\t%-25.25s\t\t%s\n\n",
 			(invalid_option ? "The command line option \"" : ""), (invalid_option ? invalid_option : ""),
 			(invalid_option ? "\" is invalid. Please consult the text below and try again.\n\n" : "\n"),
 			"-c, --check NAME", "run a single unit test",

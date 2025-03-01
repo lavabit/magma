@@ -11,7 +11,7 @@ MAKEFLAGS                     = --output-sync=target
 # Identity of this package.
 PACKAGE_NAME                  = Magma Daemon
 PACKAGE_TARNAME               = magma
-PACKAGE_VERSION               = 7.0
+PACKAGE_VERSION               = 8.0
 PACKAGE_STRING                = $(PACKAGE_NAME) $(PACKAGE_VERSION)
 PACKAGE_BUGREPORT             = support@lavabit.com
 PACKAGE_URL                   = https://lavabit.com
@@ -82,7 +82,7 @@ DIME_CHECK_STATIC             = $(MAGMA_STATIC) \
                                 $(TOPDIR)/lib/local/lib/libssl$(STATLIBEXT) \
                                 $(TOPDIR)/lib/local/lib/libcrypto$(STATLIBEXT) \
                                 $(TOPDIR)/lib/local/lib/libutf8proc$(STATLIBEXT) \
-                                $(TOPDIR)/lib/sources/googtest/lib/.libs/libgtest$(STATLIBEXT)
+                                $(TOPDIR)/lib/sources/googtest/build/libgtest$(STATLIBEXT)
 
 FILTERED_SRCFILES             = src/providers/dime/ed25519/test.c \
                                 src/providers/dime/ed25519/test-internals.c \
@@ -208,8 +208,8 @@ endif
 
 # C Compiler Options
 CFLAGS                       ?=
-CFLAGS_WARNINGS               = -Wall -Werror -Winline -Wformat-security -Warray-bounds
-CFLAGS_PEDANTIC               = -Wextra -Wpacked -Wunreachable-code -Wformat=2
+CFLAGS_WARNINGS               = -Wall -Werror -Winline -Wformat-security -Warray-bounds -Wno-address-of-packed-member
+CFLAGS_PEDANTIC               = -Wextra -Wpacked -Wunreachable-code -Wformat=2 
 CFLAGS_COMBINED               = -std=gnu99 -O0 -fPIC -fmessage-length=0 -ggdb3 -c $(CFLAGS_WARNINGS) -MMD $(CFLAGS)
 
 # C++ Compiler Options
@@ -265,7 +265,7 @@ ifneq ($(strip $(MAGMA_REPO)),1)
 MAGMA_VERSION                := $(PACKAGE_VERSION)
 MAGMA_COMMIT                 := "NONE"
 else
-# Use the number of commits since the v7.0.0 tag as the patch level.
+# Use the number of commits since the v8.0.0 tag as the patch level.
 MAGMA_VERSION                := $(PACKAGE_VERSION).$(shell git log `git log -n 1 v7.0.0 --pretty='%H'`..`git log --pretty='%H'` --format='%H' | wc -l)
 MAGMA_COMMIT                 := $(shell git log --format="%H" -n 1 | cut -c1-7)
 endif

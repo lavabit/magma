@@ -8,11 +8,11 @@
 #ifndef MAGMA_PROVIDERS_EXTERNAL_COMPRESS_H
 #define MAGMA_PROVIDERS_EXTERNAL_COMPRESS_H
 
-enum {
+typedef enum compress_engine_e {
 	COMPRESS_ENGINE_LZO = 1,
 	COMPRESS_ENGINE_ZLIB = 2,
 	COMPRESS_ENGINE_BZIP = 4
-} COMPRESS_ENGINE;
+} COMPRESS_ENGINE_T;
 
 typedef struct __attribute__ ((packed)) {
 

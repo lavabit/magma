@@ -37,7 +37,7 @@
 #include <sys/utsname.h>
 #include <sys/prctl.h>
 #include <sys/epoll.h>
-#include <sys/sysctl.h>
+#include <linux/sysctl.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <arpa/nameser.h>

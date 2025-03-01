@@ -18,11 +18,11 @@
 #define TANK_ENTRY_VERSION 100
 #define TANK_RECORD_VERSION 100
 
-enum {
+typedef enum tank_flags_e {
 	TANK_COMPRESS_LZO = 1,
 	TANK_COMPRESS_ZLIB = 2,
 	TANK_COMPRESS_BZIP = 4
-} TANK_FLAGS_E;
+} TANK_FLAGS_T;
 
 typedef struct __attribute__ ((packed)) {
 

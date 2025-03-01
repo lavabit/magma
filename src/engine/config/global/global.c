@@ -429,7 +429,7 @@ bool_t config_validate_settings(void) {
 
 	// The legal thread stack range.
 	if (magma.system.thread_stack_size < PTHREAD_STACK_MIN) {
-		log_critical("magma.system.thread_stack_size is required to be %i or larger.", PTHREAD_STACK_MIN);
+		log_critical("magma.system.thread_stack_size is required to be %li or larger.", PTHREAD_STACK_MIN);
 		result = false;
 	}
 	else if ((limit = system_ulimit_max(RLIMIT_STACK)) > 0 && magma.system.thread_stack_size > limit) {

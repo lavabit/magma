@@ -2590,7 +2590,7 @@ combine() {
         "$M_OBJECTS"/curl/*.o "$M_OBJECTS"/memcached/*.o "$M_OBJECTS"/utf8proc/*.o \
         "$M_OBJECTS"/png/*.o "$M_OBJECTS"/jpeg/*.o "$M_OBJECTS"/freetype/*.o "$M_OBJECTS"/gd/*.o \
         "$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/jansson/*.o \
-        -lm -lrt -ldl -lnsl -lresolv -lpthread -lstdc++ &>> "$M_LOGS/combine.txt"; error
+        -lm -lrt -ldl -lbsd -lnsl -lwebp -ljson-c -lresolv -lpthread -lbrotlidec   -lstdc++ &>> "$M_LOGS/combine.txt"; error
 
       # This will update the time stamps for the various standalone dependencies, which should prevent make from rebuilding them.
       find "$M_LOCAL/include" -type f -exec touch -c -m -r "$M_SO" -d '-1 minutes' {} \;
@@ -2599,7 +2599,7 @@ combine() {
       find "$M_LDPATH" -type f -iname "libssl.a" -or -iname "libssl.lib" -exec touch -c -m -r "$M_SO" -d '+6 minutes' {} \;
       find "$M_LDPATH" -type f -iname "libutf8proc.a" -or -iname "libutf8proc.lib" -exec touch -c -m -r "$M_SO" -d '+8 minutes' {} \;
       find "$M_LDPATH" -type f -iname "libcheck.a" -or -iname "libcheck.lib" -exec touch -c -m -r "$M_SO" -d '+10 minutes' {} \;
-      find "$M_SOURCES/googtest/lib/.libs/" -type f -iname "libgtest.a" -or -iname "libgtest.lib" -exec touch -c -m -r "$M_SO" -d '+12 minutes' {} \;
+      find "$M_SOURCES/googtest/BUILD/" -type f -iname "libgtest.a" -or -iname "libgtest.lib" -exec touch -c -m -r "$M_SO" -d '+12 minutes' {} \;
 
       date +"%n%nFinished creating the shared object at %r on %x%n"
     ;;

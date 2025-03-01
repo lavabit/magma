@@ -266,7 +266,7 @@ MAGMA_VERSION                := $(PACKAGE_VERSION)
 MAGMA_COMMIT                 := "NONE"
 else
 # Use the number of commits since the v8.0.0 tag as the patch level.
-MAGMA_VERSION                := $(PACKAGE_VERSION).$(shell git log `git log -n 1 v7.0.0 --pretty='%H'`..`git log --pretty='%H'` --format='%H' | wc -l)
+MAGMA_VERSION                := $(PACKAGE_VERSION).$(shell git log `git log -n 1 v8.0.0 --pretty='%H'`..`git log --pretty='%H'` --format='%H' | wc -l)
 MAGMA_COMMIT                 := $(shell git log --format="%H" -n 1 | cut -c1-7)
 endif
 

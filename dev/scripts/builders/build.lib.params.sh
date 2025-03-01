@@ -62,7 +62,7 @@ M_PKGPATH="$M_LDPATH/pkgconfig/"
 M_SYM_FILE="$M_PROJECT_ROOT/src/providers/symbols.h"
 
 # The following symbols are not in defined in any of the public header files.
-M_SYM_SKIP="tcndbgetboth|my_once_free|lt_dlexit"
+M_SYM_SKIP="tcndbgetboth|lt_dlexit"
 
 # The paths searched for all of the included header files.
 M_SYM_INCLUDES="-I$M_LOCAL/include -I$M_LOCAL/include/curl -I$M_LOCAL/include/freetype2 \

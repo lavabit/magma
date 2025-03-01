@@ -97,7 +97,6 @@ int (*lzo1x_1_compress_d)(const lzo_byte *src, lzo_uint src_len, lzo_byte *dst, 
 int (*lzo1x_decompress_safe_d)(const lzo_byte *src, lzo_uint src_len, lzo_byte *dst, lzo_uintp dst_len, lzo_voidp wrkmem) = NULL;
 
 //! MYSQL
-void (*my_once_free_d)(void) = NULL;
 void (*mysql_server_end_d)(void) = NULL;
 void (*mysql_thread_end_d)(void) = NULL;
 int (*mysql_ping_d)(MYSQL *mysql) = NULL;

@@ -10,7 +10,6 @@ extern global_config_t config;
 
 // Functions.
 extern void *lavalib;
-void (*my_once_free_d)(void) = NULL;
 void (*mysql_thread_end_d)(void) = NULL;
 int (*mysql_thread_init_d)(void) = NULL;
 int (*mysql_thread_safe_d)(void) = NULL;
@@ -159,15 +158,6 @@ int load_symbols_dataface(void) {
 	if (mysql_error_d == NULL) {
 		#ifdef DEBUG_FRAMEWORK
 		lavalog("Unable to establish a pointer to the function mysql_error.");
-		lavalog("%s", dlerror());
-		#endif
-		return 0;
-	}
-	
-	my_once_free_d = dlsym(lavalib, "my_once_free");
-	if (my_once_free_d == NULL) {
-		#ifdef DEBUG_FRAMEWORK
-		lavalog("Unable to establish a pointer to the function my_once_free.");
 		lavalog("%s", dlerror());
 		#endif
 		return 0;
@@ -719,7 +709,6 @@ void free_dataface(void) {
 	sql_connections = NULL;
 	sql_connections_list = NULL;
 	
-	my_once_free_d();
 	mysql_thread_end_d();
 	
 	pthread_mutex_unlock(&sql_mutex);

@@ -78,12 +78,6 @@
 #include <opendkim/dkim-test.h>
 #undef lint
 
-// DSPAM
-#define CONFIG_DEFAULT ""
-#define LOGDIR "~/"
-#include <dspam/libdspam.h>
-#include <dspam/mysql_drv.h>
-
 // Jansson
 #include <jansson.h>
 
@@ -151,16 +145,6 @@ extern cl_error_t (*cl_engine_set_num_d)(struct cl_engine *engine, enum cl_engin
 extern cl_error_t (*cl_engine_set_str_d)(struct cl_engine *engine, enum cl_engine_field field, const char *str);
 extern cl_error_t (*cl_load_d)(const char *path, struct cl_engine *engine, unsigned int *signo, unsigned int dboptions);
 extern cl_error_t (*cl_scandesc_d)(int desc, const char *filename, const char **virname, unsigned long int *scanned, const struct cl_engine *engine, struct cl_scan_options *scanoptions);
-
-//! DSPAM
-extern const char * (*dspam_version_d)(void);
-extern int (*dspam_detach_d)(DSPAM_CTX *CTX);
-extern void (*dspam_destroy_d)(DSPAM_CTX * CTX);
-extern int (*dspam_init_driver_d)(DRIVER_CTX *DTX);
-extern int (*dspam_shutdown_driver_d)(DRIVER_CTX *DTX);
-extern int (*dspam_attach_d)(DSPAM_CTX *CTX, void *dbh);
-extern int (*dspam_process_d)(DSPAM_CTX * CTX, const char *message);
-extern DSPAM_CTX * (*dspam_create_d)(const char *username, const char *group, const char *home, int operating_mode, u_int32_t flags);
 
 //! DKIM
 /// Note that dkim_getsighdr_d is used by the library, so were using dkim_getsighdrx_d.

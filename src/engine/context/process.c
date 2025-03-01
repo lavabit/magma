@@ -99,7 +99,6 @@ void process_stop(void) {
 		virus_stop, /* Shutdown the anti-virus engine. */
 		spf_stop,
 		dkim_stop,
-		dspam_stop,
 		cache_stop,
 		tank_stop, /* Shutdown the storage system. This should flush any pending write operations and cleanly close the tank data files. */
 
@@ -197,7 +196,6 @@ bool_t process_start(void) {
 		(void *)&virus_start,
 		(void *)&spf_start,
 		(void *)&dkim_start,
-		(void *)&dspam_start,
 		(void *)&cache_start,
 		(void *)&tank_start,
 
@@ -244,7 +242,6 @@ bool_t process_start(void) {
 		"Unable to initialize the anti-virus engine. Exiting.",
 		"Unable to initialize the SPF engine. Exiting.",
 		"Unable to initialize the DKIM engine. Exiting.",
-		"Unable to initialize the DSPAM engine. Exiting.",
 		"Unable to initialize the distributed cache system. Exiting.",
 		"Unable to initialize the storage system. Exiting.",
 

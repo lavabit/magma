@@ -87,11 +87,6 @@ void suite_check_testcase_timeout(Suite *s, const char *tags, const char *name, 
 #define TANK_CHECK_DATA_MTHREADS 2 // Disabled
 #define TANK_CHECK_DATA_CLEANUP true
 
-#define DSPAM_CHECK_SIZE_MIN 1024
-#define DSPAM_CHECK_SIZE_MAX (2 * 1024)
-#define DSPAM_CHECK_DATA_UNUM 1L
-#define DSPAM_CHECK_ITERATIONS 128
-
 // Controls the size of the compression test block.
 #define COMPRESS_CHECK_SIZE_MIN 1024 // 1 kilobyte
 #define COMPRESS_CHECK_SIZE_MAX (2 * 1024) // 2 kilobytes
@@ -166,12 +161,6 @@ void suite_check_testcase_timeout(Suite *s, const char *tags, const char *name, 
 #define TANK_CHECK_DATA_UNUM 1L
 #define TANK_CHECK_DATA_MTHREADS 8
 #define TANK_CHECK_DATA_CLEANUP true
-
-#define DSPAM_CHECK_DATA_UNUM 1L
-#define DSPAM_CHECK_ITERATIONS 8192
-#define DSPAM_CHECK_SIZE_MIN 1024
-#define DSPAM_CHECK_SIZE_MAX (16 * 1024)
-//#define DSPAM_CHECK_SIZE_MAX (1 * 1024 * 1024) // 1 megabyte
 
 #define COMPRESS_CHECK_MTHREADS 8
 #define COMPRESS_CHECK_ITERATIONS 256

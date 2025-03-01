@@ -152,36 +152,6 @@ int_t smtp_rollout(smtp_inbound_prefs_t *prefs) {
 	return 1;
 }
 
-/**
- * @brief	Generate a random key for a spam signature and store it in the database.
- * @param	prefs	the user's smtp inbound preferences object, with the spam signature field set.
- * @param	spam	the dspam return code associated with the spam signature.
- * @return	true if the key was inserted into the database successfully, or false on failure.
- */
-bool_t smtp_store_spamsig(smtp_inbound_prefs_t *prefs, int_t spam) {
-
-	// Store the variables here.
-	uint64_t key = 0;
-
-	// Generate a random number to use as an authentication key.
-	key = rand_get_uint64();
-
-	while (uint64_digits(key) < 7) {
-		key = (key * key);
-	}
-
-	// Try inserting the spam signature.
-	if (!(prefs->signum = smtp_insert_spamsig(prefs, key, spam))) {
-		log_pedantic("Could not insert the spam signature into the database. smtp_insert_spamsig = %lu", prefs->signum);
-		return false;
-	}
-
-	prefs->spamkey = key;
-	//log_pedantic("Statistical filter signature stored. {signature = %lu / key = %lu}", prefs->signum, prefs->spamkey);
-
-	return true;
-}
-
 int_t smtp_accept_message(connection_t *con, smtp_inbound_prefs_t *prefs) {
 
 	int_t state;
@@ -342,40 +312,6 @@ int_t smtp_accept_message(connection_t *con, smtp_inbound_prefs_t *prefs) {
 	if ((local = mail_add_inbound_headers(con, prefs)) == NULL) {
 		log_error("An error occurred while attempting to add the inbound headers.");
 		return SMTP_OUTCOME_TEMP_SERVER;
-	}
-
-	if (!con->smtp.bypass && (prefs->mark == SMTP_MARK_NONE) && (prefs->spam == 1)) {
-		if ((prefs->spam_checked = dspam_check(prefs->usernum, local, &(prefs->spamsig))) == -1) {
-			st_free(local);
-			return SMTP_OUTCOME_TEMP_SERVER;
-		}
-
-		// If the message is junk.
-		if (prefs->spam_checked == -2) {
-			if (prefs->spamaction == SMTP_ACTION_MARK_READ) {
-				prefs->mark = SMTP_MARK_READ | SMTP_MARK_SPAM;
-			}
-			else if (prefs->spamaction == SMTP_ACTION_MARK) {
-				prefs->mark = SMTP_MARK_SPAM;
-			}
-			else if (prefs->spamaction == SMTP_ACTION_BOUNCE) {
-				st_free(local);
-				return SMTP_OUTCOME_BOUNCE_SPAM;
-			}
-			else if (prefs->spamaction == SMTP_ACTION_DELETE) {
-				st_free(local);
-				return SMTP_OUTCOME_SUCESS;
-			}
-			else {
-				log_error("The spam action specified is not supported. spamaction = %i", prefs->spamaction);
-			}
-		}
-
-		// Store any spam signature associated with this message.
-		if (prefs->spamsig && !smtp_store_spamsig(prefs, prefs->spam_checked)) {
-			st_free(local);
-			return SMTP_OUTCOME_TEMP_SERVER;
-		}
 	}
 
 	// Auto replies.

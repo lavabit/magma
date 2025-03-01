@@ -1,0 +1,29 @@
+diff --git a/include/mysql.h b/include/mysql.h
+index 43bce61..a669454 100644
+--- a/include/mysql.h
++++ b/include/mysql.h
+@@ -591,6 +591,7 @@ my_bool STDCALL mysql_thread_init(void);
+ int STDCALL mysql_set_server_option(MYSQL *mysql, 
+                                     enum enum_mysql_set_option option);
+ const char * STDCALL mysql_get_client_info(void);
++const char * STDCALL mysql_get_connector_info(void);
+ unsigned long STDCALL mysql_get_client_version(void);
+ const char * STDCALL mysql_get_connector_info(void);
+ my_bool STDCALL mariadb_connection(MYSQL *mysql);
+diff --git a/libmariadb/mariadb_lib.c b/libmariadb/mariadb_lib.c
+index 533ab15..c50d8d9 100644
+--- a/libmariadb/mariadb_lib.c
++++ b/libmariadb/mariadb_lib.c
+@@ -2947,6 +2947,12 @@ mysql_get_proto_info(MYSQL *mysql)
+ 
+ const char * STDCALL
+ mysql_get_client_info(void)
++{
++  return (char*) "5.5.1" ;
++}
++
++const char * STDCALL
++mysql_get_connector_info(void)
+ {
+   return (char*) MARIADB_PACKAGE_VERSION;
+ }

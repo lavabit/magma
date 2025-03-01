@@ -45,10 +45,6 @@ bool_t   check_tokyo_tank_verify(inx_t *check_collection);
 /// scramble_check.c
 bool_t   check_scramble_sthread(void);
 
-/// dspam_check.c
-bool_t   check_dspam_binary_sthread(void);
-bool_t   check_dspam_mail_sthread(void);
-
 /// provide_check.c
 Suite *      suite_check_provide(void);
 

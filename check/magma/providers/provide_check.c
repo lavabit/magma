@@ -15,7 +15,7 @@ typedef struct {
 } SPF_dns_test_data_t;
 
 extern pool_t *spf_pool;
-extern bool_t do_tank_check, do_virus_check, do_dspam_check, do_spf_check, do_dkim_check;
+extern bool_t do_tank_check, do_virus_check, do_spf_check, do_dkim_check;
 extern chr_t *virus_check_data_path;
 
 //! Generic Provider Symbol Tests
@@ -511,39 +511,6 @@ START_TEST (check_virus_s) {
 }
 END_TEST
 
-//! Spam Checker Tests
-START_TEST (check_dspam_mail_s) {
-
-	log_disable();
-	bool_t outcome = true;
-	stringer_t *errmsg = MANAGEDBUF(1024);
-
-	if (status() && !check_dspam_mail_sthread()) {
-		outcome = false;
-		st_sprint(errmsg, "The check_dspam_mail_s test failed");
-	}
-
-	log_test("CHECKERS / DSPAM / MAIL / SINGLE THREADED:", errmsg);
-	ck_assert_msg(outcome, st_char_get(errmsg));
-}
-END_TEST
-
-START_TEST (check_dspam_bin_s) {
-
-	log_disable();
-	bool_t outcome = true;
-	stringer_t *errmsg = MANAGEDBUF(1024);
-
-	if (status() && !check_dspam_binary_sthread()) {
-		outcome = false;
-		st_sprint(errmsg, "check_dspam_bin_s failed");
-	}
-
-	log_test("CHECKERS / DSPAM / BINARY / SINGLE THREADED:", errmsg);
-	ck_assert_msg(outcome, st_char_get(errmsg));
-}
-END_TEST
-
 //! DKIM Tests
 START_TEST (check_dkim_verify_s) {
 
@@ -662,14 +629,6 @@ Suite * suite_check_provide(void) {
 	}
 	else {
 		log_unit("Skipping the DKIM checks...\n");
-	}
-
-	if (do_dspam_check) {
-		suite_check_testcase(s, "PROVIDERS", "DSPAM Mail/S", check_dspam_mail_s);
-		suite_check_testcase(s, "PROVIDERS", "DSPAM Binary/S", check_dspam_bin_s);
-	}
-	else {
-		log_unit("Skipping the DSPAM checks...\n");
 	}
 
 	return s;

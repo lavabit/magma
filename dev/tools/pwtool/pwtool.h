@@ -59,12 +59,6 @@ extern int case_timeout;
 #define TANK_CHECK_DATA_CLEANUP true
 #define TANK_CHECK_DATA_PATH "/home/ladar/Lavabit/magma.universe/data/messages/subset/"
 
-#define DSPAM_CHECK_SIZE_MIN 1024
-#define DSPAM_CHECK_SIZE_MAX (2 * 1024)
-#define DSPAM_CHECK_DATA_UNUM 1L
-#define DSPAM_CHECK_ITERATIONS 128
-#define DSPAM_CHECK_DATA_PATH "/home/ladar/Lavabit/magma.universe/data/messages/subset/"
-
 #define VIRUS_CHECK_DATA_PATH "/home/ladar/Lavabit/magma.universe/data/messages/subset/"
 
 // Controls the size of the compression test block.
@@ -130,13 +124,6 @@ extern int case_timeout;
 #define TANK_CHECK_DATA_MTHREADS 8
 #define TANK_CHECK_DATA_CLEANUP true
 #define TANK_CHECK_DATA_PATH "/home/ladar/Lavabit/magma.universe/data/messages/corpus/"
-
-#define DSPAM_CHECK_DATA_UNUM 1L
-#define DSPAM_CHECK_ITERATIONS 8192
-#define DSPAM_CHECK_SIZE_MIN 1024
-#define DSPAM_CHECK_SIZE_MAX (16 * 1024)
-//#define DSPAM_CHECK_SIZE_MAX (1 * 1024 * 1024) // 1 megabyte
-#define DSPAM_CHECK_DATA_PATH "/home/ladar/Lavabit/magma.universe/data/messages/corpus/"
 
 #define VIRUS_CHECK_DATA_PATH "/home/ladar/Lavabit/magma.universe/data/messages/corpus/"
 

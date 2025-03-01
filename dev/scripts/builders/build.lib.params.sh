@@ -11,7 +11,6 @@ ZLIB="zlib-1.2.11"
 JPEG="jpeg-9d"
 PCRE="pcre2-10.31"
 BZIP2="bzip2-1.0.8"
-DSPAM="dspam-3.10.2"
 GEOIP="GeoIP-1.4.8"
 #CLAMAV="clamav-0.105.0"
 CLAMAV="clamav-0.103.6"
@@ -66,7 +65,7 @@ M_SYM_FILE="$M_PROJECT_ROOT/src/providers/symbols.h"
 M_SYM_SKIP="tcndbgetboth|my_once_free|lt_dlexit"
 
 # The paths searched for all of the included header files.
-M_SYM_INCLUDES="-I$M_LOCAL/include -I$M_LOCAL/include/curl -I$M_LOCAL/include/dspam -I$M_LOCAL/include/freetype2 \
+M_SYM_INCLUDES="-I$M_LOCAL/include -I$M_LOCAL/include/curl -I$M_LOCAL/include/freetype2 \
 -I$M_LOCAL/include/freetype2/freetype -I$M_LOCAL/include/libmemcached -I$M_LOCAL/include/libxml2 -I$M_LOCAL/include/spf2 \
 -I$M_LOCAL/include/lzo -I$M_LOCAL/include/mariadb -I$M_LOCAL/include/opendkim -I$M_LOCAL/include/openssl"
 

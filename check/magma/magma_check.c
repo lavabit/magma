@@ -10,7 +10,7 @@
 extern FILE *log_descriptor;
 chr_t *barrister_unit_test = NULL;
 int_t case_timeout = RUN_TEST_CASE_TIMEOUT;
-bool_t do_virus_check = true, do_tank_check = true, do_dspam_check = true, do_spf_check = true, do_dkim_check = true;
+bool_t do_virus_check = true, do_tank_check = true, do_spf_check = true, do_dkim_check = true;
 
 /**
  * @brief Enable the log so we can print status information. We're only concerned with whether the
@@ -155,7 +155,6 @@ void check_display_help (chr_t *invalid_option) {
 			(invalid_option ? "The command line option \"" : ""), (invalid_option ? invalid_option : ""),
 			(invalid_option ? "\" is invalid. Please consult the text below and try again.\n\n" : "\n"),
 			"-c, --check NAME", "run a single unit test",
-			"    --dspam-path PATH", "set the DSPAM checker path, or disable the check if none is specified.",
 			"    --tank-path PATH",  "set the tank checker path, or disable the check if none is specified.",
 			"    --virus-path PATH", "set the virus checker path, or disable the check if none is specified.",
 			"    --disable-spf", "disable the SPF checker.",

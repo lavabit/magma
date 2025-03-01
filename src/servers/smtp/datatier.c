@@ -436,58 +436,6 @@ void smtp_update_receive_stats(connection_t *con, smtp_inbound_prefs_t *prefs) {
 }
 
 /**
- * @brief	Store a spam signature in the database.
- * @see		dspam_process()
- * @param	prefs	a pointer to the specified user's inbound mail preferences data.
- * @param	key		a randomly chosen authentication key for the signature.
- * @param	code	the dspam return code for the message from dspam_process()
- * @return	0 on failure, or the number of the newly inserted spam signature on success.
- */
-uint64_t smtp_insert_spamsig(smtp_inbound_prefs_t *prefs, uint64_t key, int_t code) {
-
-	uint64_t signum;
-	MYSQL_BIND parameters[4];
-
-	mm_wipe(parameters, sizeof(parameters));
-
-	// DSPAM will return a code of -2 for junk mail, -1 for errors, and 1 for innocent messages. The logic below will map junk to 1, and everything else to 0 (aka innocent) in the database.
-	if (code == -2) {
-		code = 1;
-	}
-	else {
-		code = 0;
-	}
-
-	// Usernum
-	parameters[0].buffer_type = MYSQL_TYPE_LONGLONG;
-	parameters[0].buffer_length = sizeof(uint64_t);
-	parameters[0].buffer = &(prefs->usernum);
-	parameters[0].is_unsigned = true;
-
-	// Key
-	parameters[1].buffer_type = MYSQL_TYPE_LONGLONG;
-	parameters[1].buffer_length = sizeof(uint64_t);
-	parameters[1].buffer = &key;
-	parameters[1].is_unsigned = true;
-
-	// Junk
-	parameters[2].buffer_type = MYSQL_TYPE_LONG;
-	parameters[2].buffer_length = sizeof(int_t);
-	parameters[2].buffer = &code;
-
-	// Signature
-	parameters[3].buffer_type = MYSQL_TYPE_STRING;
-	parameters[3].buffer = st_char_get(prefs->spamsig);
-	parameters[3].buffer_length = st_length_get(prefs->spamsig);
-
-	if ((signum = stmt_insert(stmts.insert_signature, parameters)) == 0) {
-		log_pedantic("Unable to insert the message signature.");
-	}
-
-	return signum;
-}
-
-/**
  * @brief	Update the transmission and per-user log tables in the database for a successfully sent smtp message.
  * @note	The Transmitting table is updated with the timestamp of this transaction;
  * 			the Log table for the user is updated to reflect the newly calculated total for messages sent.

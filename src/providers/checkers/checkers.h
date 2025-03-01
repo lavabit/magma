@@ -51,14 +51,6 @@ void            dkim_stop(void);
 bool_t          lib_load_dkim(void);
 const           chr_t * lib_version_dkim(void);
 
-/// dspam.c
-int_t    dspam_check(uint64_t usernum, stringer_t *message, stringer_t **signature);
-bool_t   dspam_start(void);
-void     dspam_stop(void);
-bool_t   dspam_train(uint64_t usernum, int_t disposition, stringer_t *signature);
-bool_t   lib_load_dspam(void);
-chr_t *  lib_version_dspam(void);
-
 /// spf.c
 bool_t lib_load_spf(void);
 const chr_t * lib_version_spf(void);

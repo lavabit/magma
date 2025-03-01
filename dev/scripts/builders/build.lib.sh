@@ -12,7 +12,6 @@
 # clamav -:- zlib bzip pcre libxml2
 # curl -:- zlib openssl
 # dkim -:- openssl
-# dspam -:- mariadb
 # freetype -:- zlib bzip2 png
 # gd -:- zlib png jpeg freetype
 # geoip -:- zlib
@@ -1091,106 +1090,6 @@ bzip2() {
 
 }
 
-dspam() {
-
-  if [[ $1 == "dspam-extract" ]]; then
-    rm -f "$M_LOGS/dspam.txt"; error
-  elif [[ $1 != "dspam-log" ]]; then
-    date +"%n%nStarted $1 at %r on %x%n%n" &>> "$M_LOGS/dspam.txt"
-  fi
-
-  case "$1" in
-    dspam-extract)
-      extract $DSPAM "dspam" &>> "$M_LOGS/dspam.txt"
-    ;;
-    dspam-prep)
-      cd "$M_SOURCES/dspam"; error
-
-      # Changes STATUS( to DSPAM_STATUS( in client.c, dspam.c and agent_shared.c in DSPAM the src folder.
-      if [[ $DSPAM == "dspam-3.9.1-RC1" ]]; then
-        cat "$M_PATCHES/dspam/"dspam_status_rename_3.9.0.RC1.patch | patch -p1 --verbose &>> "$M_LOGS/dspam.txt"; error
-      else
-        cat "$M_PATCHES/dspam/"dspam_status_rename_3.10.x.patch | patch -p3 --verbose &>> "$M_LOGS/dspam.txt"; error
-      fi
-
-      cat "$M_PATCHES/dspam/"dspam_version.patch | patch -p1 --verbose &>> "$M_LOGS/dspam.txt"; error
-      cat "$M_PATCHES/dspam/"dspam_headers_3.10.2.patch | patch -p1 --verbose &>> "$M_LOGS/dspam.txt"; error
-      cat "$M_PATCHES/dspam/"3.10.2_dspam_fix_mysql_conf.patch | patch -p1 --verbose &>> "$M_LOGS/dspam.txt"; error
-    ;;
-    dspam-build)
-      cd "$M_SOURCES/dspam"; error
-
-      if [ ! -f "$M_LDPATH"/mariadb/libmariadb.so ] || [ ! -f "$M_LDPATH"/mariadb/libmariadbclient.a ]; then
-        [[ -t 0 ]] && ${TPUT} sgr0 || true; [[ -t 0 ]] && ${TPUT} setaf 3 || true; printf "\nPlease build mariadb before dspam.\n"; [[ -t 0 ]] && ${TPUT} sgr0 || true
-        return 3
-      fi
-
-      # The bundled MariaDB client library supports TLS connects, which means it must also be linked against the  
-      # OpenSSL libraries. We manually add those linker flags below, so the MySQL configuration test 
-      # will compile and run. Otherwise, on some platforms, the missing TLS symbols trick autoconf into
-      # thinking the supplied MySQL client library is too old.
-      export LDFLAGS="-L$M_LDPATH/mariadb -L$M_LDPATH -Wl,-rpath,$M_LDPATH/mariadb -Wl,-rpath,$M_LDPATH -lcrypto -lssl $M_LDFLAGS"
-      export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-      export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-      export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
-
-      export LD_LIBRARY_PATH="$M_LDPATH:$M_LDPATH/mariadb/"
-
-      ./configure --enable-static --with-pic --enable-preferences-extension --enable-virtual-users \
-        --with-storage-driver=mysql_drv --disable-trusted-user-security --disable-mysql4-initialization  \
-        --with-mysql-includes="$M_LOCAL/include/" --with-mysql-libraries="$M_LOCAL/lib/mariadb/" \
-        --prefix="$M_LOCAL" &>> "$M_LOGS/dspam.txt"; error
-
-      unset CFLAGS; unset CXXFLAGS; unset CPPFLAGS; unset LDFLAGS; unset LD_LIBRARY_PATH
-
-      make &>> "$M_LOGS/dspam.txt"; error
-      make install &>> "$M_LOGS/dspam.txt"; error
-
-      # I don't know my mysql_drv.h doesn't get copied to the include directory, so the quickest workaround is
-      # is to copy it over ourselves.
-      cp "$M_SOURCES/dspam/src/mysql_drv.h" "$M_LOCAL/include/dspam/"
-    ;;
-    dspam-check)
-      cd "$M_SOURCES/dspam"; error
-      export LD_LIBRARY_PATH="$M_LDPATH"; error
-      export PATH="$M_BNPATH:$PATH"; error
-      make check &>> "$M_LOGS/dspam.txt"; error
-    ;;
-    dspam-check-full)
-      cd "$M_SOURCES/dspam"; error
-      export LD_LIBRARY_PATH="$M_LDPATH"; error
-      export PATH="$M_BNPATH:$PATH"; error
-      make check &>> "$M_LOGS/dspam.txt"; error
-    ;;
-    dspam-clean)
-      cd "$M_SOURCES/dspam"; error
-      make clean &>> "$M_LOGS/dspam.txt"; error
-    ;;
-    dspam-tail)
-      tail --lines=30 --follow=name --retry "$M_LOGS/dspam.txt"; error
-    ;;
-    dspam-log)
-      cat "$M_LOGS/dspam.txt"; error
-    ;;
-    dspam)
-      dspam "dspam-extract"
-      dspam "dspam-prep"
-      dspam "dspam-build"
-      if [ "$QUICK" != "yes" ]; then dspam "dspam-check"; fi
-    ;;
-    *)
-      printf "\nUnrecognized request.\n"
-      exit 2
-    ;;
-  esac
-
-  date +"Finished $1 at %r on %x"
-  date +"%n%nFinished $1 at %r on %x%n%n" &>> "$M_LOGS/dspam.txt"
-
-  return $?
-
-}
-
 geoip() {
 
   if [[ $1 == "geoip-extract" ]]; then
@@ -1522,6 +1421,7 @@ mariadb() {
     mariadb-prep)
       cd "$M_SOURCES/mariadb"; error
       # cat "$M_PATCHES/mariadb/"2.3.7_get_connector_info.patch | patch -p1 --verbose &>> "$M_LOGS/mariadb.txt"; error
+      cat "$M_PATCHES/mariadb/"3.6.2_get_connector_info.patch | patch -p1 --verbose &>> "$M_LOGS/mariadb.txt"; error
     ;;
     mariadb-build)
       cd "$M_SOURCES/mariadb"; error
@@ -1541,7 +1441,7 @@ mariadb() {
         return 3
       fi
       
-			mkdir build && cd build && cmake -DWITH_UNIT_TESTS=ON -DWITH_OPENSSL=ON -DWITH_EXTERNAL_ZLIB=ON \
+			mkdir build && cd build && cmake -DWITH_UNIT_TESTS=ON -DWITH_OPENSSL=ON -DWITH_MYSQLCOMPAT=ON -DWITH_EXTERNAL_ZLIB=ON \
 			-DOPENSSL_SSL_LIBRARY="$M_LOCAL/lib/libssl.so" -DOPENSSL_CRYPTO_LIBRARY="$M_LOCAL/lib/libcrypto.so" -DZLIB_LIBRARY="$M_LOCAL/lib/libz.so" \
 			-DZLIB_INCLUDE_DIR="$M_LOCAL/include" -DOPENSSL_INCLUDE_DIR="$M_LOCAL/include/openssl" \
 			-DCMAKE_INSTALL_PREFIX="$M_LOCAL" .. &>> "$M_LOGS/mariadb.txt"; error
@@ -2519,7 +2419,6 @@ combine() {
     ! -f "$M_SOURCES/dkim/libopendkim/.libs/libopendkim.a" || \
     ! -f "$M_SOURCES/zlib/libz.a" || \
     ! -f "$M_SOURCES/bzip2/libbz2.a" || \
-    ! -f "$M_SOURCES/dspam/src/.libs/libdspam.a" || \
     ! -f "$M_SOURCES/mariadb/build/libmariadb/libmariadbclient.a" || \
     ! -f "$M_SOURCES/geoip/libGeoIP/.libs/libGeoIP.a" || \
     ! -f "$M_SOURCES/clamav/libclamav/.libs/libclamav.a" || \
@@ -2595,11 +2494,6 @@ combine() {
   mkdir "$M_OBJECTS/bzip2" &>> "$M_LOGS/combine.txt"; error
   cd "$M_OBJECTS/bzip2" &>> "$M_LOGS/combine.txt"; error
   ar xv "$M_SOURCES/bzip2/libbz2.a" &>> "$M_LOGS/combine.txt"; error
-
-  rm -rf "$M_OBJECTS/dspam" &>> "$M_LOGS/combine.txt"; error
-  mkdir "$M_OBJECTS/dspam" &>> "$M_LOGS/combine.txt"; error
-  cd "$M_OBJECTS/dspam" &>> "$M_LOGS/combine.txt"; error
-  ar xv "$M_SOURCES/dspam/src/.libs/libdspam.a" &>> "$M_LOGS/combine.txt"; error
 
 	rm -rf "$M_OBJECTS/mariadb" &>> "$M_LOGS/combine.txt"; error
   mkdir "$M_OBJECTS/mariadb" &>> "$M_LOGS/combine.txt"; error
@@ -2680,7 +2574,7 @@ combine() {
         "$M_OBJECTS"/mariadb/*.o "$M_OBJECTS"/xml2/*.o "$M_OBJECTS"/spf2/*.o "$M_OBJECTS"/geoip/*.o \
         "$M_OBJECTS"/curl/*.o "$M_OBJECTS"/memcached/*.o "$M_OBJECTS"/utf8proc/*.o \
         "$M_OBJECTS"/png/*.o "$M_OBJECTS"/jpeg/*.o "$M_OBJECTS"/freetype/*.o "$M_OBJECTS"/gd/*.o \
-        "$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o &>> "$M_LOGS/combine.txt"; error
+        "$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/jansson/*.o &>> "$M_LOGS/combine.txt"; error
       find $M_LOCAL -type f -exec touch {} \;
       date +"%n%nFinished creating the static archive at %r on %x%n"
     ;;
@@ -2695,7 +2589,7 @@ combine() {
         "$M_OBJECTS"/mariadb/*.o "$M_OBJECTS"/xml2/*.o "$M_OBJECTS"/spf2/*.o "$M_OBJECTS"/geoip/*.o \
         "$M_OBJECTS"/curl/*.o "$M_OBJECTS"/memcached/*.o "$M_OBJECTS"/utf8proc/*.o \
         "$M_OBJECTS"/png/*.o "$M_OBJECTS"/jpeg/*.o "$M_OBJECTS"/freetype/*.o "$M_OBJECTS"/gd/*.o \
-        "$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/dspam/*.o "$M_OBJECTS"/jansson/*.o \
+        "$M_OBJECTS"/dkim/*.o "$M_OBJECTS"/jansson/*.o \
         -lm -lrt -ldl -lnsl -lresolv -lpthread -lstdc++ &>> "$M_LOGS/combine.txt"; error
 
       # This will update the time stamps for the various standalone dependencies, which should prevent make from rebuilding them.
@@ -2921,10 +2815,8 @@ combo() {
 
     ($M_BUILD "gd-$1") & GD_PID=$!
 
-    # The dspam library requires MariaDB/MySQL client library.
     wait $MARIADB_PID; error
 
-    ($M_BUILD "dspam-$1") & DSPAM_PID=$!
     ($M_BUILD "utf8proc-$1") & UTF8PROC_PID=$!
 
     # Wait on any remaining build jobs.
@@ -2933,7 +2825,6 @@ combo() {
     wait $SPF2_PID; error
     wait $DKIM_PID; error
     wait $GEOIP_PID; error
-    wait $DSPAM_PID; error
     wait $CLAMAV_PID; error
     wait $CHECKER_PID; error
     wait $GOOGTAP_PID; error
@@ -2960,7 +2851,6 @@ combo() {
     ($M_BUILD "dkim-$1") & DKIM_PID=$!
     ($M_BUILD "zlib-$1") & ZLIB_PID=$!
     ($M_BUILD "bzip2-$1") & BZIP2_PID=$!
-    ($M_BUILD "dspam-$1") & DSPAM_PID=$!
     ($M_BUILD "geoip-$1") & GEOIP_PID=$!
     ($M_BUILD "checker-$1") & CHECKER_PID=$!
     ($M_BUILD "openssl-$1") & OPENSSL_PID=$!
@@ -2983,7 +2873,6 @@ combo() {
     wait $DKIM_PID; error
     wait $ZLIB_PID; error
     wait $BZIP2_PID; error
-    wait $DSPAM_PID; error
     wait $MARIADB_PID; error
     wait $GEOIP_PID; error
     wait $CLAMAV_PID; error
@@ -3005,7 +2894,7 @@ combo() {
 
 follow() {
   # Note that the build.txt and combo.txt log files are intentionally excluded from this list because they don't belong to a bundled package file.
-  tail -n 0 -F "$M_LOGS/clamav.txt" "$M_LOGS/curl.txt" "$M_LOGS/dspam.txt" "$M_LOGS/jansson.txt" "$M_LOGS/memcached.txt" "$M_LOGS/openssl.txt" \
+  tail -n 0 -F "$M_LOGS/clamav.txt" "$M_LOGS/curl.txt" "$M_LOGS/jansson.txt" "$M_LOGS/memcached.txt" "$M_LOGS/openssl.txt" \
     "$M_LOGS/tokyocabinet.txt" "$M_LOGS/zlib.txt" "$M_LOGS/bzip2.txt" "$M_LOGS/dkim.txt" "$M_LOGS/geoip.txt" "$M_LOGS/lzo.txt" \
     "$M_LOGS/mariadb.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt" \
     "$M_LOGS/utf8proc.txt" "$M_LOGS/checker.txt" "$M_LOGS/pcre.txt"
@@ -3013,7 +2902,7 @@ follow() {
 
 log() {
   # Note that the build.txt and combo.txt log files are intentionally excluded from this list because they don't belong to a bundled package file.
-  cat "$M_LOGS/clamav.txt" "$M_LOGS/curl.txt" "$M_LOGS/dspam.txt" "$M_LOGS/jansson.txt" "$M_LOGS/memcached.txt" "$M_LOGS/openssl.txt" \
+  cat "$M_LOGS/clamav.txt" "$M_LOGS/curl.txt" "$M_LOGS/jansson.txt" "$M_LOGS/memcached.txt" "$M_LOGS/openssl.txt" \
     "$M_LOGS/tokyocabinet.txt" "$M_LOGS/zlib.txt" "$M_LOGS/bzip2.txt" "$M_LOGS/dkim.txt" "$M_LOGS/geoip.txt" "$M_LOGS/lzo.txt" \
     "$M_LOGS/mariadb.txt" "$M_LOGS/spf2.txt" "$M_LOGS/xml2.txt" "$M_LOGS/gd.txt" "$M_LOGS/png.txt" "$M_LOGS/jpeg.txt" "$M_LOGS/freetype.txt" \
     "$M_LOGS/utf8proc.txt" "$M_LOGS/checker.txt" "$M_LOGS/pcre.txt"
@@ -3117,7 +3006,6 @@ elif [[ $1 =~ "xml2" ]]; then xml2 "$1"
 elif [[ $1 =~ "dkim" ]]; then dkim "$1"
 elif [[ $1 =~ "zlib" ]]; then zlib "$1"
 elif [[ $1 =~ "bzip2" ]]; then bzip2 "$1"
-elif [[ $1 =~ "dspam" ]]; then dspam "$1"
 elif [[ $1 =~ "geoip" ]]; then geoip "$1"
 elif [[ $1 =~ "clamav" ]]; then clamav "$1"
 elif [[ $1 =~ "mariadb" ]]; then mariadb "$1"
@@ -3148,7 +3036,7 @@ elif [[ $1 == "tail" ]]; then follow
 else
   echo ""
   echo " Libraries"
-  echo $"  `basename $0` {gd|png|lzo|pcre|jpeg|curl|spf2|xml2|dkim|zlib|bzip2|dspam|geoip|clamav|mariadb|checker|openssl|freetype|utf8proc|memcached|tokyocabinet} and/or "
+  echo $"  `basename $0` {gd|png|lzo|pcre|jpeg|curl|spf2|xml2|dkim|zlib|bzip2|geoip|clamav|mariadb|checker|openssl|freetype|utf8proc|memcached|tokyocabinet} and/or "
   echo ""
   echo " Stages (which may be combined via a dash with the above)"
   echo $"  `basename $0` {extract|prep|build|check|check-full|clean|tail|log} or "

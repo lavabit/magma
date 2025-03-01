@@ -99,7 +99,7 @@ FILTERED_SRCFILES             = src/providers/dime/ed25519/test.c \
 
 # Bundled Dependency Include Paths
 INCDIR                        = $(TOPDIR)/lib/local/include
-MAGMA_INCDIRS                 = spf2/ mysql/ openssl/ lzo/ libxml2/ libmemcached/ opendkim/ dspam/ freetype2/
+MAGMA_INCDIRS                 = spf2/ mysql/ openssl/ lzo/ libxml2/ libmemcached/ opendkim/ freetype2/
 MAGMA_CHECK_INCDIRS           =
 
 MAGMA_CINCLUDES               = -Isrc -Isrc/providers -I$(INCDIR) $(addprefix -I,$(MAGMA_INCLUDE_ABSPATHS))

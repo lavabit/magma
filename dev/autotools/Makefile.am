@@ -18,7 +18,6 @@ COMMON_CPPFLAGS = \
 		-I@MAGMA_SHARED_LIB_DIR@/sources/tokyocabinet \
 		-I@MAGMA_SHARED_LIB_DIR@/sources/memcached \
 		-I@MAGMA_SHARED_LIB_DIR@/sources/dkim/libopendkim \
-		-I@MAGMA_SHARED_LIB_DIR@/sources/dspam/src \
 		-I@MAGMA_SHARED_LIB_DIR@/sources/jansson/src \
 		-I@MAGMA_SHARED_LIB_DIR@/sources/gd \
 		-I@MAGMA_SHARED_LIB_DIR@/sources/png \
@@ -115,7 +114,6 @@ libmagma_a_SOURCES = \
 		src/providers/symbols.c \
 		src/providers/checkers/clamav.c \
 		src/providers/checkers/dkim.c \
-		src/providers/checkers/dspam.c \
 		src/providers/checkers/spf.c \
 		src/providers/compress/bzip.c \
 		src/providers/compress/compress.c \
@@ -308,7 +306,6 @@ tests_SOURCES = \
 		check/network/network_check.c \
 		check/objects/objects_check.c \
 		check/providers/compress_check.c \
-		check/providers/dspam_check.c \
 		check/providers/ecies_check.c \
 		check/providers/hash_check.c \
 		check/providers/hmac_check.c \

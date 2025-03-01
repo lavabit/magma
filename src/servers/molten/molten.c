@@ -15,7 +15,6 @@ void molten_version(connection_t *con) {
 		"VERSION clamav %s\r\n" \
 		"VERSION commit %s\r\n" \
 		"VERSION dkim %s\r\n" \
-		"VERSION dspam %s\r\n" \
 		"VERSION freetype %s\r\n" \
 		"VERSION gd %s\r\n",
 		build_version(),
@@ -23,7 +22,6 @@ void molten_version(connection_t *con) {
 		lib_version_bzip(),
 		lib_version_clamav(),
 		lib_version_dkim(),
-		lib_version_dspam(),
 		build_commit(),
 		lib_version_freetype(),
 		lib_version_gd()) < 0) {

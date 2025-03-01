@@ -1521,7 +1521,7 @@ mariadb() {
     ;;
     mariadb-prep)
       cd "$M_SOURCES/mariadb"; error
-      cat "$M_PATCHES/mariadb/"2.3.7_get_connector_info.patch | patch -p1 --verbose &>> "$M_LOGS/mariadb.txt"; error
+      # cat "$M_PATCHES/mariadb/"2.3.7_get_connector_info.patch | patch -p1 --verbose &>> "$M_LOGS/mariadb.txt"; error
     ;;
     mariadb-build)
       cd "$M_SOURCES/mariadb"; error
@@ -1893,8 +1893,12 @@ googtest() {
       export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O $M_CFLAGS"
       export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 -O $M_CXXFLAGS"
 
-      autoreconf --install &>> "$M_LOGS/googtest.txt"; error
-      ./configure --prefix="$M_LOCAL" &>> "$M_LOGS/googtest.txt"; error
+      # autoreconf --install &>> "$M_LOGS/googtest.txt"; error
+      # ./configure --prefix="$M_LOCAL" &>> "$M_LOGS/googtest.txt"; error
+      mkdir build &>> "$M_LOGS/googtest.txt"; error
+      cd build &>> "$M_LOGS/googtest.txt"; error
+      cmake .. &>> "$M_LOGS/googtest.txt"; error
+      make &>> "$M_LOGS/googtest.txt"; error
 
       unset CFLAGS; unset CXXFLAGS
 
@@ -1902,9 +1906,7 @@ googtest() {
     ;;
     googtest-check)
       cd "$M_SOURCES/googtest"; error
-      make check &>> "$M_LOGS/googtest.txt"; error
 
-      if [ ! -d build ]; then mkdir build ; error ; fi
       cd build; error
 
       cmake -Dgtest_build_samples=ON "$M_SOURCES/googtest" &>> "$M_LOGS/googtest.txt"; error

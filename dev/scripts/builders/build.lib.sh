@@ -2599,7 +2599,7 @@ combine() {
       find "$M_LDPATH" -type f -iname "libssl.a" -or -iname "libssl.lib" -exec touch -c -m -r "$M_SO" -d '+6 minutes' {} \;
       find "$M_LDPATH" -type f -iname "libutf8proc.a" -or -iname "libutf8proc.lib" -exec touch -c -m -r "$M_SO" -d '+8 minutes' {} \;
       find "$M_LDPATH" -type f -iname "libcheck.a" -or -iname "libcheck.lib" -exec touch -c -m -r "$M_SO" -d '+10 minutes' {} \;
-      find "$M_SOURCES/googtest/BUILD/" -type f -iname "libgtest.a" -or -iname "libgtest.lib" -exec touch -c -m -r "$M_SO" -d '+12 minutes' {} \;
+      find "$M_SOURCES/googtest/build/" -type f -iname "libgtest.a" -or -iname "libgtest.lib" -exec touch -c -m -r "$M_SO" -d '+12 minutes' {} \;
 
       date +"%n%nFinished creating the shared object at %r on %x%n"
     ;;

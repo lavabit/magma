@@ -9,50 +9,52 @@
 
 bool_t check_prime_writers_sthread(stringer_t *errmsg) {
 
+	stringer_t *buffer1 = MANAGEDBUF(5), *buffer2 = MANAGEDBUF(5), *buffer3 = MANAGEDBUF(6), *buffer4 = MANAGEDBUF(6);
+
 	// The minimum valid key length is 68, so lets try that.
-	if (status() && st_cmp_cs_eq(prime_header_org_key_write(68, MANAGEDBUF(5)), hex_decode_st(NULLER("07a0000044"), MANAGEDBUF(5)))) {
+	if (status() && st_cmp_cs_eq(prime_header_org_key_write(68, buffer1), hex_decode_st(NULLER("07a0000044"), buffer2))) {
 		st_sprint(errmsg, "Invalid PRIME header for an org key.");
 		return false;
 	}
 
-	else if (status() && st_cmp_cs_eq(prime_header_user_key_write(68, MANAGEDBUF(5)), hex_decode_st(NULLER("07dd000044"), MANAGEDBUF(5)))) {
+	else if (status() && st_cmp_cs_eq(prime_header_user_key_write(68, buffer1), hex_decode_st(NULLER("07dd000044"), buffer2))) {
 		st_sprint(errmsg, "Invalid PRIME header for a user key.");
 		return false;
 	}
 
 	// We don't have minimums setup yet, so we're using 1024 for the length.
-	else if (status() && st_cmp_cs_eq(prime_header_org_signet_write(1024, MANAGEDBUF(5)), hex_decode_st(NULLER("06f0000400"), MANAGEDBUF(5)))) {
+	else if (status() && st_cmp_cs_eq(prime_header_org_signet_write(1024, buffer1), hex_decode_st(NULLER("06f0000400"), buffer2))) {
 		st_sprint(errmsg, "Invalid PRIME header for an org signet.");
 		return false;
 	}
-	else if (status() && st_cmp_cs_eq(prime_header_encrypted_org_key_write(1024, MANAGEDBUF(5)), hex_decode_st(NULLER("079b000400"), MANAGEDBUF(5)))) {
+	else if (status() && st_cmp_cs_eq(prime_header_encrypted_org_key_write(1024, buffer1), hex_decode_st(NULLER("079b000400"), buffer2))) {
 		st_sprint(errmsg, "Invalid PRIME header for an encrypted org key.");
 		return false;
 	}
-	else if (status() && st_cmp_cs_eq(prime_header_user_signet_write(1024, MANAGEDBUF(5)), hex_decode_st(NULLER("06fd000400"), MANAGEDBUF(5)))) {
+	else if (status() && st_cmp_cs_eq(prime_header_user_signet_write(1024, buffer1), hex_decode_st(NULLER("06fd000400"), buffer2))) {
 		st_sprint(errmsg, "Invalid PRIME header for a user signet.");
 		return false;
 	}
-	else if (status() && st_cmp_cs_eq(prime_header_user_signing_request_write(1024, MANAGEDBUF(5)), hex_decode_st(NULLER("04bf000400"), MANAGEDBUF(5)))) {
+	else if (status() && st_cmp_cs_eq(prime_header_user_signing_request_write(1024, buffer1), hex_decode_st(NULLER("04bf000400"), buffer2))) {
 		st_sprint(errmsg, "Invalid PRIME header for a user signing request.");
 		return false;
 	}
-	else if (status() && st_cmp_cs_eq(prime_header_encrypted_user_key_write(1024, MANAGEDBUF(5)), hex_decode_st(NULLER("07b8000400"), MANAGEDBUF(5)))) {
+	else if (status() && st_cmp_cs_eq(prime_header_encrypted_user_key_write(1024, buffer1), hex_decode_st(NULLER("07b8000400"), buffer2))) {
 		st_sprint(errmsg, "Invalid PRIME header for an encrypted user key.");
 		return false;
 	}
-	else if (status() && st_cmp_cs_eq(prime_header_encrypted_message_write(1024, MANAGEDBUF(6)), hex_decode_st(NULLER("073700000400"), MANAGEDBUF(6)))) {
+	else if (status() && st_cmp_cs_eq(prime_header_encrypted_message_write(1024, buffer3), hex_decode_st(NULLER("073700000400"), buffer4))) {
 		st_sprint(errmsg, "Invalid PRIME header for an encrypted message.");
 		return false;
 	}
 
 	// Try creating objects that are intentionally too small.
-	if (status() && prime_header_org_key_write(34, MANAGEDBUF(5))) {
+	if (status() && prime_header_org_key_write(34, buffer1)) {
 		st_sprint(errmsg, "PRIME header returned for invalid org key size.");
 		return false;
 	}
 
-	else if (status() && prime_header_user_key_write(34, MANAGEDBUF(5))) {
+	else if (status() && prime_header_user_key_write(34, buffer1)) {
 		st_sprint(errmsg, "PRIME header returned for invalid user key size.");
 		return false;
 	}
@@ -177,9 +179,10 @@ bool_t check_prime_unpacker_sthread(stringer_t *errmsg) {
 bool_t check_prime_armor_sthread(stringer_t *errmsg) {
 
 	prime_t *object1 = NULL, *object2 = NULL, *object3 = NULL;
-	stringer_t *pem1 = NULL, *pem2 = NULL, *pem_encrypted1 = NULL, *pem_encrypted2 = NULL,
-		*object_encrypted1 = NULL, *object_encrypted2 = NULL, *object_encrypted3 = NULL,
-		*binary1 = NULL, *binary2 = NULL, *binary3 = NULL,
+	stringer_t *pem1 = MANAGEDBUF(512), *pem2 = MANAGEDBUF(512),
+		*pem_encrypted1 = MANAGEDBUF(512), *pem_encrypted2 = MANAGEDBUF(512),
+		*object_encrypted1 = MANAGEDBUF(512), *object_encrypted2 = MANAGEDBUF(512), *object_encrypted3 = MANAGEDBUF(512),
+		*binary1 = MANAGEDBUF(256), *binary2 = MANAGEDBUF(256), *binary3 = MANAGEDBUF(256),
 		*protect = MANAGEDBUF(64);
 
 	// Create a random STACIE realm key.
@@ -187,12 +190,12 @@ bool_t check_prime_armor_sthread(stringer_t *errmsg) {
 
 	// Generate an org key.
 	if (!(object1 = prime_key_generate(PRIME_ORG_KEY, NONE)) ||
-		!(binary1 = prime_get(object1, BINARY, MANAGEDBUF(256))) ||
-		!(pem1 = prime_get(object1, ARMORED, MANAGEDBUF(512))) ||
-		!(pem2 = prime_pem_wrap(binary1, MANAGEDBUF(512))) ||
-		!(binary2 = prime_pem_unwrap(pem1, MANAGEDBUF(512))) ||
+		!(binary1 = prime_get(object1, BINARY, binary1)) ||
+		!(pem1 = prime_get(object1, ARMORED, pem1)) ||
+		!(pem2 = prime_pem_wrap(binary1, pem2)) ||
+		!(binary2 = prime_pem_unwrap(pem1, binary2)) ||
 		!(object2 = prime_set(pem2, ARMORED, NONE)) ||
-		!(binary3 = prime_get(object2, BINARY, MANAGEDBUF(256))) ||
+		!(binary3 = prime_get(object2, BINARY, binary3)) ||
 		st_cmp_cs_eq(pem1, pem2) ||
 		st_cmp_cs_eq(binary1, binary2) ||
 		st_cmp_cs_eq(binary1, binary3)) {
@@ -207,15 +210,15 @@ bool_t check_prime_armor_sthread(stringer_t *errmsg) {
 	object2 = NULL;
 
 	// Encrypt/decrypt armor/dearmor an org key.
-	if (!(object_encrypted1 = prime_key_encrypt(protect, object1, BINARY, MANAGEDBUF(512))) ||
-		!(pem_encrypted1 = prime_pem_wrap(object_encrypted1, MANAGEDBUF(512))) ||
-		!(object_encrypted2 =  prime_pem_unwrap(pem_encrypted1, MANAGEDBUF(512))) ||
-		!(pem_encrypted2 = prime_key_encrypt(protect, object1, ARMORED, MANAGEDBUF(512))) ||
+	if (!(object_encrypted1 = prime_key_encrypt(protect, object1, BINARY, object_encrypted1)) ||
+		!(pem_encrypted1 = prime_pem_wrap(object_encrypted1, pem_encrypted1)) ||
+		!(object_encrypted2 =  prime_pem_unwrap(pem_encrypted1, object_encrypted2)) ||
+		!(pem_encrypted2 = prime_key_encrypt(protect, object1, ARMORED, pem_encrypted2)) ||
 		!(object2 = prime_key_decrypt(protect, pem_encrypted2, ARMORED, NONE)) ||
-		!(binary2 = prime_get(object2, BINARY, MANAGEDBUF(256))) ||
-		!(object_encrypted3 =  prime_pem_unwrap(pem_encrypted2, MANAGEDBUF(512))) ||
+		!(binary2 = prime_get(object2, BINARY, binary2)) ||
+		!(object_encrypted3 =  prime_pem_unwrap(pem_encrypted2, object_encrypted3)) ||
 		!(object3 = prime_key_decrypt(protect, object_encrypted3, BINARY, NONE)) ||
-		!(binary3 = prime_get(object3, BINARY, MANAGEDBUF(256))) ||
+		!(binary3 = prime_get(object3, BINARY, binary3)) ||
 		st_cmp_cs_eq(object_encrypted1, object_encrypted2) ||
 		st_cmp_cs_eq(binary1, binary2) ||
 		st_cmp_cs_eq(binary1, binary3)) {
@@ -240,12 +243,12 @@ bool_t check_prime_armor_sthread(stringer_t *errmsg) {
 
 	// Generate a user key.
 	if (!(object1 = prime_key_generate(PRIME_USER_KEY, NONE)) ||
-		!(binary1 = prime_get(object1, BINARY, MANAGEDBUF(256))) ||
-		!(pem1 = prime_get(object1, ARMORED, MANAGEDBUF(512))) ||
-		!(pem2 = prime_pem_wrap(binary1, MANAGEDBUF(512))) ||
-		!(binary2 = prime_pem_unwrap(pem1, MANAGEDBUF(512))) ||
+		!(binary1 = prime_get(object1, BINARY, binary1)) ||
+		!(pem1 = prime_get(object1, ARMORED, pem1)) ||
+		!(pem2 = prime_pem_wrap(binary1, pem2)) ||
+		!(binary2 = prime_pem_unwrap(pem1, binary2)) ||
 		!(object2 = prime_set(pem2, ARMORED, NONE)) ||
-		!(binary3 = prime_get(object2, BINARY, MANAGEDBUF(256))) ||
+		!(binary3 = prime_get(object2, BINARY, binary3)) ||
 		st_cmp_cs_eq(pem1, pem2) ||
 		st_cmp_cs_eq(binary1, binary2) ||
 		st_cmp_cs_eq(binary1, binary3)) {
@@ -260,15 +263,15 @@ bool_t check_prime_armor_sthread(stringer_t *errmsg) {
 	object2 = NULL;
 
 	// Encrypt/decrypt armor/dearmor a user key.
-	if (!(object_encrypted1 = prime_key_encrypt(protect, object1, BINARY, MANAGEDBUF(512))) ||
-		!(pem_encrypted1 = prime_pem_wrap(object_encrypted1, MANAGEDBUF(512))) ||
-		!(object_encrypted2 =  prime_pem_unwrap(pem_encrypted1, MANAGEDBUF(512))) ||
-		!(pem_encrypted2 = prime_key_encrypt(protect, object1, ARMORED, MANAGEDBUF(512))) ||
+	if (!(object_encrypted1 = prime_key_encrypt(protect, object1, BINARY, object_encrypted1)) ||
+		!(pem_encrypted1 = prime_pem_wrap(object_encrypted1, pem_encrypted1)) ||
+		!(object_encrypted2 =  prime_pem_unwrap(pem_encrypted1, object_encrypted2)) ||
+		!(pem_encrypted2 = prime_key_encrypt(protect, object1, ARMORED, pem_encrypted2)) ||
 		!(object2 = prime_key_decrypt(protect, pem_encrypted2, ARMORED, NONE)) ||
-		!(binary2 = prime_get(object2, BINARY, MANAGEDBUF(256))) ||
-		!(object_encrypted3 =  prime_pem_unwrap(pem_encrypted2, MANAGEDBUF(512))) ||
+		!(binary2 = prime_get(object2, BINARY, binary2)) ||
+		!(object_encrypted3 =  prime_pem_unwrap(pem_encrypted2, object_encrypted3)) ||
 		!(object3 = prime_key_decrypt(protect, object_encrypted3, BINARY, NONE)) ||
-		!(binary3 = prime_get(object3, BINARY, MANAGEDBUF(256))) ||
+		!(binary3 = prime_get(object3, BINARY, binary3)) ||
 		st_cmp_cs_eq(object_encrypted1, object_encrypted2) ||
 		st_cmp_cs_eq(binary1, binary2) ||
 		st_cmp_cs_eq(binary1, binary3)) {

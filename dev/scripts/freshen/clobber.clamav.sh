@@ -34,6 +34,9 @@ fi
 cp -f  "$MAGMA_DIST/dev/virus/main.cvd" "$MAGMA_DIST/sandbox/virus/main.cvd"
 cp -f  "$MAGMA_DIST/dev/virus/daily.cvd" "$MAGMA_DIST/sandbox/virus/daily.cvd"
 cp -f  "$MAGMA_DIST/dev/virus/bytecode.cvd" "$MAGMA_DIST/sandbox/virus/bytecode.cvd"
+[ -f "$MAGMA_DIST/sandbox/virus/main.cld" ] && rm -f "$MAGMA_DIST/sandbox/virus/main.cld" 
+[ -f "$MAGMA_DIST/sandbox/virus/daily.cld" ] && rm -f "$MAGMA_DIST/sandbox/virus/daily.cld" 
+[ -f "$MAGMA_DIST/sandbox/virus/bytecode.cld" ] && rm -f "$MAGMA_DIST/sandbox/virus/bytecode.cld" 
 
 # Done.
 [[ -t 0 ]] && ${TPUT} setaf 2 || true ; printf "Done.\n" ; [[ -t 0 ]] && ${TPUT} sgr0 || true

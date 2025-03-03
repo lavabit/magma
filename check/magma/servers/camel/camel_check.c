@@ -29,7 +29,7 @@ START_TEST (check_camel_register_s) {
 	client_t *client = NULL;
 	json_t *json_objs[1] = { NULL };
 	const chr_t *json_values[1] = { NULL };
-	stringer_t *json = NULL, *username = NULL, *password = NULL, *post = MANAGEDBUF(1024), query = MANAGEDBUF(1024), *errmsg = MANAGEDBUF(1024);
+	stringer_t *json = NULL, *username = NULL, *password = NULL, *post = MANAGEDBUF(1024), *query = MANAGEDBUF(1024), *errmsg = MANAGEDBUF(1024);
 	chr_t *message = "POST /json HTTP/1.1\r\nHost: localhost:%u\r\nAccept: */*\r\n" \
 		"Content-Length: %u\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n{\"id\":%u,\"method\":\"register\"," \
 		"\"params\":{\"username\":\"%.*s\",\"password\":\"%.*s\",\"password_verification\":\"%.*s\"}}\r\n\r\n";
@@ -285,7 +285,7 @@ START_TEST (check_camel_register_s) {
 			st_sprint(errmsg, "Verification of the user table entry after registering a fully qualified user failed.");
 			outcome = false;
 		}
-		else if (outcome && sql_num_rows(query, "SELECT usernum, address FROM Mailboxes WHERE address =  '%.*s';",
+		else if (outcome && sql_num_rows(st_quick(query, "SELECT usernum, address FROM Mailboxes WHERE address =  '%.*s';",
 			st_length_int(username), st_char_get(username))) != 1) {
 			st_sprint(errmsg, "Verification of the mailbox table entry after registering a fully qualified user failed.");
 			outcome = false;

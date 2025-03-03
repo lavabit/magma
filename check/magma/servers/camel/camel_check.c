@@ -29,7 +29,7 @@ START_TEST (check_camel_register_s) {
 	client_t *client = NULL;
 	json_t *json_objs[1] = { NULL };
 	const chr_t *json_values[1] = { NULL };
-	stringer_t *json = NULL, *username = NULL, *password = NULL, *post = MANAGEDBUF(1024), *query = MANAGEDBUF(1024), *errmsg = MANAGEDBUF(1024);
+	stringer_t *json = NULL, *username = MANAGEDBUF(64), *password = MANAGEDBUF(64),*post = MANAGEDBUF(1024), *query = MANAGEDBUF(1024), *errmsg = MANAGEDBUF(1024);
 	chr_t *message = "POST /json HTTP/1.1\r\nHost: localhost:%u\r\nAccept: */*\r\n" \
 		"Content-Length: %u\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n{\"id\":%u,\"method\":\"register\"," \
 		"\"params\":{\"username\":\"%.*s\",\"password\":\"%.*s\",\"password_verification\":\"%.*s\"}}\r\n\r\n";
@@ -42,14 +42,14 @@ START_TEST (check_camel_register_s) {
 	else if (status()) {
 
 		// Generate a random username, using the pattern camel_user_X, which ensures the username is always unique.
-		if (!(password = rand_choices("0123456789", 8, MANAGEDBUF(8))) || !(username = st_quick(MANAGEDBUF(64), "camel_user_%.*s",
+		if (!(password = rand_choices("0123456789", 8, password)) || !(username = st_quick(username, "camel_user_%.*s",
 			st_length_int(password), st_char_get(password)))) {
 			st_sprint(errmsg, "An internal error occurred. Unable to generate a random username for the camelface registration test.");
 			outcome = false;
 		}
 
 		// Create a random password and confirm the length of both values.
-		else if (!(password = rand_choices("0123456789", 20, MANAGEDBUF(20)))) {
+		else if (!(password = rand_choices("0123456789", 20, password))) {
 			st_sprint(errmsg, "An internal error occurred. Unable to generate a random password for the camelface registration test.");
 			outcome = false;
 		}
@@ -129,14 +129,14 @@ START_TEST (check_camel_register_s) {
 	else if (status() && outcome) {
 
 		// Generate a random username, using the pattern camel_user_X, which ensures the username is always unique.
-		if (!(password = rand_choices("0123456789", 8, MANAGEDBUF(8))) || !(username = st_quick(MANAGEDBUF(64), "camel_user_%.*s",
+		if (!(password = rand_choices("0123456789", 8, password)) || !(username = st_quick(username, "camel_user_%.*s",
 			st_length_int(password), st_char_get(password)))) {
 			st_sprint(errmsg,	"An internal error occurred. Unable to generate a random username for the camelface registration test.");
 			outcome = false;
 		}
 
 		// Create a random password and confirm the length of both values.
-		else if (!(password = rand_choices("0123456789", 20, MANAGEDBUF(20)))) {
+		else if (!(password = rand_choices("0123456789", 20, password))) {
 			st_sprint(errmsg, "An internal error occurred. Unable to generate a random password for the camelface registration test.");
 			outcome = false;
 		}
@@ -216,14 +216,14 @@ START_TEST (check_camel_register_s) {
 	else if (status() && outcome) {
 
 		// Generate a random username, using the pattern camel_user_X, which ensures the username is always unique.
-		if (!(password = rand_choices("0123456789", 8, MANAGEDBUF(8))) || !(username = st_quick(MANAGEDBUF(64), "camel_user_%.*s@example.com",
+		if (!(password = rand_choices("0123456789", 8, password)) || !(username = st_quick(username, "camel_user_%.*s@example.com",
 			st_length_int(password), st_char_get(password)))) {
 			st_sprint(errmsg,	"An internal error occurred. Unable to generate a random username for the camelface registration test.");
 			outcome = false;
 		}
 
 		// Create a random password and confirm the length of both values.
-		else if (!(password = rand_choices("0123456789", 20, MANAGEDBUF(20)))) {
+		else if (!(password = rand_choices("0123456789", 20, password))) {
 			st_sprint(errmsg, "An internal error occurred. Unable to generate a random password for the camelface registration test.");
 			outcome = false;
 		}
@@ -303,14 +303,14 @@ START_TEST (check_camel_register_s) {
 	else if (status() && outcome) {
 
 		// Generate a random username, using the pattern camel_user_X, which ensures the username is always unique.
-		if (!(password = rand_choices("0123456789", 8, MANAGEDBUF(8))) || !(username = st_quick(MANAGEDBUF(64), "camel_user_%.*s@example.com",
+		if (!(password = rand_choices("0123456789", 8, password)) || !(username = st_quick(username, "camel_user_%.*s@example.com",
 			st_length_int(password), st_char_get(password)))) {
 			st_sprint(errmsg,	"An internal error occurred. Unable to generate a random username for the camelface registration test.");
 			outcome = false;
 		}
 
 		// Create a random password and confirm the length of both values.
-		else if (!(password = rand_choices("0123456789", 20, MANAGEDBUF(20)))) {
+		else if (!(password = rand_choices("0123456789", 20, password))) {
 			st_sprint(errmsg, "An internal error occurred. Unable to generate a random password for the camelface registration test.");
 			outcome = false;
 		}

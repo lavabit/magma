@@ -31,9 +31,9 @@ else
 fi
 
 # If the sandbox contains a CA bundle file, override the path to the CA file used by Freshclam.
-cp -f  "$MAGMA_DIST/dev/main.cvd" "$MAGMA_DIST/sandbox/virus/main.cvd"
-cp -f  "$MAGMA_DIST/dev/daily.cvd" "$MAGMA_DIST/sandbox/virus/daily.cvd"
-cp -f  "$MAGMA_DIST/dev/bytecode.cvd" "$MAGMA_DIST/sandbox/virus/bytecode.cvd"
+cp -f  "$MAGMA_DIST/dev/virus/main.cvd" "$MAGMA_DIST/sandbox/virus/main.cvd"
+cp -f  "$MAGMA_DIST/dev/virus/daily.cvd" "$MAGMA_DIST/sandbox/virus/daily.cvd"
+cp -f  "$MAGMA_DIST/dev/virus/bytecode.cvd" "$MAGMA_DIST/sandbox/virus/bytecode.cvd"
 
 # Done.
 [[ -t 0 ]] && ${TPUT} setaf 2 || true ; printf "Done.\n" ; [[ -t 0 ]] && ${TPUT} sgr0 || true

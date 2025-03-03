@@ -24,6 +24,9 @@ MAGMA_DIST=`pwd`
 # add for suppressions --gen-suppressions=all
 # self modifying code --smc-check=[none,stack,all]
 
+[ -f /usr/libexec/valgrind/default.supp ] && \
+DEFAULT_SUPPRESSIONS=" --suppressions=/usr/libexec/valgrind/default.supp "
+
 if [ $# == 1 ]; then
 valgrind --tool=memcheck \
 --log-fd=1 \
@@ -47,6 +50,7 @@ valgrind --tool=memcheck \
 --track-fds=yes \
 --gen-suppressions=all \
 --suppressions=$MAGMA_DIST/sandbox/etc/magma.suppressions \
+$DEFAULT_SUPPRESSIONS \
 $MAGMA_DIST/magmad.check --check $1 $MAGMA_DIST/sandbox/etc/magma.sandbox.config
 else
 valgrind --tool=memcheck \
@@ -71,6 +75,7 @@ valgrind --tool=memcheck \
 --partial-loads-ok=yes \
 --track-fds=yes \
 --suppressions=$MAGMA_DIST/sandbox/etc/magma.suppressions \
+$DEFAULT_SUPPRESSIONS \
 $MAGMA_DIST/magmad.check $MAGMA_DIST/sandbox/etc/magma.sandbox.config
 fi
 

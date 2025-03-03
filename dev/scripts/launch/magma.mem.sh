@@ -22,7 +22,7 @@ cd $BASE/../../../
 MAGMA_DIST=`pwd`
 
 MAGMAHIT="no"
-MYSQLHIT="no"
+SQLHIT="no"
 MEMCACHEDHIT="no"
 ECLIPSEHIT="no"
 
@@ -59,14 +59,26 @@ unset VMEM RMEM vmem rmem
 
 # MySQL Memory 
 
-VMEM=`ps kstart_time auxw | grep "mysqld" | grep -v grep | awk -F' ' '{print $5}' | tail -1`
-RMEM=`ps kstart_time auxw | grep "mysqld" | grep -v grep | awk -F' ' '{print $6}' | tail -1`
+VMEM=`ps kstart_time auxw | grep -E "mysqld" | grep -v grep | awk -F' ' '{print $5}' | tail -1`
+RMEM=`ps kstart_time auxw | grep -E "mysqld" | grep -v grep | awk -F' ' '{print $6}' | tail -1`
 
 if [ "$VMEM" != '' ] || [ "$RMEM" != '' ]; then
-	MYSQLHIT="yes"
+	SQLHIT="yes"
 	let "vmem = ($VMEM / 1024)"
 	let "rmem = ($RMEM / 1024)"
 	printf "%28.23s = %5.5s virtual megabytes %5.5s resident megabytes\n" "mysqld" "$vmem" "$rmem"
+fi
+
+unset VMEM RMEM vmem rmem
+
+VMEM=`ps kstart_time auxw | grep -E "mariadbd" | grep -v grep | awk -F' ' '{print $5}' | tail -1`
+RMEM=`ps kstart_time auxw | grep -E "mariadbd" | grep -v grep | awk -F' ' '{print $6}' | tail -1`
+
+if [ "$VMEM" != '' ] || [ "$RMEM" != '' ]; then
+	SQLHIT="yes"
+	let "vmem = ($VMEM / 1024)"
+	let "rmem = ($RMEM / 1024)"
+	printf "%28.23s = %5.5s virtual megabytes %5.5s resident megabytes\n" "mariadbd" "$vmem" "$rmem"
 fi
 
 unset VMEM RMEM vmem rmem
@@ -99,7 +111,7 @@ fi
 
 unset VMEM RMEM vmem rmem
 
-if [ "$MAGMAHIT" == "no" ] || [ "$MYSQLHIT" == "no" ] || [ "$MEMCACHEDHIT" == "no" ] || [ "$ECLIPSEHIT" == "no" ]; then
+if [ "$MAGMAHIT" == "no" ] || [ "$SQLHIT" == "no" ] || [ "$MEMCACHEDHIT" == "no" ] || [ "$ECLIPSEHIT" == "no" ]; then
 	echo ""
 fi
 
@@ -107,8 +119,8 @@ if [ "$MAGMAHIT" == "no" ]; then
 	printf "%28.23s = $(tput setaf 1)%s$(tput sgr0)\n" "magmad and magmad.check" "not running"
 fi
 
-if [ "$MYSQLHIT" == "no" ]; then
-	printf "%28.23s = $(tput setaf 1)%s$(tput sgr0)\n" "mysqld" "not running"
+if [ "$SQLHIT" == "no" ]; then
+	printf "%28.23s = $(tput setaf 1)%s$(tput sgr0)\n" "mysqld and mariadbd" "not running"
 fi
 
 if [ "$MEMCACHEDHIT" == "no" ]; then

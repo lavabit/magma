@@ -1,0 +1,113 @@
+# Enable execution recording
+#target record
+
+set record stop-at-limit off
+set record insn-number-max 1000
+
+# Shared libraries
+set auto-solib-add on
+set debug-file-directory /usr/lib/debug/:/usr/local/lib/debug/
+set stop-on-solib-events 0
+
+# Don't stop when a signal is recieved
+handle all pass print nostop
+handle SIGSEGV pass print stop
+
+# Environment info
+#set verbose on
+#set trace-commands on
+#set schedule-multiple on
+#set debug observer 1
+
+# Stringer type constants
+set $gdb_constant_t = 1
+set $gdb_placer_t = 2
+set $gdb_nuller_t = 4
+set $gdb_block_t = 8
+set $gdb_managed_t = 16
+set $gdb_mapped_t = 32
+
+# Stringer print helpers
+define pstr_len
+	
+	set $opts = *((uint32_t *)$arg0)
+	
+	if ($opts & $gdb_constant_t) == $gdb_constant_t
+		printf "Length = NULL\n"
+	end
+	if ($opts & $gdb_placer_t) == $gdb_placer_t
+		printf "Length = %u\n", ((placer_t *)$arg0)->length
+	end
+	if ($opts & $gdb_nuller_t) == $gdb_nuller_t
+		printf "Length = NULL\n"
+	end
+	if ($opts & $gdb_block_t) == $gdb_block_t
+		printf "Length = %u\n", ((block_t *)$arg0)->length
+	end
+	if ($opts & $gdb_managed_t) == $gdb_managed_t
+		printf "Length = %u\n", ((managed_t *)$arg0)->length
+	end
+	if ($opts & $gdb_mapped_t) == $gdb_mapped_t
+		printf "Length = %u\n", ((mapped_t *)$arg0)->length
+	end
+	
+end
+document pstr_len
+    Print the data length of a stringer buffer.
+end
+
+define pstr_avail
+	
+	set $opts = *((uint32_t *)$arg0)
+	
+	if ($opts & $gdb_constant_t) == $gdb_constant_t
+		printf "Available = NULL\n"
+	end
+	if ($opts & $gdb_placer_t) == $gdb_placer_t
+		printf "Available = NULL\n"
+	end
+	if ($opts & $gdb_nuller_t) == $gdb_nuller_t
+		printf "Available = NULL\n"
+	end
+	if ($opts & $gdb_block_t) == $gdb_block_t
+		printf "Available = NULL\n"
+	end
+	if ($opts & $gdb_managed_t) == $gdb_managed_t
+		printf "Available = %u\n", ((managed_t *)$arg0)->avail
+	end
+	if ($opts & $gdb_mapped_t) == $gdb_mapped_t
+		printf "Available = %u\n", ((mapped_t *)$arg0)->avail
+	end
+	
+end
+document pstr_avail
+    Print the allocated length of a stringer buffer.
+end
+
+define pstr_data
+
+	set $opts = *((uint32_t *)$arg0)
+	
+	if ($opts & $gdb_constant_t) == $gdb_constant_t
+		output *((char *)((constant_t *)$arg0)->data)
+	end
+	if ($opts & $gdb_placer_t) == $gdb_placer_t
+		output *((char *)((placer_t *)$arg0)->data)@((placer_t *)$arg0)->length
+	end
+	if ($opts & $gdb_nuller_t) == $gdb_nuller_t
+		output *((char *)((nuller_t *)$arg0)->data)
+	end
+	if ($opts & $gdb_block_t) == $gdb_block_t
+		output *((char *)((block_t *)$arg0)->data)@((block_t *)$arg0)->length
+	end
+	if ($opts & $gdb_managed_t) == $gdb_managed_t
+		output *((char *)((managed_t *)$arg0)->data)@((managed_t *)$arg0)->length
+	end
+	if ($opts & $gdb_mapped_t) == $gdb_mapped_t
+		output *((char *)((mapped_t *)$arg0)->data)@((mapped_t *)$arg0)->length
+	end
+	
+end
+document pstr_data
+    Print the data stored in a stringer buffer.
+end

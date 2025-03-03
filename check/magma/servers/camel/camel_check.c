@@ -29,7 +29,7 @@ START_TEST (check_camel_register_s) {
 	client_t *client = NULL;
 	json_t *json_objs[1] = { NULL };
 	const chr_t *json_values[1] = { NULL };
-	stringer_t *post = NULL, *json = NULL, *username = NULL, *password = NULL, *errmsg = MANAGEDBUF(1024);
+	stringer_t *json = NULL, *username = NULL, *password = NULL, *post = MANAGEDBUF(1024), query = MANAGEDBUF(1024), *errmsg = MANAGEDBUF(1024);
 	chr_t *message = "POST /json HTTP/1.1\r\nHost: localhost:%u\r\nAccept: */*\r\n" \
 		"Content-Length: %u\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n{\"id\":%u,\"method\":\"register\"," \
 		"\"params\":{\"username\":\"%.*s\",\"password\":\"%.*s\",\"password_verification\":\"%.*s\"}}\r\n\r\n";
@@ -62,7 +62,7 @@ START_TEST (check_camel_register_s) {
 
 		// Construct the registration request.
 		else {
-			post = st_quick(MANAGEDBUF(1024), message, client->port, 157, 1, st_length_int(username), st_char_get(username),
+			post = st_quick(post, message, client->port, 157, 1, st_length_int(username), st_char_get(username),
 				st_length_int(password), st_char_get(password), st_length_int(password), st_char_get(password));
 		}
 
@@ -106,12 +106,12 @@ START_TEST (check_camel_register_s) {
 		json = NULL;
 
 		// Confirm the user was created.
-		if (outcome && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, userid FROM Users WHERE userid = '%.*s';",
+		if (outcome && sql_num_rows(st_quick(query, "SELECT usernum, userid FROM Users WHERE userid = '%.*s';",
 			st_length_int(username), st_char_get(username))) != 1) {
 			st_sprint(errmsg, "Verification of the user table entry after registering a fully qualified user failed.");
 			outcome = false;
 		}
-		else if (outcome && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, address FROM Mailboxes WHERE address =  '%.*s@%.*s';",
+		else if (outcome && sql_num_rows(st_quick(query, "SELECT usernum, address FROM Mailboxes WHERE address =  '%.*s@%.*s';",
 			st_length_int(username), st_char_get(username), st_length_int(magma.system.domain), st_char_get(magma.system.domain))) != 1) {
 			st_sprint(errmsg, "Verification of the mailbox table entry after registering a fully qualified user failed.");
 			outcome = false;
@@ -149,7 +149,7 @@ START_TEST (check_camel_register_s) {
 
 		// Construct the registration request.
 		else {
-			post = st_quick(MANAGEDBUF(1024), message, client->port, 157, 1, st_length_int(username), st_char_get(username),
+			post = st_quick(post, message, client->port, 157, 1, st_length_int(username), st_char_get(username),
 				st_length_int(password), st_char_get(password), st_length_int(password), st_char_get(password));
 		}
 
@@ -193,12 +193,12 @@ START_TEST (check_camel_register_s) {
 		json = NULL;
 
 		// Confirm the user was created.
-		if (outcome && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, userid FROM Users WHERE userid = '%.*s';",
+		if (outcome && sql_num_rows(st_quick(query, "SELECT usernum, userid FROM Users WHERE userid = '%.*s';",
 			st_length_int(username), st_char_get(username))) != 1) {
 			st_sprint(errmsg, "Verification of the user table entry after registering a fully qualified user failed.");
 			outcome = false;
 		}
-		else if (outcome && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, address FROM Mailboxes WHERE address =  '%.*s@%.*s';",
+		else if (outcome && sql_num_rows(st_quick(query, "SELECT usernum, address FROM Mailboxes WHERE address =  '%.*s@%.*s';",
 			st_length_int(username), st_char_get(username), st_length_int(magma.system.domain), st_char_get(magma.system.domain))) != 1) {
 			st_sprint(errmsg, "Verification of the mailbox table entry after registering a fully qualified user failed.");
 			outcome = false;
@@ -236,7 +236,7 @@ START_TEST (check_camel_register_s) {
 
 		// Construct the registration request.
 		else {
-			post = st_quick(MANAGEDBUF(1024), message, client->port, 169, 1, st_length_int(username), st_char_get(username),
+			post = st_quick(post, message, client->port, 169, 1, st_length_int(username), st_char_get(username),
 				st_length_int(password), st_char_get(password), st_length_int(password), st_char_get(password));
 		}
 
@@ -280,12 +280,12 @@ START_TEST (check_camel_register_s) {
 		json = NULL;
 
 		// Confirm the user was created.
-		if (outcome && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, userid FROM Users WHERE userid = '%.*s';",
+		if (outcome && sql_num_rows(st_quick(query, "SELECT usernum, userid FROM Users WHERE userid = '%.*s';",
 			st_length_int(username), st_char_get(username))) != 1) {
 			st_sprint(errmsg, "Verification of the user table entry after registering a fully qualified user failed.");
 			outcome = false;
 		}
-		else if (outcome && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, address FROM Mailboxes WHERE address =  '%.*s';",
+		else if (outcome && sql_num_rows(query, "SELECT usernum, address FROM Mailboxes WHERE address =  '%.*s';",
 			st_length_int(username), st_char_get(username))) != 1) {
 			st_sprint(errmsg, "Verification of the mailbox table entry after registering a fully qualified user failed.");
 			outcome = false;
@@ -323,7 +323,7 @@ START_TEST (check_camel_register_s) {
 
 		// Construct the registration request.
 		else {
-			post = st_quick(MANAGEDBUF(1024), message, client->port, 169, 1, st_length_int(username), st_char_get(username),
+			post = st_quick(post, message, client->port, 169, 1, st_length_int(username), st_char_get(username),
 				st_length_int(password), st_char_get(password), st_length_int(password), st_char_get(password));
 		}
 
@@ -367,12 +367,12 @@ START_TEST (check_camel_register_s) {
 		json = NULL;
 
 		// Confirm the user was created.
-		if (outcome && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, userid FROM Users WHERE userid = '%.*s';",
+		if (outcome && sql_num_rows(st_quick(query, "SELECT usernum, userid FROM Users WHERE userid = '%.*s';",
 			st_length_int(username), st_char_get(username))) != 1) {
 			st_sprint(errmsg, "Verification of the user table entry after registering a fully qualified user failed.");
 			outcome = false;
 		}
-		else if (outcome && sql_num_rows(st_quick(MANAGEDBUF(1024), "SELECT usernum, address FROM Mailboxes WHERE address =  '%.*s';",
+		else if (outcome && sql_num_rows(st_quick(query, "SELECT usernum, address FROM Mailboxes WHERE address =  '%.*s';",
 			st_length_int(username), st_char_get(username))) != 1) {
 			st_sprint(errmsg, "Verification of the mailbox table entry after registering a fully qualified user failed.");
 			outcome = false;

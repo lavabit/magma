@@ -421,13 +421,13 @@ bool_t check_smtp_network_outbound_quota_sthread(stringer_t *errmsg, uint32_t po
     // Wipe the Transmitting table history for the Magma user.
     if (sql_query(PLACER("DELETE FROM Transmitting WHERE usernum = 1;", 45)) != 0) {
 
-        st_sprint(errmsg, "The SQL query to clear the Magma user's transmission history failed.");
+        st_sprint(errmsg, "The SQL query to clear the Magma user transmission history failed.");
         return false;
     }
     // Set the daily send limit to 1 for the Magma user.
     else if (sql_query(PLACER("UPDATE Dispatch SET daily_send_limit = 1 WHERE usernum = 1;", 59)) != 0) {
 
-        st_sprint(errmsg, "The SQL query to set the daily send limit low for the Magma user failed.");
+        st_sprint(errmsg, "The SQL query to set the daily send limit to 1 user failed.");
         return false;
     }
     // Connect to the SMTP server and authenticate.

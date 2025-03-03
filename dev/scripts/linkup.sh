@@ -95,6 +95,7 @@ process "t.inbound.attachment.2.sh" "t.inbound.attachment.2"
 process "t.colors.sh" "t.colors"
 process "t.syntax.sh" "t.syntax"
 
+process "clobber.clamav.sh" "clobber.clamav"
 process "freshen.clamav.sh" "freshen.clamav"
 process "runner.sh" "runner"
 process "testde.sh" "testde"

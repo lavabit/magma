@@ -20,7 +20,7 @@ chr_t * signal_name(int signal, char *buffer, size_t length) {
 		log_pedantic("Invalid output buffer supplied.");
 	}
 	else if (signal < SIGUNUSED) {
-		snprintf(buffer, length, "%s", sigabbrev_np(signal));
+		snprintf(buffer, length, "%s", sigdescr_np(signal));
 	}
 	else if (signal == SIGRTMIN) {
 		snprintf(buffer, length, "SIGRT");

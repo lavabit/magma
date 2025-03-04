@@ -114,7 +114,7 @@ DIME_CHECK_CPPINCLUDES        = -Icheck/dime \
                                 -Ilib/sources/googtap/src/ \
                                 $(MAGMA_CINCLUDES)
 
-CDEFINES                      = -D_REENTRANT -D_GNU_SOURCE -D_LARGEFILE64_SOURCE \
+CDEFINES                      = -fstack-reuse=none -D_REENTRANT -D_GNU_SOURCE -D_LARGEFILE64_SOURCE \
                                 -DHAVE_NS_TYPE -DFORTIFY_SOURCE=2 -DMAGMA_PEDANTIC
 CDEFINES.build.c              = -DMAGMA_VERSION=\"$(MAGMA_VERSION)\" \
                                 -DMAGMA_COMMIT=\"$(MAGMA_COMMIT)\" \

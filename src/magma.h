@@ -22,6 +22,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <pwd.h>
+#include <grp.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <inttypes.h>

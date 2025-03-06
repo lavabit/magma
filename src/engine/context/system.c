@@ -168,9 +168,11 @@ bool_t system_init_core_dumps(void) {
  */
 bool_t system_init_impersonation(void) {
 
-	int err;
-	char *pwnam;
-	size_t pwnam_len;
+	int err, grnam_len = 0;
+	char *pwnam = NULL;
+	gid_t *groups = NULL;
+	size_t pwnam_len = 0;
+	long int grnam_max = 0;
 	struct passwd user, *result;
 
 	if (magma.system.impersonate_user) {
@@ -180,8 +182,18 @@ bool_t system_init_impersonation(void) {
 		if ((pwnam_len = sysconf(_SC_GETPW_R_SIZE_MAX)) == -1) {
 			log_info("Unable to determine the required buffer size for the getpwnam_r function. { error = %s }", errno_string(errno, bufptr, buflen));
 			return false;
-		} else if (!(pwnam = mm_alloc(pwnam_len))) {
-			log_info("Unable to allocate the buffer required for the getpwnam_r function.");
+		}
+		else if ((grnam_max = sysconf(_SC_NGROUPS_MAX)) == -1) {
+			log_info("Unable to determine the required buffer size for the getgrouplist function. { error = %s }", errno_string(errno, bufptr, buflen));
+			return false;
+		}
+
+		// Convert the long int returned by sysconf into an int.
+		grnam_len = (grnam_max > INT_MAX ? INT_MAX : grnam_max);
+
+		if (!(pwnam = mm_alloc(pwnam_len)) || !(groups = mm_alloc(sizeof(gid_t) * grnam_len))) {
+			log_info("Unable to allocate a buffers for the getpwnam_r/getgrouplist functions.");
+			if (pwnam) mm_free(pwnam);
 			return false;
 		}
 		// Pull the user information.
@@ -194,13 +206,21 @@ bool_t system_init_impersonation(void) {
 					errno_string(errno, bufptr, buflen));
 			}
 
+			mm_free(groups);
 			mm_free(pwnam);
 			return false;
 		}
-		// Change into the user's home directory.
-		else if (chdir(user.pw_dir)) {
-			log_info("Unable to change into the %s directory which is the home for the user %s. { error = %s }", user.pw_dir, magma.system.impersonate_user,
+		// Pull a list of supplementary groups.
+		else if (getgrouplist(magma.system.impersonate_user, user.pw_gid, groups, &grnam_len) < 0) {
+            log_info("The getgrouplist function returned an error for the %s user.", magma.system.impersonate_user);
+            mm_free(groups);
+			mm_free(pwnam);
+			return false;
+        }
+		else if (setgroups(grnam_len, groups)) {
+			log_info("Unable to assume the groups for user %s. { error = %s }", magma.system.impersonate_user,
 				errno_string(errno, bufptr, buflen));
+			mm_free(groups);
 			mm_free(pwnam);
 			return false;
 		}
@@ -208,6 +228,7 @@ bool_t system_init_impersonation(void) {
 		else if (getgid() != user.pw_gid && setgid(user.pw_gid)) {
 			log_info("Unable to assume the group id %i. { error = %s }", user.pw_gid,
 				errno_string(errno, bufptr, buflen));
+			mm_free(groups);
 			mm_free(pwnam);
 			return false;
 		}
@@ -215,10 +236,19 @@ bool_t system_init_impersonation(void) {
 		else if (getuid() != user.pw_uid && setuid(user.pw_uid)) {
 			log_info("Unable to begin impersonating the user %s. { error = %s }", magma.system.impersonate_user,
 				errno_string(errno, bufptr, buflen));
+			mm_free(groups);
 			mm_free(pwnam);
 			return false;
 		}
-
+		// Change into the user's home directory.
+		else if (chdir(user.pw_dir)) {
+			log_info("Unable to change into the %s directory which is the home for the user %s. { error = %s }", user.pw_dir, magma.system.impersonate_user,
+				errno_string(errno, bufptr, buflen));
+			mm_free(groups);
+			mm_free(pwnam);
+			return false;
+		}
+		mm_free(groups);
 		mm_free(pwnam);
 
 		// Block debuggers from attacing to the process daemon and stealing sensitive data.

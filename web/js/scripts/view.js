@@ -279,12 +279,37 @@ magma.view = (function() {
                 defaultTitle = tabModel.getTitle(),
                 cc = getBlock('composingCC'),
                 bcc = getBlock('composingBCC'),
-                attachments = getBlock('composingAttachments');
+                attachments = getBlock('composingAttachments'),
+                lastSavedContent = '',
+                draftInterval = null;
 
             // ui button for browse
             attachments.find('.browse').button();
 
-            // add bcc
+            // collect form data for send/draft
+            var collectFormData = function() {
+                var editor = CKEDITOR.instances['body-' + composeModel.getComposeID()],
+                    ccInput = cc.find('input'),
+                    bccInput = bcc.find('input');
+
+                return {
+                    from: from.val(),
+                    to: to.val().split(/[,;]\s*/).filter(function(v) { return v; }),
+                    cc: cc.is(':visible') && ccInput.length ? ccInput.val().split(/[,;]\s*/).filter(function(v) { return v; }) : [],
+                    bcc: bcc.is(':visible') && bccInput.length ? bccInput.val().split(/[,;]\s*/).filter(function(v) { return v; }) : [],
+                    subject: subject.val(),
+                    priority: 'normal',
+                    bodyHtml: editor ? editor.getData() : body.val(),
+                    bodyText: editor ? $(editor.getData()).text() : body.val()
+                };
+            };
+
+            // get send button for loading state
+            var getSendButton = function() {
+                return container.closest('.workspace-wrapper').find('.send');
+            };
+
+            // add cc
             toolsModel.addObserver('ccClicked', function() {
                 // TODO: unique ids
                 if(cc.is(':visible')) {
@@ -313,18 +338,86 @@ magma.view = (function() {
                 }
             });
 
-            // simulate attachments not finished
-            // TODO: remove unfinished attach on send proto
+            // handle send button click
             toolsModel.addObserver('sendClicked', function() {
-                if(attachments.is(':visible') && !attachments.hasClass('unfinished-warning')) {
-                    attachments.addClass('unfinished-warning');
-                    attachments.append('<div><p class="warning">Your attachments have not finished uploading yet!</p></div>');
+                // check for unfinished attachments
+                if(attachments.is(':visible') && attachments.find('.uploading').length) {
+                    magma.dialog.message('Please wait for attachments to finish uploading.');
+                    return;
+                }
+
+                // collect form data
+                var formData = collectFormData();
+
+                // validate required fields
+                if(!formData.to.length) {
+                    magma.dialog.message('Please enter at least one recipient.');
+                    return;
+                }
+
+                // disable send button and show loading state
+                var sendBtn = getSendButton();
+                sendBtn.button('disable').addClass('loading');
+
+                // send the message
+                composeModel.send(formData);
+            });
+
+            // handle send success
+            composeModel.addObserver('sent', function() {
+                // clear auto-save interval
+                if(draftInterval) {
+                    clearInterval(draftInterval);
+                    draftInterval = null;
+                }
+                // clear saved draft
+                composeModel.clearDraft();
+                // close the compose tab
+                tabModel.close();
+            });
+
+            // handle send error
+            composeModel.addObserver('sentError', function(error) {
+                var sendBtn = getSendButton();
+                sendBtn.button('enable').removeClass('loading');
+                magma.dialog.message('Failed to send message: ' + (error && error.message ? error.message : 'Unknown error'));
+            });
+
+            // handle send failure (connection error)
+            composeModel.addObserver('sentFailed', function() {
+                var sendBtn = getSendButton();
+                sendBtn.button('enable').removeClass('loading');
+                magma.dialog.message('Could not connect to server. Please try again.');
+            });
+
+            // auto-save drafts every 60 seconds
+            var startAutoSave = function() {
+                draftInterval = setInterval(function() {
+                    var formData = collectFormData();
+                    var currentContent = JSON.stringify(formData);
+
+                    // only save if content has changed
+                    if(currentContent !== lastSavedContent) {
+                        lastSavedContent = currentContent;
+                        composeModel.saveDraft(formData);
+                    }
+                }, 60000); // 60 seconds
+            };
+
+            // start auto-save
+            startAutoSave();
+
+            // clean up when tab closes
+            tabModel.addObserver('closed', function() {
+                if(draftInterval) {
+                    clearInterval(draftInterval);
+                    draftInterval = null;
                 }
             });
 
             // unique ids
             form.find('input, select, textarea').each(function() {
-                var id = $(this).attr('id')
+                var id = $(this).attr('id');
                 if(id) {
                     $(this).attr('id', id + '-' + composeModel.getComposeID());
                     form.find('label').filter('#' + id).attr('for', $(this).attr('id'));

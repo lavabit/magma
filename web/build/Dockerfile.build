@@ -1,0 +1,10 @@
+# Dockerfile for building Magma frontend
+FROM php:8.2-cli-alpine
+
+WORKDIR /magma
+
+# Copy the web directory
+COPY . /magma/
+
+# Run the build scripts
+CMD ["sh", "-c", "php /magma/build/build-html.php && php /magma/build/build-js.php && echo 'Frontend build complete'"]

@@ -209,7 +209,7 @@ magma.bootstrap = (function() {
 
             // create workspace view
             var workspaceView = magma.view.workspace(workspaceModel, tabModel, toolsModel);
-
+            
             // add folders
             // use global folder and message list model
             magma.view.folders(magma.folderModel, magma.messageListModel, workspaceModel.getID()).root.appendTo(workspaceView.workspace);
@@ -370,7 +370,7 @@ magma.bootstrap = (function() {
             var folderModel = magma.model.folders('settings');
             magma.view.folders(folderModel, settingsModel, workspaceModel.getID(), false, null, false).root.appendTo(workspaceView.workspace);
             magma.view.settings(settingsModel, toolsModel, folderModel).root.prependTo(workspaceView.workspace);
-
+            
             if(magma.tabsModel.isOpen()) {
                 magma.tabsModel.hideTabs();
             }
@@ -400,7 +400,7 @@ magma.bootstrap = (function() {
 
             // no tools
             workspaceView.workspace.addClass('no-tools');
-
+            
             if(magma.tabsModel.isOpen()) {
                 magma.tabsModel.hideTabs();
             }
@@ -551,7 +551,7 @@ magma.ckeditor = function(textareaID) {
 var magma = magma || {};
 
 magma.animationSpeed = "fast";
-magma.portalUrl = true ? '/portal/camel' : '/portal/mockiface';
+magma.portalUrl = false ? '/portal/camel' : '/portal/mockiface';
 
 // TODO: better way to get table header height
 // 27px + 1px border
@@ -601,7 +601,7 @@ magma.controller = (function() {
         }
     };
 }());
-/*
+/* 
  * prepulated data for fallbacks
  */
 var magma = magma || {};
@@ -764,7 +764,7 @@ magma.model = (function() {
 
             // look for references to other templates
             var matches = magma.tmpl[template].match(/\{\{tmpl[\(]?[^\)]*[\)]?[^"]+"[^"]+"\}\}/g);
-
+            
             // may need to load before issuing callback
             if(matches) {
                 var i = 0;
@@ -897,7 +897,7 @@ magma.model = (function() {
 
         return events;
     };
-
+    
     /**
      * Provides a way for model to notify subscribers of changes
      *
@@ -943,7 +943,7 @@ magma.model = (function() {
 
             addObserver(event, observer);
         };
-
+        
         removeObserver = function(event, observer) {
             if (!groups.hasOwnProperty(event)) {
                 throw new Error('removeObserver: No event "' + event + '".');
@@ -957,7 +957,7 @@ magma.model = (function() {
             }
             throw new Error('removeObserver: Did not find the observer and so could not remove it.');
         };
-
+        
         notifyObservers = function(event, data) {
             if (!groups.hasOwnProperty(event)) {
                 throw new Error('notifyObservers: No event "' + event + '".');
@@ -967,13 +967,13 @@ magma.model = (function() {
                 group[i](data);
             }
         };
-
+        
         // initialize
         for (var i=0; i<events.length; i += 1) {
             var event = events[i];
             addEvent(event);
         }
-
+                    
         return {
             addEvent: addEvent,
             addObserver: addObserver,
@@ -1293,8 +1293,9 @@ magma.model = (function() {
 
         /*** compose ***/
         compose: function() {
-            var observable = newObservable(listEvents(['ready']).concat(['send'])),
-                id;
+            var observable = newObservable(listEvents(['ready', 'sent', 'draftSaved']).concat(['send'])),
+                id,
+                attachmentIDs = [];
 
             // gets an id to keep track of drafts / added attachments / etc
             var compose = function() {
@@ -1312,13 +1313,106 @@ magma.model = (function() {
                 });
             };
 
+            // send the composed message
+            var send = function(formData) {
+                var params = {
+                    composeID: id,
+                    from: formData.from,
+                    to: formData.to,
+                    cc: formData.cc || [],
+                    bcc: formData.bcc || [],
+                    subject: formData.subject,
+                    priority: formData.priority || 'normal',
+                    attachments: attachmentIDs,
+                    body: {
+                        text: formData.bodyText,
+                        html: formData.bodyHtml
+                    }
+                };
+
+                getData('messages.send', params, {
+                    success: function(data) {
+                        observable.notifyObservers('sent', data);
+                    },
+                    error: function(error) {
+                        observable.notifyObservers('sentError', error);
+                    },
+                    failure: function() {
+                        observable.notifyObservers('sentFailed');
+                    }
+                });
+            };
+
+            // save draft locally (no server-side draft API exists)
+            var saveDraft = function(formData) {
+                try {
+                    var draftKey = 'magma_draft_' + id;
+                    var draftData = {
+                        composeID: id,
+                        from: formData.from,
+                        to: formData.to,
+                        cc: formData.cc || [],
+                        bcc: formData.bcc || [],
+                        subject: formData.subject,
+                        bodyText: formData.bodyText,
+                        bodyHtml: formData.bodyHtml,
+                        savedAt: new Date().toISOString()
+                    };
+                    localStorage.setItem(draftKey, JSON.stringify(draftData));
+                    observable.notifyObservers('draftSaved', draftData);
+                } catch(e) {
+                    // localStorage may be unavailable or full
+                    observable.notifyObservers('draftSavedError');
+                }
+            };
+
+            // load draft from local storage
+            var loadDraft = function() {
+                try {
+                    var draftKey = 'magma_draft_' + id;
+                    var draftData = localStorage.getItem(draftKey);
+                    if(draftData) {
+                        return JSON.parse(draftData);
+                    }
+                } catch(e) {
+                    // ignore errors
+                }
+                return null;
+            };
+
+            // clear draft from local storage
+            var clearDraft = function() {
+                try {
+                    var draftKey = 'magma_draft_' + id;
+                    localStorage.removeItem(draftKey);
+                } catch(e) {
+                    // ignore errors
+                }
+            };
+
             return {
                 composeMessage: compose,
+                send: send,
+                saveDraft: saveDraft,
+                loadDraft: loadDraft,
+                clearDraft: clearDraft,
                 sendMessage: function() {
                     observable.notifyObservers('send');
                 },
                 getComposeID: function() {
                     return id;
+                },
+                addAttachment: function(attachID) {
+                    attachmentIDs.push(attachID);
+                },
+                removeAttachment: function(attachID) {
+                    var idx = attachmentIDs.indexOf(attachID);
+                    if (idx > -1) {
+                        attachmentIDs.splice(idx, 1);
+                    }
+                },
+                getAttachments: function() {
+                    return attachmentIDs.slice();
                 },
                 addObserver: observable.addObserver,
                 observeOnce: observable.observeOnce,
@@ -1348,7 +1442,7 @@ magma.model = (function() {
                     }
                 });
             };
-
+                
             return {
                 loadContact: load,
                 newContact: function() {
@@ -2159,7 +2253,7 @@ magma.model = (function() {
                         },
                         remove: function(messageID, folderID) {
                             var index;
-
+                            
                             if(this.hasMessage(messageID, folderID)) {
                                 index = _indexOf(messageID, folderID);
                             }
@@ -2347,7 +2441,7 @@ magma.model = (function() {
                     throw new Error('model.messsageList.flagMessages: must provide messageIDs in an array.');
                 }
 
-                if(messageIDs.length) {
+                if(messageIDs.length) {                
                     var flag,
                         ids = [],
                         match,
@@ -2649,7 +2743,7 @@ magma.model = (function() {
 
             // false if empty
             permatab = permatab || false;
-
+            
             if(typeof permatab !== 'boolean') {
                 throw new Error('model.tab: Permatab option must be given as a boolean');
             }
@@ -2678,7 +2772,7 @@ magma.model = (function() {
                     if(typeof title !== 'string') {
                         throw new Error('Tab title must be given as a string');
                     }
-
+                    
                     title = t;
                     observable.notifyObservers('titleModified', t);
                 },
@@ -3293,7 +3387,7 @@ magma.tinymce = function(editorID) {
 */
 /**
  * Contains all the jquery templates
- *
+ * 
  * templates inserted by build-js.php
  */
 var magma = magma || {};
@@ -3413,7 +3507,7 @@ magma.dialog = {
  *
  * Acts on selected inputs to be filled.
  * Labels for field must match an inputs id.
- *
+ * 
  * @param labels    jQuery object containing labels to fill inputs with
  */
 (function($) {
@@ -3510,7 +3604,7 @@ magma.view = (function() {
                         controlsOpen = false;
                     });
                 };
-
+                    
                 var timedRemove = function() {
                     removeTimer = setTimeout(function() {
                         removeControls();
@@ -3671,7 +3765,7 @@ magma.view = (function() {
         /*** chrome ***/
         chrome: function(globalNavModel) {
             var container = getBlock('chrome');
-
+            
             // TODO: need to grab email from loaded settings
             container.find('#account ul')
                 .before('<p>magma@lavabit.com</p>');
@@ -3713,12 +3807,37 @@ magma.view = (function() {
                 defaultTitle = tabModel.getTitle(),
                 cc = getBlock('composingCC'),
                 bcc = getBlock('composingBCC'),
-                attachments = getBlock('composingAttachments');
+                attachments = getBlock('composingAttachments'),
+                lastSavedContent = '',
+                draftInterval = null;
 
             // ui button for browse
             attachments.find('.browse').button();
 
-            // add bcc
+            // collect form data for send/draft
+            var collectFormData = function() {
+                var editor = CKEDITOR.instances['body-' + composeModel.getComposeID()],
+                    ccInput = cc.find('input'),
+                    bccInput = bcc.find('input');
+
+                return {
+                    from: from.val(),
+                    to: to.val().split(/[,;]\s*/).filter(function(v) { return v; }),
+                    cc: cc.is(':visible') && ccInput.length ? ccInput.val().split(/[,;]\s*/).filter(function(v) { return v; }) : [],
+                    bcc: bcc.is(':visible') && bccInput.length ? bccInput.val().split(/[,;]\s*/).filter(function(v) { return v; }) : [],
+                    subject: subject.val(),
+                    priority: 'normal',
+                    bodyHtml: editor ? editor.getData() : body.val(),
+                    bodyText: editor ? $(editor.getData()).text() : body.val()
+                };
+            };
+
+            // get send button for loading state
+            var getSendButton = function() {
+                return container.closest('.workspace-wrapper').find('.send');
+            };
+
+            // add cc
             toolsModel.addObserver('ccClicked', function() {
                 // TODO: unique ids
                 if(cc.is(':visible')) {
@@ -3747,18 +3866,86 @@ magma.view = (function() {
                 }
             });
 
-            // simulate attachments not finished
-            // TODO: remove unfinished attach on send proto
+            // handle send button click
             toolsModel.addObserver('sendClicked', function() {
-                if(attachments.is(':visible') && !attachments.hasClass('unfinished-warning')) {
-                    attachments.addClass('unfinished-warning');
-                    attachments.append('<div><p class="warning">Your attachments have not finished uploading yet!</p></div>');
+                // check for unfinished attachments
+                if(attachments.is(':visible') && attachments.find('.uploading').length) {
+                    magma.dialog.message('Please wait for attachments to finish uploading.');
+                    return;
+                }
+
+                // collect form data
+                var formData = collectFormData();
+
+                // validate required fields
+                if(!formData.to.length) {
+                    magma.dialog.message('Please enter at least one recipient.');
+                    return;
+                }
+
+                // disable send button and show loading state
+                var sendBtn = getSendButton();
+                sendBtn.button('disable').addClass('loading');
+
+                // send the message
+                composeModel.send(formData);
+            });
+
+            // handle send success
+            composeModel.addObserver('sent', function() {
+                // clear auto-save interval
+                if(draftInterval) {
+                    clearInterval(draftInterval);
+                    draftInterval = null;
+                }
+                // clear saved draft
+                composeModel.clearDraft();
+                // close the compose tab
+                tabModel.close();
+            });
+
+            // handle send error
+            composeModel.addObserver('sentError', function(error) {
+                var sendBtn = getSendButton();
+                sendBtn.button('enable').removeClass('loading');
+                magma.dialog.message('Failed to send message: ' + (error && error.message ? error.message : 'Unknown error'));
+            });
+
+            // handle send failure (connection error)
+            composeModel.addObserver('sentFailed', function() {
+                var sendBtn = getSendButton();
+                sendBtn.button('enable').removeClass('loading');
+                magma.dialog.message('Could not connect to server. Please try again.');
+            });
+
+            // auto-save drafts every 60 seconds
+            var startAutoSave = function() {
+                draftInterval = setInterval(function() {
+                    var formData = collectFormData();
+                    var currentContent = JSON.stringify(formData);
+
+                    // only save if content has changed
+                    if(currentContent !== lastSavedContent) {
+                        lastSavedContent = currentContent;
+                        composeModel.saveDraft(formData);
+                    }
+                }, 60000); // 60 seconds
+            };
+
+            // start auto-save
+            startAutoSave();
+
+            // clean up when tab closes
+            tabModel.addObserver('closed', function() {
+                if(draftInterval) {
+                    clearInterval(draftInterval);
+                    draftInterval = null;
                 }
             });
 
             // unique ids
             form.find('input, select, textarea').each(function() {
-                var id = $(this).attr('id')
+                var id = $(this).attr('id');
                 if(id) {
                     $(this).attr('id', id + '-' + composeModel.getComposeID());
                     form.find('label').filter('#' + id).attr('for', $(this).attr('id'));
@@ -3838,7 +4025,7 @@ magma.view = (function() {
 
             contactListModel.observeOnce('loaded', function(data) {
                 var tmplModel = magma.model.tmpl();
-
+                
                 // show gravatars if any row has one
                 for(var i in data) {
                     if(data[i].img) {
@@ -4197,7 +4384,7 @@ magma.view = (function() {
                     parentList = source.parent().parent();
                     parent = $('#folder-' + parseInt(parentList.attr('id').match(/\d+/), 10));
                 }
-
+                
                 // make sure target is not child of source
                 if(sourceSubfolders.length && sourceSubfolders.find(target).length) {
                     magma.dialog.message("I'm afraid I can't let you do that.");
@@ -4229,7 +4416,7 @@ magma.view = (function() {
                         target
                             .prepend('<a class="expander expand">Toggle</a>')
                             .addClass('expandable');
-
+                        
                         subfolders.find('ul').append($.merge(source, sourceSubfolders));
                         subfolders.insertAfter(target);
                     }
@@ -4267,7 +4454,7 @@ magma.view = (function() {
                     addBoxTimeout = 3000,
                     renameTimer,
                     renameTimeout = 1000;
-
+                    
                 var timedRemove = function(callback, timer, timeout) {
                     timer = setTimeout(function() {
                         callback();
@@ -4291,7 +4478,7 @@ magma.view = (function() {
                             rename.remove();
                             folder.removeClass('renaming').children().show();
                         };
-
+                    
                 folder
                     .children()
                     .hide()
@@ -4518,7 +4705,7 @@ magma.view = (function() {
 
             authModel.addObserver('success', gotoLoading);
             authModel.addObserver('locked', gotoLocked);
-
+            
             // [DEV]
             username.val('magma');
             password.val('password');
@@ -4572,7 +4759,7 @@ magma.view = (function() {
                     }
                 }
             };
-
+            
             displayError = function(msg) {
                 message.find('p').text(msg);
 
@@ -4648,7 +4835,7 @@ magma.view = (function() {
 
                 tmplModel.addObserver('completed', function(html) {
                     if(o.context.match(/security|contacts|mail/)) {
-
+            
                         // context capitolized above
                         var table = getBlock('logs' + context),
                             sort = function(context) {
@@ -5023,7 +5210,7 @@ magma.view = (function() {
 
             ad: function(adModel) {
                 var container = getBlock('messageAd');
-
+                
                 adModel.addObserver('loaded', function(data) {
 
                     var tmplModel = magma.model.tmpl();
@@ -5065,7 +5252,7 @@ magma.view = (function() {
                                 .slideDown(magma.animationSpeed);
                         }
                     });
-
+                    
                     tmplModel.fillTmpl('messageInfo', messageModel.getSection('info'));
                 });
 
@@ -5436,7 +5623,7 @@ magma.view = (function() {
                     };
 
                     messageTable = list.dataTable(messageTableSettings);
-
+                    
                     // setup settings for reinit in the feature
                     // get rid of 'f' for filter
                     messageTableSettings.sDom = messageTableSettings.sDom.replace(/f/, '');
@@ -5845,7 +6032,7 @@ magma.view = (function() {
                     }
                 });
             };
-
+            
             // get folders for list dropdown
             var listFolders = function(callback) {
                 var list = $('<ul/>');
@@ -5934,7 +6121,7 @@ magma.view = (function() {
 
                             tagsModel.addObserver('loaded', function(data) {
                                 var tmplModel = magma.model.tmpl();
-
+                                
                                 tmplModel.addObserver('completed', function(tags) {
                                     tagList.find('.tags').append(tags);
                                     callback(tagList);
@@ -5949,7 +6136,7 @@ magma.view = (function() {
                             toolsModel.toolClicked('tags', clicked.text());
                         }
                     );
-
+                    
                     registerTools([
                         'reply',
                         'replyAll',
@@ -6065,7 +6252,7 @@ magma.view = (function() {
                 event.preventDefault();
                 //quickSearchModel.search(input.val());
             });
-
+            
             if(advanced) {
                 search.find('.advanced').click(function(event) {
                     event.preventDefault();
@@ -6088,7 +6275,7 @@ magma.view = (function() {
                 root: search
             };
         },
-
+        
         /*** scrape contacts ***/
         scrapeContacts: function(scrapeContactsModel, workspaceID) {
             var container = getBlock('scrapeContactsList'),
@@ -6577,7 +6764,7 @@ magma.view = (function() {
                     searchOptionModel.setControls({add: true, remove: true});
                 }
             });
-
+            
             // insert default filter
             filter.append(getBlock('searchFilterString'));
             filter.find('select, input').fillWatermarks(filter.find('label'));
@@ -6934,7 +7121,7 @@ magma.view = (function() {
 }());
 /**
  * application.js
- *
+ * 
  * Kicks off Magma
  *
  * This script must be inserted last since it's calling functions
@@ -6978,7 +7165,7 @@ $(document).ready(function() {
 
         return response;
     };
-
+    
     /*
      * Ajax Mockups
      *
@@ -7167,7 +7354,7 @@ $(document).ready(function() {
 
             // look for references to other templates
             var matches = magma.tmpl[template].match(/{{tmpl[\(]?[^\)]*[\)]?[^"]+"[^"]+"}}/g);
-
+            
             // may need to load before issuing callback
             if(matches) {
                 var i = 0;
@@ -7785,7 +7972,7 @@ $(document).ready(function() {
                 event.preventDefault();
                 fill_state($(this).attr('href'));
             });
-
+    
         // prevent overlay from overflowing
         $('body').css("overflow", "hidden");
 

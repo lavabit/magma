@@ -1,0 +1,20 @@
+# Lightweight Docker test for install script syntax and structure
+FROM alpine:latest
+
+RUN apk add --no-cache bash grep coreutils
+
+WORKDIR /test
+
+# Copy just the install scripts
+COPY dev/install/*.sh /test/
+COPY dev/scripts/database/*.sh /test/scripts/
+
+# Run syntax checks
+RUN bash -n /test/magmad.install.sh && echo "✓ magmad.install.sh syntax OK"
+RUN bash -n /test/scripts/schema.dump.sh && echo "✓ schema.dump.sh syntax OK"
+
+# Check for common patterns that indicate bugs
+RUN echo "Checking for redirect issues..." && \
+    ! grep -n '>> .* > ' /test/magmad.install.sh || echo "Warning: possible redirect overwrite"
+
+CMD ["echo", "All syntax checks passed"]

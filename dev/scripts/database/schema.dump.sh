@@ -65,16 +65,22 @@ echo "TRUNCATE `Transmitting`;" | mysql --batch -u $MYSQL_USER --password="$MYSQ
 echo "TRUNCATE `Receiving`;" | mysql --batch -u $MYSQL_USER --password="$MYSQL_PASSWORD" "$MYSQL_SCHEMA"
 echo "TRUNCATE `Creation`;" | mysql --batch -u $MYSQL_USER --password="$MYSQL_PASSWORD" "$MYSQL_SCHEMA"
 
+# Dump data with extended inserts (compact format)
 mysqldump --no-create-info=TRUE --order-by-primary=TRUE --force=FALSE --no-data=FALSE --tz-utc=TRUE --flush-privileges=FALSE \
---compress=FALSE --replace=FALSE --host=localhost --insert-ignore=FALSE --user=root --quote-names=TRUE --hex-blob=TRUE --complete-insert=FALSE \
+--compress=FALSE --replace=FALSE --host=localhost --insert-ignore=FALSE --quote-names=TRUE --hex-blob=TRUE --complete-insert=FALSE \
 --add-locks=TRUE --port=3306 --disable-keys=TRUE --delayed-insert=TRUE --create-options=TRUE --extended-insert=TRUE \
 --delete-master-logs=FALSE --comments=TRUE --default-character-set=utf8 --max_allowed_packet=1G --flush-logs=FALSE --dump-date=TRUE \
---lock-tables=TRUE --allow-keywords=TRUE --events=FALSE --user $MYSQL_USER --password="$MYSQL_PASSWORD" --databases "$MYSQL_SCHEMA" \
-> res/sql/Data.sql 
+--lock-tables=TRUE --allow-keywords=TRUE --events=FALSE --user="$MYSQL_USER" --password="$MYSQL_PASSWORD" --databases "$MYSQL_SCHEMA" \
+> "$MAGMA_DIST/res/sql/Data.sql"
 
+# Dump data with single-row inserts (readable format)
 mysqldump --no-create-info=TRUE --order-by-primary=TRUE --force=FALSE --no-data=FALSE --tz-utc=TRUE --flush-privileges=FALSE \
---compress=FALSE --replace=FALSE --host=localhost --insert-ignore=FALSE --user=root --quote-names=TRUE --hex-blob=TRUE --complete-insert=TRUE \
+--compress=FALSE --replace=FALSE --host=localhost --insert-ignore=FALSE --quote-names=TRUE --hex-blob=TRUE --complete-insert=TRUE \
 --add-locks=TRUE --port=3306 --disable-keys=TRUE --delayed-insert=TRUE --create-options=TRUE --skip-extended-insert=TRUE \
 --delete-master-logs=FALSE --comments=TRUE --default-character-set=utf8 --max_allowed_packet=1G --flush-logs=FALSE --dump-date=TRUE \
---lock-tables=TRUE --allow-keywords=TRUE --events=FALSE --user $MYSQL_USER --password="$MYSQL_PASSWORD" --databases "$MYSQL_SCHEMA" \
-> res/sql/Full.sql 
+--lock-tables=TRUE --allow-keywords=TRUE --events=FALSE --user="$MYSQL_USER" --password="$MYSQL_PASSWORD" --databases "$MYSQL_SCHEMA" \
+> "$MAGMA_DIST/res/sql/Full.sql"
+
+[[ -t 0 ]] && ${TPUT} setaf 2 || true; echo "Schema dump complete."; [[ -t 0 ]] && ${TPUT} sgr0 || true
+echo "  Data.sql: $MAGMA_DIST/res/sql/Data.sql"
+echo "  Full.sql: $MAGMA_DIST/res/sql/Full.sql"

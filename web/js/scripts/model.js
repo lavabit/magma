@@ -673,8 +673,9 @@ magma.model = (function() {
 
         /*** compose ***/
         compose: function() {
-            var observable = newObservable(listEvents(['ready']).concat(['send'])),
-                id;
+            var observable = newObservable(listEvents(['ready', 'sent', 'draftSaved']).concat(['send'])),
+                id,
+                attachmentIDs = [];
 
             // gets an id to keep track of drafts / added attachments / etc
             var compose = function() {
@@ -692,13 +693,106 @@ magma.model = (function() {
                 });
             };
 
+            // send the composed message
+            var send = function(formData) {
+                var params = {
+                    composeID: id,
+                    from: formData.from,
+                    to: formData.to,
+                    cc: formData.cc || [],
+                    bcc: formData.bcc || [],
+                    subject: formData.subject,
+                    priority: formData.priority || 'normal',
+                    attachments: attachmentIDs,
+                    body: {
+                        text: formData.bodyText,
+                        html: formData.bodyHtml
+                    }
+                };
+
+                getData('messages.send', params, {
+                    success: function(data) {
+                        observable.notifyObservers('sent', data);
+                    },
+                    error: function(error) {
+                        observable.notifyObservers('sentError', error);
+                    },
+                    failure: function() {
+                        observable.notifyObservers('sentFailed');
+                    }
+                });
+            };
+
+            // save draft locally (no server-side draft API exists)
+            var saveDraft = function(formData) {
+                try {
+                    var draftKey = 'magma_draft_' + id;
+                    var draftData = {
+                        composeID: id,
+                        from: formData.from,
+                        to: formData.to,
+                        cc: formData.cc || [],
+                        bcc: formData.bcc || [],
+                        subject: formData.subject,
+                        bodyText: formData.bodyText,
+                        bodyHtml: formData.bodyHtml,
+                        savedAt: new Date().toISOString()
+                    };
+                    localStorage.setItem(draftKey, JSON.stringify(draftData));
+                    observable.notifyObservers('draftSaved', draftData);
+                } catch(e) {
+                    // localStorage may be unavailable or full
+                    observable.notifyObservers('draftSavedError');
+                }
+            };
+
+            // load draft from local storage
+            var loadDraft = function() {
+                try {
+                    var draftKey = 'magma_draft_' + id;
+                    var draftData = localStorage.getItem(draftKey);
+                    if(draftData) {
+                        return JSON.parse(draftData);
+                    }
+                } catch(e) {
+                    // ignore errors
+                }
+                return null;
+            };
+
+            // clear draft from local storage
+            var clearDraft = function() {
+                try {
+                    var draftKey = 'magma_draft_' + id;
+                    localStorage.removeItem(draftKey);
+                } catch(e) {
+                    // ignore errors
+                }
+            };
+
             return {
                 composeMessage: compose,
+                send: send,
+                saveDraft: saveDraft,
+                loadDraft: loadDraft,
+                clearDraft: clearDraft,
                 sendMessage: function() {
                     observable.notifyObservers('send');
                 },
                 getComposeID: function() {
                     return id;
+                },
+                addAttachment: function(attachID) {
+                    attachmentIDs.push(attachID);
+                },
+                removeAttachment: function(attachID) {
+                    var idx = attachmentIDs.indexOf(attachID);
+                    if (idx > -1) {
+                        attachmentIDs.splice(idx, 1);
+                    }
+                },
+                getAttachments: function() {
+                    return attachmentIDs.slice();
                 },
                 addObserver: observable.addObserver,
                 observeOnce: observable.observeOnce,

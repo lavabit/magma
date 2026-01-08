@@ -1,0 +1,477 @@
+/**
+ * Magma Folder Management Styles
+ *
+ * Enhanced styles for folder list, edit mode, and sortable reordering.
+ */
+
+/* ==========================================================================
+   Folder List Base Styles
+   ========================================================================== */
+
+.folder-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.folder-list li {
+    position: relative;
+}
+
+.folder-list .folder {
+    display: block;
+    padding: 8px 12px;
+    color: #333;
+    text-decoration: none;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.15s ease, padding-left 0.15s ease;
+}
+
+.folder-list .folder:hover {
+    background-color: #f5f5f5;
+}
+
+.folder-list .folder.permanent {
+    font-weight: 500;
+}
+
+.folder-list li.open > .folder,
+.folder-list .folder.open {
+    background-color: #e8f0fe;
+    border-left: 3px solid #1a73e8;
+    padding-left: 9px;
+}
+
+/* ==========================================================================
+   Subfolder Styles
+   ========================================================================== */
+
+.folder-list .collapsed {
+    display: none;
+}
+
+.folder-list .expandable > .expander {
+    display: inline-block;
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 20px;
+    height: 20px;
+    text-indent: -9999px;
+    cursor: pointer;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>') center no-repeat;
+    background-size: 16px;
+    transition: transform 0.2s ease;
+}
+
+.folder-list .expandable > .expander.expand {
+    transform: rotate(90deg);
+}
+
+.folder-list .expandable > .folder {
+    padding-left: 24px;
+}
+
+/* Nested subfolders */
+.folder-list [id^="subfolders-"] {
+    margin-left: 16px;
+}
+
+.folder-list [id^="subfolders-"] .folder {
+    padding-left: 12px;
+    font-size: 0.95em;
+}
+
+/* ==========================================================================
+   Edit Mode Styles
+   ========================================================================== */
+
+.folder-edit-mode .folder-scroll-wrapper {
+    background-color: #fafafa;
+}
+
+.folder-list.editing .toggle {
+    padding-right: 60px;
+}
+
+.folder-list .edit {
+    display: none;
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.folder-list.editing .edit {
+    display: block;
+}
+
+.folder-list .edit a {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-left: 4px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.folder-list .edit .rename {
+    color: #1a73e8;
+}
+
+.folder-list .edit .rename:hover {
+    background-color: #e8f0fe;
+}
+
+.folder-list .edit .remove {
+    color: #d93025;
+}
+
+.folder-list .edit .remove:hover {
+    background-color: #fce8e6;
+}
+
+/* Edit instructions */
+.edit-instructions {
+    padding: 8px 12px;
+    background-color: #e8f0fe;
+    color: #1a73e8;
+    font-size: 12px;
+    border-bottom: 1px solid #c2d7f9;
+}
+
+/* ==========================================================================
+   Rename Form Styles
+   ========================================================================== */
+
+.folder-list .renaming {
+    background-color: #fff8e1;
+}
+
+.folder-list .rename-folder {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+}
+
+.folder-list .rename-folder input[type="text"] {
+    flex: 1;
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.folder-list .rename-folder input[type="text"]:focus {
+    outline: none;
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+}
+
+.folder-list .rename-folder input[type="submit"] {
+    margin-left: 8px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    background-color: #1a73e8;
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.folder-list .rename-folder input[type="submit"]:hover {
+    background-color: #1557b0;
+}
+
+/* ==========================================================================
+   Add Folder Form Styles
+   ========================================================================== */
+
+.add-folder-box {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: #f0f7ff;
+    border-bottom: 1px solid #c2d7f9;
+}
+
+.add-folder-box label {
+    margin-right: 8px;
+    font-size: 13px;
+    color: #555;
+}
+
+.add-folder-box input[type="text"] {
+    flex: 1;
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.add-folder-box input[type="text"]:focus {
+    outline: none;
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+}
+
+.add-folder-box input[type="submit"],
+.add-folder-box .simple-button {
+    margin-left: 8px;
+    padding: 6px 16px;
+    border: none;
+    border-radius: 4px;
+    background-color: #1a73e8;
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.add-folder-box input[type="submit"]:hover,
+.add-folder-box .simple-button:hover {
+    background-color: #1557b0;
+}
+
+/* ==========================================================================
+   Sortable/Drag Styles
+   ========================================================================== */
+
+.folder-list.editing .toggle > .folder {
+    cursor: move;
+}
+
+.folder-list .toggle.sorting {
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background-color: #fff;
+}
+
+.folder-list .toggle.sorting > .folder {
+    background-color: #e8f0fe;
+}
+
+/* Sortable placeholder */
+.folder-sort-placeholder {
+    background-color: #c2d7f9;
+    border: 2px dashed #1a73e8;
+    border-radius: 4px;
+    margin: 2px 0;
+    visibility: visible !important;
+}
+
+/* Drag hover state */
+.folder-list .toggle.hover > .folder {
+    background-color: #e8f0fe;
+    border-left: 3px solid #1a73e8;
+}
+
+/* Draggable helper */
+.folder-list .ui-draggable-dragging {
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background-color: #fff;
+    opacity: 0.9;
+}
+
+/* ==========================================================================
+   Folder Options Bar
+   ========================================================================== */
+
+.folder-options {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.folder-options input[type="checkbox"] {
+    display: none;
+}
+
+.folder-options label {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    margin-right: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    background-color: #fff;
+    transition: all 0.15s ease;
+}
+
+.folder-options label:hover {
+    background-color: #f5f5f5;
+    border-color: #bbb;
+}
+
+.folder-options input:checked + label,
+.folder-options label.ui-state-active {
+    background-color: #e8f0fe;
+    border-color: #1a73e8;
+    color: #1a73e8;
+}
+
+/* Icons in options buttons */
+.folder-options label::before {
+    margin-right: 6px;
+    font-size: 14px;
+}
+
+.folder-options .add + label::before {
+    content: '+';
+    font-weight: bold;
+    color: #1a73e8;
+}
+
+.folder-options .edit + label::after {
+    content: '✎';
+    margin-left: 6px;
+}
+
+/* ==========================================================================
+   Permanent Folder Icons
+   ========================================================================== */
+
+.folder-list .inbox::before,
+.folder-list .drafts::before,
+.folder-list .sent::before,
+.folder-list .junk::before,
+.folder-list .trash::before {
+    display: inline-block;
+    width: 16px;
+    margin-right: 8px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.folder-list .inbox::before {
+    content: '📥';
+}
+
+.folder-list .drafts::before {
+    content: '📝';
+}
+
+.folder-list .sent::before {
+    content: '📤';
+}
+
+.folder-list .junk::before {
+    content: '⚠️';
+}
+
+.folder-list .trash::before {
+    content: '🗑️';
+}
+
+/* ==========================================================================
+   Confirmation Dialog Overlay
+   ========================================================================== */
+
+.folder-confirm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.folder-confirm-dialog {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    padding: 24px;
+    max-width: 400px;
+    width: 90%;
+}
+
+.folder-confirm-dialog h3 {
+    margin: 0 0 16px;
+    font-size: 18px;
+    color: #333;
+}
+
+.folder-confirm-dialog p {
+    margin: 0 0 24px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.folder-confirm-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.folder-confirm-buttons button {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.folder-confirm-buttons .cancel {
+    background-color: #f1f3f4;
+    color: #333;
+}
+
+.folder-confirm-buttons .cancel:hover {
+    background-color: #e8eaed;
+}
+
+.folder-confirm-buttons .confirm {
+    background-color: #d93025;
+    color: #fff;
+}
+
+.folder-confirm-buttons .confirm:hover {
+    background-color: #b3261e;
+}
+
+/* ==========================================================================
+   Responsive Adjustments
+   ========================================================================== */
+
+@media (max-width: 600px) {
+    .folder-options {
+        flex-wrap: wrap;
+    }
+
+    .folder-options label {
+        flex: 1;
+        justify-content: center;
+        margin-bottom: 4px;
+    }
+
+    .add-folder-box {
+        flex-wrap: wrap;
+    }
+
+    .add-folder-box label {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+
+    .add-folder-box input[type="text"] {
+        width: 100%;
+    }
+
+    .add-folder-box input[type="submit"] {
+        margin-top: 8px;
+        width: 100%;
+        margin-left: 0;
+    }
+}

@@ -19,6 +19,9 @@ magma.session = (function() {
         },
         get: function() {
             return sid;
+        },
+        clear: function() {
+            sid = undefined;
         }
     };
 }());
@@ -71,6 +74,42 @@ magma.dialog = {
             buttons: {
                 "Ok": function() {
                     $(this).dialog("close");
+                }
+            },
+            close: function() {
+                $(this).remove();
+            }
+        });
+    },
+
+    /**
+     * Confirmation dialog with callback
+     * @param {string} message - The confirmation message
+     * @param {Function} onConfirm - Callback when confirmed
+     * @param {Function} onCancel - Callback when cancelled (optional)
+     */
+    confirm: function(message, onConfirm, onCancel) {
+        var confirm_box = $('<div id="confirm-dialog"></div>');
+        var paragraph = $('<p></p>').text(message);
+        confirm_box.append(paragraph).appendTo('body').hide();
+
+        confirm_box.dialog({
+            resizable: false,
+            draggable: false,
+            modal: true,
+            title: "Confirm",
+            buttons: {
+                "Cancel": function() {
+                    $(this).dialog("close");
+                    if (typeof onCancel === 'function') {
+                        onCancel();
+                    }
+                },
+                "Confirm": function() {
+                    $(this).dialog("close");
+                    if (typeof onConfirm === 'function') {
+                        onConfirm();
+                    }
                 }
             },
             close: function() {

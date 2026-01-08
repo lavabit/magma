@@ -9,7 +9,8 @@
 var magma = magma || {};
 
 magma.animationSpeed = "fast";
-magma.portalUrl = false ? '/portal/camel' : '/portal/mockiface';
+// Use real portal endpoint by default. Set window.MAGMA_USE_MOCK = true before loading to use mock interface.
+magma.portalUrl = (typeof window.MAGMA_USE_MOCK !== 'undefined' && window.MAGMA_USE_MOCK) ? '/portal/mockiface' : '/portal/camel';
 
 // TODO: better way to get table header height
 // 27px + 1px border

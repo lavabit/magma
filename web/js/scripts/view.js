@@ -338,6 +338,114 @@ magma.view = (function() {
                 }
             });
 
+            // format file size for display
+            var formatFileSize = function(bytes) {
+                if(bytes < 1024) {
+                    return bytes + ' B';
+                } else if(bytes < 1024 * 1024) {
+                    return Math.round(bytes / 1024) + ' KB';
+                } else {
+                    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+                }
+            };
+
+            // create attachment UI element
+            var createAttachmentElement = function(file, attachmentID) {
+                var el = $('<div class="attachment uploading" data-attachment-id="' + attachmentID + '">' +
+                    '<p class="filename">' + $('<div>').text(file.name).html() + '</p>' +
+                    '<p class="size">' + formatFileSize(file.size) + '</p>' +
+                    '<div class="progress"><div class="progress-bar" style="width: 0%"></div></div>' +
+                    '<a href="#delete" class="delete">Delete</a>' +
+                    '</div>');
+                return el;
+            };
+
+            // upload a single file
+            var uploadFile = function(file) {
+                var composeID = composeModel.getComposeID(),
+                    attachmentList = attachments.find('.attachment-list');
+
+                // first call attachments.add to get an attachmentID
+                getData('attachments.add', {composeID: composeID, filename: file.name}, {
+                    success: function(data) {
+                        var attachmentID = data.attachmentID,
+                            attachmentEl = createAttachmentElement(file, attachmentID);
+
+                        attachmentList.append(attachmentEl);
+
+                        // upload the file using XHR for progress tracking
+                        var xhr = new XMLHttpRequest(),
+                            formData = new FormData();
+
+                        formData.append('file', file);
+
+                        xhr.upload.addEventListener('progress', function(e) {
+                            if(e.lengthComputable) {
+                                var percent = Math.round((e.loaded / e.total) * 100);
+                                attachmentEl.find('.progress-bar').css('width', percent + '%');
+                            }
+                        });
+
+                        xhr.addEventListener('load', function() {
+                            if(xhr.status === 200) {
+                                // upload complete
+                                attachmentEl.removeClass('uploading').addClass('complete');
+                                attachmentEl.find('.progress').remove();
+                                composeModel.addAttachment(attachmentID);
+                            } else {
+                                // upload failed
+                                attachmentEl.removeClass('uploading').addClass('error');
+                                attachmentEl.find('.progress').html('<span class="error-text">Upload failed</span>');
+                            }
+                        });
+
+                        xhr.addEventListener('error', function() {
+                            attachmentEl.removeClass('uploading').addClass('error');
+                            attachmentEl.find('.progress').html('<span class="error-text">Upload failed</span>');
+                        });
+
+                        // upload to the attachment endpoint
+                        var uploadUrl = magma.portalUrl + '/attach/' + composeID + '/' + attachmentID;
+                        xhr.open('POST', uploadUrl, true);
+                        xhr.send(formData);
+                    },
+                    error: function() {
+                        magma.dialog.message('Failed to add attachment. Please try again.');
+                    }
+                });
+            };
+
+            // handle file selection
+            attachments.find('input[type="file"]').on('change', function() {
+                var files = this.files;
+                for(var i = 0; i < files.length; i++) {
+                    uploadFile(files[i]);
+                }
+                // reset input so same file can be selected again
+                $(this).val('');
+            });
+
+            // handle attachment delete
+            attachments.on('click', '.delete', function(e) {
+                e.preventDefault();
+                var attachmentEl = $(this).closest('.attachment'),
+                    attachmentID = parseInt(attachmentEl.data('attachment-id'), 10),
+                    composeID = composeModel.getComposeID();
+
+                // call remove API
+                getData('attachments.remove', {composeID: composeID, attachmentID: attachmentID}, {
+                    success: function() {
+                        composeModel.removeAttachment(attachmentID);
+                        attachmentEl.slideUp(function() {
+                            $(this).remove();
+                        });
+                    },
+                    error: function() {
+                        magma.dialog.message('Failed to remove attachment.');
+                    }
+                });
+            });
+
             // handle send button click
             toolsModel.addObserver('sendClicked', function() {
                 // check for unfinished attachments

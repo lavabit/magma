@@ -12,7 +12,7 @@ magma.blocks = {
 'chromeAlert': '<li><a class="alert" href="#alert">Alert</a></li>',
 'chromeMeta': '<li><a class="meta" href="#info">Information</a></li>',
 'composing': '<div class="composing-wrapper"><form name="composing" method="POST" action="#send"><div class="composing-header"><div class="field-wrapper"><div class="input-wrapper"><div class="input"><select id="from" name="from"></select></div></div><div class="label-wrapper"><label for="from">From:</label></div></div><div class="field-wrapper"><div class="input-wrapper"><div class="input text"><input type="text" id="to" name="to" /></div></div><div class="label-wrapper"><label for="to">To:</label></div></div><div class="field-wrapper"><div class="input-wrapper"><div class="input text"><input type="text" id="subject" name="subject" /></div></div><div class="label-wrapper"><label for="subject">Subject:</label></div></div></div><div class="composing-body"><label class="sr-hidden watermark" for="body">Type your message here...</label><textarea id="body" name="body"></textarea></div></form></div>',
-'composingAttachments': '<div class="composing-attachments"><span class="file-wrapper"><input type="file" name="attachment" /><span class="browse">Browse</span></span><div><p>file1.ext</p><p class="size">20K</p><a href="#delete" class="delete">Delete</a></div><div><p>file2.ext</p><p class="size">40K</p><a href="#delete" class="delete">Delete</a></div></div>',
+'composingAttachments': '<div class="composing-attachments"><span class="file-wrapper"><input type="file" name="attachment" multiple /><span class="browse">Browse</span></span><div class="attachment-list"></div></div>',
 'composingBCC': '<div class="field-wrapper"><div class="input-wrapper"><div class="input text"><input type="text" id="bcc" name="bcc" /></div></div><div class="label-wrapper"><label for="bcc">BCC:</label></div></div>',
 'composingCC': '<div class="field-wrapper"><div class="input-wrapper"><div class="input text"><input type="text" id="cc" name="cc" /></div></div><div class="label-wrapper"><label for="cc">CC:</label></div></div>',
 'contactAddField': '<div class="add-field"><form action="#new-field"><label class="sr-hidden" for="contact-info-field-select">Field Select</label><select id="contact-info-field-select"><optgroup label="Email"><option value="alternate-1">Alternate 1</option><option value="alternate-2">Alternate 2</option></optgroup><optgroup label="Messaging"><option value="yahoo">Yahoo</option><option value="windows-live">Windows Live</option><option value="aol-aim">AOL/AIM</option><option value="google">Google</option><option value="ICQ">ICQ</option></optgroup><optgroup label="Contact"><option value="home">Home</option><option value="work">Work</option><option value="mobile">Mobile</option><option value="pager">Pager</option><option value="fax">Fax</option><option value="home-address">Home Address</option><option value="work-address">Work Address</option></optgroup></select><label class="sr-hidden" for="contacts-new-field">New Field</label><input id="contacts-new-field" type="text" /><input type="submit" value="Add" /></form></div>',
@@ -551,7 +551,8 @@ magma.ckeditor = function(textareaID) {
 var magma = magma || {};
 
 magma.animationSpeed = "fast";
-magma.portalUrl = false ? '/portal/camel' : '/portal/mockiface';
+// Use real portal endpoint by default. Set window.MAGMA_USE_MOCK = true before loading to use mock interface.
+magma.portalUrl = (typeof window.MAGMA_USE_MOCK !== 'undefined' && window.MAGMA_USE_MOCK) ? '/portal/mockiface' : '/portal/camel';
 
 // TODO: better way to get table header height
 // 27px + 1px border
@@ -3864,6 +3865,114 @@ magma.view = (function() {
                 } else {
                     attachments.insertAfter(container.find('.composing-header')).slideDown();
                 }
+            });
+
+            // format file size for display
+            var formatFileSize = function(bytes) {
+                if(bytes < 1024) {
+                    return bytes + ' B';
+                } else if(bytes < 1024 * 1024) {
+                    return Math.round(bytes / 1024) + ' KB';
+                } else {
+                    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+                }
+            };
+
+            // create attachment UI element
+            var createAttachmentElement = function(file, attachmentID) {
+                var el = $('<div class="attachment uploading" data-attachment-id="' + attachmentID + '">' +
+                    '<p class="filename">' + $('<div>').text(file.name).html() + '</p>' +
+                    '<p class="size">' + formatFileSize(file.size) + '</p>' +
+                    '<div class="progress"><div class="progress-bar" style="width: 0%"></div></div>' +
+                    '<a href="#delete" class="delete">Delete</a>' +
+                    '</div>');
+                return el;
+            };
+
+            // upload a single file
+            var uploadFile = function(file) {
+                var composeID = composeModel.getComposeID(),
+                    attachmentList = attachments.find('.attachment-list');
+
+                // first call attachments.add to get an attachmentID
+                getData('attachments.add', {composeID: composeID, filename: file.name}, {
+                    success: function(data) {
+                        var attachmentID = data.attachmentID,
+                            attachmentEl = createAttachmentElement(file, attachmentID);
+
+                        attachmentList.append(attachmentEl);
+
+                        // upload the file using XHR for progress tracking
+                        var xhr = new XMLHttpRequest(),
+                            formData = new FormData();
+
+                        formData.append('file', file);
+
+                        xhr.upload.addEventListener('progress', function(e) {
+                            if(e.lengthComputable) {
+                                var percent = Math.round((e.loaded / e.total) * 100);
+                                attachmentEl.find('.progress-bar').css('width', percent + '%');
+                            }
+                        });
+
+                        xhr.addEventListener('load', function() {
+                            if(xhr.status === 200) {
+                                // upload complete
+                                attachmentEl.removeClass('uploading').addClass('complete');
+                                attachmentEl.find('.progress').remove();
+                                composeModel.addAttachment(attachmentID);
+                            } else {
+                                // upload failed
+                                attachmentEl.removeClass('uploading').addClass('error');
+                                attachmentEl.find('.progress').html('<span class="error-text">Upload failed</span>');
+                            }
+                        });
+
+                        xhr.addEventListener('error', function() {
+                            attachmentEl.removeClass('uploading').addClass('error');
+                            attachmentEl.find('.progress').html('<span class="error-text">Upload failed</span>');
+                        });
+
+                        // upload to the attachment endpoint
+                        var uploadUrl = magma.portalUrl + '/attach/' + composeID + '/' + attachmentID;
+                        xhr.open('POST', uploadUrl, true);
+                        xhr.send(formData);
+                    },
+                    error: function() {
+                        magma.dialog.message('Failed to add attachment. Please try again.');
+                    }
+                });
+            };
+
+            // handle file selection
+            attachments.find('input[type="file"]').on('change', function() {
+                var files = this.files;
+                for(var i = 0; i < files.length; i++) {
+                    uploadFile(files[i]);
+                }
+                // reset input so same file can be selected again
+                $(this).val('');
+            });
+
+            // handle attachment delete
+            attachments.on('click', '.delete', function(e) {
+                e.preventDefault();
+                var attachmentEl = $(this).closest('.attachment'),
+                    attachmentID = parseInt(attachmentEl.data('attachment-id'), 10),
+                    composeID = composeModel.getComposeID();
+
+                // call remove API
+                getData('attachments.remove', {composeID: composeID, attachmentID: attachmentID}, {
+                    success: function() {
+                        composeModel.removeAttachment(attachmentID);
+                        attachmentEl.slideUp(function() {
+                            $(this).remove();
+                        });
+                    },
+                    error: function() {
+                        magma.dialog.message('Failed to remove attachment.');
+                    }
+                });
             });
 
             // handle send button click

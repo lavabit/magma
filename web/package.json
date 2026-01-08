@@ -1,0 +1,20 @@
+{
+  "name": "magma-webmail-frontend",
+  "version": "1.0.0",
+  "description": "Magma Webmail Frontend Build Tools",
+  "private": true,
+  "scripts": {
+    "build": "node build/build.js",
+    "build:prod": "node build/build.js --production",
+    "lint": "eslint js/scripts/*.js",
+    "clean": "rm -rf ../res/pages/webmail/js/*.js ../res/pages/webmail/js/*.map"
+  },
+  "devDependencies": {
+    "terser": "^5.24.0",
+    "eslint": "^8.56.0",
+    "glob": "^10.3.10"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

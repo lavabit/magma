@@ -25,8 +25,17 @@ magma.session = (function() {
 
 // dialog helpers
 magma.dialog = {
+    // SECURITY FIX (V-002): Use jQuery's text() method to safely escape HTML entities
+    // in dialog messages. This prevents XSS attacks through error messages
+    // that might contain user-controlled or server-supplied content.
+    // Previously, messages were concatenated directly into HTML which allowed
+    // script injection via payloads like <script>alert(1)</script>
     message: function(message) {
-        var message_box = $('<div id="message-box"><p>' + message + '</p></div>').appendTo('body').hide();
+        // Create elements separately and use .text() to safely set content
+        // jQuery's .text() automatically escapes HTML entities like < > & "
+        var message_box = $('<div id="message-box"></div>');
+        var paragraph = $('<p></p>').text(message);  // Safe: escapes HTML
+        message_box.append(paragraph).appendTo('body').hide();
 
         message_box.dialog({
             resizable: false,
@@ -44,8 +53,13 @@ magma.dialog = {
         });
     },
 
+    // SECURITY FIX (V-002): Same fix applied to error dialogs.
+    // Error messages from server responses could contain malicious content.
     die: function(message, type) {
-        var error_box = $('<div id="error-message"><p>' + message + '</p></div>').appendTo('body').hide();
+        // Create elements separately and use .text() to safely set content
+        var error_box = $('<div id="error-message"></div>');
+        var paragraph = $('<p></p>').text(message);  // Safe: escapes HTML
+        error_box.append(paragraph).appendTo('body').hide();
 
         type = type || "error";
 

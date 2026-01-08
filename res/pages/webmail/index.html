@@ -3,6 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <title>Lavabit ..::.. Webmail</title>
+
+    <!-- Security: Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: https:;
+        font-src 'self';
+        connect-src 'self';
+        frame-src 'none';
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+    ">
+
+    <!-- Security: Additional headers via meta tags -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <!-- Security: CSRF token placeholder (server should populate this) -->
+    <meta name="csrf-token" content="">
+
     <link rel="stylesheet" href="css/jquery-ui-smoothness.css" />
     <link rel="stylesheet" href="css/style.css" />
     <script src="js/jquery.js"></script>

@@ -77,6 +77,25 @@ magma.model = (function() {
     var getData = (function() {
         var ID = 0;
 
+        // SECURITY FIX (V-010): Add CSRF token support to prevent Cross-Site Request Forgery.
+        // CSRF attacks occur when a malicious website submits requests to this application
+        // on behalf of an authenticated user. The attacker tricks the user's browser into
+        // making requests that the user did not intend to make.
+        // Example attack: User is logged into webmail, visits malicious site which contains:
+        //   <form action="webmail/delete-all" method="POST"><input type="submit"></form>
+        // Without CSRF protection, clicking submit would delete all emails.
+        var getCSRFToken = function() {
+            // Look for CSRF token in meta tag (should be set by server in page HTML)
+            // Example: <meta name="csrf-token" content="abc123xyz">
+            var tokenMeta = document.querySelector('meta[name="csrf-token"]');
+            if (tokenMeta) {
+                return tokenMeta.getAttribute('content');
+            }
+            // Fallback: Look for token in cookie (some frameworks use this approach)
+            var match = document.cookie.match(/(?:^|;\s*)csrf[_-]?token=([^;]+)/i);
+            return match ? decodeURIComponent(match[1]) : '';
+        };
+
         return function(method, params, callbacks) {
             ID += 1;
 
@@ -91,6 +110,16 @@ magma.model = (function() {
                 cache: false,
                 processDate: false,
                 data: JSON.stringify(data),
+                // SECURITY FIX (V-010 & V-011): Add security headers to AJAX requests.
+                // - X-CSRF-Token: Prevents Cross-Site Request Forgery attacks
+                // - X-Requested-With: Helps server identify AJAX requests (provides CSRF protection
+                //   on servers that verify this header, as it cannot be set cross-origin without CORS)
+                // Note: The server MUST validate the X-CSRF-Token header on all state-changing requests.
+                // If token validation fails, the request should be rejected with 403 Forbidden.
+                headers: {
+                    'X-CSRF-Token': getCSRFToken(),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 success: function(data) {
                     if(data.result) {
                         if(callbacks.success) {

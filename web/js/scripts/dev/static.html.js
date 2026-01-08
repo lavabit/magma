@@ -307,8 +307,16 @@ $(document).ready(function() {
                             if(stub.indexOf('(') > 0) {
                                 template = stub.substr(0,stub.indexOf('('));
                                 options = stub.substring(stub.indexOf('(') + 1, stub.indexOf(')')) || '{}';
-                                // eval JSON - never do in production!!!
-                                options = eval('(' + options + ')');
+                                // SECURITY FIX (V-007): Replace eval() with JSON.parse() to safely parse JSON.
+                                // eval() can execute arbitrary code which is a Remote Code Execution (RCE) risk.
+                                // JSON.parse() only parses data structures and does not execute code.
+                                // Note: This file is in dev/ but should still follow secure practices.
+                                try {
+                                    options = JSON.parse(options);
+                                } catch (e) {
+                                    console.error('Security: Invalid JSON in template options:', e);
+                                    options = {};
+                                }
                             } else {
                                 template = stub;
                                 options = {};
@@ -417,7 +425,14 @@ $(document).ready(function() {
 
                         if(method) {
                             params = stub[1].substring(stub[1].indexOf('(') + 1, stub[1].indexOf(')')) || '{}';
-                            params = eval('(' + params + ')');
+                            // SECURITY FIX (V-007): Replace eval() with JSON.parse() to safely parse JSON.
+                            // eval() is dangerous as it executes arbitrary code.
+                            try {
+                                params = JSON.parse(params);
+                            } catch (e) {
+                                console.error('Security: Invalid JSON in method params:', e);
+                                params = {};
+                            }
                             keys = stub[1].substr(stub[1].indexOf(')') + 1, stub[1].length).split('.');
 
                             get_destination(stub[2]);

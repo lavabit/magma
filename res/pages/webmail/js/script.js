@@ -698,6 +698,16 @@ magma.model = (function() {
     var getData = (function() {
         var ID = 0;
 
+        // SECURITY FIX: CSRF token support
+        var getCSRFToken = function() {
+            var tokenMeta = document.querySelector('meta[name="csrf-token"]');
+            if (tokenMeta) {
+                return tokenMeta.getAttribute('content');
+            }
+            var match = document.cookie.match(/(?:^|;\s*)csrf[_-]?token=([^;]+)/i);
+            return match ? decodeURIComponent(match[1]) : '';
+        };
+
         return function(method, params, callbacks) {
             ID += 1;
 
@@ -712,6 +722,11 @@ magma.model = (function() {
                 cache: false,
                 processDate: false,
                 data: JSON.stringify(data),
+                // SECURITY FIX: Add CSRF and XHR headers
+                headers: {
+                    'X-CSRF-Token': getCSRFToken(),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 success: function(data) {
                     if(data.result) {
                         if(callbacks.success) {
@@ -3450,8 +3465,11 @@ magma.session = (function() {
 
 // dialog helpers
 magma.dialog = {
+    // SECURITY FIX: Use jQuery's text() to safely escape HTML entities
     message: function(message) {
-        var message_box = $('<div id="message-box"><p>' + message + '</p></div>').appendTo('body').hide();
+        var message_box = $('<div id="message-box"></div>');
+        var paragraph = $('<p></p>').text(message);
+        message_box.append(paragraph).appendTo('body').hide();
 
         message_box.dialog({
             resizable: false,
@@ -3469,8 +3487,11 @@ magma.dialog = {
         });
     },
 
+    // SECURITY FIX: Use jQuery's text() to safely escape HTML entities
     die: function(message, type) {
-        var error_box = $('<div id="error-message"><p>' + message + '</p></div>').appendTo('body').hide();
+        var error_box = $('<div id="error-message"></div>');
+        var paragraph = $('<p></p>').text(message);
+        error_box.append(paragraph).appendTo('body').hide();
 
         type = type || "error";
 

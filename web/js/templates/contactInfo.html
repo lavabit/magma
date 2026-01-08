@@ -59,7 +59,11 @@
         {{/if}}
         {{if contact.address}}
             <dt>Address</dt>
-            <dd class="address">{{html contact.address}}</dd>
+            <!-- SECURITY FIX (V-005): Use ${} instead of {{html}} to HTML-encode the address.
+                 {{html}} renders content as raw HTML which can execute malicious scripts.
+                 ${} safely escapes HTML entities like < > & " preventing XSS attacks.
+                 If multi-line formatting is needed, use CSS white-space: pre-line -->
+            <dd class="address" style="white-space: pre-line;">${contact.address}</dd>
         {{/if}}
     </dl>
 {{/if}}

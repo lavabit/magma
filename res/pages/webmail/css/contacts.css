@@ -1,0 +1,590 @@
+/**
+ * Magma Contacts Manager Styles
+ *
+ * Styles for contact forms, views, dialogs, selection,
+ * and sort controls.
+ */
+
+/* ==========================================================================
+   Contact Panel
+   ========================================================================== */
+
+.mgm-contact-panel {
+    padding: 16px;
+    background-color: #fff;
+}
+
+/* ==========================================================================
+   Contact Form
+   ========================================================================== */
+
+.mgm-contact-form {
+    max-width: 600px;
+}
+
+.mgm-contact-form-header {
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.mgm-contact-form-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.mgm-contact-form-body {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ==========================================================================
+   Form Sections
+   ========================================================================== */
+
+.mgm-contact-section {
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.mgm-contact-section:last-of-type {
+    border-bottom: none;
+}
+
+.mgm-contact-section h4 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.mgm-contact-section-collapsible h4 {
+    cursor: pointer;
+    user-select: none;
+}
+
+.mgm-contact-section-collapsible h4:hover {
+    color: #1a73e8;
+}
+
+.mgm-contact-section-toggle .toggle-icon {
+    display: inline-block;
+    width: 16px;
+    margin-left: 4px;
+    font-weight: normal;
+}
+
+.mgm-contact-section-content {
+    padding-top: 8px;
+}
+
+/* ==========================================================================
+   Form Fields
+   ========================================================================== */
+
+.mgm-contact-field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+}
+
+.mgm-contact-field label {
+    margin-bottom: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+}
+
+.mgm-contact-field label .required {
+    color: #d93025;
+    margin-left: 4px;
+}
+
+.mgm-contact-field input,
+.mgm-contact-field textarea {
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mgm-contact-field input:focus,
+.mgm-contact-field textarea:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    outline: none;
+}
+
+.mgm-contact-field input::placeholder,
+.mgm-contact-field textarea::placeholder {
+    color: #999;
+}
+
+.mgm-contact-field textarea {
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.5;
+}
+
+.mgm-contact-field.has-error input,
+.mgm-contact-field.has-error textarea {
+    border-color: #d93025;
+    background-color: #fef7f7;
+}
+
+.mgm-contact-error {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #d93025;
+    min-height: 16px;
+}
+
+/* ==========================================================================
+   Form Actions
+   ========================================================================== */
+
+.mgm-contact-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.mgm-contact-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.mgm-contact-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.mgm-contact-btn-save,
+.mgm-contact-btn-primary {
+    color: #fff;
+    background-color: #1a73e8;
+    border: 1px solid #1a73e8;
+}
+
+.mgm-contact-btn-save:hover:not(:disabled),
+.mgm-contact-btn-primary:hover:not(:disabled) {
+    background-color: #1557b0;
+    border-color: #1557b0;
+}
+
+.mgm-contact-btn-cancel {
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ccc;
+}
+
+.mgm-contact-btn-cancel:hover:not(:disabled) {
+    background-color: #f5f5f5;
+    border-color: #999;
+}
+
+/* ==========================================================================
+   Contact View (Read-only)
+   ========================================================================== */
+
+.mgm-contact-view {
+    max-width: 500px;
+}
+
+.mgm-contact-view-header {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.mgm-contact-name {
+    margin: 0 0 4px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+}
+
+.mgm-contact-company,
+.mgm-contact-title {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.mgm-contact-view-section {
+    margin-bottom: 16px;
+}
+
+.mgm-contact-view-section h4 {
+    margin: 0 0 8px 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.mgm-contact-view-section dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 4px 12px;
+}
+
+.mgm-contact-view-section dt {
+    font-size: 13px;
+    color: #666;
+}
+
+.mgm-contact-view-section dd {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.mgm-contact-view-section dd a {
+    color: #1a73e8;
+    text-decoration: none;
+}
+
+.mgm-contact-view-section dd a:hover {
+    text-decoration: underline;
+}
+
+.mgm-contact-address,
+.mgm-contact-notes {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+    line-height: 1.5;
+    white-space: pre-line;
+}
+
+/* ==========================================================================
+   Move/Copy Dialog
+   ========================================================================== */
+
+.mgm-contact-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.mgm-contact-dialog {
+    width: 400px;
+    max-width: 90vw;
+    max-height: 80vh;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+}
+
+.mgm-contact-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.mgm-contact-dialog-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.mgm-contact-dialog-close {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    font-size: 20px;
+    color: #666;
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.15s ease;
+}
+
+.mgm-contact-dialog-close:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.mgm-contact-dialog-body {
+    flex: 1;
+    padding: 16px 20px;
+    overflow-y: auto;
+}
+
+.mgm-contact-dialog-body p {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.mgm-contact-folder-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.mgm-contact-folder-list li {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.15s ease;
+}
+
+.mgm-contact-folder-list li:hover {
+    background-color: #f5f5f5;
+}
+
+.mgm-contact-folder-list li.selected {
+    background-color: #e8f0fe;
+    color: #1a73e8;
+}
+
+.mgm-contact-folder-list .folder-icon {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.mgm-contact-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 20px;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* ==========================================================================
+   Selection Styles
+   ========================================================================== */
+
+.contacts-wrapper tr.selected {
+    background-color: #e8f0fe !important;
+}
+
+.contacts-wrapper tr.selected td {
+    background-color: #e8f0fe !important;
+}
+
+.contacts-wrapper tr:hover {
+    background-color: #f5f5f5;
+}
+
+.contacts-wrapper tr.selected:hover {
+    background-color: #d4e4fc !important;
+}
+
+/* ==========================================================================
+   Sort Controls
+   ========================================================================== */
+
+.mgm-contact-sort-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.mgm-contact-sort-controls .sort-label {
+    font-size: 13px;
+    color: #666;
+}
+
+.mgm-contact-sort-field {
+    padding: 4px 24px 4px 8px;
+    font-size: 13px;
+    color: #333;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    cursor: pointer;
+}
+
+.mgm-contact-sort-field:focus {
+    border-color: #1a73e8;
+    outline: none;
+}
+
+.mgm-contact-sort-direction {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    font-size: 10px;
+    color: #666;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.mgm-contact-sort-direction:hover {
+    background-color: #f0f0f0;
+    border-color: #999;
+}
+
+.mgm-contact-sort-direction:focus {
+    border-color: #1a73e8;
+    outline: none;
+}
+
+/* ==========================================================================
+   Contact List Enhancements
+   ========================================================================== */
+
+.contacts-wrapper .dataTables_wrapper.info {
+    display: flex;
+}
+
+.contacts-wrapper .dataTables_wrapper.info .dataTables_scroll {
+    flex: 1;
+}
+
+.contacts-wrapper .column-wrapper {
+    width: 300px;
+    flex-shrink: 0;
+    border-left: 1px solid #e0e0e0;
+    overflow-y: auto;
+}
+
+.contacts-wrapper .contact-info {
+    padding: 16px;
+}
+
+.contacts-wrapper .contact-info .close {
+    float: right;
+    font-size: 12px;
+    color: #666;
+    text-decoration: none;
+}
+
+.contacts-wrapper .contact-info .close:hover {
+    color: #333;
+    text-decoration: underline;
+}
+
+/* ==========================================================================
+   Checkbox Controls
+   ========================================================================== */
+
+.checkbox-controls-button {
+    cursor: pointer;
+    user-select: none;
+    color: #666;
+}
+
+.checkbox-controls-button:hover {
+    color: #1a73e8;
+}
+
+.checkbox-controls {
+    position: absolute;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
+.checkbox-controls button {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    font-size: 13px;
+    color: #333;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+}
+
+.checkbox-controls button:hover {
+    background-color: #f5f5f5;
+}
+
+/* ==========================================================================
+   Responsive Adjustments
+   ========================================================================== */
+
+@media (max-width: 600px) {
+    .mgm-contact-form-actions {
+        flex-direction: column;
+    }
+
+    .mgm-contact-btn {
+        width: 100%;
+    }
+
+    .mgm-contact-view-section dl {
+        grid-template-columns: 1fr;
+    }
+
+    .mgm-contact-view-section dt {
+        margin-top: 8px;
+        font-weight: 600;
+    }
+
+    .mgm-contact-dialog {
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        border-radius: 0;
+    }
+
+    .contacts-wrapper .column-wrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        background-color: #fff;
+        z-index: 1000;
+    }
+
+    .mgm-contact-sort-controls {
+        flex-wrap: wrap;
+    }
+}

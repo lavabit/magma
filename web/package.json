@@ -7,12 +7,36 @@
     "build": "node build/build.js",
     "build:prod": "node build/build.js --production",
     "lint": "eslint js/scripts/*.js",
-    "clean": "rm -rf ../res/pages/webmail/js/*.js ../res/pages/webmail/js/*.map"
+    "clean": "rm -rf ../res/pages/webmail/js/*.js ../res/pages/webmail/js/*.map",
+    "update-libs": "node build/update-libs.js",
+    "test": "echo 'Open web/js/test/test.html in browser to run tests'"
   },
   "devDependencies": {
     "terser": "^5.24.0",
     "eslint": "^8.56.0",
     "glob": "^10.3.10"
+  },
+  "frontendDependencies": {
+    "_comment": "These are browser libraries bundled in js/plugins/, not npm packages",
+    "jquery": {
+      "current": "1.6.2pre",
+      "recommended": "3.7.1",
+      "notes": "Major version upgrade requires jQuery Migrate plugin for compatibility"
+    },
+    "jquery-ui": {
+      "current": "1.8.10",
+      "recommended": "1.13.3",
+      "notes": "Must match jQuery version compatibility"
+    },
+    "datatables": {
+      "current": "1.7.6",
+      "recommended": "1.13.8",
+      "notes": "API changes between versions, test thoroughly"
+    },
+    "jquery-tmpl": {
+      "current": "unknown",
+      "notes": "Deprecated plugin, consider migration to other templating"
+    }
   },
   "engines": {
     "node": ">=16.0.0"

@@ -1,24 +1,40 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <title>QUnit</title>
+    <title>Magma Webmail - QUnit Test Suite</title>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="qunit/qunit.css" />
 </head>
 <body>
-    <h1 id="qunit-header">QUnit Test Suite</h1>
+    <h1 id="qunit-header">Magma Webmail Test Suite</h1>
     <h2 id="qunit-banner"></h2>
     <div id="qunit-testrunner-toolbar"></div>
     <h2 id="qunit-userAgent"></h2>
     <ol id="qunit-tests"></ol>
     <div id="qunit-fixture"></div>
+
+    <!-- Core libraries -->
     <script src="/js/jquery.js"></script>
     <script src="/js/plugins.js"></script>
     <script src="/js/script.js"></script>
+
+    <!-- Test configuration -->
     <script>
         // Tests use mock interface
         magma.portalUrl = '/portal/mockiface';
+
+        // QUnit configuration
+        QUnit.config.testTimeout = 10000; // 10 second timeout for async tests
     </script>
-    <script src="/dev/js/test/qunit/qunit.js"></script>
+
+    <!-- QUnit framework -->
+    <script src="qunit/qunit.js"></script>
+
+    <!-- Test modules -->
+    <script src="modules/models/auth.js"></script>
+    <script src="modules/models/message.list.js"></script>
+    <script src="modules/models/compose.js"></script>
+    <script src="modules/models/folders.js"></script>
+    <script src="modules/security.js"></script>
 </body>
 </html>

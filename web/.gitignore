@@ -1,0 +1,19 @@
+# Node.js
+node_modules/
+package-lock.json
+
+# Build artifacts (generated, don't commit)
+# ../res/pages/webmail/js/manifest.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup files from library updates
+*.backup

@@ -1,8 +1,8 @@
 {
-  "buildTime": "2026-01-08T20:15:56.199Z",
+  "buildTime": "2026-01-08T20:22:06.538Z",
   "production": true,
   "files": {
     "plugins.js": "4ceb9ad1",
-    "script.js": "254303ca"
+    "script.js": "94f2379f"
   }
 }

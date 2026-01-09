@@ -77,6 +77,25 @@ magma.model = (function() {
     var getData = (function() {
         var ID = 0;
 
+        // SECURITY FIX (V-010): Add CSRF token support to prevent Cross-Site Request Forgery.
+        // CSRF attacks occur when a malicious website submits requests to this application
+        // on behalf of an authenticated user. The attacker tricks the user's browser into
+        // making requests that the user did not intend to make.
+        // Example attack: User is logged into webmail, visits malicious site which contains:
+        //   <form action="webmail/delete-all" method="POST"><input type="submit"></form>
+        // Without CSRF protection, clicking submit would delete all emails.
+        var getCSRFToken = function() {
+            // Look for CSRF token in meta tag (should be set by server in page HTML)
+            // Example: <meta name="csrf-token" content="abc123xyz">
+            var tokenMeta = document.querySelector('meta[name="csrf-token"]');
+            if (tokenMeta) {
+                return tokenMeta.getAttribute('content');
+            }
+            // Fallback: Look for token in cookie (some frameworks use this approach)
+            var match = document.cookie.match(/(?:^|;\s*)csrf[_-]?token=([^;]+)/i);
+            return match ? decodeURIComponent(match[1]) : '';
+        };
+
         return function(method, params, callbacks) {
             ID += 1;
 
@@ -91,6 +110,16 @@ magma.model = (function() {
                 cache: false,
                 processDate: false,
                 data: JSON.stringify(data),
+                // SECURITY FIX (V-010 & V-011): Add security headers to AJAX requests.
+                // - X-CSRF-Token: Prevents Cross-Site Request Forgery attacks
+                // - X-Requested-With: Helps server identify AJAX requests (provides CSRF protection
+                //   on servers that verify this header, as it cannot be set cross-origin without CORS)
+                // Note: The server MUST validate the X-CSRF-Token header on all state-changing requests.
+                // If token validation fails, the request should be rejected with 403 Forbidden.
+                headers: {
+                    'X-CSRF-Token': getCSRFToken(),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 success: function(data) {
                     if(data.result) {
                         if(callbacks.success) {
@@ -673,8 +702,9 @@ magma.model = (function() {
 
         /*** compose ***/
         compose: function() {
-            var observable = newObservable(listEvents(['ready']).concat(['send'])),
-                id;
+            var observable = newObservable(listEvents(['ready', 'sent', 'draftSaved']).concat(['send'])),
+                id,
+                attachmentIDs = [];
 
             // gets an id to keep track of drafts / added attachments / etc
             var compose = function() {
@@ -692,13 +722,106 @@ magma.model = (function() {
                 });
             };
 
+            // send the composed message
+            var send = function(formData) {
+                var params = {
+                    composeID: id,
+                    from: formData.from,
+                    to: formData.to,
+                    cc: formData.cc || [],
+                    bcc: formData.bcc || [],
+                    subject: formData.subject,
+                    priority: formData.priority || 'normal',
+                    attachments: attachmentIDs,
+                    body: {
+                        text: formData.bodyText,
+                        html: formData.bodyHtml
+                    }
+                };
+
+                getData('messages.send', params, {
+                    success: function(data) {
+                        observable.notifyObservers('sent', data);
+                    },
+                    error: function(error) {
+                        observable.notifyObservers('sentError', error);
+                    },
+                    failure: function() {
+                        observable.notifyObservers('sentFailed');
+                    }
+                });
+            };
+
+            // save draft locally (no server-side draft API exists)
+            var saveDraft = function(formData) {
+                try {
+                    var draftKey = 'magma_draft_' + id;
+                    var draftData = {
+                        composeID: id,
+                        from: formData.from,
+                        to: formData.to,
+                        cc: formData.cc || [],
+                        bcc: formData.bcc || [],
+                        subject: formData.subject,
+                        bodyText: formData.bodyText,
+                        bodyHtml: formData.bodyHtml,
+                        savedAt: new Date().toISOString()
+                    };
+                    localStorage.setItem(draftKey, JSON.stringify(draftData));
+                    observable.notifyObservers('draftSaved', draftData);
+                } catch(e) {
+                    // localStorage may be unavailable or full
+                    observable.notifyObservers('draftSavedError');
+                }
+            };
+
+            // load draft from local storage
+            var loadDraft = function() {
+                try {
+                    var draftKey = 'magma_draft_' + id;
+                    var draftData = localStorage.getItem(draftKey);
+                    if(draftData) {
+                        return JSON.parse(draftData);
+                    }
+                } catch(e) {
+                    // ignore errors
+                }
+                return null;
+            };
+
+            // clear draft from local storage
+            var clearDraft = function() {
+                try {
+                    var draftKey = 'magma_draft_' + id;
+                    localStorage.removeItem(draftKey);
+                } catch(e) {
+                    // ignore errors
+                }
+            };
+
             return {
                 composeMessage: compose,
+                send: send,
+                saveDraft: saveDraft,
+                loadDraft: loadDraft,
+                clearDraft: clearDraft,
                 sendMessage: function() {
                     observable.notifyObservers('send');
                 },
                 getComposeID: function() {
                     return id;
+                },
+                addAttachment: function(attachID) {
+                    attachmentIDs.push(attachID);
+                },
+                removeAttachment: function(attachID) {
+                    var idx = attachmentIDs.indexOf(attachID);
+                    if (idx > -1) {
+                        attachmentIDs.splice(idx, 1);
+                    }
+                },
+                getAttachments: function() {
+                    return attachmentIDs.slice();
                 },
                 addObserver: observable.addObserver,
                 observeOnce: observable.observeOnce,

@@ -1,0 +1,479 @@
+/**
+ * Magma Tag System Styles
+ *
+ * Styles for tags, tag lists, color picker, and tag input.
+ */
+
+/* ==========================================================================
+   Base Tag Styles
+   ========================================================================== */
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    margin: 2px 4px 2px 0;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: #333;
+    background-color: #e0e0e0;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+
+.tag-clickable {
+    cursor: pointer;
+}
+
+.tag-clickable:hover {
+    filter: brightness(0.95);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.tag-name {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Tag with color */
+.tag[style*="background-color"] {
+    border-color: transparent;
+}
+
+/* ==========================================================================
+   Tag Remove Button
+   ========================================================================== */
+
+.tag-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-left: 4px;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1;
+    color: inherit;
+    text-decoration: none;
+    opacity: 0.6;
+    border-radius: 50%;
+    transition: all 0.15s ease;
+}
+
+.tag-remove:hover {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.tag[style*="background-color"] .tag-remove:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ==========================================================================
+   Tag List
+   ========================================================================== */
+
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+.tag-list-vertical {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.tag-list-vertical .tag {
+    margin: 2px 0;
+}
+
+/* Empty state */
+.tag-list-empty {
+    color: #999;
+    font-size: 13px;
+    font-style: italic;
+    padding: 8px 0;
+}
+
+/* ==========================================================================
+   Tag Input
+   ========================================================================== */
+
+.tag-input-wrapper {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.tag-input {
+    flex: 1;
+    padding: 6px 10px;
+    font-size: 13px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tag-input:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+}
+
+.tag-input-add {
+    margin-left: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: #fff;
+    background-color: #1a73e8;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.tag-input-add:hover {
+    background-color: #1557b0;
+}
+
+.tag-input-add:active {
+    background-color: #0d47a1;
+}
+
+/* ==========================================================================
+   Tag Suggestions (Autocomplete)
+   ========================================================================== */
+
+.tag-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.tag-suggestions li {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+}
+
+.tag-suggestions li:hover {
+    background-color: #f5f5f5;
+}
+
+.tag-suggestions li:first-child {
+    border-radius: 4px 4px 0 0;
+}
+
+.tag-suggestions li:last-child {
+    border-radius: 0 0 4px 4px;
+}
+
+/* ==========================================================================
+   Tag Color Picker
+   ========================================================================== */
+
+.tag-color-picker {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.tag-color-preview {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    border: 2px solid #ddd;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tag-color-options {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+}
+
+.tag-color-swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.15s ease;
+}
+
+.tag-color-swatch:hover {
+    transform: scale(1.15);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.tag-color-swatch.selected {
+    border-color: #333;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #333;
+}
+
+.tag-color-none {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    border: 2px dashed #ccc;
+    color: #999;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.tag-color-none:hover {
+    border-color: #999;
+    color: #666;
+}
+
+/* ==========================================================================
+   Tags in Message List
+   ========================================================================== */
+
+.messages .tags {
+    padding: 4px 8px;
+}
+
+.messages .tag {
+    font-size: 11px;
+    padding: 1px 6px;
+}
+
+.messages .tag-name {
+    max-width: 80px;
+}
+
+/* ==========================================================================
+   Tags in Message Reading View
+   ========================================================================== */
+
+.reading-header .tag-list {
+    margin-top: 8px;
+}
+
+.reading-header .tag {
+    font-size: 12px;
+}
+
+/* ==========================================================================
+   Tags Toolbar Dropdown
+   ========================================================================== */
+
+.tool-options .tags {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.tool-options .tags li {
+    display: block;
+}
+
+.tool-options .tags a {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    color: #333;
+    text-decoration: none;
+    transition: background-color 0.1s ease;
+}
+
+.tool-options .tags a:hover {
+    background-color: #f5f5f5;
+}
+
+.tool-options .tags .tag-color-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.tool-options .add-tag {
+    border-bottom: 1px solid #eee;
+    margin-bottom: 4px;
+    padding-bottom: 4px;
+}
+
+.tool-options .add-tag .add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    color: #1a73e8;
+    font-weight: 500;
+}
+
+.tool-options .add-tag .add:hover {
+    background-color: #e8f0fe;
+}
+
+/* ==========================================================================
+   Tag Filter Bar
+   ========================================================================== */
+
+.tag-filter-bar {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: #e8f0fe;
+    border-bottom: 1px solid #c2d7f9;
+}
+
+.tag-filter-bar .tag-filter-label {
+    font-size: 13px;
+    color: #1a73e8;
+    margin-right: 8px;
+}
+
+.tag-filter-bar .tag {
+    margin-right: 8px;
+}
+
+.tag-filter-bar .tag-filter-clear {
+    margin-left: auto;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #666;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+}
+
+.tag-filter-bar .tag-filter-clear:hover {
+    color: #333;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* ==========================================================================
+   Tag Manager Panel
+   ========================================================================== */
+
+.tag-manager-panel {
+    padding: 16px;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+}
+
+.tag-manager-panel h3 {
+    margin: 0 0 16px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+}
+
+.tag-manager-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.tag-manager-list li {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.tag-manager-list li:last-child {
+    border-bottom: none;
+}
+
+.tag-manager-list .tag {
+    margin-right: auto;
+}
+
+.tag-manager-list .tag-edit-color {
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #666;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.tag-manager-list .tag-edit-color:hover {
+    color: #1a73e8;
+}
+
+.tag-manager-list .tag-delete {
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #d93025;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.tag-manager-list .tag-delete:hover {
+    color: #a50e0e;
+}
+
+/* ==========================================================================
+   Responsive Adjustments
+   ========================================================================== */
+
+@media (max-width: 600px) {
+    .tag-input-wrapper {
+        flex-wrap: wrap;
+    }
+
+    .tag-input {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+
+    .tag-input-add {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .tag-color-options {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .tag-name {
+        max-width: 80px;
+    }
+}
+
+/* ==========================================================================
+   Animation
+   ========================================================================== */
+
+@keyframes tag-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.tag-new {
+    animation: tag-pulse 0.3s ease;
+}
+
+.tag-removing {
+    opacity: 0.5;
+    transform: scale(0.9);
+    transition: all 0.2s ease;
+}

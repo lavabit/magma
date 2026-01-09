@@ -1,0 +1,612 @@
+/**
+ * Magma Settings Manager Styles
+ *
+ * Styles for settings panel, form fields, tooltips,
+ * toggle switches, and action buttons.
+ */
+
+/* ==========================================================================
+   Settings Panel
+   ========================================================================== */
+
+.mgm-setting-panel {
+    padding: 16px;
+}
+
+.mgm-setting-panel.has-unsaved-changes {
+    border-left: 3px solid #f9a825;
+}
+
+/* ==========================================================================
+   Sections
+   ========================================================================== */
+
+.mgm-setting-section {
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.mgm-setting-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.mgm-setting-section-title {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.mgm-setting-section-description {
+    margin: 0 0 16px 0;
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.mgm-setting-section-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ==========================================================================
+   Field Wrapper
+   ========================================================================== */
+
+.mgm-setting-field {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    padding: 8px 0;
+}
+
+.mgm-setting-field.has-changes {
+    background-color: #fffde7;
+    margin: -8px;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.mgm-setting-field.has-custom-value .mgm-setting-label label::after {
+    content: '(modified)';
+    margin-left: 8px;
+    font-size: 11px;
+    font-style: italic;
+    color: #1a73e8;
+}
+
+.mgm-setting-field.has-error .mgm-setting-input input,
+.mgm-setting-field.has-error .mgm-setting-input select,
+.mgm-setting-field.has-error .mgm-setting-input textarea {
+    border-color: #d93025;
+    background-color: #fef7f7;
+}
+
+/* ==========================================================================
+   Labels
+   ========================================================================== */
+
+.mgm-setting-label {
+    display: flex;
+    align-items: center;
+    width: 200px;
+    padding-right: 16px;
+    padding-top: 8px;
+    flex-shrink: 0;
+}
+
+.mgm-setting-label label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.mgm-setting-label .required-marker {
+    color: #d93025;
+    margin-left: 4px;
+    font-weight: bold;
+}
+
+/* ==========================================================================
+   Input Container
+   ========================================================================== */
+
+.mgm-setting-input {
+    flex: 1;
+    min-width: 200px;
+}
+
+.mgm-setting-description {
+    margin: 4px 0 0 0;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.mgm-setting-error {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #d93025;
+    min-height: 16px;
+}
+
+/* ==========================================================================
+   Info Tooltip
+   ========================================================================== */
+
+.mgm-setting-info {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
+    cursor: pointer;
+}
+
+.mgm-setting-info .info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    font-size: 12px;
+    color: #666;
+    background-color: #f0f0f0;
+    border-radius: 50%;
+    transition: all 0.15s ease;
+}
+
+.mgm-setting-info:hover .info-icon {
+    color: #1a73e8;
+    background-color: #e8f0fe;
+}
+
+.mgm-setting-tooltip {
+    position: absolute;
+    z-index: 10000;
+    max-width: 300px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    line-height: 1.4;
+}
+
+.mgm-setting-tooltip::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 12px;
+    width: 10px;
+    height: 10px;
+    background-color: #fff;
+    border-left: 1px solid #e0e0e0;
+    border-top: 1px solid #e0e0e0;
+    transform: rotate(45deg);
+}
+
+/* ==========================================================================
+   Toggle Switch
+   ========================================================================== */
+
+.mgm-setting-toggle {
+    display: flex;
+    align-items: center;
+}
+
+.mgm-setting-toggle input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.mgm-setting-toggle .toggle-switch {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.mgm-setting-toggle .toggle-track {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background-color: #ccc;
+    border-radius: 12px;
+    transition: background-color 0.2s ease;
+}
+
+.mgm-setting-toggle .toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background-color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+}
+
+.mgm-setting-toggle input:checked + .toggle-switch .toggle-track {
+    background-color: #1a73e8;
+}
+
+.mgm-setting-toggle input:checked + .toggle-switch .toggle-thumb {
+    transform: translateX(20px);
+}
+
+.mgm-setting-toggle input:focus + .toggle-switch .toggle-track {
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.3);
+}
+
+.mgm-setting-toggle input:disabled + .toggle-switch {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ==========================================================================
+   Checkbox
+   ========================================================================== */
+
+.mgm-setting-checkbox {
+    display: flex;
+    align-items: center;
+}
+
+.mgm-setting-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.mgm-setting-checkbox label {
+    margin-left: 8px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   Dropdown
+   ========================================================================== */
+
+.mgm-setting-dropdown select {
+    width: 100%;
+    max-width: 300px;
+    padding: 8px 32px 8px 12px;
+    font-size: 14px;
+    color: #333;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mgm-setting-dropdown select:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    outline: none;
+}
+
+.mgm-setting-dropdown select:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+/* ==========================================================================
+   Text Input
+   ========================================================================== */
+
+.mgm-setting-text input,
+.mgm-setting-email input,
+.mgm-setting-number input {
+    width: 100%;
+    max-width: 300px;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mgm-setting-text input:focus,
+.mgm-setting-email input:focus,
+.mgm-setting-number input:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    outline: none;
+}
+
+.mgm-setting-text input:disabled,
+.mgm-setting-email input:disabled,
+.mgm-setting-number input:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.mgm-setting-number input {
+    max-width: 150px;
+}
+
+/* ==========================================================================
+   Password Input
+   ========================================================================== */
+
+.mgm-setting-password {
+    display: flex;
+    align-items: center;
+    max-width: 300px;
+}
+
+.mgm-setting-password input {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px 0 0 4px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mgm-setting-password input:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    outline: none;
+}
+
+.mgm-setting-password .password-toggle {
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #666;
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-left: none;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.mgm-setting-password .password-toggle:hover {
+    background-color: #e0e0e0;
+}
+
+/* ==========================================================================
+   Textarea
+   ========================================================================== */
+
+.mgm-setting-textarea textarea {
+    width: 100%;
+    max-width: 400px;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.5;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mgm-setting-textarea textarea:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    outline: none;
+}
+
+.mgm-setting-textarea textarea:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+/* ==========================================================================
+   Radio Buttons
+   ========================================================================== */
+
+.mgm-setting-radio {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mgm-setting-radio .radio-option {
+    display: flex;
+    align-items: center;
+}
+
+.mgm-setting-radio input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.mgm-setting-radio label {
+    margin-left: 8px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+}
+
+.mgm-setting-radio input:disabled + label {
+    color: #999;
+    cursor: not-allowed;
+}
+
+/* ==========================================================================
+   Color Picker
+   ========================================================================== */
+
+.mgm-setting-color {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mgm-setting-color input[type="color"] {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    background: none;
+}
+
+.mgm-setting-color input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 2px;
+}
+
+.mgm-setting-color input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 2px;
+}
+
+.mgm-setting-color .color-preview {
+    width: 24px;
+    height: 24px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* ==========================================================================
+   Action Buttons
+   ========================================================================== */
+
+.mgm-setting-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.mgm-setting-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.mgm-setting-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.mgm-setting-btn-save {
+    color: #fff;
+    background-color: #1a73e8;
+    border: 1px solid #1a73e8;
+}
+
+.mgm-setting-btn-save:hover:not(:disabled) {
+    background-color: #1557b0;
+    border-color: #1557b0;
+}
+
+.mgm-setting-btn-save:active:not(:disabled) {
+    background-color: #104894;
+}
+
+.mgm-setting-btn-cancel {
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ccc;
+}
+
+.mgm-setting-btn-cancel:hover:not(:disabled) {
+    background-color: #f5f5f5;
+    border-color: #999;
+}
+
+.mgm-setting-btn-cancel:active:not(:disabled) {
+    background-color: #e0e0e0;
+}
+
+.mgm-setting-btn-reset {
+    color: #d93025;
+    background-color: transparent;
+    border: none;
+    margin-right: auto;
+    padding-left: 0;
+}
+
+.mgm-setting-btn-reset:hover:not(:disabled) {
+    text-decoration: underline;
+}
+
+/* ==========================================================================
+   Fields Container (non-sectioned)
+   ========================================================================== */
+
+.mgm-setting-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ==========================================================================
+   Responsive Adjustments
+   ========================================================================== */
+
+@media (max-width: 600px) {
+    .mgm-setting-field {
+        flex-direction: column;
+    }
+
+    .mgm-setting-label {
+        width: 100%;
+        padding-right: 0;
+        padding-top: 0;
+        padding-bottom: 8px;
+    }
+
+    .mgm-setting-input {
+        width: 100%;
+    }
+
+    .mgm-setting-text input,
+    .mgm-setting-email input,
+    .mgm-setting-dropdown select,
+    .mgm-setting-password,
+    .mgm-setting-textarea textarea {
+        max-width: 100%;
+    }
+
+    .mgm-setting-actions {
+        flex-wrap: wrap;
+    }
+
+    .mgm-setting-btn {
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .mgm-setting-btn-reset {
+        flex-basis: 100%;
+        margin-right: 0;
+        margin-bottom: 12px;
+        text-align: center;
+    }
+}

@@ -470,6 +470,39 @@ input.button::-moz-focus-inner {
     cursor: default;
 }
 
+.button.loading {
+    position: relative;
+    padding-right: 28px;
+}
+
+.button.loading::after {
+    content: '';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    margin-top: -7px;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    -webkit-animation: button-spin 0.8s linear infinite;
+    -moz-animation: button-spin 0.8s linear infinite;
+    animation: button-spin 0.8s linear infinite;
+}
+
+@-webkit-keyframes button-spin {
+    to { -webkit-transform: rotate(360deg); }
+}
+
+@-moz-keyframes button-spin {
+    to { -moz-transform: rotate(360deg); }
+}
+
+@keyframes button-spin {
+    to { transform: rotate(360deg); }
+}
+
 .simple-button {
     padding: 0 4px;
     background-color: white;

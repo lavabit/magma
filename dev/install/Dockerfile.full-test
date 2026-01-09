@@ -1,0 +1,17 @@
+# More comprehensive Docker test using Rocky Linux 8 (CentOS successor)
+# Tests script logic without requiring full service installation
+FROM rockylinux:8
+
+# Install dependencies for testing
+RUN dnf -y install bash which git openssl
+
+WORKDIR /root
+
+# Copy magma source
+COPY . /root/magma-develop
+WORKDIR /root/magma-develop
+
+# Make test script executable
+RUN chmod +x dev/install/test-install-parts.sh
+
+CMD ["dev/install/test-install-parts.sh"]

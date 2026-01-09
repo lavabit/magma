@@ -1,0 +1,495 @@
+/**
+ * Magma Compose Enhancement Styles
+ *
+ * Styles for form validation, draft status, character counters,
+ * and recipient chip inputs.
+ */
+
+/* ==========================================================================
+   Form Validation
+   ========================================================================== */
+
+.field-wrapper {
+    position: relative;
+    margin-bottom: 12px;
+}
+
+.field-wrapper.has-error input,
+.field-wrapper.has-error textarea {
+    border-color: #d93025;
+    background-color: #fef7f7;
+}
+
+.field-wrapper.has-error input:focus,
+.field-wrapper.has-error textarea:focus {
+    border-color: #d93025;
+    box-shadow: 0 0 0 2px rgba(217, 48, 37, 0.2);
+}
+
+.field-error {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #d93025;
+}
+
+.field-suggestion {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #1a73e8;
+}
+
+.field-suggestion .suggestion-link {
+    color: #1a73e8;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.field-suggestion .suggestion-link:hover {
+    color: #0d47a1;
+}
+
+/* ==========================================================================
+   Draft Status Indicator
+   ========================================================================== */
+
+.draft-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #666;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    min-height: 24px;
+}
+
+.draft-status-icon {
+    margin-right: 4px;
+    font-size: 14px;
+}
+
+.draft-status.saving {
+    color: #1a73e8;
+}
+
+.draft-status.saving .draft-status-icon {
+    animation: spin 1s linear infinite;
+}
+
+.draft-status.saved {
+    color: #0f9d58;
+    background-color: #e6f4ea;
+}
+
+.draft-status.error {
+    color: #d93025;
+    background-color: #fce8e6;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   Character Counter
+   ========================================================================== */
+
+.char-counter {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    color: #999;
+    text-align: right;
+}
+
+.char-counter.warning {
+    color: #f9a825;
+}
+
+.char-counter.danger {
+    color: #d93025;
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   Recipient Chip Input
+   ========================================================================== */
+
+.recipient-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    min-height: 38px;
+    cursor: text;
+}
+
+.recipient-chips:focus-within {
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+}
+
+.chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.recipient-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    font-size: 13px;
+    background-color: #e0e0e0;
+    border-radius: 16px;
+    max-width: 200px;
+}
+
+.recipient-chip .chip-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.recipient-chip .chip-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-left: 4px;
+    font-size: 14px;
+    color: #666;
+    text-decoration: none;
+    border-radius: 50%;
+    transition: all 0.15s ease;
+}
+
+.recipient-chip .chip-remove:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+.recipient-chip.invalid {
+    background-color: #fce8e6;
+    border: 1px solid #d93025;
+}
+
+.chip-input {
+    flex: 1;
+    min-width: 100px;
+    padding: 4px;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    background: transparent;
+}
+
+/* ==========================================================================
+   Compose Form Layout
+   ========================================================================== */
+
+.composing-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.composing-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.composing-form {
+    padding: 16px;
+}
+
+.composing-form .field-wrapper {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.composing-form label {
+    width: 60px;
+    padding-top: 8px;
+    font-size: 13px;
+    color: #666;
+    text-align: right;
+    margin-right: 12px;
+}
+
+.composing-form .field-input {
+    flex: 1;
+}
+
+.composing-form input[type="text"],
+.composing-form input[type="email"],
+.composing-form select {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.composing-form input:focus,
+.composing-form select:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    outline: none;
+}
+
+.composing-form textarea {
+    width: 100%;
+    min-height: 300px;
+    padding: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+}
+
+.composing-form textarea:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    outline: none;
+}
+
+/* ==========================================================================
+   Attachment Bar Enhancements
+   ========================================================================== */
+
+.composing-attachments {
+    padding: 12px 16px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.attachment-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.attachment {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    min-width: 200px;
+}
+
+.attachment.uploading {
+    background-color: #e8f0fe;
+    border-color: #c2d7f9;
+}
+
+.attachment.complete {
+    background-color: #e6f4ea;
+    border-color: #a8dab5;
+}
+
+.attachment.error {
+    background-color: #fce8e6;
+    border-color: #f5c6cb;
+}
+
+.attachment .filename {
+    flex: 1;
+    margin: 0;
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.attachment .size {
+    margin: 0 12px;
+    font-size: 12px;
+    color: #666;
+}
+
+.attachment .progress {
+    width: 100px;
+    height: 4px;
+    background-color: #e0e0e0;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.attachment .progress-bar {
+    height: 100%;
+    background-color: #1a73e8;
+    transition: width 0.2s ease;
+}
+
+.attachment .delete {
+    margin-left: 12px;
+    font-size: 12px;
+    color: #d93025;
+    text-decoration: none;
+}
+
+.attachment .delete:hover {
+    text-decoration: underline;
+}
+
+.attachment .error-text {
+    color: #d93025;
+    font-size: 12px;
+}
+
+/* ==========================================================================
+   Send Button States
+   ========================================================================== */
+
+.send.loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.send.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* ==========================================================================
+   Keyboard Shortcut Hints
+   ========================================================================== */
+
+.shortcut-hint {
+    display: inline-block;
+    padding: 2px 6px;
+    margin-left: 8px;
+    font-size: 11px;
+    color: #999;
+    background-color: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 3px;
+}
+
+/* ==========================================================================
+   CC/BCC Fields
+   ========================================================================== */
+
+.cc-field,
+.bcc-field {
+    animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================================================
+   Plain Text / HTML Toggle
+   ========================================================================== */
+
+.editor-toggle {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.editor-toggle label {
+    margin-right: 16px;
+    font-size: 13px;
+    color: #666;
+}
+
+.editor-toggle input[type="radio"] {
+    margin-right: 4px;
+}
+
+.editor-toggle .toggle-btn {
+    padding: 4px 12px;
+    font-size: 13px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.editor-toggle .toggle-btn:first-of-type {
+    border-radius: 4px 0 0 4px;
+}
+
+.editor-toggle .toggle-btn:last-of-type {
+    border-radius: 0 4px 4px 0;
+    margin-left: -1px;
+}
+
+.editor-toggle .toggle-btn.active {
+    background-color: #1a73e8;
+    border-color: #1a73e8;
+    color: #fff;
+}
+
+/* ==========================================================================
+   Responsive Adjustments
+   ========================================================================== */
+
+@media (max-width: 600px) {
+    .composing-form .field-wrapper {
+        flex-direction: column;
+    }
+
+    .composing-form label {
+        width: 100%;
+        text-align: left;
+        margin-bottom: 4px;
+        padding-top: 0;
+    }
+
+    .recipient-chips {
+        min-height: auto;
+    }
+
+    .recipient-chip {
+        max-width: 150px;
+    }
+
+    .attachment {
+        flex-wrap: wrap;
+        min-width: 100%;
+    }
+
+    .attachment .progress {
+        width: 100%;
+        margin-top: 8px;
+    }
+}

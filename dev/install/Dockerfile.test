@@ -1,0 +1,27 @@
+# Dockerfile for testing magmad installation script
+# CentOS 6 is EOL, using vault repositories
+
+FROM centos:6
+
+# CentOS 6 is EOL - switch to vault repos
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*.repo && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*.repo
+
+# Install basic utilities needed before main script
+RUN yum -y install git which
+
+# Copy the magma source
+WORKDIR /root
+COPY . /root/magma-develop
+
+WORKDIR /root/magma-develop
+
+# Make the install script executable
+RUN chmod +x dev/install/magmad.install.sh
+
+# Run a syntax check on the install script first
+RUN bash -n dev/install/magmad.install.sh
+
+# For testing, we'll run the script in parts
+# This script is interactive and requires services, so we test what we can
+CMD ["bash", "-x", "dev/install/magmad.install.sh"]

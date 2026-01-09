@@ -1,6 +1,11 @@
 <dl>
     {{each list}}
         <dt>${key}</dt>
-        <dd {{if type}}class="${type}"{{/if}}>{{html value}}</dd>
+        <!-- SECURITY FIX (V-006): Use ${} instead of {{html}} to HTML-encode dictionary values.
+             {{html}} renders content as raw HTML which can execute malicious scripts.
+             ${} safely escapes HTML entities preventing XSS attacks.
+             If HTML formatting is genuinely needed, sanitize the data in JavaScript before
+             passing it to this template using DOMPurify or similar library. -->
+        <dd {{if type}}class="${type}"{{/if}}>${value}</dd>
     {{/each}}
 </dl>

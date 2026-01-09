@@ -40,9 +40,7 @@ Column resize bug after navigating to contacts/options
 
 <--- composing --->
 Add plain text / wisywig controls
-Submit message method
-Start on attachments
-periodically save editing changes back to the server as draft messages  
+periodically save editing changes back to the server as draft messages
 test out wysiwyg cut and paste functionality and fix bugs
 apply generic theme to wysiwyg modal boxes
 
@@ -95,6 +93,9 @@ Add preview pane
 Layout header area (controls html)
 Horizontal buttons for missing actions on right (plain/html toggle, bcc, priority, attach, et al)
 reduce the wysiwyg functionality to its relevant core and then group those buttons into a single visual container along the lines of the wireframe
+Submit message method - implemented send flow with validation, error handling, and success callbacks
+Attachment upload functionality - file selection, progress tracking, delete, integrated with send
+Fixed portalUrl to use real endpoint (/portal/camel) by default instead of hardcoded mock
 
 <--- contacts --->
 Contact folders not drag/drop properly do to jquery ui requiring string selector - need to differentiate folder wrapper with an id

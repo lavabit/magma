@@ -105,11 +105,12 @@ PROOT=`openssl rand -base64 30 | sed -e "s/\//@-/g" | sed -e "s/\+/_\?/g"`
 mysqladmin --user=root password "$PROOT"
 
 # Save the password so the root user can login without having to type it in.
-printf "\n[mysql]\nuser=root\npassword=$PROOT\ndatabase=Magma\nsocket=/var/lib/mysql/mysql.sock\nsafe-updates\n\n" >> /root/.my.cnf 
-printf "\n\n[mysqldump]\nuser=root\npassword=$PROOT\nsocket=/var/lib/mysql/mysql.sock\n\n" >> /root/.my.cnf 
-printf "\n\n[mysqladmin]\nuser=root\npassword=$PROOT\nsocket=/var/lib/mysql/mysql.sock\n\n" >> /root/.my.cnf 
+printf "\n[mysql]\nuser=root\npassword=$PROOT\ndatabase=Magma\nsocket=/var/lib/mysql/mysql.sock\nsafe-updates\n\n" >> /root/.my.cnf
+printf "\n\n[mysqldump]\nuser=root\npassword=$PROOT\nsocket=/var/lib/mysql/mysql.sock\n\n" >> /root/.my.cnf
+printf "\n\n[mysqladmin]\nuser=root\npassword=$PROOT\nsocket=/var/lib/mysql/mysql.sock\n\n" >> /root/.my.cnf
 
-# /etc/my.cnf
+# Write MySQL configuration to /etc/my.cnf
+cat > /etc/my.cnf << 'MYCNF'
 [mysqld]
 datadir=/var/lib/mysql
 socket=/var/lib/mysql/mysql.sock
@@ -143,9 +144,10 @@ expire_logs_days = 14
 [mysqld_safe]
 log-error = /var/log/mysqld-error.log
 pid-file=/var/run/mysqld/mysqld.pid
+MYCNF
 
-
-# /etc/logrotate.d/mysql
+# Write MySQL logrotate configuration
+cat > /etc/logrotate.d/mysql << 'LOGROTATE'
 /var/log/mysqld-general.log
 /var/log/mysqld-error.log
 {
@@ -162,6 +164,7 @@ pid-file=/var/run/mysqld/mysqld.pid
          fi
        endscript
 }
+LOGROTATE
 
 # Find out how much RAM is installed, and what 50% would be in KB.
 TOTALMEM=`free -k | grep -E "^Mem:" | awk -F' ' '{print $2}'`
@@ -255,8 +258,10 @@ sysctl -w vm.dirty_background_ratio=2
 sysctl -w vm.dirty_ratio=60
 sysctl -w vm.swappiness=10
 
-# Open up the firewall. 
-iptables -P INPUT OUTPUT FORWARD
+# Open up the firewall - set default policies to ACCEPT
+iptables -P INPUT ACCEPT
+iptables -P OUTPUT ACCEPT
+iptables -P FORWARD ACCEPT
 iptables -F
 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -A INPUT -p icmp -j ACCEPT
@@ -436,16 +441,22 @@ chcon system_u:object_r:cert_t:s0 /etc/pki/dime/signets/
 chcon system_u:object_r:cert_t:s0 /etc/pki/dime/private/
 
 
-####
-#  Add logic for creating the organizational key and signet.
-
-####
-
-
-chmod 600 "/etc/pki/dime/private/$DIMEFILE"
-chmod 600 "/etc/pki/dime/signets/$DIMEFILE"
-chcon unconfined_u:object_r:cert_t:s0 "/etc/pki/dime/signets/$DIMEFILE"
-chcon unconfined_u:object_r:cert_t:s0 "/etc/pki/dime/private/$DIMEFILE"
+# Generate DIME organizational key and signet
+# Note: This requires the signet tool from the magma build
+DIMEFILE="dime.$DOMAIN.pem"
+if [[ -x "tools/signet/signet" ]]; then
+	# Generate the organizational signet if signet tool is available
+	tools/signet/signet --generate --signet "/etc/pki/dime/signets/$DIMEFILE" --key "/etc/pki/dime/private/$DIMEFILE"
+	chmod 600 "/etc/pki/dime/private/$DIMEFILE"
+	chmod 600 "/etc/pki/dime/signets/$DIMEFILE"
+	chcon unconfined_u:object_r:cert_t:s0 "/etc/pki/dime/signets/$DIMEFILE"
+	chcon unconfined_u:object_r:cert_t:s0 "/etc/pki/dime/private/$DIMEFILE"
+else
+	tput setaf 3; tput bold
+	printf "\nWarning: signet tool not found. DIME keys not generated.\n"
+	printf "Run 'make tools' and re-run this script to generate DIME keys.\n\n"
+	tput sgr0
+fi
 
 # Create the directory used to hold the DKIM key.
 mkdir -p /etc/pki/dkim/private/
@@ -513,8 +524,8 @@ CPUCORES=`nproc --all`
 THREADCOUNT=`echo $(($CPUCORES*16))`
 
 # Write the database config information out to the magmad config file.
-printf "magma.library.file = /usr/libexec/magmad.so\n" >> /etc/magmad.config
-printf "magma.iface.database.user = magma\n" > /etc/magmad.config
+printf "magma.library.file = /usr/libexec/magmad.so\n" > /etc/magmad.config
+printf "magma.iface.database.user = magma\n" >> /etc/magmad.config
 printf "magma.iface.database.host = localhost\n" >> /etc/magmad.config
 printf "magma.iface.database.schema = Magma\n" >> /etc/magmad.config
 printf "magma.iface.database.password = $PMAGMA\n" >> /etc/magmad.config
@@ -524,7 +535,6 @@ printf "magma.relay[1].port = 2525\n" >> /etc/magmad.config
 printf "magma.relay[1].name = localhost\n" >> /etc/magmad.config
 printf "magma.iface.cache.host[1].port = 11211\n" >> /etc/magmad.config
 printf "magma.iface.cache.host[1].name = localhost\n\n" >> /etc/magmad.config
-printf "magma.library.file = /usr/libexec/magmad.so\n" >> /etc/magmad.config
 printf "magma.system.worker_threads = $THREADCOUNT\n" >> /etc/magmad.config
 printf "magma.secure.memory.length = 268435456\n" >> /etc/magmad.config
 

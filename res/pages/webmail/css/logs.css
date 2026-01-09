@@ -1,0 +1,575 @@
+/**
+ * Magma Logs Viewer Styles
+ *
+ * Styles for log tables, filters, pagination,
+ * statistics view, and log type tabs.
+ */
+
+/* ==========================================================================
+   Logs Viewer Container
+   ========================================================================== */
+
+.mgm-logs-viewer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: #fff;
+}
+
+/* ==========================================================================
+   Log Type Tabs
+   ========================================================================== */
+
+.mgm-logs-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 12px 16px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.mgm-logs-tab {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #666;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.mgm-logs-tab:hover {
+    color: #333;
+    background-color: #e0e0e0;
+}
+
+.mgm-logs-tab.active {
+    color: #1a73e8;
+    background-color: #e8f0fe;
+}
+
+.mgm-logs-tab .tab-icon {
+    margin-right: 6px;
+}
+
+/* ==========================================================================
+   Header and Toolbar
+   ========================================================================== */
+
+.mgm-logs-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.mgm-logs-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mgm-logs-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.mgm-logs-btn:hover {
+    background-color: #f5f5f5;
+    border-color: #999;
+}
+
+.mgm-logs-btn-refresh.refreshing {
+    color: #1a73e8;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.mgm-logs-auto-refresh {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: #666;
+    cursor: pointer;
+}
+
+.mgm-logs-auto-refresh input {
+    cursor: pointer;
+}
+
+.mgm-logs-auto-refresh-interval {
+    padding: 4px 8px;
+    font-size: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* ==========================================================================
+   Filters
+   ========================================================================== */
+
+.mgm-logs-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    background-color: #fafafa;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.mgm-logs-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mgm-logs-filter-group label {
+    font-size: 13px;
+    color: #666;
+}
+
+.mgm-logs-search {
+    width: 200px;
+    padding: 6px 12px;
+    font-size: 13px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: border-color 0.15s ease;
+}
+
+.mgm-logs-search:focus {
+    border-color: #1a73e8;
+    outline: none;
+}
+
+.mgm-logs-severity,
+.mgm-logs-date-range {
+    padding: 6px 24px 6px 12px;
+    font-size: 13px;
+    color: #333;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    cursor: pointer;
+}
+
+.mgm-logs-btn-clear {
+    padding: 6px 12px;
+    font-size: 12px;
+    color: #666;
+    background: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.mgm-logs-btn-clear:hover {
+    background-color: #f5f5f5;
+}
+
+/* ==========================================================================
+   Content Area
+   ========================================================================== */
+
+.mgm-logs-content {
+    flex: 1;
+    overflow: auto;
+    padding: 0;
+}
+
+/* ==========================================================================
+   Log Table
+   ========================================================================== */
+
+.mgm-logs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.mgm-logs-table thead {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    z-index: 1;
+}
+
+.mgm-logs-table th {
+    padding: 12px 16px;
+    font-weight: 600;
+    color: #333;
+    text-align: left;
+    border-bottom: 2px solid #e0e0e0;
+    white-space: nowrap;
+}
+
+.mgm-logs-table td {
+    padding: 10px 16px;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: top;
+}
+
+.mgm-logs-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.mgm-logs-entry.mgm-logs-expandable {
+    cursor: pointer;
+}
+
+.mgm-logs-entry.mgm-logs-expandable:hover {
+    background-color: #e8f0fe;
+}
+
+.mgm-logs-entry.expanded {
+    background-color: #e8f0fe;
+}
+
+/* Severity colors */
+.mgm-logs-critical {
+    border-left: 3px solid #b71c1c;
+}
+
+.mgm-logs-error {
+    border-left: 3px solid #d93025;
+}
+
+.mgm-logs-warning {
+    border-left: 3px solid #f9a825;
+}
+
+.mgm-logs-info {
+    border-left: 3px solid #1a73e8;
+}
+
+.mgm-logs-debug {
+    border-left: 3px solid #999;
+}
+
+/* Severity badge */
+.mgm-logs-severity-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    border-radius: 3px;
+}
+
+.mgm-logs-severity-critical {
+    color: #fff;
+    background-color: #b71c1c;
+}
+
+.mgm-logs-severity-error {
+    color: #fff;
+    background-color: #d93025;
+}
+
+.mgm-logs-severity-warning {
+    color: #333;
+    background-color: #fff3cd;
+}
+
+.mgm-logs-severity-info {
+    color: #fff;
+    background-color: #1a73e8;
+}
+
+.mgm-logs-severity-debug {
+    color: #fff;
+    background-color: #666;
+}
+
+/* Outcome badge */
+.mgm-logs-outcome {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 3px;
+}
+
+.mgm-logs-outcome-delivered,
+.mgm-logs-outcome-success {
+    color: #fff;
+    background-color: #0f9d58;
+}
+
+.mgm-logs-outcome-failed,
+.mgm-logs-outcome-rejected {
+    color: #fff;
+    background-color: #d93025;
+}
+
+.mgm-logs-outcome-pending {
+    color: #333;
+    background-color: #fff3cd;
+}
+
+/* Empty state */
+.mgm-logs-empty td {
+    padding: 40px 16px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+}
+
+/* ==========================================================================
+   Entry Details
+   ========================================================================== */
+
+.mgm-logs-details {
+    background-color: #fafafa;
+}
+
+.mgm-logs-details td {
+    padding: 0;
+}
+
+.mgm-logs-details-content {
+    padding: 16px 24px;
+    border-left: 3px solid #1a73e8;
+    margin: 8px 16px;
+    background-color: #fff;
+    border-radius: 0 4px 4px 0;
+}
+
+.mgm-logs-details-content dl {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 8px 16px;
+    margin: 0;
+}
+
+.mgm-logs-details-content dt {
+    font-weight: 600;
+    color: #666;
+}
+
+.mgm-logs-details-content dd {
+    margin: 0;
+    word-break: break-word;
+}
+
+.mgm-logs-raw {
+    max-height: 200px;
+    padding: 12px;
+    margin: 0;
+    font-size: 11px;
+    font-family: monospace;
+    background-color: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    overflow: auto;
+    white-space: pre-wrap;
+}
+
+/* ==========================================================================
+   Statistics View
+   ========================================================================== */
+
+.mgm-logs-statistics {
+    padding: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.mgm-logs-stat-section {
+    padding: 16px;
+    background-color: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+}
+
+.mgm-logs-stat-section h4 {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mgm-logs-stat-section .stat-icon {
+    font-size: 18px;
+}
+
+.mgm-logs-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.mgm-logs-stat-item {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    background-color: #fff;
+    border-radius: 4px;
+}
+
+.mgm-logs-stat-item .stat-label {
+    font-size: 11px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.mgm-logs-stat-item .stat-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-top: 4px;
+}
+
+/* ==========================================================================
+   Pagination
+   ========================================================================== */
+
+.mgm-logs-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+}
+
+.mgm-logs-page-info {
+    font-size: 13px;
+    color: #666;
+}
+
+.mgm-logs-page-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mgm-logs-page-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    font-size: 16px;
+    color: #666;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.mgm-logs-page-btn:hover:not(:disabled) {
+    background-color: #f0f0f0;
+    border-color: #999;
+}
+
+.mgm-logs-page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.mgm-logs-page-input {
+    width: 60px;
+    padding: 6px 8px;
+    font-size: 13px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.mgm-logs-page-input:focus {
+    border-color: #1a73e8;
+    outline: none;
+}
+
+.mgm-logs-page-total {
+    font-size: 13px;
+    color: #666;
+}
+
+/* ==========================================================================
+   Responsive Adjustments
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .mgm-logs-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding: 8px 12px;
+    }
+
+    .mgm-logs-tab {
+        flex-shrink: 0;
+        padding: 6px 12px;
+    }
+
+    .mgm-logs-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .mgm-logs-filter-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .mgm-logs-search {
+        width: 100%;
+    }
+
+    .mgm-logs-table {
+        font-size: 12px;
+    }
+
+    .mgm-logs-table th,
+    .mgm-logs-table td {
+        padding: 8px 12px;
+    }
+
+    .mgm-logs-statistics {
+        grid-template-columns: 1fr;
+        padding: 16px;
+    }
+
+    .mgm-logs-stat-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mgm-logs-pagination {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .mgm-logs-details-content dl {
+        grid-template-columns: 1fr;
+    }
+
+    .mgm-logs-details-content dt {
+        margin-top: 8px;
+    }
+}

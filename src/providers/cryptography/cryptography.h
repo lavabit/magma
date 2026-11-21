@@ -10,7 +10,7 @@
 
 // These OpenSSL macros need to be redefined here to avoid compilation problems.
 #define BN_num_bytes_d(a)		((BN_num_bits_d(a)+7)/8)
-#define OPENSSL_free_d(addr)	CRYPTO_free_d(addr)
+#define OPENSSL_free_d(addr)	CRYPTO_free_d(addr, __FILE__, __LINE__)
 
 // The list of ciphers support depending on the SSL security level required.
 #define MAGMA_CIPHERS_HIGH		"ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305"
@@ -156,7 +156,7 @@ stringer_t *  tls_cipher(TLS *tls, stringer_t *output);
 void *        tls_client_alloc(int_t sockd);
 int           tls_continue(TLS *tls, int result, int syserror);
 stringer_t *  tls_error(TLS *tls, int_t code, stringer_t *output);
-void          tls_free(TLS *tls);
+void          tls_cleanup(TLS *tls);
 int           tls_print(TLS *tls, const char *format, va_list args);
 int           tls_read(TLS *tls, void *buffer, int length, bool_t block);
 TLS *         tls_server_alloc(void *server, int sockd, int flags);

@@ -177,7 +177,7 @@ void client_close(client_t *client) {
 	if (client) {
 
 		if (client->tls) {
-			tls_free(client->tls);
+			tls_cleanup(client->tls);
 		}
 
 		if (client->sockd != -1) {

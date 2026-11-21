@@ -25,7 +25,6 @@ int dh_params_generate_callback(int p, int n, BN_GENCB *cb) {
 void dh_params_generate(void) {
 
 	DH *holder;
-	BN_GENCB cb;
 	int_t codes = 0;
 	bool_t loop = true;
 
@@ -36,8 +35,7 @@ void dh_params_generate(void) {
 		return;
 	}
 
-	BN_GENCB_set(&cb, dh_params_generate_callback, NULL);
-
+	// OpenSSL 1.1.0+ made BN_GENCB opaque; the progress callback is optional, so we pass NULL.
 	log_pedantic("Generating DH key parameters with a %i bit prime.", 2048);
 
 	if (!(holder = DH_new_d())) {
@@ -47,7 +45,7 @@ void dh_params_generate(void) {
 
 	for (uint_t i = 0; i < 16 && loop && status(); i++) {
 
-		if (!DH_generate_parameters_ex_d(holder, 2048, 2, &cb)) {
+		if (!DH_generate_parameters_ex_d(holder, 2048, 2, NULL)) {
 			log_error("Encountered error while generating Diffie-Hellman parameters. { error = %s }",
 				ssl_error_string(MEMORYBUF(256), 256));
 			DH_free_d(holder);
@@ -96,7 +94,7 @@ void dh_params_generate(void) {
 
 	for (uint_t i = 0; i < 16 && loop && status(); i++) {
 
-		if (!DH_generate_parameters_ex_d(holder, 4096, 2, &cb)) {
+		if (!DH_generate_parameters_ex_d(holder, 4096, 2, NULL)) {
 			log_error("Encountered error while generating Diffie-Hellman parameters. { error = %s }",
 				ssl_error_string(MEMORYBUF(256), 256));
 			DH_free_d(holder);
@@ -173,10 +171,13 @@ DH *dh_params_2048(void) {
 		return NULL;
 	}
 
-	dh->p = BN_bin2bn_d(dh2048_p, sizeof(dh2048_p), NULL);
-	dh->g = BN_bin2bn_d(dh2048_g, sizeof(dh2048_g), NULL);
+	BIGNUM *p = BN_bin2bn_d(dh2048_p, sizeof(dh2048_p), NULL);
+	BIGNUM *g = BN_bin2bn_d(dh2048_g, sizeof(dh2048_g), NULL);
 
-	if (!(dh->p) || !(dh->g)) {
+	// OpenSSL 1.1.0+: DH is opaque; DH_set0_pqg() takes ownership of p and g on success.
+	if (!p || !g || !DH_set0_pqg_d(dh, p, NULL, g)) {
+		BN_free_d(p);
+		BN_free_d(g);
 		DH_free_d(dh);
 		return NULL;
 	}
@@ -241,10 +242,13 @@ DH *dh_params_4096(void) {
 		return NULL;
 	}
 
-	dh->p = BN_bin2bn_d(dh4096_p, sizeof(dh4096_p), NULL);
-	dh->g = BN_bin2bn_d(dh4096_g, sizeof(dh4096_g), NULL);
+	BIGNUM *p = BN_bin2bn_d(dh4096_p, sizeof(dh4096_p), NULL);
+	BIGNUM *g = BN_bin2bn_d(dh4096_g, sizeof(dh4096_g), NULL);
 
-	if (!(dh->p) || !(dh->g)) {
+	// OpenSSL 1.1.0+: DH is opaque; DH_set0_pqg() takes ownership of p and g on success.
+	if (!p || !g || !DH_set0_pqg_d(dh, p, NULL, g)) {
+		BN_free_d(p);
+		BN_free_d(g);
 		DH_free_d(dh);
 		return NULL;
 	}
@@ -270,7 +274,6 @@ DH * dh_static_4096(SSL *ssl, int is_export, int keylength) {
 DH * dh_exchange_2048(SSL *ssl, int is_export, int keylength) {
 
 	DH *holder;
-	BN_GENCB cb;
 	int_t codes = 0;
 	bool_t loop = true;
 
@@ -284,12 +287,11 @@ DH * dh_exchange_2048(SSL *ssl, int is_export, int keylength) {
 		return NULL;
 	}
 
-	BN_GENCB_set(&cb, dh_params_generate_callback, NULL);
 	log_pedantic("Generating %i bit DH key parameters.", 2048);
 
 	for (uint_t i = 0; i < 16 && loop && status(); i++) {
 
-		if (!DH_generate_parameters_ex_d(holder, 2048, 2, &cb)) {
+		if (!DH_generate_parameters_ex_d(holder, 2048, 2, NULL)) {
 			log_error("Encountered error while generating Diffie-Hellman parameters. { error = %s }",
 				ssl_error_string(MEMORYBUF(256), 256));
 			if (holder) DH_free_d(holder);
@@ -338,7 +340,6 @@ DH * dh_exchange_2048(SSL *ssl, int is_export, int keylength) {
 DH * dh_exchange_4096(SSL *ssl, int is_export, int keylength) {
 
 	DH *holder;
-	BN_GENCB cb;
 	int_t codes = 0;
 	bool_t loop = true;
 
@@ -352,12 +353,11 @@ DH * dh_exchange_4096(SSL *ssl, int is_export, int keylength) {
 		return NULL;
 	}
 
-	BN_GENCB_set(&cb, dh_params_generate_callback, NULL);
 	log_pedantic("Generating %i bit DH key parameters.", 4096);
 
 	for (uint_t i = 0; i < 16 && loop && status(); i++) {
 
-		if (!DH_generate_parameters_ex_d(holder, 4096, 2, &cb)) {
+		if (!DH_generate_parameters_ex_d(holder, 4096, 2, NULL)) {
 			log_error("Encountered error while generating Diffie-Hellman parameters. { error = %s }",
 				ssl_error_string(MEMORYBUF(256), 256));
 			if (holder) DH_free_d(holder);

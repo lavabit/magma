@@ -262,8 +262,6 @@ errinfo_t *_push_error_stack_openssl(const char *filename, const char *funcname,
     static int loaded = 0;
 
     if (!loaded) {
-        ERR_load_crypto_strings_d();
-        SSL_load_error_strings_d();
         loaded = 1;
     }
 
@@ -273,7 +271,7 @@ errinfo_t *_push_error_stack_openssl(const char *filename, const char *funcname,
     while (ERR_peek_error_line_data_d(&ssl_filename, &ssl_line, &ssl_data, &ssl_flags)) {
 
         if (!first_pass) {
-            BUF_strlcat_d(auxmsg, " | ", sizeof(auxmsg));
+            OPENSSL_strlcat_d(auxmsg, " | ", sizeof(auxmsg));
         } else {
             first_pass = 0;
         }
@@ -285,8 +283,8 @@ errinfo_t *_push_error_stack_openssl(const char *filename, const char *funcname,
         ERR_error_string_n_d(ERR_get_error_d(), tmpbuf2, sizeof(tmpbuf2));
 
         // Combine the two error strings and add them to the buffer.
-        BUF_strlcat_d(auxmsg, tmpbuf2, sizeof(auxmsg));
-        BUF_strlcat_d(auxmsg, tmpbuf, sizeof(auxmsg));
+        OPENSSL_strlcat_d(auxmsg, tmpbuf2, sizeof(auxmsg));
+        OPENSSL_strlcat_d(auxmsg, tmpbuf, sizeof(auxmsg));
     }
 
     return (_push_error_stack(filename, funcname, lineno, errcode, xerrno, auxmsg));

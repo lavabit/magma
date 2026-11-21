@@ -33,9 +33,9 @@ int_t digest_length_output(const digest_t *digest) {
 
 	int_t result = -1;
 
-	if (digest && (result = EVP_MD_size_d((const EVP_MD *)digest)) < 0) {
+	if (digest && (result = EVP_MD_get_size_d((const EVP_MD *)digest)) < 0) {
 		log_pedantic("Unable to determine the digest output length. { digest = %s / error = %s }",
-			OBJ_nid2sn_d(EVP_MD_type_d((const EVP_MD *)digest)), ssl_error_string(MEMORYBUF(256), 256));
+			OBJ_nid2sn_d(EVP_MD_get_type_d((const EVP_MD *)digest)), ssl_error_string(MEMORYBUF(256), 256));
 	}
 
 	return result;

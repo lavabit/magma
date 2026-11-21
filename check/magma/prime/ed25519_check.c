@@ -14,6 +14,33 @@ typedef struct {
     ed25519_public_key public_key;
 } ED25519_KEY;
 
+// OpenSSL 3.x compatibility shims: the raw BoringSSL ED25519_sign()/ED25519_verify() came from the
+// 1.0.2 curve25519 patch, which is dropped on the 3.x build. These drive magma's own EVP-based
+// ed25519_sign()/ed25519_verify() so the test call sites below remain unchanged. Return 1 on success
+// (matching the raw BoringSSL convention) so the surrounding "!= 1"/"== 1" checks still hold.
+// Use the EVP interface directly (rather than magma's ed25519_sign/verify, which guard against
+// empty input) so these match the raw BoringSSL behavior the RFC 8032 vectors expect — vector 1
+// signs an empty message.
+static int ED25519_sign_compat(uint8_t *out_sig, const uint8_t *msg, size_t msglen, const uint8_t *priv_seed) {
+	EVP_PKEY *pkey = EVP_PKEY_new_raw_private_key_d(EVP_PKEY_ED25519, NULL, priv_seed, ED25519_KEY_PRIV_LEN);
+	EVP_MD_CTX *ctx = EVP_MD_CTX_new_d();
+	size_t siglen = ED25519_SIGNATURE_LEN;
+	int ok = (pkey && ctx && EVP_DigestSignInit_d(ctx, NULL, NULL, NULL, pkey) == 1 &&
+		EVP_DigestSign_d(ctx, out_sig, &siglen, msg, msglen) == 1) ? 1 : 0;
+	if (ctx) EVP_MD_CTX_free_d(ctx);
+	if (pkey) EVP_PKEY_free_d(pkey);
+	return ok;
+}
+static int ED25519_verify_compat(const uint8_t *msg, size_t msglen, const uint8_t *sig, const uint8_t *pub) {
+	EVP_PKEY *pkey = EVP_PKEY_new_raw_public_key_d(EVP_PKEY_ED25519, NULL, pub, ED25519_KEY_PUB_LEN);
+	EVP_MD_CTX *ctx = EVP_MD_CTX_new_d();
+	int ok = (pkey && ctx && EVP_DigestVerifyInit_d(ctx, NULL, NULL, NULL, pkey) == 1 &&
+		EVP_DigestVerify_d(ctx, sig, ED25519_SIGNATURE_LEN, msg, msglen) == 1) ? 1 : 0;
+	if (ctx) EVP_MD_CTX_free_d(ctx);
+	if (pkey) EVP_PKEY_free_d(pkey);
+	return ok;
+}
+
 /**
  * @note			The static test vectors below were extracted from the official home for the EdDSA whitepaper.
  * @see				http://ed25519.cr.yp.to/python/sign.input
@@ -63,7 +90,7 @@ bool_t check_prime_ed25519_fixed_sthread(stringer_t *errmsg) {
 	}
 
 	// Generate a test signature for the first message and compare it against the expected value.
-	else if (ED25519_sign_d(&signature[0], st_data_get(message1), st_length_get(message1), key->private) != 1 ||
+	else if (ED25519_sign_compat(&signature[0], st_data_get(message1), st_length_get(message1), key->private) != 1 ||
 		st_cmp_cs_eq(PLACER(signature, ED25519_SIGNATURE_LEN), signature1)) {
 		st_sprint(errmsg, "The first ed25519 test message didn't generate the expected signature.");
 		ed25519_free(key);
@@ -71,9 +98,9 @@ bool_t check_prime_ed25519_fixed_sthread(stringer_t *errmsg) {
 	}
 
 	// Verify the test signature. First by passing the public key directly, then by passing the serialized public key buffer.
-	else if (ED25519_verify_d(st_data_get(message1), st_length_get(message1), &signature[0], key->public) != 1 ||
+	else if (ED25519_verify_compat(st_data_get(message1), st_length_get(message1), &signature[0], key->public) != 1 ||
 		st_cmp_cs_eq(PLACER(signature, ED25519_SIGNATURE_LEN), signature1) ||
-		ED25519_verify_d(st_data_get(message1), st_length_get(message1), &signature[0], st_data_get(ed25519_public_get(key, MANAGEDBUF(32)))) != 1) {
+		ED25519_verify_compat(st_data_get(message1), st_length_get(message1), &signature[0], st_data_get(ed25519_public_get(key, MANAGEDBUF(32)))) != 1) {
 		st_sprint(errmsg, "The first ed25519 signature didn't verify properly.");
 		ed25519_free(key);
 		return false;
@@ -87,7 +114,7 @@ bool_t check_prime_ed25519_fixed_sthread(stringer_t *errmsg) {
 	signature[pos] = bitwise_xor(signature[pos], byte);
 
 	// Verify the test signature after the modification.
-	if (ED25519_verify_d(st_data_get(message1), st_length_get(message1), &signature[0], key->public) == 1) {
+	if (ED25519_verify_compat(st_data_get(message1), st_length_get(message1), &signature[0], key->public) == 1) {
 		st_sprint(errmsg, "The first ed25519 signature verified with a randomly modified signature. {%.*s)", 64,
 			st_char_get(hex_encode_st(PLACER(&signature[0], ED25519_SIGNATURE_LEN), MANAGEDBUF(64))));
 		ed25519_free(key);
@@ -256,13 +283,13 @@ bool_t check_prime_ed25519_fuzz_lib_sthread(stringer_t *errmsg) {
 		st_length_set(fuzzer, len);
 
 		// Generate an ed25519 signature using OpenSSL.
-		if (ED25519_sign_d(&signature[0], st_data_get(fuzzer), len, key->private) != 1) {
+		if (ED25519_sign_compat(&signature[0], st_data_get(fuzzer), len, key->private) != 1) {
 			st_sprint(errmsg, "The ed25519 signature operation failed.");
 			ed25519_free(key);
 			ed25519_free(pub);
 			return false;
 		}
-		else if (ED25519_verify_d(st_data_get(fuzzer), len, &signature[0], pub->public) != 1) {
+		else if (ED25519_verify_compat(st_data_get(fuzzer), len, &signature[0], pub->public) != 1) {
 			st_sprint(errmsg, "The ed25519 signature verification failed.");
 			ed25519_free(key);
 			ed25519_free(pub);
@@ -285,7 +312,7 @@ bool_t check_prime_ed25519_fuzz_lib_sthread(stringer_t *errmsg) {
 		ed25519_sign_donna(st_data_get(fuzzer), len, key->private, key->public, signature);
 
 		// Verify the ed25519 signature using OpenSSL.
-		if (ED25519_verify_d(st_data_get(fuzzer), len, signature, key->public) != 1) {
+		if (ED25519_verify_compat(st_data_get(fuzzer), len, signature, key->public) != 1) {
 			st_sprint(errmsg, "The ed25519 signature generated using the alternate implementation failed to verify.");
 			ed25519_free(key);
 			ed25519_free(pub);
@@ -335,8 +362,8 @@ bool_t check_prime_ed25519_fuzz_provider_sthread(stringer_t *errmsg) {
 			return false;
 		}
 		// Verify the ed25519 signature using the library interface.
-		else if (ED25519_verify_d(st_data_get(fuzzer), len, st_data_get(managed), key->public) != 1 ||
-			ED25519_verify_d(st_data_get(fuzzer), len, st_data_get(managed), pub->public) != 1) {
+		else if (ED25519_verify_compat(st_data_get(fuzzer), len, st_data_get(managed), key->public) != 1 ||
+			ED25519_verify_compat(st_data_get(fuzzer), len, st_data_get(managed), pub->public) != 1) {
 			st_sprint(errmsg, "The direct library call failed to verify an ed25519 signature which passed using the PRIME interface.");
 			ed25519_free(key);
 			ed25519_free(pub);

@@ -54,12 +54,12 @@ bool_t tls_server_create(void *server, uint_t security_level) {
 
 	// We use the generic SSLv23 method, which really means support SSLv2 and above, including TLSv1, TLSv1.1, etc, and then limit
 	// the actual protocols the SSL context will support using the options variable configured above, and the call to SSL_CTX_ctrl() below.
-	if (!(local->tls.context = SSL_CTX_new_d(SSLv23_server_method_d()))) {
+	if (!(local->tls.context = SSL_CTX_new_d(TLS_server_method_d()))) {
 		log_critical("Could not create a valid SSL context.");
 		return false;
 	}
 	// Set the CTX options using the control function (in lieu of macros) so we can load/bind the necessary function at runtime.
-	else if ((SSL_CTX_ctrl_d(local->tls.context, SSL_CTRL_OPTIONS, options, NULL) & options) != options) {
+	else if ((SSL_CTX_set_options_d(local->tls.context, options) & options) != options) {
 		log_critical("Could set the options mask on the TLS context.");
 		return false;
 	}
@@ -105,8 +105,8 @@ bool_t tls_server_create(void *server, uint_t security_level) {
 //		return false;
 //	}
 
-	// Like the SSL_CTRL_SET_ECDH_AUTO, this function will no longer be needed when we switch to OpenSSL 1.1.0.
-	SSL_CTX_set_tmp_ecdh_callback_d(local->tls.context, ssl_ecdh_exchange_callback);
+	// OpenSSL 1.1.0+ selects the ECDH curve automatically (SSL_CTX_set_tmp_ecdh_callback was
+	// removed); temporary-ECDH keys are negotiated internally, so no callback is needed here.
 
 	// We don't support authentication using client certificates, so we set the verify flag to NONE. This will prevent the server
 	// from sending a client certificate request.
@@ -249,11 +249,11 @@ void * tls_client_alloc(int_t sockd) {
 	errno = 0;
 	ERR_clear_error_d();
 
-	if (!(ctx = SSL_CTX_new_d(SSLv23_client_method_d()))) {
+	if (!(ctx = SSL_CTX_new_d(TLS_client_method_d()))) {
 		log_pedantic("Could not create a valid TLS context. { error = %s }", ssl_error_string(MEMORYBUF(512), 512));
 		return NULL;
 	}
-	else if ((SSL_CTX_ctrl_d(ctx, SSL_CTRL_OPTIONS, options, NULL) & options) != options) {
+	else if ((SSL_CTX_set_options_d(ctx, options) & options) != options) {
 		log_pedantic("Could set the options mask on the TLS context. { error = %s }", ssl_error_string(MEMORYBUF(512), 512));
 		SSL_CTX_free_d(ctx);
 		return NULL;
@@ -313,7 +313,7 @@ void * tls_client_alloc(int_t sockd) {
  * @param	TLS		the TLS connection to be shut down.
  * @return	This function returns no value.
  */
-void tls_free(TLS *tls) {
+void tls_cleanup(TLS *tls) {
 
 #ifdef MAGMA_PEDANTIC
 	if (!tls) {
@@ -322,7 +322,7 @@ void tls_free(TLS *tls) {
 #endif
 
 	if (tls) {
-		ERR_remove_thread_state_d(0);
+		OPENSSL_thread_stop_d();
 		SSL_shutdown_d(tls);
 		SSL_free_d(tls);
 	}

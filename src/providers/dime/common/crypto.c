@@ -26,9 +26,6 @@ static EVP_MD const *_ecies_envelope_evp = NULL;
  *  -1 if any part of the initialization process failed, or 0 on success.
  */
 int _crypto_init(void) {
-	SSL_load_error_strings_d();
-	SSL_library_init_d();
-	OPENSSL_add_all_algorithms_noconf_d();
 
 	if (!(_encryption_group = EC_GROUP_new_by_curve_name_d(EC_ENCRYPT_CURVE))) {
 		PUSH_ERROR_OPENSSL();
@@ -55,8 +52,6 @@ void _crypto_shutdown(void) {
 		_encryption_group = NULL;
 	}
 
-	EVP_cleanup_d();
-	ERR_free_strings_d();
 }
 
 /**

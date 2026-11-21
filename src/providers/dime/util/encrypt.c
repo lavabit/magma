@@ -33,8 +33,6 @@ get_openssl_error(
     static int loaded = 0;
 
     if (!loaded) {
-        ERR_load_crypto_strings_d();
-        SSL_load_error_strings_d();
         loaded = 1;
     }
 
@@ -49,7 +47,7 @@ get_openssl_error(
             &ssl_flags))
     {
         if (!first_pass) {
-            BUF_strlcat_d(result, " | ", result_length);
+            OPENSSL_strlcat_d(result, " | ", result_length);
         } else {
             first_pass = 0;
         }
@@ -66,8 +64,8 @@ get_openssl_error(
         ERR_error_string_n_d(ERR_get_error_d(), tmpbuf2, sizeof(tmpbuf2));
 
         // Combine the two error strings and add them to the buffer.
-        BUF_strlcat_d(result, tmpbuf2, result_length);
-        BUF_strlcat_d(result, tmpbuf, result_length);
+        OPENSSL_strlcat_d(result, tmpbuf2, result_length);
+        OPENSSL_strlcat_d(result, tmpbuf, result_length);
     }
 }
 
@@ -107,9 +105,6 @@ encrypt_ctx_new(
     }
     memset(*result, 0, sizeof(encrypt_ctx_t));
 
-    SSL_load_error_strings_d();
-    SSL_library_init_d();
-    OPENSSL_add_all_algorithms_noconf_d();
 
     (*result)->encryption_group =
         EC_GROUP_new_by_curve_name_d(NID_secp256k1);
@@ -140,8 +135,6 @@ encrypt_ctx_new(
 cleanup_group:
     EC_GROUP_clear_free_d((*result)->encryption_group);
 cleanup_evp:
-    EVP_cleanup_d();
-    ERR_free_strings_d();
     free(*result);
     *result = NULL;
 error:
@@ -159,8 +152,6 @@ encrypt_ctx_free(encrypt_ctx_t *ctx)
         EC_GROUP_clear_free_d(ctx->encryption_group);
     }
 
-    EVP_cleanup_d();
-    ERR_free_strings_d();
 
     free(ctx);
 }

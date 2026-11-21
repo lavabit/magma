@@ -195,11 +195,14 @@ RSA *_get_rsa_dnskey(const unsigned char *rdptr, size_t rdlen) {
         RET_ERROR_PTR(ERR_UNSPEC, "unable to allocate new RSA public key holder");
     }
 
-    result->n = mod;
-    result->e = exp;
-    result->d = NULL;
-    result->p = NULL;
-    result->q = NULL;
+    // OpenSSL 1.1.0+: RSA is opaque. RSA_set0_key() takes ownership of mod and exp on success.
+    if (!RSA_set0_key_d(result, mod, exp, NULL)) {
+        PUSH_ERROR_OPENSSL();
+        BN_free_d(exp);
+        BN_free_d(mod);
+        RSA_free_d(result);
+        RET_ERROR_PTR(ERR_UNSPEC, "unable to set the RSA public key components");
+    }
 
     //printf("MOD dec = [%s], hex = [%s]\n", BN_bn2dec(mod), BN_bn2hex_d(mod));
     //printf("EXP dec = [%s], hex = [%s]\n", BN_bn2dec(exp), BN_bn2hex_d(exp));
@@ -232,7 +235,7 @@ RSA *_get_rsa_dnskey(const unsigned char *rdptr, size_t rdlen) {
  */
 int _rsa_verify_record(const char *label, unsigned char algorithm, RSA *pubkey, const unsigned char *rrsig, const unsigned char *sigbuf, size_t siglen, ns_msg *dhandle) {
 
-    EVP_MD_CTX ctx;
+    EVP_MD_CTX *ctx = NULL;
     const EVP_MD *digtype;
     EVP_PKEY *pkey;
     ns_rr rr;
@@ -371,7 +374,7 @@ int _rsa_verify_record(const char *label, unsigned char algorithm, RSA *pubkey, 
         RET_ERROR_INT(ERR_UNSPEC, "could not set key for RR signature verification");
     }
 
-    EVP_MD_CTX_init_d(&ctx);
+    ctx = EVP_MD_CTX_new_d();
 
     if (algorithm == NS_ALG_RSASHA1) {
         digtype = EVP_sha1_d();
@@ -381,19 +384,19 @@ int _rsa_verify_record(const char *label, unsigned char algorithm, RSA *pubkey, 
         digtype = EVP_sha512_d();
     }
 
-    if (EVP_DigestInit_d(&ctx, digtype) != 1) {
+    if (EVP_DigestInit_d(ctx, digtype) != 1) {
         PUSH_ERROR_OPENSSL();
         free(hdata);
         RET_ERROR_INT(ERR_UNSPEC, "could not set digest for RR signature verification");
     }
 
-    if (EVP_DigestUpdate_d(&ctx, hdata, hlen) != 1) {
+    if (EVP_DigestUpdate_d(ctx, hdata, hlen) != 1) {
         PUSH_ERROR_OPENSSL();
         free(hdata);
         RET_ERROR_INT(ERR_UNSPEC, "could not read hash for RR signature verification");
     }
 
-    result = EVP_VerifyFinal_d(&ctx, sigbuf, siglen, pkey);
+    result = EVP_VerifyFinal_d(ctx, sigbuf, siglen, pkey);
     free(hdata);
 
     if (result == 1) {

@@ -850,6 +850,10 @@ dkim() {
       cd "$M_SOURCES/dkim"; error
       cat "$M_PATCHES/dkim/"opendkim.ticket226.patch | patch -p1 --verbose &>> "$M_LOGS/dkim.txt"; error
       cat "$M_PATCHES/dkim/"opendkim_headers_2.10.3.patch | patch -p1 --verbose &>> "$M_LOGS/dkim.txt"; error
+      # OpenSSL 3.x: configure probes for OpenSSL by link-testing SSL_library_init, which is now a
+      # macro (not a linkable symbol), so the probe fails. Point it at a real 3.x function instead.
+      # (The opendkim source still calls SSL_library_init; OPENSSL_API_COMPAT handles it as a macro.)
+      sed -i -e 's/SSL_library_init/OPENSSL_init_ssl/g' configure &>> "$M_LOGS/dkim.txt"; error
     ;;
     dkim-build)
       cd "$M_SOURCES/dkim"; error
@@ -864,9 +868,14 @@ dkim() {
         return 3
       fi
 
-      export CFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
-      export CXXFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
-      export CPPFLAGS="$M_SYM_INCLUDES -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
+      # OpenDKIM 2.10.3 predates OpenSSL 1.1.0 and calls removed init APIs (e.g. SSL_library_init) in
+      # both its configure probe and its source. OPENSSL_API_COMPAT=0x10002000L (1.0.2) re-exposes those
+      # as deprecated macros that expand to the OpenSSL 3.x equivalents (OPENSSL_init_ssl, etc.), and
+      # -Wno-deprecated-declarations keeps the resulting warnings from failing the build.
+      OSSL_COMPAT="-DOPENSSL_API_COMPAT=0x10002000L -Wno-deprecated-declarations"
+      export CFLAGS="$M_SYM_INCLUDES $OSSL_COMPAT -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CFLAGS"
+      export CXXFLAGS="$M_SYM_INCLUDES $OSSL_COMPAT -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CXXFLAGS"
+      export CPPFLAGS="$M_SYM_INCLUDES $OSSL_COMPAT -fPIC -g3 -rdynamic -D_FORTIFY_SOURCE=2 $M_CPPFLAGS"
       export LDFLAGS="-L$M_LDPATH -Wl,-rpath,$M_LDPATH -L$M_LDPATH/engines/ -Wl,-rpath,$M_LDPATH/engines/ $M_LDFLAGS"
 
       ./configure \
@@ -1669,11 +1678,13 @@ openssl() {
           export CONFIGOPTS='-fno-merge-debug-strings '
       fi
 
+      # OpenSSL 3.x notes: -DPURIFY was dropped (removed in 3.x), and "make depend" no longer
+      # exists (the unified 3.x build generates dependencies automatically). --libdir=lib keeps
+      # the static libs where the combine stage expects them (3.x otherwise defaults to lib64).
       ./config -d shared zlib no-asm --prefix="$M_LOCAL" --openssldir="share" --libdir="lib" \
-        -I"$M_LOCAL/include/" -O $CONFIGOPTS -g3 -rdynamic -fPIC -DPURIFY -D_FORTIFY_SOURCE=2 \
+        -I"$M_LOCAL/include/" -O $CONFIGOPTS -g3 -rdynamic -fPIC -D_FORTIFY_SOURCE=2 \
         -L"$M_LOCAL/lib/" -Wl,-rpath,"$M_LOCAL/lib/" &>> "$M_LOGS/openssl.txt"; error
 
-      make depend &>> "$M_LOGS/openssl.txt"; error
       make &>> "$M_LOGS/openssl.txt"; error
       make install &>> "$M_LOGS/openssl.txt"; error
 
@@ -2681,12 +2692,12 @@ load() {
   # Compile the source files. If an error occurs at compile time it is probably because we have a mismatch somewhere.
   # Alternatively, we could use the syntax "-L$M_PROJECT_ROOT -l:magmad.so" ...
   gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_INCLUDES \
-    -g3 -rdynamic -Wall -Wextra -Werror -o magma.open.check magma.open.check.c magma.open.symbols.c $M_SO -ldl
+    -g3 -rdynamic -Wall -Wextra -Werror -Wno-deprecated-declarations -o magma.open.check magma.open.check.c magma.open.symbols.c $M_SO -ldl
 
   # If errors are generated from invalid symbols, this should print out the specific lines that are invalid.
   if [ $? -ne 0 ]; then
 
-    LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_INCLUDES -g3 -rdynamic -Wall -Wextra -Werror \
+    LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_INCLUDES -g3 -rdynamic -Wall -Wextra -Werror -Wno-deprecated-declarations \
       -o magma.open.check magma.open.check.c magma.open.symbols.c $M_SO -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
       grep "[0-9*]" | awk '{print $1 ", " }' | sort -gu | uniq | tr -d "\n" | sed "s/, $//g"`
 
@@ -2695,7 +2706,7 @@ load() {
 
       printf "\n\nPrinting the invalid symbols...\n\n"
 
-      LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_INCLUDES -L$M_PROJECT_ROOT -l:magmad.so -g3 -rdynamic -Wall -Wextra -Werror \
+      LNS=`gcc -D_REENTRANT -D_GNU_SOURCE -DHAVE_NS_TYPE -D_LARGEFILE64_SOURCE $M_SYM_INCLUDES -L$M_PROJECT_ROOT -l:magmad.so -g3 -rdynamic -Wall -Wextra -Werror -Wno-deprecated-declarations \
         -o magma.open.check magma.open.check.c magma.open.symbols.c $M_SO -ldl 2>&1 | grep "magma.open.symbols.c" | awk -F':' '{ print $2 }' | \
         grep "[0-9*]" | awk '{print $1 "p;" }' | sort -gu | uniq | tr -d "\n"`
 

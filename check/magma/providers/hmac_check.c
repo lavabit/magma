@@ -18,7 +18,6 @@ bool_t check_hmac_simple(void) {
 	*digest_list[] = {
 		PLACER("MD4", 3),
 		PLACER("MD5", 3),
-		PLACER("SHA", 3),
 		PLACER("SHA1", 4),
 		PLACER("SHA224", 6),
 		PLACER("SHA256", 6),
@@ -30,7 +29,6 @@ bool_t check_hmac_simple(void) {
 	*result_list[] = {
 		PLACER("9b74896f0d315106c754a6c98d5602df", 32),
 		PLACER("bc6a30c3fb714a626f2579eb17996408", 32),
-		PLACER("dd3856b9637c715a17baa22ddaefbe8d5950ad38", 40),
 		PLACER("0f296eadc8f232211a6f5a80427c3abb6490d392", 40),
 		PLACER("162d0318e6a8ca179f11ea8811a03d0187e0fb77f553f650b88d945a", 56),
 		PLACER("c68e4d52fc7380d5910f95008ceced2eb543bde28446eacb095bfc2993ea0457", 64),

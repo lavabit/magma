@@ -208,7 +208,7 @@ endif
 
 # C Compiler Options
 CFLAGS                       ?=
-CFLAGS_WARNINGS               = -Wall -Werror -Winline -Wformat-security -Warray-bounds -Wno-address-of-packed-member
+CFLAGS_WARNINGS               = -Wall -Werror -Winline -Wformat-security -Warray-bounds -Wno-address-of-packed-member -Wno-deprecated-declarations
 CFLAGS_PEDANTIC               = -Wextra -Wpacked -Wunreachable-code -Wformat=2 
 CFLAGS_COMBINED               = -std=gnu99 -O0 -fPIC -fmessage-length=0 -ggdb3 -c $(CFLAGS_WARNINGS) -MMD $(CFLAGS)
 

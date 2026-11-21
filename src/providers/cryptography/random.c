@@ -330,6 +330,6 @@ bool_t rand_start(void) {
 
 void rand_stop(void) {
 
-	RAND_cleanup_d();
+	// OpenSSL 1.1.0+ cleans up the RNG automatically at exit; RAND_cleanup was removed.
 	return;
 }

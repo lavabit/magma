@@ -12,11 +12,11 @@ stringer_t * hash_digest(digest_t *digest, stringer_t *s, stringer_t *output) {
 	int_t olen;
 	uint_t rlen;
 	uint32_t opts = 0;
-	EVP_MD_CTX ctx;
+	EVP_MD_CTX *ctx = NULL;
 	stringer_t *result = NULL;
 
 	// Ensure a digest pointer was passed in and that we can retrieve the output length.
-	if (!digest || (olen = EVP_MD_size_d((const EVP_MD *)digest)) <= 0) {
+	if (!digest || (olen = EVP_MD_get_size_d((const EVP_MD *)digest)) <= 0) {
 		log_pedantic("The hash algorithm is missing or invalid.");
 		return NULL;
 	}
@@ -40,14 +40,21 @@ stringer_t * hash_digest(digest_t *digest, stringer_t *s, stringer_t *output) {
 		return NULL;
 	}
 
-	// Initialize the context.
-	EVP_MD_CTX_init_d(&ctx);
+	// Initialize the context. OpenSSL 1.1.0+ made EVP_MD_CTX opaque, so it must be heap-allocated
+	// with EVP_MD_CTX_new()/_free() instead of stack-allocated with _init()/_cleanup().
 	rlen = olen;
+	if (!(ctx = EVP_MD_CTX_new_d())) {
+		log_pedantic("An error occurred while trying to allocate the hash context.");
+		if (!output) {
+			st_free(result);
+		}
+		return NULL;
+	}
 
 	// Setup the digest algorithm.
-	if (EVP_DigestInit_ex_d(&ctx, (const EVP_MD *)digest, NULL) != 1) {
+	if (EVP_DigestInit_ex_d(ctx, (const EVP_MD *)digest, NULL) != 1) {
 		log_pedantic("An error occurred while trying to initialize the hash context. {%s}",	ssl_error_string(MEMORYBUF(256), 256));
-		EVP_MD_CTX_cleanup_d(&ctx);
+		EVP_MD_CTX_free_d(ctx);
 		if (!output) {
 			st_free(result);
 		}
@@ -55,9 +62,9 @@ stringer_t * hash_digest(digest_t *digest, stringer_t *s, stringer_t *output) {
 	}
 
 	// Process the input data.
-	else if (EVP_DigestUpdate_d(&ctx, st_data_get(s), st_length_get(s)) != 1) {
+	else if (EVP_DigestUpdate_d(ctx, st_data_get(s), st_length_get(s)) != 1) {
 		log_pedantic("An error occurred while trying to process the input data. {%s}", ssl_error_string(MEMORYBUF(256), 256));
-		EVP_MD_CTX_cleanup_d(&ctx);
+		EVP_MD_CTX_free_d(ctx);
 		if (!output) {
 			st_free(result);
 		}
@@ -65,9 +72,9 @@ stringer_t * hash_digest(digest_t *digest, stringer_t *s, stringer_t *output) {
 	}
 
 	// Retrieve the hash output.
-	else if (EVP_DigestFinal_d(&ctx, st_data_get(result), &rlen) != 1) {
+	else if (EVP_DigestFinal_d(ctx, st_data_get(result), &rlen) != 1) {
 		log_pedantic("An error occurred while trying to retrieve the hash result. {%s}", ssl_error_string(MEMORYBUF(256), 256));
-		EVP_MD_CTX_cleanup_d(&ctx);
+		EVP_MD_CTX_free_d(ctx);
 		if (!output) {
 			st_free(result);
 		}
@@ -75,7 +82,7 @@ stringer_t * hash_digest(digest_t *digest, stringer_t *s, stringer_t *output) {
 	}
 
 	// Cleanup.
-	EVP_MD_CTX_cleanup_d(&ctx);
+	EVP_MD_CTX_free_d(ctx);
 
 	if (!output || st_valid_tracked(opts)) {
 		st_length_set(result, rlen);
@@ -92,7 +99,10 @@ stringer_t * hash_md5(stringer_t *s, stringer_t *output) {
 }
 
 stringer_t * hash_sha(stringer_t *s, stringer_t *output) {
-	return hash_digest((digest_t *)EVP_sha_d(), s, output);
+	// SHA-0 (EVP_sha) was removed in OpenSSL 1.1.0; it is cryptographically broken and has no
+	// replacement. Any caller relying on it must migrate to SHA-1 or better.
+	log_pedantic("SHA-0 is not supported by the OpenSSL 3.x build.");
+	return NULL;
 }
 
 stringer_t * hash_sha1(stringer_t *s, stringer_t *output) {

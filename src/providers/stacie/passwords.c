@@ -80,7 +80,7 @@ uint32_t stacie_derive_rounds(stringer_t *password, uint32_t bonus) {
  */
 stringer_t * stacie_derive_seed(uint32_t rounds, stringer_t *password, stringer_t *salt) {
 
-	HMAC_CTX ctx;
+	HMAC_CTX *ctx = NULL;
 	uint_t seed_len = 64;
 	stringer_t *seed = NULL;
 	size_t salt_len, password_len;
@@ -116,37 +116,37 @@ stringer_t * stacie_derive_seed(uint32_t rounds, stringer_t *password, stringer_
 	}
 
 	// Initialize the HMAC context, then initialize the key using the salt.
-	HMAC_CTX_init_d(&ctx);
+	ctx = HMAC_CTX_new_d();
 
-	if (HMAC_Init_ex_d(&ctx, salt_data, salt_len, digest, NULL) != 1) {
+	if (HMAC_Init_ex_d(ctx, salt_data, salt_len, digest, NULL) != 1) {
 		log_error("The STACIE seed derivation failed because the HMAC function didn't initialize properly. {%s}",
 			ssl_error_string(MEMORYBUF(256), 256));
-		HMAC_CTX_cleanup_d(&ctx);
+		HMAC_CTX_free_d(ctx);
 		st_cleanup(seed);
 		return NULL;
 	}
 
 	// Update the HMAC context using the password. The password is repeated successively according to the rounds variable.
 	for (uint32_t count = 0; count < rounds; count++) {
-		if (HMAC_Update_d(&ctx, password_data, password_len) != 1) {
+		if (HMAC_Update_d(ctx, password_data, password_len) != 1) {
 			log_error("The STACIE seed derivation failed because the HMAC function context couldn't be updated. {%s}",
 				ssl_error_string(MEMORYBUF(256), 256));
-			HMAC_CTX_cleanup_d(&ctx);
+			HMAC_CTX_free_d(ctx);
 			st_cleanup(seed);
 			return NULL;
 		}
 	}
 
 	// Finalize the HMAC context and retrieve the digest result as our seed value.
-	if (HMAC_Final_d(&ctx, st_data_get(seed), &seed_len) != 1 || seed_len != 64) {
+	if (HMAC_Final_d(ctx, st_data_get(seed), &seed_len) != 1 || seed_len != 64) {
 		log_error("Failed HMAC_Final_d(). {%s}", ssl_error_string(MEMORYBUF(256), 256));
-		HMAC_CTX_cleanup_d(&ctx);
+		HMAC_CTX_free_d(ctx);
 		st_cleanup(seed);
 		return NULL;
 	}
 
 	// Set the stringer length.
-	HMAC_CTX_cleanup_d(&ctx);
+	HMAC_CTX_free_d(ctx);
 	st_length_set(seed, 64);
 
 	return seed;
@@ -182,7 +182,7 @@ stringer_t * stacie_derive_seed(uint32_t rounds, stringer_t *password, stringer_
  */
 stringer_t * stacie_derive_key(stringer_t *base, uint32_t rounds, stringer_t *username, stringer_t *password, stringer_t *salt) {
 
-	EVP_MD_CTX ctx;
+	EVP_MD_CTX *ctx = NULL;
 	uint_t key_len = 64;
 	uint32_t count_data;
 	stringer_t *key = NULL;
@@ -234,7 +234,7 @@ stringer_t * stacie_derive_key(stringer_t *base, uint32_t rounds, stringer_t *us
 	}
 
 	// Initialize the context. We only need to do this once.
-	EVP_MD_CTX_init_d(&ctx);
+	ctx = EVP_MD_CTX_new_d();
 
 	for (uint32_t count = 0; count < rounds; count++) {
 
@@ -242,34 +242,34 @@ stringer_t * stacie_derive_key(stringer_t *base, uint32_t rounds, stringer_t *us
 		count_data = htobe32(count);
 
 		// Setup the digest algorithm.
-		if (EVP_DigestInit_ex_d(&ctx, (const EVP_MD *)digest, NULL) != 1) {
+		if (EVP_DigestInit_ex_d(ctx, (const EVP_MD *)digest, NULL) != 1) {
 			log_pedantic("The STACIE key derivation failed because an error occurred while trying to initialize the hash context. {%s}",
 				ssl_error_string(MEMORYBUF(256), 256));
-			EVP_MD_CTX_cleanup_d(&ctx);
+			EVP_MD_CTX_free_d(ctx);
 			st_cleanup(key);
 			return NULL;
 		}
 
 		// Process the input data. Note that the key value, which holds the output from the previous round isn't used
 		// during the first iteration.
-		if ((count != 0 && EVP_DigestUpdate_d(&ctx, key_data, key_len) != 1) ||
-			EVP_DigestUpdate_d(&ctx, base_data, base_len) != 1 ||
-			EVP_DigestUpdate_d(&ctx, username_data, username_len) != 1 ||
-			EVP_DigestUpdate_d(&ctx, salt_data, salt_len) != 1 ||
-			EVP_DigestUpdate_d(&ctx, password_data, password_len) != 1 ||
-			EVP_DigestUpdate_d(&ctx, ((uchr_t *)&count_data) + 1, 3) != 1) {
+		if ((count != 0 && EVP_DigestUpdate_d(ctx, key_data, key_len) != 1) ||
+			EVP_DigestUpdate_d(ctx, base_data, base_len) != 1 ||
+			EVP_DigestUpdate_d(ctx, username_data, username_len) != 1 ||
+			EVP_DigestUpdate_d(ctx, salt_data, salt_len) != 1 ||
+			EVP_DigestUpdate_d(ctx, password_data, password_len) != 1 ||
+			EVP_DigestUpdate_d(ctx, ((uchr_t *)&count_data) + 1, 3) != 1) {
 			log_pedantic("The STACIE key derivation failed because an error occurred while trying to process the input data. {%s}",
 				ssl_error_string(MEMORYBUF(256), 256));
-			EVP_MD_CTX_cleanup_d(&ctx);
+			EVP_MD_CTX_free_d(ctx);
 			st_cleanup(key);
 			return NULL;
 		}
 
 		// Retrieve the hash output.
-		else if (EVP_DigestFinal_d(&ctx, key_data, &key_len) != 1 || key_len != 64) {
+		else if (EVP_DigestFinal_d(ctx, key_data, &key_len) != 1 || key_len != 64) {
 			log_pedantic("The STACIE key derivation failed because an error occurred while trying to retrieve the hash result. {%s}",
 				ssl_error_string(MEMORYBUF(256), 256));
-			EVP_MD_CTX_cleanup_d(&ctx);
+			EVP_MD_CTX_free_d(ctx);
 			st_cleanup(key);
 			return NULL;
 		}
@@ -280,7 +280,7 @@ stringer_t * stacie_derive_key(stringer_t *base, uint32_t rounds, stringer_t *us
 #ifdef MAGMA_ENGINE_STATUS_H
 		else if (count && (count % 100000) == 0 && !status()) {
 			log_pedantic("The STACIE key derivation process has been aborted early by a system shutdown.");
-			EVP_MD_CTX_cleanup_d(&ctx);
+			EVP_MD_CTX_free_d(ctx);
 			st_cleanup(key);
 			return NULL;
 		}
@@ -296,7 +296,7 @@ stringer_t * stacie_derive_key(stringer_t *base, uint32_t rounds, stringer_t *us
 	}
 
 	// Cleanup.
-	EVP_MD_CTX_cleanup_d(&ctx);
+	EVP_MD_CTX_free_d(ctx);
 
 	return key;
 }

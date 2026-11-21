@@ -29,7 +29,7 @@
  */
 stringer_t * stacie_realm_key(stringer_t *master_key, stringer_t *realm, stringer_t *salt, stringer_t *shard) {
 
-	EVP_MD_CTX ctx;
+	EVP_MD_CTX *ctx = NULL;
 	uint_t hash_len = 64;
 	stringer_t *result = NULL;
 	size_t key_len, realm_len, salt_len, shard_len;
@@ -73,38 +73,38 @@ stringer_t * stacie_realm_key(stringer_t *master_key, stringer_t *realm, stringe
 	}
 
 	// Initialize the context. We only need to do this once.
-	EVP_MD_CTX_init_d(&ctx);
+	ctx = EVP_MD_CTX_new_d();
 
 	// Setup the digest algorithm.
-	if (EVP_DigestInit_ex_d(&ctx, (const EVP_MD *)digest, NULL) != 1) {
+	if (EVP_DigestInit_ex_d(ctx, (const EVP_MD *)digest, NULL) != 1) {
 		log_pedantic("The STACIE realm key derivation failed because an error occurred while trying to initialize the hash context. {%s}",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_MD_CTX_cleanup_d(&ctx);
+		EVP_MD_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
 
 	// Process the input data.
-	if (EVP_DigestUpdate_d(&ctx, key_data, key_len) != 1 ||
-		EVP_DigestUpdate_d(&ctx, realm_data, realm_len) != 1 ||
-		EVP_DigestUpdate_d(&ctx, salt_data, salt_len) != 1) {
+	if (EVP_DigestUpdate_d(ctx, key_data, key_len) != 1 ||
+		EVP_DigestUpdate_d(ctx, realm_data, realm_len) != 1 ||
+		EVP_DigestUpdate_d(ctx, salt_data, salt_len) != 1) {
 		log_pedantic("The STACIE realm key derivation failed because an error occurred while trying to process the input data. {%s}",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_MD_CTX_cleanup_d(&ctx);
+		EVP_MD_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
 
 	// Retrieve the hash output.
-	else if (EVP_DigestFinal_d(&ctx, hash_data, &hash_len) != 1 || hash_len != 64) {
+	else if (EVP_DigestFinal_d(ctx, hash_data, &hash_len) != 1 || hash_len != 64) {
 		log_pedantic("The STACIE realm key derivation failed because an error occurred while trying to retrieve the hash result. {%s}",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_MD_CTX_cleanup_d(&ctx);
+		EVP_MD_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
 
-	EVP_MD_CTX_cleanup_d(&ctx);
+	EVP_MD_CTX_free_d(ctx);
 
 	if (!st_xor(PLACER(hash_data, hash_len), shard, result)) {
 		log_error("The STACIE realm key derivation failed because an error occurred while trying to perform the XOR operation.");

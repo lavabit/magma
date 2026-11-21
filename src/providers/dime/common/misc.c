@@ -1197,11 +1197,14 @@ _decode_rsa_pubkey(unsigned char *data, size_t dlen) {
 		RET_ERROR_PTR(ERR_UNSPEC, "could not create new RSA public key holder");
 	}
 
-	result->n = mod;
-	result->e = exp;
-	result->d = NULL;
-	result->p = NULL;
-	result->q = NULL;
+	// OpenSSL 1.1.0+: RSA is opaque. RSA_set0_key() takes ownership of mod and exp on success.
+	if (!RSA_set0_key_d(result, mod, exp, NULL)) {
+		PUSH_ERROR_OPENSSL();
+		BN_free_d(mod);
+		BN_free_d(exp);
+		RSA_free_d(result);
+		RET_ERROR_PTR(ERR_UNSPEC, "could not set the RSA public key components");
+	}
 
 	return result;
 }
@@ -1224,18 +1227,22 @@ _encode_rsa_pubkey(RSA *pubkey, size_t *enclen) {
 	unsigned char *result = NULL, *rptr;
 	unsigned short explen;
 	unsigned char byte = 0;
+	const BIGNUM *rsa_n = NULL, *rsa_e = NULL;
 
 	if (!pubkey || !enclen) {
 		RET_ERROR_PTR(ERR_BAD_PARAM, NULL);
 	}
 
+	// OpenSSL 1.1.0+: RSA is opaque; fetch the modulus/exponent via the accessor.
+	RSA_get0_key_d(pubkey, &rsa_n, &rsa_e, NULL);
+
 	// If the exponent length can be fit in one byte, it will. Otherwise, it will be stored as a null byte followed by a 2-byte length.
-	if ((explen = ((BN_num_bits_d(pubkey->e) + 7) / 8)) < 0xff) {
+	if ((explen = ((BN_num_bits_d(rsa_e) + 7) / 8)) < 0xff) {
 		byte = explen;
-		*enclen = explen + 1 + ((BN_num_bits_d(pubkey->n) + 7) / 8);
+		*enclen = explen + 1 + ((BN_num_bits_d(rsa_n) + 7) / 8);
 	}
 	else {
-		*enclen = explen + 3 + ((BN_num_bits_d(pubkey->n) + 7) / 8);
+		*enclen = explen + 3 + ((BN_num_bits_d(rsa_n) + 7) / 8);
 		explen = htons(explen);
 	}
 
@@ -1254,16 +1261,16 @@ _encode_rsa_pubkey(RSA *pubkey, size_t *enclen) {
 	}
 
 	// Finally, store the exponent followed by the modulus.
-	if (!BN_bn2bin_d(pubkey->e, rptr)) {
+	if (!BN_bn2bin_d(rsa_e, rptr)) {
 		PUSH_ERROR_OPENSSL()
 		;
 		free(result);
 		RET_ERROR_PTR(ERR_UNSPEC, "could not encode RSA public key exponent");
 	}
 
-	rptr += ((BN_num_bits_d(pubkey->e) + 7) / 8);
+	rptr += ((BN_num_bits_d(rsa_e) + 7) / 8);
 
-	if (!BN_bn2bin_d(pubkey->n, rptr)) {
+	if (!BN_bn2bin_d(rsa_n, rptr)) {
 		PUSH_ERROR_OPENSSL()
 		;
 		free(result);
@@ -1301,12 +1308,12 @@ int _get_x509_cert_sha_hash(X509 *cert, size_t nbits, unsigned char *out) {
 	}
 
 	if (_compute_sha_hash(nbits, buf, blen, out) < 0) {
-		CRYPTO_free_d(buf);
+		CRYPTO_free_d(buf, __FILE__, __LINE__);
 		RET_ERROR_INT(ERR_UNSPEC, "SHA hash on X509 certificate data failed");
 	}
 
 	// TODO: Is this really the proper way to free this buffer?
-	CRYPTO_free_d(buf);
+	CRYPTO_free_d(buf, __FILE__, __LINE__);
 
 	return 0;
 }

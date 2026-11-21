@@ -117,7 +117,7 @@ placer_t aes_tag_shard(stringer_t *key) {
  */
 stringer_t * aes_chunk_encrypt(uint8_t type, stringer_t *key, stringer_t *chunk, stringer_t *output) {
 
-	EVP_CIPHER_CTX ctx;
+	EVP_CIPHER_CTX *ctx = NULL;
 	size_t chunk_size = 0;
 	uint32_t big_endian_size = 0;
 	uchr_t *chunk_data, tag[AES_TAG_LEN];
@@ -186,51 +186,51 @@ stringer_t * aes_chunk_encrypt(uint8_t type, stringer_t *key, stringer_t *chunk,
 	mm_copy(&(header->vector), st_data_get(vector_rand_shard), 16);
 
 	// Setup the cipher context.
-	EVP_CIPHER_CTX_init_d(&ctx);
+	ctx = EVP_CIPHER_CTX_new_d();
 
 	// Initialize the cipher context.
-	if (EVP_EncryptInit_ex_d(&ctx, EVP_aes_256_gcm_d(), NULL, NULL, NULL) != 1) {
+	if (EVP_EncryptInit_ex_d(ctx, EVP_aes_256_gcm_d(), NULL, NULL, NULL) != 1) {
 		log_pedantic("An error occurred while trying to initialize chosen symmetric cipher. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
 
 	// Set the vector length.
-	else if (EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_GCM_SET_IVLEN, AES_VECTOR_LEN, NULL) != 1) {
+	else if (EVP_CIPHER_CTX_ctrl_d(ctx, EVP_CTRL_GCM_SET_IVLEN, AES_VECTOR_LEN, NULL) != 1) {
 		log_pedantic("The initialization vector length could not be properly set to %i bytes. { error = %s }", AES_VECTOR_LEN,
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
 
 	// Validate the key length.
-	else if (EVP_CIPHER_CTX_key_length_d(&ctx) != AES_KEY_LEN) {
+	else if (EVP_CIPHER_CTX_get_key_length_d(ctx) != AES_KEY_LEN) {
 		log_pedantic("The cipher key size isn't what we expected. { key = %i / expected = %i }",
-			AES_KEY_LEN, EVP_CIPHER_CTX_key_length_d(&ctx));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+			AES_KEY_LEN, EVP_CIPHER_CTX_get_key_length_d(ctx));
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
 
 	// Add the vector and cipher key to the encryption context.
-	else if (EVP_EncryptInit_ex_d(&ctx, NULL, NULL, pl_data_get(cipher_key), st_data_get(vector)) != 1) {
+	else if (EVP_EncryptInit_ex_d(ctx, NULL, NULL, pl_data_get(cipher_key), st_data_get(vector)) != 1) {
 		log_pedantic("An error occurred initializing the symmetric cipher with the provided vector and key. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
 
 	// Encrypt the payload.
-	if (EVP_EncryptUpdate_d(&ctx, st_data_get(output) + PRIME_CHUNK_HEAD_LEN, &available, chunk_data, chunk_size) != 1 ||
+	if (EVP_EncryptUpdate_d(ctx, st_data_get(output) + PRIME_CHUNK_HEAD_LEN, &available, chunk_data, chunk_size) != 1 ||
 		available != chunk_size) {
 
 		log_pedantic("An error occurred while trying to encrypt the input buffer using the chosen symmetric cipher. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
@@ -239,10 +239,10 @@ stringer_t * aes_chunk_encrypt(uint8_t type, stringer_t *key, stringer_t *chunk,
 	available = payload_len - written;
 
 	// Calling the finalization routine is what generates the tamper tag, but we'll need to make a separate call to retrieve it.
-	if (EVP_EncryptFinal_ex_d(&ctx, st_data_get(output) + PRIME_CHUNK_HEAD_LEN + written, &available) != 1) {
+	if (EVP_EncryptFinal_ex_d(ctx, st_data_get(output) + PRIME_CHUNK_HEAD_LEN + written, &available) != 1) {
 		log_pedantic("An error occurred while trying to complete encryption process. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
@@ -251,17 +251,17 @@ stringer_t * aes_chunk_encrypt(uint8_t type, stringer_t *key, stringer_t *chunk,
 	available = payload_len - written;
 
 	// Retrieve the tag, and then XOR it with the shard value extracted from the key.
-	if (EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_GCM_GET_TAG, AES_TAG_LEN, &tag[0]) != 1 ||
+	if (EVP_CIPHER_CTX_ctrl_d(ctx, EVP_CTRL_GCM_GET_TAG, AES_TAG_LEN, &tag[0]) != 1 ||
 		st_xor(&tag_key_shard, PLACER(&tag[0], AES_TAG_LEN), tag_shard) != tag_shard) {
 
 		log_pedantic("An error occurred while trying to retrieve the tag value. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
 
-	EVP_CIPHER_CTX_cleanup_d(&ctx);
+	EVP_CIPHER_CTX_free_d(ctx);
 
 	mm_copy(&(header->tag), st_data_get(tag_shard), AES_TAG_LEN);
 
@@ -275,7 +275,7 @@ stringer_t * aes_chunk_encrypt(uint8_t type, stringer_t *key, stringer_t *chunk,
 stringer_t * aes_chunk_decrypt(stringer_t *key, stringer_t *chunk, stringer_t *output) {
 
 	size_t chunk_size;
-	EVP_CIPHER_CTX ctx;
+	EVP_CIPHER_CTX *ctx = NULL;
 	uchr_t *chunk_data;
 	prime_encrypted_chunk_header_t *header = NULL;
 	int_t payload_len = 0, available = 0, written = 0;
@@ -325,36 +325,36 @@ stringer_t * aes_chunk_decrypt(stringer_t *key, stringer_t *chunk, stringer_t *o
 	tag = st_xor(PLACER(&(header->tag[0]), AES_TAG_LEN), &tag_key_shard, MANAGEDBUF(AES_TAG_LEN));
 
 	// Setup the cipher context, the body length, and store a pointer to the body buffer location.
-	EVP_CIPHER_CTX_init_d(&ctx);
+	ctx = EVP_CIPHER_CTX_new_d();
 
 	// Initialize the cipher context.
-	if (EVP_DecryptInit_ex_d(&ctx, EVP_aes_256_gcm_d(), NULL, NULL, NULL) != 1) {
+	if (EVP_DecryptInit_ex_d(ctx, EVP_aes_256_gcm_d(), NULL, NULL, NULL) != 1) {
 		log_pedantic("An error occurred while trying to initialize chosen symmetric cipher. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		return NULL;
 	}
 
-	else if (EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_GCM_SET_IVLEN, AES_VECTOR_LEN, NULL) != 1) {
+	else if (EVP_CIPHER_CTX_ctrl_d(ctx, EVP_CTRL_GCM_SET_IVLEN, AES_VECTOR_LEN, NULL) != 1) {
 		log_pedantic("The initialization vector length could not be properly set to 16 bytes. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		return NULL;
 	}
 
 	// Validate the key length.
-	else if (EVP_CIPHER_CTX_key_length_d(&ctx) != AES_KEY_LEN) {
+	else if (EVP_CIPHER_CTX_get_key_length_d(ctx) != AES_KEY_LEN) {
 		log_pedantic("The encryption key length does not match the selected cipher key length. { key = %i / expected = %i }",
-			AES_KEY_LEN, EVP_CIPHER_CTX_key_length_d(&ctx));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+			AES_KEY_LEN, EVP_CIPHER_CTX_get_key_length_d(ctx));
+		EVP_CIPHER_CTX_free_d(ctx);
 		return NULL;
 	}
 
 	// Add the vector and key data.
-	else if (EVP_DecryptInit_ex_d(&ctx, NULL, NULL, pl_data_get(cipher_key), st_data_get(vector)) != 1) {
+	else if (EVP_DecryptInit_ex_d(ctx, NULL, NULL, pl_data_get(cipher_key), st_data_get(vector)) != 1) {
 		log_pedantic("An error occurred initializing the symmetric cipher with the provided key and vector data. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		return NULL;
 	}
 
@@ -373,10 +373,10 @@ stringer_t * aes_chunk_decrypt(stringer_t *key, stringer_t *chunk, stringer_t *o
 	// Wipe the buffer.
 	st_wipe(output);
 
-	if (EVP_DecryptUpdate_d(&ctx, st_data_get(output), &available, chunk_data + PRIME_CHUNK_HEAD_LEN, chunk_size - PRIME_CHUNK_HEAD_LEN) != 1) {
+	if (EVP_DecryptUpdate_d(ctx, st_data_get(output), &available, chunk_data + PRIME_CHUNK_HEAD_LEN, chunk_size - PRIME_CHUNK_HEAD_LEN) != 1) {
 		log_pedantic("An error occurred while trying to decrypt the input buffer using the chosen symmetric cipher. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
@@ -385,18 +385,18 @@ stringer_t * aes_chunk_decrypt(stringer_t *key, stringer_t *chunk, stringer_t *o
 	available = payload_len - written;
 
 	// Set the Galois verification tag, which provides protection against tampering by an attacker.
-	if (EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_GCM_SET_TAG, 16, st_data_get(tag)) != 1) {
+	if (EVP_CIPHER_CTX_ctrl_d(ctx, EVP_CTRL_GCM_SET_TAG, 16, st_data_get(tag)) != 1) {
 		log_pedantic("An error occurred while trying to set the decryption tag value. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
 
-	if (EVP_DecryptFinal_ex_d(&ctx, st_data_get(output) + written, &available) != 1) {
+	if (EVP_DecryptFinal_ex_d(ctx, st_data_get(output) + written, &available) != 1) {
 		log_pedantic("An error occurred while trying to complete decryption process. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
@@ -404,7 +404,7 @@ stringer_t * aes_chunk_decrypt(stringer_t *key, stringer_t *chunk, stringer_t *o
 	written += available;
 	available = payload_len - written;
 
-	EVP_CIPHER_CTX_cleanup_d(&ctx);
+	EVP_CIPHER_CTX_free_d(ctx);
 
 	// Update the output string length.
 	if (st_valid_tracked(st_opt_get(output))) {
@@ -417,7 +417,7 @@ stringer_t * aes_chunk_decrypt(stringer_t *key, stringer_t *chunk, stringer_t *o
 stringer_t * aes_artifact_encrypt(stringer_t *key, stringer_t *object, stringer_t *output) {
 
 	uint8_t pad = 0;
-	EVP_CIPHER_CTX ctx;
+	EVP_CIPHER_CTX *ctx = NULL;
 	size_t overall_size = 0;
 	uchr_t *object_data, tag[AES_TAG_LEN];
 	uint16_t big_endian_type = 0, type = 0;
@@ -510,49 +510,49 @@ stringer_t * aes_artifact_encrypt(stringer_t *key, stringer_t *object, stringer_
 	mm_copy(((uchr_t *)&prefix) + 3, &pad, 1);
 
 	// Setup the cipher context.
-	EVP_CIPHER_CTX_init_d(&ctx);
+	ctx = EVP_CIPHER_CTX_new_d();
 
 	// Initialize the cipher context.
-	if (EVP_EncryptInit_ex_d(&ctx, EVP_aes_256_gcm_d(), NULL, NULL, NULL) != 1) {
+	if (EVP_EncryptInit_ex_d(ctx, EVP_aes_256_gcm_d(), NULL, NULL, NULL) != 1) {
 		log_pedantic("An error occurred while trying to initialize chosen symmetric cipher.");
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
 
 	// Set the vector length.
-	else if (EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_GCM_SET_IVLEN, AES_VECTOR_LEN, NULL) != 1) {
+	else if (EVP_CIPHER_CTX_ctrl_d(ctx, EVP_CTRL_GCM_SET_IVLEN, AES_VECTOR_LEN, NULL) != 1) {
 		log_pedantic("The initialization vector length could not be properly set to %i bytes.", AES_VECTOR_LEN);
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
 
 	// Validate the key length.
-	else if (EVP_CIPHER_CTX_key_length_d(&ctx) != AES_KEY_LEN) {
+	else if (EVP_CIPHER_CTX_get_key_length_d(ctx) != AES_KEY_LEN) {
 		log_pedantic("The cipher key size isn't what we expected. { key = %i / expected = %i }",
-			AES_KEY_LEN, EVP_CIPHER_CTX_key_length_d(&ctx));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+			AES_KEY_LEN, EVP_CIPHER_CTX_get_key_length_d(ctx));
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
 
 	// Add the vector and cipher key to the encryption context.
-	else if (EVP_EncryptInit_ex_d(&ctx, NULL, NULL, pl_data_get(cipher_key), st_data_get(vector)) != 1) {
+	else if (EVP_EncryptInit_ex_d(ctx, NULL, NULL, pl_data_get(cipher_key), st_data_get(vector)) != 1) {
 		log_pedantic("An error occurred initializing the symmetric cipher with the provided vector and key. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
 
 	// Encrypt the payload prefix, which consists of a byte 24 bit big endian length, and an 8 bit padding count.
-	if (EVP_EncryptUpdate_d(&ctx, st_data_get(output) + PRIME_OBJECT_HEAD_LEN, &available, ((uchr_t *)&prefix), PRIME_OBJECT_PAYLOAD_PREFIX_LEN) != 1 ||
+	if (EVP_EncryptUpdate_d(ctx, st_data_get(output) + PRIME_OBJECT_HEAD_LEN, &available, ((uchr_t *)&prefix), PRIME_OBJECT_PAYLOAD_PREFIX_LEN) != 1 ||
 		available != PRIME_OBJECT_PAYLOAD_PREFIX_LEN) {
 
 		log_pedantic("An error occurred while trying to encrypt the input buffer using the chosen symmetric cipher. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
@@ -561,12 +561,12 @@ stringer_t * aes_artifact_encrypt(stringer_t *key, stringer_t *object, stringer_
 	available = payload_len - written;
 
 	// Encrypt the plain text buffer.
-	if (EVP_EncryptUpdate_d(&ctx, st_data_get(output) + PRIME_OBJECT_HEAD_LEN + written, &available, object_data, object_size) != 1 ||
+	if (EVP_EncryptUpdate_d(ctx, st_data_get(output) + PRIME_OBJECT_HEAD_LEN + written, &available, object_data, object_size) != 1 ||
 		available != object_size) {
 
 		log_pedantic("An error occurred while trying to encrypt the input buffer using the chosen symmetric cipher. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
@@ -576,12 +576,12 @@ stringer_t * aes_artifact_encrypt(stringer_t *key, stringer_t *object, stringer_
 
 	// Encrypt the padding bytes (if necessary).
 	for (int_t i = 0; i < pad; i++) {
-		if (EVP_EncryptUpdate_d(&ctx, st_data_get(output) + PRIME_OBJECT_HEAD_LEN + written, &available, ((uchr_t *)&pad), 1) != 1 ||
+		if (EVP_EncryptUpdate_d(ctx, st_data_get(output) + PRIME_OBJECT_HEAD_LEN + written, &available, ((uchr_t *)&pad), 1) != 1 ||
 		available != 1) {
 
 			log_pedantic("An error occurred while trying to encrypt the input buffer using the chosen symmetric cipher. { error = %s }",
 				ssl_error_string(MEMORYBUF(256), 256));
-			EVP_CIPHER_CTX_cleanup_d(&ctx);
+			EVP_CIPHER_CTX_free_d(ctx);
 			st_cleanup(result);
 			return NULL;
 		}
@@ -591,10 +591,10 @@ stringer_t * aes_artifact_encrypt(stringer_t *key, stringer_t *object, stringer_
 	}
 
 	// Calling the finalization routine is what generates the tamper tag, but we'll need to make a separate call to retrieve it.
-	if (EVP_EncryptFinal_ex_d(&ctx, st_data_get(output) + PRIME_OBJECT_HEAD_LEN + written, &available) != 1) {
+	if (EVP_EncryptFinal_ex_d(ctx, st_data_get(output) + PRIME_OBJECT_HEAD_LEN + written, &available) != 1) {
 		log_pedantic("An error occurred while trying to complete encryption process. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
@@ -603,17 +603,17 @@ stringer_t * aes_artifact_encrypt(stringer_t *key, stringer_t *object, stringer_
 	available = payload_len - written;
 
 	// Retrieve the tag, and then XOR it with the shard value extracted from the key.
-	if (EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_GCM_GET_TAG, AES_TAG_LEN, &tag[0]) != 1 ||
+	if (EVP_CIPHER_CTX_ctrl_d(ctx, EVP_CTRL_GCM_GET_TAG, AES_TAG_LEN, &tag[0]) != 1 ||
 		st_xor(&tag_key_shard, PLACER(&tag[0], AES_TAG_LEN), tag_shard) != tag_shard) {
 
 		log_pedantic("An error occurred while trying to retrieve the tag value. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
 
-	EVP_CIPHER_CTX_cleanup_d(&ctx);
+	EVP_CIPHER_CTX_free_d(ctx);
 
 	mm_copy(&(header->tag), st_data_get(tag_shard), AES_TAG_LEN);
 
@@ -629,7 +629,7 @@ stringer_t * aes_artifact_decrypt(stringer_t *key, stringer_t *object, stringer_
 	uint8_t pad = 0;
 	uint16_t type = 0;
 	size_t object_size;
-	EVP_CIPHER_CTX ctx;
+	EVP_CIPHER_CTX *ctx = NULL;
 	uchr_t *object_data;
 	prime_encrypted_object_header_t *header = NULL;
 	int_t payload_len = 0, available = 0, written = 0;
@@ -691,36 +691,36 @@ stringer_t * aes_artifact_decrypt(stringer_t *key, stringer_t *object, stringer_
 	}
 
 	// Setup the cipher context, the body length, and store a pointer to the body buffer location.
-	EVP_CIPHER_CTX_init_d(&ctx);
+	ctx = EVP_CIPHER_CTX_new_d();
 
 	// Initialize the cipher context.
-	if (EVP_DecryptInit_ex_d(&ctx, EVP_aes_256_gcm_d(), NULL, NULL, NULL) != 1) {
+	if (EVP_DecryptInit_ex_d(ctx, EVP_aes_256_gcm_d(), NULL, NULL, NULL) != 1) {
 		log_pedantic("An error occurred while trying to initialize chosen symmetric cipher. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		return NULL;
 	}
 
-	else if (EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_GCM_SET_IVLEN, AES_VECTOR_LEN, NULL) != 1) {
+	else if (EVP_CIPHER_CTX_ctrl_d(ctx, EVP_CTRL_GCM_SET_IVLEN, AES_VECTOR_LEN, NULL) != 1) {
 		log_pedantic("The initialization vector length could not be properly set to 16 bytes. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		return NULL;
 	}
 
 	// Validate the key length.
-	else if (EVP_CIPHER_CTX_key_length_d(&ctx) != AES_KEY_LEN) {
+	else if (EVP_CIPHER_CTX_get_key_length_d(ctx) != AES_KEY_LEN) {
 		log_pedantic("The encryption key length does not match the selected cipher key length. { key = %i / expected = %i }",
-			AES_KEY_LEN, EVP_CIPHER_CTX_key_length_d(&ctx));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+			AES_KEY_LEN, EVP_CIPHER_CTX_get_key_length_d(ctx));
+		EVP_CIPHER_CTX_free_d(ctx);
 		return NULL;
 	}
 
 	// Add the vector and key data.
-	else if (EVP_DecryptInit_ex_d(&ctx, NULL, NULL, pl_data_get(cipher_key), st_data_get(vector)) != 1) {
+	else if (EVP_DecryptInit_ex_d(ctx, NULL, NULL, pl_data_get(cipher_key), st_data_get(vector)) != 1) {
 		log_pedantic("An error occurred initializing the symmetric cipher with the provided key and vector data. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		return NULL;
 	}
 
@@ -739,10 +739,10 @@ stringer_t * aes_artifact_decrypt(stringer_t *key, stringer_t *object, stringer_
 	// Wipe the buffer.
 	st_wipe(output);
 
-	if (EVP_DecryptUpdate_d(&ctx, st_data_get(output) + 1, &available, object_data + PRIME_OBJECT_HEAD_LEN, object_size - PRIME_OBJECT_HEAD_LEN) != 1) {
+	if (EVP_DecryptUpdate_d(ctx, st_data_get(output) + 1, &available, object_data + PRIME_OBJECT_HEAD_LEN, object_size - PRIME_OBJECT_HEAD_LEN) != 1) {
 		log_pedantic("An error occurred while trying to decrypt the input buffer using the chosen symmetric cipher. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
@@ -751,18 +751,18 @@ stringer_t * aes_artifact_decrypt(stringer_t *key, stringer_t *object, stringer_
 	available = payload_len - written;
 
 	// Set the Galois verification tag, which provides protection against tampering by an attacker.
-	if (EVP_CIPHER_CTX_ctrl_d(&ctx, EVP_CTRL_GCM_SET_TAG, 16, st_data_get(tag)) != 1) {
+	if (EVP_CIPHER_CTX_ctrl_d(ctx, EVP_CTRL_GCM_SET_TAG, 16, st_data_get(tag)) != 1) {
 		log_pedantic("An error occurred while trying to set the decryption tag value. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
 
-	else if (EVP_DecryptFinal_ex_d(&ctx, st_data_get(output) + 1 + written, &available) != 1) {
+	else if (EVP_DecryptFinal_ex_d(ctx, st_data_get(output) + 1 + written, &available) != 1) {
 		log_pedantic("An error occurred while trying to complete decryption process. { error = %s }",
 			ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&ctx);
+		EVP_CIPHER_CTX_free_d(ctx);
 		st_cleanup(result);
 		return NULL;
 	}
@@ -770,7 +770,7 @@ stringer_t * aes_artifact_decrypt(stringer_t *key, stringer_t *object, stringer_
 	written += available;
 	available = payload_len - written;
 
-	EVP_CIPHER_CTX_cleanup_d(&ctx);
+	EVP_CIPHER_CTX_free_d(ctx);
 
 	// Parse the payload prefix.
 	mm_move(((uchr_t *)&big_endian_payload_size) + 1, st_data_get(output) + 1, 3);

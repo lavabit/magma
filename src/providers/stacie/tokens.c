@@ -37,7 +37,7 @@
  */
 stringer_t * stacie_derive_token(stringer_t *base, stringer_t *username, stringer_t *salt, stringer_t *nonce) {
 
-	EVP_MD_CTX ctx;
+	EVP_MD_CTX *ctx = NULL;
 	uint_t token_len = 64;
 	uint32_t count_data;
 	stringer_t *token = NULL;
@@ -90,7 +90,7 @@ stringer_t * stacie_derive_token(stringer_t *base, stringer_t *username, stringe
 	}
 
 	// Initialize the context. We only need to do this once.
-	EVP_MD_CTX_init_d(&ctx);
+	ctx = EVP_MD_CTX_new_d();
 
 	for (uint32_t count = 0; count < STACIE_TOKEN_ROUNDS; count++) {
 
@@ -98,41 +98,41 @@ stringer_t * stacie_derive_token(stringer_t *base, stringer_t *username, stringe
 		count_data = htobe32(count);
 
 		// Setup the digest algorithm.
-		if (EVP_DigestInit_ex_d(&ctx, (const EVP_MD *)digest, NULL) != 1) {
+		if (EVP_DigestInit_ex_d(ctx, (const EVP_MD *)digest, NULL) != 1) {
 			log_pedantic("The STACIE token derivation failed because an error occurred while trying to initialize the hash context. {%s}",
 				ssl_error_string(MEMORYBUF(256), 256));
-			EVP_MD_CTX_cleanup_d(&ctx);
+			EVP_MD_CTX_free_d(ctx);
 			st_cleanup(token);
 			return NULL;
 		}
 
 		// Process the input data. Note that the token value, which holds the output from the previous round isn't used
 		// during the first iteration, and the nonce value won't always be available.
-		if ((count != 0 && EVP_DigestUpdate_d(&ctx, token_data, token_len) != 1) ||
-			EVP_DigestUpdate_d(&ctx, base_data, base_len) != 1 ||
-			EVP_DigestUpdate_d(&ctx, username_data, username_len) != 1 ||
-			EVP_DigestUpdate_d(&ctx, salt_data, salt_len) != 1 ||
-			(nonce_data && EVP_DigestUpdate_d(&ctx, nonce_data, nonce_len) != 1) ||
-			EVP_DigestUpdate_d(&ctx, ((uchr_t *)&count_data) + 1, 3) != 1) {
+		if ((count != 0 && EVP_DigestUpdate_d(ctx, token_data, token_len) != 1) ||
+			EVP_DigestUpdate_d(ctx, base_data, base_len) != 1 ||
+			EVP_DigestUpdate_d(ctx, username_data, username_len) != 1 ||
+			EVP_DigestUpdate_d(ctx, salt_data, salt_len) != 1 ||
+			(nonce_data && EVP_DigestUpdate_d(ctx, nonce_data, nonce_len) != 1) ||
+			EVP_DigestUpdate_d(ctx, ((uchr_t *)&count_data) + 1, 3) != 1) {
 			log_pedantic("The STACIE token derivation failed because an error occurred while trying to process the input data. {%s}",
 				ssl_error_string(MEMORYBUF(256), 256));
-			EVP_MD_CTX_cleanup_d(&ctx);
+			EVP_MD_CTX_free_d(ctx);
 			st_cleanup(token);
 			return NULL;
 		}
 
 		// Retrieve the hash output.
-		else if (EVP_DigestFinal_d(&ctx, token_data, &token_len) != 1 || token_len != 64) {
+		else if (EVP_DigestFinal_d(ctx, token_data, &token_len) != 1 || token_len != 64) {
 			log_pedantic("The STACIE token derivation failed because an error occurred while trying to retrieve the hash result. {%s}",
 				ssl_error_string(MEMORYBUF(256), 256));
-			EVP_MD_CTX_cleanup_d(&ctx);
+			EVP_MD_CTX_free_d(ctx);
 			st_cleanup(token);
 			return NULL;
 		}
 	}
 
 	// Cleanup.
-	EVP_MD_CTX_cleanup_d(&ctx);
+	EVP_MD_CTX_free_d(ctx);
 
 	return token;
 }

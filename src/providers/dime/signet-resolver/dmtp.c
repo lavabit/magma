@@ -413,7 +413,7 @@ int _verify_dx_certificate(dmtp_session_t *session) {
         RET_ERROR_INT(ERR_BAD_PARAM, NULL);
     }
 
-    if (!(cert = SSL_get_peer_certificate_d(session->con))) {
+    if (!(cert = SSL_get1_peer_certificate_d(session->con))) {
         PUSH_ERROR_OPENSSL();
         _dbgprint(1, "DX TLS certificate verification failed: could not get peer certificate.\n");
         RET_ERROR_INT(ERR_UNSPEC, "could not get peer certificate");

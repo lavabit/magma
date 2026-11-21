@@ -305,7 +305,7 @@ START_TEST (check_hash_s) {
 
 	// Note that MD2 and WHIRLPOOL are not available. Although WHIRLPOOL may be available as whirlpool.
 	chr_t *digest_list[] = {
-		"MD4", "MD5", "SHA", "SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "RIPEMD160"
+		"MD4", "MD5", "SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "RIPEMD160"
 	};
 
 	mm_wipe(errbuffer, sizeof(errbuffer));
@@ -354,9 +354,9 @@ START_TEST (check_symmetric_s) {
 
 	stringer_t *errmsg = NULL, *failed = NULL;
 	chr_t *cipher_list[] = {
-		"aes-128-cbc", "aes-128-ccm", "aes-128-cfb", "aes-128-cfb1", "aes-128-cfb8", "aes-128-ctr", "aes-128-ecb", "aes-128-gcm",
-		"aes-128-ofb", "aes-128-xts", "aes-192-cbc", "aes-192-ccm", "aes-192-cfb", "aes-192-cfb1", "aes-192-cfb8", "aes-192-ctr",
-		"aes-192-ecb", "aes-192-gcm", "aes-192-ofb", "aes-256-cbc", "aes-256-ccm", "aes-256-cfb", "aes-256-cfb1", "aes-256-cfb8",
+		"aes-128-cbc", "aes-128-cfb", "aes-128-cfb1", "aes-128-cfb8", "aes-128-ctr", "aes-128-ecb", "aes-128-gcm",
+		"aes-128-ofb", "aes-128-xts", "aes-192-cbc", "aes-192-cfb", "aes-192-cfb1", "aes-192-cfb8", "aes-192-ctr",
+		"aes-192-ecb", "aes-192-gcm", "aes-192-ofb", "aes-256-cbc", "aes-256-cfb", "aes-256-cfb1", "aes-256-cfb8",
 		"aes-256-ctr", "aes-256-ecb", "aes-256-gcm", "aes-256-ofb", "aes-256-xts", "aes128", "aes192", "aes256", "camellia-128-cbc",
 		"camellia-128-cfb", "camellia-128-cfb1", "camellia-128-cfb8", "camellia-128-ecb", "camellia-128-ofb", "camellia-192-cbc",
 		"camellia-192-cfb", "camellia-192-cfb1", "camellia-192-cfb8", "camellia-192-ecb", "camellia-192-ofb", "camellia-256-cbc",

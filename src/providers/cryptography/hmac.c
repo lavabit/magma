@@ -22,11 +22,11 @@ stringer_t * deprecated_hmac_digest(digest_t *digest, stringer_t *s, stringer_t 
 	int_t olen;
 	uint_t rlen;
 	uint32_t opts = 0;
-	HMAC_CTX hmac;
+	HMAC_CTX *hmac = NULL;
 	stringer_t *result = NULL;
 
 	// Ensure a digest pointer was passed in and that we can retrieve the output length.
-	if (!digest || (olen = EVP_MD_size_d((const EVP_MD *)digest)) <= 0) {
+	if (!digest || (olen = EVP_MD_get_size_d((const EVP_MD *)digest)) <= 0) {
 		log_pedantic("The hash algorithm is missing or invalid.");
 		return NULL;
 	}
@@ -51,35 +51,35 @@ stringer_t * deprecated_hmac_digest(digest_t *digest, stringer_t *s, stringer_t 
 	}
 
 	// Initialize the context.
-	HMAC_CTX_init_d(&hmac);
+	hmac = HMAC_CTX_new_d();
 	rlen = olen;
 
 	// Setup the digest algorithm.
-	if (HMAC_Init_ex_d(&hmac, st_data_get(key), st_length_get(key), (const EVP_MD *)digest, NULL) != 1) {
+	if (HMAC_Init_ex_d(hmac, st_data_get(key), st_length_get(key), (const EVP_MD *)digest, NULL) != 1) {
 		log_pedantic("An error occurred while trying to initialize the hashed message authentication code context.");
-		HMAC_CTX_cleanup_d(&hmac);
+		HMAC_CTX_free_d(hmac);
 		if (!output) st_free(result);
 		return NULL;
 	}
 
 	// Process the input data.
-	else if (HMAC_Update_d(&hmac, st_data_get(s), st_length_get(s)) != 1) {
+	else if (HMAC_Update_d(hmac, st_data_get(s), st_length_get(s)) != 1) {
 		log_pedantic("An error occurred while trying to process the input data.");
-		HMAC_CTX_cleanup_d(&hmac);
+		HMAC_CTX_free_d(hmac);
 		if (!output) st_free(result);
 		return NULL;
 	}
 
 	// Retrieve the HMAC output.
-	else if (HMAC_Final_d(&hmac, st_data_get(result), &rlen) != 1) {
+	else if (HMAC_Final_d(hmac, st_data_get(result), &rlen) != 1) {
 		log_pedantic("An error occurred while trying to retrieve the hashed message authentication code result.");
-		HMAC_CTX_cleanup_d(&hmac);
+		HMAC_CTX_free_d(hmac);
 		if (!output) st_free(result);
 		return NULL;
 	}
 
 	// Cleanup.
-	HMAC_CTX_cleanup_d(&hmac);
+	HMAC_CTX_free_d(hmac);
 
 	if (!output || st_valid_tracked(opts)) {
 		st_length_set(result, rlen);
@@ -96,7 +96,7 @@ stringer_t * deprecated_hmac_md5(stringer_t *s, stringer_t *key, stringer_t *out
 }
 
 stringer_t * deprecated_hmac_sha(stringer_t *s, stringer_t *key, stringer_t *output) {
-	return deprecated_hmac_digest((digest_t *)EVP_sha_d(), s, key, output);
+	log_pedantic("SHA-0 is not supported by the OpenSSL 3.x build."); (void)s; (void)key; (void)output; return NULL;
 }
 
 stringer_t * deprecated_hmac_sha1(stringer_t *s, stringer_t *key, stringer_t *output) {

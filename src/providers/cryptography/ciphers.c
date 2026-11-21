@@ -47,7 +47,7 @@ int_t cipher_numeric_id(cipher_t *c) {
 
 	int_t result = NID_undef;
 
-	if (c && (result = EVP_CIPHER_nid_d((const EVP_CIPHER *)c)) < 0) {
+	if (c && (result = EVP_CIPHER_get_nid_d((const EVP_CIPHER *)c)) < 0) {
 		log_pedantic("Unable to determine the encryption cipher's numerical identifier.");
 	}
 
@@ -63,8 +63,8 @@ int_t cipher_key_length(cipher_t *c) {
 
 	int_t result = -1;
 
-	if (c && (result = EVP_CIPHER_key_length_d((const EVP_CIPHER *)c)) < 0) {
-		log_pedantic("Unable to determine the encryption cipher's key length. {cipher = %s}", OBJ_nid2sn_d(EVP_CIPHER_nid_d((const EVP_CIPHER *)c)));
+	if (c && (result = EVP_CIPHER_get_key_length_d((const EVP_CIPHER *)c)) < 0) {
+		log_pedantic("Unable to determine the encryption cipher's key length. {cipher = %s}", OBJ_nid2sn_d(EVP_CIPHER_get_nid_d((const EVP_CIPHER *)c)));
 	}
 
 	return result;
@@ -79,8 +79,8 @@ int_t cipher_vector_length(cipher_t *c) {
 
 	int_t result = -1;
 
-	if (c && (result = EVP_CIPHER_iv_length_d((const EVP_CIPHER *)c)) < 0) {
-		log_pedantic("Unable to determine the encryption cipher's vector length. {cipher = %s}", OBJ_nid2sn_d(EVP_CIPHER_nid_d((const EVP_CIPHER *)c)));
+	if (c && (result = EVP_CIPHER_get_iv_length_d((const EVP_CIPHER *)c)) < 0) {
+		log_pedantic("Unable to determine the encryption cipher's vector length. {cipher = %s}", OBJ_nid2sn_d(EVP_CIPHER_get_nid_d((const EVP_CIPHER *)c)));
 	}
 
 	return result;
@@ -95,8 +95,8 @@ int_t cipher_block_length(cipher_t *c) {
 
 	int_t result = -1;
 
-	if (c && (result = EVP_CIPHER_block_size_d((const EVP_CIPHER *)c)) < 0) {
-		log_pedantic("Unable to determine the encryption cipher's block length. {cipher = %s}", OBJ_nid2sn_d(EVP_CIPHER_nid_d((const EVP_CIPHER *)c)));
+	if (c && (result = EVP_CIPHER_get_block_size_d((const EVP_CIPHER *)c)) < 0) {
+		log_pedantic("Unable to determine the encryption cipher's block length. {cipher = %s}", OBJ_nid2sn_d(EVP_CIPHER_get_nid_d((const EVP_CIPHER *)c)));
 	}
 
 	return result;

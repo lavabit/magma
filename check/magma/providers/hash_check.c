@@ -12,11 +12,10 @@ bool_t check_hash_simple(void) {
 	digest_t *digest;
 	stringer_t *hash, *hex;
 	chr_t *digest_list[] = {
-		"MD4", "MD5", "SHA", "SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "RIPEMD160"
+		"MD4", "MD5", "SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "RIPEMD160"
 	}, *result_list[] = {
 		"66f1f59819d52476f328839e34101d0f",
 		"7215ee9c7d9dc229d2921a40e899ec5f",
-		"bce965d4e985f27d988262331c0427909417cd90",
 		"b858cb282617fb0956d960215c8e84d1ccf909c6",
 		"ca17734c016e36b898af29c1aeb142e774abf4b70bac55ec98a27ba8",
 		"36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",

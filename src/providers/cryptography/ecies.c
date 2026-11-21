@@ -407,10 +407,10 @@ void * deprecated_ecies_envelope_derivation(const void *input, size_t ilen, void
 cryptex_t * deprecated_ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, unsigned char *data, size_t length) {
 
 	void *body;
-	HMAC_CTX hmac;
+	HMAC_CTX *hmac = NULL;
 	int body_length;
 	cryptex_t *cryptex;
-	EVP_CIPHER_CTX cipher;
+	EVP_CIPHER_CTX *cipher = NULL;
 	unsigned int mac_length;
 	EC_KEY *user, *ephemeral;
 	size_t envelope_length = 0, block_length = 0, key_length = 0, hexkey_length = 0;
@@ -432,7 +432,7 @@ cryptex_t * deprecated_ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, u
 	}
 
 	// Make sure we are generating enough key material for the symmetric ciphers.
-	if ((key_length = EVP_CIPHER_key_length_d(EVP_get_cipherbyname_d(OBJ_nid2sn_d(ECIES_CIPHER)))) * 2 > SHA512_DIGEST_LENGTH) {
+	if ((key_length = EVP_CIPHER_get_key_length_d(EVP_get_cipherbyname_d(OBJ_nid2sn_d(ECIES_CIPHER)))) * 2 > SHA512_DIGEST_LENGTH) {
 		log_info("The key derivation method will not produce enough envelope key material for the chosen ciphers. {envelope = %i / required = %zu}", SHA512_DIGEST_LENGTH / 8, (key_length * 2) / 8);
 		return NULL;
 	}
@@ -456,7 +456,7 @@ cryptex_t * deprecated_ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, u
 		return NULL;
 	}
 	// Determine the envelope and block lengths so we can allocate a buffer for the result.
-	else if ((block_length = EVP_CIPHER_block_size_d(EVP_get_cipherbyname_d(OBJ_nid2sn_d(ECIES_CIPHER)))) == 0 || block_length > EVP_MAX_BLOCK_LENGTH || (envelope_length = EC_POINT_point2oct_d(EC_KEY_get0_group_d(ephemeral), EC_KEY_get0_public_key_d(ephemeral),
+	else if ((block_length = EVP_CIPHER_get_block_size_d(EVP_get_cipherbyname_d(OBJ_nid2sn_d(ECIES_CIPHER)))) == 0 || block_length > EVP_MAX_BLOCK_LENGTH || (envelope_length = EC_POINT_point2oct_d(EC_KEY_get0_group_d(ephemeral), EC_KEY_get0_public_key_d(ephemeral),
 			POINT_CONVERSION_COMPRESSED, NULL, 0, NULL)) == 0) {
 		log_info("Invalid block or envelope length. {block = %zu / envelope = %zu}", block_length, envelope_length);
 		EC_KEY_free_d(ephemeral);
@@ -464,7 +464,7 @@ cryptex_t * deprecated_ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, u
 		return NULL;
 	}
 	// We use a conditional to pad the length if the input buffer is not evenly divisible by the block size.
-	else if (!(cryptex = deprecated_cryptex_alloc(envelope_length, EVP_MD_size_d(EVP_get_digestbyname_d(OBJ_nid2sn_d(ECIES_HMAC))), length, length + (length % block_length ? (block_length - (length % block_length)) : 0)))) {
+	else if (!(cryptex = deprecated_cryptex_alloc(envelope_length, EVP_MD_get_size_d(EVP_get_digestbyname_d(OBJ_nid2sn_d(ECIES_HMAC))), length, length + (length % block_length ? (block_length - (length % block_length)) : 0)))) {
 		log_info("Unable to allocate a secure_t buffer to hold the encrypted result.");
 		EC_KEY_free_d(ephemeral);
 		EC_KEY_free_d(user);
@@ -487,15 +487,15 @@ cryptex_t * deprecated_ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, u
 	memset(iv, 0, EVP_MAX_IV_LENGTH);
 
 	// Setup the cipher context, the body length, and store a pointer to the body buffer location.
-	EVP_CIPHER_CTX_init_d(&cipher);
+	cipher = EVP_CIPHER_CTX_new_d();
 	body = deprecated_cryptex_body_data(cryptex);
 	body_length = deprecated_cryptex_body_length(cryptex);
 
 	// Initialize the cipher with the envelope key.
-	if (EVP_EncryptInit_ex_d(&cipher, EVP_get_cipherbyname_d(OBJ_nid2sn_d(ECIES_CIPHER)), NULL, envelope_key, iv) != 1 || EVP_CIPHER_CTX_set_padding_d(&cipher, 0) != 1 ||
-			EVP_EncryptUpdate_d(&cipher, body, &body_length, data, length - (length % block_length)) != 1) {
+	if (EVP_EncryptInit_ex_d(cipher, EVP_get_cipherbyname_d(OBJ_nid2sn_d(ECIES_CIPHER)), NULL, envelope_key, iv) != 1 || EVP_CIPHER_CTX_set_padding_d(cipher, 0) != 1 ||
+			EVP_EncryptUpdate_d(cipher, body, &body_length, data, length - (length % block_length)) != 1) {
 		log_info("An error occurred while trying to secure the data using the chosen symmetric cipher. {%s}", ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&cipher);
+		EVP_CIPHER_CTX_free_d(cipher);
 		deprecated_cryptex_free(cryptex);
 		return NULL;
 	}
@@ -505,7 +505,7 @@ cryptex_t * deprecated_ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, u
 		// Make sure all that remains is a partial block, and their wasn't an error.
 		if (length - body_length >= block_length) {
 			log_info("Unable to secure the data using the chosen symmetric cipher. {%s}", ssl_error_string(MEMORYBUF(256), 256));
-			EVP_CIPHER_CTX_cleanup_d(&cipher);
+			EVP_CIPHER_CTX_free_d(cipher);
 			deprecated_cryptex_free(cryptex);
 			return NULL;
 		}
@@ -518,14 +518,14 @@ cryptex_t * deprecated_ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, u
 
 		if ((body_length = deprecated_cryptex_body_length(cryptex) - body_length) < 0) {
 			log_info("The symmetric cipher overflowed!");
-			EVP_CIPHER_CTX_cleanup_d(&cipher);
+			EVP_CIPHER_CTX_free_d(cipher);
 			deprecated_cryptex_free(cryptex);
 			return NULL;
 		}
 		// Pass the final partially filled data block into the cipher as a complete block. The padding will be removed during the decryption process.
-		else if (EVP_EncryptUpdate_d(&cipher, body, &body_length, block, block_length) != 1) {
+		else if (EVP_EncryptUpdate_d(cipher, body, &body_length, block, block_length) != 1) {
 			log_info("Unable to secure the data using the chosen symmetric cipher. {%s}", ssl_error_string(MEMORYBUF(256), 256));
-			EVP_CIPHER_CTX_cleanup_d(&cipher);
+			EVP_CIPHER_CTX_free_d(cipher);
 			deprecated_cryptex_free(cryptex);
 			return NULL;
 		}
@@ -537,32 +537,32 @@ cryptex_t * deprecated_ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, u
 
 	if ((body_length = deprecated_cryptex_body_length(cryptex) - (body - deprecated_cryptex_body_data(cryptex))) < 0) {
 		log_info("The symmetric cipher overflowed!");
-		EVP_CIPHER_CTX_cleanup_d(&cipher);
+		EVP_CIPHER_CTX_free_d(cipher);
 		deprecated_cryptex_free(cryptex);
 		return NULL;
-	} else if (EVP_EncryptFinal_ex_d(&cipher, body, &body_length) != 1) {
+	} else if (EVP_EncryptFinal_ex_d(cipher, body, &body_length) != 1) {
 		log_info("Unable to secure the data using the chosen symmetric cipher. {%s}", ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&cipher);
+		EVP_CIPHER_CTX_free_d(cipher);
 		deprecated_cryptex_free(cryptex);
 		return NULL;
 	}
 
-	EVP_CIPHER_CTX_cleanup_d(&cipher);
+	EVP_CIPHER_CTX_free_d(cipher);
 
 	// Generate an authenticated hash which can be used to validate the data during decryption.
-	HMAC_CTX_init_d(&hmac);
+	hmac = HMAC_CTX_new_d();
 	mac_length = deprecated_cryptex_hmac_length(cryptex);
 
 	// At the moment we are generating the hash using encrypted data. At some point we may want to validate the original text instead.
-	if (HMAC_Init_ex_d(&hmac, envelope_key + key_length, key_length, EVP_get_digestbyname_d(OBJ_nid2sn_d(ECIES_HMAC)), NULL) != 1 || HMAC_Update_d(&hmac, deprecated_cryptex_body_data(cryptex), deprecated_cryptex_body_length(cryptex)) != 1 || HMAC_Final_d(&hmac, deprecated_cryptex_hmac_data(
+	if (HMAC_Init_ex_d(hmac, envelope_key + key_length, key_length, EVP_get_digestbyname_d(OBJ_nid2sn_d(ECIES_HMAC)), NULL) != 1 || HMAC_Update_d(hmac, deprecated_cryptex_body_data(cryptex), deprecated_cryptex_body_length(cryptex)) != 1 || HMAC_Final_d(hmac, deprecated_cryptex_hmac_data(
 			cryptex), &mac_length) != 1) {
 		log_info("Unable to generate a data authentication code. {%s}", ssl_error_string(MEMORYBUF(256), 256));
-		HMAC_CTX_cleanup_d(&hmac);
+		HMAC_CTX_free_d(hmac);
 		deprecated_cryptex_free(cryptex);
 		return NULL;
 	}
 
-	HMAC_CTX_cleanup_d(&hmac);
+	HMAC_CTX_free_d(hmac);
 
 	return cryptex;
 }
@@ -577,10 +577,10 @@ cryptex_t * deprecated_ecies_encrypt(stringer_t *key, ECIES_KEY_TYPE key_type, u
  */
 uchr_t * deprecated_ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryptex_t *cryptex, size_t *length) {
 
-	HMAC_CTX hmac;
+	HMAC_CTX *hmac = NULL;
 	size_t key_length;
 	int output_length;
-	EVP_CIPHER_CTX cipher;
+	EVP_CIPHER_CTX *cipher = NULL;
 	EC_KEY *user, *ephemeral;
 	uchr_t *kbuf;
 	size_t hexkey_length;
@@ -601,7 +601,7 @@ uchr_t * deprecated_ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryp
 		return NULL;
 	}
 	// Make sure we are generating enough key material for the symmetric ciphers.
-	else if ((key_length = EVP_CIPHER_key_length_d(EVP_get_cipherbyname_d(OBJ_nid2sn_d(ECIES_CIPHER)))) * 2 > SHA512_DIGEST_LENGTH) {
+	else if ((key_length = EVP_CIPHER_get_key_length_d(EVP_get_cipherbyname_d(OBJ_nid2sn_d(ECIES_CIPHER)))) * 2 > SHA512_DIGEST_LENGTH) {
 		log_info("The key derivation method will not produce enough envelope key material for the chosen ciphers. {envelope = %i / required = %zu}", SHA512_DIGEST_LENGTH / 8, (key_length * 2) / 8);
 		return NULL;
 	}
@@ -630,16 +630,16 @@ uchr_t * deprecated_ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryp
 	EC_KEY_free_d(user);
 
 	// Use the authenticated hash of the ciphered data to ensure it was not modified after being encrypted.
-	HMAC_CTX_init_d(&hmac);
+	hmac = HMAC_CTX_new_d();
 
 	// At the moment we are generating the hash using encrypted data. At some point we may want to validate the original text instead.
-	if (HMAC_Init_ex_d(&hmac, envelope_key + key_length, key_length, EVP_get_digestbyname_d(OBJ_nid2sn_d(ECIES_HMAC)), NULL) != 1 || HMAC_Update_d(&hmac, deprecated_cryptex_body_data(cryptex), deprecated_cryptex_body_length(cryptex)) != 1 || HMAC_Final_d(&hmac, md, &mac_length) != 1) {
+	if (HMAC_Init_ex_d(hmac, envelope_key + key_length, key_length, EVP_get_digestbyname_d(OBJ_nid2sn_d(ECIES_HMAC)), NULL) != 1 || HMAC_Update_d(hmac, deprecated_cryptex_body_data(cryptex), deprecated_cryptex_body_length(cryptex)) != 1 || HMAC_Final_d(hmac, md, &mac_length) != 1) {
 		log_info("Unable to generate the authentication code needed for validation. {%s}", ssl_error_string(MEMORYBUF(256), 256));
-		HMAC_CTX_cleanup_d(&hmac);
+		HMAC_CTX_free_d(hmac);
 		return NULL;
 	}
 
-	HMAC_CTX_cleanup_d(&hmac);
+	HMAC_CTX_free_d(hmac);
 
 	// We can use the generated hash to ensure the encrypted data was not altered after being encrypted.
 	if (mac_length != deprecated_cryptex_hmac_length(cryptex) || memcmp(md, deprecated_cryptex_hmac_data(cryptex), mac_length)) {
@@ -659,13 +659,13 @@ uchr_t * deprecated_ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryp
 	memset(iv, 0, EVP_MAX_IV_LENGTH);
 	memset(output, 0, output_length + 1);
 
-	EVP_CIPHER_CTX_init_d(&cipher);
+	cipher = EVP_CIPHER_CTX_new_d();
 
 	// Decrypt the data using the chosen symmetric cipher.
-	if (EVP_DecryptInit_ex_d(&cipher, EVP_get_cipherbyname_d(OBJ_nid2sn_d(ECIES_CIPHER)), NULL, envelope_key, iv) != 1 || EVP_CIPHER_CTX_set_padding_d(&cipher, 0) != 1 || EVP_DecryptUpdate_d(&cipher, block, &output_length, deprecated_cryptex_body_data(cryptex),
+	if (EVP_DecryptInit_ex_d(cipher, EVP_get_cipherbyname_d(OBJ_nid2sn_d(ECIES_CIPHER)), NULL, envelope_key, iv) != 1 || EVP_CIPHER_CTX_set_padding_d(cipher, 0) != 1 || EVP_DecryptUpdate_d(cipher, block, &output_length, deprecated_cryptex_body_data(cryptex),
 			deprecated_cryptex_body_length(cryptex)) != 1) {
 		log_info("Unable to decrypt the data using the chosen symmetric cipher. {%s}", ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&cipher);
+		EVP_CIPHER_CTX_free_d(cipher);
 		free(output);
 		return NULL;
 	}
@@ -674,19 +674,19 @@ uchr_t * deprecated_ecies_decrypt(stringer_t *key, ECIES_KEY_TYPE key_type, cryp
 
 	if ((output_length = deprecated_cryptex_body_length(cryptex) - output_length) != 0) {
 		log_info("The symmetric cipher failed to properly decrypt the correct amount of data!");
-		EVP_CIPHER_CTX_cleanup_d(&cipher);
+		EVP_CIPHER_CTX_free_d(cipher);
 		free(output);
 		return NULL;
 	}
 
-	if (EVP_DecryptFinal_ex_d(&cipher, block, &output_length) != 1) {
+	if (EVP_DecryptFinal_ex_d(cipher, block, &output_length) != 1) {
 		log_info("Unable to decrypt the data using the chosen symmetric cipher. {%s}", ssl_error_string(MEMORYBUF(256), 256));
-		EVP_CIPHER_CTX_cleanup_d(&cipher);
+		EVP_CIPHER_CTX_free_d(cipher);
 		free(output);
 		return NULL;
 	}
 
-	EVP_CIPHER_CTX_cleanup_d(&cipher);
+	EVP_CIPHER_CTX_free_d(cipher);
 
 	*length = deprecated_cryptex_original_length(cryptex);
 

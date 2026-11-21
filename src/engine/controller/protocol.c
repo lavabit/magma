@@ -179,7 +179,7 @@ void protocol_secure(connection_t *con) {
 #endif
 
 		// We manually free the connection structure since calling con_destroy() would improperly decrement the statistical counters.
-		if (con->network.tls) tls_free(con->network.tls);
+		if (con->network.tls) tls_cleanup(con->network.tls);
 		if (con->network.sockd != -1) close(con->network.sockd);
 		if (con->network.buffer) st_free(con->network.buffer);
 		mutex_destroy(&(con->lock));

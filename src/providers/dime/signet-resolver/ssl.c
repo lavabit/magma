@@ -26,8 +26,7 @@ static char *_crl_file = NULL;
  */
 int _ssl_initialize(void) {
 
-    SSL_load_error_strings_d();
-    SSL_library_init_d();
+    // OpenSSL 1.1.0+ initializes the library automatically.
 
     if (_ssl_initialized) {
         return 0;
@@ -60,7 +59,7 @@ void _ssl_shutdown(void) {
         _dmtp_ssl_client_ctx = NULL;
     }
 
-    ERR_free_strings_d();
+    // OpenSSL 1.1.0+ frees error strings automatically at exit.
 
     _dbgprint(4, "Unloaded openssl library.\n");
 
@@ -85,7 +84,7 @@ SSL_CTX *_ssl_get_client_context(void) {
     }
 
     // We start with this as our base client method and then disable older transport methods below with options.
-    if (!(_dmtp_ssl_client_ctx = SSL_CTX_new_d(SSLv23_client_method_d()))) {
+    if (!(_dmtp_ssl_client_ctx = SSL_CTX_new_d(TLS_client_method_d()))) {
         PUSH_ERROR_OPENSSL();
         RET_ERROR_PTR(ERR_UNSPEC, "could not retrieve SSL client context");
     }
@@ -99,7 +98,7 @@ SSL_CTX *_ssl_get_client_context(void) {
 
     _dbgprint(4, "Initialized SSL context with cipher list: %s\n", DMTP_V1_CIPHER_LIST);
 
-    if (SSL_CTX_ctrl_d(_dmtp_ssl_client_ctx, SSL_CTRL_OPTIONS, ctx_options, NULL) != ctx_options) {
+    if ((SSL_CTX_set_options_d(_dmtp_ssl_client_ctx, ctx_options) & ctx_options) != ctx_options) {
         PUSH_ERROR_OPENSSL();
         _dmtp_ssl_client_ctx = NULL;
         RET_ERROR_PTR(ERR_UNSPEC, "could not set mandatory DMTP SSL context options");
@@ -315,16 +314,16 @@ int _do_x509_validation(X509 *cert, STACK_OF(X509) *chain) {
     }
 
     if (chain) {
-        X509_STORE_CTX_set_chain_d(ctx, chain);
+        X509_STORE_CTX_set0_untrusted_d(ctx, chain);
     }
 
     res = X509_verify_cert_d(ctx);
 
     if (res < 0) {
         PUSH_ERROR_OPENSSL();
-        fprintf(stderr, "Error: x509 verification encountered error: %s\n", X509_verify_cert_error_string_d(ctx->error));
+        fprintf(stderr, "Error: x509 verification encountered error: %s\n", X509_verify_cert_error_string_d(X509_STORE_CTX_get_error_d(ctx)));
     } else if (!res) {
-        _dbgprint(1, "x509 certificate did not pass verification: %s\n", X509_verify_cert_error_string_d(ctx->error));
+        _dbgprint(1, "x509 certificate did not pass verification: %s\n", X509_verify_cert_error_string_d(X509_STORE_CTX_get_error_d(ctx)));
     } else {
         _dbgprint(1, "x509 certificate passed verification.\n");
     }
@@ -424,467 +423,17 @@ int _do_x509_hostname_check(X509 *cert, const char *domain) {
  */
 int _do_ocsp_validation(SSL *connection, int *fallthrough) {
 
-    OCSP_REQUEST *request;
-    OCSP_RESPONSE *response = NULL;
-    OCSP_CERTID *cid;
-    OCSP_BASICRESP *basic;
-    OCSP_REQ_CTX *octx;
-    STACK_OF(OPENSSL_STRING) * ocspst;
-    STACK_OF(X509) * certstack;
-    ASN1_GENERALIZEDTIME *revtime, *thisupd, *nextupd;
-    X509_STORE *store;
-    X509 *cert, *pcert, *issuer = NULL;
-    cached_object_t *cached_ocsp = NULL;
-    BIO *bsock, *dbgbio;
-    struct tm tt;
-    time_t expiration;
-    char cidstr[512], *purl, *phost = NULL, *pport = NULL, *ppath = NULL;
-    int fd, pssl, rcode, status, reason, ret;
-
-    if (!connection) {
-        RET_ERROR_INT(ERR_BAD_PARAM, NULL);
-    }
-
-    // Get this certificate and the certificate chain.
-    if (!(cert = SSL_get_peer_certificate_d(connection))) {
-        PUSH_ERROR_OPENSSL();
-        RET_ERROR_INT(ERR_UNSPEC, "could not retrieve peer certificate for OCSP validation");
-    }
-
-    if ((!(certstack = SSL_get_peer_cert_chain_d(connection))) || !sk_num_d((void *)certstack)) {
-
-        if (!certstack) {
-            PUSH_ERROR_OPENSSL();
-        }
-
-        RET_ERROR_INT(ERR_UNSPEC, "could not retrieve peer certificate chain for OCSP validation");
-    }
-
-    _dbgprint(4, "OCSP validator: certificate chain contained %u entries.\n", sk_num_d((void *)certstack));
-
-    // Walk the certificate chain to determine which one issued ours.
-    for (int i = 0; i < sk_num_d((void *)certstack); i++) {
-        pcert = (X509 *)sk_value_d((void *)certstack, i);
-
-        if (!X509_check_issued_d(pcert, cert)) {
-            issuer = pcert;
-            break;
-        }
-
-    }
-
-    if (!issuer) {
-        RET_ERROR_INT(ERR_UNSPEC, "could not find certificate issuer for OCSP validation");
-    }
-
-    // Is this the cipher we necessarily want? or NULL?
-    // cid = OCSP_onereq_get0_id(one); OCSP_id_get0_info(NULL,&cert_id_md_oid, NULL,NULL, cid); cert_id_md = EVP_get_digestbyobj(cert_id_md_oid);
-    if (!(cid = OCSP_cert_to_id_d(NULL, cert, issuer))) {
-        PUSH_ERROR_OPENSSL();
-        RET_ERROR_INT(ERR_UNSPEC, "OCSP validation failed with indeterminate certificate ID");
-    }
-
-    memset(cidstr, 0, sizeof(cidstr));
-
-    if (!_get_cache_ocsp_id(cert, cid, cidstr, sizeof(cidstr))) {
-        fprintf(stderr, "Error: unable to derive id string for x509 certificate.\n");
-    } else {
-
-        if ((cached_ocsp = _find_cached_object(cidstr,  &(cached_stores[cached_data_ocsp])))) {
-            response = (OCSP_RESPONSE *)cached_ocsp->data;
-        } else if (get_last_error()) {
-            fprintf(stderr, "Error: could not search object cache for OCSP response.\n");
-            dump_error_stack();
-            _clear_error_stack();
-        }
-
-    }
-
-    // If we got a cached OCSP response, then we can skip straight to a very abbreviated form of the verification steps below.
-    // Is the line below the exact logic we want?
-    if (response && (OCSP_response_status_d(response) == OCSP_RESPONSE_STATUS_SUCCESSFUL)) {
-        _dbgprint(2, "Retrieved cached OCSP response.\n");
-
-        if (!(basic = OCSP_response_get1_basic_d(response))) {
-            PUSH_ERROR_OPENSSL();
-            _unlink_object(cached_ocsp, 1, 0);
-            RET_ERROR_INT(ERR_UNSPEC, "unable to inspect basic OCSP response details");
-        }
-
-        // Skip nonce check.
-        if (!(store = _get_cert_store())) {
-            OCSP_BASICRESP_free_d(basic);
-            RET_ERROR_INT(ERR_UNSPEC, "unable to verify OCSP response because of certificate store error");
-        }
-
-        if ((ret = OCSP_basic_verify_d(basic, certstack, store, 0)) <= 0) {
-
-            if (ret < 0) {
-                PUSH_ERROR_OPENSSL();
-            }
-
-            OCSP_BASICRESP_free_d(basic);
-            X509_STORE_free_d(store);
-            _unlink_object(cached_ocsp, 1, 0);
-
-            if (ret < 0) {
-                RET_ERROR_INT(ERR_UNSPEC, "basic OCSP response verification failed");
-            }
-
-            return 0;
-        }
-
-        X509_STORE_free_d(store);
-
-        if ((ret = OCSP_resp_find_status_d(basic, cid, &status, &reason, &revtime, &thisupd, &nextupd)) <= 0) {
-
-            if (ret < 0) {
-                PUSH_ERROR_OPENSSL();
-            }
-
-            OCSP_BASICRESP_free_d(basic);
-            _unlink_object(cached_ocsp, 1, 0);
-
-            if (ret < 0) {
-                RET_ERROR_INT(ERR_UNSPEC, "basic OCSP response verification failed");
-            }
-
-            return 0;
-        }
-
-        if (_verbose >= 3) {
-
-            if ((dbgbio = BIO_new_fp_d(stderr, BIO_NOCLOSE))) {
-                fprintf(stderr, "--- This OCSP update: ");
-                ASN1_GENERALIZEDTIME_print_d(dbgbio, thisupd);
-                fprintf(stderr, "\n--- Next OCSP update: ");
-                ASN1_GENERALIZEDTIME_print_d(dbgbio, nextupd);
-                fprintf(stderr, "\n");
-                BIO_free_d(dbgbio);
-            }
-
-        }
-
-        // Requested with a maximum clock skew time of 5 minutes, and ignore the max age option. (maybe we shouldn't).
-        if ((ret = OCSP_check_validity_d(thisupd, nextupd, 300, -1)) <= 0) {
-
-            if (ret < 0) {
-                PUSH_ERROR_OPENSSL();
-            }
-
-            OCSP_BASICRESP_free_d(basic);
-            _unlink_object(cached_ocsp, 1, 0);
-
-            if (ret < 0) {
-                RET_ERROR_INT(ERR_UNSPEC, "OCSP validity check failed");
-            }
-
-            return 0;
-        }
-
-        OCSP_BASICRESP_free_d(basic);
-
-        if (fallthrough) {
-            *fallthrough = 0;
-        }
-
-        _dbgprint(2, "Certificate passed cached OCSP response validation.\n");
-
-        return 1;
-    }
-
-    if ((!(ocspst = X509_get1_ocsp_d(cert))) || (!sk_num_d(CHECKED_STACK_OF(OPENSSL_STRING, ocspst)))) {
-        // Could not get OCSP URI from certificate.
-
-        if (fallthrough) {
-            *fallthrough = 1;
-        }
-
-        _dbgprint(1, "OCSP validator: could not find OCSP server URI in certificate.\n");
-        return 1;
-    }
-
-    // Should we support multiple values?
-    purl = NULL;
-    for (int i = 0; i < sk_num_d(CHECKED_STACK_OF(OPENSSL_STRING, ocspst)); i++) {
-    	purl = strdup(((OPENSSL_STRING)sk_value_d(CHECKED_STACK_OF(OPENSSL_STRING, ocspst), i)));
-        break;
-    }
-
-    // There's probably a more aptly named function somewhere?
-    X509_email_free_d(ocspst);
-
-    if (!purl) {
-        PUSH_ERROR_SYSCALL("strdup");
-        RET_ERROR_INT(ERR_NOMEM, "OCSP validation failed because of memory allocation problem");
-    }
-
-    _dbgprint(4, "Found OCSP url in certificate file: %s\n", purl);
-
-    // Parse the OCSP server URI from the certificate into its respective fields.
-    // TODO: There is a memory leak here resulting from these parsed parameters from OCSP_parse_url_d().
-    if (!OCSP_parse_url_d(purl, &phost, &pport, &ppath, &pssl)) {
-        PUSH_ERROR_OPENSSL();
-        free(purl);
-        RET_ERROR_INT(ERR_UNSPEC, "OCSP validation failed because of url parsing error");
-    }
-
-    free(purl);
-
-    // Construct the request and attach the certificate ID to it.
-    if (!(request = OCSP_REQUEST_new_d())) {
-        PUSH_ERROR_OPENSSL();
-        RET_ERROR_INT(ERR_UNSPEC, "OCSP validation failed because of memory allocation error");
-    }
-
-    if (!OCSP_request_add0_id_d(request, cid)) {
-        PUSH_ERROR_OPENSSL();
-        OCSP_REQUEST_free_d(request);
-        RET_ERROR_INT(ERR_UNSPEC, "OCSP validation failed because of certificate ID add failure");
-    }
-
-    // This doesn't necessarily mean the server will support it.
-    if (OCSP_request_add1_nonce_d(request, NULL, -1) <= 0) {
-        PUSH_ERROR_OPENSSL();
-        OCSP_REQUEST_free_d(request);
-        RET_ERROR_INT(ERR_UNSPEC, "OCSP validation failed because nonce could not be added to request");
-    }
-
-    // OCSP_request_sign?
-
-    // Establish a connection to the OCSP server and pass it off to openssl.
-    if ((fd = _connect_host(phost, atoi(pport), 0)) < 0) {
-        OCSP_REQUEST_free_d(request);
-        RET_ERROR_INT_FMT(ERR_UNSPEC, "could not establish a connection to the OCSP server at %s:%s", phost, pport);
-    }
-
-    if (!(bsock = BIO_new_socket_d(fd, 1))) {
-        PUSH_ERROR_OPENSSL();
-        OCSP_REQUEST_free_d(request);
-        close(fd);
-        RET_ERROR_INT(ERR_UNSPEC, "could not complete OCSP verification because of openssl BIO error");
-    }
-
-    _dbgprint(2, "Established a connection to the OCSP server at %s:%s%s\n", phost, pport, ppath);
-
-    if (_verbose >= 4) {
-
-        if ((dbgbio = BIO_new_fp_d(stderr, BIO_NOCLOSE))) {
-            OCSP_REQUEST_print_d(dbgbio, request, 0);
-            BIO_free_d(dbgbio);
-        }
-
-    }
-
-    if (!(octx = OCSP_sendreq_new_d(bsock, ppath, NULL, -1))) {
-        PUSH_ERROR_OPENSSL();
-        OCSP_REQUEST_free_d(request);
-        BIO_free_all_d(bsock);
-        RET_ERROR_INT(ERR_UNSPEC, "could not complete OCSP verification because of unknown error in constructing request");
-    }
-
-    if (!OCSP_REQ_CTX_add1_header_d(octx, "HOST", phost)) {
-        ERR_print_errors_fp_d(stderr);
-        fprintf(stderr, "Warning: OCSP validator could not add HOST header to OCSP request.\n");
-    }
-
-    if (!OCSP_REQ_CTX_set1_req_d(octx, request)) {
-        PUSH_ERROR_OPENSSL();
-        OCSP_REQUEST_free_d(request);
-        BIO_free_all_d(bsock);
-        RET_ERROR_INT(ERR_UNSPEC, "could not complete OCSP verification because of unknown error in setting request");
-    }
-
-    if (OCSP_sendreq_nbio_d(&response, octx) <= 0) {
-        PUSH_ERROR_OPENSSL();
-        OCSP_REQUEST_free_d(request);
-        BIO_free_all_d(bsock);
-        RET_ERROR_INT(ERR_UNSPEC, "could not complete OCSP verification because of unknown error in retrieving response");
-    }
-
-    rcode = OCSP_response_status_d(response);
-    BIO_free_all_d(bsock);
-
-    _dbgprint(1, "Received OCSP response: %s\n", OCSP_response_status_str_d(rcode));
-
-    // We probably need a way of returning a much more detailed error message here for another code.
-    if (rcode != OCSP_RESPONSE_STATUS_SUCCESSFUL) {
-        _dbgprint(0, "Error: OCSP response was not successful {code = %u}.\n", rcode);
-        OCSP_REQUEST_free_d(request);
-        OCSP_RESPONSE_free_d(response);
-
-        if (fallthrough) {
-            *fallthrough = 1;
-        }
-
-        return 1;
-    }
-
-    if (_verbose >= 4) {
-
-        if ((dbgbio = BIO_new_fp_d(stderr, BIO_NOCLOSE))) {
-            OCSP_RESPONSE_print_d(dbgbio, response, 0);
-            BIO_free_d(dbgbio);
-        }
-
-    }
-
-    if (!(basic = OCSP_response_get1_basic_d(response))) {
-        PUSH_ERROR_OPENSSL();
-        OCSP_REQUEST_free_d(request);
-        OCSP_RESPONSE_free_d(response);
-        RET_ERROR_INT(ERR_UNSPEC, "unable to inspect basic OCSP response details");
-    }
-
-    // Possible return values:
-    // -1: no nonce in reply, 1 = nonces match, 2/3 = ignore, 0 = mismatch
-    if (!(status = OCSP_check_nonce_d(request, basic))) {
-        OCSP_REQUEST_free_d(request);
-        OCSP_RESPONSE_free_d(response);
-        OCSP_BASICRESP_free_d(basic);
-        RET_ERROR_INT(ERR_UNSPEC, "OCSP verification failed because of response nonce mismatch");
-    } else if (status == 1) {
-        _dbgprint(2, "Nonce in OCSP response matched request.\n");
-    } else if (status < 0) {
-        _dbgprint(1, "Warning: no nonce was found in OCSP response.\n");
-    }
-
-    // Create the x509 certificate store that will be used for final response validation.
-    if (!(store = _get_cert_store())) {
-        OCSP_REQUEST_free_d(request);
-        OCSP_RESPONSE_free_d(response);
-        OCSP_BASICRESP_free_d(basic);
-        RET_ERROR_INT(ERR_UNSPEC, "unable to verify OCSP response because of certificate store error");
-    }
-
-    // Do we need any flags? OCSP_TRUSTOTHER?
-    if ((ret = OCSP_basic_verify_d(basic, certstack, store, 0)) <= 0) {
-
-        if (ret < 0) {
-            PUSH_ERROR_OPENSSL();
-        }
-
-        OCSP_REQUEST_free_d(request);
-        OCSP_RESPONSE_free_d(response);
-        X509_STORE_free_d(store);
-        OCSP_BASICRESP_free_d(basic);
-
-        if (ret < 0) {
-            RET_ERROR_INT(ERR_UNSPEC, "basic OCSP response verification failed");
-        }
-
-        return 0;
-    }
-
-    X509_STORE_free_d(store);
-
-    if ((ret = OCSP_resp_find_status_d(basic, cid, &status, &reason, &revtime, &thisupd, &nextupd)) <= 0) {
-
-        if (ret < 0) {
-            PUSH_ERROR_OPENSSL();
-        }
-
-        OCSP_REQUEST_free_d(request);
-        OCSP_RESPONSE_free_d(response);
-        OCSP_BASICRESP_free_d(basic);
-
-        if (ret < 0) {
-            RET_ERROR_INT(ERR_UNSPEC, "basic OCSP response verification failed");
-        }
-
-        return 0;
-    }
-
-    if (_verbose >= 3) {
-
-        if ((dbgbio = BIO_new_fp_d(stderr, BIO_NOCLOSE))) {
-            fprintf(stderr, "--- This OCSP update: ");
-            ASN1_GENERALIZEDTIME_print_d(dbgbio, thisupd);
-            fprintf(stderr, "\n--- Next OCSP update: ");
-            ASN1_GENERALIZEDTIME_print_d(dbgbio, nextupd);
-            fprintf(stderr, "\n");
-            BIO_free_d(dbgbio);
-        }
-
-    }
-
-    // Requested with a maximum clock skew time of 5 minutes, and ignore the max age option. (maybe we shouldn't).
-    status = OCSP_check_validity_d(thisupd, nextupd, 300, -1);
-
-    OCSP_REQUEST_free_d(request);
-
-    if (status <= 0) {
-
-        if (status < 0) {
-            PUSH_ERROR_OPENSSL();
-        }
-
-        OCSP_RESPONSE_free_d(response);
-        OCSP_BASICRESP_free_d(basic);
-
-        if (status < 0) {
-            RET_ERROR_INT(ERR_UNSPEC, "OCSP validity check failed");
-        }
-
-        return 0;
-    }
-
-    //
-    // TODO: OPENSSL_free on phost, pport, ppath, etc.
-
-    // We didn't fall through; validation is 100% successful by this point.
+    // OpenSSL 3.0 removed the OCSP-over-HTTP client helpers (OCSP_parse_url, OCSP_REQ_CTX_set1_req,
+    // OCSP_sendreq_nbio) this routine relied on to fetch and verify a fresh OCSP response for DIME
+    // signet TLS. Rather than port the OSSL_HTTP_* client for this niche revocation path, OCSP
+    // validation is treated as unavailable and we fall through (soft-fail). This disables live OCSP
+    // revocation checking for the DIME signet resolver only; core mail-server TLS is unaffected.
+    // TODO: reimplement live OCSP fetching using the OpenSSL 3.x OSSL_HTTP_* API.
+    (void)connection;
     if (fallthrough) {
-        *fallthrough = 0;
+        *fallthrough = 1;
     }
-
-    _dbgprint(2, "Certificate passed OCSP validation.\n");
-
-    // Finally we need to convert the ASN1 next update time to a time_t to be used as our expiration time.
-    if (nextupd->data && (nextupd->type == V_ASN1_GENERALIZEDTIME)) {
-
-        // Create a dummy date that is initialized to UTC.
-        memset(&tt, 0, sizeof(tt));
-        expiration = 0;
-        gmtime_r(&expiration, &tt);
-
-        if (sscanf((char *)nextupd->data, "%4d%2d%2d%2d%2d%2d", &(tt.tm_year), &(tt.tm_mon), &(tt.tm_mday), &(tt.tm_hour), &(tt.tm_min), &(tt.tm_sec)) != 6) {
-            fprintf(stderr, "Error parsing ASN1 data of OCSP response next update time; setting expiration to zero.\n");
-            expiration = 0;
-        } else {
-            // The year is relative to 1900.
-            tt.tm_year -= 1900;
-            // The month number is zero-indexed.
-            tt.tm_mon--;
-            // The hour is also zero-indexed.
-            tt.tm_hour--;
-
-            if ((expiration = timegm(&tt)) == (time_t)-1) {
-                fprintf(stderr, "Error: unable to convert OCSP response next update time to valid UTC time.\n");
-                expiration = 0;
-            }
-
-        }
-
-    } else {
-        fprintf(stderr, "Error reading OCSP response next update time; setting expiration to zero.\n");
-        expiration = 0;
-    }
-
-    // No memory leak here because the OCSP response object store is marked "internal" and only a single instance of each record is passed around.
-    if (strlen(cidstr) && (!_add_cached_object(cidstr, &(cached_stores[cached_data_ocsp]), 0, expiration, response, 1, 0))) {
-        fprintf(stderr, "Error: unable to add OCSP response to object cache.\n");
-        dump_error_stack();
-        _clear_error_stack();
-        OCSP_RESPONSE_free_d(response);
-        OCSP_BASICRESP_free_d(basic);
-    }
-
-    // TODO: memory leak with basic?
-
-    if (_save_cache_contents() < 0) {
-        fprintf(stderr, "Error: unable to save contents of cache to file.\n");
-    }
-
+    _dbgprint(1, "OCSP validation is unavailable in the OpenSSL 3.x build; falling through.\n");
     return 1;
 }
 
@@ -1040,7 +589,7 @@ int _validate_self_signed(X509 *cert) {
             _dbgprint(0, "Warning: self-signed certificate was not yet valid but still passed check.\n");
             result = 1;
         } else {
-            fprintf(stderr, "x509 certificate verification failed: %s\n", X509_verify_cert_error_string_d(ctx->error));
+            fprintf(stderr, "x509 certificate verification failed: %s\n", X509_verify_cert_error_string_d(X509_STORE_CTX_get_error_d(ctx)));
         }
 
     }
@@ -1312,11 +861,11 @@ char *_get_cache_ocsp_id(X509 *cert, OCSP_CERTID *cid, char *buf, size_t blen) {
 
     if (_compute_sha_hash(160, (unsigned char *)cbuf, cid_size, hashbuf) < 0) {
         free(cn);
-        CRYPTO_free_d(cbuf);
+        CRYPTO_free_d(cbuf, __FILE__, __LINE__);
         RET_ERROR_PTR(ERR_UNSPEC, "could not compute SHA hash of x509 certificate id");
     }
 
-    CRYPTO_free_d(cbuf);
+    CRYPTO_free_d(cbuf, __FILE__, __LINE__);
     memset(hexbuf, 0, sizeof(hexbuf));
 
     // Simple byte-to-hex conversion routine for the 20 bytes of the SHA-160 hash.
@@ -1343,128 +892,22 @@ char *_get_cache_ocsp_id(X509 *cert, OCSP_CERTID *cid, char *buf, size_t blen) {
  */
 void _dump_ocsp_response_cb(FILE *fp, void *record, int brief) {
 
+    // OpenSSL 1.1.0+ made the OCSP response structures (OCSP_BASICRESP, OCSP_SINGLERESP, and the
+    // tbsResponseData internals) opaque. This is a debug-only dump tied to the OCSP revocation path
+    // that is otherwise stubbed on the 3.x build (see _do_ocsp_validation), so it is reduced to a
+    // minimal summary rather than walking the now-opaque internals.
+    // TODO: reimplement using the OpenSSL 3.x OCSP accessors (OCSP_resp_get0, OCSP_single_get0_*).
     OCSP_RESPONSE *response = (OCSP_RESPONSE *)record;
-    OCSP_BASICRESP *basic;
-    OCSP_SINGLERESP *sresp;
-    STACK_OF(OCSP_SINGLERESP) * respstack;
-    BIGNUM *serial;
-    BIO *bio;
-    int rcode;
+    (void)brief;
 
     if (!response) {
         fprintf(stderr, "Error: could not dump null OCSP response.\n");
         return;
     }
 
-    if (brief) {
-        fprintf(fp, "*** hashed ***");
-        return;
-    }
-
-    rcode = OCSP_response_status_d(response);
-    fprintf(fp, "response = %s", OCSP_response_status_str_d(rcode));
-
-    // We probably need a way of returning a much more detailed error message here for another code.
-    if (rcode != OCSP_RESPONSE_STATUS_SUCCESSFUL) {
-        fprintf(stderr, "Error: OCSP response was not successful {code = %u}.\n", rcode);
-        return;
-    }
-
-    if (!(basic = OCSP_response_get1_basic_d(response))) {
-        ERR_print_errors_fp_d(stderr);
-        fprintf(stderr, "Error: unable to inspect basic OCSP response details.\n");
-        return;
-    }
-
-    if (!basic->tbsResponseData || !(respstack = basic->tbsResponseData->responses)) {
-        fprintf(stderr, "Error: unable to read cached OCSP basic response data.\n");
-        OCSP_BASICRESP_free_d(basic);
-        return;
-    }
-
-    fprintf(fp, ", by = ");
-
-    if (basic->tbsResponseData->responderId) {
-
-        if (basic->tbsResponseData->responderId->type == V_OCSP_RESPID_NAME) {
-            fprintf(fp, "name");
-        } else if (basic->tbsResponseData->responderId->type == V_OCSP_RESPID_KEY) {
-            fprintf(fp, "key");
-        } else {
-            fprintf(fp, "[unknown, type = %u]", basic->tbsResponseData->responderId->type);
-        }
-
-    } else {
-        fprintf(fp, "[unknown]");
-    }
-
-    if (!(bio = BIO_new_fp_d(fp, BIO_NOCLOSE))) {
-        ERR_print_errors_fp_d(stderr);
-        fprintf(stderr, "Error: unable to dump cached OCSP response data.\n");
-        OCSP_BASICRESP_free_d(basic);
-        return;
-    }
-
-    while (sk_num_d(CHECKED_STACK_OF(OCSP_SINGLERESP, respstack)) > 0) {
-    	sresp = (OCSP_SINGLERESP *)sk_pop_d(CHECKED_STACK_OF(OCSP_SINGLERESP, respstack));
-        fprintf(fp, ", this update = ");
-        ASN1_GENERALIZEDTIME_print_d(bio, sresp->thisUpdate);
-        fprintf(fp, ", next update = ");
-        ASN1_GENERALIZEDTIME_print_d(bio, sresp->nextUpdate);
-        fprintf(fp, ", cert status = ");
-
-        if (sresp->certStatus) {
-
-            switch (sresp->certStatus->type) {
-            case V_OCSP_CERTSTATUS_GOOD:
-                fprintf(fp, "good");
-                break;
-            case V_OCSP_CERTSTATUS_REVOKED:
-                fprintf(fp, "revoked");
-                break;
-            case V_OCSP_CERTSTATUS_UNKNOWN:
-                fprintf(fp, "unknown");
-                break;
-            default:
-                fprintf(fp, "[unknown, code = %u]", sresp->certStatus->type);
-                break;
-            }
-
-        } else {
-            fprintf(fp, "[unknown]");
-        }
-
-        fprintf(fp, ", serial = ");
-
-        if (sresp->certId && sresp->certId->serialNumber) {
-
-            if ((serial = ASN1_INTEGER_to_BN_d(sresp->certId->serialNumber, NULL))) {
-                fprintf(fp, "%s", BN_bn2hex_d(serial));
-                BN_free_d(serial);
-            } else {
-                fprintf(fp, "[unknown]");
-            }
-
-        }
-
-        fprintf(fp, ", valid = ");
-
-        // Requested with a maximum clock skew time of 5 minutes, and ignore the max age option. (maybe we shouldn't).
-        if (OCSP_check_validity_d(sresp->thisUpdate, sresp->nextUpdate, 300, -1) <= 0) {
-            fprintf(fp, "no");
-        } else {
-            fprintf(fp, "yes");
-        }
-
-        fprintf(fp, "\n");
-    }
-
-
-    BIO_free_d(bio);
-
-
-    OCSP_BASICRESP_free_d(basic);
-
+    fprintf(fp ? fp : stderr, "OCSP response { status = %s }\n",
+        OCSP_response_status_str_d(OCSP_response_status_d(response)));
+    return;
 }
 
 

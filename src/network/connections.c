@@ -168,7 +168,7 @@ void con_destroy(connection_t *con) {
 		}
 
 		if (con->network.tls) {
-			tls_free(con->network.tls);
+			tls_cleanup(con->network.tls);
 		}
 
 		if (con->network.sockd != -1) {

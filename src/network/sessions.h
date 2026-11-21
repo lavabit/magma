@@ -62,7 +62,10 @@ typedef struct __attribute__ ((packed)) {
 		bool_t trigger;
 	} refresh;
 
-	pthread_mutex_t lock;
+	// The futex system call requires a naturally aligned address. This structure is packed, and the boolean members above
+	// would otherwise leave the lock at an odd offset, which is harmless until two threads contend for it. At that point the
+	// kernel rejects the wait with EINVAL and glibc aborts with "The futex facility returned an unexpected error code."
+	pthread_mutex_t lock __attribute__ ((aligned (8)));
 
 } session_t;
 
